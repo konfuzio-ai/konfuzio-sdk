@@ -68,10 +68,10 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Guides</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#how-to-integrate-the-document-validation-ui-into-custom-solutions">How to integrate the Document Validation UI into custom solutions?</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#install-as-an-npm-package">Install as an NPM package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#configure-the-app">Configure the app</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#configure-the-application">Configure the application</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#integrate-by-deploying-the-app">Integrate by deploying the app</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#integrate-by-deploying-the-application">Integrate by deploying the application</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#deploy">Deploy</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#local-development">Local Development</a></li>
 </ul>
@@ -124,21 +124,29 @@
 <h1>Guides<a class="headerlink" href="#guides" title="Permalink to this headline">¶</a></h1>
 <section id="how-to-integrate-the-document-validation-ui-into-custom-solutions">
 <h2>How to integrate the Document Validation UI into custom solutions?<a class="headerlink" href="#how-to-integrate-the-document-validation-ui-into-custom-solutions" title="Permalink to this headline">¶</a></h2>
-<p>The app requires <code class="docutils literal notranslate"><span class="pre">node</span></code> and <code class="docutils literal notranslate"><span class="pre">npm</span></code> to run. It also requires a connection to the <a class="reference external" href="https://app.konfuzio.com/v3/swagger/">Konfuzio Server API version 3</a>. See <a class="reference external" href="https://dev.konfuzio.com/web/api-v3.html">full documentation</a>.</p>
+<p>The application requires <code class="docutils literal notranslate"><span class="pre">node</span></code> and <code class="docutils literal notranslate"><span class="pre">npm</span></code> to run. It also requires a connection to the <a class="reference external" href="https://app.konfuzio.com/v3/swagger/">Konfuzio Server API version 3</a>. See <a class="reference external" href="https://dev.konfuzio.com/web/api-v3.html">full documentation</a>.</p>
 <p>There are a few different options to integrate the Document Validation UI into your Project, which we will explain next.</p>
 <section id="install-as-an-npm-package">
 <h3>Install as an NPM package<a class="headerlink" href="#install-as-an-npm-package" title="Permalink to this headline">¶</a></h3>
 <p>If you want to integrate the Document Validation UI to an existing application, we recommend installing the available package on the <a class="reference external" href="https://www.npmjs.com/package/&#64;konfuzio/capture-vue">npm repository</a>.</p>
-<section id="configure-the-app">
-<h4>Configure the app<a class="headerlink" href="#configure-the-app" title="Permalink to this headline">¶</a></h4>
-<p>Once the package is installed, you can configure the app using a JavaScript bundler. You can find an example using <a class="reference external" href="https://webpack.js.org/guides/getting-started/">Webpack</a> below:</p>
+<section id="configure-the-application">
+<h4>Configure the application<a class="headerlink" href="#configure-the-application" title="Permalink to this headline">¶</a></h4>
+<p>Once the package is installed, you can configure the application in two ways:</p>
+<section id="pointing-to-the-dist-folder">
+<h5>Pointing to the dist folder<a class="headerlink" href="#pointing-to-the-dist-folder" title="Permalink to this headline">¶</a></h5>
+<p>You can use the compiled version under the <code class="docutils literal notranslate"><span class="pre">dist</span></code> folder on the package source, by pointing to it from the <code class="docutils literal notranslate"><span class="pre">index.html</span></code> and making any necessary changes to the <code class="docutils literal notranslate"><span class="pre">HTML</span></code> properties on the <code class="docutils literal notranslate"><span class="pre">App</span></code> tag.</p>
+<a class="reference external image-reference" href="./images/dist-npm-package.png"><img alt="dist-npm-package.png" src="../_images/dist-npm-package.png" /></a>
+</section>
+<section id="using-a-javascript-bundler">
+<h5>Using a JavaScript bundler<a class="headerlink" href="#using-a-javascript-bundler" title="Permalink to this headline">¶</a></h5>
+<p>If you want more integration with your current configuration, you can use a JavaScript bundler. You can find an example using <a class="reference external" href="https://webpack.js.org/guides/getting-started/">Webpack</a> below:</p>
 <section id="webpack-config-js">
-<h5>webpack.config.js<a class="headerlink" href="#webpack-config-js" title="Permalink to this headline">¶</a></h5>
+<h6>webpack.config.js<a class="headerlink" href="#webpack-config-js" title="Permalink to this headline">¶</a></h6>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>const VueLoaderPlugin = require(&quot;vue-loader/lib/plugin&quot;);
 
 module.exports = {
     entry: {
-        capture_vue: &quot;./node_modules/@konfuzio/document-validation-ui/src/main.js&quot;,
+        document_validation_ui: &quot;./node_modules/@konfuzio/document-validation-ui/src/main.js&quot;,
     },
     output: {
         path: &quot;/server/bundle&quot;,
@@ -164,50 +172,83 @@ module.exports = {
 </pre></div>
 </div>
 </section>
+</section>
 <section id="html">
 <h5>HTML<a class="headerlink" href="#html" title="Permalink to this headline">¶</a></h5>
-<p>In the HTML we should load the script we created with webpack and customise the variables we want. Please note that customising the variables is optional and that, as previously mentioned, any variable in the <code class="docutils literal notranslate"><span class="pre">.env</span></code> will have priority from the variables defined in the <code class="docutils literal notranslate"><span class="pre">index.html</span></code>.</p>
-<p>The following example includes the custom variables (Document ID, User Token, Locale), but it is not mandatory to add these, which should still be added to the <code class="docutils literal notranslate"><span class="pre">.env</span></code> file.</p>
+<p>In the <code class="docutils literal notranslate"><span class="pre">HTML</span></code> we should load the script we created with Webpack or the compiled version under the <code class="docutils literal notranslate"><span class="pre">dist</span></code> folder, and customise the variables we want. Please note that customising the variables is optional and that any variable in the <code class="docutils literal notranslate"><span class="pre">.env</span></code> will have priority from the variables defined in the <code class="docutils literal notranslate"><span class="pre">index.html</span></code>.</p>
+<p>The following examples, based on the two configuration options mentioned before, include the custom variables (Document ID, User Token, Locale), but it is not mandatory to add these, which should still be added to the <code class="docutils literal notranslate"><span class="pre">.env</span></code> file.</p>
+<section id="webpack-bundle">
+<h6>Webpack bundle<a class="headerlink" href="#webpack-bundle" title="Permalink to this headline">¶</a></h6>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&lt;div id=&quot;app&quot;&gt;
    &lt;App document=&quot;DOCUMENT_ID&quot; user_token:”USER_TOKEN” locale=&quot;LOCALE&quot;&gt;&lt;/App&gt;
  &lt;/div&gt;
 
- &lt;script src=&quot;/server/bundle/capture_vue.js&quot;&gt;&lt;/script&gt;
+  &lt;script src=&quot;/server/bundle/document_validation_ui.js&quot;&gt;&lt;/script&gt;
+</pre></div>
+</div>
+</section>
+<section id="imports-from-dist-folder">
+<h6>Imports from dist folder<a class="headerlink" href="#imports-from-dist-folder" title="Permalink to this headline">¶</a></h6>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&lt;head&gt;
+    &lt;script
+      defer=&quot;defer&quot;
+      src=&quot;node_modules/@konfuzio/document-validation-ui/dist/js/chunk-vendors.a48fca3f.js&quot;
+    &gt;&lt;/script&gt;
+    &lt;script
+      defer=&quot;defer&quot;
+      src=&quot;node_modules/@konfuzio/document-validation-ui/dist/js/app.17fe48c4.js&quot;
+    &gt;&lt;/script&gt;
+    &lt;link
+      href=&quot;node_modules/@konfuzio/document-validation-ui/dist/css/chunk-vendors.053b6b6e.css&quot;
+      rel=&quot;stylesheet&quot;
+    /&gt;
+    &lt;link
+      href=&quot;node_modules/@konfuzio/document-validation-ui/dist/css/app.0c8973f8.css&quot;
+      rel=&quot;stylesheet&quot;
+    /&gt;
+&lt;/head&gt;
+
+&lt;body&gt;
+ &lt;div id=&quot;app&quot;&gt;
+    &lt;App document=&quot;DOCUMENT_ID&quot; user_token:”USER_TOKEN” locale=&quot;LOCALE&quot;&gt;&lt;/App&gt;
+  &lt;/div&gt;
+&lt;/body&gt;
 </pre></div>
 </div>
 </section>
 </section>
 </section>
-<section id="integrate-by-deploying-the-app">
-<h3>Integrate by deploying the app<a class="headerlink" href="#integrate-by-deploying-the-app" title="Permalink to this headline">¶</a></h3>
-<p>You can also deploy the app by following the steps below:</p>
+</section>
+<section id="integrate-by-deploying-the-application">
+<h3>Integrate by deploying the application<a class="headerlink" href="#integrate-by-deploying-the-application" title="Permalink to this headline">¶</a></h3>
+<p>You can also deploy the application by following the steps below:</p>
 <ol class="arabic simple">
 <li><p>Clone the repository</p></li>
 </ol>
-<p>You can download the app by cloning our <a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui">GitHub repository</a> or downloading the source code.</p>
+<p>You can download the application by cloning our <a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui">GitHub repository</a> or downloading the source code.</p>
 <p><code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">clone</span> <span class="pre">git&#64;github.com:konfuzio-ai/document-validation-ui.git</span></code></p>
 <ol class="arabic simple">
-<li><p>Configure the App</p></li>
+<li><p>Configure the Application</p></li>
 </ol>
-<p>Decide if the app will be run as <a class="reference external" href="./modes.md">Read Only or Full Mode</a>.</p>
+<p>Decide if the application will be run as <a class="reference external" href="./modes.md">Read Only or Full Mode</a>.</p>
 <ol class="arabic simple">
 <li><p>Install all packages</p></li>
 </ol>
 <p>Install all the dependencies by running:</p>
 <p><code class="docutils literal notranslate"><span class="pre">npm</span> <span class="pre">install</span></code></p>
 <ol class="arabic simple">
-<li><p>Run the App</p></li>
+<li><p>Run the Application</p></li>
 </ol>
 <section id="deploy">
 <h4>Deploy<a class="headerlink" href="#deploy" title="Permalink to this headline">¶</a></h4>
-<p>If you want to deploy this app in a web server environment then you should run:</p>
+<p>If you want to deploy this application in a web server environment then you should run:</p>
 <p><code class="docutils literal notranslate"><span class="pre">npm</span> <span class="pre">run</span> <span class="pre">build</span></code></p>
-<p>When succeeded, you should export the <code class="docutils literal notranslate"><span class="pre">dist</span></code> folder generated from that command to the destination source in the host server and configure the web server engine in order to have the <code class="docutils literal notranslate"><span class="pre">index.html</span></code> file as the entry point. If everything is correctly configured you should be able to open the server URL and the app will load.</p>
+<p>When succeeded, you should export the <code class="docutils literal notranslate"><span class="pre">dist</span></code> folder generated from that command to the destination source in the host server and configure the web server engine in order to have the <code class="docutils literal notranslate"><span class="pre">index.html</span></code> file as the entry point. If everything is correctly configured you should be able to open the server URL and the application will load.</p>
 <a class="reference external image-reference" href="./images/dist.png"><img alt="dist.png" src="../_images/dist.png" /></a>
 </section>
 <section id="local-development">
 <h4>Local Development<a class="headerlink" href="#local-development" title="Permalink to this headline">¶</a></h4>
-<p>If you want to serve the app locally to run on a browser (default URL: <a class="reference external" href="http://localhost:3000">http://localhost:3000</a>) you should run:</p>
+<p>If you want to serve the application locally to run on a browser (default URL: <a class="reference external" href="http://localhost:3000">http://localhost:3000</a>) you should run:</p>
 <p><code class="docutils literal notranslate"><span class="pre">npm</span> <span class="pre">run</span> <span class="pre">serve</span></code></p>
 </section>
 </section>
