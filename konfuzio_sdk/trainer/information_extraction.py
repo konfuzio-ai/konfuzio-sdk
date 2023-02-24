@@ -2205,7 +2205,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         self,
         documents: List[Document],
         no_label_limit: Union[None, int, float] = None,
-        retokenize: Union[bool, None] = None,
+        retokenize: Optional[bool] = None,
         require_revised_annotations: bool = False,
     ) -> Tuple[List[pandas.DataFrame], list]:
         """Calculate features per Span of Annotations.
