@@ -50,9 +50,18 @@ from konfuzio_sdk.normalize import (
     normalize_to_positive_float,
 )
 from konfuzio_sdk.regex import regex_matches
-from konfuzio_sdk.utils import get_timestamp, get_bbox, normalize_memory, get_sdk_version, memory_size_of
+from konfuzio_sdk.utils import (
+    get_timestamp,
+    get_bbox,
+    normalize_memory,
+    get_sdk_version,
+    memory_size_of,
+    sdk_isinstance,
+)
 
 from konfuzio_sdk.evaluate import Evaluation
+
+from konfuzio_sdk.tokenizer.base import ListTokenizer
 
 logger = logging.getLogger(__name__)
 
@@ -2195,9 +2204,9 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
     def feature_function(
         self,
         documents: List[Document],
-        no_label_limit=None,
+        no_label_limit: Union[None, int, float] = None,
         retokenize: Union[bool, None] = None,
-        require_revised_annotations=False,
+        require_revised_annotations: bool = False,
     ) -> Tuple[List[pandas.DataFrame], list]:
         """Calculate features per Span of Annotations.
 
@@ -2212,7 +2221,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         logger.info(f'{require_revised_annotations=}')
 
         if retokenize is None:
-            if self.tokenizer.__name__ == 'ListTokenizer':
+            if sdk_isinstance(self.tokenizer, ListTokenizer):
                 retokenize = False
             else:
                 retokenize = True

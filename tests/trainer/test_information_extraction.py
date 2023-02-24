@@ -452,7 +452,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         assert 1e6 < memory_size_of(self.pipeline.category) < 2.2e6
 
         self.pipeline.df_train, self.pipeline.label_feature_list = self.pipeline.feature_function(
-            documents=self.pipeline.documents, retokenize=False, require_revised_annotations=False
+            documents=self.pipeline.documents, require_revised_annotations=False
         )
 
         assert 1e6 < memory_size_of(self.pipeline.category) < 2.2e6
