@@ -100,10 +100,10 @@ class Page(Data):
         self,
         id_: Union[int, None],
         document: 'Document',
-        start_offset: int,
-        end_offset: int,
         number: int,
         original_size: Tuple[float, float],
+        start_offset: Optional[int] = None,
+        end_offset: Optional[int] = None,
     ):
         """Create a Page for a Document."""
         self.id_ = id_
@@ -113,6 +113,11 @@ class Page(Data):
         document.add_page(self)
         self.start_offset = start_offset
         self.end_offset = end_offset
+        if start_offset is None or end_offset is None:
+            page_texts = self.document.text.split('\f')
+            self.start_offset = sum([len(page_text) for page_text in page_texts[: self.index]]) + self.index
+            self.end_offset = self.start_offset + len(page_texts[self.index])
+
         self.image = None
         self._original_size = original_size
         self.width = self._original_size[0]
@@ -1336,8 +1341,8 @@ class Span(Data):
         )
 
     def __lt__(self, other: 'Span'):
-        """If we sort spans we do so by start offset."""
-        return self.start_offset < other.start_offset
+        """We compare Spans by their start offset. If start offsets are equal, we use end offsets."""
+        return (self.start_offset, self.end_offset) < (other.start_offset, other.end_offset)
 
     def __repr__(self):
         """Return string representation."""
