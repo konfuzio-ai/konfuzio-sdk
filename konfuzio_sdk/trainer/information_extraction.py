@@ -2196,7 +2196,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         self,
         documents: List[Document],
         no_label_limit=None,
-        retokenize=True,
+        retokenize: Union[bool, None] = None,
         require_revised_annotations=False,
     ) -> Tuple[List[pandas.DataFrame], list]:
         """Calculate features per Span of Annotations.
@@ -2210,6 +2210,13 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         logger.info(f'{no_label_limit=}')
         logger.info(f'{retokenize=}')
         logger.info(f'{require_revised_annotations=}')
+
+        if retokenize is None:
+            if self.tokenizer.__name__ == 'ListTokenizer':
+                retokenize = False
+            else:
+                retokenize = True
+            logger.info(f'retokenize option set to {retokenize} with tokenizer {self.tokenizer}')
 
         df_real_list = []
         df_raw_errors_list = []
