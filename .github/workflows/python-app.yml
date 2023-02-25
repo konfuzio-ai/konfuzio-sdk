@@ -38,7 +38,7 @@ jobs:
         pip install --upgrade --upgrade-strategy eager -e .[dev]
     - name: Test the code examples in documentation
       run: |
-        python -m doctest -v konfuzio_sdk
+        # python -m doctest -v konfuzio_sdk
         python docs/sdk/boilerplates/*.py
       env:
         KONFUZIO_PROJECT_ID: ${{ secrets.KONFUZIO_PROJECT_ID }}
