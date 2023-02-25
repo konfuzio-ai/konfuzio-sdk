@@ -64,11 +64,17 @@ run on the Page level, not the Document level – the result of classification i
 value, which is unique to the Page class and is not present in Document class. Pages with `is_first_page = True` become 
 splitting points, thus, each new Sub-Document has a Page predicted as first as its starting point.
 
-To begin, we will make all the necessary imports and initialize the `ContextAwareFileSplittingModel` class:
+To begin, we will make all the necessary imports:
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_example.py
    :language: python
-   :lines: 2-9,13-14,22,35-39
+   :lines: 2-8,10-11
+
+Then, let's initialize the `ContextAwareFileSplittingModel` class:
+
+.. literalinclude:: ../../konfuzio_sdk/trainer/file_splitting.py
+   :language: python
+   :lines: 386,394,407-411
 
 The class inherits from `AbstractFileSplittingModel`, so we run `super().__init__(categories=categories)` to properly 
 inherit its attributes. The `tokenizer` attribute will be used to process the text within the Document, separating it 
@@ -84,41 +90,41 @@ An example of how ConnectedTextTokenizer works:
 
 .. literalinclude:: /sdk/boilerplates/test_connected_text_tokenizer.py
    :language: python
-   :lines: 9-14,18-21,24-30,33-36
+   :lines: 9-14,20-23,26-32,35-38
 
 The first method to define will be the `fit()` method. For each Category, we call `exclusive_first_page_strings` method, 
 which allows us to gather the strings that appear on the first Page of each Document. `allow_empty_categories` allows 
 for returning empty lists for Categories that haven't had any exclusive first-page strings found across their Documents. 
 This means that those Categories would not be used in the prediction process.
 
-.. literalinclude:: /sdk/boilerplates/test_file_splitting_example.py
+.. literalinclude:: ../../konfuzio_sdk/trainer/file_splitting.py
    :language: python
-   :lines: 41,55-68
+   :lines: 413,427-440
 
 Next, we define `predict()` method. The method accepts a Page as an input and checks its Span set for containing 
 first-page strings for each of the Categories. If there is at least one intersection, the Page is predicted to be a 
 first Page. If there are no intersections, the Page is predicted to be a non-first Page.
 
-.. literalinclude:: /sdk/boilerplates/test_file_splitting_example.py
+.. literalinclude:: ../../konfuzio_sdk/trainer/file_splitting.py
    :language: python
-   :lines: 70,81-90
+   :lines: 442,452-463
 
 Lastly, a `check_is_ready()` method is defined. This method is used to ensure that a model is ready for prediction: the
 checks cover that the Tokenizer and a set of Categories is defined, and that at least one of the Categories has 
 exclusive first-page strings.
 
-.. literalinclude:: /sdk/boilerplates/test_file_splitting_example.py
+.. literalinclude:: ../../konfuzio_sdk/trainer/file_splitting.py
    :language: python
-   :lines: 92,101-116
+   :lines: 465,474-489
+
+Full code of class:
+
+.. literalinclude:: ../../konfuzio_sdk/trainer/file_splitting.py
+   :language: python
+   :lines: 386,394,407-413,427-442,452-465,474-489
 
 A quick example of the class's usage:
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_example.py
    :language: python
-   :lines: 122-129,135-175
-
-Full code:
-
-.. literalinclude:: /sdk/boilerplates/test_file_splitting_example.py
-   :language: python
-   :lines: 2-51,54-76,80-97,100-116,121-129,135-175
+   :lines: 19-26,32-72

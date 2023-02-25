@@ -14,4 +14,4 @@ that it does not require specifying a Tokenizer explicitly.
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_example.py
    :language: python
-   :lines: 6-9,122-176
+   :lines: 6,8-11,18-72

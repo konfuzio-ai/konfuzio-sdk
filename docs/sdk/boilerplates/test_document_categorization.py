@@ -7,7 +7,7 @@ YOUR_DOCUMENT_ID = 44865
 
 # Set up your project.
 project = Project(id_=YOUR_PROJECT_ID)
-YOUR_CATEGORY_ID = project.categories[0]
+YOUR_CATEGORY_ID = project.categories[0].id_
 
 # Initialize the categorization model.
 categorization_model = FallbackCategorizationModel(project)
@@ -24,6 +24,7 @@ result_doc = categorization_model.categorize(document=test_document)
 
 # Each page is categorized individually.
 for page in result_doc.pages():
+    assert page.category == project.categories[0]
     print(f"Found category {page.category} for {page}")
 
 # The category of the document is defined when all pages' categories are equal.
@@ -31,23 +32,20 @@ for page in result_doc.pages():
 # and the document level category will be None.
 print(f"Found category {result_doc.category} for {result_doc}")
 
-YOUR_PROJECT_ID: int
-my_project = Project(id_=YOUR_PROJECT_ID)
+my_category = project.get_category_by_id(YOUR_CATEGORY_ID)
 
-YOUR_CATEGORY_ID: int
-my_category = my_project.get_category_by_id(YOUR_CATEGORY_ID)
-
-my_document = Document(text="My text.", category=my_category)
+my_document = Document(text="My text.", project=project, category=my_category)
 assert my_document.category == my_category
+my_document.category_is_revised = True
 assert my_document.category_is_revised is True
 
-YOUR_DOCUMENT_ID: int
-document = my_project.get_document_by_id(YOUR_DOCUMENT_ID)
-document.category = None
-assert document.category is None
+document = project.get_document_by_id(YOUR_DOCUMENT_ID)
+document.set_category(None)
+assert document.category == project.no_category
 document.set_category(my_category)
 assert document.category == my_category
 assert document.category_is_revised is True
 # This will set it for all of its pages as well.
 for page in document.pages():
     assert page.category == my_category
+my_document.delete()
