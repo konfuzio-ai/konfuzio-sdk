@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 YOUR_PROJECT_ID = 46
 YOUR_DOCUMENT_ID = 44865
-List[Page, Category, AbstractFileSplittingModel]  # for referencing in the imports and passing the linting
+[List, Page, Category, AbstractFileSplittingModel]  # for referencing in the imports and passing the linting
 
 # initialize a Project and fetch a test Document of your choice
 
