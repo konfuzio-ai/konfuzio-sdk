@@ -50,9 +50,18 @@ from konfuzio_sdk.normalize import (
     normalize_to_positive_float,
 )
 from konfuzio_sdk.regex import regex_matches
-from konfuzio_sdk.utils import get_timestamp, get_bbox, normalize_memory, get_sdk_version, memory_size_of
+from konfuzio_sdk.utils import (
+    get_timestamp,
+    get_bbox,
+    normalize_memory,
+    get_sdk_version,
+    memory_size_of,
+    sdk_isinstance,
+)
 
 from konfuzio_sdk.evaluate import Evaluation
+
+from konfuzio_sdk.tokenizer.base import ListTokenizer
 
 logger = logging.getLogger(__name__)
 
@@ -2195,9 +2204,9 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
     def feature_function(
         self,
         documents: List[Document],
-        no_label_limit=None,
-        retokenize=True,
-        require_revised_annotations=False,
+        no_label_limit: Union[None, int, float] = None,
+        retokenize: Optional[bool] = None,
+        require_revised_annotations: bool = False,
     ) -> Tuple[List[pandas.DataFrame], list]:
         """Calculate features per Span of Annotations.
 
@@ -2210,6 +2219,13 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         logger.info(f'{no_label_limit=}')
         logger.info(f'{retokenize=}')
         logger.info(f'{require_revised_annotations=}')
+
+        if retokenize is None:
+            if sdk_isinstance(self.tokenizer, ListTokenizer):
+                retokenize = False
+            else:
+                retokenize = True
+            logger.info(f'retokenize option set to {retokenize} with tokenizer {self.tokenizer}')
 
         df_real_list = []
         df_raw_errors_list = []
@@ -2358,7 +2374,9 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         return self.clf
 
-    def evaluate_full(self, strict: bool = True, use_training_docs: bool = False) -> Evaluation:
+    def evaluate_full(
+        self, strict: bool = True, use_training_docs: bool = False, use_view_annotations: bool = True
+    ) -> Evaluation:
         """
         Evaluate the full pipeline on the pipeline's Test Documents.
 
@@ -2376,9 +2394,9 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             predicted_doc = self.extract(document=document)
             eval_list.append((document, predicted_doc))
 
-        self.full_evaluation = Evaluation(eval_list, strict=strict)
+        full_evaluation = Evaluation(eval_list, strict=strict, use_view_annotations=use_view_annotations)
 
-        return self.full_evaluation
+        return full_evaluation
 
     def evaluate_tokenizer(self, use_training_docs: bool = False) -> Evaluation:
         """Evaluate the tokenizer."""
@@ -2421,7 +2439,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             predicted_doc = self.extract_from_df(feats_df, virtual_doc)
             eval_list.append((document, predicted_doc))
 
-        clf_evaluation = Evaluation(eval_list)
+        clf_evaluation = Evaluation(eval_list, use_view_annotations=False)
 
         return clf_evaluation
 
@@ -2460,7 +2478,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
             eval_list.append((document, predicted_doc))
 
-        label_set_clf_evaluation = Evaluation(eval_list)
+        label_set_clf_evaluation = Evaluation(eval_list, use_view_annotations=False)
 
         return label_set_clf_evaluation
 
