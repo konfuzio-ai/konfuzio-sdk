@@ -94,17 +94,17 @@
              
   <section id="document-categorization">
 <h1>Document Categorization<a class="headerlink" href="#document-categorization" title="Permalink to this headline">¶</a></h1>
-<section id="categorization-fallback-logic">
-<h2>Categorization Fallback Logic<a class="headerlink" href="#categorization-fallback-logic" title="Permalink to this headline">¶</a></h2>
-<p>Use the name of the category as an effective fallback logic to categorize documents when no categorization AI is available:</p>
+<section id="name-based-categorization-ai">
+<h2>Name-based Categorization AI<a class="headerlink" href="#name-based-categorization-ai" title="Permalink to this headline">¶</a></h2>
+<p>Use the name of the category as an effective fallback logic to categorize documents when no Categorization AI is available:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.document_categorization</span> <span class="kn">import</span> <span class="n">FallbackCategorizationModel</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.document_categorization</span> <span class="kn">import</span> <span class="n">NameBasedCategorizationAI</span>
 
 <span class="c1"># Set up your project.</span>
 <span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
 
 <span class="c1"># Initialize the categorization model.</span>
-<span class="n">categorization_model</span> <span class="o">=</span> <span class="n">FallbackCategorizationModel</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
+<span class="n">categorization_model</span> <span class="o">=</span> <span class="n">NameBasedCategorizationAI</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
 <span class="n">categorization_model</span><span class="o">.</span><span class="n">categories</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">categories</span>
 
 <span class="c1"># Retrieve a document to categorize.</span>
@@ -154,7 +154,7 @@
 </pre></div>
 </div>
 <p>If you use a Categorization AI to automatically assign a Category to a Document (such as the
-<a class="reference external" href="tutorials.html#categorization-fallback-logic">FallbackCategorizationModel</a>), each Page will be assigned a
+<a class="reference external" href="tutorials.html#categorization-fallback-logic">NameBasedCategorizationAI</a>), each Page will be assigned a
 Category Annotation with predicted confidence information, and the following properties will be accessible. You can
 also find these documented under <a class="reference external" href="sourcecode.html#document">API Reference - Document</a>,
 <a class="reference external" href="sourcecode.html#page">API Reference - Page</a> and

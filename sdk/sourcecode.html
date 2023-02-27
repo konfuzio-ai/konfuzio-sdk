@@ -81,7 +81,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#categorization-ai">Categorization AI</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#abstract-categorization-ai">Abstract Categorization AI</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#fallback-categorization-model">Fallback Categorization Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#name-based-categorization-ai">Name-based Categorization AI</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#file-splitting-ai">File Splitting AI</a><ul>
@@ -2277,11 +2277,11 @@ NotFittedError: When CLF is not fitted</p>
 </dd></dl>
 
 </section>
-<section id="fallback-categorization-model">
-<h3>Fallback Categorization Model<a class="headerlink" href="#fallback-categorization-model" title="Permalink to this headline">¶</a></h3>
+<section id="name-based-categorization-ai">
+<h3>Name-based Categorization AI<a class="headerlink" href="#name-based-categorization-ai" title="Permalink to this headline">¶</a></h3>
 <dl class="py class">
 <dt class="sig sig-object py">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.trainer.document_categorization.</span></span><span class="sig-name descname"><span class="pre">FallbackCategorizationModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">categories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.data.Category</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.trainer.document_categorization.</span></span><span class="sig-name descname"><span class="pre">NameBasedCategorizationAI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">categories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.data.Category</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>A simple, non-trainable model that predicts a Category for a given Document based on a predefined rule.</p>
 <p>It checks for whether the name of the Category is present in the input Document (case insensitive; also see
 Category.fallback_name). This can be an effective fallback logic to categorize Documents when no Categorization AI
