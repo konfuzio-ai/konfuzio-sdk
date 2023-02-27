@@ -152,15 +152,23 @@ label_set_clf_classes = ['Brutto-Bezug', 'Lohnabrechnung', 'Netto-Bezug', 'No', 
 
 
 @parameterized.parameterized_class(
-    ('use_separate_labels', 'evaluate_full_result', 'data_quality_result', 'clf_quality_result'),
+    (
+        'use_separate_labels',
+        'evaluate_full_result',
+        'data_quality_result',
+        'clf_quality_result',
+        'n_nearest_accross_lines',
+    ),
     [
         (
             False,
             0.8055555555555556,  # w/ full dataset: 0.9237668161434978
             0.9745762711864406,
             0.9705882352941176,
+            False,
         ),
-        (True, 0.8055555555555556, 0.9704641350210971, 0.967741935483871),  # w/ full dataset: 0.9783549783549783
+        (True, 0.8055555555555556, 0.9704641350210971, 0.967741935483871, False),  # w/ full dataset: 0.9783549783549783
+        (False, 0.8611111111111112, 0.9704641350210971, 1.0, True),
     ],
 )
 class TestWhitespaceRFExtractionAI(unittest.TestCase):
@@ -171,7 +179,11 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         """Set up the Data and Pipeline."""
         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
 
-        cls.pipeline = RFExtractionAI(use_separate_labels=cls.use_separate_labels, tokenizer=None)
+        cls.pipeline = RFExtractionAI(
+            use_separate_labels=cls.use_separate_labels,
+            n_nearest_across_lines=cls.n_nearest_accross_lines,
+            tokenizer=None,
+        )
         cls.pipeline.pipeline_path_no_konfuzio_sdk = None
 
         cls.tests_annotations_spans = list()
@@ -748,6 +760,19 @@ class TestInformationExtraction(unittest.TestCase):
         # feature order should stay the same to get predictable results
         assert feature_names[-1] == 'first_word_y1'
         assert feature_names[42] == 'feat_substring_count_h'
+
+    def test_feature_function_n_nearest_accross_lines(self):
+        """Test to generate features with n_nearest_across_lines=True."""
+        document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        pipeline = RFExtractionAI(n_nearest_across_lines=True)
+        pipeline.tokenizer = WhitespaceTokenizer()
+        features, feature_names, errors = pipeline.features(document)
+        assert len(feature_names) == 274  # todo investigate if all features are calculated correctly, see #9289
+        # feature order should stay the same to get predictable results
+        assert feature_names[-1] == 'first_word_y1'
+        assert feature_names[42] == 'feat_substring_count_h'
+        assert feature_names[59] == 'l_pos0'
+        assert feature_names[64] == 'r_pos1'
 
     def test_extract_with_unfitted_clf(self):
         """Test to extract a Document."""

@@ -31,7 +31,7 @@ import unicodedata
 from copy import deepcopy
 from heapq import nsmallest
 from inspect import signature
-from typing import Tuple, Optional, List, Union, Callable, Dict
+from typing import Tuple, Optional, List, Union, Dict
 from warnings import warn
 
 import numpy
@@ -701,7 +701,7 @@ def process_document_data(
     spans: List[Span],
     n_nearest: Union[int, List, Tuple] = 2,
     first_word: bool = True,
-    tokenize_fn: Optional[Callable] = None,
+    # tokenize_fn: Optional[Callable] = None,
     substring_features=None,
     catchphrase_list=None,
     n_nearest_across_lines: bool = False,
@@ -846,14 +846,18 @@ def process_document_data(
             i = 1
             while (line_num - i) >= 0:
                 line_candidates, candidates_cache = get_line_candidates(
-                    document_text, document_bbox, line_list, line_num - i, tokenize_fn, candidates_cache
+                    document_text,
+                    document_bbox,
+                    line_list,
+                    line_num - i,
+                    candidates_cache,  # tokenize_fn,
                 )
                 for candidate in line_candidates:
                     candidate['dist'] = min(
-                        abs(span.x0 - candidate['x0']),
-                        abs(span.x0 - candidate['x1']),
-                        abs(span.x1 - candidate['x0']),
-                        abs(span.x1 - candidate['x1']),
+                        abs(span.bbox().x0 - candidate['x0']),
+                        abs(span.bbox().x0 - candidate['x1']),
+                        abs(span.bbox().x1 - candidate['x0']),
+                        abs(span.bbox().x1 - candidate['x1']),
                     )
                     candidate['pos'] = -i
                 prev_line_candidates.extend(line_candidates)
@@ -865,14 +869,18 @@ def process_document_data(
             i = 1
             while line_num + i < len(line_list):
                 line_candidates, candidates_cache = get_line_candidates(
-                    document_text, document_bbox, line_list, line_num + i, tokenize_fn, candidates_cache
+                    document_text,
+                    document_bbox,
+                    line_list,
+                    line_num + i,
+                    candidates_cache,  # tokenize_fn,
                 )
                 for candidate in line_candidates:
                     candidate['dist'] = min(
-                        abs(span.x0 - candidate['x0']),
-                        abs(span.x0 - candidate['x1']),
-                        abs(span.x1 - candidate['x0']),
-                        abs(span.x1 - candidate['x1']),
+                        abs(span.bbox().x0 - candidate['x0']),
+                        abs(span.bbox().x0 - candidate['x1']),
+                        abs(span.bbox().x1 - candidate['x0']),
+                        abs(span.bbox().x1 - candidate['x1']),
                     )
                     candidate['pos'] = i
                 next_line_candidates.extend(line_candidates)
@@ -1900,7 +1908,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             spans=document.spans(use_correct=False),
             n_nearest=self.n_nearest,
             first_word=self.first_word,
-            tokenize_fn=self.tokenizer.tokenize,  # todo: we are tokenizing the document multiple times
+            # tokenize_fn=self.tokenizer.tokenize,  # todo: we are tokenizing the document multiple times
             catchphrase_list=self.catchphrase_features,
             substring_features=self.substring_features,
             n_nearest_across_lines=self.n_nearest_across_lines,
