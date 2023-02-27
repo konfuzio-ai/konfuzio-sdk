@@ -1,18 +1,18 @@
 ## Document Categorization
 
-### Categorization Fallback Logic
+### Name-based Categorization AI
 
-Use the name of the category as an effective fallback logic to categorize documents when no categorization AI is available:
+Use the name of the category as an effective fallback logic to categorize documents when no Categorization AI is available:
 
 ```python
 from konfuzio_sdk.data import Project
-from konfuzio_sdk.trainer.document_categorization import FallbackCategorizationModel
+from konfuzio_sdk.trainer.document_categorization import NameBasedCategorizationAI
 
 # Set up your project.
 project = Project(id_=YOUR_PROJECT_ID)
 
 # Initialize the categorization model.
-categorization_model = FallbackCategorizationModel(project)
+categorization_model = NameBasedCategorizationAI(project)
 categorization_model.categories = project.categories
 
 # Retrieve a document to categorize.
@@ -65,7 +65,7 @@ for page in document.pages():
 ```
 
 If you use a Categorization AI to automatically assign a Category to a Document (such as the 
-[FallbackCategorizationModel](tutorials.html#categorization-fallback-logic)), each Page will be assigned a 
+[NameBasedCategorizationAI](tutorials.html#categorization-fallback-logic)), each Page will be assigned a 
 Category Annotation with predicted confidence information, and the following properties will be accessible. You can 
 also find these documented under [API Reference - Document](sourcecode.html#document), 
 [API Reference - Page](sourcecode.html#page) and 
