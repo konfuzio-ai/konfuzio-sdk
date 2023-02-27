@@ -1,6 +1,6 @@
 ## Document Categorization
 
-### Name-based categorization
+### Name-based Categorization AI
 
 Use the name of the category as an effective fallback logic to categorize documents when no Categorization AI is available:
 
