@@ -89,7 +89,6 @@ class TestFallbackCategorizationModel(unittest.TestCase):
     def test_5b_categorize_test_document_check_category_annotation(self):
         """Test extract Category for a selected Test Document and ensure that maximum_confidence_category is set."""
         test_receipt_document = deepcopy(self.project.get_document_by_id(TEST_CATEGORIZATION_DOCUMENT_ID))
-        # reset each Page.category attribute to test that it can be categorized successfully
         test_receipt_document.set_category(self.project.no_category)
         result = self.categorization_pipeline.categorize(document=test_receipt_document, recategorize=True)
         assert isinstance(result, Document)
