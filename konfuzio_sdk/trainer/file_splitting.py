@@ -37,9 +37,8 @@ from tensorflow.keras.preprocessing.image import img_to_array
 from transformers import BertTokenizer, AutoModel, AutoConfig
 from typing import List
 
-from konfuzio_sdk.data import Document, Page, Category, Project
+from konfuzio_sdk.data import Document, Page, Category
 from konfuzio_sdk.evaluate import FileSplittingEvaluation
-from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
 from konfuzio_sdk.trainer.information_extraction import BaseModel
 from konfuzio_sdk.utils import get_timestamp
 
@@ -422,7 +421,11 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         :raises ValueError: When allow_empty_categories is False and no exclusive first-page strings were found for
         at least one Category.
 
-        >>> model.fit()
+        >>> from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
+        >>> from konfuzio_sdk.data import Project
+        >>> project = Project(id_=46)
+        >>> tokenizer = ConnectedTextTokenizer()
+        >>> model = ContextAwareFileSplittingModel(categories=project.categories, tokenizer=tokenizer).fit()
         """
         for category in self.categories:
             # method exclusive_first_page_strings fetches a set of first-page strings exclusive among the Documents
@@ -447,7 +450,16 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         :type page: Page
         :return: A Page with a newly predicted is_first_page attribute.
 
+        >>> from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
+        >>> from konfuzio_sdk.data import Project
+        >>> project = Project(id_=46)
+        >>> tokenizer = ConnectedTextTokenizer()
+        >>> test_document = project.get_document_by_id(44865)
+        >>> model = ContextAwareFileSplittingModel(categories=project.categories, tokenizer=tokenizer)
+        >>> model.fit()
+        >>> model.check_is_ready()
         >>> model.predict(model.tokenizer.tokenize(test_document).pages()[0]).is_first_page
+        True
         """
         self.check_is_ready()
         page.is_first_page = False
@@ -468,8 +480,6 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
 
         :raises AttributeError: When no Tokenizer or no Categories were passed.
         :raises ValueError: When no Categories have _exclusive_first_page_strings.
-
-        >>> model.check_is_ready()
         """
         if self.tokenizer is None:
             raise AttributeError(f'{self} missing Tokenizer.')
@@ -624,7 +634,4 @@ class SplittingAI:
 if __name__ == "__main__":
     import doctest
 
-    project = Project(id_=46)
-    test_document = project.get_document_by_id(44865)
-    model = ContextAwareFileSplittingModel(categories=project.categories, tokenizer=ConnectedTextTokenizer())
-    doctest.testmod(extraglobs={'model': model, 'test_document': test_document})
+    doctest.testmod()
