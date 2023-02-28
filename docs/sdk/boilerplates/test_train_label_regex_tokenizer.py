@@ -16,7 +16,7 @@ for regex in label.find_regex(category=category):
     regex_tokenizer = RegexTokenizer(regex=regex)
     tokenizer.tokenizers.append(regex_tokenizer)
 
-# You can then use it to create an Annotation for every matching string in a document.
+# You can then use it to create an Annotation for every matching string in a Document.
 document = my_project.get_document_by_id(YOUR_DOCUMENT_ID)
 tokenizer.tokenize(document)
 assert len(document.spans()) == 179

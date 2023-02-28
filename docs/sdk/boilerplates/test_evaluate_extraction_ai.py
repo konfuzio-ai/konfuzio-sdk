@@ -13,7 +13,7 @@ print(f"Full evaluation recall: {evaluation.recall()}")
 assert evaluation.precision() > 0.7
 print(f"Full evaluation precision: {evaluation.precision()}")
 
-# To get the evaluation of the tokenizer alone
+# To get the evaluation of the Tokenizer alone
 evaluation = pipeline.evaluate_tokenizer()
 assert evaluation.tokenizer_f1() > 0.5
 print(f"Tokenizer evaluation F1 score: {evaluation.tokenizer_f1()}")

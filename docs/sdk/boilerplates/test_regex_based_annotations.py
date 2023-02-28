@@ -7,13 +7,13 @@ from variables import YOUR_PROJECT_ID
 
 my_project = Project(id_=YOUR_PROJECT_ID)
 
-# Word/expression to annotate in the document
-# should match an existing one in your document
+# Word/expression to annotate in the Document
+# should match an existing one in your Document
 input_expression = "Musterstraße"
 
-# Label for the annotation
+# Label for the Annotation
 label_name = "Lohnart"
-# Getting the Label from the project
+# Getting the Label from the Project
 my_label = my_project.get_label_by_name(label_name)
 assert my_label.name == label_name
 
@@ -21,17 +21,17 @@ assert my_label.name == label_name
 label_set = my_label.label_sets[0]
 assert label_set.name == 'Brutto-Bezug'
 
-# First document in the project
+# First Document in the Project
 document = my_project.documents[0]
 
-# Matches of the word/expression in the document
+# Matches of the word/expression in the Document
 matches_locations = [(m.start(0), m.end(0)) for m in re.finditer(input_expression, document.text)]
 assert matches_locations == [(1590, 1602)]
 
-# List to save the links to the annotations created
+# List to save the links to the Annotations created
 new_annotations_links = []
 
-# Create annotation for each match
+# Create Annotation for each match
 for offsets in matches_locations:
     span = Span(start_offset=offsets[0], end_offset=offsets[1])
     annotation_obj = Annotation(
