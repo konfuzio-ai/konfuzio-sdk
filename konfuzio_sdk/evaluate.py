@@ -85,7 +85,7 @@ def grouped(group, target: str):
 
 
 def compare(
-    doc_a, doc_b, only_use_correct=False, use_view_annotations=False, ignore_below_threshold=True, strict=True
+    doc_a, doc_b, only_use_correct=False, use_view_annotations=False, ignore_below_threshold=False, strict=True
 ) -> pandas.DataFrame:
     """Compare the Annotations of two potentially empty Documents wrt. to **all** Annotations.
 

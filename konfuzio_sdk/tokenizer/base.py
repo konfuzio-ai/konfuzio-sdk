@@ -75,7 +75,7 @@ class AbstractTokenizer(metaclass=abc.ABCMeta):
 
         virtual_doc = deepcopy(document)
         self.tokenize(virtual_doc)
-        evaluation = compare(document, virtual_doc, use_view_annotations=False)
+        evaluation = compare(document, virtual_doc, use_view_annotations=False, ignore_below_threshold=False)
         logger.warning(
             f'{evaluation["tokenizer_true_positive"].sum()} of {evaluation["is_correct"].sum()} corrects'
             f' Spans are found by Tokenizer'
