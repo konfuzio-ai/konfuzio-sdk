@@ -77,9 +77,9 @@ setuptools.setup(
         'cloudpickle==2.2.1',  # Used to pickle objects
         'filetype==1.0.7',  # Used to check that files are in the correct format
         'nltk',
-        'numpy==1.22.4',
-        'pandas==1.3.5',
-        'Pillow==8.4.0',
+        'numpy>=1.22.4',
+        'pandas>=1.3.5',
+        'Pillow>=8.4.0',
         'python-dateutil',
         'python-decouple',  # todo add ==3.3 ?
         'requests',  # todo add ==2.24.0 ?
