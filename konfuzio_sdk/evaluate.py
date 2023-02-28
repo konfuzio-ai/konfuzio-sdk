@@ -84,19 +84,27 @@ def grouped(group, target: str):
     return group
 
 
-def compare(doc_a, doc_b, only_use_correct=False, use_view_annotations=False, strict=True) -> pandas.DataFrame:
+def compare(
+    doc_a, doc_b, only_use_correct=False, use_view_annotations=False, ignore_below_threshold=True, strict=True
+) -> pandas.DataFrame:
     """Compare the Annotations of two potentially empty Documents wrt. to **all** Annotations.
 
     :param doc_a: Document which is assumed to be correct
     :param doc_b: Document which needs to be evaluated
     :param only_use_correct: Unrevised feedback in doc_a is assumed to be correct.
+    :param use_view_annotations: Use view_annotations filter to evaluate doc_b
+    :param ignore_below_threshold: Ignore Annotations below detection threshold of the Label (only affects TNs)
     :param strict: Evaluate on a Character exact level without any postprocessing, an amount Span "5,55 " will not be
      exact with "5,55"
     :raises ValueError: When the Category differs.
     :return: Evaluation DataFrame
     """
     df_a = pandas.DataFrame(doc_a.eval_dict(use_correct=only_use_correct))
-    df_b = pandas.DataFrame(doc_b.eval_dict(use_view_annotations=use_view_annotations, use_correct=False))
+    df_b = pandas.DataFrame(
+        doc_b.eval_dict(
+            use_view_annotations=use_view_annotations, use_correct=False, ignore_below_threshold=ignore_below_threshold
+        )
+    )
     if doc_a.category != doc_b.category:
         raise ValueError(f'Categories of {doc_a} with {doc_a.category} and {doc_b} with {doc_a.category} do not match.')
     if strict:  # many to many inner join to keep all Spans of both Documents
@@ -291,7 +299,11 @@ class Evaluation:
     """Calculated accuracy measures by using the detailed comparison on Span Level."""
 
     def __init__(
-        self, documents: List[Tuple[Document, Document]], strict: bool = True, use_view_annotations: bool = True
+        self,
+        documents: List[Tuple[Document, Document]],
+        strict: bool = True,
+        use_view_annotations: bool = True,
+        ignore_below_threshold: bool = True,
     ):
         """
         Relate to the two document instances.
@@ -301,11 +313,15 @@ class Evaluation:
         :param use_view_annotations:
             Bool for whether to filter evaluated Document with view_annotations. Will filter out all overlapping Spans
             and below threshold Annotations. Should lead to faster evaluation.
+        :param ignore_below_threshold:
+            If true, will ignore all Annotations below the Label detection threshold. Only affects True Negatives.
+            Leads to faster evaluation.
         """
         logger.info(f"Initializing Evaluation object with {len(documents)} documents. Evaluation mode {strict=}.")
         self.documents = documents
         self.strict = strict
         self.use_view_annotations = use_view_annotations
+        self.ignore_below_threshold = ignore_below_threshold
         self.only_use_correct = True
         self.data = None
         self.calculate()
@@ -321,6 +337,7 @@ class Evaluation:
                 only_use_correct=self.only_use_correct,
                 strict=self.strict,
                 use_view_annotations=self.use_view_annotations,
+                ignore_below_threshold=self.ignore_below_threshold,
             )
             evaluations.append(evaluation)
 
