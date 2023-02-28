@@ -2224,7 +2224,7 @@ class Document(Data):
 
         :return: The found Category Annotation, or None if not present.
         """
-        if self._category not in [self.project.no_category, None]:
+        if self.category != self.project.no_category:
             # there is a unique Category Annotation per Category associated to this Document
             # by construction in Document.category_annotations
             return [
@@ -2339,10 +2339,13 @@ class Document(Data):
 
         return sorted(spans)
 
-    def eval_dict(self, use_correct=False) -> List[dict]:
+    def eval_dict(self, use_view_annotations=False, use_correct=False) -> List[dict]:
         """Use this dict to evaluate Documents. The speciality: For every Span of an Annotation create one entry."""
         result = []
-        annotations = self.annotations(use_correct=use_correct)
+        if use_view_annotations:
+            annotations = self.view_annotations()
+        else:
+            annotations = self.annotations(use_correct=use_correct)
         if not annotations:  # if there are no Annotations in this Documents
             result.append(Span(start_offset=0, end_offset=0).eval_dict())
         else:
