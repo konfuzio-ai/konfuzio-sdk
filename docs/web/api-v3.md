@@ -114,15 +114,15 @@ curl --request GET \
 
 To get a token:
 
-.. literalinclude:: ./sdk/boilerplates/test_rest_api.py
+.. literalinclude:: ../sdk/boilerplates/test_rest_api.py
    :language: python
-   :lines: 2,5-13,27-28
+   :lines: 2,5-10,22-23
 
 To use the token:
 
-.. literalinclude:: ./sdk/boilerplates/test_rest_api.py
+.. literalinclude:: ../sdk/boilerplates/test_rest_api.py
    :language: python
-   :lines: 2,5-7,16-20,27-28
+   :lines: 2,5-7,13-15,22-23
 
 #### Accessing and using the token via the Konfuzio SDK
 
@@ -130,9 +130,9 @@ To get a token, access it via `from konfuzio_sdk import KONFUZIO_TOKEN` (availab
 
 To use a token:
 
-.. literalinclude:: ./sdk/boilerplates/test_rest_api.py
+.. literalinclude:: ../sdk/boilerplates/test_rest_api.py
    :language: python
-   :lines: 3-4,5-7,23-28
+   :lines: 3-5,18-23
 
 To access this and other information via SDK's Data layer concepts, see [SDK Quickstart](https://dev.konfuzio.com/sdk/home/index.html) page.
 

@@ -41,10 +41,18 @@ for bbox in image_characters_bbox:
 image_segmentation_bboxes = get_results_from_segmentation(document.id_, my_project.id_)
 
 for bbox in image_segmentation_bboxes[page_index]:
+    pp1 = (int(bbox["x0"]), int(bbox["y0"]))
+    pp2 = (int(bbox["x1"]), int(bbox["y1"]))
+    image = cv2.rectangle(np.array(image), pp1, pp2, (255, 0, 0), 1)
+
+for bbox in image_segmentation_bboxes[page_index]:
     pp1 = (int(bbox["x0"] * factor_x), int(bbox["y0"] * factor_y))
     pp2 = (int(bbox["x1"] * factor_x), int(bbox["y1"] * factor_y))
     image = cv2.rectangle(np.array(image), pp1, pp2, (255, 0, 0), 1)
 
 plt.imshow(image)
 plt.show(block=False)
+
+# Note: cv2 has the origin of the y coordinates in the upper left corner. Therefore, for visualization, the height of
+# the image is subtracted to the y coordinates.
 plt.close('all')

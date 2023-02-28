@@ -6,7 +6,7 @@ Use the name of the category as an effective fallback logic to categorize docume
 
 .. literalinclude:: /sdk/boilerplates/test_document_categorization.py
    :language: python
-   :lines: 2-4,7-9,11-26,28-33
+   :lines: 2-4,9-10,12-27,29-34
 
 ### Working with the Category of a Document and its individual Pages
 
@@ -14,13 +14,13 @@ You can initialize a Document with a Category, which will count as if a human ma
 
 .. literalinclude:: /sdk/boilerplates/test_document_categorization.py
    :language: python
-   :lines: 9,11,35-38,40
+   :lines: 10,36-39,41
 
 If a Document is initialized with no Category, it can be manually set later.
 
 .. literalinclude:: /sdk/boilerplates/test_document_categorization.py
    :language: python
-   :lines: 42-50
+   :lines: 43,45-51
 
 
 If you use a Categorization AI to automatically assign a Category to a Document (such as the 

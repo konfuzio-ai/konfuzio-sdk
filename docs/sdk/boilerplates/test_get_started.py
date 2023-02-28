@@ -3,13 +3,12 @@ import os
 import time
 
 from konfuzio_sdk.data import Project, Document
-
 from variables import YOUR_PROJECT_ID
 
 FILE_PATH = 'docs/sdk/boilerplates/pdf.pdf'
 ASSIGNEE_ID = None
 
-my_project = Project(id_=YOUR_PROJECT_ID, update=True)
+my_project = Project(id_=YOUR_PROJECT_ID)
 assert len(my_project._documents) == 81
 my_project.get(update=True)
 my_project = Project(id_=YOUR_PROJECT_ID, update=True)

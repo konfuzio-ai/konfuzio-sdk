@@ -31,7 +31,7 @@ The following code can be used for this:
 
 .. literalinclude:: /sdk/boilerplates/test_segmentation_and_bboxes.py
    :language: python
-   :lines: 2-6,9-16,18-23,26-27,30-33,35-39,47-49
+   :lines: 2-6,9-16,18-23,26-27,30-33,35-39,52-57
 
 ![characters_bboxes](../_static/img/bboxes_characters.png)
 
@@ -41,7 +41,7 @@ we can overlap them directly.
 
 .. literalinclude:: /sdk/boilerplates/test_segmentation_and_bboxes.py
    :language: python
-   :lines: 2-7,9-15,17,20,27,41-49
+   :lines: 2-7,9-15,17,20,27,41-47,53-54
 
 ![segmentation_bboxes](../_static/img/bboxes_segmentation.png)
 
@@ -50,6 +50,6 @@ size used for the characters' bbox.
 
 .. literalinclude:: /sdk/boilerplates/test_segmentation_and_bboxes.py
    :language: python
-   :lines: 2-7,9-23,26-33,35-49
+   :lines: 2-7,9-23,26-33,35-41,47-54
 
 ![characters_and_segmentation_bboxes](../_static/img/bboxes_overlap.png)
