@@ -29,9 +29,9 @@ To visualize the character bounding boxes of a document and overlapping them in 
 library PIL, for example, we can resize the image to the size in which they are based (original_size).
 The following code can be used for this:
 
-.. literalinclude:: /sdk/boilerplates/test_visualize_bboxes.py
+.. literalinclude:: /sdk/boilerplates/test_segmentation_and_bboxes.py
    :language: python
-   :lines: 2-6,8-21,24-29,31-42
+   :lines: 2-6,9-16,18-23,26-27,30-33,35-39,47-49
 
 ![characters_bboxes](../_static/img/bboxes_characters.png)
 
@@ -39,9 +39,9 @@ The coordinates obtained from the segmentation endpoint of the API are based on 
 To visualize the segmentation bounding boxes of a page on an image opened with the python library PIL, for example,
 we can overlap them directly.
 
-.. literalinclude:: /sdk/boilerplates/test_segmentation.py
+.. literalinclude:: /sdk/boilerplates/test_segmentation_and_bboxes.py
    :language: python
-   :lines: 2-7,9-27
+   :lines: 2-7,9-15,17,20,27,41-49
 
 ![segmentation_bboxes](../_static/img/bboxes_segmentation.png)
 

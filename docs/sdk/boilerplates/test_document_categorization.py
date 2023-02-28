@@ -1,6 +1,6 @@
 """Test Document Categorization code examples from the documentation."""
 from konfuzio_sdk.data import Project, Document
-from konfuzio_sdk.trainer.document_categorization import FallbackCategorizationModel
+from konfuzio_sdk.trainer.document_categorization import NameBasedCategorizationAI
 
 YOUR_PROJECT_ID = 46
 YOUR_DOCUMENT_ID = 44865
@@ -10,7 +10,7 @@ project = Project(id_=YOUR_PROJECT_ID)
 YOUR_CATEGORY_ID = project.categories[0].id_
 
 # Initialize the categorization model.
-categorization_model = FallbackCategorizationModel(project)
+categorization_model = NameBasedCategorizationAI(project)
 categorization_model.categories = project.categories
 
 # Retrieve a document to categorize.
