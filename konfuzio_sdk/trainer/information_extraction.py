@@ -761,9 +761,6 @@ def process_document_data(
         first_word_x1 = first_candidate['x1']
         first_word_y1 = first_candidate['y1']
 
-    # todo document.annotations () should be sorted already - check or update this function
-    spans.sort(key=lambda x: x.start_offset)
-
     # WIP: Word on page feature
     page_text_list = document_text.split('\f')
 
@@ -803,24 +800,25 @@ def process_document_data(
         # append to line candidates
         # store the line_start_offset so if the next annotation is on the same line then we use the same
         # line_candidiates list and therefore saves us tokenizing the same line again
-        for line_num, line in enumerate(line_list):
-            if line['start_offset'] <= span.end_offset and line['end_offset'] >= span.start_offset:
+        # for line_num, line in enumerate(line_list):
+        #     if line['start_offset'] <= span.end_offset and line['end_offset'] >= span.start_offset:
 
-                # get the catchphrase features
-                if catchphrase_list is not None and len(catchphrase_list) != 0:
-                    if line_num == _line_num:
-                        span.catchphrase_dict = _catchphrase_dict
-                    else:
-                        _catchphrase_dict = generate_feature_dict_from_occurence_dict(
-                            occurrence_dict, catchphrase_list, line_num
-                        )
-                        span.catchphrase_dict = _catchphrase_dict
-                        _line_num = line_num
-
-                line_candidates, candidates_cache = get_line_candidates(
-                    document_text, document_bbox, line_list, line_num, candidates_cache
+        # get the catchphrase features
+        line_num = span.line_index
+        if catchphrase_list is not None and len(catchphrase_list) != 0:
+            if line_num == _line_num:
+                span.catchphrase_dict = _catchphrase_dict
+            else:
+                _catchphrase_dict = generate_feature_dict_from_occurence_dict(
+                    occurrence_dict, catchphrase_list, line_num
                 )
-                break
+                span.catchphrase_dict = _catchphrase_dict
+                _line_num = line_num
+
+        line_candidates, candidates_cache = get_line_candidates(
+            document_text, document_bbox, line_list, line_num, candidates_cache
+        )
+        # break
 
         l_list = []
         r_list = []
@@ -969,6 +967,8 @@ def process_document_data(
     df_string_features_real = convert_to_feat(list(df["offset_string"]))
     string_feature_column_order = list(df_string_features_real.columns.values)
 
+    # joins it to the main DataFrame
+    df = df.join(df_string_features_real, lsuffix='_caller', rsuffix='_other')
     relative_string_feature_list = []
 
     for index in range(n_left_nearest):
@@ -983,7 +983,7 @@ def process_document_data(
 
     df["relative_position_in_page"] = df["page_index"] / document_n_pages
 
-    abs_pos_feature_list = ["x0", "y0", "x1", "y1", "page_index", "area_quadrant_two"]  # , "area"]
+    abs_pos_feature_list = ["x0", "y0", "x1", "y1", "page_index", "area_quadrant_two", "area"]
     relative_pos_feature_list = ["relative_position_in_page"]
 
     feature_list = (
@@ -1002,9 +1002,6 @@ def process_document_data(
     if catchphrase_list is not None:
         for catchphrase in catchphrase_list:
             feature_list.append('catchphrase_dist_' + catchphrase)
-
-    # joins it to the main DataFrame
-    df = df.join(df_string_features_real, lsuffix='_caller', rsuffix='_other')
 
     return df, feature_list, df_errors
 

@@ -1716,7 +1716,7 @@ class Annotation(Data):
 
     def __lt__(self, other):
         """If we sort Annotations we do so by start offset."""
-        return min([span.start_offset for span in self.spans]) < min([span.start_offset for span in other.spans])
+        return self.spans[0] < other.spans[0]
 
     def __hash__(self):
         """Identity of Annotation that does not change over time."""
