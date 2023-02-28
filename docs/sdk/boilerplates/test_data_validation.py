@@ -3,7 +3,7 @@ from copy import deepcopy
 
 from konfuzio_sdk.data import Project
 
-YOUR_PROJECT_ID = 46
+from variables import YOUR_PROJECT_ID
 
 project = Project(id_=YOUR_PROJECT_ID)  # all the data in this project will be validated
 assert len(project.documents) == 26

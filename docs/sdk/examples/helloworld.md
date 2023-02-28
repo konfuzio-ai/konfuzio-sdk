@@ -20,7 +20,7 @@ training data.
 
 .. literalinclude:: /sdk/boilerplates/test_train_label_regex_tokenizer.py
    :language: python
-   :lines: 2-5,10-23
+   :lines: 2-5,8-21
 
 ## Finding Spans of a Label Not Found by a Tokenizer
 

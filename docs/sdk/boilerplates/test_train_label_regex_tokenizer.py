@@ -3,9 +3,7 @@ from konfuzio_sdk.data import Project
 from konfuzio_sdk.tokenizer.regex import RegexTokenizer
 from konfuzio_sdk.tokenizer.base import ListTokenizer
 
-YOUR_PROJECT_ID = 46
-YOUR_CATEGORY_ID = 63
-YOUR_DOCUMENT_ID = 44823
+from variables import YOUR_PROJECT_ID, YOUR_CATEGORY_ID, YOUR_DOCUMENT_ID
 
 my_project = Project(id_=YOUR_PROJECT_ID)
 category = my_project.get_category_by_id(id_=YOUR_CATEGORY_ID)

@@ -2,7 +2,8 @@
 from konfuzio_sdk.data import Project, Document
 from konfuzio_sdk.trainer.document_categorization import NameBasedCategorizationAI
 
-YOUR_PROJECT_ID = 46
+from variables import YOUR_PROJECT_ID
+
 YOUR_DOCUMENT_ID = 44865
 
 # Set up your project.

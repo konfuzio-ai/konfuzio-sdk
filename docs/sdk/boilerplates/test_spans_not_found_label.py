@@ -2,7 +2,7 @@
 from konfuzio_sdk.data import Project
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
 
-YOUR_PROJECT_ID = 46
+from variables import YOUR_PROJECT_ID
 
 my_project = Project(id_=YOUR_PROJECT_ID)
 category = my_project.categories[0]

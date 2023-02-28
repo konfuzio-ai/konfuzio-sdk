@@ -3,7 +3,7 @@ import re
 
 from konfuzio_sdk.data import Project, Annotation, Span
 
-YOUR_PROJECT_ID = 46
+from variables import YOUR_PROJECT_ID
 
 my_project = Project(id_=YOUR_PROJECT_ID)
 

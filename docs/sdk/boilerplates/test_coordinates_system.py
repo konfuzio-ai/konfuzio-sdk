@@ -1,7 +1,7 @@
 """Test code examples for coordination system documentation."""
 from konfuzio_sdk.data import Project
 
-YOUR_PROJECT_ID = 46
+from variables import YOUR_PROJECT_ID
 
 my_project = Project(id_=YOUR_PROJECT_ID)
 # first document uploaded
