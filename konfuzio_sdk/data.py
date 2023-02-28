@@ -2339,13 +2339,13 @@ class Document(Data):
 
         return sorted(spans)
 
-    def eval_dict(self, use_view_annotations=False, use_correct=False) -> List[dict]:
+    def eval_dict(self, use_view_annotations=False, use_correct=False, ignore_below_threshold=False) -> List[dict]:
         """Use this dict to evaluate Documents. The speciality: For every Span of an Annotation create one entry."""
         result = []
         if use_view_annotations:
             annotations = self.view_annotations()
         else:
-            annotations = self.annotations(use_correct=use_correct)
+            annotations = self.annotations(use_correct=use_correct, ignore_below_threshold=ignore_below_threshold)
         if not annotations:  # if there are no Annotations in this Documents
             result.append(Span(start_offset=0, end_offset=0).eval_dict())
         else:
