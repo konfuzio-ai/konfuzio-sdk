@@ -8,13 +8,13 @@ from konfuzio_sdk.data import Project
 from variables import YOUR_PROJECT_ID
 
 my_project = Project(id_=YOUR_PROJECT_ID)
-# first document uploaded
+# first Document uploaded
 document = my_project.documents[0]
-# index of the page to test
+# index of the Page to test
 page_index = 0
 
 document.get_images()
-image_path = document.image_paths[page_index]
+image_path = document.pages()[0].image_path
 image = Image.open(image_path).convert('RGB')
 image_segmentation_bboxes = get_results_from_segmentation(document.id_, my_project.id_)
 
@@ -24,4 +24,5 @@ for bbox in image_segmentation_bboxes[page_index]:
     image = cv2.rectangle(np.array(image), pp1, pp2, (255, 0, 0), 1)
 
 plt.imshow(image)
-plt.show()
+plt.show(block=False)
+plt.close('all')

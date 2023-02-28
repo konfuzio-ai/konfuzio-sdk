@@ -114,36 +114,15 @@ curl --request GET \
 
 To get a token:
 
-```python
-import requests
-
-url = "https://app.konfuzio.com/api/v3/auth/"
-
-payload = {
-    "username": "example@example.org",
-    "password": "examplepassword"
-}
-
-response = requests.post(url, json=payload)
-
-print(response.json())
-```
+.. literalinclude:: ./sdk/boilerplates/test_rest_api.py
+   :language: python
+   :lines: 2,5-13,27-28
 
 To use the token:
 
-```python
-import requests
-
-url = "https://app.konfuzio.com/api/v3/projects/"
-
-headers = {
-    "Authorization": "Token bf20d992c0960876157b53745cdd86fad95e6ff4"
-}
-
-response = requests.get(url, headers=headers)
-
-print(response.json())
-```
+.. literalinclude:: ./sdk/boilerplates/test_rest_api.py
+   :language: python
+   :lines: 2,5-7,16-20,27-28
 
 #### Accessing and using the token via the Konfuzio SDK
 
@@ -151,19 +130,9 @@ To get a token, access it via `from konfuzio_sdk import KONFUZIO_TOKEN` (availab
 
 To use a token:
 
-```python
-from konfuzio_sdk import KONFUZIO_TOKEN
-from konfuzio_sdk.api import konfuzio_session
-
-url = "https://app.konfuzio.com/api/v3/projects/"
-
-# if you ran konfuzio_sdk init, you can run konfuzio_session() without explicitly specifying the token
-session = konfuzio_session(KONFUZIO_TOKEN)  
-
-response = session.get(url)
-
-print(response.json())
-```
+.. literalinclude:: ./sdk/boilerplates/test_rest_api.py
+   :language: python
+   :lines: 3-4,5-7,23-28
 
 To access this and other information via SDK's Data layer concepts, see [SDK Quickstart](https://dev.konfuzio.com/sdk/home/index.html) page.
 
