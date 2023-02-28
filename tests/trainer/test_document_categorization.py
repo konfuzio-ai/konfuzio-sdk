@@ -14,7 +14,7 @@ from tests.variables import (
     TEST_PAYSLIPS_CATEGORY_ID,
 )
 from konfuzio_sdk.trainer.document_categorization import (
-    FallbackCategorizationModel,
+    NameBasedCategorizationAI,
 )
 from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel
 
@@ -28,7 +28,7 @@ class TestFallbackCategorizationModel(unittest.TestCase):
     def setUpClass(cls) -> None:
         """Set up the Data and Categorization Pipeline."""
         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-        cls.categorization_pipeline = FallbackCategorizationModel(cls.project.categories)
+        cls.categorization_pipeline = NameBasedCategorizationAI(cls.project.categories)
         cls.payslips_category = cls.project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID)
         cls.receipts_category = cls.project.get_category_by_id(TEST_RECEIPTS_CATEGORY_ID)
 
@@ -65,7 +65,7 @@ class TestFallbackCategorizationModel(unittest.TestCase):
             )
 
     def test_4_evaluate(self):
-        """Evaluate FallbackCategorizationModel."""
+        """Evaluate NameBasedCategorizationAI."""
         categorization_evaluation = self.categorization_pipeline.evaluate()
         # can't categorize any of the 3 payslips docs since they don't contain the word "lohnabrechnung"
         assert categorization_evaluation.f1(self.categorization_pipeline.categories[0]) == 1.0
@@ -75,7 +75,7 @@ class TestFallbackCategorizationModel(unittest.TestCase):
         # global f1 score
         assert categorization_evaluation.f1(None) == 1.0
 
-    def test_5_categorize_test_document(self):
+    def test_5a_categorize_test_document(self):
         """Test extract Category for a selected Test Document with the Category name contained within its text."""
         test_receipt_document = deepcopy(self.project.get_document_by_id(TEST_CATEGORIZATION_DOCUMENT_ID))
         # reset each Page.category attribute to test that it can be categorized successfully
@@ -85,6 +85,15 @@ class TestFallbackCategorizationModel(unittest.TestCase):
         assert result.category == self.receipts_category
         for page in result.pages():
             assert page.category == self.receipts_category
+
+    def test_5b_categorize_test_document_check_category_annotation(self):
+        """Test extract Category for a selected Test Document and ensure that maximum_confidence_category is set."""
+        test_receipt_document = deepcopy(self.project.get_document_by_id(TEST_CATEGORIZATION_DOCUMENT_ID))
+        test_receipt_document.set_category(self.project.no_category)
+        result = self.categorization_pipeline.categorize(document=test_receipt_document, recategorize=True)
+        assert isinstance(result, Document)
+        assert result.maximum_confidence_category == self.receipts_category
+        assert result.category == result.maximum_confidence_category
 
     def test_6a_categorize_document_with_no_pages(self):
         """Test extract Category for a Document without a Page."""

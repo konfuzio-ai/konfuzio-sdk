@@ -106,9 +106,10 @@ class AbstractCategorizationAI(metaclass=abc.ABCMeta):
         """
         try:
             return (
-                signature(other.__init__).parameters['categories'].annotation is List[Category]
-                and signature(other._categorize_page).parameters['page'].annotation is Page
-                and signature(other._categorize_page).return_annotation is Page
+                signature(other.__init__).parameters['categories'].annotation._name == 'List'
+                and signature(other.__init__).parameters['categories'].annotation.__args__[0].__name__ == 'Category'
+                and signature(other._categorize_page).parameters['page'].annotation.__name__ == 'Page'
+                and signature(other._categorize_page).return_annotation.__name__ == 'Page'
                 and signature(other.fit)
                 and signature(other.check_is_ready)
             )
@@ -118,7 +119,7 @@ class AbstractCategorizationAI(metaclass=abc.ABCMeta):
             return False
 
 
-class FallbackCategorizationModel(AbstractCategorizationAI):
+class NameBasedCategorizationAI(AbstractCategorizationAI):
     """A simple, non-trainable model that predicts a Category for a given Document based on a predefined rule.
 
     It checks for whether the name of the Category is present in the input Document (case insensitive; also see
