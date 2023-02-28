@@ -244,4 +244,4 @@ By default, we provide a bare-bones HTML snippet that looks similar to this:
 
 This creates on your page an iframe with 100% width (full width of its container) and a height of 600 pixels that doesn’t have a border. You can customise the iframe‘s size and other options by changing these and other attributes (see [iframe documentation](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe)).
 
-![dvui.png](./images/dvui.png)
+![public_dvui.png](./images/public_dvui.png)
