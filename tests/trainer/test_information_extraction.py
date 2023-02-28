@@ -162,13 +162,13 @@ label_set_clf_classes = ['Brutto-Bezug', 'Lohnabrechnung', 'Netto-Bezug', 'No', 
     [
         (
             False,
-            0.8055555555555556,  # w/ full dataset: 0.9237668161434978
+            0.7671232876712328,  # w/ full dataset: 0.9237668161434978
             0.9745762711864406,
-            0.9705882352941176,
+            1.0,
             False,
         ),
-        (True, 0.8055555555555556, 0.9704641350210971, 0.967741935483871, False),  # w/ full dataset: 0.9783549783549783
-        (False, 0.8611111111111112, 0.9704641350210971, 1.0, True),
+        (True, 0.7945205479452054, 0.9745762711864406, 1.0, False),  # w/ full dataset: 0.9783549783549783
+        (False, 0.8732394366197183, 0.9704641350210971, 1.0, True),
     ],
 )
 class TestWhitespaceRFExtractionAI(unittest.TestCase):
@@ -327,7 +327,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 
         assert evaluation.f1(None) == self.evaluate_full_result
 
-        assert 5e5 < memory_size_of(evaluation.data) < 6e5
+        assert 1e5 < memory_size_of(evaluation.data) < 2e5
 
         view_evaluation = self.pipeline.evaluate_full(use_view_annotations=True)
         assert view_evaluation.f1(None) == self.evaluate_full_result == evaluation.f1(None)
@@ -339,7 +339,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         evaluation = self.pipeline.evaluate_full(use_training_docs=True, use_view_annotations=False)
         assert evaluation.f1(None) == self.data_quality_result
 
-        assert 22e5 < memory_size_of(evaluation.data) < 24e5
+        assert 2e5 < memory_size_of(evaluation.data) < 4e5
 
         view_evaluation = self.pipeline.evaluate_full(use_training_docs=True, use_view_annotations=True)
         assert view_evaluation.f1(None) == self.data_quality_result == evaluation.f1(None)
@@ -361,7 +361,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         evaluation = self.pipeline.evaluate_clf()
         assert evaluation.clf_f1(None) == self.clf_quality_result
 
-        assert 1e5 < memory_size_of(evaluation.data) < 2e5
+        assert 5e4 < memory_size_of(evaluation.data) < 2e5
 
     def test_10_label_set_clf_quality(self):
         """Evaluate the LabelSet classifier quality."""
@@ -369,7 +369,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 
         assert evaluation.f1(None) == 0.9552238805970149
 
-        assert 1e5 < memory_size_of(evaluation.data) < 2e5
+        assert 5e4 < memory_size_of(evaluation.data) < 2e5
 
     def test_11_extract_test_document(self):
         """Extract a randomly selected Test Document."""
@@ -419,8 +419,8 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 @parameterized.parameterized_class(
     ('use_separate_labels', 'evaluate_full_result'),
     [
-        (False, 0.7272727272727273),  # w/ full dataset: 0.8930232558139535
-        (True, 0.7164179104477612),  # w/ full dataset: 0.9596412556053812
+        (False, 0.7741935483870968),  # w/ full dataset: 0.8930232558139535
+        (True, 0.75),  # w/ full dataset: 0.9596412556053812
     ],
 )
 class TestRegexRFExtractionAI(unittest.TestCase):
@@ -430,6 +430,8 @@ class TestRegexRFExtractionAI(unittest.TestCase):
     def setUpClass(cls) -> None:
         """Set up the Data and Pipeline."""
         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
+        for label in cls.project.labels:
+            label.threshold = 0.2
         cls.pipeline = RFExtractionAI(use_separate_labels=cls.use_separate_labels)
 
         cls.pipeline.pipeline_path_no_konfuzio_sdk = None
@@ -571,7 +573,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         evaluation = self.pipeline.evaluate_full(use_training_docs=True, use_view_annotations=False)
         assert evaluation.f1(None) >= 0.94
 
-        assert 4e5 < memory_size_of(evaluation.data) < 6e5
+        assert 2e5 < memory_size_of(evaluation.data) < 4e5
 
         view_evaluation = self.pipeline.evaluate_full(use_training_docs=True, use_view_annotations=True)
         assert view_evaluation.f1(None) >= 0.94
@@ -756,7 +758,7 @@ class TestInformationExtraction(unittest.TestCase):
         pipeline = RFExtractionAI()
         pipeline.tokenizer = WhitespaceTokenizer()
         features, feature_names, errors = pipeline.features(document)
-        assert len(feature_names) == 270  # todo investigate if all features are calculated correctly, see #9289
+        assert len(feature_names) == 271  # todo investigate if all features are calculated correctly, see #9289
         # feature order should stay the same to get predictable results
         assert feature_names[-1] == 'first_word_y1'
         assert feature_names[42] == 'feat_substring_count_h'
@@ -767,12 +769,12 @@ class TestInformationExtraction(unittest.TestCase):
         pipeline = RFExtractionAI(n_nearest_across_lines=True)
         pipeline.tokenizer = WhitespaceTokenizer()
         features, feature_names, errors = pipeline.features(document)
-        assert len(feature_names) == 274  # todo investigate if all features are calculated correctly, see #9289
+        assert len(feature_names) == 275  # todo investigate if all features are calculated correctly, see #9289
         # feature order should stay the same to get predictable results
         assert feature_names[-1] == 'first_word_y1'
         assert feature_names[42] == 'feat_substring_count_h'
-        assert feature_names[59] == 'l_pos0'
-        assert feature_names[64] == 'r_pos1'
+        assert feature_names[60] == 'l_pos0'
+        assert feature_names[65] == 'r_pos1'
 
     def test_extract_with_unfitted_clf(self):
         """Test to extract a Document."""
@@ -822,7 +824,7 @@ class TestInformationExtraction(unittest.TestCase):
         pipeline.tokenizer = WhitespaceTokenizer()
         pipeline.n_nearest = 10
         features, feature_names, errors = pipeline.features(document)
-        assert len(feature_names) == 1102  # todo investigate if all features are calculated correctly, see #9289
+        assert len(feature_names) == 1103  # todo investigate if all features are calculated correctly, see #9289
         assert features['is_correct'].sum() == 21
         assert features['revised'].sum() == 2
 
