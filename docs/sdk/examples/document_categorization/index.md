@@ -1,8 +1,8 @@
 ## Document Categorization
 
-### Categorization Fallback Logic
+### Name-based Categorization AI
 
-Use the name of the category as an effective fallback logic to categorize documents when no categorization AI is available:
+Use the name of the category as an effective fallback logic to categorize documents when no Categorization AI is available:
 
 .. literalinclude:: /sdk/boilerplates/test_document_categorization.py
    :language: python
@@ -24,7 +24,7 @@ If a Document is initialized with no Category, it can be manually set later.
 
 
 If you use a Categorization AI to automatically assign a Category to a Document (such as the 
-[FallbackCategorizationModel](tutorials.html#categorization-fallback-logic)), each Page will be assigned a 
+[NameBasedCategorizationAI](tutorials.html#categorization-fallback-logic)), each Page will be assigned a 
 Category Annotation with predicted confidence information, and the following properties will be accessible. You can 
 also find these documented under [API Reference - Document](sourcecode.html#document), 
 [API Reference - Page](sourcecode.html#page) and 

@@ -100,10 +100,10 @@ class Page(Data):
         self,
         id_: Union[int, None],
         document: 'Document',
-        start_offset: int,
-        end_offset: int,
         number: int,
         original_size: Tuple[float, float],
+        start_offset: Optional[int] = None,
+        end_offset: Optional[int] = None,
     ):
         """Create a Page for a Document."""
         self.id_ = id_
@@ -113,6 +113,11 @@ class Page(Data):
         document.add_page(self)
         self.start_offset = start_offset
         self.end_offset = end_offset
+        if start_offset is None or end_offset is None:
+            page_texts = self.document.text.split('\f')
+            self.start_offset = sum([len(page_text) for page_text in page_texts[: self.index]]) + self.index
+            self.end_offset = self.start_offset + len(page_texts[self.index])
+
         self.image = None
         self._original_size = original_size
         self.width = self._original_size[0]
@@ -2219,7 +2224,7 @@ class Document(Data):
 
         :return: The found Category Annotation, or None if not present.
         """
-        if self._category not in [self.project.no_category, None]:
+        if self.category != self.project.no_category:
             # there is a unique Category Annotation per Category associated to this Document
             # by construction in Document.category_annotations
             return [
@@ -2334,10 +2339,13 @@ class Document(Data):
 
         return sorted(spans)
 
-    def eval_dict(self, use_correct=False) -> List[dict]:
+    def eval_dict(self, use_view_annotations=False, use_correct=False) -> List[dict]:
         """Use this dict to evaluate Documents. The speciality: For every Span of an Annotation create one entry."""
         result = []
-        annotations = self.annotations(use_correct=use_correct)
+        if use_view_annotations:
+            annotations = self.view_annotations()
+        else:
+            annotations = self.annotations(use_correct=use_correct)
         if not annotations:  # if there are no Annotations in this Documents
             result.append(Span(start_offset=0, end_offset=0).eval_dict())
         else:
