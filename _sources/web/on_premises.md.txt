@@ -185,7 +185,7 @@ setup are set by default to be adequate for a small production deployment. This 
 intended to fit in a cluster with at least 8 vCPU with AVX2 support enabled, 32 GB of
 RAM and one Nvidia GPU with minimum 4GB which supports at least CUDA10.1 and CUDNN 7.0. If you are
 trying to deploy a non-production instance, you can reduce the defaults in order to fit
-into a smaller cluster. Konfuzio can work without a GPU. The GPU is used to train and run Categorization AIs. We observe a 5x faster training and a 2x faster execution on GPU compared to CPU. Most Konfuzio Installations do not use GPUs.
+into a smaller cluster. Konfuzio can work without a GPU. The GPU is used to train and run Categorization AIs. We observe a 5x faster training and a 2x faster execution on GPU compared to CPU.
 
 ##### Storage Requirements
 
