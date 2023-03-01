@@ -800,8 +800,6 @@ def process_document_data(
         # append to line candidates
         # store the line_start_offset so if the next annotation is on the same line then we use the same
         # line_candidiates list and therefore saves us tokenizing the same line again
-        # for line_num, line in enumerate(line_list):
-        #     if line['start_offset'] <= span.end_offset and line['end_offset'] >= span.start_offset:
 
         # get the catchphrase features
         line_num = span.line_index
@@ -818,7 +816,6 @@ def process_document_data(
         line_candidates, candidates_cache = get_line_candidates(
             document_text, document_bbox, line_list, line_num, candidates_cache
         )
-        # break
 
         l_list = []
         r_list = []
@@ -927,11 +924,6 @@ def process_document_data(
         # WIP: word on page feature
         for index, item in enumerate(word_on_page_feature_list):
             span_dict['word_on_page_feat' + str(index)] = item
-
-        # if annotation.label and annotation.label.threshold:
-        #     annotation_dict["threshold"] = annotation.label.threshold
-        # else:
-        #     annotation_dict["threshold"] = 0.1
 
         if _catchphrase_dict:
             for catchphrase, dist in _catchphrase_dict.items():
@@ -1243,7 +1235,7 @@ class Trainer(BaseModel):
         # Go through keyword arguments, and either save their values to our
         # instance, or raise an error.
         super().__init__()
-        self.category = Category
+        self.category = category
         self.clf = None
         self.label_feature_list = None  # will be set later
 
@@ -1873,7 +1865,6 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         logger.info(f"{n_nearest_across_lines=}")
 
         self.use_separate_labels = use_separate_labels
-        self.category = category
         self.n_nearest = n_nearest
         self.first_word = first_word
         self.max_depth = max_depth
