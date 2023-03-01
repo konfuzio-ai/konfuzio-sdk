@@ -5,7 +5,7 @@ import time
 from konfuzio_sdk.data import Project, Document
 from variables import YOUR_PROJECT_ID
 
-FILE_PATH = 'docs/sdk/boilerplates/pdf.pdf'
+FILE_PATH = 'tests/test_data/pdf.pdf'
 ASSIGNEE_ID = None
 
 my_project = Project(id_=YOUR_PROJECT_ID)
