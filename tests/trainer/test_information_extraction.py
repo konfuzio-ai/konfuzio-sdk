@@ -1367,6 +1367,7 @@ def test_load_model_wrong_pickle_data():
         load_model(path)
 
 
+@unittest.skipIf(sys.version_info[:2] == (3, 11), 'Throws "TypeError: code() argument 13 must be str, not int"')
 def test_load_ai_model_konfuzio_sdk_not_included():
     """Test loading of trained model with include_konfuzio setting set to False."""
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
