@@ -166,6 +166,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         self,
         categories: List[Category],
         text_processing_model: str = 'nlpaueb/legal-bert-base-uncased',
+        scale: int = 2,
         *args,
         **kwargs,
     ):
@@ -178,6 +179,9 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         data from the Documents, can be a path in the HuggingFace repo or a local path to a checkpoint of a pre-trained
         HuggingFace model. Default is LegalBERT.
         :type text_processing_model: str
+        :param scale: A multiplier to define a number of units (neurons) in Dense layers of a model for image
+        processing.
+        :type scale: int
         """
         logging.info('Initializing Multimodal File Splitting Model.')
         super().__init__(categories=categories)
@@ -191,6 +195,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         self.train_labels = None
         self.test_labels = None
         self.input_shape = None
+        self.scale = scale
         self.model = None
         logger.info('Initializing BERT components of the Multimodal File Splitting Model.')
         configuration = AutoConfig.from_pretrained(text_processing_model)
@@ -291,7 +296,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         txt_input = Input(shape=self.input_shape, name='text')
         txt_x = Dense(units=768, activation="relu")(txt_input)
         txt_x = Flatten()(txt_x)
-        txt_x = Dense(units=4096, activation="relu")(txt_x)
+        txt_x = Dense(units=256 * self.scale, activation="relu")(txt_x)
         img_input = Input(shape=(224, 224, 4), name='image')
         img_x = Conv2D(input_shape=(224, 224, 4), filters=64, kernel_size=(3, 3), padding="same", activation="relu")(
             img_input
@@ -310,10 +315,10 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         img_x = Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
         img_x = MaxPool2D(pool_size=(2, 2), strides=(2, 2))(img_x)
         img_x = Flatten()(img_x)
-        img_x = Dense(units=4096, activation="relu")(img_x)
-        img_x = Dense(units=4096, activation="relu", name='img_outputs')(img_x)
+        img_x = Dense(units=256 * self.scale, activation="relu")(img_x)
+        img_x = Dense(units=256 * self.scale, activation="relu", name='img_outputs')(img_x)
         concatenated = Concatenate(axis=-1)([img_x, txt_x])
-        x = Dense(50, input_shape=(8192,), activation='relu')(concatenated)
+        x = Dense(50, input_shape=(512 * self.scale,), activation='relu')(concatenated)
         x = Dense(50, activation='elu')(x)
         x = Dense(50, activation='elu')(x)
         output = Dense(1, activation='sigmoid')(x)
