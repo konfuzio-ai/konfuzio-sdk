@@ -1908,7 +1908,8 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         return df, _feature_list, _temp_df_raw_errors
 
     def check_is_ready(self):
-        """Check if tokenizer is set and the classifiers set and trained."""
+        """Check if Tokenizer is set and the classifiers set and trained."""
+        logger.info(f"Checking if {self} is ready for extraction.")
         if self.tokenizer is None:
             raise AttributeError(f'{self} missing Tokenizer.')
 

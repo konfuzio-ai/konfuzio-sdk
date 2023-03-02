@@ -321,6 +321,7 @@ class Page(Data):
 
         :param category: The Category to set for the Page.
         """
+        logger.info(f'Setting {self} Category to {category}.')
         self._category = category
         if category is None:
             self.category_annotations = []
@@ -2268,6 +2269,7 @@ class Document(Data):
 
     def set_category(self, category: Category) -> None:
         """Set the Category of the Document and the Category of all of its Pages as revised."""
+        logger.info(f"Setting Category of {self} to {category}.")
         if (self._category not in [None, self.project.no_category]) and (
             category not in [self._category, None, self.project.no_category]
         ):
