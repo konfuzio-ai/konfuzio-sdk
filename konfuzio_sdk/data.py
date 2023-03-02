@@ -2388,7 +2388,7 @@ class Document(Data):
             bbox=self.get_bbox(),
         )
         for page in self.pages():
-            copy_id = self.id_ if self.id_ else self.copy_of_id
+            copy_id = page.id_ if page.id_ else page.copy_of_id
             _ = Page(
                 id_=None,
                 document=document,
@@ -3160,14 +3160,16 @@ class Document(Data):
         start_offset = 0
         for page in self.pages():
             end_offset = start_offset + len(page.text)
+            page_id = page.id_ if page.id_ else page.copy_of_id
             if include:
                 if page.number in range(start_page.number, end_page.number + 1):
                     _ = Page(
-                        id_=page.id_,
+                        id_=None,
                         original_size=(page.height, page.width),
                         document=new_doc,
                         start_offset=start_offset,
                         end_offset=end_offset,
+                        copy_of_id=page_id,
                         number=i,
                     )
                     i += 1
@@ -3175,11 +3177,12 @@ class Document(Data):
             else:
                 if page.number in range(start_page.number, end_page.number):
                     _ = Page(
-                        id_=page.id_,
+                        id_=None,
                         original_size=(page.height, page.width),
                         document=new_doc,
                         start_offset=start_offset,
                         end_offset=end_offset,
+                        copy_of_id=page_id,
                         number=i,
                     )
                     i += 1
