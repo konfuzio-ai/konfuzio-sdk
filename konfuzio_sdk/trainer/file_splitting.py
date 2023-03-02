@@ -291,7 +291,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         txt_input = Input(shape=self.input_shape, name='text')
         txt_x = Dense(units=768, activation="relu")(txt_input)
         txt_x = Flatten()(txt_x)
-        txt_x = Dense(units=4096, activation="relu")(txt_x)
+        txt_x = Dense(units=512, activation="relu")(txt_x)
         img_input = Input(shape=(224, 224, 4), name='image')
         img_x = Conv2D(input_shape=(224, 224, 4), filters=64, kernel_size=(3, 3), padding="same", activation="relu")(
             img_input
@@ -310,10 +310,10 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         img_x = Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
         img_x = MaxPool2D(pool_size=(2, 2), strides=(2, 2))(img_x)
         img_x = Flatten()(img_x)
-        img_x = Dense(units=4096, activation="relu")(img_x)
-        img_x = Dense(units=4096, activation="relu", name='img_outputs')(img_x)
+        img_x = Dense(units=512, activation="relu")(img_x)
+        img_x = Dense(units=512, activation="relu", name='img_outputs')(img_x)
         concatenated = Concatenate(axis=-1)([img_x, txt_x])
-        x = Dense(50, input_shape=(8192,), activation='relu')(concatenated)
+        x = Dense(50, input_shape=(1024,), activation='relu')(concatenated)
         x = Dense(50, activation='elu')(x)
         x = Dense(50, activation='elu')(x)
         output = Dense(1, activation='sigmoid')(x)
