@@ -74,23 +74,23 @@ setuptools.setup(
     include_package_data=True,
     entry_points={'console_scripts': ['konfuzio_sdk=konfuzio_sdk.cli:main']},
     install_requires=[
-        'cloudpickle==2.0.0',  # Used to pickle objects
+        'cloudpickle==2.2.1',  # Used to pickle objects
         'filetype==1.0.7',  # Used to check that files are in the correct format
         'nltk',
-        'numpy>=1.21.6',
+        'numpy>=1.22.4',
         'pandas>=1.3.5',
-        'Pillow>=7.1.2',
+        'Pillow>=8.4.0',
         'python-dateutil',
         'python-decouple',  # todo add ==3.3 ?
         'requests',  # todo add ==2.24.0 ?
         'regex>=2020.6.8',  # re module but better
-        'tabulate==0.9.0',  # Used to pretty print DataFrames
-        'tensorflow==2.9.1',
-        'torch==1.12.1',
-        'transformers==4.21.2',
+        'tabulate>=0.9.0',  # Used to pretty print DataFrames
+        'tensorflow-cpu',
+        'torch>=1.8,<1.13',
+        'transformers>=4.21.2',
         'tqdm',
-        'pympler==1.0.1',  # Use to get pickle file size.
-        'scikit-learn==1.0.2',
+        'pympler>=1.0.1',  # Use to get pickle file size.
+        'scikit-learn>=1.0.2',
     ],
     extras_require={
         'dev': [
