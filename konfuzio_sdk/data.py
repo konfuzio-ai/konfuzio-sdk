@@ -165,7 +165,8 @@ class Page(Data):
     def get_image(self, update: bool = False):
         """Get Document Page as PNG."""
         if self.document.status[0] == 2 and (not is_file(self.image_path, raise_exception=False) or update):
-            png_content = get_page_image(self.id_)
+            page_id = self.id_ if self.id_ else self.copy_of_id
+            png_content = get_page_image(page_id)
             with open(self.image_path, "wb") as f:
                 f.write(png_content)
                 self.image = Image.open(io.BytesIO(png_content))
