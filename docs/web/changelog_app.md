@@ -41,7 +41,11 @@ These changes are for the tokenizers/new SDK branch.
 
 ## Next Release (estimated release date: 3th March 2023)
 
-Upcoming...
+### Added
+- [Add the overall processing time of a Document to the API V3](https://app.konfuzio.com/v3/swagger/#/documents/documents_retrieve) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10660)).
+- [Allow AI guets to re-categorize Documents](https://help.konfuzio.com/modules/members/index.html#detailed-permissions-of-available-roles) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10707)).
+- [Add the api_name attribute the the Label Set for the Document endpoint in API V3](https://app.konfuzio.com/v3/swagger/#/documents/documents_retrieve) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10747)).
+- [Add access to the Contract Center to manage Subscriptions](https://konfuzio.com/price) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10583)).
 
 ## released-2023-02-17_14-27-57
 
