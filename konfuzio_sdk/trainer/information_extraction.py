@@ -1114,7 +1114,8 @@ class BaseModel(metaclass=abc.ABCMeta):
     def reduce_model_weight(self):
         """Remove all non-strictly necessary parameters before saving."""
         self.project.lose_weight()
-        self.tokenizer.lose_weight()
+        if hasattr(self, 'tokenizer'):
+            self.tokenizer.lose_weight()
 
     def ensure_model_memory_usage_within_limit(self, max_ram):
         """
