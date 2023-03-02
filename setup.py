@@ -105,7 +105,7 @@ setuptools.setup(
             'm2r2==0.3.2',
             'sphinx-sitemap==2.2.0',
             'sphinx-rtd-theme==1.0.0',
-            'sphinxcontrib-mermaid==0.7.1',
+            'sphinxcontrib-mermaid==0.8.1',
         ]
     },
 )
