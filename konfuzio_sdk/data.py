@@ -104,6 +104,7 @@ class Page(Data):
         original_size: Tuple[float, float],
         start_offset: Optional[int] = None,
         end_offset: Optional[int] = None,
+        copy_of_id: Optional[int] = None,
     ):
         """Create a Page for a Document."""
         self.id_ = id_
@@ -118,6 +119,7 @@ class Page(Data):
             self.start_offset = sum([len(page_text) for page_text in page_texts[: self.index]]) + self.index
             self.end_offset = self.start_offset + len(page_texts[self.index])
 
+        self.copy_of_id = copy_of_id
         self.image = None
         self._original_size = original_size
         self.width = self._original_size[0]
@@ -2385,11 +2387,13 @@ class Document(Data):
             bbox=self.get_bbox(),
         )
         for page in self.pages():
+            copy_id = self.id_ if self.id_ else self.copy_of_id
             _ = Page(
                 id_=None,
                 document=document,
                 start_offset=page.start_offset,
                 end_offset=page.end_offset,
+                copy_of_id=copy_id,
                 number=page.number,
                 original_size=(page.width, page.height),
             )
@@ -3158,7 +3162,7 @@ class Document(Data):
             if include:
                 if page.number in range(start_page.number, end_page.number + 1):
                     _ = Page(
-                        id_=None,
+                        id_=page.id_,
                         original_size=(page.height, page.width),
                         document=new_doc,
                         start_offset=start_offset,
@@ -3170,7 +3174,7 @@ class Document(Data):
             else:
                 if page.number in range(start_page.number, end_page.number):
                     _ = Page(
-                        id_=None,
+                        id_=page.id_,
                         original_size=(page.height, page.width),
                         document=new_doc,
                         start_offset=start_offset,
