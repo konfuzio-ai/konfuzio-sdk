@@ -2780,7 +2780,7 @@ class Document(Data):
                 bbox = json.loads(archive.read('bbox.json5'))
         elif self.is_online and self.status and self.status[0] == 2:
             # todo check for self.project.id_ and self.id_ and ?
-            logger.warning(f'Start downloading bbox files of {len(self.text)} characters for {self}.')
+            logger.info(f'Start downloading bbox files of {len(self.text)} characters for {self}.')
             bbox = get_document_details(document_id=self.id_, project_id=self.project.id_, extra_fields="bbox")['bbox']
             # Use the `zipfile` module: `compresslevel` was added in Python 3.7
             with zipfile.ZipFile(
@@ -2984,18 +2984,6 @@ class Document(Data):
                         buffer = [span]
                         continue
 
-                    # Do not merge new Span if Annotation is part of an AnnotationSet with more than 1 Annotation
-                    # (except default AnnotationSet)
-                    if (
-                        span.annotation.annotation_set
-                        and not span.annotation.annotation_set.label_set.is_default
-                        and len(
-                            span.annotation.annotation_set.annotations(use_correct=False, ignore_below_threshold=True)
-                        )
-                        > 1
-                    ):
-                        buffer.append(span)
-                        continue
                     if len(annotation.spans) > 1:
                         buffer.append(span)
                         continue
@@ -3004,13 +2992,22 @@ class Document(Data):
                         # only looking for elements in line above
                         if candidate.line_index == span.line_index:
                             break
-                        # overlap in x
-                        # or next line
+
+                        # Merge if there is overlap in the horizontal direction or if only separated by a line break
+                        # AND if the AnnotationSets are the same or if the Annotation is alone in its AnnotationSet
                         if (
-                            not (span.bbox().x0 > candidate.bbox().x1 or span.bbox().x1 < candidate.bbox().x0)
-                        ) or self.text[candidate.end_offset : span.start_offset].replace(' ', '').replace(
-                            '\n', ''
-                        ) == '':
+                            (not (span.bbox().x0 > candidate.bbox().x1 or span.bbox().x1 < candidate.bbox().x0))
+                            or self.text[candidate.end_offset : span.start_offset].replace(' ', '').replace('\n', '')
+                            == ''
+                        ) and (
+                            span.annotation.annotation_set is candidate.annotation.annotation_set
+                            or len(
+                                span.annotation.annotation_set.annotations(
+                                    use_correct=False, ignore_below_threshold=True
+                                )
+                            )
+                            == 1
+                        ):
                             span.annotation.delete(delete_online=False)
                             span.annotation = None
                             candidate.annotation.add_span(span)
