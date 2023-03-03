@@ -3155,7 +3155,7 @@ class Document(Data):
             pages_text = self.text[start_page.start_offset : end_page.end_offset]
         else:
             pages_text = self.text[start_page.start_offset : end_page.start_offset]
-        new_doc = Document(project=self.project, id_=None, text=pages_text)
+        new_doc = Document(project=self.project, id_=None, text=pages_text, category=self.category)
         i = 1
         start_offset = 0
         for page in self.pages():
