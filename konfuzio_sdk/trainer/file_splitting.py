@@ -291,7 +291,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         txt_input = Input(shape=self.input_shape, name='text')
         txt_x = Dense(units=768, activation="relu")(txt_input)
         txt_x = Flatten()(txt_x)
-        txt_x = Dense(units=4096, activation="relu")(txt_x)
+        txt_x = Dense(units=512, activation="relu")(txt_x)
         img_input = Input(shape=(224, 224, 4), name='image')
         img_x = Conv2D(input_shape=(224, 224, 4), filters=64, kernel_size=(3, 3), padding="same", activation="relu")(
             img_input
@@ -310,10 +310,10 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         img_x = Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
         img_x = MaxPool2D(pool_size=(2, 2), strides=(2, 2))(img_x)
         img_x = Flatten()(img_x)
-        img_x = Dense(units=4096, activation="relu")(img_x)
-        img_x = Dense(units=4096, activation="relu", name='img_outputs')(img_x)
+        img_x = Dense(units=512, activation="relu")(img_x)
+        img_x = Dense(units=512, activation="relu", name='img_outputs')(img_x)
         concatenated = Concatenate(axis=-1)([img_x, txt_x])
-        x = Dense(50, input_shape=(8192,), activation='relu')(concatenated)
+        x = Dense(50, input_shape=(1024,), activation='relu')(concatenated)
         x = Dense(50, activation='elu')(x)
         x = Dense(50, activation='elu')(x)
         output = Dense(1, activation='sigmoid')(x)
@@ -420,6 +420,12 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         :type allow_empty_categories: bool
         :raises ValueError: When allow_empty_categories is False and no exclusive first-page strings were found for
         at least one Category.
+
+        >>> from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
+        >>> from konfuzio_sdk.data import Project
+        >>> project = Project(id_=46)
+        >>> tokenizer = ConnectedTextTokenizer()
+        >>> model = ContextAwareFileSplittingModel(categories=project.categories, tokenizer=tokenizer).fit()
         """
         for category in self.categories:
             # method exclusive_first_page_strings fetches a set of first-page strings exclusive among the Documents
@@ -443,6 +449,17 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         :param page: A Page to receive first or non-first label.
         :type page: Page
         :return: A Page with a newly predicted is_first_page attribute.
+
+        >>> from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
+        >>> from konfuzio_sdk.data import Project
+        >>> project = Project(id_=46)
+        >>> tokenizer = ConnectedTextTokenizer()
+        >>> test_document = project.get_document_by_id(44865)
+        >>> model = ContextAwareFileSplittingModel(categories=project.categories, tokenizer=tokenizer)
+        >>> model.fit()
+        >>> model.check_is_ready()
+        >>> model.predict(model.tokenizer.tokenize(test_document).pages()[0]).is_first_page
+        True
         """
         self.check_is_ready()
         page.is_first_page = False
@@ -496,7 +513,7 @@ class SplittingAI:
         if not AbstractFileSplittingModel.has_compatible_interface(model):
             raise ValueError("The model is not inheriting from AbstractFileSplittingModel class.")
         self.model = model
-        if type(self.model) == ContextAwareFileSplittingModel:
+        if not self.model.requires_images:
             self.tokenizer = self.model.tokenizer
 
     def _suggest_first_pages(self, document: Document, inplace: bool = False) -> List[Document]:
@@ -612,3 +629,9 @@ class SplittingAI:
             pred_docs.append(predictions[0])
         self.full_evaluation = FileSplittingEvaluation(original_docs, pred_docs)
         return self.full_evaluation
+
+
+if __name__ == "__main__":
+    import doctest
+
+    doctest.testmod()

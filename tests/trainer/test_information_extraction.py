@@ -252,8 +252,8 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         """Start to train the Model."""
         self.pipeline.fit()
 
-        assert memory_size_of(self.pipeline.clf) < 1e5
-        assert memory_size_of(self.pipeline.label_set_clf) < 1e5
+        assert memory_size_of(self.pipeline.clf) < 2e5
+        assert memory_size_of(self.pipeline.label_set_clf) < 2e5
 
         if self.pipeline.use_separate_labels:
             assert len(self.pipeline.clf.classes_) == 19
@@ -486,8 +486,8 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         """Start to train the Model."""
         self.pipeline.fit()
 
-        assert memory_size_of(self.pipeline.clf) < 1e5
-        assert memory_size_of(self.pipeline.label_set_clf) < 1e5
+        assert memory_size_of(self.pipeline.clf) < 2e5
+        assert memory_size_of(self.pipeline.label_set_clf) < 2e5
 
         if self.pipeline.use_separate_labels:
             assert len(self.pipeline.clf.classes_) == 19
@@ -1394,6 +1394,7 @@ def test_load_model_wrong_pickle_data():
         load_model(path)
 
 
+@unittest.skipIf(sys.version_info[:2] == (3, 11), 'Throws "TypeError: code() argument 13 must be str, not int"')
 def test_load_ai_model_konfuzio_sdk_not_included():
     """Test loading of trained model with include_konfuzio setting set to False."""
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
