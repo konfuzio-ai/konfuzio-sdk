@@ -206,6 +206,10 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
             text_processing_model, do_lower_case=True, max_length=2000, padding="max_length", truncate=True
         )
 
+    def reduce_model_weight(self):
+        """Remove all non-strictly necessary parameters before saving."""
+        self.project.lose_weight()
+
     def _preprocess_documents(self, data: List[Document]) -> (List[str], List[str], List[int]):
         """
         Take a list of Documents and extract paths to its Pages' images, texts and labels of first or non-first class.
@@ -501,7 +505,7 @@ class SplittingAI:
         if not AbstractFileSplittingModel.has_compatible_interface(model):
             raise ValueError("The model is not inheriting from AbstractFileSplittingModel class.")
         self.model = model
-        if type(self.model) == ContextAwareFileSplittingModel:
+        if not self.model.requires_images:
             self.tokenizer = self.model.tokenizer
 
     def _suggest_first_pages(self, document: Document, inplace: bool = False) -> List[Document]:
