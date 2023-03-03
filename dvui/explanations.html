@@ -23,7 +23,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Guides" href="guides.html" />
+    <link rel="next" title="Source Code" href="sourcecode.html" />
     <link rel="prev" title="What is the Konfuzio Document Validation UI?" href="index.html" /> 
 </head>
 
@@ -71,9 +71,32 @@
 <li class="toctree-l3"><a class="reference internal" href="#full-mode">Full Mode</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-integrate-the-document-validation-ui-into-custom-solutions">How to integrate the Document Validation UI into custom solutions?</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#install-as-an-npm-package">Install as an NPM package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#configure-the-application">Configure the application</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="guides.html">Guides</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#integrate-by-deploying-the-application">Integrate by deploying the application</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#deploy">Deploy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#local-development">Local Development</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#run-the-document-validation-ui-in-non-vue-applications">Run the Document Validation UI in non-Vue applications</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#run-in-react">Run in React</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run-in-angular">Run in Angular</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#iframe-integration">Iframe integration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#html-iframe-as-public-document">HTML iframe as Public Document</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#embed-a-konfuzio-document-on-another-website">Embed a Konfuzio Document on another website</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#add-your-domain-s-to-the-projects-domain-whitelist">Add your domain(s) to the Project’s domain whitelist</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#customise-the-iframe">Customise the iframe</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="sourcecode.html">Source Code</a></li>
 <li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
 </ul>
@@ -139,6 +162,188 @@
 <p>Please be aware that any variable in the <code class="docutils literal notranslate"><span class="pre">.env</span></code> will have priority from the variables defined in the <code class="docutils literal notranslate"><span class="pre">index.html</span></code>.</p>
 </section>
 </section>
+<section id="how-to-integrate-the-document-validation-ui-into-custom-solutions">
+<h2>How to integrate the Document Validation UI into custom solutions?<a class="headerlink" href="#how-to-integrate-the-document-validation-ui-into-custom-solutions" title="Permalink to this headline">¶</a></h2>
+<p>The application requires <code class="docutils literal notranslate"><span class="pre">node</span></code> and <code class="docutils literal notranslate"><span class="pre">npm</span></code> to run. It also requires a connection to the <a class="reference external" href="https://app.konfuzio.com/v3/swagger/">Konfuzio Server API version 3</a>. See <a class="reference external" href="https://dev.konfuzio.com/web/api-v3.html">full documentation</a>.</p>
+<p>There are a few different options to integrate the Document Validation UI into your Project, which we will explain next.</p>
+<section id="install-as-an-npm-package">
+<h3>Install as an NPM package<a class="headerlink" href="#install-as-an-npm-package" title="Permalink to this headline">¶</a></h3>
+<p>If you want to integrate the Document Validation UI to an existing application, you can run the following command in your terminal to install our <a class="reference external" href="https://www.npmjs.com/package/&#64;konfuzio/document-validation-ui">npm package</a>:</p>
+<p><code class="docutils literal notranslate"><span class="pre">npm</span> <span class="pre">i</span> <span class="pre">&#64;konfuzio/document-validation-ui</span></code></p>
+<section id="configure-the-application">
+<h4>Configure the application<a class="headerlink" href="#configure-the-application" title="Permalink to this headline">¶</a></h4>
+<p>Once the package is installed, you can configure the application in two ways:</p>
+<section id="pointing-to-the-dist-folder">
+<h5>Pointing to the dist folder<a class="headerlink" href="#pointing-to-the-dist-folder" title="Permalink to this headline">¶</a></h5>
+<p>You can use the compiled version under the <code class="docutils literal notranslate"><span class="pre">dist</span></code> folder on the package source, by pointing to it from the <code class="docutils literal notranslate"><span class="pre">index.html</span></code> and making any necessary changes to the <code class="docutils literal notranslate"><span class="pre">HTML</span></code> properties on the <code class="docutils literal notranslate"><span class="pre">App</span></code> tag.</p>
+<a class="reference external image-reference" href="./images/dist-npm-package.png"><img alt="dist-npm-package.png" src="../_images/dist-npm-package.png" /></a>
+</section>
+<section id="using-a-javascript-bundler">
+<h5>Using a JavaScript bundler<a class="headerlink" href="#using-a-javascript-bundler" title="Permalink to this headline">¶</a></h5>
+<p>If you want more integration with your current configuration, you can use a JavaScript bundler. You can find an example using <a class="reference external" href="https://webpack.js.org/guides/getting-started/">Webpack</a> below:</p>
+<section id="webpack-config-js">
+<h6>webpack.config.js<a class="headerlink" href="#webpack-config-js" title="Permalink to this headline">¶</a></h6>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>const VueLoaderPlugin = require(&quot;vue-loader/lib/plugin&quot;);
+
+module.exports = {
+    entry: {
+        document_validation_ui: &quot;./node_modules/@konfuzio/document-validation-ui/src/main.js&quot;,
+    },
+    output: {
+        path: &quot;/server/bundle&quot;,
+        publicPath: &quot;/bundle/&quot;,
+        filename: &quot;[name].js&quot;,
+        sourceMapFilename: &quot;[name].js.map&quot;,
+    },
+    module: {
+        rules: [
+            {
+                test: /\.vue$/,
+                loader: &quot;vue-loader&quot;,
+                options: {
+                    sourceMap: true,
+                },
+            }
+        ],
+    },
+    plugins: [
+        new VueLoaderPlugin()
+    ],
+};
+</pre></div>
+</div>
+</section>
+</section>
+<section id="html">
+<h5>HTML<a class="headerlink" href="#html" title="Permalink to this headline">¶</a></h5>
+<p>In the <code class="docutils literal notranslate"><span class="pre">HTML</span></code> we should load the script we created with Webpack or the compiled version under the <code class="docutils literal notranslate"><span class="pre">dist</span></code> folder, and customise the variables we want. Please note that customising the variables is optional and that any variable in the <code class="docutils literal notranslate"><span class="pre">.env</span></code> will have priority from the variables defined in the <code class="docutils literal notranslate"><span class="pre">index.html</span></code>.</p>
+<p>The following examples, based on the two configuration options mentioned before, include the custom variables (Document ID, User Token, Locale), but it is not mandatory to add these, which should still be added to the <code class="docutils literal notranslate"><span class="pre">.env</span></code> file.</p>
+<section id="webpack-bundle">
+<h6>Webpack bundle<a class="headerlink" href="#webpack-bundle" title="Permalink to this headline">¶</a></h6>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&lt;div id=&quot;app&quot;&gt;
+   &lt;App document=&quot;DOCUMENT_ID&quot; user_token:”USER_TOKEN” locale=&quot;LOCALE&quot;&gt;&lt;/App&gt;
+ &lt;/div&gt;
+
+  &lt;script src=&quot;/server/bundle/document_validation_ui.js&quot;&gt;&lt;/script&gt;
+</pre></div>
+</div>
+</section>
+<section id="imports-from-dist-folder">
+<h6>Imports from dist folder<a class="headerlink" href="#imports-from-dist-folder" title="Permalink to this headline">¶</a></h6>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&lt;head&gt;
+    &lt;script
+      defer=&quot;defer&quot;
+      src=&quot;node_modules/@konfuzio/document-validation-ui/dist/js/chunk-vendors.a48fca3f.js&quot;
+    &gt;&lt;/script&gt;
+    &lt;script
+      defer=&quot;defer&quot;
+      src=&quot;node_modules/@konfuzio/document-validation-ui/dist/js/app.17fe48c4.js&quot;
+    &gt;&lt;/script&gt;
+    &lt;link
+      href=&quot;node_modules/@konfuzio/document-validation-ui/dist/css/chunk-vendors.053b6b6e.css&quot;
+      rel=&quot;stylesheet&quot;
+    /&gt;
+    &lt;link
+      href=&quot;node_modules/@konfuzio/document-validation-ui/dist/css/app.0c8973f8.css&quot;
+      rel=&quot;stylesheet&quot;
+    /&gt;
+&lt;/head&gt;
+
+&lt;body&gt;
+ &lt;div id=&quot;app&quot;&gt;
+    &lt;App document=&quot;DOCUMENT_ID&quot; user_token:”USER_TOKEN” locale=&quot;LOCALE&quot;&gt;&lt;/App&gt;
+  &lt;/div&gt;
+&lt;/body&gt;
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+</section>
+<section id="integrate-by-deploying-the-application">
+<h3>Integrate by deploying the application<a class="headerlink" href="#integrate-by-deploying-the-application" title="Permalink to this headline">¶</a></h3>
+<p>You can also deploy the application by following the steps below:</p>
+<ol class="arabic simple">
+<li><p>Clone the repository</p></li>
+</ol>
+<p>You can download the application by cloning our <a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui">GitHub repository</a> or downloading the source code.</p>
+<p><code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">clone</span> <span class="pre">git&#64;github.com:konfuzio-ai/document-validation-ui.git</span></code></p>
+<ol class="arabic simple">
+<li><p>Configure the Application</p></li>
+</ol>
+<p>Decide if the application will be run as <a class="reference external" href="./modes.md">Read Only or Full Mode</a>.</p>
+<ol class="arabic simple">
+<li><p>Install all packages</p></li>
+</ol>
+<p>Install all the dependencies by running:</p>
+<p><code class="docutils literal notranslate"><span class="pre">npm</span> <span class="pre">install</span></code></p>
+<ol class="arabic simple">
+<li><p>Run the Application</p></li>
+</ol>
+<section id="deploy">
+<h4>Deploy<a class="headerlink" href="#deploy" title="Permalink to this headline">¶</a></h4>
+<p>If you want to deploy this application in a web server environment then you should run:</p>
+<p><code class="docutils literal notranslate"><span class="pre">npm</span> <span class="pre">run</span> <span class="pre">build</span></code></p>
+<p>When succeeded, you should export the <code class="docutils literal notranslate"><span class="pre">dist</span></code> folder generated from that command to the destination source in the host server and configure the web server engine in order to have the <code class="docutils literal notranslate"><span class="pre">index.html</span></code> file as the entry point. If everything is correctly configured you should be able to open the server URL and the application will load.</p>
+<a class="reference external image-reference" href="./images/dist.png"><img alt="dist.png" src="../_images/dist.png" /></a>
+</section>
+<section id="local-development">
+<h4>Local Development<a class="headerlink" href="#local-development" title="Permalink to this headline">¶</a></h4>
+<p>If you want to serve the application locally to run on a browser (default URL: <a class="reference external" href="http://localhost:3000">http://localhost:3000</a>) you should run:</p>
+<p><code class="docutils literal notranslate"><span class="pre">npm</span> <span class="pre">run</span> <span class="pre">serve</span></code></p>
+</section>
+</section>
+<section id="run-the-document-validation-ui-in-non-vue-applications">
+<h3>Run the Document Validation UI in non-Vue applications<a class="headerlink" href="#run-the-document-validation-ui-in-non-vue-applications" title="Permalink to this headline">¶</a></h3>
+<p>If your application is developed using technologies other than Vue (for example React or Angular), you can build the Document Validation UI app into a package, as described in our <a class="reference external" href="#configure-the-app">configuration example</a>, and import it to your existing project, or install it as an npm package.</p>
+<section id="run-in-react">
+<h4>Run in React<a class="headerlink" href="#run-in-react" title="Permalink to this headline">¶</a></h4>
+<p>You can find a full example on using the Document Validation UI in a React application <a class="reference external" href="https://medium.com/&#64;pateldhruv020/using-vue-component-in-react-9161f30d29a0">here</a>.</p>
+</section>
+<section id="run-in-angular">
+<h4>Run in Angular<a class="headerlink" href="#run-in-angular" title="Permalink to this headline">¶</a></h4>
+<p>At <a class="reference external" href="https://www.ais.com/using-a-vue-component-in-an-angular-app/">this link</a> you will see a step by step on how to use the Document Validation UI in an Angular application.</p>
+</section>
+</section>
+<section id="iframe-integration">
+<h3>Iframe integration<a class="headerlink" href="#iframe-integration" title="Permalink to this headline">¶</a></h3>
+<section id="html-iframe-as-public-document">
+<h4>HTML iframe as Public Document<a class="headerlink" href="#html-iframe-as-public-document" title="Permalink to this headline">¶</a></h4>
+<p>You can mark your Documents as public. Marking Documents as public will generate a read-only, publicly accessible URL that does not require authentication. This allows you to share a link to the Document and its extracted data, or embed it in another website. See <a class="reference external" href="./modes.md/#read-only-mode">Read Only mode</a> for reference.</p>
+<section id="share-a-document-with-a-link">
+<h5>Share a Document with a link<a class="headerlink" href="#share-a-document-with-a-link" title="Permalink to this headline">¶</a></h5>
+<p>From the details page, you can copy a public URL to your Document, which you can share with other people. Apart from the URL, it does not contain any Konfuzio branding.</p>
+<p>This lightweight version contains an image version of the PDF pages, and its currently extracted metadata (Annotation sets, Label sets, Labels). Any modification you make to the Document in the Document Validation UI is reflected here.</p>
+<p>Currently this public view is not allowed to be indexed by search engines.</p>
+<p>If you need to programmatically generate public links, you can use the format <code class="docutils literal notranslate"><span class="pre">https://app.konfuzio.com/d/&lt;id&gt;/</span></code>. You can retrieve the ID of a Document from your Konfuzio dashboard or the API. Document ids which don’t exist or are not public will return a 404 error.</p>
+</section>
+</section>
+<section id="embed-a-konfuzio-document-on-another-website">
+<h4>Embed a Konfuzio Document on another website<a class="headerlink" href="#embed-a-konfuzio-document-on-another-website" title="Permalink to this headline">¶</a></h4>
+<p>From the details page, you can copy an example HTML snippet that allows you to embed a public Document within an iframe. Visually, it looks the same as the above-mentioned public Document view, and in fact its internal implementation is the same. However, to prevent abuse, you first need to configure your Project’s “domain whitelist” setting. This only needs to be done once per Project for each domain you want to allow.</p>
+</section>
+<section id="add-your-domain-s-to-the-projects-domain-whitelist">
+<h4>Add your domain(s) to the Project’s domain whitelist<a class="headerlink" href="#add-your-domain-s-to-the-projects-domain-whitelist" title="Permalink to this headline">¶</a></h4>
+<p>On the Konfuzio Dashboard, open the left-side menu and click “Projects”.</p>
+<a class="reference external image-reference" href="./images/dashboard.png"><img alt="dashboard.png" src="../_images/dashboard.png" /></a>
+<p>Click on the Project associated with the Document(s) you want to make public.</p>
+<a class="reference external image-reference" href="./images/project.png"><img alt="project.png" src="../_images/project.png" /></a>
+<p>In the “Domain whitelist” field, add the domains where you’re going to embed your Document(s), one per line and without “http” or “https”.</p>
+<p>For example, if you want to embed a Document on <a class="reference external" href="https://www.example.org">https://www.example.org</a>, you should add www.example.org to the list.</p>
+<a class="reference external image-reference" href="./images/whitelist.png"><img alt="whitelist.png" src="../_images/whitelist.png" /></a>
+<p>Click “Save”.</p>
+<a class="reference external image-reference" href="./images/save.png"><img alt="save.png" src="../_images/save.png" /></a>
+<p><em>It is important to note that this process will NOT make all your Projects’ Documents public by default. It simply establishes which domains are allowed to embed public Documents for this Project. You will still need to mark Documents as public by yourself.</em></p>
+</section>
+<section id="customise-the-iframe">
+<h4>Customise the iframe<a class="headerlink" href="#customise-the-iframe" title="Permalink to this headline">¶</a></h4>
+<p>By default, we provide a bare-bones HTML snippet that looks similar to this:</p>
+<p><code class="docutils literal notranslate"><span class="pre">&lt;iframe</span> <span class="pre">src=&quot;https://app.konfuzio.com/d/&lt;id&gt;/&quot;</span> <span class="pre">width=&quot;100%&quot;</span> <span class="pre">height=&quot;600&quot;</span> <span class="pre">frameborder=&quot;0&quot;&gt;&lt;/iframe&gt;</span></code></p>
+<p>This creates on your page an iframe with 100% width (full width of its container) and a height of 600 pixels that doesn’t have a border. You can customise the iframe‘s size and other options by changing these and other attributes (see <a class="reference external" href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe">iframe documentation</a>).</p>
+<a class="reference external image-reference" href="./images/public_dvui.png"><img alt="public_dvui.png" src="../_images/public_dvui.png" /></a>
+</section>
+</section>
+</section>
 </section>
 
 
@@ -146,7 +351,7 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="index.html" class="btn btn-neutral float-left" title="What is the Konfuzio Document Validation UI?" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="guides.html" class="btn btn-neutral float-right" title="Guides" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="sourcecode.html" class="btn btn-neutral float-right" title="Source Code" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
