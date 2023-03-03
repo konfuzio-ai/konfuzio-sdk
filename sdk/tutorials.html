@@ -58,15 +58,18 @@
 <li class="toctree-l3"><a class="reference internal" href="#initializing-a-project-with-the-data-validation-rules-disabled">Initializing a Project with the Data Validation Rules disabled</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#split-a-file-into-separate-documents">Split a file into separate Documents</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#splitting-for-multi-document-files-step-by-step-guide">Splitting for multi-Document files: Step-by-step guide</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#intro">Intro</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#quick-explanation">Quick explanation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#step-by-step-explanation">Step-by-step explanation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id7">File Splitting</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#split-a-file-into-separate-documents">Split a file into separate Documents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#splitting-for-multi-document-files-step-by-step-guide">Splitting for multi-Document files: Step-by-step guide</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#intro">Intro</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quick-explanation">Quick explanation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#step-by-step-explanation">Step-by-step explanation</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#filesplittingevaluation-class">FileSplittingEvaluation class</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#example-of-evaluation-input-and-output">Example of evaluation input and output</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#filesplittingevaluation-class">FileSplittingEvaluation class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#example-of-evaluation-input-and-output">Example of evaluation input and output</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#document-categorization">Document Categorization</a><ul>
@@ -168,7 +171,7 @@ Annotations in the Document will be retrievable.</p></li>
 special needs to be done to enable it.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
 
-<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>  <span class="c1"># all the data in this project will be validated</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>  <span class="c1"># all the data in this Project will be validated</span>
 </pre></div>
 </div>
 </section>
@@ -230,8 +233,10 @@ or inconsistent data can <strong>decrease the quality of an Extraction AI</stron
 </div>
 </section>
 </section>
+<section id="id7">
+<h2>File Splitting<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h2>
 <section id="split-a-file-into-separate-documents">
-<h2>Split a file into separate Documents<a class="headerlink" href="#split-a-file-into-separate-documents" title="Permalink to this headline">¶</a></h2>
+<h3>Split a file into separate Documents<a class="headerlink" href="#split-a-file-into-separate-documents" title="Permalink to this headline">¶</a></h3>
 <p>Let’s see how to use the <code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span></code> to automatically split a file into several Documents. We will be using
 a pre-built class <code class="docutils literal notranslate"><span class="pre">SplittingAI</span></code> and an instance of a trained <code class="docutils literal notranslate"><span class="pre">ContextAwareFileSplittingModel</span></code>. The latter uses a
 context-aware logic. By context-aware we mean a rule-based approach that looks for common strings between the first
@@ -240,10 +245,13 @@ first or not), we compare Page’s contents to these common first-page strings; 
 such string, we mark a Page to be first (thus meaning it is a splitting point).</p>
 <p>This tutorial can also be used with the <code class="docutils literal notranslate"><span class="pre">MultimodalFileSplittingModel</span></code>; the only difference in the initialization is
 that it does not require specifying a Tokenizer explicitly.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.regex</span> <span class="kn">import</span> <span class="n">ConnectedTextTokenizer</span>
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.file_splitting</span> <span class="kn">import</span> <span class="n">ContextAwareFileSplittingModel</span><span class="p">,</span> <span class="n">SplittingAI</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Page</span><span class="p">,</span> <span class="n">Category</span><span class="p">,</span> <span class="n">Project</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.file_splitting</span> <span class="kn">import</span> <span class="n">SplittingAI</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.file_splitting</span> <span class="kn">import</span> <span class="n">ContextAwareFileSplittingModel</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">load_model</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.regex</span> <span class="kn">import</span> <span class="n">ConnectedTextTokenizer</span>
+
+<span class="c1"># initialize a Project and fetch a test Document of your choice</span>
 
 <span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
 <span class="n">test_document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
@@ -257,11 +265,13 @@ that it does not require specifying a Tokenizer explicitly.</p>
 <span class="c1"># from konfuzio_sdk.trainer.file_splitting import MultimodalFileSplittingModel</span>
 <span class="c1"># file_splitting_model = MultimodalFileSplittingModel(categories=project.categories)</span>
 
-<span class="n">file_splitting_model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+<span class="c1"># for an example run, you can take only a slice of training documents to make fitting faster</span>
+<span class="n">file_splitting_model</span><span class="o">.</span><span class="n">documents</span> <span class="o">=</span> <span class="n">file_splitting_model</span><span class="o">.</span><span class="n">documents</span><span class="p">[:</span><span class="mi">10</span><span class="p">]</span>
+
+<span class="n">file_splitting_model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">allow_empty_categories</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="c1"># save the model</span>
-<span class="n">file_splitting_model</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">model_folder</span>
-<span class="n">file_splitting_model</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+<span class="n">save_path</span> <span class="o">=</span> <span class="n">file_splitting_model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">include_konfuzio</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="c1"># run the prediction</span>
 <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">test_document</span><span class="o">.</span><span class="n">pages</span><span class="p">():</span>
@@ -273,7 +283,7 @@ that it does not require specifying a Tokenizer explicitly.</p>
 
 <span class="c1"># usage with the Splitting AI – you can load a pre-saved model or pass an initialized instance as the input</span>
 <span class="c1"># in this example, we load a previously saved one</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">model_folder</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span>
 
 <span class="c1"># initialize the Splitting AI</span>
 <span class="n">splitting_ai</span> <span class="o">=</span> <span class="n">SplittingAI</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
@@ -299,9 +309,9 @@ that it does not require specifying a Tokenizer explicitly.</p>
 </div>
 </section>
 <section id="splitting-for-multi-document-files-step-by-step-guide">
-<h2>Splitting for multi-Document files: Step-by-step guide<a class="headerlink" href="#splitting-for-multi-document-files-step-by-step-guide" title="Permalink to this headline">¶</a></h2>
+<h3>Splitting for multi-Document files: Step-by-step guide<a class="headerlink" href="#splitting-for-multi-document-files-step-by-step-guide" title="Permalink to this headline">¶</a></h3>
 <section id="intro">
-<h3>Intro<a class="headerlink" href="#intro" title="Permalink to this headline">¶</a></h3>
+<h4>Intro<a class="headerlink" href="#intro" title="Permalink to this headline">¶</a></h4>
 <p>It’s common for multipage files to not be perfectly organized, and in some cases, multiple independent Documents may be
 included in a single file. To ensure that these Documents are properly processed and separated, we will be discussing a
 method for identifying and splitting them into individual, independent Sub-documents.</p>
@@ -323,7 +333,7 @@ for each Category. In this tutorial, we will explain how to implement the class 
 <p>If you are unfamiliar with the SDK’s main concepts (like Page or Span), you can get to know them at <a class="reference external" href="https://dev.konfuzio.com/sdk/explanations.html#data-layer-concepts">Data Layer Concepts</a>.</p>
 </section>
 <section id="quick-explanation">
-<h3>Quick explanation<a class="headerlink" href="#quick-explanation" title="Permalink to this headline">¶</a></h3>
+<h4>Quick explanation<a class="headerlink" href="#quick-explanation" title="Permalink to this headline">¶</a></h4>
 <p>The first step in implementing this method is “training”: this involves tokenizing the Document by splitting its text
 into parts, specifically into strings without line breaks. We then gather the exclusive strings from Spans, which are
 the parts of the text in the Page, and compare them to the first Pages of each Document in the training data.</p>
@@ -338,7 +348,7 @@ the case, it’s worth checking if your data is consistent, for example, not in 
 Categories.</p>
 </section>
 <section id="step-by-step-explanation">
-<h3>Step-by-step explanation<a class="headerlink" href="#step-by-step-explanation" title="Permalink to this headline">¶</a></h3>
+<h4>Step-by-step explanation<a class="headerlink" href="#step-by-step-explanation" title="Permalink to this headline">¶</a></h4>
 <p>In this section, we will walk you through the process of setting up the <code class="docutils literal notranslate"><span class="pre">ContextAwareFileSplittingModel</span></code> class, which
 can be found in the code block at the bottom of this page. This class is already implemented and can be imported using
 <code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">konfuzio_sdk.trainer.file_splitting</span> <span class="pre">import</span> <span class="pre">ContextAwareFileSplittingModel</span></code>.</p>
@@ -353,20 +363,22 @@ run on the Page level, not the Document level – the result of classification i
 value, which is unique to the Page class and is not present in Document class. Pages with <code class="docutils literal notranslate"><span class="pre">is_first_page</span> <span class="pre">=</span> <span class="pre">True</span></code> become
 splitting points, thus, each new Sub-Document has a Page predicted as first as its starting point.</p></li>
 </ul>
-<p>To begin, we will make all the necessary imports and initialize the <code class="docutils literal notranslate"><span class="pre">ContextAwareFileSplittingModel</span></code> class:</p>
+<p>To begin, we will make all the necessary imports:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span>
 
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
 
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Page</span><span class="p">,</span> <span class="n">Category</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Page</span><span class="p">,</span> <span class="n">Category</span><span class="p">,</span> <span class="n">Project</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.file_splitting</span> <span class="kn">import</span> <span class="n">AbstractFileSplittingModel</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.file_splitting</span> <span class="kn">import</span> <span class="n">SplittingAI</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">load_model</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.regex</span> <span class="kn">import</span> <span class="n">ConnectedTextTokenizer</span>
-
-<span class="k">class</span> <span class="nc">ContextAwareFileSplittingModel</span><span class="p">(</span><span class="n">AbstractFileSplittingModel</span><span class="p">):</span>
+</pre></div>
+</div>
+<p>Then, let’s initialize the <code class="docutils literal notranslate"><span class="pre">ContextAwareFileSplittingModel</span></code> class:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ContextAwareFileSplittingModel</span><span class="p">(</span><span class="n">AbstractFileSplittingModel</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">categories</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Category</span><span class="p">],</span> <span class="n">tokenizer</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">categories</span><span class="o">=</span><span class="n">categories</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">model_folder</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span> <span class="o">=</span> <span class="n">tokenizer</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">requires_text</span> <span class="o">=</span> <span class="kc">True</span>
@@ -387,7 +399,8 @@ needed for distinguishing between preprocessing types once a model is passed int
 <span class="n">test_document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
 <span class="n">test_document</span><span class="o">.</span><span class="n">text</span>
 
-<span class="c1"># output: &quot;This is an example text. \n It has several lines. \n Here it finishes.&quot;</span>
+<span class="c1"># output: &quot;Hi all,\nI like bread.\n\fI hope to get everything done soon.\n\fMorning,\n\fI&#39;m glad to see you.&quot;</span>
+<span class="c1">#             &quot;\n\fMorning,&quot;</span>
 
 <span class="n">test_document</span><span class="o">.</span><span class="n">spans</span><span class="p">()</span>
 
@@ -398,177 +411,18 @@ needed for distinguishing between preprocessing types once a model is passed int
 <span class="c1"># after tokenization</span>
 <span class="n">test_document</span><span class="o">.</span><span class="n">spans</span><span class="p">()</span>
 
-<span class="c1"># output: [Span (0, 24), Span(25, 47), Span(48, 65)]</span>
+<span class="c1"># output: [Span (0, 7), Span (8, 21), Span (22, 58), Span (59, 68), Span (69, 90), Span (91, 100)]</span>
 
-<span class="n">test_document</span><span class="o">.</span><span class="n">spans</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">offset_string</span>
+<span class="n">test_document</span><span class="o">.</span><span class="n">spans</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">offset_string</span>
 
-<span class="c1"># output: &quot;This is an example text. &quot;</span>
+<span class="c1"># output: &quot;Hi all,&quot;</span>
 </pre></div>
 </div>
 <p>The first method to define will be the <code class="docutils literal notranslate"><span class="pre">fit()</span></code> method. For each Category, we call <code class="docutils literal notranslate"><span class="pre">exclusive_first_page_strings</span></code> method,
 which allows us to gather the strings that appear on the first Page of each Document. <code class="docutils literal notranslate"><span class="pre">allow_empty_categories</span></code> allows
 for returning empty lists for Categories that haven’t had any exclusive first-page strings found across their Documents.
 This means that those Categories would not be used in the prediction process.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">allow_empty_categories</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="k">for</span> <span class="n">category</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">categories</span><span class="p">:</span>
-        <span class="c1"># method exclusive_first_page_strings fetches a set of first-page strings exclusive among the Documents</span>
-        <span class="c1"># of a given Category. they can be found in _exclusive_first_page_strings attribute of a Category after</span>
-        <span class="c1"># the method has been run. this is needed so that the information remains even if local variable</span>
-        <span class="c1"># cur_first_page_strings is lost.</span>
-        <span class="n">cur_first_page_strings</span> <span class="o">=</span> <span class="n">category</span><span class="o">.</span><span class="n">exclusive_first_page_strings</span><span class="p">(</span><span class="n">tokenizer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">cur_first_page_strings</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">allow_empty_categories</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s1">&#39;No exclusive first-page strings were found for </span><span class="si">{</span><span class="n">category</span><span class="si">}</span><span class="s1">, so it will not be used &#39;</span>
-                    <span class="sa">f</span><span class="s1">&#39;at prediction.&#39;</span>
-                <span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;No exclusive first-page strings were found for </span><span class="si">{</span><span class="n">category</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Next, we define <code class="docutils literal notranslate"><span class="pre">predict()</span></code> method. The method accepts a Page as an input and checks its Span set for containing
-first-page strings for each of the Categories. If there is at least one intersection, the Page is predicted to be a
-first Page. If there are no intersections, the Page is predicted to be a non-first Page.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">page</span><span class="p">:</span> <span class="n">Page</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Page</span><span class="p">:</span>
-    <span class="k">for</span> <span class="n">category</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">categories</span><span class="p">:</span>
-        <span class="c1"># exclusive_first_page_strings calls an implicit _exclusive_first_page_strings attribute once it was</span>
-        <span class="c1"># already calculated during fit() method so it is not a recurrent calculation each time.</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">category</span><span class="o">.</span><span class="n">exclusive_first_page_strings</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot run prediction as </span><span class="si">{</span><span class="n">category</span><span class="si">}</span><span class="s2"> does not have exclusive_first_page_strings.&quot;</span><span class="p">)</span>
-    <span class="n">page</span><span class="o">.</span><span class="n">is_first_page</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="k">for</span> <span class="n">category</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">categories</span><span class="p">:</span>
-        <span class="n">cur_first_page_strings</span> <span class="o">=</span> <span class="n">category</span><span class="o">.</span><span class="n">exclusive_first_page_strings</span><span class="p">(</span><span class="n">tokenizer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="p">)</span>
-        <span class="n">intersection</span> <span class="o">=</span> <span class="p">{</span><span class="n">span</span><span class="o">.</span><span class="n">offset_string</span> <span class="k">for</span> <span class="n">span</span> <span class="ow">in</span> <span class="n">page</span><span class="o">.</span><span class="n">spans</span><span class="p">()}</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span>
-            <span class="n">cur_first_page_strings</span>
-        <span class="p">)</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">intersection</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">page</span><span class="o">.</span><span class="n">is_first_page</span> <span class="o">=</span> <span class="kc">True</span>
-            <span class="k">break</span>
-    <span class="n">page</span><span class="o">.</span><span class="n">is_first_page_confidence</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="k">return</span> <span class="n">page</span>
-</pre></div>
-</div>
-<p>Lastly, a <code class="docutils literal notranslate"><span class="pre">check_is_ready()</span></code> method is defined. This method is used to ensure that a model is ready for prediction: the
-checks cover that the Tokenizer and a set of Categories is defined, and that at least one of the Categories has
-exclusive first-page strings.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">check_is_ready</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="si">}</span><span class="s1"> missing Tokenizer.&#39;</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">categories</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="si">}</span><span class="s1"> requires Categories.&#39;</span><span class="p">)</span>
-
-    <span class="n">empty_first_page_strings</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="n">category</span>
-        <span class="k">for</span> <span class="n">category</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">categories</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">category</span><span class="o">.</span><span class="n">exclusive_first_page_strings</span><span class="p">(</span><span class="n">tokenizer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="p">)</span>
-    <span class="p">]</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">empty_first_page_strings</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">categories</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Cannot run prediction as none of the Categories in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="si">}</span><span class="s2"> have &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;_exclusive_first_page_strings.&quot;</span>
-        <span class="p">)</span>
-</pre></div>
-</div>
-<p>A quick example of the class’s usage:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># initialize a Project and fetch a test Document of your choice</span>
-<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
-<span class="n">test_document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
-
-<span class="c1"># initialize a Context Aware File Splitting Model and fit it</span>
-
-<span class="n">file_splitting_model</span> <span class="o">=</span> <span class="n">ContextAwareFileSplittingModel</span><span class="p">(</span><span class="n">categories</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">categories</span><span class="p">,</span> <span class="n">tokenizer</span><span class="o">=</span><span class="n">ConnectedTextTokenizer</span><span class="p">())</span>
-<span class="n">file_splitting_model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
-
-<span class="c1"># save the model</span>
-<span class="n">file_splitting_model</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">model_folder</span>
-<span class="n">file_splitting_model</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
-
-<span class="c1"># run the prediction</span>
-<span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">test_document</span><span class="o">.</span><span class="n">pages</span><span class="p">():</span>
-    <span class="n">pred</span> <span class="o">=</span> <span class="n">file_splitting_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">pred</span><span class="o">.</span><span class="n">is_first_page</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Page </span><span class="si">{}</span><span class="s1"> is predicted as the first.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">number</span><span class="p">))</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Page </span><span class="si">{}</span><span class="s1"> is predicted as the non-first.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">number</span><span class="p">))</span>
-
-<span class="c1"># usage with the Splitting AI – you can load a pre-saved model or pass an initialized instance as the input</span>
-<span class="c1"># in this example, we load a previously saved one</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">model_folder</span><span class="p">)</span>
-
-<span class="c1"># initialize the Splitting AI</span>
-<span class="n">splitting_ai</span> <span class="o">=</span> <span class="n">SplittingAI</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-
-<span class="c1"># Splitting AI is a more high-level interface to the Context Aware File Splitting Model and any other models that can be</span>
-<span class="c1"># developed for File Splitting purposes. It takes a Document as an input, rather than individual Pages, because it</span>
-<span class="c1"># utilizes page-level prediction of possible split points and returns Document or Documents with changes depending on</span>
-<span class="c1"># the prediction mode.</span>
-
-<span class="c1"># Splitting AI can be run in two modes: returning a list of Sub-Documents as the result of the input Document</span>
-<span class="c1"># splitting or returning a copy of the input Document with Pages predicted as first having an attribute</span>
-<span class="c1"># &quot;is_first_page&quot;. The flag &quot;return_pages&quot; has to be True for the latter; let&#39;s use it</span>
-<span class="n">new_document</span> <span class="o">=</span> <span class="n">splitting_ai</span><span class="o">.</span><span class="n">propose_split_documents</span><span class="p">(</span><span class="n">test_document</span><span class="p">,</span> <span class="n">return_pages</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">new_document</span><span class="p">)</span>
-<span class="c1"># output: [predicted_document]</span>
-
-<span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">new_document</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pages</span><span class="p">():</span>
-    <span class="k">if</span> <span class="n">page</span><span class="o">.</span><span class="n">is_first_page</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Page </span><span class="si">{}</span><span class="s1"> is predicted as the first.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">number</span><span class="p">))</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Page </span><span class="si">{}</span><span class="s1"> is predicted as the non-first.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">number</span><span class="p">))</span>
-</pre></div>
-</div>
-<p>Full code:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span>
-
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
-
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Page</span><span class="p">,</span> <span class="n">Category</span><span class="p">,</span> <span class="n">Project</span>
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.file_splitting</span> <span class="kn">import</span> <span class="n">AbstractFileSplittingModel</span><span class="p">,</span> <span class="n">SplittingAI</span>
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">load_model</span>
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.regex</span> <span class="kn">import</span> <span class="n">ConnectedTextTokenizer</span>
-
-<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
-
-<span class="k">class</span> <span class="nc">ContextAwareFileSplittingModel</span><span class="p">(</span><span class="n">AbstractFileSplittingModel</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    A File Splitting Model that uses a context-aware logic.</span>
-
-<span class="sd">    Context-aware logic implies a rule-based approach that looks for common strings between the first Pages of all</span>
-<span class="sd">    Category&#39;s Documents.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">categories</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Category</span><span class="p">],</span> <span class="n">tokenizer</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Initialize the Context Aware File Splitting Model.</span>
-
-<span class="sd">        :param categories: A list of Categories to run training/prediction of the model on.</span>
-<span class="sd">        :type categories: List[Category]</span>
-<span class="sd">        :param tokenizer: Tokenizer used for processing Documents on fitting when searching for exclusive first-page</span>
-<span class="sd">        strings.</span>
-<span class="sd">        :raises ValueError: When an empty list of Categories is passed into categories argument.</span>
-<span class="sd">        :raises ValueError: When a list passed into categories contains elements other than Categories.</span>
-<span class="sd">        :raises ValueError: When a list passed into categories contains at least one Category with no Documents or test</span>
-<span class="sd">        Documents.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">categories</span><span class="o">=</span><span class="n">categories</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">model_folder</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span> <span class="o">=</span> <span class="n">tokenizer</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">requires_text</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">requires_images</span> <span class="o">=</span> <span class="kc">False</span>
-
-    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">allow_empty_categories</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Gather the strings exclusive for first Pages in a given stream of Documents.</span>
-
-<span class="sd">        Exclusive means that each of these strings appear only on first Pages of Documents within a Category.</span>
-
-<span class="sd">        :param allow_empty_categories: To allow returning empty list for a Category if no exclusive first-page strings</span>
-<span class="sd">        were found during fitting (which means prediction would be impossible for a Category).</span>
-<span class="sd">        :type allow_empty_categories: bool</span>
-<span class="sd">        :raises ValueError: When allow_empty_categories is False and no exclusive first-page strings were found for</span>
-<span class="sd">        at least one Category.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">allow_empty_categories</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">category</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">categories</span><span class="p">:</span>
             <span class="c1"># method exclusive_first_page_strings fetches a set of first-page strings exclusive among the Documents</span>
             <span class="c1"># of a given Category. they can be found in _exclusive_first_page_strings attribute of a Category after</span>
@@ -583,20 +437,17 @@ exclusive first-page strings.</p>
                     <span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;No exclusive first-page strings were found for </span><span class="si">{</span><span class="n">category</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">page</span><span class="p">:</span> <span class="n">Page</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Page</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Predict a Page as first or non-first.</span>
-
-<span class="sd">        :param page: A Page to receive first or non-first label.</span>
-<span class="sd">        :type page: Page</span>
-<span class="sd">        :return: A Page with a newly predicted is_first_page attribute.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+</pre></div>
+</div>
+<p>Next, we define <code class="docutils literal notranslate"><span class="pre">predict()</span></code> method. The method accepts a Page as an input and checks its Span set for containing
+first-page strings for each of the Categories. If there is at least one intersection, the Page is predicted to be a
+first Page. If there are no intersections, the Page is predicted to be a non-first Page.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">page</span><span class="p">:</span> <span class="n">Page</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Page</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">check_is_ready</span><span class="p">()</span>
         <span class="n">page</span><span class="o">.</span><span class="n">is_first_page</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">for</span> <span class="n">category</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">categories</span><span class="p">:</span>
             <span class="n">cur_first_page_strings</span> <span class="o">=</span> <span class="n">category</span><span class="o">.</span><span class="n">exclusive_first_page_strings</span><span class="p">(</span><span class="n">tokenizer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="p">)</span>
-            <span class="n">intersection</span> <span class="o">=</span> <span class="p">{</span><span class="n">span</span><span class="o">.</span><span class="n">offset_string</span> <span class="k">for</span> <span class="n">span</span> <span class="ow">in</span> <span class="n">page</span><span class="o">.</span><span class="n">spans</span><span class="p">()}</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span>
+            <span class="n">intersection</span> <span class="o">=</span> <span class="p">{</span><span class="n">span</span><span class="o">.</span><span class="n">offset_string</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\f</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">span</span> <span class="ow">in</span> <span class="n">page</span><span class="o">.</span><span class="n">spans</span><span class="p">()}</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span>
                 <span class="n">cur_first_page_strings</span>
             <span class="p">)</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">intersection</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -604,14 +455,12 @@ exclusive first-page strings.</p>
                 <span class="k">break</span>
         <span class="n">page</span><span class="o">.</span><span class="n">is_first_page_confidence</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="k">return</span> <span class="n">page</span>
-
-    <span class="k">def</span> <span class="nf">check_is_ready</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Check File Splitting Model is ready for inference.</span>
-
-<span class="sd">        :raises AttributeError: When no Tokenizer or no Categories were passed.</span>
-<span class="sd">        :raises ValueError: When no Categories have _exclusive_first_page_strings.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+</pre></div>
+</div>
+<p>Lastly, a <code class="docutils literal notranslate"><span class="pre">check_is_ready()</span></code> method is defined. This method is used to ensure that a model is ready for prediction: the
+checks cover that the Tokenizer and a set of Categories is defined, and that at least one of the Categories has
+exclusive first-page strings.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="k">def</span> <span class="nf">check_is_ready</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="si">}</span><span class="s1"> missing Tokenizer.&#39;</span><span class="p">)</span>
 
@@ -628,36 +477,101 @@ exclusive first-page strings.</p>
                 <span class="sa">f</span><span class="s2">&quot;Cannot run prediction as none of the Categories in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="si">}</span><span class="s2"> have &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;_exclusive_first_page_strings.&quot;</span>
             <span class="p">)</span>
+</pre></div>
+</div>
+<p>Full code of class:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ContextAwareFileSplittingModel</span><span class="p">(</span><span class="n">AbstractFileSplittingModel</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">categories</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Category</span><span class="p">],</span> <span class="n">tokenizer</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">categories</span><span class="o">=</span><span class="n">categories</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">model_folder</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span> <span class="o">=</span> <span class="n">tokenizer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">requires_text</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">requires_images</span> <span class="o">=</span> <span class="kc">False</span>
 
-<span class="c1"># initialize a Project and fetch a test Document of your choice</span>
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">allow_empty_categories</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">category</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">categories</span><span class="p">:</span>
+            <span class="c1"># method exclusive_first_page_strings fetches a set of first-page strings exclusive among the Documents</span>
+            <span class="c1"># of a given Category. they can be found in _exclusive_first_page_strings attribute of a Category after</span>
+            <span class="c1"># the method has been run. this is needed so that the information remains even if local variable</span>
+            <span class="c1"># cur_first_page_strings is lost.</span>
+            <span class="n">cur_first_page_strings</span> <span class="o">=</span> <span class="n">category</span><span class="o">.</span><span class="n">exclusive_first_page_strings</span><span class="p">(</span><span class="n">tokenizer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">cur_first_page_strings</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">allow_empty_categories</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s1">&#39;No exclusive first-page strings were found for </span><span class="si">{</span><span class="n">category</span><span class="si">}</span><span class="s1">, so it will not be used &#39;</span>
+                        <span class="sa">f</span><span class="s1">&#39;at prediction.&#39;</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;No exclusive first-page strings were found for </span><span class="si">{</span><span class="n">category</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">page</span><span class="p">:</span> <span class="n">Page</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Page</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_is_ready</span><span class="p">()</span>
+        <span class="n">page</span><span class="o">.</span><span class="n">is_first_page</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">category</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">categories</span><span class="p">:</span>
+            <span class="n">cur_first_page_strings</span> <span class="o">=</span> <span class="n">category</span><span class="o">.</span><span class="n">exclusive_first_page_strings</span><span class="p">(</span><span class="n">tokenizer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="p">)</span>
+            <span class="n">intersection</span> <span class="o">=</span> <span class="p">{</span><span class="n">span</span><span class="o">.</span><span class="n">offset_string</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\f</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">span</span> <span class="ow">in</span> <span class="n">page</span><span class="o">.</span><span class="n">spans</span><span class="p">()}</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span>
+                <span class="n">cur_first_page_strings</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">intersection</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">page</span><span class="o">.</span><span class="n">is_first_page</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">break</span>
+        <span class="n">page</span><span class="o">.</span><span class="n">is_first_page_confidence</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">page</span>
+
+    <span class="k">def</span> <span class="nf">check_is_ready</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="si">}</span><span class="s1"> missing Tokenizer.&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">categories</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="si">}</span><span class="s1"> requires Categories.&#39;</span><span class="p">)</span>
+
+        <span class="n">empty_first_page_strings</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">category</span>
+            <span class="k">for</span> <span class="n">category</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">categories</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">category</span><span class="o">.</span><span class="n">exclusive_first_page_strings</span><span class="p">(</span><span class="n">tokenizer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">empty_first_page_strings</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">categories</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Cannot run prediction as none of the Categories in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="si">}</span><span class="s2"> have &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;_exclusive_first_page_strings.&quot;</span>
+            <span class="p">)</span>
+</pre></div>
+</div>
+<p>A quick example of the class’s usage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># initialize a Project and fetch a test Document of your choice</span>
+
 <span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
 <span class="n">test_document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
 
 <span class="c1"># initialize a Context Aware File Splitting Model and fit it</span>
 
 <span class="n">file_splitting_model</span> <span class="o">=</span> <span class="n">ContextAwareFileSplittingModel</span><span class="p">(</span><span class="n">categories</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">categories</span><span class="p">,</span> <span class="n">tokenizer</span><span class="o">=</span><span class="n">ConnectedTextTokenizer</span><span class="p">())</span>
-<span class="n">file_splitting_model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+
+<span class="c1"># for an example run, you can take only a slice of training documents to make fitting faster</span>
+<span class="n">file_splitting_model</span><span class="o">.</span><span class="n">documents</span> <span class="o">=</span> <span class="n">file_splitting_model</span><span class="o">.</span><span class="n">documents</span><span class="p">[:</span><span class="mi">10</span><span class="p">]</span>
+
+<span class="n">file_splitting_model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">allow_empty_categories</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="c1"># save the model</span>
-<span class="n">file_splitting_model</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+<span class="n">save_path</span> <span class="o">=</span> <span class="n">file_splitting_model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">include_konfuzio</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="c1"># run the prediction</span>
 <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">test_document</span><span class="o">.</span><span class="n">pages</span><span class="p">():</span>
- <span class="n">pred</span> <span class="o">=</span> <span class="n">file_splitting_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
- <span class="k">if</span> <span class="n">pred</span><span class="o">.</span><span class="n">is_first_page</span><span class="p">:</span>
-  <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Page </span><span class="si">{}</span><span class="s1"> is predicted as the first.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">number</span><span class="p">))</span>
- <span class="k">else</span><span class="p">:</span>
-  <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Page </span><span class="si">{}</span><span class="s1"> is predicted as the non-first.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">number</span><span class="p">))</span>
+    <span class="n">pred</span> <span class="o">=</span> <span class="n">file_splitting_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">pred</span><span class="o">.</span><span class="n">is_first_page</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Page </span><span class="si">{}</span><span class="s1"> is predicted as the first.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">number</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Page </span><span class="si">{}</span><span class="s1"> is predicted as the non-first.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">number</span><span class="p">))</span>
 
 <span class="c1"># usage with the Splitting AI – you can load a pre-saved model or pass an initialized instance as the input</span>
 <span class="c1"># in this example, we load a previously saved one</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">model_folder</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span>
 
 <span class="c1"># initialize the Splitting AI</span>
 <span class="n">splitting_ai</span> <span class="o">=</span> <span class="n">SplittingAI</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 
 <span class="c1"># Splitting AI is a more high-level interface to Context Aware File Splitting Model and any other models that can be</span>
-<span class="c1"># developed for file-splitting purposes. It takes a Document as an input, rather than individual Pages, because it</span>
+<span class="c1"># developed for File Splitting purposes. It takes a Document as an input, rather than individual Pages, because it</span>
 <span class="c1"># utilizes page-level prediction of possible split points and returns Document or Documents with changes depending on</span>
 <span class="c1"># the prediction mode.</span>
 
@@ -678,7 +592,7 @@ exclusive first-page strings.</p>
 </section>
 </section>
 <section id="filesplittingevaluation-class">
-<h2>FileSplittingEvaluation class<a class="headerlink" href="#filesplittingevaluation-class" title="Permalink to this headline">¶</a></h2>
+<h3>FileSplittingEvaluation class<a class="headerlink" href="#filesplittingevaluation-class" title="Permalink to this headline">¶</a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">FileSplittingEvaluation</span></code> class can be used to evaluate performance of Context-Aware File Splitting Model, returning a
 set of metrics that includes precision, recall, f1 measure, True Positives, False Positives, True Negatives, and False
 Negatives.</p>
@@ -686,8 +600,9 @@ Negatives.</p>
 of Documents as an input – first list consists of ground-truth Documents where all first Pages are marked as such,
 second is of Documents on Pages of which File Splitting Model ran a prediction of them being first or non-first.</p>
 <p>The initialization would look like this:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">evaluation</span> <span class="o">=</span> <span class="n">FileSplittingEvaluation</span><span class="p">(</span><span class="n">ground_truth_documents</span><span class="o">=</span><span class="n">YOUR_GROUND_TRUTH_LIST</span><span class="p">,</span>
-                                     <span class="n">prediction_documents</span><span class="o">=</span><span class="n">YOUR_PREDICTION_LIST</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">evaluation</span> <span class="o">=</span> <span class="n">FileSplittingEvaluation</span><span class="p">(</span>
+    <span class="n">ground_truth_documents</span><span class="o">=</span><span class="n">YOUR_GROUND_TRUTH_LIST</span><span class="p">,</span> <span class="n">prediction_documents</span><span class="o">=</span><span class="n">YOUR_PREDICTION_LIST</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 <p>The class compares each pair of Pages. If a Page is labeled as first and the model also predicted it as first, it is
@@ -721,18 +636,18 @@ Negative.</p>
 <p>After iterating through all Pages of all Documents, precision, recall and f1 measure are calculated. If you wish to set
 metrics to <code class="docutils literal notranslate"><span class="pre">None</span></code> in case there has been an attempt of zero division, set <code class="docutils literal notranslate"><span class="pre">allow_zero=True</span></code> at the initialization.</p>
 <p>To see a certain metric after the class has been initialized, you can call a metric’s method:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">fn</span><span class="p">())</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">fn</span><span class="p">())</span>
 </pre></div>
 </div>
 <p>It is also possible to look at the metrics calculated by each Category independently. For this, pass
 <code class="docutils literal notranslate"><span class="pre">search=YOUR_CATEGORY_HERE</span></code> when calling the wanted metric’s method:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">fn</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">YOUR_CATEGORY_HERE</span><span class="p">))</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">fn</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">YOUR_CATEGORY</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>For more details, see the <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#evaluation">Python API Documentation</a> on
 Evaluation.</p>
 <section id="example-of-evaluation-input-and-output">
-<h3>Example of evaluation input and output<a class="headerlink" href="#example-of-evaluation-input-and-output" title="Permalink to this headline">¶</a></h3>
+<h4>Example of evaluation input and output<a class="headerlink" href="#example-of-evaluation-input-and-output" title="Permalink to this headline">¶</a></h4>
 <p>Suppose in our test dataset we have 2 Documents of 2 Categories: one 3-paged, consisting of a single file (-&gt; it has
 only one ground-truth first Page) of a first Category, and one 5-paged, consisting of three files: two 2-paged and one
 1-paged (-&gt; it has three ground-truth first Pages), of a second Category.</p>
@@ -740,10 +655,8 @@ only one ground-truth first Page) of a first Category, and one 5-paged, consisti
 <p><em>First document</em></p>
 <img alt="../_images/document_example_2.png" src="../_images/document_example_2.png" />
 <p><em>Second document</em></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># generate the test Documents</span>
-
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Category</span><span class="p">,</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Document</span><span class="p">,</span> <span class="n">Page</span>
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.evaluate</span> <span class="kn">import</span> <span class="n">FileSplittingEvaluation</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Document</span><span class="p">,</span> <span class="n">Page</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.evaluate</span> <span class="kn">import</span> <span class="n">FileSplittingEvaluation</span><span class="p">,</span> <span class="n">EvaluationCalculator</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.file_splitting</span> <span class="kn">import</span> <span class="n">SplittingAI</span>
 
 <span class="c1"># This example builds the Documents from scratch and without uploading a Supported File.</span>
@@ -752,13 +665,14 @@ only one ground-truth first Page) of a first Category, and one 5-paged, consisti
 <span class="n">text_1</span> <span class="o">=</span> <span class="s2">&quot;Hi all,</span><span class="se">\n</span><span class="s2">I like bread.</span><span class="se">\n</span><span class="s2">I hope to get everything done soon.</span><span class="se">\n</span><span class="s2">Have you seen it?&quot;</span>
 <span class="n">document_1</span> <span class="o">=</span> <span class="n">Document</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">YOUR_PROJECT</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="n">YOUR_CATEGORY_1</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">text_1</span><span class="p">,</span> <span class="n">dataset_status</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 <span class="n">_</span> <span class="o">=</span> <span class="n">Page</span><span class="p">(</span>
-        <span class="n">id_</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">original_size</span><span class="o">=</span><span class="p">(</span><span class="mi">320</span><span class="p">,</span> <span class="mi">240</span><span class="p">),</span>
-        <span class="n">document</span><span class="o">=</span><span class="n">document_1</span><span class="p">,</span>
-        <span class="n">start_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-        <span class="n">end_offset</span><span class="o">=</span><span class="mi">21</span><span class="p">,</span>
-        <span class="n">number</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="p">)</span>
+    <span class="n">id_</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">original_size</span><span class="o">=</span><span class="p">(</span><span class="mi">320</span><span class="p">,</span> <span class="mi">240</span><span class="p">),</span>
+    <span class="n">document</span><span class="o">=</span><span class="n">document_1</span><span class="p">,</span>
+    <span class="n">start_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">end_offset</span><span class="o">=</span><span class="mi">21</span><span class="p">,</span>
+    <span class="n">number</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span>
+
 <span class="n">_</span> <span class="o">=</span> <span class="n">Page</span><span class="p">(</span>
     <span class="n">id_</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">original_size</span><span class="o">=</span><span class="p">(</span><span class="mi">320</span><span class="p">,</span> <span class="mi">240</span><span class="p">),</span>
@@ -779,49 +693,14 @@ only one ground-truth first Page) of a first Category, and one 5-paged, consisti
 
 <span class="c1"># As with the previous example Document, you can just retrieve an online Document with</span>
 <span class="c1"># document_2 = project.get_document_by_id(YOUR_DOCUMENT_ID)</span>
-<span class="n">text_2</span> <span class="o">=</span> <span class="s2">&quot;Good evening,</span><span class="se">\n</span><span class="s2">thank you for coming.</span><span class="se">\n</span><span class="s2">Can you give me that?</span><span class="se">\n</span><span class="s2">I need it.</span><span class="se">\n</span><span class="s2">Send it to me.&quot;</span>
+<span class="n">text_2</span> <span class="o">=</span> <span class="s2">&quot;Evening,</span><span class="se">\n</span><span class="s2">thank you for coming.</span><span class="se">\n</span><span class="s2">I like fish.</span><span class="se">\n</span><span class="s2">I need it.</span><span class="se">\n</span><span class="s2">Evening.&quot;</span>
 <span class="n">document_2</span> <span class="o">=</span> <span class="n">Document</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">YOUR_PROJECT</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="n">YOUR_CATEGORY_2</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">text_2</span><span class="p">,</span> <span class="n">dataset_status</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">Page</span><span class="p">(</span>
-    <span class="n">id_</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">original_size</span><span class="o">=</span><span class="p">(</span><span class="mi">320</span><span class="p">,</span> <span class="mi">240</span><span class="p">),</span>
-    <span class="n">document</span><span class="o">=</span><span class="n">document_2</span><span class="p">,</span>
-    <span class="n">start_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-    <span class="n">end_offset</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>
-    <span class="n">number</span><span class="o">=</span><span class="mi">1</span>
-<span class="p">)</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">Page</span><span class="p">(</span>
-    <span class="n">id_</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">original_size</span><span class="o">=</span><span class="p">(</span><span class="mi">320</span><span class="p">,</span> <span class="mi">240</span><span class="p">),</span>
-    <span class="n">document</span><span class="o">=</span><span class="n">document_2</span><span class="p">,</span>
-    <span class="n">start_offset</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span>
-    <span class="n">end_offset</span><span class="o">=</span><span class="mi">34</span><span class="p">,</span>
-    <span class="n">number</span><span class="o">=</span><span class="mi">2</span>
-<span class="p">)</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">Page</span><span class="p">(</span>
-    <span class="n">id_</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">original_size</span><span class="o">=</span><span class="p">(</span><span class="mi">320</span><span class="p">,</span> <span class="mi">240</span><span class="p">),</span>
-    <span class="n">document</span><span class="o">=</span><span class="n">document_2</span><span class="p">,</span>
-    <span class="n">start_offset</span><span class="o">=</span><span class="mi">35</span><span class="p">,</span>
-    <span class="n">end_offset</span><span class="o">=</span><span class="mi">56</span><span class="p">,</span>
-    <span class="n">number</span><span class="o">=</span><span class="mi">3</span>
-<span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">Page</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">original_size</span><span class="o">=</span><span class="p">(</span><span class="mi">320</span><span class="p">,</span> <span class="mi">240</span><span class="p">),</span> <span class="n">document</span><span class="o">=</span><span class="n">document_2</span><span class="p">,</span> <span class="n">start_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">end_offset</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">number</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">Page</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">original_size</span><span class="o">=</span><span class="p">(</span><span class="mi">320</span><span class="p">,</span> <span class="mi">240</span><span class="p">),</span> <span class="n">document</span><span class="o">=</span><span class="n">document_2</span><span class="p">,</span> <span class="n">start_offset</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">end_offset</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">number</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">Page</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">original_size</span><span class="o">=</span><span class="p">(</span><span class="mi">320</span><span class="p">,</span> <span class="mi">240</span><span class="p">),</span> <span class="n">document</span><span class="o">=</span><span class="n">document_2</span><span class="p">,</span> <span class="n">start_offset</span><span class="o">=</span><span class="mi">31</span><span class="p">,</span> <span class="n">end_offset</span><span class="o">=</span><span class="mi">43</span><span class="p">,</span> <span class="n">number</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 <span class="n">_</span><span class="o">.</span><span class="n">is_first_page</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">Page</span><span class="p">(</span>
-    <span class="n">id_</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">original_size</span><span class="o">=</span><span class="p">(</span><span class="mi">320</span><span class="p">,</span> <span class="mi">240</span><span class="p">),</span>
-    <span class="n">document</span><span class="o">=</span><span class="n">document_2</span><span class="p">,</span>
-    <span class="n">start_offset</span><span class="o">=</span><span class="mi">57</span><span class="p">,</span>
-    <span class="n">end_offset</span><span class="o">=</span><span class="mi">67</span><span class="p">,</span>
-    <span class="n">number</span><span class="o">=</span><span class="mi">4</span>
-<span class="p">)</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">Page</span><span class="p">(</span>
-    <span class="n">id_</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">original_size</span><span class="o">=</span><span class="p">(</span><span class="mi">320</span><span class="p">,</span> <span class="mi">240</span><span class="p">),</span>
-    <span class="n">document</span><span class="o">=</span><span class="n">document_2</span><span class="p">,</span>
-    <span class="n">start_offset</span><span class="o">=</span><span class="mi">68</span><span class="p">,</span>
-    <span class="n">end_offset</span><span class="o">=</span><span class="mi">82</span><span class="p">,</span>
-    <span class="n">number</span><span class="o">=</span><span class="mi">5</span>
-<span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">Page</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">original_size</span><span class="o">=</span><span class="p">(</span><span class="mi">320</span><span class="p">,</span> <span class="mi">240</span><span class="p">),</span> <span class="n">document</span><span class="o">=</span><span class="n">document_2</span><span class="p">,</span> <span class="n">start_offset</span><span class="o">=</span><span class="mi">44</span><span class="p">,</span> <span class="n">end_offset</span><span class="o">=</span><span class="mi">54</span><span class="p">,</span> <span class="n">number</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">Page</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">original_size</span><span class="o">=</span><span class="p">(</span><span class="mi">320</span><span class="p">,</span> <span class="mi">240</span><span class="p">),</span> <span class="n">document</span><span class="o">=</span><span class="n">document_2</span><span class="p">,</span> <span class="n">start_offset</span><span class="o">=</span><span class="mi">55</span><span class="p">,</span> <span class="n">end_offset</span><span class="o">=</span><span class="mi">63</span><span class="p">,</span> <span class="n">number</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 <span class="n">_</span><span class="o">.</span><span class="n">is_first_page</span> <span class="o">=</span> <span class="kc">True</span>
 </pre></div>
 </div>
@@ -829,18 +708,26 @@ only one ground-truth first Page) of a first Category, and one 5-paged, consisti
 Page of the Documents through the model’s prediction.</p>
 <p>Let’s say the evaluation gave good results, with only one first Page being predicted as non-first and all the other
 Pages being predicted correctly. An example of how the evaluation would be implemented would be:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">splitting_ai</span> <span class="o">=</span> <span class="n">SplittingAI</span><span class="p">(</span><span class="n">YOUR_MODEL_HERE</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">splitting_ai</span> <span class="o">=</span> <span class="n">SplittingAI</span><span class="p">(</span><span class="n">YOUR_MODEL</span><span class="p">)</span>
 <span class="n">pred_1</span><span class="p">:</span> <span class="n">Document</span> <span class="o">=</span> <span class="n">splitting_ai</span><span class="o">.</span><span class="n">propose_split_documents</span><span class="p">(</span><span class="n">document_1</span><span class="p">,</span> <span class="n">return_pages</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 <span class="n">pred_2</span><span class="p">:</span> <span class="n">Document</span> <span class="o">=</span> <span class="n">splitting_ai</span><span class="o">.</span><span class="n">propose_split_documents</span><span class="p">(</span><span class="n">document_2</span><span class="p">,</span> <span class="n">return_pages</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-<span class="n">evaluation</span> <span class="o">=</span> <span class="n">FileSplittingEvaluation</span><span class="p">(</span><span class="n">ground_truth_documents</span><span class="o">=</span><span class="p">[</span><span class="n">document_1</span><span class="p">,</span> <span class="n">document_2</span><span class="p">],</span>
-                                     <span class="n">prediction_documents</span><span class="o">=</span><span class="p">[</span><span class="n">pred_1</span><span class="p">,</span> <span class="n">pred_2</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">tp</span><span class="p">())</span> <span class="c1"># returns: 3</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">tn</span><span class="p">())</span> <span class="c1"># returns: 4</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">fp</span><span class="p">())</span> <span class="c1"># returns: 0</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">fn</span><span class="p">())</span> <span class="c1"># returns: 1</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">precision</span><span class="p">())</span> <span class="c1"># returns: 1</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">recall</span><span class="p">())</span> <span class="c1"># returns: 0.75</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">f1</span><span class="p">())</span> <span class="c1"># returns: 0.85</span>
+<span class="n">evaluation</span> <span class="o">=</span> <span class="n">FileSplittingEvaluation</span><span class="p">(</span>
+    <span class="n">ground_truth_documents</span><span class="o">=</span><span class="p">[</span><span class="n">document_1</span><span class="p">,</span> <span class="n">document_2</span><span class="p">],</span> <span class="n">prediction_documents</span><span class="o">=</span><span class="p">[</span><span class="n">pred_1</span><span class="p">,</span> <span class="n">pred_2</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">tp</span><span class="p">())</span>
+<span class="c1"># returns: 3</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">tn</span><span class="p">())</span>
+<span class="c1"># returns: 4</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">fp</span><span class="p">())</span>
+<span class="c1"># returns: 0</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">fn</span><span class="p">())</span>
+<span class="c1"># returns: 1</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">precision</span><span class="p">())</span>
+<span class="c1"># returns: 1</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">recall</span><span class="p">())</span>
+<span class="c1"># returns: 0.75</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">f1</span><span class="p">())</span>
+<span class="c1"># returns: 0.85</span>
 </pre></div>
 </div>
 <p>Our results could be reflected in a following table:</p>
@@ -876,13 +763,20 @@ Pages being predicted correctly. An example of how the evaluation would be imple
 </tbody>
 </table>
 <p>If we want to see evaluation results by Category, the implementation of the Evaluation would look like this:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">tp</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">CATEGORY_1</span><span class="p">),</span> <span class="n">evaluation</span><span class="o">.</span><span class="n">tp</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">CATEGORY_2</span><span class="p">))</span> <span class="c1"># returns: 1 2</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">tn</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">CATEGORY_1</span><span class="p">),</span> <span class="n">evaluation</span><span class="o">.</span><span class="n">tn</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">CATEGORY_2</span><span class="p">))</span> <span class="c1"># returns: 2 2</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">fp</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">CATEGORY_1</span><span class="p">),</span> <span class="n">evaluation</span><span class="o">.</span><span class="n">fp</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">CATEGORY_2</span><span class="p">))</span> <span class="c1"># returns: 0 0</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">fn</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">CATEGORY_1</span><span class="p">),</span> <span class="n">evaluation</span><span class="o">.</span><span class="n">fn</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">CATEGORY_2</span><span class="p">))</span> <span class="c1"># returns: 0 1</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">precision</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">CATEGORY_1</span><span class="p">),</span> <span class="n">evaluation</span><span class="o">.</span><span class="n">precision</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">CATEGORY_2</span><span class="p">))</span> <span class="c1"># returns: 1 1</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">recall</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">CATEGORY_1</span><span class="p">),</span> <span class="n">evaluation</span><span class="o">.</span><span class="n">recall</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">CATEGORY_2</span><span class="p">))</span> <span class="c1"># returns: 1 0.66</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">f1</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">CATEGORY_1</span><span class="p">),</span> <span class="n">evaluation</span><span class="o">.</span><span class="n">f1</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">CATEGORY_2</span><span class="p">))</span> <span class="c1"># returns: 1 0.79</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">tp</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">YOUR_CATEGORY_1</span><span class="p">),</span> <span class="n">evaluation</span><span class="o">.</span><span class="n">tp</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">YOUR_CATEGORY_2</span><span class="p">))</span>
+<span class="c1"># returns: 1 2</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">tn</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">YOUR_CATEGORY_1</span><span class="p">),</span> <span class="n">evaluation</span><span class="o">.</span><span class="n">tn</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">YOUR_CATEGORY_2</span><span class="p">))</span>
+<span class="c1"># returns: 2 2</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">fp</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">YOUR_CATEGORY_1</span><span class="p">),</span> <span class="n">evaluation</span><span class="o">.</span><span class="n">fp</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">YOUR_CATEGORY_2</span><span class="p">))</span>
+<span class="c1"># returns: 0 0</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">fn</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">YOUR_CATEGORY_1</span><span class="p">),</span> <span class="n">evaluation</span><span class="o">.</span><span class="n">fn</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">YOUR_CATEGORY_2</span><span class="p">))</span>
+<span class="c1"># returns: 0 1</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">precision</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">YOUR_CATEGORY_1</span><span class="p">),</span> <span class="n">evaluation</span><span class="o">.</span><span class="n">precision</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">YOUR_CATEGORY_2</span><span class="p">))</span>
+<span class="c1"># returns: 1 1</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">recall</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">YOUR_CATEGORY_1</span><span class="p">),</span> <span class="n">evaluation</span><span class="o">.</span><span class="n">recall</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">YOUR_CATEGORY_2</span><span class="p">))</span>
+<span class="c1"># returns: 1 0.66</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">f1</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">YOUR_CATEGORY_1</span><span class="p">),</span> <span class="n">evaluation</span><span class="o">.</span><span class="n">f1</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">YOUR_CATEGORY_2</span><span class="p">))</span>
+<span class="c1"># returns: 1 0.8</span>
 </pre></div>
 </div>
 <p>the output could be reflected in a following table:</p>
@@ -925,7 +819,7 @@ Pages being predicted correctly. An example of how the evaluation would be imple
 <td><p>1</p></td>
 <td><p>1</p></td>
 <td><p>0.66</p></td>
-<td><p>0.79</p></td>
+<td><p>0.8</p></td>
 </tr>
 </tbody>
 </table>
@@ -936,37 +830,38 @@ specify the metrics accordingly at the class’s initialization). Example usage:
 </div>
 </section>
 </section>
+</section>
 <section id="document-categorization">
 <h2>Document Categorization<a class="headerlink" href="#document-categorization" title="Permalink to this headline">¶</a></h2>
 <section id="name-based-categorization-ai">
 <h3>Name-based Categorization AI<a class="headerlink" href="#name-based-categorization-ai" title="Permalink to this headline">¶</a></h3>
 <p>Use the name of the category as an effective fallback logic to categorize documents when no Categorization AI is available:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Document</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.document_categorization</span> <span class="kn">import</span> <span class="n">NameBasedCategorizationAI</span>
 
-<span class="c1"># Set up your project.</span>
+<span class="c1"># Set up your Project.</span>
 <span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
 
-<span class="c1"># Initialize the categorization model.</span>
+<span class="c1"># Initialize the Categorization Model.</span>
 <span class="n">categorization_model</span> <span class="o">=</span> <span class="n">NameBasedCategorizationAI</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
 <span class="n">categorization_model</span><span class="o">.</span><span class="n">categories</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">categories</span>
 
-<span class="c1"># Retrieve a document to categorize.</span>
+<span class="c1"># Retrieve a Document to categorize.</span>
 <span class="n">test_document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
 
-<span class="c1"># The categorization model returns a copy of the SDK Document with category attribute</span>
-<span class="c1"># (use inplace=True to maintain the original document instead).</span>
-<span class="c1"># If the input document is already categorized, the already present category is used</span>
+<span class="c1"># The Categorization Model returns a copy of the SDK Document with Category attribute</span>
+<span class="c1"># (use inplace=True to maintain the original Document instead).</span>
+<span class="c1"># If the input Document is already categorized, the already present Category is used</span>
 <span class="c1"># (use recategorize=True if you want to force a recategorization).</span>
 <span class="n">result_doc</span> <span class="o">=</span> <span class="n">categorization_model</span><span class="o">.</span><span class="n">categorize</span><span class="p">(</span><span class="n">document</span><span class="o">=</span><span class="n">test_document</span><span class="p">)</span>
 
-<span class="c1"># Each page is categorized individually.</span>
+<span class="c1"># Each Page is categorized individually.</span>
 <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">result_doc</span><span class="o">.</span><span class="n">pages</span><span class="p">():</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found category </span><span class="si">{</span><span class="n">page</span><span class="o">.</span><span class="n">category</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">page</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-<span class="c1"># The category of the document is defined when all pages&#39; categories are equal.</span>
-<span class="c1"># If the document contains mixed categories, only the page level category will be defined,</span>
-<span class="c1"># and the document level category will be None.</span>
+<span class="c1"># The Category of the Document is defined when all pages&#39; Categories are equal.</span>
+<span class="c1"># If the Document contains mixed Categories, only the Page level Category will be defined,</span>
+<span class="c1"># and the Document level Category will be None.</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found category </span><span class="si">{</span><span class="n">result_doc</span><span class="o">.</span><span class="n">category</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">result_doc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -974,25 +869,21 @@ specify the metrics accordingly at the class’s initialization). Example usage:
 <section id="working-with-the-category-of-a-document-and-its-individual-pages">
 <h3>Working with the Category of a Document and its individual Pages<a class="headerlink" href="#working-with-the-category-of-a-document-and-its-individual-pages" title="Permalink to this headline">¶</a></h3>
 <p>You can initialize a Document with a Category, which will count as if a human manually revised it.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">MY_PROJECT_ID</span><span class="p">:</span> <span class="nb">int</span>
-<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">MY_PROJECT_ID</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
+<span class="n">my_category</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_category_by_id</span><span class="p">(</span><span class="n">YOUR_CATEGORY_ID</span><span class="p">)</span>
 
-<span class="n">MY_CATEGORY_ID</span><span class="p">:</span> <span class="nb">int</span>
-<span class="n">my_category</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_category_by_id</span><span class="p">(</span><span class="n">MY_CATEGORY_ID</span><span class="p">)</span>
-
-<span class="n">my_document</span> <span class="o">=</span> <span class="n">Document</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;My text.&quot;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="n">my_category</span><span class="p">)</span>
+<span class="n">my_document</span> <span class="o">=</span> <span class="n">Document</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;My text.&quot;</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="n">my_category</span><span class="p">)</span>
 <span class="k">assert</span> <span class="n">my_document</span><span class="o">.</span><span class="n">category</span> <span class="o">==</span> <span class="n">my_category</span>
-<span class="k">assert</span> <span class="n">my_document</span><span class="o">.</span><span class="n">category_is_revised</span> <span class="o">==</span> <span class="kc">True</span>
+<span class="k">assert</span> <span class="n">my_document</span><span class="o">.</span><span class="n">category_is_revised</span> <span class="ow">is</span> <span class="kc">True</span>
 </pre></div>
 </div>
 <p>If a Document is initialized with no Category, it can be manually set later.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">DOCUMENT_ID</span><span class="p">:</span> <span class="nb">int</span>
-<span class="n">document</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">DOCUMENT_ID</span><span class="p">)</span>
-<span class="k">assert</span> <span class="n">document</span><span class="o">.</span><span class="n">category</span> <span class="ow">is</span> <span class="kc">None</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">document</span><span class="o">.</span><span class="n">category</span> <span class="o">==</span> <span class="n">project</span><span class="o">.</span><span class="n">no_category</span>
 <span class="n">document</span><span class="o">.</span><span class="n">set_category</span><span class="p">(</span><span class="n">my_category</span><span class="p">)</span>
 <span class="k">assert</span> <span class="n">document</span><span class="o">.</span><span class="n">category</span> <span class="o">==</span> <span class="n">my_category</span>
-<span class="k">assert</span> <span class="n">document</span><span class="o">.</span><span class="n">category_is_revised</span> <span class="o">==</span> <span class="kc">True</span>
-<span class="c1"># This will set it for all of its pages as well.</span>
+<span class="k">assert</span> <span class="n">document</span><span class="o">.</span><span class="n">category_is_revised</span> <span class="ow">is</span> <span class="kc">True</span>
+<span class="c1"># This will set it for all of its Pages as well.</span>
 <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">document</span><span class="o">.</span><span class="n">pages</span><span class="p">():</span>
     <span class="k">assert</span> <span class="n">page</span><span class="o">.</span><span class="n">category</span> <span class="o">==</span> <span class="n">my_category</span>
 </pre></div>
@@ -1056,9 +947,11 @@ and try it by yourself.</p>
 </section>
 <section id="evaluate-a-trained-extraction-ai-model">
 <h2>Evaluate a Trained Extraction AI Model<a class="headerlink" href="#evaluate-a-trained-extraction-ai-model" title="Permalink to this headline">¶</a></h2>
-<p>In this example we will see how we can evaluate a trained <code class="docutils literal notranslate"><span class="pre">RFExtractionAI</span></code> model. We will assume that we have a trained pickled model available. See <a class="reference external" href="https://dev.konfuzio.com/sdk/examples/examples.html#train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents">here</a> for how to train such a model, and check out the <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#evaluation">Evaluation</a> documentation for more details.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">load_model</span>
+<p>In this example we will see how we can evaluate a trained <code class="docutils literal notranslate"><span class="pre">RFExtractionAI</span></code> model. We will assume that we have a trained
+pickled model available. See <a class="reference external" href="https://dev.konfuzio.com/sdk/examples/examples.html#train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents">here</a>
+for how to train such a model, and check out the <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#evaluation">Evaluation</a>
+documentation for more details.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">load_model</span>
 
 <span class="n">pipeline</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="n">MODEL_PATH</span><span class="p">)</span>
 
@@ -1068,7 +961,7 @@ and try it by yourself.</p>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Full evaluation recall: </span><span class="si">{</span><span class="n">evaluation</span><span class="o">.</span><span class="n">recall</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Full evaluation precision: </span><span class="si">{</span><span class="n">evaluation</span><span class="o">.</span><span class="n">precision</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-<span class="c1"># To get the evaluation of the tokenizer alone</span>
+<span class="c1"># To get the evaluation of the Tokenizer alone</span>
 <span class="n">evaluation</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">evaluate_tokenizer</span><span class="p">()</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tokenizer evaluation F1 score: </span><span class="si">{</span><span class="n">evaluation</span><span class="o">.</span><span class="n">tokenizer_f1</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
@@ -1077,7 +970,7 @@ and try it by yourself.</p>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Label classifier evaluation F1 score: </span><span class="si">{</span><span class="n">evaluation</span><span class="o">.</span><span class="n">clf_f1</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 <span class="c1"># To get the evaluation of the LabelSet given perfect Label classification</span>
-<span class="n">evaluation</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">evaluate_template_clf</span><span class="p">()</span>
+<span class="n">evaluation</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">evaluate_clf</span><span class="p">()</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Label Set evaluation F1 score: </span><span class="si">{</span><span class="n">evaluation</span><span class="o">.</span><span class="n">f1</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -1089,45 +982,41 @@ and try it by yourself.</p>
 <p>You can follow the example below to post annotations of a certain word or expression in the first document uploaded.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">re</span>
 
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Annotation</span><span class="p">,</span> <span class="n">Label</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Annotation</span><span class="p">,</span> <span class="n">Span</span>
 
 <span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
 
-<span class="c1"># Word/expression to annotate in the document</span>
-<span class="c1"># should match an existing one in your document</span>
-<span class="n">input_expression</span> <span class="o">=</span> <span class="s2">&quot;John Smith&quot;</span>
+<span class="c1"># Word/expression to annotate in the Document</span>
+<span class="c1"># should match an existing one in your Document</span>
+<span class="n">input_expression</span> <span class="o">=</span> <span class="s2">&quot;Musterstraße&quot;</span>
 
-<span class="c1"># Label for the annotation</span>
-<span class="n">label_name</span> <span class="o">=</span> <span class="s2">&quot;Name&quot;</span>
-<span class="c1"># Getting the Label from the project</span>
+<span class="c1"># Label for the Annotation</span>
+<span class="n">label_name</span> <span class="o">=</span> <span class="s2">&quot;Lohnart&quot;</span>
+<span class="c1"># Getting the Label from the Project</span>
 <span class="n">my_label</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="n">label_name</span><span class="p">)</span>
 
 <span class="c1"># LabelSet to which the Label belongs</span>
 <span class="n">label_set</span> <span class="o">=</span> <span class="n">my_label</span><span class="o">.</span><span class="n">label_sets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-<span class="c1"># First document in the project</span>
+<span class="c1"># First Document in the Project</span>
 <span class="n">document</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-<span class="c1"># Matches of the word/expression in the document</span>
+<span class="c1"># Matches of the word/expression in the Document</span>
 <span class="n">matches_locations</span> <span class="o">=</span> <span class="p">[(</span><span class="n">m</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">m</span><span class="o">.</span><span class="n">end</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="n">input_expression</span><span class="p">,</span> <span class="n">document</span><span class="o">.</span><span class="n">text</span><span class="p">)]</span>
 
-<span class="c1"># List to save the links to the annotations created</span>
+<span class="c1"># List to save the links to the Annotations created</span>
 <span class="n">new_annotations_links</span> <span class="o">=</span> <span class="p">[]</span>
 
-<span class="c1"># Create annotation for each match</span>
+<span class="c1"># Create Annotation for each match</span>
 <span class="k">for</span> <span class="n">offsets</span> <span class="ow">in</span> <span class="n">matches_locations</span><span class="p">:</span>
     <span class="n">span</span> <span class="o">=</span> <span class="n">Span</span><span class="p">(</span><span class="n">start_offset</span><span class="o">=</span><span class="n">offsets</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">end_offset</span><span class="o">=</span><span class="n">offsets</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
     <span class="n">annotation_obj</span> <span class="o">=</span> <span class="n">Annotation</span><span class="p">(</span>
-        <span class="n">document</span><span class="o">=</span><span class="n">document</span><span class="p">,</span>
-        <span class="n">label</span><span class="o">=</span><span class="n">my_label</span><span class="p">,</span>
-        <span class="n">label_set</span><span class="o">=</span><span class="n">label_set</span><span class="p">,</span>
-        <span class="n">confidence</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
-        <span class="n">spans</span><span class="o">=</span><span class="p">[</span><span class="n">span</span><span class="p">],</span>
-        <span class="n">is_correct</span><span class="o">=</span><span class="kc">True</span>
+        <span class="n">document</span><span class="o">=</span><span class="n">document</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">my_label</span><span class="p">,</span> <span class="n">label_set</span><span class="o">=</span><span class="n">label_set</span><span class="p">,</span> <span class="n">confidence</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">spans</span><span class="o">=</span><span class="p">[</span><span class="n">span</span><span class="p">],</span> <span class="n">is_correct</span><span class="o">=</span><span class="kc">True</span>
     <span class="p">)</span>
     <span class="n">new_annotation_added</span> <span class="o">=</span> <span class="n">annotation_obj</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">new_annotation_added</span><span class="p">:</span>
         <span class="n">new_annotations_links</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">annotation_obj</span><span class="o">.</span><span class="n">get_link</span><span class="p">())</span>
+    <span class="n">annotation_obj</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">delete_online</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">new_annotations_links</span><span class="p">)</span>
 </pre></div>
@@ -1136,24 +1025,25 @@ and try it by yourself.</p>
 <section id="train-label-regex-tokenizer">
 <h2>Train Label Regex Tokenizer<a class="headerlink" href="#train-label-regex-tokenizer" title="Permalink to this headline">¶</a></h2>
 <p>You can use the <code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span></code> package to train a custom Regex tokenizer.</p>
-<p>In this example, you will see how to find regex expressions that match with occurences of the “IBAN” Label in the training data.</p>
+<p>In this example, you will see how to find regex expressions that match with occurrences of the “Lohnart” Label in the
+training data.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.regex</span> <span class="kn">import</span> <span class="n">RegexTokenizer</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.base</span> <span class="kn">import</span> <span class="n">ListTokenizer</span>
 
 <span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
-<span class="n">category</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_category_by_id</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">CATEGORY_ID</span><span class="p">)</span>
+<span class="n">category</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_category_by_id</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_CATEGORY_ID</span><span class="p">)</span>
 
 <span class="n">tokenizer</span> <span class="o">=</span> <span class="n">ListTokenizer</span><span class="p">(</span><span class="n">tokenizers</span><span class="o">=</span><span class="p">[])</span>
 
-<span class="n">iban_label</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="s2">&quot;IBAN&quot;</span><span class="p">)</span>
+<span class="n">label</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="s2">&quot;Lohnart&quot;</span><span class="p">)</span>
 
-<span class="k">for</span> <span class="n">regex</span> <span class="ow">in</span> <span class="n">iban_label</span><span class="o">.</span><span class="n">find_regex</span><span class="p">(</span><span class="n">category</span><span class="o">=</span><span class="n">category</span><span class="p">):</span>
+<span class="k">for</span> <span class="n">regex</span> <span class="ow">in</span> <span class="n">label</span><span class="o">.</span><span class="n">find_regex</span><span class="p">(</span><span class="n">category</span><span class="o">=</span><span class="n">category</span><span class="p">):</span>
     <span class="n">regex_tokenizer</span> <span class="o">=</span> <span class="n">RegexTokenizer</span><span class="p">(</span><span class="n">regex</span><span class="o">=</span><span class="n">regex</span><span class="p">)</span>
     <span class="n">tokenizer</span><span class="o">.</span><span class="n">tokenizers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">regex_tokenizer</span><span class="p">)</span>
 
-<span class="c1"># You can then use it to create an Annotation for every matching string in a document.</span>
-<span class="n">document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">DOCUMENT_ID</span><span class="p">)</span>
+<span class="c1"># You can then use it to create an Annotation for every matching string in a Document.</span>
+<span class="n">document</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
 <span class="n">tokenizer</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -1161,17 +1051,17 @@ and try it by yourself.</p>
 <section id="finding-spans-of-a-label-not-found-by-a-tokenizer">
 <h2>Finding Spans of a Label Not Found by a Tokenizer<a class="headerlink" href="#finding-spans-of-a-label-not-found-by-a-tokenizer" title="Permalink to this headline">¶</a></h2>
 <p>Here is an example of how to use the <code class="docutils literal notranslate"><span class="pre">Label.spans_not_found_by_tokenizer</span></code> method. This will allow you to determine if a RegexTokenizer is suitable at finding the Spans of a Label, or what Spans might have been annotated wrong. Say, you have a number of annotations assigned to the <code class="docutils literal notranslate"><span class="pre">IBAN</span></code> Label and want to know which Spans would not be found when using the WhiteSpace Tokenizer. You can follow this example to find all the relevant Spans.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Annotation</span><span class="p">,</span> <span class="n">Label</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.regex</span> <span class="kn">import</span> <span class="n">WhitespaceTokenizer</span>
 
 <span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
-<span class="n">category</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">categories</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">category</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">categories</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
 <span class="n">tokenizer</span> <span class="o">=</span> <span class="n">WhitespaceTokenizer</span><span class="p">()</span>
 
-<span class="n">iban_label</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="s1">&#39;IBAN&#39;</span><span class="p">)</span>
+<span class="n">label</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="s1">&#39;Austellungsdatum&#39;</span><span class="p">)</span>
 
-<span class="n">spans_not_found</span> <span class="o">=</span> <span class="n">iban_label</span><span class="o">.</span><span class="n">spans_not_found_by_tokenizer</span><span class="p">(</span><span class="n">tokenizer</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="p">[</span><span class="n">category</span><span class="p">])</span>
+<span class="n">spans_not_found</span> <span class="o">=</span> <span class="n">label</span><span class="o">.</span><span class="n">spans_not_found_by_tokenizer</span><span class="p">(</span><span class="n">tokenizer</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="p">[</span><span class="n">category</span><span class="p">])</span>
 
 <span class="k">for</span> <span class="n">span</span> <span class="ow">in</span> <span class="n">spans_not_found</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">span</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">span</span><span class="o">.</span><span class="n">offset_string</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>

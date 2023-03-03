@@ -291,10 +291,7 @@ header <code class="docutils literal notranslate"><span class="pre">Authorizatio
 
 <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://app.konfuzio.com/api/v3/auth/&quot;</span>
 
-<span class="n">payload</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;example@example.org&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;password&quot;</span><span class="p">:</span> <span class="s2">&quot;examplepassword&quot;</span>
-<span class="p">}</span>
+<span class="n">payload</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;example@example.org&quot;</span><span class="p">,</span> <span class="s2">&quot;password&quot;</span><span class="p">:</span> <span class="s2">&quot;examplepassword&quot;</span><span class="p">}</span>
 
 <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="n">payload</span><span class="p">)</span>
 
@@ -304,11 +301,9 @@ header <code class="docutils literal notranslate"><span class="pre">Authorizatio
 <p>To use the token:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">requests</span>
 
-<span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://app.konfuzio.com/api/v3/projects/&quot;</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://app.konfuzio.com/api/v3/auth/&quot;</span>
 
-<span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;Authorization&quot;</span><span class="p">:</span> <span class="s2">&quot;Token bf20d992c0960876157b53745cdd86fad95e6ff4&quot;</span>
-<span class="p">}</span>
+<span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;Authorization&quot;</span><span class="p">:</span> <span class="s2">&quot;Token bf20d992c0960876157b53745cdd86fad95e6ff4&quot;</span><span class="p">}</span>
 
 <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
 
@@ -323,11 +318,9 @@ header <code class="docutils literal notranslate"><span class="pre">Authorizatio
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk</span> <span class="kn">import</span> <span class="n">KONFUZIO_TOKEN</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.api</span> <span class="kn">import</span> <span class="n">konfuzio_session</span>
 
-<span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://app.konfuzio.com/api/v3/projects/&quot;</span>
-
 <span class="c1"># if you ran konfuzio_sdk init, you can run konfuzio_session() without explicitly specifying the token</span>
 <span class="n">session</span> <span class="o">=</span> <span class="n">konfuzio_session</span><span class="p">(</span><span class="n">KONFUZIO_TOKEN</span><span class="p">)</span>
-
+<span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://app.konfuzio.com/api/v3/projects/&quot;</span>
 <span class="n">response</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">())</span>
