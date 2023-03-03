@@ -420,6 +420,12 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         :type allow_empty_categories: bool
         :raises ValueError: When allow_empty_categories is False and no exclusive first-page strings were found for
         at least one Category.
+
+        >>> from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
+        >>> from konfuzio_sdk.data import Project
+        >>> project = Project(id_=46)
+        >>> tokenizer = ConnectedTextTokenizer()
+        >>> model = ContextAwareFileSplittingModel(categories=project.categories, tokenizer=tokenizer).fit()
         """
         for category in self.categories:
             # method exclusive_first_page_strings fetches a set of first-page strings exclusive among the Documents
@@ -443,6 +449,17 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         :param page: A Page to receive first or non-first label.
         :type page: Page
         :return: A Page with a newly predicted is_first_page attribute.
+
+        >>> from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
+        >>> from konfuzio_sdk.data import Project
+        >>> project = Project(id_=46)
+        >>> tokenizer = ConnectedTextTokenizer()
+        >>> test_document = project.get_document_by_id(44865)
+        >>> model = ContextAwareFileSplittingModel(categories=project.categories, tokenizer=tokenizer)
+        >>> model.fit()
+        >>> model.check_is_ready()
+        >>> model.predict(model.tokenizer.tokenize(test_document).pages()[0]).is_first_page
+        True
         """
         self.check_is_ready()
         page.is_first_page = False
@@ -496,7 +513,7 @@ class SplittingAI:
         if not AbstractFileSplittingModel.has_compatible_interface(model):
             raise ValueError("The model is not inheriting from AbstractFileSplittingModel class.")
         self.model = model
-        if type(self.model) == ContextAwareFileSplittingModel:
+        if not self.model.requires_images:
             self.tokenizer = self.model.tokenizer
 
     def _suggest_first_pages(self, document: Document, inplace: bool = False) -> List[Document]:
@@ -612,3 +629,9 @@ class SplittingAI:
             pred_docs.append(predictions[0])
         self.full_evaluation = FileSplittingEvaluation(original_docs, pred_docs)
         return self.full_evaluation
+
+
+if __name__ == "__main__":
+    import doctest
+
+    doctest.testmod()
