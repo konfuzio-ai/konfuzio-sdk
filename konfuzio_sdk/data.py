@@ -104,6 +104,7 @@ class Page(Data):
         original_size: Tuple[float, float],
         start_offset: Optional[int] = None,
         end_offset: Optional[int] = None,
+        copy_of_id: Optional[int] = None,
     ):
         """Create a Page for a Document."""
         self.id_ = id_
@@ -118,6 +119,7 @@ class Page(Data):
             self.start_offset = sum([len(page_text) for page_text in page_texts[: self.index]]) + self.index
             self.end_offset = self.start_offset + len(page_texts[self.index])
 
+        self.copy_of_id = copy_of_id
         self.image = None
         self._original_size = original_size
         self.width = self._original_size[0]
@@ -163,7 +165,8 @@ class Page(Data):
     def get_image(self, update: bool = False):
         """Get Document Page as PNG."""
         if self.document.status[0] == 2 and (not is_file(self.image_path, raise_exception=False) or update):
-            png_content = get_page_image(self.id_)
+            page_id = self.id_ if self.id_ else self.copy_of_id
+            png_content = get_page_image(page_id)
             with open(self.image_path, "wb") as f:
                 f.write(png_content)
                 self.image = Image.open(io.BytesIO(png_content))
@@ -2385,11 +2388,13 @@ class Document(Data):
             bbox=self.get_bbox(),
         )
         for page in self.pages():
+            copy_id = page.id_ if page.id_ else page.copy_of_id
             _ = Page(
                 id_=None,
                 document=document,
                 start_offset=page.start_offset,
                 end_offset=page.end_offset,
+                copy_of_id=copy_id,
                 number=page.number,
                 original_size=(page.width, page.height),
             )
@@ -3150,11 +3155,12 @@ class Document(Data):
             pages_text = self.text[start_page.start_offset : end_page.end_offset]
         else:
             pages_text = self.text[start_page.start_offset : end_page.start_offset]
-        new_doc = Document(project=self.project, id_=None, text=pages_text)
+        new_doc = Document(project=self.project, id_=None, text=pages_text, category=self.category)
         i = 1
         start_offset = 0
         for page in self.pages():
             end_offset = start_offset + len(page.text)
+            page_id = page.id_ if page.id_ else page.copy_of_id
             if include:
                 if page.number in range(start_page.number, end_page.number + 1):
                     _ = Page(
@@ -3163,6 +3169,7 @@ class Document(Data):
                         document=new_doc,
                         start_offset=start_offset,
                         end_offset=end_offset,
+                        copy_of_id=page_id,
                         number=i,
                     )
                     i += 1
@@ -3175,6 +3182,7 @@ class Document(Data):
                         document=new_doc,
                         start_offset=start_offset,
                         end_offset=end_offset,
+                        copy_of_id=page_id,
                         number=i,
                     )
                     i += 1
