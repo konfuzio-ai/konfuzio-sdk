@@ -39,7 +39,11 @@ These changes are for the tokenizers/new SDK branch.
 - A bug during the extraction post-processing steps, which was causing the first line items of each page to be skipped ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9561))
 -->
 
-## Next Release (estimated release date: 6th March 2023)
+## Next Release (estimated release date: 20th March 2023)
+
+Upcoming...
+
+## released-2023-03-06_21-09-18
 
 This version uses Konfuzio Trainer in version v.0.3.23, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Document Validation UI in version 0.1.2.
 
