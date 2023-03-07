@@ -41,7 +41,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.utils.validation import check_is_fitted
 from tabulate import tabulate
 
-from konfuzio_sdk.data import Data, Document, Annotation, Category, AnnotationSet, Label, LabelSet, Span
+from konfuzio_sdk.data import Data, Document, Annotation, Category, AnnotationSet, Label, LabelSet, Span  # , Page
 
 from konfuzio_sdk.normalize import (
     normalize_to_float,
@@ -1885,6 +1885,8 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         self.output_dir = None
 
+        # self.doc_object = Document
+
     def features(self, document: Document):
         """Calculate features using the best working default values that can be overwritten with self values."""
         logger.info(f"Starting {document} feature calculation.")
@@ -2040,9 +2042,74 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         self.tokenizer.found_spans(virtual_doc)
 
         # join document Spans into multi-line Annotation
-        virtual_doc.merge_vertical()
+        # virtual_doc.merge_vertical()
+        virtual_doc = self.merge_vertical(virtual_doc)
 
         return virtual_doc
+
+    def merge_vertical(self, document: Document, only_multiline_labels=True):
+        """
+        Merge Annotations with the same Label.
+
+        See more details at https://dev.konfuzio.com/sdk/explanations.html#vertical-merge
+
+        :param document: Document whose Annotations should be merged vertically
+        :param only_multiline_labels: Only merge if a multiline Label Annotation is in the Category Training set
+        """
+        logger.info("Vertical merging Annotations.")
+        labels_dict = {}
+        for label in self.category.labels:
+            if not only_multiline_labels or label.has_multiline_annotations():
+                labels_dict[label.name] = []
+
+        for annotation in document.annotations(use_correct=False, ignore_below_threshold=True):
+            if annotation.label.name in labels_dict:
+                labels_dict[annotation.label.name].append(annotation)
+
+        for label_id in labels_dict:
+            buffer = []
+            for annotation in labels_dict[label_id]:
+                for span in annotation.spans:
+                    # remove all spans in buffer more than 1 line apart
+                    while buffer and span.line_index > buffer[0].line_index + 1:
+                        buffer.pop(0)
+
+                    if buffer and buffer[-1].page != span.page:
+                        buffer = [span]
+                        continue
+
+                    if len(annotation.spans) > 1:
+                        buffer.append(span)
+                        continue
+
+                    for candidate in buffer:
+                        # only looking for elements in line above
+                        if candidate.line_index == span.line_index:
+                            break
+
+                        # Merge if there is overlap in the horizontal direction or if only separated by a line break
+                        # AND if the AnnotationSets are the same or if the Annotation is alone in its AnnotationSet
+                        if (
+                            (not (span.bbox().x0 > candidate.bbox().x1 or span.bbox().x1 < candidate.bbox().x0))
+                            or document.text[candidate.end_offset : span.start_offset]
+                            .replace(' ', '')
+                            .replace('\n', '')
+                            == ''
+                        ) and (
+                            span.annotation.annotation_set is candidate.annotation.annotation_set
+                            or len(
+                                span.annotation.annotation_set.annotations(
+                                    use_correct=False, ignore_below_threshold=True
+                                )
+                            )
+                            == 1
+                        ):
+                            span.annotation.delete(delete_online=False)
+                            span.annotation = None
+                            candidate.annotation.add_span(span)
+                            buffer.remove(candidate)
+                    buffer.append(span)
+        return document
 
     def separate_labels(self, res_dict: 'Dict') -> 'Dict':
         """

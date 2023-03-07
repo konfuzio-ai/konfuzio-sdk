@@ -2962,6 +2962,7 @@ class Document(Data):
 
         :param only_multiline_labels: Only merge if a multiline Label Annotation is in the Category Training set
         """
+        logger.warning('You use merge_vertical on Document Level which is legacy.')
         logger.info("Vertical merging Annotations.")
         labels_dict = {}
         for label in self.category.labels:
