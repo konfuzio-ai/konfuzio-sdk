@@ -304,8 +304,8 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         txt_x = Dense(units=768, activation="relu")(txt_input)
         txt_x = Flatten()(txt_x)
         txt_x = Dense(units=256 * self.scale, activation="relu")(txt_x)
-        img_input = Input(shape=(224, 224, 4), name='image')
-        img_x = Conv2D(input_shape=(224, 224, 4), filters=64, kernel_size=(3, 3), padding="same", activation="relu")(
+        img_input = Input(shape=(224, 224, 3), name='image')
+        img_x = Conv2D(input_shape=(224, 224, 3), filters=64, kernel_size=(3, 3), padding="same", activation="relu")(
             img_input
         )
         img_x = Conv2D(filters=64, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
