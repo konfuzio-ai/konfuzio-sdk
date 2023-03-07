@@ -2031,9 +2031,9 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         res_dict = self.merge_horizontal(res_dict, inference_document.text)
 
         # Try to calculate sections based on template classifier.
-        if self.label_set_clf is not None:  # todo smarter handling of multiple clf
+        if self.label_set_clf is not None and res_dict:  # todo smarter handling of multiple clf
             res_dict = self.extract_template_with_clf(inference_document.text, res_dict)
-            res_dict[self.no_label_set_name] = no_label_res_dict
+        res_dict[self.no_label_set_name] = no_label_res_dict
 
         if self.use_separate_labels:
             res_dict = self.separate_labels(res_dict)

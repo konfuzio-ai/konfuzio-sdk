@@ -444,7 +444,7 @@ class Bbox:
                 handler=handler,
             )
 
-        if self.y1 > self.page.height:
+        if int(self.y1) > self.page.height:
             exception_or_log_error(
                 msg=f'{self} exceeds height of {self.page}.',
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
@@ -452,7 +452,7 @@ class Bbox:
                 handler=handler,
             )
 
-        if self.x1 > self.page.width:
+        if int(self.x1) > self.page.width:
             exception_or_log_error(
                 msg=f'{self} exceeds width of {self.page}.',
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
