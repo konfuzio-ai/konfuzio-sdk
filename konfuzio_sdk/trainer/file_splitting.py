@@ -361,7 +361,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         txt_data = [output.pooler_output]
         txt_data = [np.asarray(x).astype('float32') for x in txt_data]
         txt_data = np.asarray(txt_data)
-        image = Image.open(page.image_path)
+        image = Image.open(page.image_path).convert('RGB')
         image = image.resize((224, 224))
         image = img_to_array(image)
         image = image.reshape((1, image.shape[0], image.shape[1], image.shape[2]))
