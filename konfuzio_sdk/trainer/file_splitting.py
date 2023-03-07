@@ -243,11 +243,12 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         """
         images = []
         for page_image_path in page_image_paths:
-            image = Image.open(page_image_path)
+            image = Image.open(page_image_path).convert('RGB')
             image = image.resize((224, 224))
             image = img_to_array(image)
             image = image.reshape((1, image.shape[0], image.shape[1], image.shape[2]))
-            image = preprocess_input(image)
+            image = image[..., ::-1]
+            image[0] -= 103.939
             images.append(image)
         return images
 
