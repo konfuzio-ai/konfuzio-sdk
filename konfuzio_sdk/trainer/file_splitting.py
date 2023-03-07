@@ -30,7 +30,6 @@ from copy import deepcopy
 from inspect import signature
 from PIL import Image
 from tensorflow.keras import Input
-from tensorflow.keras.applications.vgg19 import preprocess_input
 from tensorflow.keras.layers import Dense, Conv2D, MaxPool2D, Flatten, Concatenate
 from tensorflow.keras.models import Model
 from tensorflow.keras.preprocessing.image import img_to_array
@@ -366,7 +365,8 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         image = image.resize((224, 224))
         image = img_to_array(image)
         image = image.reshape((1, image.shape[0], image.shape[1], image.shape[2]))
-        image = preprocess_input(image)
+        image = image[..., ::-1]
+        image[0] -= 103.939
         img_data = np.concatenate([image])
         preprocessed = [img_data.reshape((1, 224, 224, 3)), txt_data.reshape((1, 1, 768))]
         if not use_gpu:
