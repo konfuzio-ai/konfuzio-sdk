@@ -68,8 +68,10 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
         for category in categories:
             if not isinstance(category, Category):
                 raise ValueError("All elements of the list have to be Categories.")
-            if not category.documents():
-                raise ValueError(f'{category} does not have Documents and cannot be used for training.')
+        nonempty_categories = [category for category in categories if category.documents()]
+        if not nonempty_categories:
+            raise ValueError("At least one Category has to have Documents for training the model.")
+        for category in nonempty_categories:
             if not category.test_documents():
                 raise ValueError(f'{category} does not have test Documents.')
         self.categories = categories
