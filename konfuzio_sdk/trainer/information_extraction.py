@@ -1710,8 +1710,11 @@ class GroupAnnotationSets:
         return global_df.fillna(0)
 
     def extract_template_with_clf(self, text, res_dict):
-        """Run template classifier to calculate sections."""
-        logger.info('Extract sections.')
+        """Run LabelSet classifier to find AnnotationSets."""
+        logger.info('Extract AnnotationSets.')
+        if not res_dict:
+            logger.warning('res_dict is empty')
+            return res_dict
         n_nearest = self.n_nearest_template if hasattr(self, 'n_nearest_template') else 0
         feature_df = self.build_document_template_feature_X(text, dict_to_dataframe(res_dict)).filter(
             self.template_feature_list, axis=1
