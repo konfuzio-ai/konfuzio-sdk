@@ -247,7 +247,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
             image = img_to_array(image)
             image = image.reshape((1, image.shape[0], image.shape[1], image.shape[2]))
             image = image[..., ::-1]  # replacement of keras's preprocess_input implementation because of dimensionality
-            image[0] -= 103.939  # zero-centering color channel
+            image[0] -= 103.939
             images.append(image)
         return images
 
