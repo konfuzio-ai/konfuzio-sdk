@@ -33,6 +33,7 @@ from konfuzio_sdk.api import (
 )
 from konfuzio_sdk.normalize import normalize
 from konfuzio_sdk.regex import get_best_regex, regex_matches, suggest_regex_for_string, merge_regex
+from konfuzio_sdk.tokenizer.regex import RegexTokenizer
 from konfuzio_sdk.urls import get_annotation_view_url
 from konfuzio_sdk.utils import (
     is_file,
@@ -958,8 +959,8 @@ class Label(Data):
 
         Example:
             Three Annotations about the birthdate in two Documents and one regex to be evaluated
-            1.doc: "My was born at the 12th of December 1980, you could also say 12.12.1980." (2 Annotations)
-            2.doc: "My was born at 12.06.1997." (1 Annotations)
+            1.doc: "My was born on the 12th of December 1980, you could also say 12.12.1980." (2 Annotations)
+            2.doc: "My was born on 12.06.1997." (1 Annotations)
             regex: dd.dd.dddd (without escaped characters for easier reading)
             stats:
                   total_correct_findings: 2
@@ -1218,6 +1219,31 @@ class Label(Data):
         self._evaluations = {}
         self._tokens = {}
         self._regex = {}
+
+    def get_probable_outliers(self, use_test_docs: bool = False) -> List['Annotation']:
+        """
+        Get a list of Annotations that come from the least precise regex.
+
+        :param use_test_docs: Whether the evaluation of the regex happens on test Documents or training Documents.
+        :type use_test_docs: bool
+        """
+        true_positives = {}
+        if use_test_docs:
+            documents = self.project.test_documents
+        else:
+            documents = self.project.documents
+        for regex in self.regex(categories=self.project.categories):
+            for document in documents:
+                evaluation = document.evaluate_regex(regex, self)
+                true_positives[regex] += evaluation['count_correct_annotations']
+        min_tps_regex = min(true_positives, key=true_positives.get)
+        tokenizer = RegexTokenizer(min_tps_regex)
+        outliers = []
+        for annotation in self.annotations(categories=self.project.categories):
+            for span in annotation.spans:
+                if tokenizer.span_match(span):
+                    outliers.append(annotation)
+        return outliers
 
     # def save(self) -> bool:
     #     """
