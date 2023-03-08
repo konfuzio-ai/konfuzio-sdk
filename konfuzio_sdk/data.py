@@ -406,71 +406,76 @@ class Bbox:
         """Define that one Bounding Box on the same page is identical."""
         return self.__hash__() == other.__hash__()
 
-    def _valid(self, validation=BboxValidationTypes.ALLOW_ZERO_SIZE, handler="sdk_validation"):
+    def _valid(
+            self, validation=BboxValidationTypes.ALLOW_ZERO_SIZE, handler="sdk_validation"
+    ):
         """
-        Validate contained data.
+        Validates the coordinates of the Bounding Box contained in the object, raising a ValueError exception in case
+        of invalid coordinates. Rounded to two decimals, which can be updated in the future if needed.
 
         :param validation: One of ALLOW_ZERO_SIZE (default), STRICT, or DISABLED. Also see the `Bbox` class.
         """
-        if self.x0 == self.x1:
+        round_decimals = 2
+
+        if round(self.x0, round_decimals) == round(self.x1, round_decimals):
             exception_or_log_error(
-                msg=f'{self} has no width in {self.page}.',
+                msg=f"{self} has no width in {self.page}.",
                 fail_loudly=validation is BboxValidationTypes.STRICT,
                 exception_type=ValueError,
                 handler=handler,
             )
 
-        if self.x0 > self.x1:
+        if round(self.x0, round_decimals) > round(self.x1, round_decimals):
             exception_or_log_error(
-                msg=f'{self} has negative width in {self.page}.',
+                msg=f"{self} has negative width in {self.page}.",
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
                 handler=handler,
             )
 
-        if self.y0 == self.y1:
+        if round(self.y0, round_decimals) == round(self.y1, round_decimals):
             exception_or_log_error(
-                msg=f'{self} has no height in {self.page}.',
+                msg=f"{self} has no height in {self.page}.",
                 fail_loudly=validation is BboxValidationTypes.STRICT,
                 exception_type=ValueError,
                 handler=handler,
             )
 
-        if self.y0 > self.y1:
+        if round(self.y0, round_decimals) > round(self.y1, round_decimals):
             exception_or_log_error(
-                msg=f'{self} has negative height in {self.page}.',
+                msg=f"{self} has negative height in {self.page}.",
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
                 handler=handler,
             )
 
-        if self.y1 > self.page.height:
+        if round(self.y1, round_decimals) > round(self.page.height, round_decimals):
             exception_or_log_error(
-                msg=f'{self} exceeds height of {self.page}.',
+                msg=f"{self} exceeds height of {self.page}.",
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
                 handler=handler,
             )
 
-        if self.x1 > self.page.width:
+        if round(self.x1, round_decimals) > round(self.page.width, round_decimals):
             exception_or_log_error(
-                msg=f'{self} exceeds width of {self.page}.',
+                msg=f"{self} exceeds width of {self.page}.",
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
                 handler=handler,
             )
 
-        if self.y0 < 0:
+        if round(self.y0, round_decimals) < 0:
             exception_or_log_error(
-                msg=f'{self} has negative y coordinate in {self.page}.',
+                msg=f"{self} has negative y coordinate in {self.page}.",
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
                 handler=handler,
             )
 
-        if self.x0 < 0:
+        if round(self.x0, round_decimals) < 0:
             exception_or_log_error(
-                msg=f'{self} has negative x coordinate in {self.page}.',
+                msg=f"{self} has negative x coordinate in {self.page}.",
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
                 handler=handler,
