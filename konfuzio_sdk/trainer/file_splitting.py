@@ -30,7 +30,6 @@ from copy import deepcopy
 from inspect import signature
 from PIL import Image
 from tensorflow.keras import Input
-from tensorflow.keras.applications.vgg19 import preprocess_input
 from tensorflow.keras.layers import Dense, Conv2D, MaxPool2D, Flatten, Concatenate
 from tensorflow.keras.models import Model
 from tensorflow.keras.preprocessing.image import img_to_array
@@ -68,8 +67,10 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
         for category in categories:
             if not isinstance(category, Category):
                 raise ValueError("All elements of the list have to be Categories.")
-            if not category.documents():
-                raise ValueError(f'{category} does not have Documents and cannot be used for training.')
+        nonempty_categories = [category for category in categories if category.documents()]
+        if not nonempty_categories:
+            raise ValueError("At least one Category has to have Documents for training the model.")
+        for category in nonempty_categories:
             if not category.test_documents():
                 raise ValueError(f'{category} does not have test Documents.')
         self.categories = categories
@@ -241,11 +242,12 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         """
         images = []
         for page_image_path in page_image_paths:
-            image = Image.open(page_image_path)
+            image = Image.open(page_image_path).convert('RGB')
             image = image.resize((224, 224))
             image = img_to_array(image)
             image = image.reshape((1, image.shape[0], image.shape[1], image.shape[2]))
-            image = preprocess_input(image)
+            image = image[..., ::-1]  # replacement of keras's preprocess_input implementation because of dimensionality
+            image[0] -= 103.939
             images.append(image)
         return images
 
@@ -301,8 +303,8 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         txt_x = Dense(units=768, activation="relu")(txt_input)
         txt_x = Flatten()(txt_x)
         txt_x = Dense(units=256 * self.scale, activation="relu")(txt_x)
-        img_input = Input(shape=(224, 224, 4), name='image')
-        img_x = Conv2D(input_shape=(224, 224, 4), filters=64, kernel_size=(3, 3), padding="same", activation="relu")(
+        img_input = Input(shape=(224, 224, 3), name='image')
+        img_x = Conv2D(input_shape=(224, 224, 3), filters=64, kernel_size=(3, 3), padding="same", activation="relu")(
             img_input
         )
         img_x = Conv2D(filters=64, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
@@ -359,13 +361,14 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         txt_data = [output.pooler_output]
         txt_data = [np.asarray(x).astype('float32') for x in txt_data]
         txt_data = np.asarray(txt_data)
-        image = Image.open(page.image_path)
+        image = Image.open(page.image_path).convert('RGB')
         image = image.resize((224, 224))
         image = img_to_array(image)
         image = image.reshape((1, image.shape[0], image.shape[1], image.shape[2]))
-        image = preprocess_input(image)
+        image = image[..., ::-1]
+        image[0] -= 103.939
         img_data = np.concatenate([image])
-        preprocessed = [img_data.reshape((1, 224, 224, 4)), txt_data.reshape((1, 1, 768))]
+        preprocessed = [img_data.reshape((1, 224, 224, 3)), txt_data.reshape((1, 1, 768))]
         if not use_gpu:
             with tf.device('/cpu:0'):
                 prediction = self.model.predict(preprocessed, verbose=0)[0, 0]
