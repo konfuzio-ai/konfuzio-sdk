@@ -67,7 +67,7 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
     def test_init_file_splitting_model_category_no_documents(self):
         """Test passing a Category that does not have Documents."""
         _ = Category(project=self.project, id_=5, name="CategoryName 5")
-        with pytest.raises(ValueError, match="does not have Documents"):
+        with pytest.raises(ValueError, match="At least one Category"):
             ContextAwareFileSplittingModel(categories=[_], tokenizer=ConnectedTextTokenizer())
 
     def test_init_file_splitting_model_category_no_test_documents(self):
