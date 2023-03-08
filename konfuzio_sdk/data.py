@@ -410,8 +410,7 @@ class Bbox:
             self, validation=BboxValidationTypes.ALLOW_ZERO_SIZE, handler="sdk_validation"
     ):
         """
-        Validates the coordinates of the Bounding Box contained in the object, raising a ValueError exception in case
-        of invalid coordinates. Rounded to two decimals, which can be updated in the future if needed.
+        Validate the coordinates of the Bounding Box contained in the Bbox, raising a ValueError exception in case.
 
         :param validation: One of ALLOW_ZERO_SIZE (default), STRICT, or DISABLED. Also see the `Bbox` class.
         """
