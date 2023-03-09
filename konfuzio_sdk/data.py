@@ -533,7 +533,7 @@ class AnnotationSet(Data):
         return annotations
 
     @property
-    def start_offset(self):
+    def start_offset(self) -> Optional[int]:
         """Calculate the earliest start based on all Annotations above detection threshold in this AnnotationSet."""
         return min(
             (s.start_offset for a in self.annotations(use_correct=False, ignore_below_threshold=True) for s in a.spans),
@@ -541,21 +541,21 @@ class AnnotationSet(Data):
         )
 
     @property
-    def start_line_index(self):
+    def start_line_index(self) -> Optional[int]:
         """Calculate starting line of this Annotation Set."""
         if self.start_offset is None:
             return None
         return self.document.text[0 : self.start_offset].count('\n')
 
     @property
-    def end_offset(self):
-        """Calculate the end based on all Annotations above detection threshold currently in this Annotation Set."""
+    def end_offset(self) -> Optional[int]:
+        """Calculate the end based on all Annotations above detection threshold currently in this AnnotationSet."""
         return max(
             (a.end_offset for a in self.annotations(use_correct=False, ignore_below_threshold=True)), default=None
         )
 
     @property
-    def end_line_index(self):
+    def end_line_index(self) -> Optional[int]:
         """Calculate ending line of this Annotation Set."""
         if self.end_offset is None:
             return None
