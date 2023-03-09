@@ -1036,38 +1036,6 @@ def generate_feature_dict_from_occurence_dict(occurence_dict, catchphrase_list, 
     return _dict
 
 
-def add_extractions_as_annotations(
-    extractions: pandas.DataFrame, document: Document, label: Label, label_set: LabelSet, annotation_set: AnnotationSet
-) -> None:
-    """Add the extraction of a model to the document."""
-    if not isinstance(extractions, pandas.DataFrame):
-        raise TypeError(f'Provided extraction object should be a Dataframe, got a {type(extractions)} instead')
-    if not extractions.empty:
-        # TODO: define required fields
-        required_fields = ['start_offset', 'end_offset', 'confidence']
-        if not set(required_fields).issubset(extractions.columns):
-            raise ValueError(
-                f'Extraction do not contain all required fields: {required_fields}.'
-                f' Extraction columns: {extractions.columns.to_list()}'
-            )
-
-        extracted_spans = extractions[required_fields].sort_values(by='confidence', ascending=False)
-
-        for span in extracted_spans.to_dict('records'):  # todo: are start_offset and end_offset always ints?
-            annotation = Annotation(
-                document=document,
-                label=label,
-                confidence=span['confidence'],
-                label_set=label_set,
-                annotation_set=annotation_set,
-                spans=[Span(start_offset=span['start_offset'], end_offset=span['end_offset'])],
-            )
-            if annotation.spans[0].offset_string is None:
-                raise NotImplementedError(
-                    f"Extracted {annotation} does not have a correspondence in the " f"text of {document}."
-                )
-
-
 class BaseModel(metaclass=abc.ABCMeta):
     """Base model to define common methods for all AIs."""
 
@@ -1268,46 +1236,83 @@ class Trainer(BaseModel):
 
         # define Annotation Set for the Category Label Set: todo: this is unclear from API side
         # default Annotation Set will be always added even if there are no predictions for it
-        category_label_set = self.category.project.get_label_set_by_id(self.category.id_)
-        virtual_default_annotation_set = AnnotationSet(
-            document=virtual_doc, label_set=category_label_set, id_=virtual_annotation_set_id
-        )
+        # category_label_set = self.category.project.get_label_set_by_id(self.category.id_)
+        # virtual_default_annotation_set = AnnotationSet(
+        #     document=virtual_doc, label_set=category_label_set, id_=virtual_annotation_set_id
+        # )
 
         for label_or_label_set_name, information in extraction_result.items():
-            if isinstance(information, pandas.DataFrame) and not information.empty:
-                # annotations belong to the default Annotation Set
-                label = self.category.project.get_label_by_name(label_or_label_set_name)
-                add_extractions_as_annotations(
-                    document=virtual_doc,
-                    extractions=information,
-                    label=label,
-                    label_set=category_label_set,
-                    annotation_set=virtual_default_annotation_set,
+            # if isinstance(information, pandas.DataFrame) and not information.empty:
+            #     # annotations belong to the default Annotation Set
+            #     label = self.category.project.get_label_by_name(label_or_label_set_name)
+            #     add_extractions_as_annotations(
+            #         document=virtual_doc,
+            #         extractions=information,
+            #         label=label,
+            #         label_set=category_label_set,
+            #         annotation_set=virtual_default_annotation_set,
+            #     )
+
+            # elif isinstance(information, list) or isinstance(information, dict):
+            # process multi Annotation Sets that are not part of the category Label Set
+            label_set = self.category.project.get_label_set_by_name(label_or_label_set_name)
+
+            if not isinstance(information, list):
+                information = [information]
+
+            for entry in information:  # represents one of pot. multiple annotation-sets belonging of one LabelSet
+                virtual_annotation_set = AnnotationSet(
+                    document=virtual_doc, label_set=label_set, id_=virtual_annotation_set_id
                 )
 
-            elif isinstance(information, list) or isinstance(information, dict):
-                # process multi Annotation Sets that are not part of the category Label Set
-                label_set = self.category.project.get_label_set_by_name(label_or_label_set_name)
-
-                if not isinstance(information, list):
-                    information = [information]
-
-                for entry in information:  # represents one of pot. multiple annotation-sets belonging of one LabelSet
-                    virtual_annotation_set_id += 1
-                    virtual_annotation_set = AnnotationSet(
-                        document=virtual_doc, label_set=label_set, id_=virtual_annotation_set_id
+                for label_name, extractions in entry.items():
+                    label = self.category.project.get_label_by_name(label_name)
+                    self.add_extractions_as_annotations(
+                        document=virtual_doc,
+                        extractions=extractions,
+                        label=label,
+                        label_set=label_set,
+                        annotation_set=virtual_annotation_set,
                     )
+                virtual_annotation_set_id += 1
 
-                    for label_name, extractions in entry.items():
-                        label = self.category.project.get_label_by_name(label_name)
-                        add_extractions_as_annotations(
-                            document=virtual_doc,
-                            extractions=extractions,
-                            label=label,
-                            label_set=label_set,
-                            annotation_set=virtual_annotation_set,
-                        )
         return virtual_doc
+
+    @staticmethod
+    def add_extractions_as_annotations(
+        extractions: pandas.DataFrame,
+        document: Document,
+        label: Label,
+        label_set: LabelSet,
+        annotation_set: AnnotationSet,
+    ) -> None:
+        """Add the extraction of a model to the document."""
+        if not isinstance(extractions, pandas.DataFrame):
+            raise TypeError(f'Provided extraction object should be a Dataframe, got a {type(extractions)} instead')
+        if not extractions.empty:
+            # TODO: define required fields
+            required_fields = ['start_offset', 'end_offset', 'confidence']
+            if not set(required_fields).issubset(extractions.columns):
+                raise ValueError(
+                    f'Extraction do not contain all required fields: {required_fields}.'
+                    f' Extraction columns: {extractions.columns.to_list()}'
+                )
+
+            extracted_spans = extractions[required_fields].sort_values(by='confidence', ascending=False)
+
+            for span in extracted_spans.to_dict('records'):  # todo: are start_offset and end_offset always ints?
+                annotation = Annotation(
+                    document=document,
+                    label=label,
+                    confidence=span['confidence'],
+                    label_set=label_set,
+                    annotation_set=annotation_set,
+                    spans=[Span(start_offset=span['start_offset'], end_offset=span['end_offset'])],
+                )
+                if annotation.spans[0].offset_string is None:
+                    raise NotImplementedError(
+                        f"Extracted {annotation} does not have a correspondence in the " f"text of {document}."
+                    )
 
     @classmethod
     def merge_horizontal(cls, res_dict: Dict, doc_text: str) -> Dict:
