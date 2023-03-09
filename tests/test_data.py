@@ -1884,6 +1884,42 @@ class TestOfflineDataSetup(unittest.TestCase):
         )
         assert not _.is_first_page
 
+    def test_bbox_rounding(self):
+        """Test that Bbox coordinates are rounded correctly in the `_valid` method."""
+        # Initialize a Page with a width and height of 1000
+        page = Page(
+            id_=1,
+            number=1,
+            original_size=(1000, 1000),
+            document=self.document,
+            start_offset=0,
+            end_offset=1,
+        )
+
+        # Test a Bbox with coordinates that exceed the height and width of the document, unless rounded.
+        valid_height_width = 1000.005  # round(n, 2) = 1000.0
+        bbox_valid = Bbox(
+            x0=valid_height_width,
+            x1=valid_height_width,
+            y0=valid_height_width,
+            y1=valid_height_width,
+            page=page,
+        )
+        # Validate that the `_valid` method returns None, indicating that the Bbox coordinates were correctly rounded
+        self.assertIsNone(bbox_valid._valid())
+
+        # Test a Bbox with coordinates that exceed the height and width of the document, even when rounded
+        invalid_height_width = 1000.006  # round(n, 2) = 1000.01
+        with self.assertRaises(ValueError):
+            bbox_invalid = Bbox(
+                x0=invalid_height_width,
+                x1=invalid_height_width,
+                y0=invalid_height_width,
+                y1=invalid_height_width,
+                page=page,
+            )
+            bbox_invalid._valid()
+
 
 class TestSeparateLabels(unittest.TestCase):
     """Test the feature create separated Labels per Label Set."""
