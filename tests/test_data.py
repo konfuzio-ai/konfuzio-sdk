@@ -1509,6 +1509,57 @@ class TestOfflineDataSetup(unittest.TestCase):
         annotation_set = AnnotationSet(document=document, label_set=self.label_set)
         assert annotation_set in document.annotation_sets()
 
+    def test_annotation_set_start_end_offset_and_line_index(self):
+        """Test AnnotationSet info methods."""
+        project = Project(id_=None)
+        document = Document(project=project, category=self.category, text="l1\nl2\nl3\nl4")
+        annotation_set = AnnotationSet(document=document, label_set=self.label_set)
+
+        span1 = Span(start_offset=3, end_offset=5)
+        annotation1 = Annotation(
+            document=document,
+            is_correct=True,
+            label=self.label,
+            annotation_set=annotation_set,
+            label_set=self.label_set,
+            spans=[span1],
+        )
+        assert span1.offset_string == "l2"
+
+        span2 = Span(start_offset=6, end_offset=8)
+        annotation2 = Annotation(
+            document=document,
+            is_correct=False,
+            confidence=0.2,
+            label=self.label,
+            annotation_set=annotation_set,
+            label_set=self.label_set,
+            spans=[span2],
+        )
+        assert span2.offset_string == "l3"
+
+        span3 = Span(start_offset=9, end_offset=11)
+        annotation3 = Annotation(
+            document=document,
+            is_correct=False,
+            confidence=0.05,
+            label=self.label,
+            annotation_set=annotation_set,
+            label_set=self.label_set,
+            spans=[span3],
+        )
+        assert span3.offset_string == "l4"
+
+        assert annotation1 in annotation_set.annotations()
+        assert annotation2 not in annotation_set.annotations()
+        assert annotation2 in annotation_set.annotations(use_correct=False)
+        assert annotation3 not in annotation_set.annotations()
+        assert annotation3 in annotation_set.annotations(use_correct=False, ignore_below_threshold=False)
+        assert annotation_set.start_line_index == 1
+        assert annotation_set.end_line_index == 2
+        assert annotation_set.start_offset == 3
+        assert annotation_set.end_offset == 8
+
     def test_to_add_two_spans_to_annotation(self):
         """Add one Span to one Annotation."""
         document = Document(project=self.project, category=self.category)
@@ -2831,6 +2882,17 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
         assert len(annotation_set.annotations()) == 1
         assert len(annotation_set.annotations(use_correct=False)) == 10
         assert len(annotation_set.annotations(use_correct=False, ignore_below_threshold=True)) == 9
+
+    def test_annotationset_start_end_offset_and_start_line_index(self):
+        """Test AnnotationSet start and end offset methods and start_line_index."""
+        project = LocalTextProject()
+        document = project.get_document_by_id(7)
+
+        annotation_set = document.annotation_sets()[0]
+
+        assert annotation_set.start_offset == 0
+        assert annotation_set.start_line_index == 0
+        assert annotation_set.end_offset == 73
 
     def test_label_spans_not_found_by_tokenizer(self):
         """Test Label spans_not_found_by_tokenizer method."""

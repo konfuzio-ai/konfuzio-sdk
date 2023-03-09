@@ -543,6 +543,8 @@ class AnnotationSet(Data):
     @property
     def start_line_index(self):
         """Calculate starting line of this Annotation Set."""
+        if self.start_offset is None:
+            return None
         return self.document.text[0 : self.start_offset].count('\n')
 
     @property
@@ -551,6 +553,13 @@ class AnnotationSet(Data):
         return max(
             (a.end_offset for a in self.annotations(use_correct=False, ignore_below_threshold=True)), default=None
         )
+
+    @property
+    def end_line_index(self):
+        """Calculate ending line of this Annotation Set."""
+        if self.end_offset is None:
+            return None
+        return self.document.text[0 : self.end_offset].count('\n')
 
 
 class LabelSet(Data):
