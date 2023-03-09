@@ -1634,7 +1634,9 @@ class GroupAnnotationSets:
         char_count = 0
 
         document_annotations = [
-            annotation for annotation_set in document.annotation_sets() for annotation in annotation_set.annotations()
+            annotation
+            for annotation_set in document.annotation_sets()
+            for annotation in annotation_set.annotations(use_correct=True)
         ]
 
         # Loop over lines
