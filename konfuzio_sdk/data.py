@@ -406,9 +406,7 @@ class Bbox:
         """Define that one Bounding Box on the same page is identical."""
         return self.__hash__() == other.__hash__()
 
-    def _valid(
-            self, validation=BboxValidationTypes.ALLOW_ZERO_SIZE, handler="sdk_validation"
-    ):
+    def _valid(self, validation=BboxValidationTypes.ALLOW_ZERO_SIZE, handler="sdk_validation"):
         """
         Validate the coordinates of the Bounding Box contained in the Bbox, raising a ValueError exception in case.
 

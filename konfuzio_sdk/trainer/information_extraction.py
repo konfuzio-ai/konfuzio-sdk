@@ -1710,8 +1710,11 @@ class GroupAnnotationSets:
         return global_df.fillna(0)
 
     def extract_template_with_clf(self, text, res_dict):
-        """Run template classifier to calculate sections."""
-        logger.info('Extract sections.')
+        """Run LabelSet classifier to find AnnotationSets."""
+        logger.info('Extract AnnotationSets.')
+        if not res_dict:
+            logger.warning('res_dict is empty')
+            return res_dict
         n_nearest = self.n_nearest_template if hasattr(self, 'n_nearest_template') else 0
         feature_df = self.build_document_template_feature_X(text, dict_to_dataframe(res_dict)).filter(
             self.template_feature_list, axis=1
@@ -2031,9 +2034,9 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         res_dict = self.merge_horizontal(res_dict, inference_document.text)
 
         # Try to calculate sections based on template classifier.
-        if self.label_set_clf is not None:  # todo smarter handling of multiple clf
+        if self.label_set_clf is not None and res_dict:  # todo smarter handling of multiple clf
             res_dict = self.extract_template_with_clf(inference_document.text, res_dict)
-            res_dict[self.no_label_set_name] = no_label_res_dict
+        res_dict[self.no_label_set_name] = no_label_res_dict
 
         if self.use_separate_labels:
             res_dict = self.separate_labels(res_dict)
