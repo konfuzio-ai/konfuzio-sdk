@@ -1236,45 +1236,51 @@ class Trainer(BaseModel):
 
         # define Annotation Set for the Category Label Set: todo: this is unclear from API side
         # default Annotation Set will be always added even if there are no predictions for it
-        # category_label_set = self.category.project.get_label_set_by_id(self.category.id_)
-        # virtual_default_annotation_set = AnnotationSet(
-        #     document=virtual_doc, label_set=category_label_set, id_=virtual_annotation_set_id
-        # )
-
+        category_label_set = self.category.project.get_label_set_by_id(self.category.id_)
+        virtual_default_annotation_set = AnnotationSet(
+            document=virtual_doc, label_set=category_label_set, id_=virtual_annotation_set_id
+        )
+        virtual_annotation_set_id += 1
         for label_or_label_set_name, information in extraction_result.items():
-            # if isinstance(information, pandas.DataFrame) and not information.empty:
-            #     # annotations belong to the default Annotation Set
-            #     label = self.category.project.get_label_by_name(label_or_label_set_name)
-            #     add_extractions_as_annotations(
-            #         document=virtual_doc,
-            #         extractions=information,
-            #         label=label,
-            #         label_set=category_label_set,
-            #         annotation_set=virtual_default_annotation_set,
-            #     )
 
-            # elif isinstance(information, list) or isinstance(information, dict):
-            # process multi Annotation Sets that are not part of the category Label Set
-            label_set = self.category.project.get_label_set_by_name(label_or_label_set_name)
+            if isinstance(information, pandas.DataFrame):
+                if information.empty:
+                    continue
 
-            if not isinstance(information, list):
-                information = [information]
-
-            for entry in information:  # represents one of pot. multiple annotation-sets belonging of one LabelSet
-                virtual_annotation_set = AnnotationSet(
-                    document=virtual_doc, label_set=label_set, id_=virtual_annotation_set_id
+                # annotations belong to the default Annotation Set
+                label = self.category.project.get_label_by_name(label_or_label_set_name)
+                self.add_extractions_as_annotations(
+                    document=virtual_doc,
+                    extractions=information,
+                    label=label,
+                    label_set=category_label_set,
+                    annotation_set=virtual_default_annotation_set,
                 )
+            # process multi Annotation Sets that are not part of the category Label Set
+            else:
+                label_set = self.category.project.get_label_set_by_name(label_or_label_set_name)
 
-                for label_name, extractions in entry.items():
-                    label = self.category.project.get_label_by_name(label_name)
-                    self.add_extractions_as_annotations(
-                        document=virtual_doc,
-                        extractions=extractions,
-                        label=label,
-                        label_set=label_set,
-                        annotation_set=virtual_annotation_set,
-                    )
-                virtual_annotation_set_id += 1
+                if not isinstance(information, list):
+                    information = [information]
+
+                for entry in information:  # represents one of pot. multiple annotation-sets belonging of one LabelSet
+                    if label_set is not category_label_set:
+                        virtual_annotation_set = AnnotationSet(
+                            document=virtual_doc, label_set=label_set, id_=virtual_annotation_set_id
+                        )
+                        virtual_annotation_set_id += 1
+                    else:
+                        virtual_annotation_set = virtual_default_annotation_set
+
+                    for label_name, extractions in entry.items():
+                        label = self.category.project.get_label_by_name(label_name)
+                        self.add_extractions_as_annotations(
+                            document=virtual_doc,
+                            extractions=extractions,
+                            label=label,
+                            label_set=label_set,
+                            annotation_set=virtual_annotation_set,
+                        )
 
         return virtual_doc
 
