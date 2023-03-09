@@ -33,7 +33,6 @@ from konfuzio_sdk.api import (
 )
 from konfuzio_sdk.normalize import normalize
 from konfuzio_sdk.regex import get_best_regex, regex_matches, suggest_regex_for_string, merge_regex
-from konfuzio_sdk.tokenizer.regex import RegexTokenizer
 from konfuzio_sdk.urls import get_annotation_view_url
 from konfuzio_sdk.utils import (
     is_file,
@@ -1061,24 +1060,18 @@ class Label(Data):
 
         return label_regex_token
 
-    def find_regex(self, category: 'Category', max_findings_per_page=100) -> List[str]:
-        """Find the best combination of regex for Label with before and after context."""
-        all_annotations = self.annotations(categories=[category])  # default is use_correct = True
-        if all_annotations == []:
-            logger.error(f"We cannot find annotations for Label {self} and Category {category}.")
-            return []
-
-        label_regex_token = self.base_regex(category=category, annotations=all_annotations)
-
+    def _find_regexes(
+        self, annotations, label_regex_token, category: 'Category', max_findings_per_page=100
+    ) -> List[str]:
+        """Find regexes for the Label."""
         search = [1, 3, 5]
         regex_to_remove_groupnames = re.compile(r'<.*?>')
         regex_to_remove_groupnames_full = re.compile(r'\?P<.*?>')
 
-        naive_proposal = label_regex_token
         regex_made = []
         regex_found = set()
 
-        for annotation in all_annotations:
+        for annotation in annotations:
             new_proposals = []
             annotation.document.spans(fill=True)
             for span in annotation.spans:
@@ -1136,7 +1129,7 @@ class Label(Data):
                                 else:
                                     logger.info(
                                         f'Skip to evaluate regex {repr(proposal)} as it finds {num_matches} in\
-                                            {annotation.document}.'
+                                                    {annotation.document}.'
                                     )
                             else:
                                 new_proposals.append(proposal)
@@ -1147,13 +1140,22 @@ class Label(Data):
                     regex_found.add(new_regex)
 
         logger.info(
-            f'For Label {self.name} we found {len(regex_made)} regex proposals for {len(all_annotations)} Annotations.'
+            f'For Label {self.name} we found {len(regex_made)} regex proposals for {len(annotations)} Annotations.'
         )
+        return regex_made
 
+    def find_regex(self, category: 'Category', max_findings_per_page=100) -> List[str]:
+        """Find the best combination of regex for Label with before and after context."""
+        all_annotations = self.annotations(categories=[category])  # default is use_correct = True
+        if all_annotations == []:
+            logger.error(f"We cannot find annotations for Label {self} and Category {category}.")
+            return []
+        label_regex_token = self.base_regex(category=category, annotations=all_annotations)
+        found_regex = self._find_regexes(all_annotations, label_regex_token, category, max_findings_per_page)
         # todo replace by compare
         evaluations = [
             self.evaluate_regex(_regex_made, category=category, annotations=all_annotations)
-            for _regex_made in regex_made
+            for _regex_made in found_regex
         ]
 
         logger.info(
@@ -1169,7 +1171,7 @@ class Label(Data):
             best_regex = []
 
         if best_regex == []:
-            best_regex = [naive_proposal]
+            best_regex = [label_regex_token]
 
         return best_regex
 
@@ -1220,29 +1222,55 @@ class Label(Data):
         self._tokens = {}
         self._regex = {}
 
-    def get_probable_outliers(self, use_test_docs: bool = False) -> List['Annotation']:
+    def get_probable_outliers(
+        self,
+        categories: List[Category],
+        use_test_docs: bool = False,
+    ) -> List['Annotation']:
         """
         Get a list of Annotations that come from the least precise regex.
 
+        :param categories: Categories under which the search is done.
+        :type categories: List[Category]
         :param use_test_docs: Whether the evaluation of the regex happens on test Documents or training Documents.
         :type use_test_docs: bool
         """
-        true_positives = {}
         if use_test_docs:
             documents = self.project.test_documents
         else:
             documents = self.project.documents
-        for regex in self.regex(categories=self.project.categories):
-            for document in documents:
-                evaluation = document.evaluate_regex(regex, self)
-                true_positives[regex] += evaluation['count_correct_annotations']
-        min_tps_regex = min(true_positives, key=true_positives.get)
-        tokenizer = RegexTokenizer(min_tps_regex)
-        outliers = []
-        for annotation in self.annotations(categories=self.project.categories):
-            for span in annotation.spans:
-                if tokenizer.span_match(span):
-                    outliers.append(annotation)
+        outliers = set()
+        for category in categories:
+            true_positives = {}
+            all_annotations = self.annotations(categories=[category])
+            label_regex_token = self.base_regex(category=category, annotations=all_annotations)
+            found_regex = self._find_regexes(all_annotations, label_regex_token, category, 100)
+            for regex in found_regex:
+                for document in documents:
+                    if regex in true_positives.keys():
+                        true_positives[regex] += document.evaluate_regex(regex, self)['count_correct_annotations']
+                    else:
+                        true_positives[regex] = document.evaluate_regex(regex, self)['count_correct_annotations']
+            if not true_positives:
+                logger.warning(f"No regex was found for {self} in {category}.")
+            else:
+                min_tps_regex = min(true_positives, key=true_positives.get)
+                max_tps_regex = self.find_regex(category=category)[0]
+                detected_by_worst = set()
+                detected_by_best = set()
+                for annotation in self.annotations([category]):
+                    text = annotation.document.text
+                    for span in annotation.spans:
+                        for span_info in regex_matches(text, min_tps_regex, keep_full_match=False):
+                            span_info_offsets = (span_info['start_offset'], span_info['end_offset'])
+                            if span_info_offsets == (span.start_offset, span.end_offset):
+                                detected_by_worst.add(annotation)
+                        for span_info in regex_matches(text, max_tps_regex, keep_full_match=False):
+                            span_info_offsets = (span_info['start_offset'], span_info['end_offset'])
+                            if span_info_offsets == (span.start_offset, span.end_offset):
+                                detected_by_best.add(annotation)
+                outliers.add(detected_by_worst - detected_by_best)
+        outliers = list(outliers)
         return outliers
 
     # def save(self) -> bool:
