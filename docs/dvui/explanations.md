@@ -40,6 +40,25 @@ Some other optional variables you can include are:
 
 Please be aware that any variable in the `.env` will have priority from the variables defined in the `index.html`.
 
+## Multilingual User Interface
+
+The Document Validation UI can currently be used in three languages: German (DE), English (EN), and Spanish (ES). You can specify what the default language of the application will be in the `.env` file, like so:
+
+```
+VUE_APP_I18N_LOCALE=
+VUE_APP_I18N_FALLBACK_LOCALE=
+```
+
+You can also specify the language in the `html` file:
+
+```
+<div id="app">
+    <app locale="DE/EN/ES"></app>
+  </div>
+```
+
+You are also welcome to create a new locales file for a language not currently provided by us, considering the data from [our existing files](https://github.com/konfuzio-ai/document-validation-ui/tree/main/src/locales), and share it with us via a [Support Ticket](https://konfuzio.com/en/support/) or create a Pull Request to add it to the repository.
+
 ## How to integrate the Document Validation UI into custom solutions?
 
 The application requires `node` and `npm` to run. It also requires a connection to the [Konfuzio Server API version 3](https://app.konfuzio.com/v3/swagger/). See [full documentation](https://dev.konfuzio.com/web/api-v3.html).
@@ -108,7 +127,7 @@ The following examples, based on the two configuration options mentioned before,
 
 ```
  <div id="app">
-    <App document="DOCUMENT_ID" user_token:”USER_TOKEN” locale="LOCALE"></App>
+    <app document="DOCUMENT_ID" user_token=”USER_TOKEN” locale="DE/EN/ES"></app>
   </div>
 
    <script src="/server/bundle/document_validation_ui.js"></script>
@@ -139,10 +158,31 @@ The following examples, based on the two configuration options mentioned before,
 
 <body>
  <div id="app">
-    <App document="DOCUMENT_ID" user_token:”USER_TOKEN” locale="LOCALE"></App>
+    <app document="DOCUMENT_ID" user_token=”USER_TOKEN” locale="DE/EN/ES"></app>
   </div>
 </body>
 ```
+
+### Integrate with CDN
+
+An alternative to using `npm` is to load JavaScript and CSS bundles from [CDN](https://en.wikipedia.org/wiki/Content_delivery_network).
+
+You can simply add the corresponding links in the `script` and `link` tags in your `html`, as shown in the following example: 
+
+```
+<script defer="defer" src="https://unpkg.com/@konfuzio/document-validation-ui@latest/dist/js/chunk-vendors.a48fca3f.js"></script>
+<script defer="defer" src="https://unpkg.com/@konfuzio/document-validation-ui@latest/dist/js/app.cc0b0c26.js"></script>
+<link href="https://unpkg.com/@konfuzio/document-validation-ui@latest/dist/css/chunk-vendors.053b6b6e.css" rel="stylesheet">
+<link href="https://unpkg.com/@konfuzio/document-validation-ui@latest/dist/css/app.7dd6bb8c.css" rel="stylesheet">
+
+<div id="app" style="height: 100vh">
+  <app document="DOCUMENT_ID" user_token=”USER_TOKEN” locale="DE/EN/ES"
+></app>
+</div>
+```
+
+*Please note that the file names will be updated in our next release, and from then on the names will be consistent, so there will be no need to manually update them.*
+
 
 ### Integrate by deploying the application
 
