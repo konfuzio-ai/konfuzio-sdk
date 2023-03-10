@@ -1249,7 +1249,7 @@ class Label(Data):
         self._regex = {}
 
     def get_probable_outliers(
-        self, categories: List[Category], use_test_docs: bool = False, n_outliers: int = 10
+        self, categories: List[Category], use_test_docs: bool = False, n_regexes: int = 3
     ) -> List['Annotation']:
         """
         Get a list of Annotations that come from the least precise regex.
@@ -1258,6 +1258,8 @@ class Label(Data):
         :type categories: List[Category]
         :param use_test_docs: Whether the evaluation of the regex happens on test Documents or training Documents.
         :type use_test_docs: bool
+        :param n_regexes: Number of worst regexes to return outliers from.
+        :type n_regexes: int
         """
         if use_test_docs:
             documents = self.project.test_documents
@@ -1278,23 +1280,25 @@ class Label(Data):
             if not true_positives:
                 logger.warning(f"No regex was found for {self} in {category}.")
             else:
-                min_tps_regex = min(true_positives, key=true_positives.get)
+                sorted_regexes = sorted(true_positives.items(), key=lambda item: item[1])
+                top_worst_regexes = dict(sorted_regexes[: n_regexes + 1])
                 max_tps_regex = self.find_regex(category=category)[0]
                 detected_by_worst = set()
                 detected_by_best = set()
-                for annotation in self.annotations([category]):
-                    text = annotation.document.text
-                    for span in annotation.spans:
-                        for span_info in regex_matches(text, min_tps_regex, keep_full_match=False):
-                            span_info_offsets = (span_info['start_offset'], span_info['end_offset'])
-                            if span_info_offsets == (span.start_offset, span.end_offset):
-                                detected_by_worst.add(annotation)
-                        for span_info in regex_matches(text, max_tps_regex, keep_full_match=False):
-                            span_info_offsets = (span_info['start_offset'], span_info['end_offset'])
-                            if span_info_offsets == (span.start_offset, span.end_offset):
-                                detected_by_best.add(annotation)
+                for regex in top_worst_regexes:
+                    for annotation in self.annotations([category]):
+                        text = annotation.document.text
+                        for span in annotation.spans:
+                            for span_info in regex_matches(text, regex, keep_full_match=False):
+                                span_info_offsets = (span_info['start_offset'], span_info['end_offset'])
+                                if span_info_offsets == (span.start_offset, span.end_offset):
+                                    detected_by_worst.add(annotation)
+                            for span_info in regex_matches(text, max_tps_regex, keep_full_match=False):
+                                span_info_offsets = (span_info['start_offset'], span_info['end_offset'])
+                                if span_info_offsets == (span.start_offset, span.end_offset):
+                                    detected_by_best.add(annotation)
                 outliers.update(detected_by_worst - detected_by_best)
-        outliers = list(outliers)[:n_outliers]
+        outliers = list(outliers)
         return outliers
 
     # def save(self) -> bool:
