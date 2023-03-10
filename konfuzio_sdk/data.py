@@ -1223,9 +1223,7 @@ class Label(Data):
         self._regex = {}
 
     def get_probable_outliers(
-        self,
-        categories: List[Category],
-        use_test_docs: bool = False,
+        self, categories: List[Category], use_test_docs: bool = False, n_outliers: int = 10
     ) -> List['Annotation']:
         """
         Get a list of Annotations that come from the least precise regex.
@@ -1269,8 +1267,8 @@ class Label(Data):
                             span_info_offsets = (span_info['start_offset'], span_info['end_offset'])
                             if span_info_offsets == (span.start_offset, span.end_offset):
                                 detected_by_best.add(annotation)
-                outliers.add(detected_by_worst - detected_by_best)
-        outliers = list(outliers)
+                outliers.update(detected_by_worst - detected_by_best)
+        outliers = list(outliers)[:n_outliers]
         return outliers
 
     # def save(self) -> bool:

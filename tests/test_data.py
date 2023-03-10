@@ -450,6 +450,16 @@ class TestOfflineExampleData(unittest.TestCase):
         """Test that NO_CATEGORY is present in the offline Project."""
         assert self.project.no_category
 
+    def test_find_outlier_annotations(self):
+        """Test finding the possibly incorrect Annotations of a Label."""
+        label = self.project.get_label_by_name('BonNr')
+        outliers = label.get_probable_outliers(self.project.categories)
+        outlier_spans = [span.offset_string for annotation in outliers for span in annotation.spans]
+        assert len(outliers) == 3
+        assert '7054' in outlier_spans
+        assert '0014' in outlier_spans
+        assert '0112' in outlier_spans
+
 
 class TestEqualityAnnotation(unittest.TestCase):
     """Test the equality of Annotations."""
