@@ -2062,6 +2062,8 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         :param only_multiline_labels: Only merge if a multiline Label Annotation is in the Category Training set
         """
         logger.info("Vertical merging Annotations.")
+        if not self.category:
+            raise AttributeError(f'{self} merge_vertical requires a Category.')
         labels_dict = {}
         for label in self.category.labels:
             if not only_multiline_labels or label.has_multiline_annotations():

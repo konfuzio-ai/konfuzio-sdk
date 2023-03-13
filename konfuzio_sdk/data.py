@@ -2985,67 +2985,6 @@ class Document(Data):
         """Delete Document."""
         self.project.del_document_by_id(self.id_, delete_online=delete_online)
 
-    def merge_vertical(self, only_multiline_labels=True):
-        """
-        Merge Annotations with the same Label.
-
-        See more details at https://dev.konfuzio.com/sdk/explanations.html#vertical-merge
-
-        :param only_multiline_labels: Only merge if a multiline Label Annotation is in the Category Training set
-        """
-        logger.warning('You use merge_vertical on Document Level which is legacy.')
-        logger.info("Vertical merging Annotations.")
-        labels_dict = {}
-        for label in self.category.labels:
-            if not only_multiline_labels or label.has_multiline_annotations():
-                labels_dict[label.name] = []
-
-        for annotation in self.annotations(use_correct=False, ignore_below_threshold=True):
-            if annotation.label.name in labels_dict:
-                labels_dict[annotation.label.name].append(annotation)
-
-        for label_id in labels_dict:
-            buffer = []
-            for annotation in labels_dict[label_id]:
-                for span in annotation.spans:
-                    # remove all spans in buffer more than 1 line apart
-                    while buffer and span.line_index > buffer[0].line_index + 1:
-                        buffer.pop(0)
-
-                    if buffer and buffer[-1].page != span.page:
-                        buffer = [span]
-                        continue
-
-                    if len(annotation.spans) > 1:
-                        buffer.append(span)
-                        continue
-
-                    for candidate in buffer:
-                        # only looking for elements in line above
-                        if candidate.line_index == span.line_index:
-                            break
-
-                        # Merge if there is overlap in the horizontal direction or if only separated by a line break
-                        # AND if the AnnotationSets are the same or if the Annotation is alone in its AnnotationSet
-                        if (
-                            (not (span.bbox().x0 > candidate.bbox().x1 or span.bbox().x1 < candidate.bbox().x0))
-                            or self.text[candidate.end_offset : span.start_offset].replace(' ', '').replace('\n', '')
-                            == ''
-                        ) and (
-                            span.annotation.annotation_set is candidate.annotation.annotation_set
-                            or len(
-                                span.annotation.annotation_set.annotations(
-                                    use_correct=False, ignore_below_threshold=True
-                                )
-                            )
-                            == 1
-                        ):
-                            span.annotation.delete(delete_online=False)
-                            span.annotation = None
-                            candidate.annotation.add_span(span)
-                            buffer.remove(candidate)
-                    buffer.append(span)
-
     def evaluate_regex(self, regex, label: Label, annotations: List['Annotation'] = None):
         """Evaluate a regex based on the Document."""
         start_time = time.time()
