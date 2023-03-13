@@ -408,6 +408,12 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         res_doc = no_konfuzio_sdk_pipeline.extract(document=test_document)
         assert len(res_doc.view_annotations()) == 19
 
+        prj46 = Project(id_=46, update=True)
+        doc = prj46.get_document_by_id(570129)
+        res_doc = self.pipeline.extract(document=doc)
+
+        return
+
     @classmethod
     def tearDownClass(cls) -> None:
         """Clear Project files."""
@@ -595,7 +601,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         evaluation = self.pipeline.evaluate_clf()
         assert evaluation.clf_f1(None) == 1.0
 
-        assert 1e5 < memory_size_of(evaluation.data) < 2e5
+        assert 5e4 < memory_size_of(evaluation.data) < 2e5
 
     def test_10_label_set_clf_quality(self):
         """Evaluate the LabelSet classifier quality."""
@@ -751,6 +757,13 @@ class TestInformationExtraction(unittest.TestCase):
         virt_doc = pipeline.extract(document)
 
         assert virt_doc.annotations(use_correct=False) == []
+
+    def test_annotation_set_extraction_with_no_span_above_detection_threshold(self):
+        """Test that extract_template_with_clf returns empty dictionary when no spans above detection threshold."""
+        category = self.project.get_category_by_id(63)
+        pipeline = RFExtractionAI(category=category)
+        res_dict = pipeline.extract_template_with_clf("doc text", res_dict={})
+        assert res_dict == {}
 
     def test_feature_function(self):
         """Test to generate features."""

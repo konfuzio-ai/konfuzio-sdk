@@ -30,7 +30,6 @@ from copy import deepcopy
 from inspect import signature
 from PIL import Image
 from tensorflow.keras import Input
-from tensorflow.keras.applications.vgg19 import preprocess_input
 from tensorflow.keras.layers import Dense, Conv2D, MaxPool2D, Flatten, Concatenate
 from tensorflow.keras.models import Model
 from tensorflow.keras.preprocessing.image import img_to_array
@@ -68,8 +67,10 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
         for category in categories:
             if not isinstance(category, Category):
                 raise ValueError("All elements of the list have to be Categories.")
-            if not category.documents():
-                raise ValueError(f'{category} does not have Documents and cannot be used for training.')
+        nonempty_categories = [category for category in categories if category.documents()]
+        if not nonempty_categories:
+            raise ValueError("At least one Category has to have Documents for training the model.")
+        for category in nonempty_categories:
             if not category.test_documents():
                 raise ValueError(f'{category} does not have test Documents.')
         self.categories = categories
@@ -166,6 +167,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         self,
         categories: List[Category],
         text_processing_model: str = 'nlpaueb/legal-bert-base-uncased',
+        scale: int = 2,
         *args,
         **kwargs,
     ):
@@ -178,6 +180,9 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         data from the Documents, can be a path in the HuggingFace repo or a local path to a checkpoint of a pre-trained
         HuggingFace model. Default is LegalBERT.
         :type text_processing_model: str
+        :param scale: A multiplier to define a number of units (neurons) in Dense layers of a model for image
+        processing.
+        :type scale: int
         """
         logging.info('Initializing Multimodal File Splitting Model.')
         super().__init__(categories=categories)
@@ -191,6 +196,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         self.train_labels = None
         self.test_labels = None
         self.input_shape = None
+        self.scale = scale
         self.model = None
         logger.info('Initializing BERT components of the Multimodal File Splitting Model.')
         configuration = AutoConfig.from_pretrained(text_processing_model)
@@ -200,6 +206,10 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         self.bert_tokenizer = BertTokenizer.from_pretrained(
             text_processing_model, do_lower_case=True, max_length=2000, padding="max_length", truncate=True
         )
+
+    def reduce_model_weight(self):
+        """Remove all non-strictly necessary parameters before saving."""
+        self.project.lose_weight()
 
     def _preprocess_documents(self, data: List[Document]) -> (List[str], List[str], List[int]):
         """
@@ -232,11 +242,12 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         """
         images = []
         for page_image_path in page_image_paths:
-            image = Image.open(page_image_path)
+            image = Image.open(page_image_path).convert('RGB')
             image = image.resize((224, 224))
             image = img_to_array(image)
             image = image.reshape((1, image.shape[0], image.shape[1], image.shape[2]))
-            image = preprocess_input(image)
+            image = image[..., ::-1]  # replacement of keras's preprocess_input implementation because of dimensionality
+            image[0] -= 103.939
             images.append(image)
         return images
 
@@ -291,9 +302,9 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         txt_input = Input(shape=self.input_shape, name='text')
         txt_x = Dense(units=768, activation="relu")(txt_input)
         txt_x = Flatten()(txt_x)
-        txt_x = Dense(units=512, activation="relu")(txt_x)
-        img_input = Input(shape=(224, 224, 4), name='image')
-        img_x = Conv2D(input_shape=(224, 224, 4), filters=64, kernel_size=(3, 3), padding="same", activation="relu")(
+        txt_x = Dense(units=256 * self.scale, activation="relu")(txt_x)
+        img_input = Input(shape=(224, 224, 3), name='image')
+        img_x = Conv2D(input_shape=(224, 224, 3), filters=64, kernel_size=(3, 3), padding="same", activation="relu")(
             img_input
         )
         img_x = Conv2D(filters=64, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
@@ -310,10 +321,10 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         img_x = Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
         img_x = MaxPool2D(pool_size=(2, 2), strides=(2, 2))(img_x)
         img_x = Flatten()(img_x)
-        img_x = Dense(units=512, activation="relu")(img_x)
-        img_x = Dense(units=512, activation="relu", name='img_outputs')(img_x)
+        img_x = Dense(units=256 * self.scale, activation="relu")(img_x)
+        img_x = Dense(units=256 * self.scale, activation="relu", name='img_outputs')(img_x)
         concatenated = Concatenate(axis=-1)([img_x, txt_x])
-        x = Dense(50, input_shape=(1024,), activation='relu')(concatenated)
+        x = Dense(50, input_shape=(512 * self.scale,), activation='relu')(concatenated)
         x = Dense(50, activation='elu')(x)
         x = Dense(50, activation='elu')(x)
         output = Dense(1, activation='sigmoid')(x)
@@ -350,13 +361,14 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         txt_data = [output.pooler_output]
         txt_data = [np.asarray(x).astype('float32') for x in txt_data]
         txt_data = np.asarray(txt_data)
-        image = Image.open(page.image_path)
+        image = Image.open(page.image_path).convert('RGB')
         image = image.resize((224, 224))
         image = img_to_array(image)
         image = image.reshape((1, image.shape[0], image.shape[1], image.shape[2]))
-        image = preprocess_input(image)
+        image = image[..., ::-1]
+        image[0] -= 103.939
         img_data = np.concatenate([image])
-        preprocessed = [img_data.reshape((1, 224, 224, 4)), txt_data.reshape((1, 1, 768))]
+        preprocessed = [img_data.reshape((1, 224, 224, 3)), txt_data.reshape((1, 1, 768))]
         if not use_gpu:
             with tf.device('/cpu:0'):
                 prediction = self.model.predict(preprocessed, verbose=0)[0, 0]
