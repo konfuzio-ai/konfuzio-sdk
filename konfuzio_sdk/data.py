@@ -1258,7 +1258,7 @@ class Label(Data):
         :type categories: List[Category]
         :param use_test_docs: Whether the evaluation of the regex happens on test Documents or training Documents.
         :type use_test_docs: bool
-        :param n_regexes: Number of worst regexes to return outliers from.
+        :param n_regexes: Number of the worst regexes to return outliers from.
         :type n_regexes: int
         """
         if use_test_docs:
@@ -1281,22 +1281,22 @@ class Label(Data):
                 logger.warning(f"No regex was found for {self} in {category}.")
             else:
                 sorted_regexes = sorted(true_positives.items(), key=lambda item: item[1])
-                top_worst_regexes = dict(sorted_regexes[: n_regexes + 1])
+                top_worst_regexes = dict(sorted_regexes[:n_regexes])
                 max_tps_regex = self.find_regex(category=category)[0]
                 detected_by_worst = set()
                 detected_by_best = set()
                 for regex in top_worst_regexes:
-                    for annotation in self.annotations([category]):
+                    for annotation in all_annotations:
                         text = annotation.document.text
                         for span in annotation.spans:
                             for span_info in regex_matches(text, regex, keep_full_match=False):
                                 span_info_offsets = (span_info['start_offset'], span_info['end_offset'])
                                 if span_info_offsets == (span.start_offset, span.end_offset):
-                                    detected_by_worst.add(annotation)
+                                    detected_by_worst.add(span)
                             for span_info in regex_matches(text, max_tps_regex, keep_full_match=False):
                                 span_info_offsets = (span_info['start_offset'], span_info['end_offset'])
                                 if span_info_offsets == (span.start_offset, span.end_offset):
-                                    detected_by_best.add(annotation)
+                                    detected_by_best.add(span)
                 outliers.update(detected_by_worst - detected_by_best)
         outliers = list(outliers)
         return outliers
