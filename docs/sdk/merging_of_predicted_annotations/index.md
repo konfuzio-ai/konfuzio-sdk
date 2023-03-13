@@ -51,7 +51,7 @@ A vertical merging is valid only if:
 4. Consecutive vertical Spans either overlap in the x-axis, OR the preceding Span is at the end of the line, and following Span is at the beginning of the next
 5. Confidence of predicted Label is above the Label threshold
 6. Spans are on consecutive lines
-7. Merged lower Span belongs to an Annotation in the default LabelSet, OR to an AnnotationSet with only a single Annotation
+7. Merged lower Span belongs to an Annotation in the same AnnotationSet, OR to an AnnotationSet with only a single Annotation
 
 |          Input          | Able to merge? | Reason |
 |:-----------------------:|:----------:| :-----------: |
