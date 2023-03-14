@@ -324,6 +324,7 @@ class Page(Data):
 
         :param category: The Category to set for the Page.
         """
+        logger.info(f'Setting {self} Category to {category}.')
         self._category = category
         if category is None:
             self.category_annotations = []
@@ -1841,7 +1842,7 @@ class Annotation(Data):
 
     def __lt__(self, other):
         """If we sort Annotations we do so by start offset."""
-        return min([span.start_offset for span in self.spans]) < min([span.start_offset for span in other.spans])
+        return self.spans[0] < other.spans[0]
 
     def __hash__(self):
         """Identity of Annotation that does not change over time."""
@@ -2393,6 +2394,7 @@ class Document(Data):
 
     def set_category(self, category: Category) -> None:
         """Set the Category of the Document and the Category of all of its Pages as revised."""
+        logger.info(f"Setting Category of {self} to {category}.")
         if (self._category not in [None, self.project.no_category]) and (
             category not in [self._category, None, self.project.no_category]
         ):
@@ -2464,13 +2466,13 @@ class Document(Data):
 
         return sorted(spans)
 
-    def eval_dict(self, use_view_annotations=False, use_correct=False) -> List[dict]:
+    def eval_dict(self, use_view_annotations=False, use_correct=False, ignore_below_threshold=False) -> List[dict]:
         """Use this dict to evaluate Documents. The speciality: For every Span of an Annotation create one entry."""
         result = []
         if use_view_annotations:
             annotations = self.view_annotations()
         else:
-            annotations = self.annotations(use_correct=use_correct)
+            annotations = self.annotations(use_correct=use_correct, ignore_below_threshold=ignore_below_threshold)
         if not annotations:  # if there are no Annotations in this Documents
             result.append(Span(start_offset=0, end_offset=0).eval_dict())
         else:
@@ -2905,7 +2907,7 @@ class Document(Data):
                 bbox = json.loads(archive.read('bbox.json5'))
         elif self.is_online and self.status and self.status[0] == 2:
             # todo check for self.project.id_ and self.id_ and ?
-            logger.warning(f'Start downloading bbox files of {len(self.text)} characters for {self}.')
+            logger.info(f'Start downloading bbox files of {len(self.text)} characters for {self}.')
             bbox = get_document_details(document_id=self.id_, project_id=self.project.id_, extra_fields="bbox")['bbox']
             # Use the `zipfile` module: `compresslevel` was added in Python 3.7
             with zipfile.ZipFile(
@@ -3078,69 +3080,6 @@ class Document(Data):
     def delete(self, delete_online: bool = False):
         """Delete Document."""
         self.project.del_document_by_id(self.id_, delete_online=delete_online)
-
-    def merge_vertical(self, only_multiline_labels=True):
-        """
-        Merge Annotations with the same Label.
-
-        See more details at https://dev.konfuzio.com/sdk/explanations.html#vertical-merge
-
-        :param only_multiline_labels: Only merge if a multiline Label Annotation is in the Category Training set
-        """
-        logger.info("Vertical merging Annotations.")
-        labels_dict = {}
-        for label in self.category.labels:
-            if not only_multiline_labels or label.has_multiline_annotations():
-                labels_dict[label.name] = []
-
-        for annotation in self.annotations(use_correct=False, ignore_below_threshold=True):
-            if annotation.label.name in labels_dict:
-                labels_dict[annotation.label.name].append(annotation)
-
-        for label_id in labels_dict:
-            buffer = []
-            for annotation in labels_dict[label_id]:
-                for span in annotation.spans:
-                    # remove all spans in buffer more than 1 line apart
-                    while buffer and span.line_index > buffer[0].line_index + 1:
-                        buffer.pop(0)
-
-                    if buffer and buffer[-1].page != span.page:
-                        buffer = [span]
-                        continue
-
-                    # Do not merge new Span if Annotation is part of an AnnotationSet with more than 1 Annotation
-                    # (except default AnnotationSet)
-                    if (
-                        span.annotation.annotation_set
-                        and not span.annotation.annotation_set.label_set.is_default
-                        and len(
-                            span.annotation.annotation_set.annotations(use_correct=False, ignore_below_threshold=True)
-                        )
-                        > 1
-                    ):
-                        buffer.append(span)
-                        continue
-                    if len(annotation.spans) > 1:
-                        buffer.append(span)
-                        continue
-
-                    for candidate in buffer:
-                        # only looking for elements in line above
-                        if candidate.line_index == span.line_index:
-                            break
-                        # overlap in x
-                        # or next line
-                        if (
-                            not (span.bbox().x0 > candidate.bbox().x1 or span.bbox().x1 < candidate.bbox().x0)
-                        ) or self.text[candidate.end_offset : span.start_offset].replace(' ', '').replace(
-                            '\n', ''
-                        ) == '':
-                            span.annotation.delete(delete_online=False)
-                            span.annotation = None
-                            candidate.annotation.add_span(span)
-                            buffer.remove(candidate)
-                    buffer.append(span)
 
     def evaluate_regex(self, regex, label: Label, annotations: List['Annotation'] = None):
         """Evaluate a regex based on the Document."""
@@ -3599,11 +3538,15 @@ class Project(Data):
 
         :param from_online: If True, all Document metadata info is first reloaded with latest changes in the server
         """
+        logger.info(f"Running init_or_update_document({from_online=}) on {self}")
         local_docs_dict = self.online_documents_dict
         if from_online:
             self.write_meta_of_files()
             self.get_meta(reload=True)
         updated_docs_ids_set = set()  # delete all docs not in the list at the end
+        n_updated_documents = 0
+        n_new_documents = 0
+        n_unchanged_documents = 0
         for document_data in self.meta_data:
             updated_docs_ids_set.add(document_data['id'])
             if document_data['status'][0] == 2:  # NOQA - hotfix for Text Annotation Server # todo add test
@@ -3619,20 +3562,31 @@ class Project(Data):
                     doc = local_docs_dict[document_data['id']]
                     doc.update_meta_data(**document_data)
                     doc.update()
-                    logger.info(f'{doc} was updated, we will download it again as soon you use it.')
+                    logger.debug(f'{doc} was updated, we will download it again as soon you use it.')
+                    n_updated_documents += 1
                 elif new:
                     doc = Document(project=self, update=True, id_=document_data['id'], **document_data)
-                    logger.info(f'{doc} is not available on your machine, we will download it as soon you use it.')
+                    logger.debug(f'{doc} is not available on your machine, we will download it as soon you use it.')
+                    n_new_documents += 1
                 else:
                     doc = local_docs_dict[document_data['id']]
                     doc.update_meta_data(**document_data)  # reset any Document level meta data changes
                     logger.debug(f'Unchanged local version of {doc} from {new_date}.')
+                    n_unchanged_documents += 1
             else:
                 logger.debug(f"Not loading Document {[document_data['id']]} with status {document_data['status'][0]}.")
 
         to_delete_ids = set(local_docs_dict.keys()) - updated_docs_ids_set
+        n_deleted_documents = len(to_delete_ids)
         for to_del_id in to_delete_ids:
             local_docs_dict[to_del_id].delete(delete_online=False)
+
+        logger.info(
+            f"{n_updated_documents} Documents were updated,"
+            f" {n_new_documents} Documents are new,"
+            f" {n_unchanged_documents} Documents are unchanged,"
+            f" and {n_deleted_documents} Documents were deleted."
+        )
 
     def get_document_by_id(self, document_id: int) -> Document:
         """Return Document by its ID."""
