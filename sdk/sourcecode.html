@@ -757,7 +757,7 @@ initializing the Document, which will enable running a hash comparison during th
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">eval_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_view_annotations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_correct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></span></dt>
+<span class="sig-name descname"><span class="pre">eval_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_view_annotations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_correct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_below_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></span></dt>
 <dd><p>Use this dict to evaluate Documents. The speciality: For every Span of an Annotation create one entry.</p>
 </dd></dl>
 
@@ -940,18 +940,6 @@ many documents, it is advised to use the Document.from_file_async method.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>The found Category Annotation, or None if not present.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">merge_vertical</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">only_multiline_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Merge Annotations with the same Label.</p>
-<p>See more details at <a class="reference external" href="https://dev.konfuzio.com/sdk/explanations.html#vertical-merge">https://dev.konfuzio.com/sdk/explanations.html#vertical-merge</a></p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>only_multiline_labels</strong> – Only merge if a multiline Label Annotation is in the Category Training set</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2010,7 +1998,7 @@ The Label Set classifier groups them into Annotation sets.</p>
 <dl class="py method">
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">check_is_ready</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Check if tokenizer is set and the classifiers set and trained.</p>
+<dd><p>Check if Tokenizer is set and the classifiers set and trained.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -2139,6 +2127,21 @@ NotFittedError: When CLF is not fitted</p>
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">label_train_document</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">virtual_document</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">konfuzio_sdk.data.Document</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">original_document</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">konfuzio_sdk.data.Document</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Assign labels to Annotations in newly tokenized virtual training document.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">merge_vertical</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">konfuzio_sdk.data.Document</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_multiline_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Merge Annotations with the same Label.</p>
+<p>See more details at <a class="reference external" href="https://dev.konfuzio.com/sdk/explanations.html#vertical-merge">https://dev.konfuzio.com/sdk/explanations.html#vertical-merge</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>document</strong> – Document whose Annotations should be merged vertically</p></li>
+<li><p><strong>only_multiline_labels</strong> – Only merge if a multiline Label Annotation is in the Category Training set</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py property">
@@ -2580,7 +2583,7 @@ with Pages marked .is_first_page on splitting points.</p>
 <h3>Extraction AI Evaluation<a class="headerlink" href="#extraction-ai-evaluation" title="Permalink to this headline">¶</a></h3>
 <dl class="py class">
 <dt class="sig sig-object py">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.evaluate.</span></span><span class="sig-name descname"><span class="pre">Evaluation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">documents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.data.Document</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">konfuzio_sdk.data.Document</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_view_annotations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.evaluate.</span></span><span class="sig-name descname"><span class="pre">Evaluation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">documents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.data.Document</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">konfuzio_sdk.data.Document</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_view_annotations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_below_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Calculated accuracy measures by using the detailed comparison on Span Level.</p>
 <dl class="py method">
 <dt class="sig sig-object py">
@@ -2732,7 +2735,7 @@ https://arxiv.org/pdf/1911.03347.pdf</p>
 <h3>compare<a class="headerlink" href="#compare" title="Permalink to this headline">¶</a></h3>
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.evaluate.</span></span><span class="sig-name descname"><span class="pre">compare</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doc_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">doc_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_use_correct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_view_annotations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.core.frame.DataFrame</span></span></span></dt>
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.evaluate.</span></span><span class="sig-name descname"><span class="pre">compare</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doc_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">doc_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_use_correct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_view_annotations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_below_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.core.frame.DataFrame</span></span></span></dt>
 <dd><p>Compare the Annotations of two potentially empty Documents wrt. to <strong>all</strong> Annotations.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -2740,6 +2743,8 @@ https://arxiv.org/pdf/1911.03347.pdf</p>
 <li><p><strong>doc_a</strong> – Document which is assumed to be correct</p></li>
 <li><p><strong>doc_b</strong> – Document which needs to be evaluated</p></li>
 <li><p><strong>only_use_correct</strong> – Unrevised feedback in doc_a is assumed to be correct.</p></li>
+<li><p><strong>use_view_annotations</strong> – Use view_annotations filter to evaluate doc_b</p></li>
+<li><p><strong>ignore_below_threshold</strong> – Ignore Annotations below detection threshold of the Label (only affects TNs)</p></li>
 <li><p><strong>strict</strong> – Evaluate on a Character exact level without any postprocessing, an amount Span “5,55 ” will not be
 exact with “5,55”</p></li>
 </ul>
