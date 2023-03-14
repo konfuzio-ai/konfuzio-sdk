@@ -7,15 +7,16 @@ Our extraction AI runs a merging logic at two steps in the extraction process. T
 
 ## Horizontal Merge
 
-When using an [Extraction AI](https://dev.konfuzio.com/sdk/sourcecode.html#extraction-ai), we merge adjacent horizontal Spans right after the Label classifier. 
+When using an [Extraction AI](https://dev.konfuzio.com/sdk/sourcecode.html#extraction-ai), we merge adjacent horizontal Spans right after the Label classifier. The confidence of the resulting new Span if taken to be the mean confidence of the original Spans being merged.
 
 A horizontal merging is valid only if:
 1. All Spans have the same predicted Label
 2. Confidence of predicted Label is above the Label threshold
 3. All Spans are on the same line
-4. No extraneous characters in between Spans
-5. A maximum of 5 spaces in between Spans
-6. The [Label type](https://dev.konfuzio.com/web/api.html#supported-data-normalization) is not one of the following: 'Number', 'Positive Number', 'Percentage', 'Date'
+4. Spans are not overlapping
+5. No extraneous characters in between Spans
+6. A maximum of 5 spaces in between Spans
+7. The [Label type](https://dev.konfuzio.com/web/api.html#supported-data-normalization) is not one of the following: 'Number', 'Positive Number', 'Percentage', 'Date'
  OR the resulting merging create a Span [normalizable](https://dev.konfuzio.com/web/api.html#supported-data-normalization) to the same type
 
 |          Input          | Able to merge? | Reason | Result |
