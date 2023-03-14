@@ -22,13 +22,13 @@ You can think of the _Planned_ section as a _Roadmap_ that lists Konfuzio Server
 - First stable release of Capture Vue in version ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9958)).
 - Suggest page breaks if one file contains multiple Documents ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/7671)).
 - Perfomance improvement of the Konfuzio Server interface ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10274)).
-- Sort Labels in Label-Sets to allow users to customize the UI per Category ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/8932)).
+- Sort Labels in Label-Sets to allow Users to customize the UI per Category ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/8932)).
 - Delta Training, Partial Fit an exisiting classifier, so that training documents used previously can be deleted ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9251)).
 - Allow administrators of Konfuzio on-premise installations to run a speedtest ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9870)).
 
 <!---
 - Add self-service customer center to manage contracts and invoices ([Internal Documentation](https://git.konfuzio.com/konfuzio/manual/-/merge_requests/23/diffs), [Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/8235)).
-- Start automatic AI retraining after user confirms that he has finished a annotation review ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9166)).
+- Start automatic AI retraining after User confirms that he has finished a annotation review ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9166)).
 --->
 
 <!---
@@ -39,9 +39,19 @@ These changes are for the tokenizers/new SDK branch.
 - A bug during the extraction post-processing steps, which was causing the first line items of each page to be skipped ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9561))
 -->
 
-## Next Release (estimated release date: 3th March 2023)
+## Next Release (estimated release date: 20th March 2023)
 
 Upcoming...
+
+## released-2023-03-06_21-09-18
+
+This version uses Konfuzio Trainer in version v.0.3.23, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Document Validation UI in version 0.1.2.
+
+### Added
+- [Add the overall processing time of a Document to the API V3](https://app.konfuzio.com/v3/swagger/#/documents/documents_retrieve) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10660)).
+- [Allow AI-Guests to re-categorize Documents](https://help.konfuzio.com/modules/members/index.html#detailed-permissions-of-available-roles) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10707)).
+- [Add the api_name attribute the the Label Set for the Document endpoint in API V3](https://app.konfuzio.com/v3/swagger/#/documents/documents_retrieve) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10747)).
+- [Add access to the Contract Center to manage Subscriptions](https://konfuzio.com/price) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10583)).
 
 ## released-2023-02-17_14-27-57
 
@@ -68,7 +78,7 @@ This version uses Konfuzio Trainer in version v.0.3.23, the Konfuzio Python SDK 
 
 ### Fixed
 - Proper error handling in case a password is reset for an unregistered User ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10490)).
-- In-active users do not longer receive email notifications ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10528)).
+- In-active Users do not longer receive email notifications ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10528)).
 - Links to specific Annotations (e.g. https://app.konfuzio.com/a/123456789) now accept trailing slashes ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10066)).
 
 
@@ -89,7 +99,7 @@ This version uses Konfuzio Trainer in version v.0.3.23, the Konfuzio Python SDK 
 This version uses Konfuzio Trainer in version v.0.3.23, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Capture Vue in version [0.1.0](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
 
 ### Added
-- [Allow new users to use to use Konfuzio SaaS Basic](https://konfuzio.com/de/preise/) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10489)).
+- [Allow new Users to use to use Konfuzio SaaS Basic](https://konfuzio.com/de/preise/) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10489)).
 
 ### Changed
 - [Redirect https://app.konfuzio.com/api/ to stable API Version 3](https://app.konfuzio.com/api/) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9692)).
@@ -127,7 +137,7 @@ This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK 
 
 ### Fixed
 
-- Show a message that informs a user if his account was deactivated ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10119)).
+- Show a message that informs a User if his account was deactivated ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10119)).
 - Failed login attemps have not been shown in the web interface ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9992)).
 - Missing German translation on the Member list page ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10306)).
 - Improve performance of Document List Endpoint in API V3 by excluding large Document attributes ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10248)).

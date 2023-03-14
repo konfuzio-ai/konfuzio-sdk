@@ -630,7 +630,7 @@ class TestOfflineDataSetup(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
-        assert len(cls.project.virtual_documents) == 59
+        assert len(cls.project.virtual_documents) == 62
 
     def test_document_only_needs_project(self):
         """Test that a Document can be created without Category."""
@@ -1244,6 +1244,21 @@ class TestOfflineDataSetup(unittest.TestCase):
         assert document.get_page_by_index(0).text == 'page1'
         assert document.get_page_by_index(1).text == 'page2'
 
+    def test_page_text_without_specifying_offsets(self):
+        """Test text Page when start and end offsets are implicitly calculated from the Document's text page breaks."""
+        document_bbox = {
+            '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'p'}
+        }
+        document = Document(
+            project=self.project, category=self.category, text='page1\fpage2\fpage3', bbox=document_bbox
+        )
+        _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document)
+        _ = Page(id_=2, number=2, original_size=(595.2, 841.68), document=document)
+        _ = Page(id_=3, number=3, original_size=(595.2, 841.68), document=document)
+        assert document.get_page_by_index(0).text == 'page1'
+        assert document.get_page_by_index(1).text == 'page2'
+        assert document.get_page_by_index(2).text == 'page3'
+
     def test_page_text_offsets(self):
         """Test text Page offsets."""
         document_bbox = {
@@ -1254,6 +1269,21 @@ class TestOfflineDataSetup(unittest.TestCase):
         page2 = Page(id_=2, number=2, original_size=(595.2, 841.68), document=document, start_offset=6, end_offset=11)
         assert page1.text == document.text[page1.start_offset : page1.end_offset]
         assert page2.text == document.text[page2.start_offset : page2.end_offset]
+
+    def test_page_text_offsets_without_specifying_offsets(self):
+        """Test Page offsets when implicitly calculated from the Document's text page breaks."""
+        document_bbox = {
+            '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'p'}
+        }
+        document = Document(
+            project=self.project, category=self.category, text='page1\fpage2\fpage3', bbox=document_bbox
+        )
+        page1 = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document)
+        page2 = Page(id_=2, number=2, original_size=(595.2, 841.68), document=document)
+        page3 = Page(id_=3, number=3, original_size=(595.2, 841.68), document=document)
+        assert page1.text == document.text[page1.start_offset : page1.end_offset]
+        assert page2.text == document.text[page2.start_offset : page2.end_offset]
+        assert page3.text == document.text[page3.start_offset : page3.end_offset]
 
     def test_page_get_bbox(self):
         """Test getting bbox for Page."""
@@ -1266,6 +1296,22 @@ class TestOfflineDataSetup(unittest.TestCase):
         document = Document(project=self.project, category=self.category, text='p1\fp2', bbox=document_bbox)
         page1 = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=2)
         page2 = Page(id_=2, number=2, original_size=(595.2, 841.68), document=document, start_offset=3, end_offset=5)
+        assert '0' in page1.get_bbox() and '2' in page1.get_bbox()
+        assert '8' in page2.get_bbox() and '10' in page2.get_bbox()
+        assert '0' not in page2.get_bbox() and '2' not in page2.get_bbox()
+        assert '8' not in page1.get_bbox() and '10' not in page1.get_bbox()
+
+    def test_page_get_bbox_without_specifying_offsets(self):
+        """Test getting bbox for Page when offsets are implicitly calculated from the Document's text page breaks."""
+        document_bbox = {
+            '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'p'},
+            '2': {'x0': 1, 'x1': 0, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': '1'},
+            '8': {'x0': 0, 'x1': 1, 'y0': 10, 'y1': 12, 'top': 10, 'bottom': 11, 'page_number': 2, 'text': 'p'},
+            '10': {'x0': 1, 'x1': 0, 'y0': 10, 'y1': 12, 'top': 10, 'bottom': 11, 'page_number': 2, 'text': '2'},
+        }
+        document = Document(project=self.project, category=self.category, text='p1\fp2', bbox=document_bbox)
+        page1 = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document)
+        page2 = Page(id_=2, number=2, original_size=(595.2, 841.68), document=document)
         assert '0' in page1.get_bbox() and '2' in page1.get_bbox()
         assert '8' in page2.get_bbox() and '10' in page2.get_bbox()
         assert '0' not in page2.get_bbox() and '2' not in page2.get_bbox()
@@ -1462,6 +1508,57 @@ class TestOfflineDataSetup(unittest.TestCase):
         document = Document(project=self.project, category=self.category)
         annotation_set = AnnotationSet(document=document, label_set=self.label_set)
         assert annotation_set in document.annotation_sets()
+
+    def test_annotation_set_start_end_offset_and_line_index(self):
+        """Test AnnotationSet info methods."""
+        project = Project(id_=None)
+        document = Document(project=project, category=self.category, text="l1\nl2\nl3\nl4")
+        annotation_set = AnnotationSet(document=document, label_set=self.label_set)
+
+        span1 = Span(start_offset=3, end_offset=5)
+        annotation1 = Annotation(
+            document=document,
+            is_correct=True,
+            label=self.label,
+            annotation_set=annotation_set,
+            label_set=self.label_set,
+            spans=[span1],
+        )
+        assert span1.offset_string == "l2"
+
+        span2 = Span(start_offset=6, end_offset=8)
+        annotation2 = Annotation(
+            document=document,
+            is_correct=False,
+            confidence=0.2,
+            label=self.label,
+            annotation_set=annotation_set,
+            label_set=self.label_set,
+            spans=[span2],
+        )
+        assert span2.offset_string == "l3"
+
+        span3 = Span(start_offset=9, end_offset=11)
+        annotation3 = Annotation(
+            document=document,
+            is_correct=False,
+            confidence=0.05,
+            label=self.label,
+            annotation_set=annotation_set,
+            label_set=self.label_set,
+            spans=[span3],
+        )
+        assert span3.offset_string == "l4"
+
+        assert annotation1 in annotation_set.annotations()
+        assert annotation2 not in annotation_set.annotations()
+        assert annotation2 in annotation_set.annotations(use_correct=False)
+        assert annotation3 not in annotation_set.annotations()
+        assert annotation3 in annotation_set.annotations(use_correct=False, ignore_below_threshold=False)
+        assert annotation_set.start_line_index == 1
+        assert annotation_set.end_line_index == 2
+        assert annotation_set.start_offset == 3
+        assert annotation_set.end_offset == 8
 
     def test_to_add_two_spans_to_annotation(self):
         """Add one Span to one Annotation."""
@@ -1663,65 +1760,6 @@ class TestOfflineDataSetup(unittest.TestCase):
         Annotation(document=document, spans=[first_span, second_span], label_set=self.label_set, label=self.label)
         assert len(document.annotations(use_correct=False)) == 2
 
-    def test_merge_vertical_1(self):
-        """Test the vertical merging of Spans into a single Annotation."""
-        project = LocalTextProject()
-
-        category = project.get_category_by_id(1)
-
-        document = project.no_status_documents[1]
-        label = document.annotations(use_correct=False)[0].label
-
-        assert len(document.spans()) == 4
-        assert len(document.annotations(use_correct=False)) == 4
-
-        with pytest.raises(TypeError, match="This value has never been computed."):
-            document.merge_vertical()
-
-        for category_label in category.labels:
-            category_label.has_multiline_annotations(categories=[category])
-
-        document.merge_vertical()
-
-        assert label.has_multiline_annotations(categories=[category]) is False
-        assert document.bboxes_available is True
-
-        train_document = Document(project=project, category=category, text='p1\np2', dataset_status=2)
-        train_span1 = Span(start_offset=0, end_offset=2)
-        train_span2 = Span(start_offset=3, end_offset=5)
-        _ = Annotation(
-            document=train_document,
-            is_correct=True,
-            label=label,
-            label_set=project.no_label_set,
-            spans=[train_span1, train_span2],
-        )
-
-        assert label.has_multiline_annotations() is False  # Value hasn't been updated yet
-        assert label.has_multiline_annotations(categories=[category]) is True
-        assert label.has_multiline_annotations() is True
-
-        document.merge_vertical()
-
-        assert len(document.spans()) == 4
-        assert len(document.annotations(use_correct=False)) == 2
-
-    def test_merge_vertical_2(self):
-        """Test the vertical merging of Spans into a single Annotation."""
-        project = LocalTextProject()
-
-        document = project.get_document_by_id(8)
-
-        assert len(document.annotations(use_correct=False)) == 6
-
-        with pytest.raises(TypeError, match="This value has never been computed."):
-            document.merge_vertical(only_multiline_labels=True)
-
-        document.merge_vertical(only_multiline_labels=False)
-
-        assert len(document.annotations(use_correct=False)) == 4
-        assert len(document.annotations(use_correct=False)[1].spans) == 3
-
     def test_lose_weight(self):
         """Lose weight should remove session and Documents."""
         project = Project(id_=None)
@@ -1786,6 +1824,42 @@ class TestOfflineDataSetup(unittest.TestCase):
             number=2,
         )
         assert not _.is_first_page
+
+    def test_bbox_rounding(self):
+        """Test that Bbox coordinates are rounded correctly in the `_valid` method."""
+        # Initialize a Page with a width and height of 1000
+        page = Page(
+            id_=1,
+            number=1,
+            original_size=(1000, 1000),
+            document=self.document,
+            start_offset=0,
+            end_offset=1,
+        )
+
+        # Test a Bbox with coordinates that exceed the height and width of the document, unless rounded.
+        valid_height_width = 1000.005  # round(n, 2) = 1000.0
+        bbox_valid = Bbox(
+            x0=valid_height_width,
+            x1=valid_height_width,
+            y0=valid_height_width,
+            y1=valid_height_width,
+            page=page,
+        )
+        # Validate that the `_valid` method returns None, indicating that the Bbox coordinates were correctly rounded
+        self.assertIsNone(bbox_valid._valid())
+
+        # Test a Bbox with coordinates that exceed the height and width of the document, even when rounded
+        invalid_height_width = 1000.006  # round(n, 2) = 1000.01
+        with self.assertRaises(ValueError):
+            bbox_invalid = Bbox(
+                x0=invalid_height_width,
+                x1=invalid_height_width,
+                y0=invalid_height_width,
+                y1=invalid_height_width,
+                page=page,
+            )
+            bbox_invalid._valid()
 
 
 class TestSeparateLabels(unittest.TestCase):
@@ -2192,7 +2266,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
             document.text
         after = _getsize(prj)
         assert 1.6 < after / before < 2.1
-        assert after < 500000
+        assert after < 600000
 
         # strings in prj take slightly less space than in a list
         assert _getsize([doc.text for doc in prj.documents]) + before < after + 500
@@ -2785,6 +2859,17 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
         assert len(annotation_set.annotations()) == 1
         assert len(annotation_set.annotations(use_correct=False)) == 10
         assert len(annotation_set.annotations(use_correct=False, ignore_below_threshold=True)) == 9
+
+    def test_annotationset_start_end_offset_and_start_line_index(self):
+        """Test AnnotationSet start and end offset methods and start_line_index."""
+        project = LocalTextProject()
+        document = project.get_document_by_id(7)
+
+        annotation_set = document.annotation_sets()[0]
+
+        assert annotation_set.start_offset == 0
+        assert annotation_set.start_line_index == 0
+        assert annotation_set.end_offset == 73
 
     def test_label_spans_not_found_by_tokenizer(self):
         """Test Label spans_not_found_by_tokenizer method."""

@@ -101,11 +101,12 @@ class Page(Data):
         self,
         id_: Union[int, None],
         document: 'Document',
-        start_offset: int,
-        end_offset: int,
         number: int,
         original_size: Tuple[float, float],
         image_size: Tuple[int, int] = (None, None),
+        start_offset: Optional[int] = None,
+        end_offset: Optional[int] = None,
+        copy_of_id: Optional[int] = None,
     ):
         """
         Create a Page for a Document.
@@ -125,6 +126,12 @@ class Page(Data):
         document.add_page(self)
         self.start_offset = start_offset
         self.end_offset = end_offset
+        if start_offset is None or end_offset is None:
+            page_texts = self.document.text.split('\f')
+            self.start_offset = sum([len(page_text) for page_text in page_texts[: self.index]]) + self.index
+            self.end_offset = self.start_offset + len(page_texts[self.index])
+
+        self.copy_of_id = copy_of_id
         self.image = None
         self._original_size = original_size
         self.width = self._original_size[0]
@@ -173,16 +180,9 @@ class Page(Data):
 
     def get_image(self, update: bool = False) -> Image:
         """Get Document Page as PNG."""
-        if self.document.id_ is None and self.document.copy_of_id is not None:
-            # if it's a virtual Document, get image from original Document
-            original_doc = self.document.project.get_document_by_id(self.document.copy_of_id)
-            self.image = original_doc.get_page_by_index(self.index).get_image()
-        elif (
-            self.document.status
-            and self.document.status[0] == 2
-            and (not is_file(self.image_path, raise_exception=False) or update)
-        ):
-            png_content = get_page_image(self.id_)
+        if self.document.status[0] == 2 and (not is_file(self.image_path, raise_exception=False) or update):
+            page_id = self.id_ if self.id_ else self.copy_of_id
+            png_content = get_page_image(page_id)
             with open(self.image_path, "wb") as f:
                 f.write(png_content)
                 self.image = Image.open(io.BytesIO(png_content))
@@ -372,6 +372,7 @@ class Page(Data):
 
         :param category: The Category to set for the Page.
         """
+        logger.info(f'Setting {self} Category to {category}.')
         self._category = category
         if category is None:
             self.category_annotations = []
@@ -456,69 +457,71 @@ class Bbox:
 
     def _valid(self, validation=BboxValidationTypes.ALLOW_ZERO_SIZE, handler="sdk_validation"):
         """
-        Validate contained data.
+        Validate the coordinates of the Bounding Box contained in the Bbox, raising a ValueError exception in case.
 
         :param validation: One of ALLOW_ZERO_SIZE (default), STRICT, or DISABLED. Also see the `Bbox` class.
         """
-        if self.x0 == self.x1:
+        round_decimals = 2
+
+        if round(self.x0, round_decimals) == round(self.x1, round_decimals):
             exception_or_log_error(
-                msg=f'{self} has no width in {self.page}.',
+                msg=f"{self} has no width in {self.page}.",
                 fail_loudly=validation is BboxValidationTypes.STRICT,
                 exception_type=ValueError,
                 handler=handler,
             )
 
-        if self.x0 > self.x1:
+        if round(self.x0, round_decimals) > round(self.x1, round_decimals):
             exception_or_log_error(
-                msg=f'{self} has negative width in {self.page}.',
+                msg=f"{self} has negative width in {self.page}.",
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
                 handler=handler,
             )
 
-        if self.y0 == self.y1:
+        if round(self.y0, round_decimals) == round(self.y1, round_decimals):
             exception_or_log_error(
-                msg=f'{self} has no height in {self.page}.',
+                msg=f"{self} has no height in {self.page}.",
                 fail_loudly=validation is BboxValidationTypes.STRICT,
                 exception_type=ValueError,
                 handler=handler,
             )
 
-        if self.y0 > self.y1:
+        if round(self.y0, round_decimals) > round(self.y1, round_decimals):
             exception_or_log_error(
-                msg=f'{self} has negative height in {self.page}.',
+                msg=f"{self} has negative height in {self.page}.",
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
                 handler=handler,
             )
 
-        if self.y1 > self.page.height:
+        if round(self.y1, round_decimals) > round(self.page.height, round_decimals):
             exception_or_log_error(
-                msg=f'{self} exceeds height of {self.page}.',
+                msg=f"{self} exceeds height of {self.page}.",
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
                 handler=handler,
             )
 
-        if self.x1 > self.page.width:
+        if round(self.x1, round_decimals) > round(self.page.width, round_decimals):
             exception_or_log_error(
-                msg=f'{self} exceeds width of {self.page}.',
+                msg=f"{self} exceeds width of {self.page}.",
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
                 handler=handler,
             )
 
-        if self.y0 < 0:
+        if round(self.y0, round_decimals) < 0:
             exception_or_log_error(
-                msg=f'{self} has negative y coordinate in {self.page}.',
+                msg=f"{self} has negative y coordinate in {self.page}.",
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
                 handler=handler,
             )
 
-        if self.x0 < 0:
+        if round(self.x0, round_decimals) < 0:
             exception_or_log_error(
-                msg=f'{self} has negative x coordinate in {self.page}.',
+                msg=f"{self} has negative x coordinate in {self.page}.",
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
                 handler=handler,
@@ -606,6 +609,12 @@ class AnnotationSet(Data):
         """Return string representation of the Annotation Set."""
         return f"{self.__class__.__name__}({self.id_}) of {self.label_set} in {self.document}."
 
+    def __lt__(self, other: 'AnnotationSet'):
+        """Sort AnnotationSets by their first Annotation."""
+        self_annotations = self.annotations(use_correct=False, ignore_below_threshold=True)
+        other_annotations = other.annotations(use_correct=False, ignore_below_threshold=True)
+        return self_annotations[0] < other_annotations[0]
+
     def annotations(self, use_correct: bool = True, ignore_below_threshold: bool = False):
         """All Annotations currently in this Annotation Set."""
         if not self._annotations:
@@ -617,25 +626,43 @@ class AnnotationSet(Data):
         if use_correct:
             annotations = [ann for ann in self._annotations if ann.is_correct]
         elif ignore_below_threshold:
-            annotations = [ann for ann in self._annotations if ann.is_correct or ann.confidence >= ann.label.threshold]
+            annotations = [
+                ann
+                for ann in self._annotations
+                if ann.is_correct or (ann.confidence and ann.confidence >= ann.label.threshold)
+            ]
         else:
             annotations = self._annotations
         return annotations
 
     @property
-    def start_offset(self):
-        """Calculate the earliest start based on all Annotations currently in this Annotation Set."""
-        return min((s.start_offset for a in self.annotations() for s in a.spans), default=None)
+    def start_offset(self) -> Optional[int]:
+        """Calculate the earliest start based on all Annotations above detection threshold in this AnnotationSet."""
+        return min(
+            (s.start_offset for a in self.annotations(use_correct=False, ignore_below_threshold=True) for s in a.spans),
+            default=None,
+        )
 
     @property
-    def start_line_index(self):
+    def start_line_index(self) -> Optional[int]:
         """Calculate starting line of this Annotation Set."""
+        if self.start_offset is None:
+            return None
         return self.document.text[0 : self.start_offset].count('\n')
 
     @property
-    def end_offset(self):
-        """Calculate the end based on all Annotations currently in this Annotation Set."""
-        return max((a.end_offset for a in self.annotations()), default=None)
+    def end_offset(self) -> Optional[int]:
+        """Calculate the end based on all Annotations above detection threshold currently in this AnnotationSet."""
+        return max(
+            (a.end_offset for a in self.annotations(use_correct=False, ignore_below_threshold=True)), default=None
+        )
+
+    @property
+    def end_line_index(self) -> Optional[int]:
+        """Calculate ending line of this Annotation Set."""
+        if self.end_offset is None:
+            return None
+        return self.document.text[0 : self.end_offset].count('\n')
 
 
 class LabelSet(Data):
@@ -1844,7 +1871,7 @@ class Annotation(Data):
 
     def __lt__(self, other):
         """If we sort Annotations we do so by start offset."""
-        return min([span.start_offset for span in self.spans]) < min([span.start_offset for span in other.spans])
+        return self.spans[0] < other.spans[0]
 
     def __hash__(self):
         """Identity of Annotation that does not change over time."""
@@ -2371,7 +2398,7 @@ class Document(Data):
 
         :return: The found Category Annotation, or None if not present.
         """
-        if self._category not in [self.project.no_category, None]:
+        if self.category != self.project.no_category:
             # there is a unique Category Annotation per Category associated to this Document
             # by construction in Document.category_annotations
             return [
@@ -2415,6 +2442,7 @@ class Document(Data):
 
     def set_category(self, category: Category) -> None:
         """Set the Category of the Document and the Category of all of its Pages as revised."""
+        logger.info(f"Setting Category of {self} to {category}.")
         if (self._category not in [None, self.project.no_category]) and (
             category not in [self._category, None, self.project.no_category]
         ):
@@ -2486,10 +2514,13 @@ class Document(Data):
 
         return sorted(spans)
 
-    def eval_dict(self, use_correct=False) -> List[dict]:
+    def eval_dict(self, use_view_annotations=False, use_correct=False, ignore_below_threshold=False) -> List[dict]:
         """Use this dict to evaluate Documents. The speciality: For every Span of an Annotation create one entry."""
         result = []
-        annotations = self.annotations(use_correct=use_correct)
+        if use_view_annotations:
+            annotations = self.view_annotations()
+        else:
+            annotations = self.annotations(use_correct=use_correct, ignore_below_threshold=ignore_below_threshold)
         if not annotations:  # if there are no Annotations in this Documents
             result.append(Span(start_offset=0, end_offset=0).eval_dict())
         else:
@@ -2529,11 +2560,13 @@ class Document(Data):
             bbox=self.get_bbox(),
         )
         for page in self.pages():
+            copy_id = page.id_ if page.id_ else page.copy_of_id
             _ = Page(
                 id_=None,
                 document=document,
                 start_offset=page.start_offset,
                 end_offset=page.end_offset,
+                copy_of_id=copy_id,
                 number=page.number,
                 original_size=(page.width, page.height),
                 image_size=(page.image_width, page.image_height),
@@ -2923,7 +2956,7 @@ class Document(Data):
                 bbox = json.loads(archive.read('bbox.json5'))
         elif self.is_online and self.status and self.status[0] == 2:
             # todo check for self.project.id_ and self.id_ and ?
-            logger.warning(f'Start downloading bbox files of {len(self.text)} characters for {self}.')
+            logger.info(f'Start downloading bbox files of {len(self.text)} characters for {self}.')
             bbox = get_document_details(document_id=self.id_, project_id=self.project.id_, extra_fields="bbox")['bbox']
             # Use the `zipfile` module: `compresslevel` was added in Python 3.7
             with zipfile.ZipFile(
@@ -3107,69 +3140,6 @@ class Document(Data):
         """Delete Document."""
         self.project.del_document_by_id(self.id_, delete_online=delete_online)
 
-    def merge_vertical(self, only_multiline_labels=True):
-        """
-        Merge Annotations with the same Label.
-
-        See more details at https://dev.konfuzio.com/sdk/explanations.html#vertical-merge
-
-        :param only_multiline_labels: Only merge if a multiline Label Annotation is in the Category Training set
-        """
-        logger.info("Vertical merging Annotations.")
-        labels_dict = {}
-        for label in self.category.labels:
-            if not only_multiline_labels or label.has_multiline_annotations():
-                labels_dict[label.name] = []
-
-        for annotation in self.annotations(use_correct=False, ignore_below_threshold=True):
-            if annotation.label.name in labels_dict:
-                labels_dict[annotation.label.name].append(annotation)
-
-        for label_id in labels_dict:
-            buffer = []
-            for annotation in labels_dict[label_id]:
-                for span in annotation.spans:
-                    # remove all spans in buffer more than 1 line apart
-                    while buffer and span.line_index > buffer[0].line_index + 1:
-                        buffer.pop(0)
-
-                    if buffer and buffer[-1].page != span.page:
-                        buffer = [span]
-                        continue
-
-                    # Do not merge new Span if Annotation is part of an AnnotationSet with more than 1 Annotation
-                    # (except default AnnotationSet)
-                    if (
-                        span.annotation.annotation_set
-                        and not span.annotation.annotation_set.label_set.is_default
-                        and len(
-                            span.annotation.annotation_set.annotations(use_correct=False, ignore_below_threshold=True)
-                        )
-                        > 1
-                    ):
-                        buffer.append(span)
-                        continue
-                    if len(annotation.spans) > 1:
-                        buffer.append(span)
-                        continue
-
-                    for candidate in buffer:
-                        # only looking for elements in line above
-                        if candidate.line_index == span.line_index:
-                            break
-                        # overlap in x
-                        # or next line
-                        if (
-                            not (span.bbox().x0 > candidate.bbox().x1 or span.bbox().x1 < candidate.bbox().x0)
-                        ) or self.text[candidate.end_offset : span.start_offset].replace(' ', '').replace(
-                            '\n', ''
-                        ) == '':
-                            span.annotation.delete(delete_online=False)
-                            span.annotation = None
-                            candidate.annotation.add_span(span)
-                            buffer.remove(candidate)
-                    buffer.append(span)
-
     def merge_vertical_like(self, document: 'Document'):  # drawing
         """
         Merge Annotations the same way as in another copy of the same Document.
@@ -3343,11 +3313,12 @@ class Document(Data):
             pages_text = self.text[start_page.start_offset : end_page.end_offset]
         else:
             pages_text = self.text[start_page.start_offset : end_page.start_offset]
-        new_doc = Document(project=self.project, id_=None, text=pages_text)
+        new_doc = Document(project=self.project, id_=None, text=pages_text, category=self.category)
         i = 1
         start_offset = 0
         for page in self.pages():
             end_offset = start_offset + len(page.text)
+            page_id = page.id_ if page.id_ else page.copy_of_id
             if include:
                 if page.number in range(start_page.number, end_page.number + 1):
                     _ = Page(
@@ -3356,6 +3327,7 @@ class Document(Data):
                         document=new_doc,
                         start_offset=start_offset,
                         end_offset=end_offset,
+                        copy_of_id=page_id,
                         number=i,
                     )
                     i += 1
@@ -3368,6 +3340,7 @@ class Document(Data):
                         document=new_doc,
                         start_offset=start_offset,
                         end_offset=end_offset,
+                        copy_of_id=page_id,
                         number=i,
                     )
                     i += 1

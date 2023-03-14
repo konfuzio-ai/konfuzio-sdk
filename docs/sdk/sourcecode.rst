@@ -191,9 +191,9 @@ Abstract Categorization AI
    :members:
    :noindex:
 
-Fallback Categorization Model
+Name-based Categorization AI
 ---------------------
-.. autoclass:: FallbackCategorizationModel
+.. autoclass:: NameBasedCategorizationAI
    :members:
    :noindex:
 

@@ -114,36 +114,15 @@ curl --request GET \
 
 To get a token:
 
-```python
-import requests
-
-url = "https://app.konfuzio.com/api/v3/auth/"
-
-payload = {
-    "username": "example@example.org",
-    "password": "examplepassword"
-}
-
-response = requests.post(url, json=payload)
-
-print(response.json())
-```
+.. literalinclude:: ../sdk/boilerplates/test_rest_api.py
+   :language: python
+   :lines: 2,5-10,22-23
 
 To use the token:
 
-```python
-import requests
-
-url = "https://app.konfuzio.com/api/v3/projects/"
-
-headers = {
-    "Authorization": "Token bf20d992c0960876157b53745cdd86fad95e6ff4"
-}
-
-response = requests.get(url, headers=headers)
-
-print(response.json())
-```
+.. literalinclude:: ../sdk/boilerplates/test_rest_api.py
+   :language: python
+   :lines: 2,5-7,13-15,22-23
 
 #### Accessing and using the token via the Konfuzio SDK
 
@@ -151,21 +130,38 @@ To get a token, access it via `from konfuzio_sdk import KONFUZIO_TOKEN` (availab
 
 To use a token:
 
-```python
-from konfuzio_sdk import KONFUZIO_TOKEN
-from konfuzio_sdk.api import konfuzio_session
-
-url = "https://app.konfuzio.com/api/v3/projects/"
-
-# if you ran konfuzio_sdk init, you can run konfuzio_session() without explicitly specifying the token
-session = konfuzio_session(KONFUZIO_TOKEN)  
-
-response = session.get(url)
-
-print(response.json())
-```
+.. literalinclude:: ../sdk/boilerplates/test_rest_api.py
+   :language: python
+   :lines: 3-5,18-23
 
 To access this and other information via SDK's Data layer concepts, see [SDK Quickstart](https://dev.konfuzio.com/sdk/home/index.html) page.
+
+#### Authenticating with a Token as a Query Parameter (_Upcoming feature_)
+
+.. Note::
+    Please open a [support ticket](https://konfuzio.com/support/) if you would like to have early access to this feature.
+
+Sometimes you might need to use one of our endpoints with a third party service that doesn't allow you to specify
+certain types of information (like authentication tokens) in the request. In these cases, you can use a special method
+to authenticate your request using a token as a query parameter.
+
+To do this, you'll first need to generate an authentication token using the steps we provided earlier. Then, you can
+include the token in your request by adding it as a query parameter at the end of the URL.
+
+Here's an example of what that might look like:
+
+```html
+http://app.konfuzio.com/api/v3/projects/3/export/all.csv?token=123456
+
+```
+
+Just replace 123456 with your own authentication token, and you'll be able to use this method to authenticate your
+request.
+
+.. Note::
+    This functionality is offered as part of the Google-Sheet export function, as well as usable on
+    any other csv importable software (SAP, Excel, etc).
+
 
 ### Response codes
 
