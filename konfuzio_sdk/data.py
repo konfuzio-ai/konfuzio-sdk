@@ -1261,6 +1261,11 @@ class Label(Data):
         :param n_regexes: Number of the worst regexes to return outliers from.
         :type n_regexes: int
         """
+        if not self.project._regexes:
+            all_regexes = {}
+            for category in self.project.categories:
+                all_regexes[category] = {label: label.find_regex(category) for label in self.project.labels}
+            self.project._regexes = all_regexes
         if use_test_docs:
             documents = self.project.test_documents
         else:
@@ -1280,7 +1285,7 @@ class Label(Data):
             if not true_positives:
                 logger.warning(f"No regex was found for {self} in {category}.")
             else:
-                sorted_regexes = sorted(true_positives.items(), key=lambda item: item[1])
+                sorted_regexes = dict(sorted(true_positives.items(), key=lambda item: item[1]))
                 max_tps_regex = self.find_regex(category=category)[0]
                 worst_regexes = set()
                 detected_by_worst_spans = set()
@@ -1292,36 +1297,46 @@ class Label(Data):
                     for span in annotation.spans:
                         for regex in sorted_regexes:
                             matches = regex_matches(text, regex, keep_full_match=False)
-                            if matches and len(worst_regexes) < n_regexes:
-                                worst_regexes.add(regex)
-                                for span_match in matches:
-                                    span_match_offsets = (span_match['start_offset'], span_match['end_offset'])
-                                    if span_match_offsets == (span.start_offset, span.end_offset):
-                                        detected_by_worst_annotations.add(annotation)
-                                        detected_by_worst_spans.add(span)
-                        matches = regex_matches(text, max_tps_regex, keep_full_match=False)
-                        for span_match in matches:
-                            span_match_offsets = (span_match['start_offset'], span_match['end_offset'])
-                            if span_match_offsets == (span.start_offset, span.end_offset):
-                                detected_by_best_annotations.add(annotation)
-                                detected_by_best_spans.add(span)
+                            if matches:
+                                if len(worst_regexes) < n_regexes:
+                                    worst_regexes.add(regex)
+                                    for span_match in matches:
+                                        span_match_offsets = (span_match['start_offset'], span_match['end_offset'])
+                                        if span_match_offsets == (span.start_offset, span.end_offset):
+                                            detected_by_worst_annotations.add(annotation)
+                                            detected_by_worst_spans.add(span)
+                                else:
+                                    break
+                            matches = regex_matches(text, max_tps_regex, keep_full_match=False)
+                            for span_match in matches:
+                                span_match_offsets = (span_match['start_offset'], span_match['end_offset'])
+                                if span_match_offsets == (span.start_offset, span.end_offset):
+                                    detected_by_best_annotations.add(annotation)
+                                    detected_by_best_spans.add(span)
                 for annotation in detected_by_worst_annotations.union(detected_by_best_annotations):
                     if len(annotation.spans) > 1:
                         text = annotation.document.text
                         for span in annotation.spans:
                             if span not in detected_by_worst_spans.union(detected_by_best_spans):
+                                print(span.offset_string, ' undetected')
                                 found_regex = None
-                                for label in self.project.get_labels():
-                                    for cur_category in self.project.categories:
-                                        best_regex = label.find_regex(cur_category)
-                                        if best_regex:
-                                            matches = regex_matches(text, best_regex[0], keep_full_match=False)
+                                for regex_category in self.project._regexes:
+                                    for regex in self.project._regexes[regex_category]:
+                                        if self.project._regexes[regex_category][regex]:
+                                            matches = regex_matches(
+                                                text,
+                                                self.project._regexes[regex_category][regex][0],
+                                                keep_full_match=False,
+                                            )
                                             if matches:
-                                                found_regex = matches
+                                                for match in matches:
+                                                    span_match_offsets = (match['start_offset'], match['end_offset'])
+                                                    if span_match_offsets == (span.start_offset, span.end_offset):
+                                                        found_regex = self.project._regexes[regex_category][regex][0]
                                                 break
                                 if not found_regex:
                                     outliers.add(annotation)
-                                    break
+                            break
                 outliers.update(detected_by_worst_annotations - detected_by_best_annotations)
         outliers = list(outliers)
         return outliers
@@ -3347,6 +3362,7 @@ class Project(Data):
         self.no_label_set.name = 'NO_LABEL_SET'
         self.no_label = Label(project=self, text='NO_LABEL', label_sets=[self.no_label_set])
         self.no_label.name_clean = 'NO_LABEL'
+        self._regexes = None
 
     def __repr__(self):
         """Return string representation."""
