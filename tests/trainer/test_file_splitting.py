@@ -67,7 +67,7 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
     def test_init_file_splitting_model_category_no_documents(self):
         """Test passing a Category that does not have Documents."""
         _ = Category(project=self.project, id_=5, name="CategoryName 5")
-        with pytest.raises(ValueError, match="does not have Documents"):
+        with pytest.raises(ValueError, match="At least one Category"):
             ContextAwareFileSplittingModel(categories=[_], tokenizer=ConnectedTextTokenizer())
 
     def test_init_file_splitting_model_category_no_test_documents(self):
@@ -93,7 +93,7 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
         test_document = self.file_splitting_model.tokenizer.tokenize(
             deepcopy(self.project.get_category_by_id(3).test_documents()[0])
         )
-        # deepcopying because we do not want changes in an original test Document.
+        # deep copying because we do not want changes in an original test Document.
         # typically this happens in one of the private methods, but since here we pass a Document Page by Page, we
         # need to tokenize it explicitly (compared to when we pass a full Document to the Splitting AI).
         for page in test_document.pages():

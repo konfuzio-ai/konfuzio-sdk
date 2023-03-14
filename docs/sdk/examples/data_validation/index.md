@@ -23,11 +23,9 @@ Annotations in the Document will be retrievable.
 By default, any [Project](https://dev.konfuzio.com/sdk/sourcecode.html#project) has the Data Validation Rules enabled, so nothing 
 special needs to be done to enable it.
 
-```python
-from konfuzio_sdk.data import Project
-
-project = Project(id_=YOUR_PROJECT_ID)  # all the data in this project will be validated
-```
+.. literalinclude:: /sdk/boilerplates/test_data_validation.py
+   :language: python
+   :lines: 4-5,8
 
 ### Document Validation Rules
 
@@ -78,8 +76,6 @@ is consistent for training an Extraction AI. Disabling the Data Validation Rules
 [Extraction AI](https://dev.konfuzio.com/sdk/sourcecode.html#extraction-ai) with potentially duplicated, malformed,
 or inconsistent data can **decrease the quality of an Extraction AI**. Only disable them if you know what you are doing.
 
-```python
-from konfuzio_sdk.data import Project
-
-project = Project(id_=YOUR_PROJECT_ID, strict_data_validation=False)
-```
+.. literalinclude:: /sdk/boilerplates/test_data_validation.py
+   :language: python
+   :lines: 4-5,10
