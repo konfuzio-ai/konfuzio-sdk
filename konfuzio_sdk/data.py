@@ -2177,8 +2177,14 @@ class Document(Data):
             callback_url=callback_url,
             sync=True,
         )
+        response = response.json()
 
-        new_document_id = json.loads(response.text)['id']
+        if response['status'][0] == 2:
+            logger.debug(f"Document status code {response['status'][0]}: {response['status'][1]}")
+        else:
+            logger.warning(f"Document status code {response['status'][0]}: {response['status'][1]}")
+
+        new_document_id = response['id']
 
         project.init_or_update_document(from_online=True)
         doc = project.get_document_by_id(new_document_id)
