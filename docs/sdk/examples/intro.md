@@ -184,6 +184,50 @@ Boxes).
 ]
 ```
 
+#### Upload Document
+To upload a new file (see [Supported File Types](https://help.konfuzio.com/specification/supported_file_types/index.html)) 
+in your Project using the SDK, you have the option between two Document methods: `from_file_sync` and `from_file_async`. 
+
+If you want to upload a Document, and start working with it as soon as the OCR processing step is done, we recommend 
+`from_file_sync` as it will wait for the Document to be processed and then return a ready Document. Beware, this may 
+take from a few seconds up to over a minute. 
+
+.. literalinclude:: /sdk/boilerplates/test_get_started.py
+   :language: python
+   :lines: 44
+
+If however you are trying to upload a large number of files and don't want to wait for them to be processed you can use 
+the asynchronous function which only returns a Document ID:
+
+.. literalinclude:: /sdk/boilerplates/test_get_started.py
+   :language: python
+   :lines: 48
+
+Later, you can load the processed Document and get your Document with:
+
+.. literalinclude:: /sdk/boilerplates/test_get_started.py
+   :language: python
+   :lines: 51-53
+
+#### Modify Document
+
+If you would like to use the SDK to modify some Document's meta-data like the dataset status or the assignee, you can do
+it like this:
+
+.. literalinclude:: /sdk/boilerplates/test_get_started.py
+   :language: python
+   :lines: 56-59
+
+#### Update Document
+If there are changes in the Document in the Konfuzio Server, you can update the Document with:
+
+.. literalinclude:: /sdk/boilerplates/test_get_started.py
+   :language: python
+   :lines: 40
+
+If a Document is part of the Training or Test set, you can also update it by updating the entire Project via
+`project.get(update=True)`. However, for Projects with many Documents it can be faster to update only the relevant Documents.
+
 #### Download PDFs
 To get the PDFs of the Documents, you can use `get_file()`.
 
@@ -228,50 +272,6 @@ For example, you can get the path to the file with the Document text with:
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
    :lines: 38
-
-#### Update Document
-If there are changes in the Document in the Konfuzio Server, you can update the Document with:
-
-.. literalinclude:: /sdk/boilerplates/test_get_started.py
-   :language: python
-   :lines: 40
-
-If a Document is part of the Training or Test set, you can also update it by updating the entire Project via
-`project.get(update=True)`. However, for Projects with many Documents it can be faster to update only the relevant Documents.
-
-#### Upload Document
-To upload a new file (see [Supported File Types](https://help.konfuzio.com/specification/supported_file_types/index.html)) 
-in your Project using the SDK, you have the option between two Document methods: `from_file_sync` and `from_file_async`. 
-
-If you want to upload a Document, and start working with it as soon as the OCR processing step is done, we recommend 
-`from_file_sync` as it will wait for the Document to be processed and then return a ready Document. Beware, this may 
-take from a few seconds up to over a minute. 
-
-.. literalinclude:: /sdk/boilerplates/test_get_started.py
-   :language: python
-   :lines: 44
-
-If however you are trying to upload a large number of files and don't want to wait for them to be processed you can use 
-the asynchronous function which only returns a Document ID:
-
-.. literalinclude:: /sdk/boilerplates/test_get_started.py
-   :language: python
-   :lines: 48
-
-Later, you can load the processed Document and get your Document with:
-
-.. literalinclude:: /sdk/boilerplates/test_get_started.py
-   :language: python
-   :lines: 51-53
-
-#### Modify Document
-
-If you would like to use the SDK to modify some Document's meta-data like the dataset status or the assignee, you can do
-it like this:
-
-.. literalinclude:: /sdk/boilerplates/test_get_started.py
-   :language: python
-   :lines: 56-59
 
 #### Delete Document
 
