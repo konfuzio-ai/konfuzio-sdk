@@ -1323,7 +1323,6 @@ class Label(Data):
                         text = annotation.document.text
                         for span in annotation.spans:
                             if span not in detected_by_worst_spans.union(detected_by_best_spans):
-                                print(span.offset_string, ' undetected')
                                 found_regex = None
                                 for regex_category in self.project._regexes:
                                     for regex in self.project._regexes[regex_category]:
