@@ -3308,7 +3308,7 @@ class Project(Data):
         self.get_labels(reload=True)
         self.get_label_sets(reload=True)
         self.get_categories()
-        self.init_or_update_document()
+        self.init_or_update_document(from_online=False)
         return self
 
     def add_label_set(self, label_set: LabelSet):
@@ -3468,7 +3468,7 @@ class Project(Data):
                     logger.debug(f'{doc} was updated, we will download it again as soon you use it.')
                     n_updated_documents += 1
                 elif new:
-                    doc = Document(project=self, update=True, id_=document_data['id'], **document_data)
+                    doc = Document(project=self, update=from_online, id_=document_data['id'], **document_data)
                     logger.debug(f'{doc} is not available on your machine, we will download it as soon you use it.')
                     n_new_documents += 1
                 else:
