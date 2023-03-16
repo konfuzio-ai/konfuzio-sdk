@@ -1342,6 +1342,17 @@ class Label(Data):
         outliers = list(outliers)
         return outliers
 
+    def get_probable_outliers_by_confidence(
+        self, categories: List[Category], n_outliers: int = 10
+    ) -> List['Annotation']:
+        """Get a list of Annotations with the lowest confidence."""
+        all_annotations = []
+        for category in categories:
+            for annotation in self.annotations([category]):
+                all_annotations.append((annotation, annotation.confidence))
+        outliers = sorted(all_annotations, key=lambda item: item[1])[:n_outliers]
+        return outliers
+
     # def save(self) -> bool:
     #     """
     #     Save Label online.
