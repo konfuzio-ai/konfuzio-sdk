@@ -5,7 +5,7 @@ import logging
 import os
 from json import JSONDecodeError
 from operator import itemgetter
-from typing import List, Union
+from typing import List, Union, Optional
 
 import requests
 from requests import HTTPError
@@ -132,12 +132,15 @@ class TimeoutHTTPAdapter(HTTPAdapter):
         return response
 
 
-def konfuzio_session(token: str = KONFUZIO_TOKEN, timeout: int = 120):
+def konfuzio_session(token: str = KONFUZIO_TOKEN, timeout: Optional[int] = None):
     """
     Create a session incl. Token to the KONFUZIO_HOST.
 
     :return: Request session.
     """
+    if timeout is None:
+        timeout = 120
+
     retry_strategy = Retry(
         total=5,
         status_forcelist=[429, 500, 502, 503, 504],
