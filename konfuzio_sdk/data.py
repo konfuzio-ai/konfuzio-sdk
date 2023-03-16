@@ -1275,7 +1275,9 @@ class Label(Data):
         for category in categories:
             true_positives = {}
             all_annotations = [
-                annotation for annotation in self.annotations(categories=[category]) if annotation.is_correct
+                annotation
+                for annotation in self.annotations(categories=[category])
+                if (annotation.is_correct and annotation.confidence < 0.5)
             ]
             label_regex_token = self.base_regex(category=category, annotations=all_annotations)
             found_regex = self._find_regexes(all_annotations, label_regex_token, category, 100)
@@ -1351,12 +1353,17 @@ class Label(Data):
         all_annotations = []
         for category in categories:
             for annotation in [
-                annotation for annotation in self.annotations(categories=[category]) if annotation.is_correct
+                annotation
+                for annotation in self.annotations(categories=[category])
+                if (annotation.is_correct and annotation.confidence < 0.5)
             ]:
                 all_annotations.append((annotation, annotation.confidence))
-        outliers = list(
-            [annotation[0] for annotation in sorted(all_annotations, key=lambda item: item[1])[:n_outliers]]
-        )
+        if len(all_annotations) >= n_outliers:
+            outliers = list(
+                [annotation[0] for annotation in sorted(all_annotations, key=lambda item: item[1])[:n_outliers]]
+            )
+        else:
+            outliers = list([annotation[0] for annotation in sorted(all_annotations, key=lambda item: item[1])])
         return outliers
 
     # def save(self) -> bool:

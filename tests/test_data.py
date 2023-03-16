@@ -461,12 +461,12 @@ class TestOfflineExampleData(unittest.TestCase):
 
     def test_find_outlier_annotations_by_confidence(self):
         """Test finding the Annotations with the least confidence."""
-        label = self.project.get_label_by_name('Austellungsdatum')
+        label = self.project.get_label_by_name('Firmenname')
         outliers = label.get_probable_outliers_by_confidence(self.project.categories, 3)
         assert len(outliers) == 3
         for annotation in outliers:
+            assert annotation.confidence < 0.5
             assert annotation.is_correct
-            assert annotation.confidence < 0.9
 
 
 class TestEqualityAnnotation(unittest.TestCase):
