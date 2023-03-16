@@ -459,6 +459,15 @@ class TestOfflineExampleData(unittest.TestCase):
         assert '328927/10103' in outlier_spans
         assert '22.05.2018' in outlier_spans
 
+    def test_find_outlier_annotations_by_confidence(self):
+        """Test finding the Annotations with the least confidence."""
+        label = self.project.get_label_by_name('Austellungsdatum')
+        outliers = label.get_probable_outliers_by_confidence(self.project.categories, 3)
+        assert len(outliers) == 3
+        for annotation in outliers:
+            assert annotation.is_correct
+            assert annotation.confidence < 0.9
+
 
 class TestEqualityAnnotation(unittest.TestCase):
     """Test the equality of Annotations."""

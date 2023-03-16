@@ -1274,7 +1274,9 @@ class Label(Data):
         outliers = set()
         for category in categories:
             true_positives = {}
-            all_annotations = self.annotations(categories=[category])
+            all_annotations = [
+                annotation for annotation in self.annotations(categories=[category]) if annotation.is_correct
+            ]
             label_regex_token = self.base_regex(category=category, annotations=all_annotations)
             found_regex = self._find_regexes(all_annotations, label_regex_token, category, 100)
             for regex in found_regex:
@@ -1348,9 +1350,13 @@ class Label(Data):
         """Get a list of Annotations with the lowest confidence."""
         all_annotations = []
         for category in categories:
-            for annotation in self.annotations([category]):
+            for annotation in [
+                annotation for annotation in self.annotations(categories=[category]) if annotation.is_correct
+            ]:
                 all_annotations.append((annotation, annotation.confidence))
-        outliers = sorted(all_annotations, key=lambda item: item[1])[:n_outliers]
+        outliers = list(
+            [annotation[0] for annotation in sorted(all_annotations, key=lambda item: item[1])[:n_outliers]]
+        )
         return outliers
 
     # def save(self) -> bool:
