@@ -19,7 +19,6 @@ You can think of the _Planned_ section as a _Roadmap_ that lists Konfuzio Server
 - Add a filter to the list of Documents to find Documents that need to be revised by humans. ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9242)).
 - Improved training time of Extraction AIs when using word detection mode (reduced up to 50%) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9435)).
 - Train custom Page-based Categorization AI via [SDK](https://github.com/konfuzio-ai/konfuzio-sdk/) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9481)).
-- First stable release of Capture Vue in version ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9958)).
 - Suggest page breaks if one file contains multiple Documents ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/7671)).
 - Perfomance improvement of the Konfuzio Server interface ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10274)).
 - Sort Labels in Label-Sets to allow Users to customize the UI per Category ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/8932)).
@@ -27,7 +26,6 @@ You can think of the _Planned_ section as a _Roadmap_ that lists Konfuzio Server
 - Allow administrators of Konfuzio on-premise installations to run a speedtest ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9870)).
 
 <!---
-- Add self-service customer center to manage contracts and invoices ([Internal Documentation](https://git.konfuzio.com/konfuzio/manual/-/merge_requests/23/diffs), [Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/8235)).
 - Start automatic AI retraining after User confirms that he has finished a annotation review ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9166)).
 --->
 
@@ -41,7 +39,13 @@ These changes are for the tokenizers/new SDK branch.
 
 ## Next Release (estimated release date: 20th March 2023)
 
-Upcoming...
+This version uses Konfuzio Trainer in version v.0.3.23, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Document Validation UI in version 0.1.3.
+
+### Added
+- [Contract Managers can invite Users to join their subscription](https://app.konfuzio.com/v3/swagger/#/documents/documents_retriev) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10583)).
+
+### Fixed
+- AI-Guests can now re-categorize Document using the API ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10361)).
 
 ## released-2023-03-06_21-09-18
 
