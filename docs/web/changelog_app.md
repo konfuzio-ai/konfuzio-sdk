@@ -41,7 +41,13 @@ These changes are for the tokenizers/new SDK branch.
 
 ## Next Release (estimated release date: 20th March 2023)
 
-Upcoming...
+This version uses Konfuzio Trainer in version v.0.3.23, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Document Validation UI in version 0.1.2.
+
+### Added
+- [Contract Managers can invite Users to join their subscription](https://app.konfuzio.com/v3/swagger/#/documents/documents_retriev) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10583)).
+
+### Fixed
+- AI-Guests can now re-categorize Document using the API ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10361)).
 
 ## released-2023-03-06_21-09-18
 
