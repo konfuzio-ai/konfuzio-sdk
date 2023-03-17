@@ -452,12 +452,12 @@ class TestOfflineExampleData(unittest.TestCase):
 
     def test_find_outlier_annotations(self):
         """Test finding the possibly incorrect Annotations of a Label."""
-        label = self.project.get_label_by_name('Auszahlungsbetrag')
+        label = self.project.get_label_by_name('Bank inkl. IBAN')
         outliers = label.get_probable_outliers(self.project.categories)
         outlier_spans = [span.offset_string for annotation in outliers for span in annotation.spans]
-        assert len(outliers) == 1
-        assert '328927/10103' in outlier_spans
-        assert '22.05.2018' in outlier_spans
+        assert len(outliers) == 16
+        assert 'Deutsche Bank PGK  Nürnbe' in outlier_spans
+        assert 'DE73 7607 0024 0568 9745 11' in outlier_spans
 
     def test_find_outlier_annotations_by_confidence(self):
         """Test finding the Annotations with the least confidence."""
