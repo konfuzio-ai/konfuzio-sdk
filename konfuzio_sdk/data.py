@@ -2152,8 +2152,9 @@ class Document(Data):
         path: str,
         project: 'Project',
         dataset_status: int = 0,
-        category_id: Union[None, int] = None,
+        category_id: Optional[int] = None,
         callback_url: str = '',
+        timeout: Optional[int] = None,
     ) -> 'Document':
         """
         Initialize Document from file with synchronous API call.
@@ -2167,6 +2168,7 @@ class Document(Data):
         :param dataset_status: Dataset status of the document (None: 0 Preparation: 1 Training: 2 Test: 3 Excluded: 4)
         :param category_id: Category the Document belongs to (if unset, it will be assigned one by the server)
         :param callback_url: Callback URL receiving POST call once extraction is done
+        :param timeout: Number of seconds to wait for response from the server
         :return: New Document
         """
         response = upload_file_konfuzio_api(
@@ -2176,9 +2178,16 @@ class Document(Data):
             category_id=category_id,
             callback_url=callback_url,
             sync=True,
+            session=konfuzio_session(timeout=timeout),
         )
+        response = response.json()
 
-        new_document_id = json.loads(response.text)['id']
+        if response['status'][0] == 2:
+            logger.debug(f"Document status code {response['status'][0]}: {response['status'][1]}")
+        else:
+            logger.warning(f"Document status code {response['status'][0]}: {response['status'][1]}")
+
+        new_document_id = response['id']
 
         project.init_or_update_document(from_online=True)
         doc = project.get_document_by_id(new_document_id)
@@ -2193,6 +2202,7 @@ class Document(Data):
         dataset_status: int = 0,
         category_id: Union[None, int] = None,
         callback_url: str = '',
+        timeout: Optional[int] = None,
     ) -> int:
         """
         Initialize Document from file with asynchrinous API call.
@@ -2206,7 +2216,8 @@ class Document(Data):
         :param project: If to filter by correct annotations
         :param dataset_status: Dataset status of the document (None: 0 Preparation: 1 Training: 2 Test: 3 Excluded: 4)
         :param category_id: Category the Document belongs to (if unset, it will be assigned one by the server)
-        :param callback_url: Callback URL receiving POST call once extraction is done
+        :param callback_url: Callback URL receiving POST call once extraction is
+        :param timeout: Number of seconds to wait for response from the server
         :return: ID of new Document
         """
         response = upload_file_konfuzio_api(
@@ -2216,6 +2227,7 @@ class Document(Data):
             category_id=category_id,
             callback_url=callback_url,
             sync=False,
+            session=konfuzio_session(timeout=timeout),
         )
 
         new_document_id = json.loads(response.text)['id']
