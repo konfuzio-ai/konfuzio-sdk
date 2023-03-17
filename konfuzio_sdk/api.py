@@ -5,7 +5,7 @@ import logging
 import os
 from json import JSONDecodeError
 from operator import itemgetter
-from typing import List, Union
+from typing import List, Union, Optional
 
 import requests
 from requests import HTTPError
@@ -124,15 +124,23 @@ class TimeoutHTTPAdapter(HTTPAdapter):
                 detail = 'No JSON provided by Host.'
             raise HTTPError(f'{response.status_code} {response.reason}: {detail} via {response.url}')
 
+        try:
+            response.raise_for_status()
+        except HTTPError as e:
+            raise HTTPError(response.text) from e
+
         return response
 
 
-def konfuzio_session(token: str = KONFUZIO_TOKEN):
+def konfuzio_session(token: str = KONFUZIO_TOKEN, timeout: Optional[int] = None):
     """
     Create a session incl. Token to the KONFUZIO_HOST.
 
     :return: Request session.
     """
+    if timeout is None:
+        timeout = 120
+
     retry_strategy = Retry(
         total=5,
         status_forcelist=[429, 500, 502, 503, 504],
@@ -140,7 +148,7 @@ def konfuzio_session(token: str = KONFUZIO_TOKEN):
         # allowed_methods=["HEAD", "GET", "PUT", "DELETE", "OPTIONS", "TRACE"],  # POST excluded
     )
     session = requests.Session()
-    session.mount('https://', adapter=TimeoutHTTPAdapter(max_retries=retry_strategy, timeout=120))
+    session.mount('https://', adapter=TimeoutHTTPAdapter(max_retries=retry_strategy, timeout=timeout))
     session.headers.update({'Authorization': f'Token {token}'})
     return session
 
@@ -167,10 +175,7 @@ def get_project_details(project_id: int, session=konfuzio_session()) -> dict:
     """
     url = get_project_url(project_id=project_id)
     r = session.get(url=url)
-    try:
-        r.raise_for_status()
-    except HTTPError as e:
-        raise HTTPError(r.text) from e
+
     return r.json()
 
 
@@ -188,7 +193,7 @@ def create_new_project(project_name, session=konfuzio_session()):
 
     if r.status_code == 201:
         project_id = r.json()["id"]
-        print(f"Project {project_name} (ID {project_id}) was created successfully!")
+        logger.info(f"Project {project_name} (ID {project_id}) was created successfully!")
         return project_id
     else:
         raise PermissionError(
@@ -460,10 +465,6 @@ def upload_file_konfuzio_api(
 
     r = session.post(url=url, files=files, data=data)
 
-    try:
-        r.raise_for_status()
-    except HTTPError as e:
-        raise HTTPError(r.text) from e
     return r
 
 
@@ -478,12 +479,7 @@ def delete_file_konfuzio_api(document_id: int, session=konfuzio_session()):
     url = get_document_url(document_id)
     data = {'id': document_id}
 
-    r = session.delete(url=url, json=data)
-
-    try:
-        r.raise_for_status()
-    except HTTPError as e:
-        raise HTTPError(r.text) from e
+    session.delete(url=url, json=data)
 
     return True
 
@@ -517,11 +513,6 @@ def update_document_konfuzio_api(document_id: int, session=konfuzio_session(), *
         data.update({"assignee": assignee})
 
     r = session.patch(url=url, json=data)
-
-    try:
-        r.raise_for_status()
-    except HTTPError as e:
-        raise HTTPError(r.text) from e
 
     return json.loads(r.text)
 
