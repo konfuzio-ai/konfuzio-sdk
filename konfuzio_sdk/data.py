@@ -1275,9 +1275,7 @@ class Label(Data):
         for category in categories:
             true_positives = {}
             all_annotations = [
-                annotation
-                for annotation in self.annotations(categories=[category])
-                if (annotation.is_correct and annotation.confidence < 0.5)
+                annotation for annotation in self.annotations(categories=[category]) if (annotation.is_correct)
             ]
             label_regex_token = self.base_regex(category=category, annotations=all_annotations)
             found_regex = self._find_regexes(all_annotations, label_regex_token, category, 100)
@@ -1297,27 +1295,26 @@ class Label(Data):
                 detected_by_worst_annotations = set()
                 detected_by_best_spans = set()
                 detected_by_best_annotations = set()
-                for annotation in all_annotations:
-                    text = annotation.document.text
-                    for span in annotation.spans:
-                        for regex in sorted_regexes:
+                for regex in sorted_regexes:
+                    if len(worst_regexes) < n_regexes:
+                        for annotation in all_annotations:
+                            text = annotation.document.text
                             matches = regex_matches(text, regex, keep_full_match=False)
-                            if matches:
-                                if len(worst_regexes) < n_regexes:
-                                    worst_regexes.add(regex)
-                                    for span_match in matches:
-                                        span_match_offsets = (span_match['start_offset'], span_match['end_offset'])
-                                        if span_match_offsets == (span.start_offset, span.end_offset):
-                                            detected_by_worst_annotations.add(annotation)
-                                            detected_by_worst_spans.add(span)
-                                else:
-                                    break
+                            for span in annotation.spans:
+                                for span_match in matches:
+                                    span_match_offsets = (span_match['start_offset'], span_match['end_offset'])
+                                    if span_match_offsets == (span.start_offset, span.end_offset):
+                                        detected_by_worst_annotations.add(annotation)
+                                        detected_by_worst_spans.add(span)
                             matches = regex_matches(text, max_tps_regex, keep_full_match=False)
-                            for span_match in matches:
-                                span_match_offsets = (span_match['start_offset'], span_match['end_offset'])
-                                if span_match_offsets == (span.start_offset, span.end_offset):
-                                    detected_by_best_annotations.add(annotation)
-                                    detected_by_best_spans.add(span)
+                            for span in annotation.spans:
+                                for span_match in matches:
+                                    span_match_offsets = (span_match['start_offset'], span_match['end_offset'])
+                                    if span_match_offsets == (span.start_offset, span.end_offset):
+                                        detected_by_best_annotations.add(annotation)
+                                        detected_by_best_spans.add(span)
+                    else:
+                        break
                 for annotation in detected_by_worst_annotations.union(detected_by_best_annotations):
                     if len(annotation.spans) > 1:
                         text = annotation.document.text
