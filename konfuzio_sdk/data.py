@@ -1362,6 +1362,25 @@ class Label(Data):
             outliers = list([annotation[0] for annotation in sorted(all_annotations, key=lambda item: item[1])])
         return outliers
 
+    def get_probable_outliers_by_normalization(
+        self, categories: List[Category], n_outliers: int = 10
+    ) -> List['Annotation']:
+        """Get a list of Annotations that do not pass normalization by the data type."""
+        outliers = set()
+        for category in categories:
+            for annotation in [
+                annotation for annotation in self.annotations(categories=[category]) if annotation.is_correct
+            ]:
+                for span in annotation.spans:
+                    normalized = normalize(span.offset_string, self.data_type)
+                    if not normalized:
+                        outliers.add(annotation)
+        if len(outliers) >= n_outliers:
+            outliers = list(outliers)[:n_outliers]
+        else:
+            outliers = list(outliers)
+        return outliers
+
     # def save(self) -> bool:
     #     """
     #     Save Label online.

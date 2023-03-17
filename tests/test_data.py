@@ -468,6 +468,15 @@ class TestOfflineExampleData(unittest.TestCase):
             assert annotation.confidence < 0.5
             assert annotation.is_correct
 
+    def test_find_outlier_annotations_by_normalization(self):
+        """Test finding the Annotations that do not correspond the Label's data type."""
+        label = self.project.get_label_by_name('Austellungsdatum')
+        outliers = label.get_probable_outliers_by_normalization(self.project.categories)
+        outlier_spans = [span.offset_string for annotation in outliers for span in annotation.spans]
+        assert len(outliers) == 1
+        assert '328927/10103' in outlier_spans
+        assert '22.05.2018' in outlier_spans
+
 
 class TestEqualityAnnotation(unittest.TestCase):
     """Test the equality of Annotations."""
