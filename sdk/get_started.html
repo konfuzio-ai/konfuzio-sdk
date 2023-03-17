@@ -58,14 +58,13 @@
 <li class="toctree-l2"><a class="reference internal" href="#example-usage">Example Usage</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#project">Project</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#documents">Documents</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#upload-document">Upload Document</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#modify-document">Modify Document</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#update-document">Update Document</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#download-pdfs">Download PDFs</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#download-pages-as-images">Download pages as images</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#download-bounding-boxes-of-the-characters">Download bounding boxes of the characters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#update-document">Update Document</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#delete-document">Delete Document</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#upload-document">Upload Document</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#modify-document">Modify Document</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id3">Delete Document</a></li>
 </ul>
 </li>
 </ul>
@@ -155,7 +154,7 @@ At the end, one file will be created in your working directory: <a href="#id1"><
 You can check your project ID by selecting the project in the Projects tab in the Web App.
 The ID of the project is shown in the URL.</p>
 <p><code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span> <span class="pre">download_data</span> <span class="pre">123</span></code></p>
-<p>The data from the documents that you uploaded in your Konfuzio project will be downloaded to a folder called “<a href="#id4"><span class="problematic" id="id5">data_</span></a>”
+<p>The data from the documents that you uploaded in your Konfuzio project will be downloaded to a folder called “<a href="#id3"><span class="problematic" id="id4">data_</span></a>”
 followed by the ID of the project.</p>
 <p><em>Note</em>:
 Only documents in the training or test set are downloaded.</p>
@@ -324,6 +323,48 @@ Boxes).</p>
 <span class="p">]</span>
 </pre></div>
 </div>
+<section id="upload-document">
+<h4>Upload Document<a class="headerlink" href="#upload-document" title="Permalink to this headline">¶</a></h4>
+<p>To upload a new file (see <a class="reference external" href="https://help.konfuzio.com/specification/supported_file_types/index.html">Supported File Types</a>)
+in your Project using the SDK, you have the option between two Document methods: <code class="docutils literal notranslate"><span class="pre">from_file_sync</span></code> and <code class="docutils literal notranslate"><span class="pre">from_file_async</span></code>.</p>
+<p>If you want to upload a Document, and start working with it as soon as the OCR processing step is done, we recommend
+<code class="docutils literal notranslate"><span class="pre">from_file_sync</span></code> as it will wait for the Document to be processed and then return a ready Document. Beware, this may
+take from a few seconds up to over a minute.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span> <span class="o">=</span> <span class="n">Document</span><span class="o">.</span><span class="n">from_file_sync</span><span class="p">(</span><span class="n">FILE_PATH</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">my_project</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If however you are trying to upload a large number of files and don’t want to wait for them to be processed you can use
+the asynchronous function which only returns a Document ID:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document_async</span> <span class="o">=</span> <span class="n">Document</span><span class="o">.</span><span class="n">from_file_async</span><span class="p">(</span><span class="n">FILE_PATH</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">my_project</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Later, you can load the processed Document and get your Document with:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_project</span><span class="o">.</span><span class="n">init_or_update_document</span><span class="p">(</span><span class="n">from_online</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">document_id</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">id_</span>
+<span class="n">document</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">document_id</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="modify-document">
+<h4>Modify Document<a class="headerlink" href="#modify-document" title="Permalink to this headline">¶</a></h4>
+<p>If you would like to use the SDK to modify some Document’s meta-data like the dataset status or the assignee, you can do
+it like this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span><span class="o">.</span><span class="n">assignee</span> <span class="o">=</span> <span class="n">ASSIGNEE_ID</span>
+<span class="n">document</span><span class="o">.</span><span class="n">dataset_status</span> <span class="o">=</span> <span class="mi">2</span>
+
+<span class="n">document</span><span class="o">.</span><span class="n">save_meta_data</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="update-document">
+<h4>Update Document<a class="headerlink" href="#update-document" title="Permalink to this headline">¶</a></h4>
+<p>If there are changes in the Document in the Konfuzio Server, you can update the Document with:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>If a Document is part of the Training or Test set, you can also update it by updating the entire Project via
+<code class="docutils literal notranslate"><span class="pre">project.get(update=True)</span></code>. However, for Projects with many Documents it can be faster to update only the relevant Documents.</p>
+</section>
 <section id="download-pdfs">
 <h4>Download PDFs<a class="headerlink" href="#download-pdfs" title="Permalink to this headline">¶</a></h4>
 <p>To get the PDFs of the Documents, you can use <code class="docutils literal notranslate"><span class="pre">get_file()</span></code>.</p>
@@ -364,66 +405,20 @@ For example, you can get the path to the file with the Document text with:</p>
 </pre></div>
 </div>
 </section>
-<section id="update-document">
-<h4>Update Document<a class="headerlink" href="#update-document" title="Permalink to this headline">¶</a></h4>
-<p>If there are changes in the Document in the Konfuzio Server, you can update the Document with:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
-</pre></div>
-</div>
-<p>If a Document is part of the Training or Test set, you can also update it by updating the entire Project via
-<code class="docutils literal notranslate"><span class="pre">project.get(update=True)</span></code>. However, for Projects with many Documents it can be faster to update only the relevant Documents.</p>
-</section>
 <section id="delete-document">
 <h4>Delete Document<a class="headerlink" href="#delete-document" title="Permalink to this headline">¶</a></h4>
+<section id="delete-document-locally">
+<h5>Delete Document Locally<a class="headerlink" href="#delete-document-locally" title="Permalink to this headline">¶</a></h5>
 <p>To locally delete a Document, you can use:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>The Document will be deleted from your local data folder, but it will remain in the Konfuzio Server.
 If you want to get it again you can update the Project.</p>
-<p>If you want to delete a document permanently you can do it like so:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">delete_online</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</pre></div>
-</div>
 </section>
-<section id="upload-document">
-<h4>Upload Document<a class="headerlink" href="#upload-document" title="Permalink to this headline">¶</a></h4>
-<p>To upload a new file (see <a class="reference external" href="https://help.konfuzio.com/specification/supported_file_types/index.html">Supported File Types</a>)
-in your Project using the SDK, you have the option between two Document methods: <code class="docutils literal notranslate"><span class="pre">from_file_sync</span></code> and <code class="docutils literal notranslate"><span class="pre">from_file_async</span></code>.</p>
-<p>If you want to upload a Document, and start working with it as soon as the OCR processing step is done, we recommend
-<code class="docutils literal notranslate"><span class="pre">from_file_sync</span></code> as it will wait for the Document to be processed and then return a ready Document. Beware, this may
-take from a few seconds up to over a minute.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span> <span class="o">=</span> <span class="n">Document</span><span class="o">.</span><span class="n">from_file_sync</span><span class="p">(</span><span class="n">FILE_PATH</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">my_project</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>If however you are trying to upload a large number of files and don’t wait to wait for them to be processed you can use
-the asynchronous function which only returns a Document ID:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document_async</span> <span class="o">=</span> <span class="n">Document</span><span class="o">.</span><span class="n">from_file_async</span><span class="p">(</span><span class="n">FILE_PATH</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">my_project</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Later, you can load the processed Document and get your Document with:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_project</span><span class="o">.</span><span class="n">init_or_update_document</span><span class="p">(</span><span class="n">from_online</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="n">document_id</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">id_</span>
-<span class="n">document</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">document_id</span><span class="p">)</span>
-</pre></div>
-</div>
-</section>
-<section id="modify-document">
-<h4>Modify Document<a class="headerlink" href="#modify-document" title="Permalink to this headline">¶</a></h4>
-<p>If you would like to use the SDK to modify some Document’s meta-data like the dataset status or the assignee, you can do
-it like this:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span><span class="o">.</span><span class="n">assignee</span> <span class="o">=</span> <span class="n">ASSIGNEE_ID</span>
-<span class="n">document</span><span class="o">.</span><span class="n">dataset_status</span> <span class="o">=</span> <span class="mi">2</span>
-
-<span class="n">document</span><span class="o">.</span><span class="n">save_meta_data</span><span class="p">()</span>
-</pre></div>
-</div>
-</section>
-<section id="id3">
-<h4>Delete Document<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
-<p>If you would like to delete a Document in the remote server you can simply use the <code class="docutils literal notranslate"><span class="pre">Document.delete</span></code> method. You can
-only delete Documents with a dataset status of None (0). <strong>Be careful!</strong> Once the Document is deleted online, we will
-have no way of recovering it.</p>
+<section id="delete-document-online">
+<h5>Delete Document Online<a class="headerlink" href="#delete-document-online" title="Permalink to this headline">¶</a></h5>
+<p>If you would like to delete a Document in the remote server you can simply use the <code class="docutils literal notranslate"><span class="pre">Document.delete</span></code> method the <code class="docutils literal notranslate"><span class="pre">delete_online</span></code> setting set to <code class="docutils literal notranslate"><span class="pre">True</span></code>. You can only delete Documents with a dataset status of None (0). <strong>Be careful!</strong> Once the Document is deleted online, we will have no way of recovering it.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span><span class="o">.</span><span class="n">dataset_status</span> <span class="o">=</span> <span class="mi">0</span>
 
 <span class="n">document</span><span class="o">.</span><span class="n">save_meta_data</span><span class="p">()</span>
@@ -432,6 +427,7 @@ have no way of recovering it.</p>
 </div>
 <p>If <code class="docutils literal notranslate"><span class="pre">delete_online</span></code> is set to False (the default), the Document will only be deleted on your local machine, and will be
 reloaded next time you load the Project, or if you run the <code class="docutils literal notranslate"><span class="pre">Project.init_or_update_document</span></code> method directly.</p>
+</section>
 </section>
 </section>
 </section>

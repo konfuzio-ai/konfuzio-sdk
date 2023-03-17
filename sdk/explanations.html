@@ -409,12 +409,13 @@ size used for the characters’ bbox.</p>
 </section>
 <section id="horizontal-merge">
 <h2>Horizontal Merge<a class="headerlink" href="#horizontal-merge" title="Permalink to this headline">¶</a></h2>
-<p>When using an <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#extraction-ai">Extraction AI</a>, we merge adjacent horizontal Spans right after the Label classifier.</p>
+<p>When using an <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#extraction-ai">Extraction AI</a>, we merge adjacent horizontal Spans right after the Label classifier. The confidence of the resulting new Span if taken to be the mean confidence of the original Spans being merged.</p>
 <p>A horizontal merging is valid only if:</p>
 <ol class="arabic simple">
 <li><p>All Spans have the same predicted Label</p></li>
 <li><p>Confidence of predicted Label is above the Label threshold</p></li>
 <li><p>All Spans are on the same line</p></li>
+<li><p>Spans are not overlapping</p></li>
 <li><p>No extraneous characters in between Spans</p></li>
 <li><p>A maximum of 5 spaces in between Spans</p></li>
 <li><p>The <a class="reference external" href="https://dev.konfuzio.com/web/api.html#supported-data-normalization">Label type</a> is not one of the following: ‘Number’, ‘Positive Number’, ‘Percentage’, ‘Date’
