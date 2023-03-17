@@ -3,13 +3,12 @@
 import abc
 import collections
 import logging
-import time
 from typing import List, Union, Tuple, Dict, Optional
 from copy import deepcopy
 
 import pandas as pd
 
-from konfuzio_sdk.data import Document, Category, Span, Page, Annotation
+from konfuzio_sdk.data import Document, Category, Span, Page
 from konfuzio_sdk.evaluate import compare, ExtractionEvaluation
 from konfuzio_sdk.utils import sdk_isinstance
 
@@ -219,17 +218,10 @@ class AbstractTokenizer(metaclass=abc.ABCMeta):
         """Fit the tokenizer accordingly with the Documents of the Category."""
 
     @abc.abstractmethod
-    def _tokenize(self, document: Document) -> List[Span]:
-        """
-        Given a Document use the tokenizer to tokenize the text of the Document.
-
-        Returns the Spans as a list.
-        """
-
-    @abc.abstractmethod
     def found_spans(self, document: Document) -> List[Span]:
         """Find all Spans in a Document that can be found by a Tokenizer."""
 
+    @abc.abstractmethod
     def tokenize(self, document: Document) -> Document:
         """
         Create Annotations with 1 Span based on the result of the Tokenizer.
@@ -237,50 +229,6 @@ class AbstractTokenizer(metaclass=abc.ABCMeta):
         :param document: Document to tokenize, can have been tokenized before
         :return: Document with Spans created by the Tokenizer.
         """
-        assert sdk_isinstance(document, Document)
-        if document.text is None:
-            raise NotImplementedError(f'{document} cannot be tokenized when text is None.')
-
-        before_none = len(document.annotations(use_correct=False, label=document.project.no_label))
-
-        t0 = time.monotonic()
-        spans = self._tokenize(document)
-
-        # Create a revised = False and is_correct = False (defaults) Annotation
-        document_spans = {(span.start_offset, span.end_offset): span for span in document.spans()}
-        for span in spans:
-            span_key = (span.start_offset, span.end_offset)
-            if span_key not in document_spans:  # (use_correct=False):
-                document_spans[span_key] = span
-                # todo this hides the fact, that Tokenizers of different quality can create the same Span
-                # todo we create an overlapping Annotation in case the Tokenizer finds a correct match
-                annotation = Annotation(
-                    document=document,
-                    annotation_set=document.no_label_annotation_set,
-                    label=document.project.no_label,  # track which tokenizer created the span by using a Label
-                    label_set=document.project.no_label_set,
-                    category=document.category,
-                    spans=[span],
-                )
-                for span in annotation.spans:
-                    try:
-                        span.bbox()  # check that the bbox can be calculated  # todo add test
-                    except ValueError as e:
-                        logger.error(f'Regex made {span} "{span.offset_string}" that has no valid bbox: {repr(e)}')
-                        # annotation.delete()  # todo we should skip Annotations that have no valide bbox
-                    # except TypeError as e:
-                    #   logger.error(f'Typeerror Bbox of {span} "{span.offset_string}": {repr(e)} - {span.eval_dict()}')
-                    #   # annotation.delete()  # todo we should skip Annotations that have no valide bbox
-            else:
-                if self not in document_spans[span_key].regex_matching:
-                    document_spans[span_key].regex_matching.append(self)  # add tokenizer to Span.regex_matches:
-                logger.warning(f'{document} contains {span} already. It will not be added by the Tokenizer.')
-        after_none = len(document.annotations(use_correct=False, label=document.project.no_label))
-        logger.info(f'{after_none - before_none} new Annotations in {document} by {repr(self)}.')
-
-        self.processing_steps.append(ProcessingStep(self, document, time.monotonic() - t0))
-
-        return document
 
     def evaluate(self, document: Document) -> pd.DataFrame:
         """
@@ -294,7 +242,7 @@ class AbstractTokenizer(metaclass=abc.ABCMeta):
 
         virtual_doc = deepcopy(document)
         self.tokenize(virtual_doc)
-        evaluation = compare(document, virtual_doc)
+        evaluation = compare(document, virtual_doc, use_view_annotations=False, ignore_below_threshold=False)
         logger.warning(
             f'{evaluation["tokenizer_true_positive"].sum()} of {evaluation["is_correct"].sum()} corrects'
             f' Spans are found by Tokenizer'
@@ -315,7 +263,7 @@ class AbstractTokenizer(metaclass=abc.ABCMeta):
             virtual_doc = deepcopy(document)
             self.tokenize(virtual_doc)
             eval_list.append((document, virtual_doc))
-        return ExtractionEvaluation(eval_list)
+        return ExtractionEvaluation(eval_list, use_view_annotations=False, ignore_below_threshold=False)
 
     def missing_spans(self, document: Document) -> List[Span]:
         """

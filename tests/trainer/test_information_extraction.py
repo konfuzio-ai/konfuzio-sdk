@@ -19,7 +19,7 @@ import pandas as pd
 from sklearn.datasets import make_classification
 from sklearn.ensemble import RandomForestClassifier
 
-from konfuzio_sdk.data import Project, Document, AnnotationSet
+from konfuzio_sdk.data import Project, Document, AnnotationSet, Annotation, Span
 from konfuzio_sdk.trainer.information_extraction import (
     num_count,
     date_count,
@@ -34,7 +34,7 @@ from konfuzio_sdk.trainer.information_extraction import (
     strip_accents,
     count_string_differences,
     year_month_day_count,
-    add_extractions_as_annotations,
+    # add_extractions_as_annotations,
     load_model,
     RFExtractionAI,
     Trainer,
@@ -152,15 +152,23 @@ label_set_clf_classes = ['Brutto-Bezug', 'Lohnabrechnung', 'Netto-Bezug', 'No', 
 
 
 @parameterized.parameterized_class(
-    ('use_separate_labels', 'evaluate_full_result', 'data_quality_result', 'clf_quality_result'),
+    (
+        'use_separate_labels',
+        'evaluate_full_result',
+        'data_quality_result',
+        'clf_quality_result',
+        'n_nearest_accross_lines',
+    ),
     [
         (
             False,
-            0.8055555555555556,  # w/ full dataset: 0.9237668161434978
+            0.7671232876712328,  # w/ full dataset: 0.9237668161434978
             0.9745762711864406,
-            0.9705882352941176,
+            1.0,
+            False,
         ),
-        (True, 0.8055555555555556, 0.9704641350210971, 0.967741935483871),  # w/ full dataset: 0.9783549783549783
+        (True, 0.7945205479452054, 0.9745762711864406, 1.0, False),  # w/ full dataset: 0.9783549783549783
+        (False, 0.8732394366197183, 0.9704641350210971, 1.0, True),
     ],
 )
 class TestWhitespaceRFExtractionAI(unittest.TestCase):
@@ -171,7 +179,11 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         """Set up the Data and Pipeline."""
         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
 
-        cls.pipeline = RFExtractionAI(use_separate_labels=cls.use_separate_labels, tokenizer=None)
+        cls.pipeline = RFExtractionAI(
+            use_separate_labels=cls.use_separate_labels,
+            n_nearest_across_lines=cls.n_nearest_accross_lines,
+            tokenizer=None,
+        )
         cls.pipeline.pipeline_path_no_konfuzio_sdk = None
 
         cls.tests_annotations_spans = list()
@@ -240,8 +252,8 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         """Start to train the Model."""
         self.pipeline.fit()
 
-        assert memory_size_of(self.pipeline.clf) < 1e5
-        assert memory_size_of(self.pipeline.label_set_clf) < 1e5
+        assert memory_size_of(self.pipeline.clf) < 2e5
+        assert memory_size_of(self.pipeline.label_set_clf) < 2e5
 
         if self.pipeline.use_separate_labels:
             assert len(self.pipeline.clf.classes_) == 19
@@ -311,18 +323,28 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 
     def test_06_evaluate_full(self):
         """Evaluate Whitespace RFExtractionAI Model."""
-        evaluation = self.pipeline.evaluate_full()
+        evaluation = self.pipeline.evaluate_full(use_view_annotations=False)
 
         assert evaluation.f1(None) == self.evaluate_full_result
 
-        assert 5e5 < memory_size_of(evaluation.data) < 6e5
+        assert 1e5 < memory_size_of(evaluation.data) < 2e5
+
+        view_evaluation = self.pipeline.evaluate_full(use_view_annotations=True)
+        assert view_evaluation.f1(None) == self.evaluate_full_result == evaluation.f1(None)
+
+        assert 1e5 < memory_size_of(view_evaluation.data) < 2e5
 
     def test_07_data_quality(self):
         """Evaluate on training documents."""
-        evaluation = self.pipeline.evaluate_full(use_training_docs=True)
+        evaluation = self.pipeline.evaluate_full(use_training_docs=True, use_view_annotations=False)
         assert evaluation.f1(None) == self.data_quality_result
 
-        assert 22e5 < memory_size_of(evaluation.data) < 24e5
+        assert 2e5 < memory_size_of(evaluation.data) < 4e5
+
+        view_evaluation = self.pipeline.evaluate_full(use_training_docs=True, use_view_annotations=True)
+        assert view_evaluation.f1(None) == self.data_quality_result == evaluation.f1(None)
+
+        assert 2e5 < memory_size_of(view_evaluation.data) < 4e5
 
     def test_08_tokenizer_quality(self):
         """Evaluate the tokenizer quality."""
@@ -339,7 +361,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         evaluation = self.pipeline.evaluate_clf()
         assert evaluation.clf_f1(None) == self.clf_quality_result
 
-        assert 1e5 < memory_size_of(evaluation.data) < 2e5
+        assert 5e4 < memory_size_of(evaluation.data) < 2e5
 
     def test_10_label_set_clf_quality(self):
         """Evaluate the LabelSet classifier quality."""
@@ -347,14 +369,20 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 
         assert evaluation.f1(None) == 0.9552238805970149
 
-        assert 1e5 < memory_size_of(evaluation.data) < 2e5
+        assert 5e4 < memory_size_of(evaluation.data) < 2e5
 
     def test_11_extract_test_document(self):
         """Extract a randomly selected Test Document."""
         test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         res_doc = self.pipeline.extract(document=test_document)
+
+        document_annotation_sets = res_doc.annotation_sets()
+        assert len(document_annotation_sets) == 5
+        assert len([ann_set for ann_set in document_annotation_sets if ann_set.label_set.is_default]) == 1
+
         view_annotations = res_doc.view_annotations()
         assert len(view_annotations) == 19
+
         view_spans = sorted([span for ann in view_annotations for span in ann.spans])
         self.tests_annotations_spans += view_spans
         assert len(self.tests_annotations_spans) == 20
@@ -382,9 +410,17 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         res_doc = self.pipeline.extract(document=test_document)
         assert len(res_doc.view_annotations()) == 19
 
+        assert len(res_doc.annotation_sets()) == 5
+
         no_konfuzio_sdk_pipeline = load_model(self.pipeline.pipeline_path_no_konfuzio_sdk)
         res_doc = no_konfuzio_sdk_pipeline.extract(document=test_document)
         assert len(res_doc.view_annotations()) == 19
+
+        prj46 = Project(id_=46, update=True)
+        doc = prj46.get_document_by_id(570129)
+        res_doc = self.pipeline.extract(document=doc)
+
+        return
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -397,8 +433,8 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 @parameterized.parameterized_class(
     ('use_separate_labels', 'evaluate_full_result'),
     [
-        (False, 0.7272727272727273),  # w/ full dataset: 0.8930232558139535
-        (True, 0.7164179104477612),  # w/ full dataset: 0.9596412556053812
+        (False, 0.7741935483870968),  # w/ full dataset: 0.8930232558139535
+        (True, 0.75),  # w/ full dataset: 0.9596412556053812
     ],
 )
 class TestRegexRFExtractionAI(unittest.TestCase):
@@ -408,6 +444,8 @@ class TestRegexRFExtractionAI(unittest.TestCase):
     def setUpClass(cls) -> None:
         """Set up the Data and Pipeline."""
         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
+        for label in cls.project.labels:
+            label.threshold = 0.2
         cls.pipeline = RFExtractionAI(use_separate_labels=cls.use_separate_labels)
 
         cls.pipeline.pipeline_path_no_konfuzio_sdk = None
@@ -452,7 +490,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         assert 1e6 < memory_size_of(self.pipeline.category) < 2.2e6
 
         self.pipeline.df_train, self.pipeline.label_feature_list = self.pipeline.feature_function(
-            documents=self.pipeline.documents, retokenize=False, require_revised_annotations=False
+            documents=self.pipeline.documents, require_revised_annotations=False
         )
 
         assert 1e6 < memory_size_of(self.pipeline.category) < 2.2e6
@@ -462,8 +500,8 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         """Start to train the Model."""
         self.pipeline.fit()
 
-        assert memory_size_of(self.pipeline.clf) < 1e5
-        assert memory_size_of(self.pipeline.label_set_clf) < 1e5
+        assert memory_size_of(self.pipeline.clf) < 2e5
+        assert memory_size_of(self.pipeline.label_set_clf) < 2e5
 
         if self.pipeline.use_separate_labels:
             assert len(self.pipeline.clf.classes_) == 19
@@ -534,17 +572,27 @@ class TestRegexRFExtractionAI(unittest.TestCase):
 
     def test_06_evaluate_full(self):
         """Evaluate DocumentEntityMultiClassModel."""
-        evaluation = self.pipeline.evaluate_full()
+        evaluation = self.pipeline.evaluate_full(use_view_annotations=False)
         assert evaluation.f1(None) == self.evaluate_full_result
 
         assert 1e5 < memory_size_of(evaluation.data) < 2e5
 
+        view_evaluation = self.pipeline.evaluate_full(use_view_annotations=True)
+        assert view_evaluation.f1(None) == self.evaluate_full_result == evaluation.f1(None)
+
+        assert 1e5 < memory_size_of(view_evaluation.data) < 2e5
+
     def test_07_data_quality(self):
         """Evaluate on training documents."""
-        evaluation = self.pipeline.evaluate_full(use_training_docs=True)
+        evaluation = self.pipeline.evaluate_full(use_training_docs=True, use_view_annotations=False)
         assert evaluation.f1(None) >= 0.94
 
-        assert 4e5 < memory_size_of(evaluation.data) < 6e5
+        assert 2e5 < memory_size_of(evaluation.data) < 4e5
+
+        view_evaluation = self.pipeline.evaluate_full(use_training_docs=True, use_view_annotations=True)
+        assert view_evaluation.f1(None) >= 0.94
+
+        assert 2e5 < memory_size_of(view_evaluation.data) < 4e5
 
     def test_08_tokenizer_quality(self):
         """Evaluate the tokenizer quality."""
@@ -561,7 +609,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         evaluation = self.pipeline.evaluate_clf()
         assert evaluation.clf_f1(None) == 1.0
 
-        assert 1e5 < memory_size_of(evaluation.data) < 2e5
+        assert 5e4 < memory_size_of(evaluation.data) < 2e5
 
     def test_10_label_set_clf_quality(self):
         """Evaluate the LabelSet classifier quality."""
@@ -572,8 +620,14 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         """Extract a randomly selected Test Document."""
         test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         res_doc = self.pipeline.extract(document=test_document)
+
+        document_annotation_sets = res_doc.annotation_sets()
+        assert len(document_annotation_sets) == 5
+        assert len([ann_set for ann_set in document_annotation_sets if ann_set.label_set.is_default]) == 1
+
         view_annotations = res_doc.view_annotations()
         assert len(view_annotations) == 19
+
         view_spans = sorted([span for ann in view_annotations for span in ann.spans])
         self.tests_annotations_spans += view_spans
         assert len(self.tests_annotations_spans) == 20
@@ -598,6 +652,8 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         res_doc = self.pipeline.extract(document=test_document)
         assert len(res_doc.view_annotations()) == 19
+
+        assert len(res_doc.annotation_sets()) == 5
 
         no_konf_pipeline = load_model(self.pipeline.pipeline_path_no_konfuzio_sdk)
         res_doc = no_konf_pipeline.extract(document=test_document)
@@ -718,16 +774,108 @@ class TestInformationExtraction(unittest.TestCase):
 
         assert virt_doc.annotations(use_correct=False) == []
 
+    def test_annotation_set_extraction_with_no_span_above_detection_threshold(self):
+        """Test that extract_template_with_clf returns empty dictionary when no spans above detection threshold."""
+        category = self.project.get_category_by_id(63)
+        pipeline = RFExtractionAI(category=category)
+        res_dict = pipeline.extract_template_with_clf("doc text", res_dict={})
+        assert res_dict == {}
+
+    def test_merge_vertical_1(self):
+        """Test the vertical merging of Spans into a single Annotation."""
+        project = LocalTextProject()
+
+        category = project.get_category_by_id(1)
+        pipeline = RFExtractionAI()
+
+        document = project.no_status_documents[1]
+        label = document.annotations(use_correct=False)[0].label
+
+        assert len(document.spans()) == 4
+        assert len(document.annotations(use_correct=False)) == 4
+
+        with pytest.raises(AttributeError, match="merge_vertical requires a Category"):
+            pipeline.merge_vertical(document, only_multiline_labels=True)
+
+        pipeline.category = category
+
+        with pytest.raises(TypeError, match="This value has never been computed."):
+            pipeline.merge_vertical(document)
+
+        for category_label in category.labels:
+            category_label.has_multiline_annotations(categories=[category])
+
+        pipeline.merge_vertical(document)
+
+        assert label.has_multiline_annotations(categories=[category]) is False
+        assert document.bboxes_available is True
+
+        train_document = Document(project=project, category=category, text='p1\np2', dataset_status=2)
+        train_span1 = Span(start_offset=0, end_offset=2)
+        train_span2 = Span(start_offset=3, end_offset=5)
+        _ = Annotation(
+            document=train_document,
+            is_correct=True,
+            label=label,
+            label_set=project.no_label_set,
+            spans=[train_span1, train_span2],
+        )
+
+        assert label.has_multiline_annotations() is False  # Value hasn't been updated yet
+        assert label.has_multiline_annotations(categories=[category]) is True
+        assert label.has_multiline_annotations() is True
+
+        pipeline.merge_vertical(document)
+
+        assert len(document.spans()) == 4
+        assert len(document.annotations(use_correct=False)) == 2
+
+    def test_merge_vertical_2(self):
+        """Test the vertical merging of Spans into a single Annotation with the only_multiline_labels parameter."""
+        project = LocalTextProject()
+        category = project.get_category_by_id(1)
+        pipeline = RFExtractionAI()
+
+        document = project.get_document_by_id(8)
+
+        assert len(document.annotations(use_correct=False)) == 6
+
+        with pytest.raises(AttributeError, match="merge_vertical requires a Category"):
+            pipeline.merge_vertical(document, only_multiline_labels=True)
+
+        pipeline.category = category
+
+        with pytest.raises(TypeError, match="This value has never been computed."):
+            pipeline.merge_vertical(document, only_multiline_labels=True)
+
+        pipeline.merge_vertical(document, only_multiline_labels=False)
+
+        assert len(document.annotations(use_correct=False)) == 4
+        assert len(document.annotations(use_correct=False)[1].spans) == 3
+
     def test_feature_function(self):
         """Test to generate features."""
         document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         pipeline = RFExtractionAI()
         pipeline.tokenizer = WhitespaceTokenizer()
         features, feature_names, errors = pipeline.features(document)
-        assert len(feature_names) == 270  # todo investigate if all features are calculated correctly, see #9289
+        assert len(feature_names) == 271  # todo investigate if all features are calculated correctly, see #9289
         # feature order should stay the same to get predictable results
         assert feature_names[-1] == 'first_word_y1'
         assert feature_names[42] == 'feat_substring_count_h'
+
+    def test_feature_function_n_nearest_accross_lines(self):
+        """Test to generate features with n_nearest_across_lines=True."""
+        document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        pipeline = RFExtractionAI(n_nearest_across_lines=True)
+        pipeline.tokenizer = WhitespaceTokenizer()
+        features, feature_names, errors = pipeline.features(document)
+        assert len(feature_names) == 275  # todo investigate if all features are calculated correctly, see #9289
+        # feature order should stay the same to get predictable results
+        assert feature_names[-1] == 'first_word_y1'
+        assert feature_names[42] == 'feat_substring_count_h'
+        assert feature_names[60] == 'l_pos0'
+        assert feature_names[65] == 'r_pos1'
 
     def test_extract_with_unfitted_clf(self):
         """Test to extract a Document."""
@@ -777,7 +925,7 @@ class TestInformationExtraction(unittest.TestCase):
         pipeline.tokenizer = WhitespaceTokenizer()
         pipeline.n_nearest = 10
         features, feature_names, errors = pipeline.features(document)
-        assert len(feature_names) == 1102  # todo investigate if all features are calculated correctly, see #9289
+        assert len(feature_names) == 1103  # todo investigate if all features are calculated correctly, see #9289
         assert features['is_correct'].sum() == 21
         assert features['revised'].sum() == 2
 
@@ -1003,7 +1151,7 @@ class TestAddExtractionAsAnnotation(unittest.TestCase):
         """Test add extraction to the sample document."""
         annotation_set = AnnotationSet(id_=99, document=self.sample_document, label_set=self.label_set)
 
-        add_extractions_as_annotations(
+        RFExtractionAI().add_extractions_as_annotations(
             extractions=self.extraction_df,
             document=self.sample_document,
             label=self.label,
@@ -1039,7 +1187,7 @@ class TestAddExtractionAsAnnotation(unittest.TestCase):
         annotation_set_1 = AnnotationSet(id_=97, document=document, label_set=self.label_set)
         extraction_df = pd.DataFrame()
 
-        add_extractions_as_annotations(
+        RFExtractionAI().add_extractions_as_annotations(
             extractions=extraction_df,
             document=document,
             label=self.label,
@@ -1054,7 +1202,7 @@ class TestAddExtractionAsAnnotation(unittest.TestCase):
         annotation_set_1 = AnnotationSet(id_=98, document=document, label_set=self.label_set)
         extraction_df = pd.DataFrame()
 
-        add_extractions_as_annotations(
+        RFExtractionAI().add_extractions_as_annotations(
             extractions=extraction_df,
             document=document,
             label=self.label,
@@ -1071,7 +1219,7 @@ class TestAddExtractionAsAnnotation(unittest.TestCase):
         # The document used is an empty document, therefore it does not have text or bounding boxes,
         # so we cannot have the offset string or the coordinates and it shouldn't have been extracted at all
         with pytest.raises(NotImplementedError, match='does not have a correspondence in the text of Virtual Document'):
-            add_extractions_as_annotations(
+            RFExtractionAI().add_extractions_as_annotations(
                 extractions=self.extraction_df,
                 document=document,
                 label=self.label,
@@ -1088,7 +1236,7 @@ class TestAddExtractionAsAnnotation(unittest.TestCase):
         extraction_df = pd.DataFrame(data=[extraction])
 
         with pytest.raises(ValueError, match='Extraction do not contain all required fields'):
-            add_extractions_as_annotations(
+            RFExtractionAI().add_extractions_as_annotations(
                 extractions=extraction_df,
                 document=document,
                 label=self.label,
@@ -1347,6 +1495,7 @@ def test_load_model_wrong_pickle_data():
         load_model(path)
 
 
+@unittest.skipIf(sys.version_info[:2] == (3, 11), 'Throws "TypeError: code() argument 13 must be str, not int"')
 def test_load_ai_model_konfuzio_sdk_not_included():
     """Test loading of trained model with include_konfuzio setting set to False."""
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)

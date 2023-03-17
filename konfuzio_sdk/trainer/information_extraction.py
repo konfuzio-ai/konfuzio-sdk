@@ -31,7 +31,7 @@ import unicodedata
 from copy import deepcopy
 from heapq import nsmallest
 from inspect import signature
-from typing import Tuple, Optional, List, Union, Callable, Dict
+from typing import Tuple, Optional, List, Union, Dict
 from warnings import warn
 
 import numpy
@@ -41,7 +41,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.utils.validation import check_is_fitted
 from tabulate import tabulate
 
-from konfuzio_sdk.data import Data, Document, Annotation, Category, AnnotationSet, Label, LabelSet, Span
+from konfuzio_sdk.data import Data, Document, Annotation, Category, AnnotationSet, Label, LabelSet, Span  # , Page
 
 from konfuzio_sdk.normalize import (
     normalize_to_float,
@@ -50,9 +50,18 @@ from konfuzio_sdk.normalize import (
     normalize_to_positive_float,
 )
 from konfuzio_sdk.regex import regex_matches
-from konfuzio_sdk.utils import get_timestamp, get_bbox, normalize_memory, get_sdk_version, memory_size_of
+from konfuzio_sdk.utils import (
+    get_timestamp,
+    get_bbox,
+    normalize_memory,
+    get_sdk_version,
+    memory_size_of,
+    sdk_isinstance,
+)
 
 from konfuzio_sdk.evaluate import ExtractionEvaluation
+
+from konfuzio_sdk.tokenizer.base import ListTokenizer
 
 logger = logging.getLogger(__name__)
 
@@ -692,7 +701,7 @@ def process_document_data(
     spans: List[Span],
     n_nearest: Union[int, List, Tuple] = 2,
     first_word: bool = True,
-    tokenize_fn: Optional[Callable] = None,
+    # tokenize_fn: Optional[Callable] = None,
     substring_features=None,
     catchphrase_list=None,
     n_nearest_across_lines: bool = False,
@@ -752,9 +761,6 @@ def process_document_data(
         first_word_x1 = first_candidate['x1']
         first_word_y1 = first_candidate['y1']
 
-    # todo document.annotations () should be sorted already - check or update this function
-    spans.sort(key=lambda x: x.start_offset)
-
     # WIP: Word on page feature
     page_text_list = document_text.split('\f')
 
@@ -794,24 +800,22 @@ def process_document_data(
         # append to line candidates
         # store the line_start_offset so if the next annotation is on the same line then we use the same
         # line_candidiates list and therefore saves us tokenizing the same line again
-        for line_num, line in enumerate(line_list):
-            if line['start_offset'] <= span.end_offset and line['end_offset'] >= span.start_offset:
 
-                # get the catchphrase features
-                if catchphrase_list is not None and len(catchphrase_list) != 0:
-                    if line_num == _line_num:
-                        span.catchphrase_dict = _catchphrase_dict
-                    else:
-                        _catchphrase_dict = generate_feature_dict_from_occurence_dict(
-                            occurrence_dict, catchphrase_list, line_num
-                        )
-                        span.catchphrase_dict = _catchphrase_dict
-                        _line_num = line_num
-
-                line_candidates, candidates_cache = get_line_candidates(
-                    document_text, document_bbox, line_list, line_num, candidates_cache
+        # get the catchphrase features
+        line_num = span.line_index
+        if catchphrase_list is not None and len(catchphrase_list) != 0:
+            if line_num == _line_num:
+                span.catchphrase_dict = _catchphrase_dict
+            else:
+                _catchphrase_dict = generate_feature_dict_from_occurence_dict(
+                    occurrence_dict, catchphrase_list, line_num
                 )
-                break
+                span.catchphrase_dict = _catchphrase_dict
+                _line_num = line_num
+
+        line_candidates, candidates_cache = get_line_candidates(
+            document_text, document_bbox, line_list, line_num, candidates_cache
+        )
 
         l_list = []
         r_list = []
@@ -837,14 +841,18 @@ def process_document_data(
             i = 1
             while (line_num - i) >= 0:
                 line_candidates, candidates_cache = get_line_candidates(
-                    document_text, document_bbox, line_list, line_num - i, tokenize_fn, candidates_cache
+                    document_text,
+                    document_bbox,
+                    line_list,
+                    line_num - i,
+                    candidates_cache,  # tokenize_fn,
                 )
                 for candidate in line_candidates:
                     candidate['dist'] = min(
-                        abs(span.x0 - candidate['x0']),
-                        abs(span.x0 - candidate['x1']),
-                        abs(span.x1 - candidate['x0']),
-                        abs(span.x1 - candidate['x1']),
+                        abs(span.bbox().x0 - candidate['x0']),
+                        abs(span.bbox().x0 - candidate['x1']),
+                        abs(span.bbox().x1 - candidate['x0']),
+                        abs(span.bbox().x1 - candidate['x1']),
                     )
                     candidate['pos'] = -i
                 prev_line_candidates.extend(line_candidates)
@@ -856,14 +864,18 @@ def process_document_data(
             i = 1
             while line_num + i < len(line_list):
                 line_candidates, candidates_cache = get_line_candidates(
-                    document_text, document_bbox, line_list, line_num + i, tokenize_fn, candidates_cache
+                    document_text,
+                    document_bbox,
+                    line_list,
+                    line_num + i,
+                    candidates_cache,  # tokenize_fn,
                 )
                 for candidate in line_candidates:
                     candidate['dist'] = min(
-                        abs(span.x0 - candidate['x0']),
-                        abs(span.x0 - candidate['x1']),
-                        abs(span.x1 - candidate['x0']),
-                        abs(span.x1 - candidate['x1']),
+                        abs(span.bbox().x0 - candidate['x0']),
+                        abs(span.bbox().x0 - candidate['x1']),
+                        abs(span.bbox().x1 - candidate['x0']),
+                        abs(span.bbox().x1 - candidate['x1']),
                     )
                     candidate['pos'] = i
                 next_line_candidates.extend(line_candidates)
@@ -913,11 +925,6 @@ def process_document_data(
         for index, item in enumerate(word_on_page_feature_list):
             span_dict['word_on_page_feat' + str(index)] = item
 
-        # if annotation.label and annotation.label.threshold:
-        #     annotation_dict["threshold"] = annotation.label.threshold
-        # else:
-        #     annotation_dict["threshold"] = 0.1
-
         if _catchphrase_dict:
             for catchphrase, dist in _catchphrase_dict.items():
                 span_dict['catchphrase_dist_' + catchphrase] = dist
@@ -952,6 +959,8 @@ def process_document_data(
     df_string_features_real = convert_to_feat(list(df["offset_string"]))
     string_feature_column_order = list(df_string_features_real.columns.values)
 
+    # joins it to the main DataFrame
+    df = df.join(df_string_features_real, lsuffix='_caller', rsuffix='_other')
     relative_string_feature_list = []
 
     for index in range(n_left_nearest):
@@ -966,7 +975,7 @@ def process_document_data(
 
     df["relative_position_in_page"] = df["page_index"] / document_n_pages
 
-    abs_pos_feature_list = ["x0", "y0", "x1", "y1", "page_index", "area_quadrant_two"]  # , "area"]
+    abs_pos_feature_list = ["x0", "y0", "x1", "y1", "page_index", "area_quadrant_two", "area"]
     relative_pos_feature_list = ["relative_position_in_page"]
 
     feature_list = (
@@ -985,9 +994,6 @@ def process_document_data(
     if catchphrase_list is not None:
         for catchphrase in catchphrase_list:
             feature_list.append('catchphrase_dist_' + catchphrase)
-
-    # joins it to the main DataFrame
-    df = df.join(df_string_features_real, lsuffix='_caller', rsuffix='_other')
 
     return df, feature_list, df_errors
 
@@ -1025,38 +1031,6 @@ def generate_feature_dict_from_occurence_dict(occurence_dict, catchphrase_list, 
         _dict[catchphrase] = next((i - line_num for i in occurence_dict[catchphrase] if i < line_num), -1)
 
     return _dict
-
-
-def add_extractions_as_annotations(
-    extractions: pandas.DataFrame, document: Document, label: Label, label_set: LabelSet, annotation_set: AnnotationSet
-) -> None:
-    """Add the extraction of a model to the document."""
-    if not isinstance(extractions, pandas.DataFrame):
-        raise TypeError(f'Provided extraction object should be a Dataframe, got a {type(extractions)} instead')
-    if not extractions.empty:
-        # TODO: define required fields
-        required_fields = ['start_offset', 'end_offset', 'confidence']
-        if not set(required_fields).issubset(extractions.columns):
-            raise ValueError(
-                f'Extraction do not contain all required fields: {required_fields}.'
-                f' Extraction columns: {extractions.columns.to_list()}'
-            )
-
-        extracted_spans = extractions[required_fields].sort_values(by='confidence', ascending=False)
-
-        for span in extracted_spans.to_dict('records'):  # todo: are start_offset and end_offset always ints?
-            annotation = Annotation(
-                document=document,
-                label=label,
-                confidence=span['confidence'],
-                label_set=label_set,
-                annotation_set=annotation_set,
-                spans=[Span(start_offset=span['start_offset'], end_offset=span['end_offset'])],
-            )
-            if annotation.spans[0].offset_string is None:
-                raise NotImplementedError(
-                    f"Extracted {annotation} does not have a correspondence in the " f"text of {document}."
-                )
 
 
 class BaseModel(metaclass=abc.ABCMeta):
@@ -1229,7 +1203,7 @@ class Trainer(BaseModel):
         # Go through keyword arguments, and either save their values to our
         # instance, or raise an error.
         super().__init__()
-        self.category = Category
+        self.category = category
         self.clf = None
         self.label_feature_list = None  # will be set later
 
@@ -1263,42 +1237,85 @@ class Trainer(BaseModel):
         virtual_default_annotation_set = AnnotationSet(
             document=virtual_doc, label_set=category_label_set, id_=virtual_annotation_set_id
         )
-
+        virtual_annotation_set_id += 1
         for label_or_label_set_name, information in extraction_result.items():
-            if isinstance(information, pandas.DataFrame) and not information.empty:
+
+            if isinstance(information, pandas.DataFrame):
+                if information.empty:
+                    continue
+
                 # annotations belong to the default Annotation Set
                 label = self.category.project.get_label_by_name(label_or_label_set_name)
-                add_extractions_as_annotations(
+                self.add_extractions_as_annotations(
                     document=virtual_doc,
                     extractions=information,
                     label=label,
                     label_set=category_label_set,
                     annotation_set=virtual_default_annotation_set,
                 )
-
-            elif isinstance(information, list) or isinstance(information, dict):
-                # process multi Annotation Sets that are not part of the category Label Set
+            # process multi Annotation Sets that are not part of the category Label Set
+            else:
                 label_set = self.category.project.get_label_set_by_name(label_or_label_set_name)
 
                 if not isinstance(information, list):
                     information = [information]
 
                 for entry in information:  # represents one of pot. multiple annotation-sets belonging of one LabelSet
-                    virtual_annotation_set_id += 1
-                    virtual_annotation_set = AnnotationSet(
-                        document=virtual_doc, label_set=label_set, id_=virtual_annotation_set_id
-                    )
+                    if label_set is not category_label_set:
+                        virtual_annotation_set = AnnotationSet(
+                            document=virtual_doc, label_set=label_set, id_=virtual_annotation_set_id
+                        )
+                        virtual_annotation_set_id += 1
+                    else:
+                        virtual_annotation_set = virtual_default_annotation_set
 
                     for label_name, extractions in entry.items():
                         label = self.category.project.get_label_by_name(label_name)
-                        add_extractions_as_annotations(
+                        self.add_extractions_as_annotations(
                             document=virtual_doc,
                             extractions=extractions,
                             label=label,
                             label_set=label_set,
                             annotation_set=virtual_annotation_set,
                         )
+
         return virtual_doc
+
+    @staticmethod
+    def add_extractions_as_annotations(
+        extractions: pandas.DataFrame,
+        document: Document,
+        label: Label,
+        label_set: LabelSet,
+        annotation_set: AnnotationSet,
+    ) -> None:
+        """Add the extraction of a model to the document."""
+        if not isinstance(extractions, pandas.DataFrame):
+            raise TypeError(f'Provided extraction object should be a Dataframe, got a {type(extractions)} instead')
+        if not extractions.empty:
+            # TODO: define required fields
+            required_fields = ['start_offset', 'end_offset', 'confidence']
+            if not set(required_fields).issubset(extractions.columns):
+                raise ValueError(
+                    f'Extraction do not contain all required fields: {required_fields}.'
+                    f' Extraction columns: {extractions.columns.to_list()}'
+                )
+
+            extracted_spans = extractions[required_fields].sort_values(by='confidence', ascending=False)
+
+            for span in extracted_spans.to_dict('records'):  # todo: are start_offset and end_offset always ints?
+                annotation = Annotation(
+                    document=document,
+                    label=label,
+                    confidence=span['confidence'],
+                    label_set=label_set,
+                    annotation_set=annotation_set,
+                    spans=[Span(start_offset=span['start_offset'], end_offset=span['end_offset'])],
+                )
+                if annotation.spans[0].offset_string is None:
+                    raise NotImplementedError(
+                        f"Extracted {annotation} does not have a correspondence in the " f"text of {document}."
+                    )
 
     @classmethod
     def merge_horizontal(cls, res_dict: Dict, doc_text: str) -> Dict:
@@ -1625,7 +1642,9 @@ class GroupAnnotationSets:
         char_count = 0
 
         document_annotations = [
-            annotation for annotation_set in document.annotation_sets() for annotation in annotation_set.annotations()
+            annotation
+            for annotation_set in document.annotation_sets()
+            for annotation in annotation_set.annotations(use_correct=True)
         ]
 
         # Loop over lines
@@ -1701,8 +1720,11 @@ class GroupAnnotationSets:
         return global_df.fillna(0)
 
     def extract_template_with_clf(self, text, res_dict):
-        """Run template classifier to calculate sections."""
-        logger.info('Extract sections.')
+        """Run LabelSet classifier to find AnnotationSets."""
+        logger.info('Extract AnnotationSets.')
+        if not res_dict:
+            logger.warning('res_dict is empty')
+            return res_dict
         n_nearest = self.n_nearest_template if hasattr(self, 'n_nearest_template') else 0
         feature_df = self.build_document_template_feature_X(text, dict_to_dataframe(res_dict)).filter(
             self.template_feature_list, axis=1
@@ -1859,7 +1881,6 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         logger.info(f"{n_nearest_across_lines=}")
 
         self.use_separate_labels = use_separate_labels
-        self.category = category
         self.n_nearest = n_nearest
         self.first_word = first_word
         self.max_depth = max_depth
@@ -1880,6 +1901,8 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         self.output_dir = None
 
+        # self.doc_object = Document
+
     def features(self, document: Document):
         """Calculate features using the best working default values that can be overwritten with self values."""
         logger.info(f"Starting {document} feature calculation.")
@@ -1891,7 +1914,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             spans=document.spans(use_correct=False),
             n_nearest=self.n_nearest,
             first_word=self.first_word,
-            tokenize_fn=self.tokenizer.tokenize,  # todo: we are tokenizing the document multiple times
+            # tokenize_fn=self.tokenizer.tokenize,  # todo: we are tokenizing the document multiple times
             catchphrase_list=self.catchphrase_features,
             substring_features=self.substring_features,
             n_nearest_across_lines=self.n_nearest_across_lines,
@@ -1903,7 +1926,8 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         return df, _feature_list, _temp_df_raw_errors
 
     def check_is_ready(self):
-        """Check if tokenizer is set and the classifiers set and trained."""
+        """Check if Tokenizer is set and the classifiers set and trained."""
+        logger.info(f"Checking if {self} is ready for extraction.")
         if self.tokenizer is None:
             raise AttributeError(f'{self} missing Tokenizer.')
 
@@ -1916,7 +1940,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             check_is_fitted(self.clf)
 
         if self.label_set_clf is None:
-            logger.warning('{self} does not provide a LabelSet Classfier.')
+            logger.warning(f'{self} does not provide a LabelSet Classfier.')
 
     @property
     def project(self):
@@ -2022,9 +2046,9 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         res_dict = self.merge_horizontal(res_dict, inference_document.text)
 
         # Try to calculate sections based on template classifier.
-        if self.label_set_clf is not None:  # todo smarter handling of multiple clf
+        if self.label_set_clf is not None and res_dict:  # todo smarter handling of multiple clf
             res_dict = self.extract_template_with_clf(inference_document.text, res_dict)
-            res_dict[self.no_label_set_name] = no_label_res_dict
+        res_dict[self.no_label_set_name] = no_label_res_dict
 
         if self.use_separate_labels:
             res_dict = self.separate_labels(res_dict)
@@ -2034,9 +2058,76 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         self.tokenizer.found_spans(virtual_doc)
 
         # join document Spans into multi-line Annotation
-        virtual_doc.merge_vertical()
+        # virtual_doc.merge_vertical()
+        virtual_doc = self.merge_vertical(virtual_doc)
 
         return virtual_doc
+
+    def merge_vertical(self, document: Document, only_multiline_labels=True):
+        """
+        Merge Annotations with the same Label.
+
+        See more details at https://dev.konfuzio.com/sdk/explanations.html#vertical-merge
+
+        :param document: Document whose Annotations should be merged vertically
+        :param only_multiline_labels: Only merge if a multiline Label Annotation is in the Category Training set
+        """
+        logger.info("Vertical merging Annotations.")
+        if not self.category:
+            raise AttributeError(f'{self} merge_vertical requires a Category.')
+        labels_dict = {}
+        for label in self.category.labels:
+            if not only_multiline_labels or label.has_multiline_annotations():
+                labels_dict[label.name] = []
+
+        for annotation in document.annotations(use_correct=False, ignore_below_threshold=True):
+            if annotation.label.name in labels_dict:
+                labels_dict[annotation.label.name].append(annotation)
+
+        for label_id in labels_dict:
+            buffer = []
+            for annotation in labels_dict[label_id]:
+                for span in annotation.spans:
+                    # remove all spans in buffer more than 1 line apart
+                    while buffer and span.line_index > buffer[0].line_index + 1:
+                        buffer.pop(0)
+
+                    if buffer and buffer[-1].page != span.page:
+                        buffer = [span]
+                        continue
+
+                    if len(annotation.spans) > 1:
+                        buffer.append(span)
+                        continue
+
+                    for candidate in buffer:
+                        # only looking for elements in line above
+                        if candidate.line_index == span.line_index:
+                            break
+
+                        # Merge if there is overlap in the horizontal direction or if only separated by a line break
+                        # AND if the AnnotationSets are the same or if the Annotation is alone in its AnnotationSet
+                        if (
+                            (not (span.bbox().x0 > candidate.bbox().x1 or span.bbox().x1 < candidate.bbox().x0))
+                            or document.text[candidate.end_offset : span.start_offset]
+                            .replace(' ', '')
+                            .replace('\n', '')
+                            == ''
+                        ) and (
+                            span.annotation.annotation_set is candidate.annotation.annotation_set
+                            or len(
+                                span.annotation.annotation_set.annotations(
+                                    use_correct=False, ignore_below_threshold=True
+                                )
+                            )
+                            == 1
+                        ):
+                            span.annotation.delete(delete_online=False)
+                            span.annotation = None
+                            candidate.annotation.add_span(span)
+                            buffer.remove(candidate)
+                    buffer.append(span)
+        return document
 
     def separate_labels(self, res_dict: 'Dict') -> 'Dict':
         """
@@ -2195,9 +2286,9 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
     def feature_function(
         self,
         documents: List[Document],
-        no_label_limit=None,
-        retokenize=True,
-        require_revised_annotations=False,
+        no_label_limit: Union[None, int, float] = None,
+        retokenize: Optional[bool] = None,
+        require_revised_annotations: bool = False,
     ) -> Tuple[List[pandas.DataFrame], list]:
         """Calculate features per Span of Annotations.
 
@@ -2210,6 +2301,13 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         logger.info(f'{no_label_limit=}')
         logger.info(f'{retokenize=}')
         logger.info(f'{require_revised_annotations=}')
+
+        if retokenize is None:
+            if sdk_isinstance(self.tokenizer, ListTokenizer):
+                retokenize = False
+            else:
+                retokenize = True
+            logger.info(f'retokenize option set to {retokenize} with tokenizer {self.tokenizer}')
 
         df_real_list = []
         df_raw_errors_list = []
@@ -2358,7 +2456,9 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         return self.clf
 
-    def evaluate_full(self, strict: bool = True, use_training_docs: bool = False) -> ExtractionEvaluation:
+    def evaluate_full(
+        self, strict: bool = True, use_training_docs: bool = False, use_view_annotations: bool = True
+    ) -> ExtractionEvaluation:
         """
         Evaluate the full pipeline on the pipeline's Test Documents.
 
@@ -2376,9 +2476,9 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             predicted_doc = self.extract(document=document)
             eval_list.append((document, predicted_doc))
 
-        self.full_evaluation = ExtractionEvaluation(eval_list, strict=strict)
+        full_evaluation = ExtractionEvaluation(eval_list, strict=strict, use_view_annotations=use_view_annotations)
 
-        return self.full_evaluation
+        return full_evaluation
 
     def evaluate_tokenizer(self, use_training_docs: bool = False) -> ExtractionEvaluation:
         """Evaluate the tokenizer."""
@@ -2421,7 +2521,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             predicted_doc = self.extract_from_df(feats_df, virtual_doc)
             eval_list.append((document, predicted_doc))
 
-        clf_evaluation = ExtractionEvaluation(eval_list)
+        clf_evaluation = ExtractionEvaluation(eval_list, use_view_annotations=False)
 
         return clf_evaluation
 
@@ -2460,7 +2560,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
             eval_list.append((document, predicted_doc))
 
-        label_set_clf_evaluation = ExtractionEvaluation(eval_list)
+        label_set_clf_evaluation = ExtractionEvaluation(eval_list, use_view_annotations=False)
 
         return label_set_clf_evaluation
 

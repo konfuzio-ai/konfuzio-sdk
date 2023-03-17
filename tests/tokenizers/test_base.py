@@ -5,6 +5,7 @@ from typing import List
 
 import pandas as pd
 import pytest
+import time
 
 from konfuzio_sdk.data import Project, Annotation, Document, Label, AnnotationSet, LabelSet, Span, Category
 from konfuzio_sdk.tokenizer.base import AbstractTokenizer, ListTokenizer, ProcessingStep
@@ -48,7 +49,10 @@ class TestAbstractTokenizer(unittest.TestCase):
                 assert isinstance(category, Category)
                 pass
 
-            def _tokenize(self, document: Document) -> List[Span]:
+            def tokenize(self, document: Document) -> List[Span]:
+                assert isinstance(document, Document)
+                t0 = time.monotonic()
+                self.processing_steps.append(ProcessingStep(self.__repr__(), document, time.monotonic() - t0))
                 return []
 
             def found_spans(self, document: Document):

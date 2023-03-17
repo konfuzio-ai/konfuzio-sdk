@@ -116,7 +116,7 @@ class TestCompare(unittest.TestCase):
 
         # evaluate on doc_b and assume the feedback required ones are correct
         assert len(doc_a.annotations()) == len(doc_b.annotations()) - 1
-        evaluation = compare(doc_a, doc_b)
+        evaluation = compare(doc_a, doc_b, ignore_below_threshold=False)
         # 24 if considering negative Annotations, 2 annotations are false and two have feedback required
         assert len(evaluation) == 24
         assert evaluation["true_positive"].sum() == 19
@@ -150,7 +150,7 @@ class TestCompare(unittest.TestCase):
             doc_a.add_annotation(annotation)
 
         assert len(doc_a.annotations()) == len(doc_b.annotations()) - 1
-        evaluation = compare(doc_a, doc_b)
+        evaluation = compare(doc_a, doc_b, ignore_below_threshold=False)
         assert len(evaluation) == 24  # 23 if not considering negative Annotations, 2 Annotations are false
         # doc_a 18 + 1 multiline + 2 feedback required + 1 rejected
         assert evaluation["true_positive"].sum() == 19
@@ -169,7 +169,7 @@ class TestCompare(unittest.TestCase):
         for annotation in doc_a.annotations(use_correct=False)[:-1]:
             doc_b.add_annotation(annotation)
 
-        evaluation = compare(doc_a, doc_b)
+        evaluation = compare(doc_a, doc_b, ignore_below_threshold=False)
         assert len(evaluation) == 24  # 23 if not considering negative Annotations, 2 Annotations are false
         # doc_a 19 + 2 multiline
         assert evaluation["true_positive"].sum() == 20  # due to the fact that we find both offsets of the multiline
@@ -188,7 +188,7 @@ class TestCompare(unittest.TestCase):
         for annotation in doc_b.annotations(use_correct=False)[:-1]:
             doc_a.add_annotation(annotation)
 
-        evaluation = compare(doc_a, doc_b)
+        evaluation = compare(doc_a, doc_b, ignore_below_threshold=False)
         assert len(evaluation) == 24  # 23 if not considering negative, 2 Annotations are false
         # doc_a 18 + 2 multiline
         assert evaluation["true_positive"].sum() == 20  # due to the fact that we find both offsets of the multiline
@@ -203,7 +203,7 @@ class TestCompare(unittest.TestCase):
         prj = Project(id_=None, project_folder='example_project_data')
         doc_b = prj.get_document_by_id(TEST_DOCUMENT_ID)
         doc_a = Document(project=prj, category=doc_b.category)
-        evaluation = compare(doc_a, doc_b)
+        evaluation = compare(doc_a, doc_b, ignore_below_threshold=False)
         assert len(evaluation) == 25  # 24 if not considering negative Annotations
         assert evaluation["true_positive"].sum() == 0
         # any Annotation above threshold is a false positive independent if it's correct or revised
@@ -251,7 +251,7 @@ class TestCompare(unittest.TestCase):
 
             doc_b.add_annotation(annotation)
 
-        evaluation = compare(doc_a, doc_b)
+        evaluation = compare(doc_a, doc_b, ignore_below_threshold=False)
         assert len(evaluation) == 24  # 23 if not considering negative Annotations,
         # Evaluation as it is now: everything needs to be find even if multiple=False
         assert evaluation["true_positive"].sum() == 20

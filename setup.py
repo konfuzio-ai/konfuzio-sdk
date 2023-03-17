@@ -74,27 +74,26 @@ setuptools.setup(
     include_package_data=True,
     entry_points={'console_scripts': ['konfuzio_sdk=konfuzio_sdk.cli:main']},
     install_requires=[
-        'cloudpickle==2.0.0',  # Used to pickle objects
+        'cloudpickle==2.2.1',  # Used to pickle objects
         'filetype==1.0.7',  # Used to check that files are in the correct format
         'nltk',
-        'numpy>=1.21.6',
+        'numpy>=1.22.4',
         'pandas>=1.3.5',
-        'Pillow>=7.1.2',
+        'Pillow>=8.4.0',
         'python-dateutil',
         'python-decouple',  # todo add ==3.3 ?
         'requests',  # todo add ==2.24.0 ?
         'regex>=2020.6.8',  # re module but better
-        'tabulate==0.9.0',  # Used to pretty print DataFrames
-        'tensorflow==2.9.1',
-        'torch==1.12.0',  # for compatibility with corresponding torchvision version
-        'torchvision==0.13.0',
-        'transformers==4.23.1',  # huggingface transformers and tokenizers
+        'tabulate>=0.9.0',  # Used to pretty print DataFrames
+        'tensorflow-cpu',
+        'torch>=1.8',
+        'torchvision>=0.9',
+        'transformers>=4.21.2',  # huggingface transformers and tokenizers
         'tqdm',
-        'pympler==1.0.1',  # Use to get pickle file size.
-        'scikit-learn==1.0.2',
-        'timm==0.6.11',  # for extra pytorch models, i.e. EfficientNet
-        'spacy==2.3.5',  # used for spaCy tokenization
-        'parameterized',
+        'pympler>=1.0.1',  # Use to get pickle file size.
+        'scikit-learn>=1.0.2',
+        'timm>=0.6.11',  # for extra pytorch models, i.e. EfficientNet
+        'spacy>=2.3.5',  # used for spaCy tokenization
     ],
     extras_require={
         'dev': [
@@ -109,7 +108,7 @@ setuptools.setup(
             'm2r2==0.3.2',
             'sphinx-sitemap==2.2.0',
             'sphinx-rtd-theme==1.0.0',
-            'sphinxcontrib-mermaid==0.7.1',
+            'sphinxcontrib-mermaid==0.8.1',
         ]
     },
 )
