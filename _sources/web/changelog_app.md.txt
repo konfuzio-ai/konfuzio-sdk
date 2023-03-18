@@ -46,7 +46,7 @@ Upcoming...
 This version uses Konfuzio Trainer in version v.0.3.23, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Document Validation UI in version 0.1.3.
 
 ### Added
-- [Contract Managers can invite Users to join their subscription](https://app.konfuzio.com/v3/swagger/#/documents/documents_retriev) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10583)).
+- [Contract Managers can invite Users to join their subscription](https://app.konfuzio.com/admin/billing/contract/) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10583)).
 
 ### Fixed
 - AI-Guests can now re-categorize Document using the API ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10361)).
