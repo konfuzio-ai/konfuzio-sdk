@@ -39,6 +39,10 @@ These changes are for the tokenizers/new SDK branch.
 
 ## Next Release (estimated release date: 20th March 2023)
 
+Upcoming...
+
+## 2023-03-18_13-32-19
+
 This version uses Konfuzio Trainer in version v.0.3.23, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Document Validation UI in version 0.1.3.
 
 ### Added
