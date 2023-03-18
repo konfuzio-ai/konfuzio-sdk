@@ -76,7 +76,6 @@ setuptools.setup(
     install_requires=[
         'cloudpickle==2.2.1',  # Used to pickle objects
         'filetype==1.0.7',  # Used to check that files are in the correct format
-        'nltk',
         'numpy>=1.22.4',
         'pandas>=1.3.5',
         'Pillow>=8.4.0',
@@ -85,14 +84,17 @@ setuptools.setup(
         'requests',  # todo add ==2.24.0 ?
         'regex>=2020.6.8',  # re module but better
         'tabulate>=0.9.0',  # Used to pretty print DataFrames
-        'tensorflow-cpu',
-        'torch>=1.8',
-        'transformers>=4.21.2',
         'tqdm',
         'pympler>=1.0.1',  # Use to get pickle file size.
-        'scikit-learn>=1.0.2',
     ],
     extras_require={
+        'trainer': [
+            'tensorflow-cpu',
+            'torch>=1.8',
+            'transformers>=4.21.2',
+            'scikit-learn>=1.0.2',
+            'nltk',
+        ],
         'dev': [
             'flake8',
             'pydocstyle',
