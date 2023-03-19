@@ -551,7 +551,7 @@ def test_build_categorization_ai() -> None:
     """Test building a Categorization AI by choosing an ImageModel and a TextModel."""
     from konfuzio_sdk.trainer.document_categorization import ImageModel, TextModel, build_categorization_ai_architecture
 
-    project = Project(id_=1680)
+    project = Project(id_=None, project_folder=OFFLINE_PROJECT)
     categorization_pipeline = build_categorization_ai_architecture(
         categories=project.categories,
         documents=project.documents,

@@ -91,8 +91,13 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
     prev_local_id = next(Data.id_iter)
 
     try:
-        with bz2.open(pickle_path, 'rb') as file:
-            model = cloudpickle.load(file)
+        if pickle_path.endswith(".pt"):
+            from konfuzio_sdk.trainer.document_categorization import load_categorization_model
+
+            model = load_categorization_model(pickle_path)
+        else:
+            with bz2.open(pickle_path, 'rb') as file:
+                model = cloudpickle.load(file)
     except OSError:
         raise OSError(f"Pickle file {pickle_path} data is invalid.")
     except AttributeError as err:

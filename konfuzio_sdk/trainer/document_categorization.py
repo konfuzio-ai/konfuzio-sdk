@@ -48,8 +48,15 @@ class AbstractCategorizationAI(metaclass=abc.ABCMeta):
         self.documents = None
         self.test_documents = None
         self.categories = categories
+        self.project = None
+        if categories is not None:
+            self.project = categories[0].project
         self.name = self.__class__.__name__
         self.evaluation = None
+
+    def name_lower(self):
+        """Convert class name to machine-readable name."""
+        return f'{self.name.lower().strip()}'
 
     @abc.abstractmethod
     def fit(self) -> None:
@@ -114,6 +121,11 @@ class AbstractCategorizationAI(metaclass=abc.ABCMeta):
         self.evaluation = CategorizationEvaluation(self.categories, eval_list)
 
         return self.evaluation
+
+    def check_is_ready(self):
+        """Check if Categorization AI instance is ready for inference."""
+        if not self.categories:
+            raise AttributeError(f'{self} requires Categories.')
 
     @staticmethod
     def has_compatible_interface(other):
@@ -877,7 +889,7 @@ class CategorizationAI(AbstractCategorizationAI):
 
         self.device = torch.device('cuda' if (torch.cuda.is_available() and use_cuda) else 'cpu')
 
-    def save(self, path: Union[None, str] = None, model_type: str = 'CategorizationAI') -> str:
+    def save(self, path: Union[None, str] = None) -> str:
         """
         Save only the necessary parts of the model for extraction/inference.
 
@@ -896,17 +908,19 @@ class CategorizationAI(AbstractCategorizationAI):
             'text_vocab': self.text_vocab,
             'category_vocab': self.category_vocab,
             'classifier': self.classifier,
-            'model_type': model_type,
+            'model_type': 'CategorizationAI',
         }
 
         # Save only the necessary parts of the model for extraction/inference.
         # if no path is given then we use a default path and filename
         if path is None:
             path = os.path.join(
-                self.categories[0].project.project_folder, 'models', f'{get_timestamp()}_{model_type}.pt'
+                self.categories[0].project.project_folder,
+                'models',
+                f'{get_timestamp()}_{self.name_lower()}_{self.project.id_}.pt',
             )
 
-        logger.info(f'Saving model of type {model_type} in {path}')
+        logger.info(f'Saving model of type Categorization AI in {path}')
 
         # save all necessary model data
         torch.save(data_to_save, path)
