@@ -11,10 +11,10 @@ import uuid
 from copy import deepcopy
 from inspect import signature
 from typing import Union, List, Dict, Tuple, Optional
+from enum import Enum
 from warnings import warn
 from io import BytesIO
 
-from konfuzio_sdk.data import CategoryAnnotation
 import timm
 import torchvision
 import torch
@@ -27,7 +27,9 @@ import tqdm
 from PIL import Image
 from torch.utils.data import DataLoader
 
-from konfuzio_sdk.data import Document, Page, Category
+from konfuzio_sdk.tokenizer.base import AbstractTokenizer
+from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
+from konfuzio_sdk.data import Document, Page, Category, CategoryAnnotation
 from konfuzio_sdk.evaluate import CategorizationEvaluation
 from konfuzio_sdk.tokenizer.base import Vocab
 from konfuzio_sdk.trainer.image import ImagePreProcessing, ImageDataAugmentation
@@ -181,8 +183,8 @@ class NameBasedCategorizationAI(AbstractCategorizationAI):
         return page
 
 
-class AbstractClassificationModule(nn.Module, metaclass=abc.ABCMeta):
-    """Define general functionality to work with nn.Module classes used for classification."""
+class AbstractCategorizationModel(nn.Module, metaclass=abc.ABCMeta):
+    """Define general functionality to work with nn.Module classes used for categorization."""
 
     @abc.abstractmethod
     def _valid(self) -> None:
@@ -196,28 +198,13 @@ class AbstractClassificationModule(nn.Module, metaclass=abc.ABCMeta):
     def _define_features(self) -> None:
         """Define number of features as `self.n_features: int`."""
 
-    # noqa: F821, we use trainer/information_extraction.py::load_model function
-    def from_pretrained(self, load: Union[None, str, Dict] = None):
-        """Load a module from a pre-trained state."""
-        if load is None:
-            pass
-        elif isinstance(load, str):
-            # load is a string so we assume it's a path to the saved state dict
-            self.load_state_dict(torch.load(load))
-        elif isinstance(load, dict):
-            # load is a dict so we assume it's the state dict which we load directly
-            self.load_state_dict(load)
-        else:
-            raise ValueError(f'input to from_pretrained should be None, str or dict, got {type(load)}')
 
-
-class AbstractTextClassificationModule(AbstractClassificationModule, metaclass=abc.ABCMeta):
-    """Define general functionality to work with nn.Module classes used for text classification."""
+class AbstractTextCategorizationModel(AbstractCategorizationModel, metaclass=abc.ABCMeta):
+    """Define general functionality to work with nn.Module classes used for text categorization."""
 
     def __init__(
         self,
         input_dim: int,
-        load: Union[None, str, dict] = None,
         **kwargs,
     ):
         """Init and set parameters."""
@@ -234,8 +221,6 @@ class AbstractTextClassificationModule(AbstractClassificationModule, metaclass=a
         self._load_architecture()
         self.uses_attention = False
         self._define_features()
-
-        self.from_pretrained(load)
 
     @abc.abstractmethod
     def _output(self, text: torch.Tensor) -> List[torch.FloatTensor]:
@@ -254,7 +239,7 @@ class AbstractTextClassificationModule(AbstractClassificationModule, metaclass=a
         return output
 
 
-class NBOW(AbstractTextClassificationModule):
+class NBOW(AbstractTextCategorizationModel):
     """
     The neural bag-of-words (NBOW) model is the simplest of models, it passes each token through an embedding layer.
 
@@ -274,11 +259,10 @@ class NBOW(AbstractTextClassificationModule):
         input_dim: int,
         emb_dim: int = 64,
         dropout_rate: float = 0.0,
-        load: Union[None, str, dict] = None,
         **kwargs,
     ):
         """Init and set parameters."""
-        super().__init__(input_dim=input_dim, emb_dim=emb_dim, dropout_rate=dropout_rate, load=load)
+        super().__init__(input_dim=input_dim, emb_dim=emb_dim, dropout_rate=dropout_rate)
 
     def _valid(self) -> None:
         """Validate nothing as this NBOW implementation doesn't have constraints on input_dim or emb_dim."""
@@ -299,7 +283,7 @@ class NBOW(AbstractTextClassificationModule):
         return [text_features]
 
 
-class NBOWSelfAttention(AbstractTextClassificationModule):
+class NBOWSelfAttention(AbstractTextCategorizationModel):
     """
     This is an NBOW model with a multi-headed self-attention layer, which is added after the embedding layer.
 
@@ -319,11 +303,10 @@ class NBOWSelfAttention(AbstractTextClassificationModule):
         emb_dim: int = 64,
         n_heads: int = 8,
         dropout_rate: float = 0.0,
-        load: Union[None, str, dict] = None,
         **kwargs,
     ):
         """Init and set parameters."""
-        super().__init__(input_dim=input_dim, emb_dim=emb_dim, n_heads=n_heads, dropout_rate=dropout_rate, load=load)
+        super().__init__(input_dim=input_dim, emb_dim=emb_dim, n_heads=n_heads, dropout_rate=dropout_rate)
         self.uses_attention = True
 
     def _valid(self) -> None:
@@ -349,7 +332,7 @@ class NBOWSelfAttention(AbstractTextClassificationModule):
         return [text_features, attention]
 
 
-class LSTM(AbstractTextClassificationModule):
+class LSTM(AbstractTextCategorizationModel):
     """
     The LSTM (long short-term memory) is a variant of a RNN (recurrent neural network).
 
@@ -373,7 +356,6 @@ class LSTM(AbstractTextClassificationModule):
         n_layers: int = 2,
         bidirectional: bool = True,
         dropout_rate: float = 0.0,
-        load: Union[None, str, dict] = None,
         **kwargs,
     ):
         """Initialize LSTM model."""
@@ -384,7 +366,6 @@ class LSTM(AbstractTextClassificationModule):
             n_layers=n_layers,
             bidirectional=bidirectional,
             dropout_rate=dropout_rate,
-            load=load,
         )
 
     def _valid(self) -> None:
@@ -415,7 +396,7 @@ class LSTM(AbstractTextClassificationModule):
         return [text_features]
 
 
-class BERT(AbstractTextClassificationModule):
+class BERT(AbstractTextCategorizationModel):
     """
     Wraps around pre-trained BERT-type models from the HuggingFace library.
 
@@ -442,11 +423,10 @@ class BERT(AbstractTextClassificationModule):
         input_dim: int,
         name: str = 'bert-base-german-cased',
         freeze: bool = True,
-        load: Union[None, str, dict] = None,
         **kwargs,
     ):
         """Initialize BERT model from the HuggingFace library."""
-        super().__init__(input_dim=input_dim, name=name, freeze=freeze, load=load)
+        super().__init__(input_dim=input_dim, name=name, freeze=freeze)
         self.uses_attention = True
 
     def _valid(self) -> None:
@@ -493,35 +473,35 @@ class BERT(AbstractTextClassificationModule):
         return [text_features, attention]
 
 
-class DocumentClassifier(nn.Module):
-    """Container for document classifiers."""
+class PageCategorizationModel(nn.Module):
+    """Container for Categorization Models."""
 
     def forward(self, input: Dict[str, torch.Tensor]) -> Dict[str, torch.FloatTensor]:
         """Forward pass."""
         raise NotImplementedError
 
 
-class DocumentTextClassifier(DocumentClassifier):
-    """Classifies a document based on the text on each page only."""
+class PageTextCategorizationModel(PageCategorizationModel):
+    """Container for Text Categorization Models."""
 
     def __init__(
-        self, text_module: AbstractTextClassificationModule, output_dim: int, dropout_rate: float = 0.0, **kwargs
+        self, text_model: AbstractTextCategorizationModel, output_dim: int, dropout_rate: float = 0.0, **kwargs
     ):
-        """Initialize the classifier."""
+        """Initialize the Model."""
         super().__init__()
 
-        assert isinstance(text_module, AbstractTextClassificationModule)
+        assert issubclass(text_model.__class__, AbstractTextCategorizationModel)
 
-        self.text_module = text_module
+        self.text_model = text_model
         self.output_dim = output_dim
         self.dropout_rate = dropout_rate
 
-        self.fc_out = nn.Linear(text_module.n_features, output_dim)
+        self.fc_out = nn.Linear(text_model.n_features, output_dim)
         self.dropout = nn.Dropout(dropout_rate)
 
     def forward(self, input: Dict[str, torch.Tensor]) -> Dict[str, torch.FloatTensor]:
         """Forward pass."""
-        encoded_text = self.text_module(input)
+        encoded_text = self.text_model(input)
         text_features = encoded_text['features']
         # text_features = [batch, seq len, n text features]
         pooled_text_features = text_features.mean(dim=1)  # mean pool across sequence length
@@ -534,15 +514,14 @@ class DocumentTextClassifier(DocumentClassifier):
         return output
 
 
-class ImageClassificationModule(AbstractClassificationModule, metaclass=abc.ABCMeta):
-    """Define general functionality to work with nn.Module classes used for image classification."""
+class AbstractImageCategorizationModel(AbstractCategorizationModel, metaclass=abc.ABCMeta):
+    """Define general functionality to work with nn.Module classes used for image categorization."""
 
     def __init__(
         self,
         name: str,
         pretrained: bool = True,
         freeze: bool = True,
-        load: Union[None, str, dict] = None,
         **kwargs,
     ):
         """Init and set parameters."""
@@ -558,8 +537,6 @@ class ImageClassificationModule(AbstractClassificationModule, metaclass=abc.ABCM
             self._freeze()
 
         self._define_features()
-
-        self.from_pretrained(load)
 
     @abc.abstractmethod
     def _freeze(self) -> None:
@@ -579,19 +556,35 @@ class ImageClassificationModule(AbstractClassificationModule, metaclass=abc.ABCM
         return output
 
 
-class VGG(ImageClassificationModule):
-    """VGG classifier."""
+class VGG(AbstractImageCategorizationModel):
+    """
+    The VGG family of models are image classification models designed for the ImageNet.
+
+    They are usually used as a baseline in image classification tasks, however are considerably larger - in terms of
+    the number of parameters - than modern architectures.
+
+    Available variants are: `vgg11`, `vgg13`, `vgg16`, `vgg19`, `vgg11_bn`, `vgg13_bn`, `vgg16_bn`, `vgg19_bn`. The
+    number generally indicates the number of layers in the model, higher does not always mean better. The `_bn` suffix
+    means that the VGG model uses Batch Normalization layers, this generally leads to better results.
+
+    The pre-trained weights are taken from the [torchvision](https://github.com/pytorch/vision) library and are weights
+    from a model that has been trained as an image classifier on ImageNet. Ideally, this means the images should be
+    3-channel color images that are at least 224x224 pixels and should be normalized.
+
+    :param name: The name of the VGG variant to use
+    :param pretrained: If pre-trained weights for the VGG variant should be used
+    :param freeze: If the parameters of the VGG variant should be frozen
+    """
 
     def __init__(
         self,
         name: str = 'vgg11',
         pretrained: bool = True,
         freeze: bool = True,
-        load: Union[None, str, dict] = None,
         **kwargs,
     ):
         """Init and set parameters."""
-        super().__init__(name, pretrained, freeze, load)
+        super().__init__(name, pretrained, freeze)
 
     def _valid(self) -> None:
         """No validations needed for this VGG implementation."""
@@ -619,19 +612,33 @@ class VGG(ImageClassificationModule):
         return image_features
 
 
-class EfficientNet(ImageClassificationModule):
-    """EfficientNet classifier."""
+class EfficientNet(AbstractImageCategorizationModel):
+    """
+    EfficientNet is a family of convolutional neural network based models that are designed to be more efficient.
+
+    The efficiency comes in terms of the number of parameters and FLOPS, compared to previous computer vision models
+    whilst maintaining equivalent image classification performance.
+
+    Available variants are: `efficientnet_b0`, `efficientnet_b1`, ..., `efficienet_b7`. With `b0` having the least
+    amount of parameters and `b7` having the most.
+
+    The pre-trained weights are taken from the timm library and have been trained on ImageNet, thus the same tips,
+    i.e. normalization, that apply to the VGG models also apply here.
+
+    :param name: The name of the EfficientNet variant to use
+    :param pretrained: If pre-trained weights for the EfficientNet variant should be used
+    :param freeze: If the parameters of the EfficientNet variant should be frozen
+    """
 
     def __init__(
         self,
         name: str = 'efficientnet_b0',
         pretrained: bool = True,
         freeze: bool = True,
-        load: Union[None, str, dict] = None,
         **kwargs,
     ):
         """Initialize the model."""
-        super().__init__(name, pretrained, freeze, load)
+        super().__init__(name, pretrained, freeze)
 
     def _valid(self) -> None:
         """No validations needed for this EfficientNet implementation."""
@@ -665,25 +672,27 @@ class EfficientNet(ImageClassificationModule):
         return image_features
 
 
-class DocumentImageClassifier(DocumentClassifier):
-    """Classifies a document based on the image of the pages only."""
+class PageImageCategorizationModel(PageCategorizationModel):
+    """Container for Image Categorization Models."""
 
-    def __init__(self, image_module: ImageClassificationModule, output_dim: int, dropout_rate: float = 0.0, **kwargs):
-        """Initialize the classifier."""
+    def __init__(
+        self, image_model: AbstractImageCategorizationModel, output_dim: int, dropout_rate: float = 0.0, **kwargs
+    ):
+        """Initialize the Model."""
         super().__init__()
 
-        assert isinstance(image_module, ImageClassificationModule)
+        assert isinstance(image_model, AbstractImageCategorizationModel)
 
-        self.image_module = image_module
+        self.image_model = image_model
         self.output_dim = output_dim
         self.dropout_rate = dropout_rate
 
-        self.fc_out = nn.Linear(image_module.n_features, output_dim)
+        self.fc_out = nn.Linear(image_model.n_features, output_dim)
         self.dropout = nn.Dropout(dropout_rate)
 
     def forward(self, input: Dict[str, torch.Tensor]) -> Dict[str, torch.FloatTensor]:
         """Forward pass."""
-        encoded_image = self.image_module(input)
+        encoded_image = self.image_model(input)
         image_features = encoded_image['features']
         # image_features = [batch, n image features]
         prediction = self.fc_out(self.dropout(image_features))
@@ -692,8 +701,8 @@ class DocumentImageClassifier(DocumentClassifier):
         return output
 
 
-class MultimodalClassificationModule(AbstractClassificationModule, metaclass=abc.ABCMeta):
-    """Define general functionality to work with nn.Module classes used for image and text classification."""
+class AbstractMultimodalCategorizationModel(AbstractCategorizationModel, metaclass=abc.ABCMeta):
+    """Define general functionality to work with nn.Module classes used for image and text categorization."""
 
     def __init__(
         self,
@@ -701,7 +710,6 @@ class MultimodalClassificationModule(AbstractClassificationModule, metaclass=abc
         n_text_features: int,
         hid_dim: int = 256,
         output_dim: Optional[int] = None,
-        load: Union[None, str, dict] = None,
         **kwargs,
     ):
         """Init and set parameters."""
@@ -715,8 +723,6 @@ class MultimodalClassificationModule(AbstractClassificationModule, metaclass=abc
         self._valid()
         self._load_architecture()
         self._define_features()
-
-        self.from_pretrained(load)
 
     @abc.abstractmethod
     def _output(self, image_features: torch.Tensor, text_features: torch.Tensor) -> torch.FloatTensor:
@@ -734,8 +740,8 @@ class MultimodalClassificationModule(AbstractClassificationModule, metaclass=abc
         return output
 
 
-class MultimodalConcatenate(MultimodalClassificationModule):
-    """Defines how the image and text features are combined."""
+class MultimodalConcatenate(AbstractMultimodalCategorizationModel):
+    """Defines how the image and text features are combined in order to yield a categorization prediction."""
 
     def __init__(
         self,
@@ -743,11 +749,10 @@ class MultimodalConcatenate(MultimodalClassificationModule):
         n_text_features: int,
         hid_dim: int = 256,
         output_dim: Optional[int] = None,
-        load: Union[None, str, dict] = None,
         **kwargs,
     ):
         """Init and set parameters."""
-        super().__init__(n_image_features, n_text_features, hid_dim, output_dim, load)
+        super().__init__(n_image_features, n_text_features, hid_dim, output_dim)
 
     def _valid(self) -> None:
         """Validate nothing as this combination of text module and image module has no restrictions."""
@@ -757,10 +762,6 @@ class MultimodalConcatenate(MultimodalClassificationModule):
         """Load NN architecture."""
         self.fc1 = nn.Linear(self.n_image_features + self.n_text_features, self.hid_dim)
         self.fc2 = nn.Linear(self.hid_dim, self.hid_dim)
-        # TODO: remove the below `if` check after the following are phased out:
-        # classifier_modules.py
-        # models_multimodal.py
-        # multimodal_modules.py
         if self.output_dim is not None:
             self.fc3 = nn.Linear(self.hid_dim, self.output_dim)
 
@@ -776,26 +777,23 @@ class MultimodalConcatenate(MultimodalClassificationModule):
         # x = [batch size, hid dim]
         x = F.relu(self.fc2(x))
         # x = [batch size, hid dim]
-        # TODO: remove the below `if` check after the following are phased out:
-        # classifier_modules.py
-        # models_multimodal.py
-        # multimodal_modules.py
         if hasattr(self, 'fc3'):
             x = F.relu(self.fc3(x))
         return x
 
 
-class DocumentMultimodalClassifier(DocumentClassifier):
-    """Model to classify document pages.
+class PageMultimodalCategorizationModel(PageCategorizationModel):
+    """
+    Container for Text and Image Categorization Models.
 
-    It can take in consideration the combination of the document visual and text features.
+    It can take in consideration the combination of the Document visual and text features.
     """
 
     def __init__(
         self,
-        image_module: ImageClassificationModule,
-        text_module: AbstractTextClassificationModule,
-        multimodal_module: MultimodalClassificationModule,
+        image_model: AbstractImageCategorizationModel,
+        text_model: AbstractTextCategorizationModel,
+        multimodal_model: AbstractMultimodalCategorizationModel,
         output_dim: int,
         dropout_rate: float = 0.0,
         **kwargs,
@@ -803,30 +801,30 @@ class DocumentMultimodalClassifier(DocumentClassifier):
         """Init and set parameters."""
         super().__init__()
 
-        assert isinstance(text_module, AbstractTextClassificationModule)
-        assert isinstance(image_module, ImageClassificationModule)
-        assert isinstance(multimodal_module, MultimodalClassificationModule)
+        assert isinstance(text_model, AbstractTextCategorizationModel)
+        assert isinstance(image_model, AbstractImageCategorizationModel)
+        assert isinstance(multimodal_model, AbstractMultimodalCategorizationModel)
 
-        self.image_module = image_module  # input: images, output: image features
-        self.text_module = text_module  # input: text, output: text features
-        self.multimodal_module = multimodal_module  # input: (image feats, text feats), output: multimodal feats
+        self.image_model = image_model  # input: images, output: image features
+        self.text_model = text_model  # input: text, output: text features
+        self.multimodal_model = multimodal_model  # input: (image feats, text feats), output: multimodal feats
         self.output_dim = output_dim
 
-        self.fc_out = nn.Linear(multimodal_module.n_features, output_dim)
+        self.fc_out = nn.Linear(multimodal_model.n_features, output_dim)
         self.dropout = nn.Dropout(dropout_rate)
 
     def forward(self, input: Dict[str, torch.Tensor]) -> Dict[str, torch.FloatTensor]:
         """Define the computation performed at every call."""
-        encoded_image = self.image_module(input)
+        encoded_image = self.image_model(input)
         image_features = encoded_image['features']
         # image_features = [batch, n image features]
-        encoded_text = self.text_module(input)
+        encoded_text = self.text_model(input)
         text_features = encoded_text['features']
         # text_features = [batch, seq length, n text features]
         pooled_text_features = text_features.mean(dim=1)  # mean pool across sequence length
         # text_features = [batch, n text features]
         input = {'image_features': image_features, 'text_features': pooled_text_features}
-        multimodal_features = self.multimodal_module(input)['features']
+        multimodal_features = self.multimodal_model(input)['features']
         # prediction = [batch, n multimodal features]
         prediction = self.fc_out(self.dropout(multimodal_features))
         output = {'prediction': prediction}
@@ -835,8 +833,8 @@ class DocumentMultimodalClassifier(DocumentClassifier):
         return output
 
 
-def get_optimizer(classifier: DocumentClassifier, config: dict) -> torch.optim.Optimizer:
-    """Get an optimizer for a given `classifier` given a config."""
+def get_optimizer(classifier: PageCategorizationModel, config: dict) -> torch.optim.Optimizer:
+    """Get an optimizer for a given Model given a config."""
     logger.info('getting optimizer')
 
     # name of the optimizer, i.e. SGD, Adam, RMSprop
@@ -857,13 +855,11 @@ def get_optimizer(classifier: DocumentClassifier, config: dict) -> torch.optim.O
 
 
 class CategorizationAI(AbstractCategorizationAI):
-    """A trainable model that predicts a category for a given document."""
+    """A trainable AI that predicts a Category for each Page of a given Document."""
 
     def __init__(
         self,
         categories: List[Category],
-        image_preprocessing=None,
-        image_augmentation=None,
         use_cuda: bool = False,
         *args,
         **kwargs,
@@ -878,43 +874,6 @@ class CategorizationAI(AbstractCategorizationAI):
         self.text_vocab = None
         self.category_vocab = None
         self.classifier = None
-
-        # @TODO do not hardcode the config
-        if image_augmentation is None:
-            image_augmentation = {'rotate': 5}
-        if image_preprocessing is None:
-            image_preprocessing = {'target_size': (1000, 1000), 'grayscale': True}
-        document_classifier_config: dict = {
-            'image_module': {'name': 'efficientnet_b0'},
-            'text_module': {'name': 'nbowselfattention'},
-            'multimodal_module': {'name': 'concatenate'},
-        }
-        # if we are using an image module in our classifier then we need to set-up the
-        # pre-processing and data augmentation for the images
-        if 'image_module' in document_classifier_config:
-            self.image_preprocessing = image_preprocessing
-            self.image_augmentation = image_augmentation
-            # get preprocessing
-            preprocessing = ImagePreProcessing(transforms=image_preprocessing)
-            preprocessing_ops = preprocessing.pre_processing_operations
-            # get data augmentation
-            augmentation = ImageDataAugmentation(
-                transforms=image_augmentation, pre_processing_operations=preprocessing_ops
-            )
-            # evaluation transforms are just the preprocessing
-            # training transforms are the preprocessing + augmentation
-            self.eval_transforms = preprocessing.get_transforms()
-            self.train_transforms = augmentation.get_transforms()
-        else:
-            # if not using an image module in our classifier then
-            # our preprocessing and augmentation should be None
-            assert (
-                image_preprocessing is None and image_augmentation is None
-            ), 'If not using an image module then preprocessing/augmentation must be None!'
-            self.image_preprocessing = None
-            self.image_augmentation = None
-            self.eval_transforms = None
-            self.train_transforms = None
 
         self.device = torch.device('cuda' if (torch.cuda.is_available() and use_cuda) else 'cpu')
 
@@ -952,6 +911,40 @@ class CategorizationAI(AbstractCategorizationAI):
         # save all necessary model data
         torch.save(data_to_save, path)
         return path
+
+    def build_preprocessing_pipeline(self, use_image: bool, image_augmentation=None, image_preprocessing=None) -> None:
+        """Set up the pre-processing and data augmentation when necessary."""
+        if image_augmentation is None:
+            image_augmentation = {'rotate': 5}
+        if image_preprocessing is None:
+            image_preprocessing = {'target_size': (1000, 1000), 'grayscale': True}
+
+        # if we are using an image model in our classifier then we need to set-up the
+        # pre-processing and data augmentation for the images
+        if use_image:
+            self.image_preprocessing = image_preprocessing
+            self.image_augmentation = image_augmentation
+            # get preprocessing
+            preprocessing = ImagePreProcessing(transforms=image_preprocessing)
+            preprocessing_ops = preprocessing.pre_processing_operations
+            # get data augmentation
+            augmentation = ImageDataAugmentation(
+                transforms=image_augmentation, pre_processing_operations=preprocessing_ops
+            )
+            # evaluation transforms are just the preprocessing
+            # training transforms are the preprocessing + augmentation
+            self.eval_transforms = preprocessing.get_transforms()
+            self.train_transforms = augmentation.get_transforms()
+        else:
+            # if not using an image module in our classifier then
+            # our preprocessing and augmentation should be None
+            assert (
+                image_preprocessing is None and image_augmentation is None
+            ), 'If not using an image module then preprocessing/augmentation must be None!'
+            self.image_preprocessing = None
+            self.image_augmentation = None
+            self.eval_transforms = None
+            self.train_transforms = None
 
     def build_template_category_vocab(self) -> Vocab:
         """Build a vocabulary over the Categories."""
@@ -1083,7 +1076,7 @@ class CategorizationAI(AbstractCategorizationAI):
         optimizer=None,
         lr_decay: float = 0.999,
         **kwargs,
-    ) -> Tuple[DocumentClassifier, Dict[str, List[float]]]:
+    ) -> Tuple[PageCategorizationModel, Dict[str, List[float]]]:
         """
         Fits a classifier on given `train_examples` and evaluates on given `test_examples`.
 
@@ -1146,13 +1139,12 @@ class CategorizationAI(AbstractCategorizationAI):
 
         # figure out if we need images and/or text depending on if the classifier
         # has an image and/or text module
-        use_image = hasattr(self.classifier, 'image_module')
-        use_text = hasattr(self.classifier, 'text_module')
+        use_image = hasattr(self.classifier, 'image_model')
+        use_text = hasattr(self.classifier, 'text_model')
 
-        if hasattr(self.classifier, 'text_module') and isinstance(self.classifier.text_module, BERT):
-            document_training_config['max_len'] = self.classifier.text_module.get_max_length()
+        if hasattr(self.classifier, 'text_model') and isinstance(self.classifier.text_model, BERT):
+            document_training_config['max_len'] = self.classifier.text_model.get_max_length()
 
-        # @TODO move this validation to the Categorization AI configure step
         assert self.documents is not None, "Training documents need to be specified"
         assert self.test_documents is not None, "Test documents need to be specified"
         # get document classifier example iterators
@@ -1166,21 +1158,6 @@ class CategorizationAI(AbstractCategorizationAI):
             max_len=document_training_config['max_len'],
             device=self.device,
         )
-        # test_examples = build_document_classifier_iterator
-        # examples = build_document_template_classifier_iterators(
-        #     self.documents,
-        #     self.test_documents,
-        #     self.tokenizer,
-        #     self.eval_transforms,
-        #     self.train_transforms,
-        #     self.text_vocab,
-        #     self.category_vocab,
-        #     use_image,
-        #     use_text,
-        #     **document_training_config,
-        #     device=self.device,
-        # )
-
         logger.info(f'{len(train_iterator)} training examples')
         # logger.info(f'{len(test_iterator)} testing examples')
 
@@ -1242,8 +1219,8 @@ class CategorizationAI(AbstractCategorizationAI):
         page_text = text
 
         # does our classifier use text and images?
-        use_image = hasattr(self.classifier, 'image_module')
-        use_text = hasattr(self.classifier, 'text_module')
+        use_image = hasattr(self.classifier, 'image_model')
+        use_text = hasattr(self.classifier, 'text_model')
 
         batch_image, batch_text = [], []
         predictions = []
@@ -1327,29 +1304,24 @@ class CategorizationAI(AbstractCategorizationAI):
         :returns: The input Page with added categorization information
         """
         docs_data_images = [None]
-        use_image = hasattr(self.classifier, 'image_module')
+        use_image = hasattr(self.classifier, 'image_model')
         if use_image:
             img_data = Image.open(page.image_path)
             buf = BytesIO()
             img_data.save(buf, format='PNG')
             docs_data_images = [buf]
 
-        use_text = hasattr(self.classifier, 'text_module')
+        use_text = hasattr(self.classifier, 'text_model')
         text_coded = [None]
         if use_text:
-            if isinstance(self.classifier.text_module, BERT):
-                max_length = self.classifier.text_module.get_max_length()
+            if isinstance(self.classifier.text_model, BERT):
+                max_length = self.classifier.text_model.get_max_length()
             else:
                 max_length = None
             self.text_vocab.numericalize(page, max_length)
             text_coded = [torch.LongTensor(page.text_encoded)]
 
-        # todo optimize for gpu? self._predict can accept a batch of images/texts
         (predicted_category_id, predicted_confidence), _ = self._predict(page_images=docs_data_images, text=text_coded)
-
-        if predicted_category_id == -1:
-            # todo ensure that this never happens, then remove
-            raise ValueError(f'{self} could not find the category of {page} by using the trained CategorizationAI.')
 
         for category in self.categories:
             if category.id_ == predicted_category_id:
@@ -1358,8 +1330,128 @@ class CategorizationAI(AbstractCategorizationAI):
         return page
 
 
-# existent model classes
-MODEL_CLASSES = {'CategorizationAI': CategorizationAI}
+class ImageModel(Enum):
+    """
+    We currently have two image modules available (VGG and EfficientNet), each have several variants.
+
+    The image models each have their classification heads removed and generally, they return the output of the final
+    pooling layer within the model which has been flattened to a `[batch_size, n_features]` tensor, where `n_features`
+    is an attribute of the model.
+    """
+
+    VGG11 = 'vgg11'
+    VGG13 = 'vgg13'
+    VGG16 = 'vgg16'
+    VGG19 = 'vgg19'
+    EfficientNetB0 = 'efficientnet_b0'
+    EfficientNetB1 = 'efficientnet_b1'
+    EfficientNetB2 = 'efficientnet_b2'
+    EfficientNetB3 = 'efficientnet_b3'
+    EfficientNetB4 = 'efficientnet_b4'
+    EfficientNetB5 = 'efficientnet_b5'
+    EfficientNetB6 = 'efficientnet_b6'
+    EfficientNetB7 = 'efficientnet_b7'
+    EfficientNetB8 = 'efficientnet_b8'
+
+
+class TextModel(Enum):
+    """
+    There are currently four text modules available (NBOW, NBOW Self Attention, LSTM, and BERT).
+
+    Each module takes a sequence of tokens as input and outputs a sequence of "hidden states", i.e. one vector per
+    input token. The size of each of the hidden states can be found with the module's `n_features` parameter.
+    """
+
+    NBOW = 'nbow'
+    NBOWSelfAttention = 'nbowselfattention'
+    LSTM = 'lstm'
+    BERT = 'bert'
+
+
+class Optimizer(Enum):
+    """SGD and Adam Optimizers."""
+
+    SGD = 'SGD'
+    Adam = 'Adam'
+
+
+def build_categorization_ai_architecture(
+    categories: List[Category],
+    documents: List[Document],
+    test_documents: List[Document],
+    tokenizer: Optional[AbstractTokenizer] = None,
+    image_model: Optional[ImageModel] = None,
+    text_model: Optional[TextModel] = None,
+    optimizer: Optimizer = Optimizer.Adam,
+) -> CategorizationAI:
+    """
+
+    Build a Categorization AI neural network by choosing an ImageModel and a TextModel.
+
+    See an in-depth tutorial at https://dev.konfuzio.com/sdk/tutorials.html#model-based-categorization-ai
+    """
+    # Configure Categories, with training and test Documents for the Categorization AI
+    categorization_pipeline = CategorizationAI(categories)
+    categorization_pipeline.documents = documents
+    categorization_pipeline.test_documents = test_documents
+    # Configure pipeline with the tokenizer, text vocab, and category vocab
+    if tokenizer is None:
+        tokenizer = WhitespaceTokenizer()
+    categorization_pipeline.tokenizer = tokenizer
+    categorization_pipeline.text_vocab = categorization_pipeline.build_text_vocab()
+    categorization_pipeline.category_vocab = categorization_pipeline.build_template_category_vocab()
+    # Configure image and text models
+    if image_model is not None:
+        image_model_class = None
+        if "efficientnet" in image_model.value:
+            image_model_class = EfficientNet
+        elif "vgg" in image_model.value:
+            image_model_class = VGG
+        # Configure image model
+        image_model = image_model_class(name=image_model.value)
+    if text_model is not None:
+        text_model_class_mapping = {
+            TextModel.NBOW: NBOW,
+            TextModel.NBOWSelfAttention: NBOWSelfAttention,
+            TextModel.LSTM: LSTM,
+            TextModel.BERT: BERT,
+        }
+        text_model_class = text_model_class_mapping[text_model]
+        # Configure text model
+        text_model = text_model_class(input_dim=len(categorization_pipeline.text_vocab))
+    # Configure the classifier (whether it predicts using only the image of the Page,
+    # or only the text, or a MLP to concatenate both predictions)
+    if image_model is None:
+        categorization_pipeline.classifier = PageTextCategorizationModel(
+            text_model=text_model,
+            output_dim=len(categorization_pipeline.category_vocab),
+        )
+        categorization_pipeline.build_preprocessing_pipeline(use_image=False)
+    elif text_model is None:
+        categorization_pipeline.classifier = PageImageCategorizationModel(
+            image_model=image_model,
+            output_dim=len(categorization_pipeline.category_vocab),
+        )
+        categorization_pipeline.build_preprocessing_pipeline(use_image=True)
+    else:
+        # If both image and text classification are chosen, create also a concatenation model
+        multimodal_model = MultimodalConcatenate(
+            n_image_features=image_model.n_features,
+            n_text_features=text_model.n_features,
+        )
+        # Provide the classifier with image model, text model, and concatenation model
+        categorization_pipeline.classifier = PageMultimodalCategorizationModel(
+            image_model=image_model,
+            text_model=text_model,
+            multimodal_model=multimodal_model,
+            output_dim=len(categorization_pipeline.category_vocab),
+        )
+        categorization_pipeline.build_preprocessing_pipeline(use_image=True)
+    # need to ensure classifier starts in evaluation mode
+    categorization_pipeline.classifier.eval()
+
+    return categorization_pipeline
+
 
 COMMON_PARAMETERS = ['tokenizer', 'text_vocab', 'model_type']
 
@@ -1378,12 +1470,13 @@ def _load_categorization_model(path: str):
     # load model dict
     loaded_data = torch.load(path)
 
-    if 'model_type' not in loaded_data.keys():
-        model_type = path.split('_')[-1].split('.')[0]
-    else:
-        model_type = loaded_data['model_type']
+    model_type = "CategorizationAI"
+    # if 'model_type' not in loaded_data.keys():
+    #    model_type = path.split('_')[-1].split('.')[0]
+    # else:
+    #    model_type = loaded_data['model_type']
 
-    model_class = MODEL_CLASSES[model_type]
+    model_class = CategorizationAI
     model_args = MODEL_PARAMETERS_TO_SAVE[model_type]
 
     # Verify if loaded data has all necessary components
@@ -1432,14 +1525,7 @@ def load_categorization_model(pt_path: str, device: Optional[str] = 'cpu'):
         file_data = torch.load(pt_path, map_location=torch.device(device))
 
     if isinstance(file_data, dict):
-        # verification of str in path can be removed after all models being updated with the model_type
-        possible_names = list(MODEL_CLASSES.keys())
-        if ('model_type' in file_data.keys() and file_data['model_type'] in possible_names) or any(
-            [n in pt_path for n in possible_names]
-        ):
-            file_data = _load_categorization_model(pt_path)
-        else:
-            raise TypeError(f"Categorization Model type not recognized: {file_data['model_type']}")
+        file_data = _load_categorization_model(pt_path)
     else:
         with open(pt_path, 'rb') as f:
             file_data = torch.load(f, map_location=torch.device(device))

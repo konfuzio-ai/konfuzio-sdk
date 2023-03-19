@@ -183,6 +183,54 @@ Name-based Categorization AI
    :members:
    :noindex:
 
+Model-based Categorization AI
+---------------------
+.. autoclass:: CategorizationAI
+   :members:
+   :noindex:
+
+Build a Model-based Categorization AI
+---------------------
+.. autofunction:: build_categorization_ai_architecture
+   :noindex:
+
+NBOW Model
+---------------------
+.. autoclass:: NBOW
+   :members:
+   :noindex:
+
+NBOW Self Attention Model
+---------------------
+.. autoclass:: NBOWSelfAttention
+   :members:
+   :noindex:
+
+LSTM Model
+---------------------
+.. autoclass:: LSTM
+   :members:
+   :noindex:
+
+BERT Model
+---------------------
+.. autoclass:: BERT
+   :members:
+   :noindex:
+
+VGG Model
+---------------------
+.. autoclass:: VGG
+   :members:
+   :noindex:
+
+EfficientNet Model
+---------------------
+.. autoclass:: EfficientNet
+   :members:
+   :noindex:
+
+
 File Splitting AI
 =====================
 
@@ -220,19 +268,8 @@ AI Evaluation
 `[source] <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/evaluate.py>`__
 
 Extraction AI Evaluation
-=====================
-.. autoclass:: konfuzio_sdk.evaluate.Evaluation
-   :members:
-   :noindex:
-
-compare
 ---------------------
-.. autofunction:: konfuzio_sdk.evaluate.compare
-   :noindex:
-
-Categorization AI Evaluation
-=====================
-.. autoclass:: konfuzio_sdk.evaluate.CategorizationEvaluation
+.. autoclass:: konfuzio_sdk.evaluate.Evaluation
    :members:
    :noindex:
 

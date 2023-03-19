@@ -16,12 +16,12 @@ from konfuzio_sdk.trainer.tokenization import PhraseMatcherTokenizer
 
 from konfuzio_sdk.trainer.document_categorization import (
     NameBasedCategorizationAI,
-    AbstractClassificationModule,
-    AbstractTextClassificationModule,
+    AbstractCategorizationModel,
+    AbstractTextCategorizationModel,
     CategorizationAI,
-    DocumentMultimodalClassifier,
-    DocumentTextClassifier,
-    DocumentImageClassifier,
+    PageMultimodalCategorizationModel,
+    PageTextCategorizationModel,
+    PageImageCategorizationModel,
     MultimodalConcatenate,
     EfficientNet,
     VGG,
@@ -214,14 +214,14 @@ class TestNameBasedCategorizationAI(unittest.TestCase):
         assert not self.categorization_pipeline.has_compatible_interface(wrong_class)
 
 
-class TestAbstractClassificationModule(unittest.TestCase):
+class TestAbstractCategorizationModel(unittest.TestCase):
     """Test general functionality that uses nn.Module classes for classification."""
 
     @classmethod
     def setUpClass(cls) -> None:
         """Initialize the classifier and test setup."""
         # DummyClassifier definition
-        class DummyClassifier(AbstractClassificationModule):
+        class DummyClassifier(AbstractCategorizationModel):
             def _valid(self) -> None:
                 """Validate architecture sizes."""
                 pass
@@ -237,19 +237,19 @@ class TestAbstractClassificationModule(unittest.TestCase):
         cls.classifier = DummyClassifier()
 
     def test_create_instance(self):
-        """Test create instance of the AbstractClassificationModule."""
-        with pytest.raises(TypeError, match="Can't instantiate abstract class AbstractClassificationModule"):
-            _ = AbstractClassificationModule()
+        """Test create instance of the AbstractCategorizationModel."""
+        with pytest.raises(TypeError, match="Can't instantiate abstract class AbstractCategorizationModel"):
+            _ = AbstractCategorizationModel()
 
 
-class TestAbstractTextClassificationModule(unittest.TestCase):
+class TestAbstractTextCategorizationModel(unittest.TestCase):
     """Test general functionality that uses nn.Module classes for text classification."""
 
     @classmethod
     def setUpClass(cls) -> None:
         """Initialize the classifier and test setup."""
         # DummyClassifier definition
-        class DummyTextClassifier(AbstractTextClassificationModule):
+        class DummyTextClassifier(AbstractTextCategorizationModel):
             def _valid(self) -> None:
                 """Validate architecture sizes."""
                 pass
@@ -274,9 +274,9 @@ class TestAbstractTextClassificationModule(unittest.TestCase):
         cls.classifier = DummyTextClassifier(input_dim=100, emb_dim=64)
 
     def test_create_instance(self):
-        """Test create instance of the AbstractTextClassificationModule."""
-        with pytest.raises(TypeError, match="Can't instantiate abstract class AbstractTextClassificationModule"):
-            _ = AbstractTextClassificationModule()
+        """Test create instance of the AbstractTextCategorizationModel."""
+        with pytest.raises(TypeError, match="Can't instantiate abstract class AbstractTextCategorizationModel"):
+            _ = AbstractTextCategorizationModel()
 
     def test_n_features(self):
         """Test number of features."""
@@ -310,7 +310,7 @@ class TestAbstractTextClassificationModule(unittest.TestCase):
         (BERT, 100, None, None, 'distilbert-base-german-cased'),
     ],
 )
-class TestTextClassifiers(unittest.TestCase):
+class TestTextCategorizationModels(unittest.TestCase):
     """
     Test the currently four text modules available (NBOW, NBOWSelfAttention, LSTM, BERT).
 
@@ -321,14 +321,14 @@ class TestTextClassifiers(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Set up the Text Classifier."""
-        cls.text_module = cls.text_class(
+        cls.text_model = cls.text_class(
             input_dim=cls.input_dim, emb_dim=cls.emb_dim, n_heads=cls.n_heads, name=cls.test_name
         )
 
     @classmethod
     def tearDownClass(cls) -> None:
         """Delete the Text Classifier."""
-        del cls.text_module
+        del cls.text_model
 
     def test_valid(self) -> None:
         """Test _valid method."""
@@ -340,44 +340,44 @@ class TestTextClassifiers(unittest.TestCase):
         """Test n_features."""
         if "bert" in self.test_name:
             # The transformers library stores the number of features in the config dict so no need to check the value
-            assert self.text_module._feature_size in self.text_module.bert.config.to_dict()
+            assert self.text_model._feature_size in self.text_model.bert.config.to_dict()
             return
-        bidirectional = self.text_module.bidirectional
-        n_features = self.text_module.n_features
-        emb_dim = self.text_module.emb_dim
+        bidirectional = self.text_model.bidirectional
+        n_features = self.text_model.n_features
+        emb_dim = self.text_model.emb_dim
         if bidirectional is None:
             # Only trainer/document_categorization.py::LSTM has a bidirectional option
             # (see docstring of the classes for details)
             assert n_features == emb_dim
         else:
-            hid_dim = self.text_module.hid_dim
+            hid_dim = self.text_model.hid_dim
             assert n_features == hid_dim * 2 if bidirectional else hid_dim
 
     def test_output(self) -> None:
         """Test collect output of NN architecture."""
-        text = torch.ones([1, self.text_module.input_dim], dtype=torch.int64)
-        result: List[torch.FloatTensor] = self.text_module._output(text=text)
-        if self.text_module.uses_attention:
+        text = torch.ones([1, self.text_model.input_dim], dtype=torch.int64)
+        result: List[torch.FloatTensor] = self.text_model._output(text=text)
+        if self.text_model.uses_attention:
             # In trainer/document_categorization.py, only NBOWSelfAttention and BERT use attention
             # (see docstring of the classes for details)
             assert len(result) == 2
-            assert result[1].shape == (1, self.text_module.input_dim, self.text_module.input_dim)
+            assert result[1].shape == (1, self.text_model.input_dim, self.text_model.input_dim)
         else:
             assert len(result) == 1
-            assert result[0].shape == (1, self.text_module.input_dim, self.text_module.n_features)
+            assert result[0].shape == (1, self.text_model.input_dim, self.text_model.n_features)
 
     def test_forward(self) -> None:
         """Test the computation performed at every call."""
-        text = torch.ones([1, self.text_module.input_dim], dtype=torch.int64)
+        text = torch.ones([1, self.text_model.input_dim], dtype=torch.int64)
         input_ = {'text': text}
-        res: Dict[str, torch.FloatTensor] = self.text_module(input=input_)
+        res: Dict[str, torch.FloatTensor] = self.text_model(input=input_)
         assert 'features' in res
-        assert res['features'].shape == (1, self.text_module.input_dim, self.text_module.n_features)
-        if self.text_module.uses_attention:
+        assert res['features'].shape == (1, self.text_model.input_dim, self.text_model.n_features)
+        if self.text_model.uses_attention:
             # In trainer/document_categorization.py, only NBOWSelfAttention and BERT use attention
             # (see docstring of the classes for details)
             assert 'attention' in res
-            assert res['attention'].shape == (1, self.text_module.input_dim, self.text_module.input_dim)
+            assert res['attention'].shape == (1, self.text_model.input_dim, self.text_model.input_dim)
 
 
 @parameterized.parameterized_class(
@@ -445,31 +445,31 @@ class TestAllCategorizationConfigurations(unittest.TestCase):
             self.categorization_pipeline.text_vocab = self.categorization_pipeline.build_text_vocab()
         self.categorization_pipeline.category_vocab = self.categorization_pipeline.build_template_category_vocab()
 
-        image_module = None
-        text_module = None
+        image_model = None
+        text_model = None
         if self.image_class is not None:
-            image_module = self.image_class(name=self.image_nn_version)
+            image_model = self.image_class(name=self.image_nn_version)
         if self.text_class is not None:
-            text_module = self.text_class(input_dim=len(self.categorization_pipeline.text_vocab))
+            text_model = self.text_class(input_dim=len(self.categorization_pipeline.text_vocab))
         if self.image_class is None:
-            self.categorization_pipeline.classifier = DocumentTextClassifier(
-                text_module=text_module,
+            self.categorization_pipeline.classifier = PageTextCategorizationModel(
+                text_model=text_model,
                 output_dim=len(self.categorization_pipeline.category_vocab),
             )
         elif self.text_class is None:
-            self.categorization_pipeline.classifier = DocumentImageClassifier(
-                image_module=image_module,
+            self.categorization_pipeline.classifier = PageImageCategorizationModel(
+                image_model=image_model,
                 output_dim=len(self.categorization_pipeline.category_vocab),
             )
         else:
-            multimodal_module = MultimodalConcatenate(
-                n_image_features=image_module.n_features,
-                n_text_features=text_module.n_features,
+            multimodal_model = MultimodalConcatenate(
+                n_image_features=image_model.n_features,
+                n_text_features=text_model.n_features,
             )
-            self.categorization_pipeline.classifier = DocumentMultimodalClassifier(
-                image_module=image_module,
-                text_module=text_module,
-                multimodal_module=multimodal_module,
+            self.categorization_pipeline.classifier = PageMultimodalCategorizationModel(
+                image_model=image_model,
+                text_model=text_model,
+                multimodal_model=multimodal_model,
                 output_dim=len(self.categorization_pipeline.category_vocab),
             )
 
@@ -545,3 +545,21 @@ class TestAllCategorizationConfigurations(unittest.TestCase):
         result = self.categorization_pipeline.categorize(document=test_receipt_document)
         assert isinstance(result, Document)
         assert result.category == self.receipts_category
+
+
+def test_build_categorization_ai() -> None:
+    """Test building a Categorization AI by choosing an ImageModel and a TextModel."""
+    from konfuzio_sdk.trainer.document_categorization import ImageModel, TextModel, build_categorization_ai_architecture
+
+    project = Project(id_=1680)
+    categorization_pipeline = build_categorization_ai_architecture(
+        categories=project.categories,
+        documents=project.documents,
+        test_documents=project.test_documents,
+        image_model=ImageModel.EfficientNetB0,
+        text_model=TextModel.NBOWSelfAttention,
+    )
+    from konfuzio_sdk.trainer.information_extraction import load_model
+
+    pipeline_path = categorization_pipeline.save()
+    load_model(pipeline_path)
