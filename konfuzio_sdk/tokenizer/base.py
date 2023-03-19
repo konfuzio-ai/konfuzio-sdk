@@ -8,7 +8,6 @@ from copy import deepcopy
 import pandas as pd
 
 from konfuzio_sdk.data import Document, Category, Span
-from konfuzio_sdk.evaluate import compare, Evaluation
 from konfuzio_sdk.utils import sdk_isinstance
 
 logger = logging.getLogger(__name__)
@@ -70,6 +69,8 @@ class AbstractTokenizer(metaclass=abc.ABCMeta):
         :param document: Document to evaluate
         :return: Evaluation DataFrame
         """
+        from konfuzio_sdk.evaluate import compare
+
         assert sdk_isinstance(document, Document)
         document.annotations()  # Load Annotations before doing tokenization
 
@@ -82,13 +83,15 @@ class AbstractTokenizer(metaclass=abc.ABCMeta):
         )
         return evaluation
 
-    def evaluate_dataset(self, dataset_documents: List[Document]) -> Evaluation:
+    def evaluate_dataset(self, dataset_documents: List[Document]) -> 'Evaluation':
         """
         Evaluate the tokenizer on a dataset of documents.
 
         :param dataset_documents: Documents to evaluate
         :return: Evaluation instance
         """
+        from konfuzio_sdk.evaluate import Evaluation
+
         eval_list = []
         for document in dataset_documents:
             assert sdk_isinstance(document, Document), f"Invalid document type: {type(document)}. Should be Document."
