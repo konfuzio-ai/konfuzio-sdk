@@ -2,7 +2,7 @@
 from konfuzio_sdk.data import Project, Document
 from konfuzio_sdk.trainer.document_categorization import NameBasedCategorizationAI
 from konfuzio_sdk.trainer.information_extraction import load_model
-from konfuzio_sdk.trainer.document_categorization import build_categorization_ai_architecture
+from konfuzio_sdk.trainer.document_categorization import build_categorization_ai_pipeline
 from konfuzio_sdk.trainer.document_categorization import ImageModel, TextModel
 
 from variables import YOUR_PROJECT_ID
@@ -57,7 +57,7 @@ my_document.delete()
 
 # Build the Categorization AI architecture using a template
 # of pre-built Image and Text classification Models.
-categorization_pipeline = build_categorization_ai_architecture(
+categorization_pipeline = build_categorization_ai_pipeline(
     categories=project.categories,
     documents=project.documents,
     test_documents=project.test_documents,

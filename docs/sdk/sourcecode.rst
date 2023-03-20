@@ -191,7 +191,7 @@ Model-based Categorization AI
 
 Build a Model-based Categorization AI
 ---------------------
-.. autofunction:: build_categorization_ai_architecture
+.. autofunction:: build_categorization_ai_pipeline
    :noindex:
 
 NBOW Model
@@ -227,6 +227,12 @@ VGG Model
 EfficientNet Model
 ---------------------
 .. autoclass:: EfficientNet
+   :members:
+   :noindex:
+
+Multimodal Concatenation
+---------------------
+.. autoclass:: MultimodalConcatenate
    :members:
    :noindex:
 

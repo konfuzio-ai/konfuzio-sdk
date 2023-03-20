@@ -50,11 +50,11 @@ For a list of available Models see [Available Categorization Models](#id8).
 
 .. literalinclude:: /sdk/boilerplates/test_document_categorization.py
    :language: python
-   :lines: 2,4,6,5,11-13,57-72,76,80-82,85-87,88-89,91
+   :lines: 2,4,6,5,11-13,57-72,76,80-83,85-87,88-89,91
 
 #### Available Categorization Models
 
-When using `build_categorization_ai_architecture`, you can select which Image Module and/or Text Module to use for 
+When using `build_categorization_ai_pipeline`, you can select which Image Module and/or Text Module to use for 
 classification. At least one betweem the Image Model or the Text Model must be specified. Both can also be used 
 at the same time.
 

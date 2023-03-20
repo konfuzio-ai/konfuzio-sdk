@@ -1389,7 +1389,7 @@ class Optimizer(Enum):
     Adam = 'Adam'
 
 
-def build_categorization_ai_architecture(
+def build_categorization_ai_pipeline(
     categories: List[Category],
     documents: List[Document],
     test_documents: List[Document],

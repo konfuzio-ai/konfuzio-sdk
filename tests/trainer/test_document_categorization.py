@@ -549,10 +549,10 @@ class TestAllCategorizationConfigurations(unittest.TestCase):
 
 def test_build_categorization_ai() -> None:
     """Test building a Categorization AI by choosing an ImageModel and a TextModel."""
-    from konfuzio_sdk.trainer.document_categorization import ImageModel, TextModel, build_categorization_ai_architecture
+    from konfuzio_sdk.trainer.document_categorization import ImageModel, TextModel, build_categorization_ai_pipeline
 
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-    categorization_pipeline = build_categorization_ai_architecture(
+    categorization_pipeline = build_categorization_ai_pipeline(
         categories=project.categories,
         documents=project.documents,
         test_documents=project.test_documents,
