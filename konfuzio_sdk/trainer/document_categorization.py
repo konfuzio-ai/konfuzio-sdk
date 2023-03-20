@@ -1524,11 +1524,6 @@ def load_categorization_model(pt_path: str, device: Optional[str] = 'cpu'):
     :raises TypeError: When the loaded pt file isn't recognized as a Konfuzio AI model.
     :return: Categorization AI model.
     """
-    import dill
-
-    # https://stackoverflow.com/a/43006034/5344492
-    dill._dill._reverse_typemap['ClassType'] = type
-
     if device is None:
         if torch.cuda.is_available():
             device = 'cuda'
