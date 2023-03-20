@@ -1086,7 +1086,7 @@ class BaseModel(metaclass=abc.ABCMeta):
         self.project.lose_weight()
         self.tokenizer.lose_weight()
 
-    def ensure_model_memory_usage_within_limit(self, max_ram):
+    def ensure_model_memory_usage_within_limit(self, max_ram: Optional[str] = None):
         """
         Ensure that a model is not exceeding allowed max_ram.
 
