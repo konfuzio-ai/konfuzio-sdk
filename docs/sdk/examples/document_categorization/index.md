@@ -68,5 +68,18 @@ See more details about these Categorization Models under [API Reference - Catego
 
 ### Categorization AI Overview Diagram
 
+A Model-based Categorization AI is able to categorize Pages using a Page Categorization Model, which is a container for 
+Image Categorization Models and/or Text Categorization Models.
+
+In the first diagram, we show the class hierarchy of the available Categorization Models within the SDK. Note that the 
+Multimodal Model simply consists of a Multi Layer Perceptron to concatenate the feature outputs of a Text Model and an 
+Image Model, such that the predictions from both Models can be unified in a unique Category prediction.
+
+In the second diagram, we show how these models are contained within a Model-based Categorization AI. The 
+[Categorization AI](https://dev.konfuzio.com/sdk/sourcecode.html#categorization-ai) class provides the high level 
+interface to categorize Documents, as exemplified in the code examples above. It uses a Page Categorization Model 
+to categorize each Page. The Page Categorization Model is a container for Categorization Models: it wraps the feature 
+output layers with a Dropout Layer and a Fully Connected Layer.
+
 <div class="mxgraph" style="max-width:100%;border:1px solid transparent;" data-mxgraph="{&quot;highlight&quot;:&quot;#0000ff&quot;,&quot;nav&quot;:true,&quot;resize&quot;:true,&quot;toolbar&quot;:&quot;zoom layers tags lightbox&quot;,&quot;edit&quot;:&quot;_blank&quot;,&quot;url&quot;:&quot;https://raw.githubusercontent.com/konfuzio-ai/konfuzio-sdk/master/docs/sdk/examples/document_categorization/CategorizationAI.drawio&quot;}"></div>
 <script type="text/javascript" src="https://viewer.diagrams.net/embed2.js?&fetch=https%3A%2F%2Fraw.githubusercontent.com%2Fkonfuzio-ai%2Fkonfuzio-sdk%2Fmaster%2Fdocs%2Fsdk%2Fexamples%2Fdocument_categorization%2FCategorizationAI.drawio"></script>
