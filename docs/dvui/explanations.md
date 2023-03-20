@@ -140,18 +140,18 @@ The following examples, based on the two configuration options mentioned before,
 <head>
     <script
       defer="defer"
-      src="node_modules/@konfuzio/document-validation-ui/dist/js/chunk-vendors.a48fca3f.js"
+      src="node_modules/@konfuzio/document-validation-ui/dist/js/chunk-vendors.js"
     ></script>
     <script
       defer="defer"
-      src="node_modules/@konfuzio/document-validation-ui/dist/js/app.17fe48c4.js"
+      src="node_modules/@konfuzio/document-validation-ui/dist/js/app.js"
     ></script>
     <link
-      href="node_modules/@konfuzio/document-validation-ui/dist/css/chunk-vendors.053b6b6e.css"
+      href="node_modules/@konfuzio/document-validation-ui/dist/css/chunk-vendors.css"
       rel="stylesheet"
     />
     <link
-      href="node_modules/@konfuzio/document-validation-ui/dist/css/app.0c8973f8.css"
+      href="node_modules/@konfuzio/document-validation-ui/dist/css/app.css"
       rel="stylesheet"
     />
 </head>
@@ -170,19 +170,16 @@ An alternative to using `npm` is to load JavaScript and CSS bundles from [CDN](h
 You can simply add the corresponding links in the `script` and `link` tags in your `html`, as shown in the following example: 
 
 ```
-<script defer="defer" src="https://unpkg.com/@konfuzio/document-validation-ui@latest/dist/js/chunk-vendors.a48fca3f.js"></script>
-<script defer="defer" src="https://unpkg.com/@konfuzio/document-validation-ui@latest/dist/js/app.cc0b0c26.js"></script>
-<link href="https://unpkg.com/@konfuzio/document-validation-ui@latest/dist/css/chunk-vendors.053b6b6e.css" rel="stylesheet">
-<link href="https://unpkg.com/@konfuzio/document-validation-ui@latest/dist/css/app.7dd6bb8c.css" rel="stylesheet">
+<script defer="defer" src="https://unpkg.com/@konfuzio/document-validation-ui@latest/dist/js/chunk-vendors.js"></script>
+<script defer="defer" src="https://unpkg.com/@konfuzio/document-validation-ui@latest/dist/js/app.js"></script>
+<link href="https://unpkg.com/@konfuzio/document-validation-ui@latest/dist/css/chunk-vendors.css" rel="stylesheet">
+<link href="https://unpkg.com/@konfuzio/document-validation-ui@latest/dist/css/app.css" rel="stylesheet">
 
 <div id="app" style="height: 100vh">
   <app document="DOCUMENT_ID" user_token=”USER_TOKEN” locale="DE/EN/ES"
 ></app>
 </div>
 ```
-
-*Please note that the file names will be updated in our next release, and from then on the names will be consistent, so there will be no need to manually update them.*
-
 
 ### Integrate by deploying the application
 
