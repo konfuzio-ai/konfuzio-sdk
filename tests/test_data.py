@@ -307,9 +307,9 @@ class TestOfflineExampleData(unittest.TestCase):
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
         assert len(cls.payslips_category.documents()) == 25
-        assert len(cls.receipts_category.documents()) == 24
+        assert len(cls.receipts_category.documents()) == 23
         assert cls.project.get_document_by_id(44864).category.name == cls.project.no_category.name
-        assert len(cls.project.documents) == 25 + 24 + 1
+        assert len(cls.project.documents) == 25 + 23 + 1
 
     def test_copy(self):
         """Test that copy is not allowed as it needs to be implemented for every SDK concept."""
@@ -957,7 +957,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         span = Span(start_offset=1, end_offset=2)
         _ = Annotation(document=document, spans=[span], label=self.label, label_set=self.label_set)
         _ = Page(id_=1, number=1, original_size=(595.2, 300.0), document=document, start_offset=0, end_offset=1)
-        with pytest.raises(ValueError, match='provides Character "None" document text refers to "e"'):
+        with pytest.raises(ValueError, match='provides Character "None" Document text refers to "e"'):
             span.bbox()
 
     def test_get_span_bbox_with_characters_without_width_allowed(self):
@@ -1928,8 +1928,8 @@ class TestKonfuzioOneVirtualTwoRealCategories(unittest.TestCase):
 class TestKonfuzioDataSetup(unittest.TestCase):
     """Test handle data."""
 
-    document_count = 50
-    test_document_count = 5
+    document_count = 49
+    test_document_count = 6
     annotations_correct = 24
     # 24 created by human
     # https://app.konfuzio.com/admin/server/sequenceannotation/?
@@ -2530,7 +2530,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         self.assertTrue(virtual_doc.bboxes)
         virtual_doc.set_text_bbox_hashes()
         virtual_doc._text = '123' + doc.text  # Change text to bring bbox out of sync.
-        with pytest.raises(ValueError, match='Bbox provides Character "n" document text refers to "l"'):
+        with pytest.raises(ValueError, match='Bbox provides Character "n" Document text refers to "l"'):
             virtual_doc.check_bbox()
 
     def test_document_check_bbox_without_validations(self):
