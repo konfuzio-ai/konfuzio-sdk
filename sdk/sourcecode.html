@@ -82,6 +82,15 @@
 <li class="toctree-l2"><a class="reference internal" href="#categorization-ai">Categorization AI</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#abstract-categorization-ai">Abstract Categorization AI</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#name-based-categorization-ai">Name-based Categorization AI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#model-based-categorization-ai">Model-based Categorization AI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#build-a-model-based-categorization-ai">Build a Model-based Categorization AI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nbow-model">NBOW Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nbow-self-attention-model">NBOW Self Attention Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lstm-model">LSTM Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#bert-model">BERT Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#vgg-model">VGG Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#efficientnet-model">EfficientNet Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal-concatenation">Multimodal Concatenation</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#file-splitting-ai">File Splitting AI</a><ul>
@@ -93,7 +102,6 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#ai-evaluation">AI Evaluation</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#extraction-ai-evaluation">Extraction AI Evaluation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#compare">compare</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#categorization-ai-evaluation">Categorization AI Evaluation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#file-splitting-ai-evaluation">File Splitting AI Evaluation</a></li>
 </ul>
@@ -740,7 +748,7 @@ initializing the Document, which will enable running a hash comparison during th
 <dl class="py method">
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">delete_document_details</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Delete all local content information for the document.</p>
+<dd><p>Delete all local content information for the Document.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -859,6 +867,12 @@ many documents, it is advised to use the Document.from_file_async method.</p>
 <dd class="field-odd"><p>Bounding box information per character in the Document.</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">get_document_classifier_examples</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text_vocab</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">category_vocab</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_len</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_text</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Get the per document examples for the document classifier.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1035,7 +1049,7 @@ anymore because _annotation_sets will no longer be None.</p>
 <dl class="py method">
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Update document information.</p>
+<dd><p>Update Document information.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1057,7 +1071,7 @@ anymore because _annotation_sets will no longer be None.</p>
 <h3>Page<a class="headerlink" href="#page" title="Permalink to this headline">¶</a></h3>
 <dl class="py class">
 <dt class="sig sig-object py">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.data.</span></span><span class="sig-name descname"><span class="pre">Page</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id_</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">document</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">konfuzio_sdk.data.Document</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">original_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy_of_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.data.</span></span><span class="sig-name descname"><span class="pre">Page</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id_</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">document</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">konfuzio_sdk.data.Document</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">original_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">category</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.data.Category</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy_of_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Access the information about one Page of a Document.</p>
 <dl class="py method">
 <dt class="sig sig-object py">
@@ -1459,14 +1473,14 @@ argument.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">evaluate_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_documents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.data.Document</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">konfuzio_sdk.evaluate.Evaluation</span></span></span></dt>
+<span class="sig-name descname"><span class="pre">evaluate_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_documents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.data.Document</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">konfuzio_sdk.evaluate.ExtractionEvaluation</span></span></span></dt>
 <dd><p>Evaluate the tokenizer on a dataset of documents.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>dataset_documents</strong> – Documents to evaluate</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Evaluation instance</p>
+<dd class="field-even"><p>ExtractionEvaluation instance</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1517,8 +1531,16 @@ argument.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">tokenize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">konfuzio_sdk.data.Document</span></span></em><span class="sig-paren">)</span></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">tokenize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">konfuzio_sdk.data.Document</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">konfuzio_sdk.data.Document</span></span></span></dt>
 <dd><p>Create Annotations with 1 Span based on the result of the Tokenizer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>document</strong> – Document to tokenize, can have been tokenized before</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Document with Spans created by the Tokenizer.</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -2005,13 +2027,13 @@ The Label Set classifier groups them into Annotation sets.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">evaluate_clf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_training_docs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">konfuzio_sdk.evaluate.Evaluation</span></span></span></dt>
+<span class="sig-name descname"><span class="pre">evaluate_clf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_training_docs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">konfuzio_sdk.evaluate.ExtractionEvaluation</span></span></span></dt>
 <dd><p>Evaluate the Label classifier.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">evaluate_full</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_training_docs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_view_annotations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">konfuzio_sdk.evaluate.Evaluation</span></span></span></dt>
+<span class="sig-name descname"><span class="pre">evaluate_full</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_training_docs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_view_annotations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">konfuzio_sdk.evaluate.ExtractionEvaluation</span></span></span></dt>
 <dd><p>Evaluate the full pipeline on the pipeline’s Test Documents.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -2028,13 +2050,13 @@ The Label Set classifier groups them into Annotation sets.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">evaluate_label_set_clf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_training_docs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">konfuzio_sdk.evaluate.Evaluation</span></span></span></dt>
+<span class="sig-name descname"><span class="pre">evaluate_label_set_clf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_training_docs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">konfuzio_sdk.evaluate.ExtractionEvaluation</span></span></span></dt>
 <dd><p>Evaluate the LabelSet classifier.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">evaluate_tokenizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_training_docs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">konfuzio_sdk.evaluate.Evaluation</span></span></span></dt>
+<span class="sig-name descname"><span class="pre">evaluate_tokenizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_training_docs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">konfuzio_sdk.evaluate.ExtractionEvaluation</span></span></span></dt>
 <dd><p>Evaluate the tokenizer.</p>
 </dd></dl>
 
@@ -2250,6 +2272,12 @@ NotFittedError: When CLF is not fitted</p>
 
 <dl class="py method">
 <dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">check_is_ready</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Check if Categorization AI instance is ready for inference.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_training_docs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">konfuzio_sdk.evaluate.CategorizationEvaluation</span></span></span></dt>
 <dd><p>Evaluate the full Categorization pipeline on the pipeline’s Test Documents.</p>
 <dl class="field-list simple">
@@ -2286,6 +2314,12 @@ NotFittedError: When CLF is not fitted</p>
 
 <dl class="py method">
 <dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">name_lower</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Convert class name to machine-readable name.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_konfuzio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Save the model to disk.</p>
 </dd></dl>
@@ -2314,6 +2348,248 @@ is available.</p>
 <dd><p>Use as placeholder Function.</p>
 </dd></dl>
 
+</dd></dl>
+
+</section>
+<section id="model-based-categorization-ai">
+<h3>Model-based Categorization AI<a class="headerlink" href="#model-based-categorization-ai" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.trainer.document_categorization.</span></span><span class="sig-name descname"><span class="pre">CategorizationAI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">categories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.data.Category</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_cuda</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>A trainable AI that predicts a Category for each Page of a given Document.</p>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">build_document_classifier_iterator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">documents</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transforms:</span> <span class="pre">&lt;module</span> <span class="pre">'torchvision.transforms'</span> <span class="pre">from</span> <span class="pre">'/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torchvision/transforms/__init__.py'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_image:</span> <span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_text:</span> <span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shuffle:</span> <span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size:</span> <span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_len:</span> <span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device:</span> <span class="pre">torch.device</span> <span class="pre">=</span> <span class="pre">'cpu'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.utils.data.dataloader.DataLoader</span></span></span></dt>
+<dd><p>Prepare the data necessary for the document classifier, and build the iterators for the data list.</p>
+<dl class="simple">
+<dt>For each document we split into pages and from each page we take:</dt><dd><ul class="simple">
+<li><p>the path to an image of the page</p></li>
+<li><p>the tokenized and numericalized text on the page</p></li>
+<li><p>the label (category) of the page</p></li>
+<li><p>the id of the document</p></li>
+<li><p>the page number</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">build_preprocessing_pipeline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_augmentation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_preprocessing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span></dt>
+<dd><p>Set up the pre-processing and data augmentation when necessary.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">build_template_category_vocab</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">konfuzio_sdk.tokenizer.base.Vocab</span></span></span></dt>
+<dd><p>Build a vocabulary over the Categories.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">build_text_vocab</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">min_freq</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">konfuzio_sdk.tokenizer.base.Vocab</span></span></span></dt>
+<dd><p>Build a vocabulary over the document text.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_training_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></dt>
+<dd><p>Fit the CategorizationAI classifier.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span></dt>
+<dd><p>Save only the necessary parts of the model for extraction/inference.</p>
+<p>Saves:
+- tokenizer (needed to ensure we tokenize inference examples in the same way that they are trained)
+- transforms (to ensure we transform/pre-process images in the same way as training)
+- vocabs (to ensure the tokens/labels are mapped to the same integers as training)
+- configs (to ensure we load the same models used in training)
+- state_dicts (the classifier parameters achieved through training)</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="build-a-model-based-categorization-ai">
+<h3>Build a Model-based Categorization AI<a class="headerlink" href="#build-a-model-based-categorization-ai" title="Permalink to this headline">¶</a></h3>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.trainer.document_categorization.</span></span><span class="sig-name descname"><span class="pre">build_categorization_ai_pipeline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">categories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.data.Category</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">documents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.data.Document</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_documents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.data.Document</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tokenizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.tokenizer.base.AbstractTokenizer</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.trainer.document_categorization.ImageModel</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.trainer.document_categorization.TextModel</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">konfuzio_sdk.trainer.document_categorization.Optimizer</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Optimizer.Adam</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">konfuzio_sdk.trainer.document_categorization.CategorizationAI</span></span></span></dt>
+<dd><p>Build a Categorization AI neural network by choosing an ImageModel and a TextModel.</p>
+<p>See an in-depth tutorial at <a class="reference external" href="https://dev.konfuzio.com/sdk/tutorials.html#model-based-categorization-ai">https://dev.konfuzio.com/sdk/tutorials.html#model-based-categorization-ai</a></p>
+</dd></dl>
+
+</section>
+<section id="nbow-model">
+<h3>NBOW Model<a class="headerlink" href="#nbow-model" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.trainer.document_categorization.</span></span><span class="sig-name descname"><span class="pre">NBOW</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emb_dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>The neural bag-of-words (NBOW) model is the simplest of models, it passes each token through an embedding layer.</p>
+<p>As shown in the fastText paper (<a class="reference external" href="https://arxiv.org/abs/1607.01759">https://arxiv.org/abs/1607.01759</a>) this model is still able to achieve comparable
+performance to some deep learning models whilst being considerably faster.</p>
+<p>One downside of this model is that tokens are embedded without regards to the surrounding context in which they
+appear, e.g. the embedding for “May” in the two sentences “May I speak to you?” and “I am leaving on the 1st of May”
+are identical, even though they have different semantics.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>emb_dim</strong> – The dimensions of the embedding vector.</p></li>
+<li><p><strong>dropout_rate</strong> – The amount of dropout applied to the embedding vectors.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="nbow-self-attention-model">
+<h3>NBOW Self Attention Model<a class="headerlink" href="#nbow-self-attention-model" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.trainer.document_categorization.</span></span><span class="sig-name descname"><span class="pre">NBOWSelfAttention</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emb_dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_heads</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>This is an NBOW model with a multi-headed self-attention layer, which is added after the embedding layer.</p>
+<p>See details at <a class="reference external" href="https://arxiv.org/abs/1706.03762">https://arxiv.org/abs/1706.03762</a>.
+The self-attention layer effectively contextualizes the output as now each hidden state is calculated from the
+embedding vector of a token and the embedding vector of all other tokens within the sequence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>emb_dim</strong> – The dimensions of the embedding vector.</p></li>
+<li><p><strong>dropout_rate</strong> – The amount of dropout applied to the embedding vectors.</p></li>
+<li><p><strong>n_heads</strong> – The number of attention heads to use in the multi-headed self-attention layer. Note that <cite>n_heads</cite></p></li>
+</ul>
+</dd>
+</dl>
+<p>must be a factor of <cite>emb_dim</cite>, i.e. <cite>emb_dim % n_heads == 0</cite>.</p>
+</dd></dl>
+
+</section>
+<section id="lstm-model">
+<h3>LSTM Model<a class="headerlink" href="#lstm-model" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.trainer.document_categorization.</span></span><span class="sig-name descname"><span class="pre">LSTM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emb_dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hid_dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_layers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bidirectional</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>The LSTM (long short-term memory) is a variant of a RNN (recurrent neural network).</p>
+<p>It feeds the input tokens through an embedding layer and then processes them sequentially with the LSTM, outputting
+a hidden state for each token. If the LSTM is bi-directional then it trains a forward and backward LSTM per layer
+and concatenates the forward and backward hidden states for each token.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>emb_dim</strong> – The dimensions of the embedding vector.</p></li>
+<li><p><strong>hid_dim</strong> – The dimensions of the hidden states.</p></li>
+<li><p><strong>n_layers</strong> – How many LSTM layers to use.</p></li>
+<li><p><strong>bidirectional</strong> – If the LSTM should be bidirectional.</p></li>
+<li><p><strong>dropout_rate</strong> – The amount of dropout applied to the embedding vectors and between LSTM layers if</p></li>
+</ul>
+</dd>
+</dl>
+<p><cite>n_layers &gt; 1</cite>.</p>
+</dd></dl>
+
+</section>
+<section id="bert-model">
+<h3>BERT Model<a class="headerlink" href="#bert-model" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.trainer.document_categorization.</span></span><span class="sig-name descname"><span class="pre">BERT</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'bert-base-german-cased'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freeze</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Wraps around pre-trained BERT-type models from the HuggingFace library.</p>
+<p>BERT (bi-directional encoder representations from Transformers) is a family of large Transformer models. The
+available BERT variants are all pre-trained models provided by the transformers library. It is usually infeasible
+to train a BERT model from scratch due to the significant amount of computation required. However, the pre-trained
+models can be easily fine-tuned on desired data.</p>
+<dl class="simple">
+<dt>The BERT variants, i.e. name arguments, that are covered by internal tests are:</dt><dd><ul class="simple">
+<li><p><cite>bert-base-german-cased</cite></p></li>
+<li><p><cite>bert-base-german-dbmdz-cased</cite></p></li>
+<li><p><cite>bert-base-german-dbmdz-uncased</cite></p></li>
+<li><p><cite>distilbert-base-german-cased</cite></p></li>
+</ul>
+</dd>
+</dl>
+<p>In theory, all variants beginning with <cite>bert-base-*</cite> and <cite>distilbert-*</cite> should work out of the box. Other BERT
+variants come with no guarantees.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – The name of the pre-trained BERT variant to use.</p></li>
+<li><p><strong>freeze</strong> – Should the BERT model be frozen, i.e. the pre-trained parameters are not updated.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">get_max_length</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Get the maximum length of a sequence that can be passed to the BERT module.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="vgg-model">
+<h3>VGG Model<a class="headerlink" href="#vgg-model" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.trainer.document_categorization.</span></span><span class="sig-name descname"><span class="pre">VGG</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'vgg11'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freeze</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>The VGG family of models are image classification models designed for the ImageNet.</p>
+<p>They are usually used as a baseline in image classification tasks, however are considerably larger - in terms of
+the number of parameters - than modern architectures.</p>
+<p>Available variants are: <cite>vgg11</cite>, <cite>vgg13</cite>, <cite>vgg16</cite>, <cite>vgg19</cite>, <cite>vgg11_bn</cite>, <cite>vgg13_bn</cite>, <cite>vgg16_bn</cite>, <cite>vgg19_bn</cite>. The
+number generally indicates the number of layers in the model, higher does not always mean better. The <cite>_bn</cite> suffix
+means that the VGG model uses Batch Normalization layers, this generally leads to better results.</p>
+<p>The pre-trained weights are taken from the [torchvision](<a class="reference external" href="https://github.com/pytorch/vision">https://github.com/pytorch/vision</a>) library and are weights
+from a model that has been trained as an image classifier on ImageNet. Ideally, this means the images should be
+3-channel color images that are at least 224x224 pixels and should be normalized.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – The name of the VGG variant to use</p></li>
+<li><p><strong>pretrained</strong> – If pre-trained weights for the VGG variant should be used</p></li>
+<li><p><strong>freeze</strong> – If the parameters of the VGG variant should be frozen</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="efficientnet-model">
+<h3>EfficientNet Model<a class="headerlink" href="#efficientnet-model" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.trainer.document_categorization.</span></span><span class="sig-name descname"><span class="pre">EfficientNet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'efficientnet_b0'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freeze</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>EfficientNet is a family of convolutional neural network based models that are designed to be more efficient.</p>
+<p>The efficiency comes in terms of the number of parameters and FLOPS, compared to previous computer vision models
+whilst maintaining equivalent image classification performance.</p>
+<p>Available variants are: <cite>efficientnet_b0</cite>, <cite>efficientnet_b1</cite>, …, <cite>efficienet_b7</cite>. With <cite>b0</cite> having the least
+amount of parameters and <cite>b7</cite> having the most.</p>
+<p>The pre-trained weights are taken from the timm library and have been trained on ImageNet, thus the same tips,
+i.e. normalization, that apply to the VGG models also apply here.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – The name of the EfficientNet variant to use</p></li>
+<li><p><strong>pretrained</strong> – If pre-trained weights for the EfficientNet variant should be used</p></li>
+<li><p><strong>freeze</strong> – If the parameters of the EfficientNet variant should be frozen</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">get_n_features</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span></dt>
+<dd><p>Calculate number of output features based on given model.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="multimodal-concatenation">
+<h3>Multimodal Concatenation<a class="headerlink" href="#multimodal-concatenation" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.trainer.document_categorization.</span></span><span class="sig-name descname"><span class="pre">MultimodalConcatenate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_image_features</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_text_features</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hid_dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Defines how the image and text features are combined in order to yield a categorization prediction.</p>
 </dd></dl>
 
 </section>
@@ -2583,183 +2859,6 @@ with Pages marked .is_first_page on splitting points.</p>
 <p><a class="reference external" href="https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/evaluate.py">[source]</a></p>
 <section id="extraction-ai-evaluation">
 <h3>Extraction AI Evaluation<a class="headerlink" href="#extraction-ai-evaluation" title="Permalink to this headline">¶</a></h3>
-<dl class="py class">
-<dt class="sig sig-object py">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.evaluate.</span></span><span class="sig-name descname"><span class="pre">Evaluation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">documents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.data.Document</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">konfuzio_sdk.data.Document</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_view_annotations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_below_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Calculated accuracy measures by using the detailed comparison on Span Level.</p>
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">calculate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Calculate and update the data stored within this Evaluation.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">clf_f1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span></dt>
-<dd><p>Calculate the F1 Score of one the Label classifier.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>search</strong> – Parameter used to calculate the value for one Data object.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">clf_fn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span></dt>
-<dd><p>Return the Label classifier False Negatives of all Spans.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">clf_fp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span></dt>
-<dd><p>Return the Label classifier False Positives of all Spans.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">clf_tp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span></dt>
-<dd><p>Return the Label classifier True Positives of all Spans.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">f1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span></dt>
-<dd><p>Calculate the F1 Score of one class.</p>
-<p>Please note: As suggested by Opitz et al. (2021) use the arithmetic mean over individual F1 scores.</p>
-<p>“F1 is often used with the intention to assign equal weight to frequent and infrequent classes, we recommend
-evaluating classifiers with F1 (the arithmetic mean over individual F1 scores), which is significantly more
-robust towards the error type distribution.”</p>
-<p>Opitz, Juri, and Sebastian Burst. “Macro F1 and Macro F1.” arXiv preprint arXiv:1911.03347 (2021).
-https://arxiv.org/pdf/1911.03347.pdf</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>search</strong> – Parameter used to calculate the value for one class.</p>
-</dd>
-</dl>
-<dl class="simple">
-<dt>Example:</dt><dd><ol class="arabic simple">
-<li><p>If you have three Documents, calculate the F-1 Score per Document and use the arithmetic mean.</p></li>
-<li><p>If you have three Labels, calculate the F-1 Score per Label and use the arithmetic mean.</p></li>
-<li><p>If you have three Labels and three documents, calculate six F-1 Scores and use the arithmetic mean.</p></li>
-</ol>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">fn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span></dt>
-<dd><p>Return the False Negatives of all Spans.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">fp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span></dt>
-<dd><p>Return the False Positives of all Spans.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">get_evaluation_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">search</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_zero</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">konfuzio_sdk.evaluate.EvaluationCalculator</span></span></span></dt>
-<dd><p>Get precision, recall, f1, based on TP, FP, FN.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">get_missing_vertical_merge</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Return Spans that should have been merged.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">get_wrong_vertical_merge</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Return Spans that were wrongly merged vertically.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">precision</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span></dt>
-<dd><p>Calculate the Precision and see f1 to calculate imbalanced classes.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">recall</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span></dt>
-<dd><p>Calculate the Recall and see f1 to calculate imbalanced classes.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">tn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span></dt>
-<dd><p>Return the True Negatives of all Spans.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">tokenizer_f1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span></dt>
-<dd><p>Calculate the F1 Score of one the tokenizer.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>search</strong> – Parameter used to calculate the value for one Data object.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">tokenizer_fn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span></dt>
-<dd><p>Return the tokenizer False Negatives of all Spans.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">tokenizer_fp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span></dt>
-<dd><p>Return the tokenizer False Positives of all Spans.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">tokenizer_tp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span></dt>
-<dd><p>Return the tokenizer True Positives of all Spans.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">tp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span></dt>
-<dd><p>Return the True Positives of all Spans.</p>
-</dd></dl>
-
-</dd></dl>
-
-</section>
-<section id="compare">
-<h3>compare<a class="headerlink" href="#compare" title="Permalink to this headline">¶</a></h3>
-<dl class="py function">
-<dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.evaluate.</span></span><span class="sig-name descname"><span class="pre">compare</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doc_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">doc_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_use_correct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_view_annotations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_below_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.core.frame.DataFrame</span></span></span></dt>
-<dd><p>Compare the Annotations of two potentially empty Documents wrt. to <strong>all</strong> Annotations.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>doc_a</strong> – Document which is assumed to be correct</p></li>
-<li><p><strong>doc_b</strong> – Document which needs to be evaluated</p></li>
-<li><p><strong>only_use_correct</strong> – Unrevised feedback in doc_a is assumed to be correct.</p></li>
-<li><p><strong>use_view_annotations</strong> – Use view_annotations filter to evaluate doc_b</p></li>
-<li><p><strong>ignore_below_threshold</strong> – Ignore Annotations below detection threshold of the Label (only affects TNs)</p></li>
-<li><p><strong>strict</strong> – Evaluate on a Character exact level without any postprocessing, an amount Span “5,55 ” will not be
-exact with “5,55”</p></li>
-</ul>
-</dd>
-<dt class="field-even">Raises</dt>
-<dd class="field-even"><p><strong>ValueError</strong> – When the Category differs.</p>
-</dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>Evaluation DataFrame</p>
-</dd>
-</dl>
-</dd></dl>
-
 </section>
 <section id="categorization-ai-evaluation">
 <h3>Categorization AI Evaluation<a class="headerlink" href="#categorization-ai-evaluation" title="Permalink to this headline">¶</a></h3>

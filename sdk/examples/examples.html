@@ -677,39 +677,6 @@ specify the metrics accordingly at the class’s initialization). Example usage:
 </section>
 <section id="document-categorization">
 <h2>Document Categorization<a class="headerlink" href="#document-categorization" title="Permalink to this headline">¶</a></h2>
-<section id="name-based-categorization-ai">
-<h3>Name-based Categorization AI<a class="headerlink" href="#name-based-categorization-ai" title="Permalink to this headline">¶</a></h3>
-<p>Use the name of the category as an effective fallback logic to categorize documents when no Categorization AI is available:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Document</span>
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.document_categorization</span> <span class="kn">import</span> <span class="n">NameBasedCategorizationAI</span>
-
-<span class="c1"># Set up your Project.</span>
-<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
-
-<span class="c1"># Initialize the Categorization Model.</span>
-<span class="n">categorization_model</span> <span class="o">=</span> <span class="n">NameBasedCategorizationAI</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
-<span class="n">categorization_model</span><span class="o">.</span><span class="n">categories</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">categories</span>
-
-<span class="c1"># Retrieve a Document to categorize.</span>
-<span class="n">test_document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
-
-<span class="c1"># The Categorization Model returns a copy of the SDK Document with Category attribute</span>
-<span class="c1"># (use inplace=True to maintain the original Document instead).</span>
-<span class="c1"># If the input Document is already categorized, the already present Category is used</span>
-<span class="c1"># (use recategorize=True if you want to force a recategorization).</span>
-<span class="n">result_doc</span> <span class="o">=</span> <span class="n">categorization_model</span><span class="o">.</span><span class="n">categorize</span><span class="p">(</span><span class="n">document</span><span class="o">=</span><span class="n">test_document</span><span class="p">)</span>
-
-<span class="c1"># Each Page is categorized individually.</span>
-<span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">result_doc</span><span class="o">.</span><span class="n">pages</span><span class="p">():</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found category </span><span class="si">{</span><span class="n">page</span><span class="o">.</span><span class="n">category</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">page</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-<span class="c1"># The Category of the Document is defined when all pages&#39; Categories are equal.</span>
-<span class="c1"># If the Document contains mixed Categories, only the Page level Category will be defined,</span>
-<span class="c1"># and the Document level Category will be None.</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found category </span><span class="si">{</span><span class="n">result_doc</span><span class="o">.</span><span class="n">category</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">result_doc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-</section>
 <section id="working-with-the-category-of-a-document-and-its-individual-pages">
 <h3>Working with the Category of a Document and its individual Pages<a class="headerlink" href="#working-with-the-category-of-a-document-and-its-individual-pages" title="Permalink to this headline">¶</a></h3>
 <p>You can initialize a Document with a Category, which will count as if a human manually revised it.</p>
@@ -779,6 +746,124 @@ also find these documented under <a class="reference external" href="sourcecode.
 </tbody>
 </table>
 </section>
+<section id="name-based-categorization-ai">
+<h3>Name-based Categorization AI<a class="headerlink" href="#name-based-categorization-ai" title="Permalink to this headline">¶</a></h3>
+<p>Use the name of the Category as an effective fallback logic to categorize Documents when no Categorization AI is available:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Document</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.document_categorization</span> <span class="kn">import</span> <span class="n">NameBasedCategorizationAI</span>
+
+<span class="c1"># Set up your Project.</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
+
+<span class="c1"># Initialize the Categorization Model.</span>
+<span class="n">categorization_model</span> <span class="o">=</span> <span class="n">NameBasedCategorizationAI</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
+<span class="n">categorization_model</span><span class="o">.</span><span class="n">categories</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">categories</span>
+
+<span class="c1"># Retrieve a Document to categorize.</span>
+<span class="n">test_document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
+
+<span class="c1"># The Categorization Model returns a copy of the SDK Document with Category attribute</span>
+<span class="c1"># (use inplace=True to maintain the original Document instead).</span>
+<span class="c1"># If the input Document is already categorized, the already present Category is used</span>
+<span class="c1"># (use recategorize=True if you want to force a recategorization).</span>
+<span class="n">result_doc</span> <span class="o">=</span> <span class="n">categorization_model</span><span class="o">.</span><span class="n">categorize</span><span class="p">(</span><span class="n">document</span><span class="o">=</span><span class="n">test_document</span><span class="p">)</span>
+
+<span class="c1"># Each Page is categorized individually.</span>
+<span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">result_doc</span><span class="o">.</span><span class="n">pages</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found category </span><span class="si">{</span><span class="n">page</span><span class="o">.</span><span class="n">category</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">page</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># The Category of the Document is defined when all pages&#39; Categories are equal.</span>
+<span class="c1"># If the Document contains mixed Categories, only the Page level Category will be defined,</span>
+<span class="c1"># and the Document level Category will be None.</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found category </span><span class="si">{</span><span class="n">result_doc</span><span class="o">.</span><span class="n">category</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">result_doc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="model-based-categorization-ai">
+<h3>Model-based Categorization AI<a class="headerlink" href="#model-based-categorization-ai" title="Permalink to this headline">¶</a></h3>
+<p>Build, train and test a Categorization AI using Image Models and Text Models to classify the image and text of each Page.</p>
+<p>For a list of available Models see <a class="reference external" href="#id8">Available Categorization Models</a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Document</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">load_model</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.document_categorization</span> <span class="kn">import</span> <span class="n">ImageModel</span><span class="p">,</span> <span class="n">TextModel</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.document_categorization</span> <span class="kn">import</span> <span class="n">build_categorization_ai_pipeline</span>
+
+<span class="c1"># Set up your Project.</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
+
+<span class="c1"># Build the Categorization AI architecture using a template</span>
+<span class="c1"># of pre-built Image and Text classification Models.</span>
+<span class="n">categorization_pipeline</span> <span class="o">=</span> <span class="n">build_categorization_ai_pipeline</span><span class="p">(</span>
+    <span class="n">categories</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">categories</span><span class="p">,</span>
+    <span class="n">documents</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">documents</span><span class="p">,</span>
+    <span class="n">test_documents</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">test_documents</span><span class="p">,</span>
+    <span class="n">image_model</span><span class="o">=</span><span class="n">ImageModel</span><span class="o">.</span><span class="n">EfficientNetB0</span><span class="p">,</span>
+    <span class="n">text_model</span><span class="o">=</span><span class="n">TextModel</span><span class="o">.</span><span class="n">NBOWSelfAttention</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Train the AI.</span>
+<span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">n_epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="c1"># Evaluate the AI</span>
+<span class="n">data_quality</span> <span class="o">=</span> <span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">use_training_docs</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">ai_quality</span> <span class="o">=</span> <span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">evaluate</span><span class="p">()</span>
+
+<span class="c1"># Categorize a Document</span>
+<span class="n">document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
+<span class="n">categorization_result</span> <span class="o">=</span> <span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">categorize</span><span class="p">(</span><span class="n">document</span><span class="o">=</span><span class="n">document</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">categorization_result</span><span class="o">.</span><span class="n">pages</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found category </span><span class="si">{</span><span class="n">page</span><span class="o">.</span><span class="n">category</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">page</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Save and load a pickle file for the AI</span>
+<span class="n">pickle_ai_path</span> <span class="o">=</span> <span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+<span class="n">categorization_pipeline_loaded</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">pipeline_path</span><span class="p">)</span>
+</pre></div>
+</div>
+<section id="id8">
+<h4>Available Categorization Models<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h4>
+<p>When using <code class="docutils literal notranslate"><span class="pre">build_categorization_ai_pipeline</span></code>, you can select which Image Module and/or Text Module to use for
+classification. At least one betweem the Image Model or the Text Model must be specified. Both can also be used
+at the same time.</p>
+<p>The list of available Categorization Models is implemented as an Enum containing the following elements:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.document_categorization</span> <span class="kn">import</span> <span class="n">ImageModel</span><span class="p">,</span> <span class="n">TextModel</span>
+
+<span class="c1"># Image Models</span>
+<span class="n">ImageModel</span><span class="o">.</span><span class="n">VGG11</span>
+<span class="n">ImageModel</span><span class="o">.</span><span class="n">VGG13</span>
+<span class="n">ImageModel</span><span class="o">.</span><span class="n">VGG16</span>
+<span class="n">ImageModel</span><span class="o">.</span><span class="n">VGG19</span>
+<span class="n">ImageModel</span><span class="o">.</span><span class="n">EfficientNetB0</span>
+<span class="n">ImageModel</span><span class="o">.</span><span class="n">EfficientNetB1</span>
+<span class="n">ImageModel</span><span class="o">.</span><span class="n">EfficientNetB2</span>
+<span class="n">ImageModel</span><span class="o">.</span><span class="n">EfficientNetB3</span>
+<span class="n">ImageModel</span><span class="o">.</span><span class="n">EfficientNetB4</span>
+<span class="n">ImageModel</span><span class="o">.</span><span class="n">EfficientNetB5</span>
+<span class="n">ImageModel</span><span class="o">.</span><span class="n">EfficientNetB6</span>
+<span class="n">ImageModel</span><span class="o">.</span><span class="n">EfficientNetB7</span>
+<span class="n">ImageModel</span><span class="o">.</span><span class="n">EfficientNetB8</span>
+
+<span class="c1"># Text Models</span>
+<span class="n">TextModel</span><span class="o">.</span><span class="n">NBOW</span>
+<span class="n">TextModel</span><span class="o">.</span><span class="n">NBOWSelfAttention</span>
+<span class="n">TextModel</span><span class="o">.</span><span class="n">LSTM</span>
+<span class="n">TextModel</span><span class="o">.</span><span class="n">BERT</span>
+</pre></div>
+</div>
+<p>See more details about these Categorization Models under <a class="reference external" href="sourcecode.html#categorization-ai">API Reference - Categorization AI</a>.</p>
+</section>
+</section>
+<section id="categorization-ai-overview-diagram">
+<h3>Categorization AI Overview Diagram<a class="headerlink" href="#categorization-ai-overview-diagram" title="Permalink to this headline">¶</a></h3>
+<p>In the first diagram, we show the class hierarchy of the available Categorization Models within the SDK. Note that the
+Multimodal Model simply consists of a Multi Layer Perceptron to concatenate the feature outputs of a Text Model and an
+Image Model, such that the predictions from both Models can be unified in a unique Category prediction.</p>
+<p>In the second diagram, we show how these models are contained within a Model-based Categorization AI. The
+<a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#categorization-ai">Categorization AI</a> class provides the high level
+interface to categorize Documents, as exemplified in the code examples above. It uses a Page Categorization Model
+to categorize each Page. The Page Categorization Model is a container for Categorization Models: it wraps the feature
+output layers of each contained Model with a Dropout Layer and a Fully Connected Layer.</p>
+<p><span class="raw-html-m2r"><div class="mxgraph" style="max-width:100%;border:1px solid transparent;" data-mxgraph="{&quot;highlight&quot;:&quot;#0000ff&quot;,&quot;nav&quot;:true,&quot;resize&quot;:true,&quot;toolbar&quot;:&quot;zoom layers tags lightbox&quot;,&quot;edit&quot;:&quot;_blank&quot;,&quot;url&quot;:&quot;https://raw.githubusercontent.com/konfuzio-ai/konfuzio-sdk/master/docs/sdk/examples/document_categorization/CategorizationAI.drawio&quot;}"></div></span></p>
+<script type="text/javascript" src="https://viewer.diagrams.net/embed2.js?&fetch=https%3A%2F%2Fraw.githubusercontent.com%2Fkonfuzio-ai%2Fkonfuzio-sdk%2Fmaster%2Fdocs%2Fsdk%2Fexamples%2Fdocument_categorization%2FCategorizationAI.drawio"></script></section>
 </section>
 <section id="train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents">
 <h2>Train a Konfuzio SDK Model to Extract Information From Payslip Documents<a class="headerlink" href="#train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents" title="Permalink to this headline">¶</a></h2>
