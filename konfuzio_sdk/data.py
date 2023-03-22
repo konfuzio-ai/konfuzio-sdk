@@ -1332,6 +1332,10 @@ class Label(Data):
                                         detected_by_best_spans.add(span)
                     else:
                         break
+                if len(detected_by_worst_annotations) not in range(
+                    round(len(detected_by_best_annotations) * 0.7), round(len(detected_by_best_annotations) * 1.1)
+                ):
+                    outliers.update(detected_by_worst_annotations - detected_by_best_annotations)
                 for annotation in detected_by_worst_annotations.union(detected_by_best_annotations):
                     if len(annotation.spans) > 1:
                         text = annotation.document.text
@@ -1355,7 +1359,6 @@ class Label(Data):
                                 if not found_regex:
                                     outliers.add(annotation)
                             break
-                outliers.update(detected_by_worst_annotations - detected_by_best_annotations)
         outliers = list(outliers)
         return outliers
 
