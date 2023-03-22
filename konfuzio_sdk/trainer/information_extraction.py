@@ -706,9 +706,6 @@ def process_document_data(
     spans: List[Span],
     n_nearest: Union[int, List, Tuple] = 2,
     first_word: bool = True,
-    # tokenize_fn: Optional[Callable] = None,
-    substring_features=None,
-    catchphrase_list=None,
     n_nearest_across_lines: bool = False,
 ) -> Tuple[pandas.DataFrame, List, pandas.DataFrame]:
     """
@@ -754,10 +751,6 @@ def process_document_data(
         line_list.append({'start_offset': char_counter, 'end_offset': char_counter + n_chars_on_line})
         char_counter += n_chars_on_line + 1
 
-    # generate the Catchphrase-Dataframe
-    if catchphrase_list is not None:
-        occurrence_dict = generate_catchphrase_occurrence_dict(line_list, catchphrase_list, document_text)
-
     if first_word:
         first_candidate = get_first_candidate(document_text, document_bbox, line_list)
         first_word_string = first_candidate['offset_string']
@@ -766,23 +759,9 @@ def process_document_data(
         first_word_x1 = first_candidate['x1']
         first_word_y1 = first_candidate['y1']
 
-    # WIP: Word on page feature
-    page_text_list = document_text.split('\f')
-
-    # used to cache the catchphrase features
-    _line_num = -1
-    _catchphrase_dict = None
     candidates_cache = dict()
     for span in spans:
 
-        word_on_page_feature_list = []
-        word_on_page_feature_name_list = []
-
-        # WIP: Word on page feature
-        if substring_features:
-            for index, substring_feature in enumerate(substring_features):
-                word_on_page_feature_list.append(substring_on_page(substring_feature, span, page_text_list))
-                word_on_page_feature_name_list.append(f'word_on_page_feat{index}')
         # if span.annotation.id_:
         #     # Annotation
         #     logger.error(f'{span}')
@@ -806,17 +785,7 @@ def process_document_data(
         # store the line_start_offset so if the next annotation is on the same line then we use the same
         # line_candidiates list and therefore saves us tokenizing the same line again
 
-        # get the catchphrase features
         line_num = span.line_index
-        if catchphrase_list is not None and len(catchphrase_list) != 0:
-            if line_num == _line_num:
-                span.catchphrase_dict = _catchphrase_dict
-            else:
-                _catchphrase_dict = generate_feature_dict_from_occurence_dict(
-                    occurrence_dict, catchphrase_list, line_num
-                )
-                span.catchphrase_dict = _catchphrase_dict
-                _line_num = line_num
 
         line_candidates, candidates_cache = get_line_candidates(
             document_text, document_bbox, line_list, line_num, candidates_cache
@@ -850,7 +819,7 @@ def process_document_data(
                     document_bbox,
                     line_list,
                     line_num - i,
-                    candidates_cache,  # tokenize_fn,
+                    candidates_cache,
                 )
                 for candidate in line_candidates:
                     candidate['dist'] = min(
@@ -873,7 +842,7 @@ def process_document_data(
                     document_bbox,
                     line_list,
                     line_num + i,
-                    candidates_cache,  # tokenize_fn,
+                    candidates_cache,
                 )
                 for candidate in line_candidates:
                     candidate['dist'] = min(
@@ -925,14 +894,6 @@ def process_document_data(
             span_dict['r_offset_string' + str(index)] = item['offset_string']
             if n_nearest_across_lines:
                 span_dict['r_pos' + str(index)] = item['pos']
-
-        # WIP: word on page feature
-        for index, item in enumerate(word_on_page_feature_list):
-            span_dict['word_on_page_feat' + str(index)] = item
-
-        if _catchphrase_dict:
-            for catchphrase, dist in _catchphrase_dict.items():
-                span_dict['catchphrase_dist_' + catchphrase] = dist
 
         # checks for ERRORS
         if span_dict["confidence"] is None and not (span_dict["revised"] is False and span_dict["is_correct"] is True):
@@ -990,15 +951,9 @@ def process_document_data(
         + r_keys
         + relative_string_feature_list
         + relative_pos_feature_list
-        + word_on_page_feature_name_list
     )
     if first_word:
         feature_list += first_word_features
-
-    # append the catchphrase_features to the feature_list
-    if catchphrase_list is not None:
-        for catchphrase in catchphrase_list:
-            feature_list.append('catchphrase_dist_' + catchphrase)
 
     return df, feature_list, df_errors
 
@@ -1013,29 +968,6 @@ def substring_on_page(substring, annotation, page_text_list) -> bool:
         return False
     else:
         return substring in page_text_list[annotation.page_index]
-
-
-def generate_catchphrase_occurrence_dict(line_list, catchphrase_list, document_text) -> Dict:
-    """Generate a dict that stores on which line certain catchphrases occurrence."""
-    _dict = {catchphrase: [] for catchphrase in catchphrase_list}
-
-    for line_num, _line in enumerate(line_list):
-        line_text = document_text[_line['start_offset'] : _line['end_offset']]
-        for catchphrase in catchphrase_list:
-            if catchphrase in line_text:
-                _dict[catchphrase].append(line_num)
-
-    return _dict
-
-
-def generate_feature_dict_from_occurence_dict(occurence_dict, catchphrase_list, line_num) -> Dict:
-    """Generate the fitting catchphrase features."""
-    _dict = {catchphrase: None for catchphrase in catchphrase_list}
-
-    for catchphrase in catchphrase_list:
-        _dict[catchphrase] = next((i - line_num for i in occurence_dict[catchphrase] if i < line_num), -1)
-
-    return _dict
 
 
 class BaseModel(metaclass=abc.ABCMeta):
@@ -1893,9 +1825,6 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         self.no_label_limit = no_label_limit
         self.n_nearest_across_lines = n_nearest_across_lines
 
-        self.substring_features = kwargs.get('substring_features', None)
-        self.catchphrase_features = kwargs.get('catchphrase_features', None)
-
         self.tokenizer = tokenizer
         logger.info(f"{tokenizer=}")
 
@@ -1920,8 +1849,8 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             n_nearest=self.n_nearest,
             first_word=self.first_word,
             # tokenize_fn=self.tokenizer.tokenize,  # todo: we are tokenizing the document multiple times
-            catchphrase_list=self.catchphrase_features,
-            substring_features=self.substring_features,
+            # catchphrase_list=self.catchphrase_features,
+            # substring_features=self.substring_features,
             n_nearest_across_lines=self.n_nearest_across_lines,
         )
         if self.use_separate_labels:
