@@ -1255,6 +1255,15 @@ class Label(Data):
         """
         Get a list of Annotations that come from the least precise regex.
 
+        A method iterates over the list of Categories and Annotations under each of the Category, gathering all regexes
+        for them. Once regexes are gathered, they run through the evaluation and top worst (= ones with the least
+        True Positives) are collected. For each top worst regex, the Annotations that were found by it and not found by
+        the best regex for this label are returned as possible outliers.
+
+        For detecting outlier Annotations that are multi-Span, the method iterates over all the multi-Span Annotations
+        under the Label and checks each Span that was not detected by the said worst regexes: if it is not found by any
+        other regex in the Project, the whole Annotation is deemed a possible outlier.
+
         :param categories: Categories under which the search is done.
         :type categories: List[Category]
         :param use_test_docs: Whether the evaluation of the regex happens on test Documents or training Documents.
@@ -1345,7 +1354,11 @@ class Label(Data):
     def get_probable_outliers_by_confidence(
         self, categories: List[Category], n_outliers: int = 10
     ) -> List['Annotation']:
-        """Get a list of Annotations with the lowest confidence."""
+        """
+        Get a list of Annotations with the lowest confidence.
+
+        A method iterates over the list of Categories, returning the top N Annotations with the lowest confidence score.
+        """
         all_annotations = []
         for category in categories:
             for annotation in [
@@ -1365,7 +1378,12 @@ class Label(Data):
     def get_probable_outliers_by_normalization(
         self, categories: List[Category], n_outliers: int = 10
     ) -> List['Annotation']:
-        """Get a list of Annotations that do not pass normalization by the data type."""
+        """
+        Get a list of Annotations that do not pass normalization by the data type.
+
+        A method iterates over the list of Categories, returning the Annotations that do not fit into the data type of
+        a Label (= have None returned in an attempt of the normalization by the Label's data type).
+        """
         outliers = set()
         for category in categories:
             for annotation in [
