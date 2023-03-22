@@ -59,7 +59,7 @@ from konfuzio_sdk.utils import (
     sdk_isinstance,
 )
 
-from konfuzio_sdk.evaluate import Evaluation
+from konfuzio_sdk.evaluate import ExtractionEvaluation
 
 from konfuzio_sdk.tokenizer.base import ListTokenizer
 
@@ -91,8 +91,13 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
     prev_local_id = next(Data.id_iter)
 
     try:
-        with bz2.open(pickle_path, 'rb') as file:
-            model = cloudpickle.load(file)
+        if pickle_path.endswith(".pt"):
+            from konfuzio_sdk.trainer.document_categorization import load_categorization_model
+
+            model = load_categorization_model(pickle_path)
+        else:
+            with bz2.open(pickle_path, 'rb') as file:
+                model = cloudpickle.load(file)
     except OSError:
         raise OSError(f"Pickle file {pickle_path} data is invalid.")
     except AttributeError as err:
@@ -1081,7 +1086,7 @@ class BaseModel(metaclass=abc.ABCMeta):
         self.project.lose_weight()
         self.tokenizer.lose_weight()
 
-    def ensure_model_memory_usage_within_limit(self, max_ram):
+    def ensure_model_memory_usage_within_limit(self, max_ram: Optional[str] = None):
         """
         Ensure that a model is not exceeding allowed max_ram.
 
@@ -2458,7 +2463,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
     def evaluate_full(
         self, strict: bool = True, use_training_docs: bool = False, use_view_annotations: bool = True
-    ) -> Evaluation:
+    ) -> ExtractionEvaluation:
         """
         Evaluate the full pipeline on the pipeline's Test Documents.
 
@@ -2476,11 +2481,11 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             predicted_doc = self.extract(document=document)
             eval_list.append((document, predicted_doc))
 
-        full_evaluation = Evaluation(eval_list, strict=strict, use_view_annotations=use_view_annotations)
+        full_evaluation = ExtractionEvaluation(eval_list, strict=strict, use_view_annotations=use_view_annotations)
 
         return full_evaluation
 
-    def evaluate_tokenizer(self, use_training_docs: bool = False) -> Evaluation:
+    def evaluate_tokenizer(self, use_training_docs: bool = False) -> ExtractionEvaluation:
         """Evaluate the tokenizer."""
         if not use_training_docs:
             eval_docs = self.test_documents
@@ -2491,7 +2496,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         return evaluation
 
-    def evaluate_clf(self, use_training_docs: bool = False) -> Evaluation:
+    def evaluate_clf(self, use_training_docs: bool = False) -> ExtractionEvaluation:
         """Evaluate the Label classifier."""
         eval_list = []
         if not use_training_docs:
@@ -2521,11 +2526,11 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             predicted_doc = self.extract_from_df(feats_df, virtual_doc)
             eval_list.append((document, predicted_doc))
 
-        clf_evaluation = Evaluation(eval_list, use_view_annotations=False)
+        clf_evaluation = ExtractionEvaluation(eval_list, use_view_annotations=False)
 
         return clf_evaluation
 
-    def evaluate_label_set_clf(self, use_training_docs: bool = False) -> Evaluation:
+    def evaluate_label_set_clf(self, use_training_docs: bool = False) -> ExtractionEvaluation:
         """Evaluate the LabelSet classifier."""
         if self.label_set_clf is None:
             raise AttributeError(f'{self} does not provide a LabelSet Classifier.')
@@ -2560,7 +2565,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
             eval_list.append((document, predicted_doc))
 
-        label_set_clf_evaluation = Evaluation(eval_list, use_view_annotations=False)
+        label_set_clf_evaluation = ExtractionEvaluation(eval_list, use_view_annotations=False)
 
         return label_set_clf_evaluation
 

@@ -2,19 +2,18 @@
 import logging
 from typing import Dict, Tuple, List, Optional, Union
 
-import numpy
 import pandas
+import numpy
+from sklearn.utils.extmath import weighted_mode
 from sklearn.metrics import (
     confusion_matrix,
     classification_report,
 )
-from sklearn.utils.extmath import weighted_mode
 
 from konfuzio_sdk.utils import sdk_isinstance, memory_size_of
-from konfuzio_sdk.data import Document, Category
+from konfuzio_sdk.data import Category, Document
 
 logger = logging.getLogger(__name__)
-
 
 RELEVANT_FOR_EVALUATION = [
     "is_matched",  # needed to group spans in Annotations
@@ -295,7 +294,7 @@ class EvaluationCalculator:
         logger.info(f"F1: {self.f1}")
 
 
-class Evaluation:
+class ExtractionEvaluation:
     """Calculated accuracy measures by using the detailed comparison on Span Level."""
 
     def __init__(

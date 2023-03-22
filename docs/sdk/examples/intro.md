@@ -184,6 +184,50 @@ Boxes).
 ]
 ```
 
+#### Upload Document
+To upload a new file (see [Supported File Types](https://help.konfuzio.com/specification/supported_file_types/index.html)) 
+in your Project using the SDK, you have the option between two Document methods: `from_file_sync` and `from_file_async`. 
+
+If you want to upload a Document, and start working with it as soon as the OCR processing step is done, we recommend 
+`from_file_sync` as it will wait for the Document to be processed and then return a ready Document. Beware, this may 
+take from a few seconds up to over a minute. 
+
+.. literalinclude:: /sdk/boilerplates/test_get_started.py
+   :language: python
+   :lines: 44
+
+If however you are trying to upload a large number of files and don't want to wait for them to be processed you can use 
+the asynchronous function which only returns a Document ID:
+
+.. literalinclude:: /sdk/boilerplates/test_get_started.py
+   :language: python
+   :lines: 48
+
+Later, you can load the processed Document and get your Document with:
+
+.. literalinclude:: /sdk/boilerplates/test_get_started.py
+   :language: python
+   :lines: 51-53
+
+#### Modify Document
+
+If you would like to use the SDK to modify some Document's meta-data like the dataset status or the assignee, you can do
+it like this:
+
+.. literalinclude:: /sdk/boilerplates/test_get_started.py
+   :language: python
+   :lines: 56-59
+
+#### Update Document
+If there are changes in the Document in the Konfuzio Server, you can update the Document with:
+
+.. literalinclude:: /sdk/boilerplates/test_get_started.py
+   :language: python
+   :lines: 40
+
+If a Document is part of the Training or Test set, you can also update it by updating the entire Project via
+`project.get(update=True)`. However, for Projects with many Documents it can be faster to update only the relevant Documents.
+
 #### Download PDFs
 To get the PDFs of the Documents, you can use `get_file()`.
 
@@ -229,17 +273,9 @@ For example, you can get the path to the file with the Document text with:
    :language: python
    :lines: 38
 
-#### Update Document
-If there are changes in the Document in the Konfuzio Server, you can update the Document with:
-
-.. literalinclude:: /sdk/boilerplates/test_get_started.py
-   :language: python
-   :lines: 40
-
-If a Document is part of the Training or Test set, you can also update it by updating the entire Project via
-`project.get(update=True)`. However, for Projects with many Documents it can be faster to update only the relevant Documents.
-
 #### Delete Document
+
+##### Delete Document Locally
 To locally delete a Document, you can use:
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
@@ -249,51 +285,9 @@ To locally delete a Document, you can use:
 The Document will be deleted from your local data folder, but it will remain in the Konfuzio Server.
 If you want to get it again you can update the Project.
 
-If you want to delete a document permanently you can do it like so:
+##### Delete Document Online
 
-.. literalinclude:: /sdk/boilerplates/test_get_started.py
-   :language: python
-   :lines: 47
-
-#### Upload Document
-To upload a new file (see [Supported File Types](https://help.konfuzio.com/specification/supported_file_types/index.html)) 
-in your Project using the SDK, you have the option between two Document methods: `from_file_sync` and `from_file_async`. 
-
-If you want to upload a Document, and start working with it as soon as the OCR processing step is done, we recommend 
-`from_file_sync` as it will wait for the Document to be processed and then return a ready Document. Beware, this may 
-take from a few seconds up to over a minute. 
-
-.. literalinclude:: /sdk/boilerplates/test_get_started.py
-   :language: python
-   :lines: 44
-
-If however you are trying to upload a large number of files and don't wait to wait for them to be processed you can use 
-the asynchronous function which only returns a Document ID:
-
-.. literalinclude:: /sdk/boilerplates/test_get_started.py
-   :language: python
-   :lines: 48
-
-Later, you can load the processed Document and get your Document with:
-
-.. literalinclude:: /sdk/boilerplates/test_get_started.py
-   :language: python
-   :lines: 51-53
-
-#### Modify Document
-
-If you would like to use the SDK to modify some Document's meta-data like the dataset status or the assignee, you can do
-it like this:
-
-.. literalinclude:: /sdk/boilerplates/test_get_started.py
-   :language: python
-   :lines: 56-59
-
-#### Delete Document
-
-If you would like to delete a Document in the remote server you can simply use the `Document.delete` method. You can 
-only delete Documents with a dataset status of None (0). **Be careful!** Once the Document is deleted online, we will 
-have no way of recovering it. 
+If you would like to delete a Document in the remote server you can simply use the `Document.delete` method the `delete_online` setting set to `True`. You can only delete Documents with a dataset status of None (0). **Be careful!** Once the Document is deleted online, we will have no way of recovering it. 
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
