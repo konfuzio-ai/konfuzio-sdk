@@ -1279,11 +1279,6 @@ class Label(Data):
         :param n_regexes: Number of the worst regexes to return outliers from.
         :type n_regexes: int
         """
-        if not self.project._regexes:
-            all_regexes = {}
-            for category in self.project.categories:
-                all_regexes[category] = {label: label.find_regex(category) for label in self.project.labels}
-            self.project._regexes = all_regexes
         if use_test_docs:
             documents = self.project.test_documents
         else:
@@ -1292,11 +1287,10 @@ class Label(Data):
         for category in categories:
             true_positives = {}
             all_annotations = [
-                annotation for annotation in self.annotations(categories=[category]) if (annotation.is_correct)
+                annotation for annotation in self.annotations(categories=[category]) if annotation.is_correct
             ]
-            label_regex_token = self.base_regex(category=category, annotations=all_annotations)
-            found_regex = self._find_regexes(all_annotations, label_regex_token, category, 100)
-            for regex in found_regex:
+            found_regex = self.regex(categories)
+            for regex in found_regex[category.id_]:
                 for document in documents:
                     if regex in true_positives.keys():
                         true_positives[regex] += document.evaluate_regex(regex, self)['count_correct_annotations']
@@ -1341,22 +1335,21 @@ class Label(Data):
                         text = annotation.document.text
                         for span in annotation.spans:
                             if span not in detected_by_worst_spans.union(detected_by_best_spans):
-                                found_regex = None
-                                for regex_category in self.project._regexes:
-                                    for regex in self.project._regexes[regex_category]:
-                                        if self.project._regexes[regex_category][regex]:
-                                            matches = regex_matches(
-                                                text,
-                                                self.project._regexes[regex_category][regex][0],
-                                                keep_full_match=False,
-                                            )
-                                            if matches:
-                                                for match in matches:
-                                                    span_match_offsets = (match['start_offset'], match['end_offset'])
-                                                    if span_match_offsets == (span.start_offset, span.end_offset):
-                                                        found_regex = self.project._regexes[regex_category][regex][0]
-                                                break
-                                if not found_regex:
+                                cur_regex = None
+                                if found_regex[category.id_]:
+                                    for regex in found_regex[category.id_]:
+                                        matches = regex_matches(
+                                            text,
+                                            regex,
+                                            keep_full_match=False,
+                                        )
+                                        if matches:
+                                            for match in matches:
+                                                span_match_offsets = (match['start_offset'], match['end_offset'])
+                                                if span_match_offsets == (span.start_offset, span.end_offset):
+                                                    cur_regex = regex
+                                            break
+                                if not cur_regex:
                                     outliers.add(annotation)
                             break
         outliers = list(outliers)
