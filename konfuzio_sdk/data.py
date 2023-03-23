@@ -796,7 +796,10 @@ class Category(Data):
 
     def __eq__(self, other: 'Category') -> bool:
         """Compare two Categories."""
-        return self.name == other.name
+        if other is not None:
+            return self.name == other.name
+        else:
+            return False
 
     def __hash__(self):
         """Make Category hashable."""
