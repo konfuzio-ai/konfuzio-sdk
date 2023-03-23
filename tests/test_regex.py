@@ -325,8 +325,8 @@ class TestTokensMultipleCategories(unittest.TestCase):
     def setUpClass(cls) -> None:
         """Initialize the Project."""
         cls.project = Project(id_=None)
-        cls.category = Category(project=cls.project, id_=1)
-        cls.category_2 = Category(project=cls.project, id_=2)
+        cls.category = Category(project=cls.project, id_=1, name='Category1')
+        cls.category_2 = Category(project=cls.project, id_=2, name='Category2')
         cls.label_set = LabelSet(id_=2, project=cls.project, categories=[cls.category, cls.category_2])
         cls.label = Label(id_=3, text='LabelName', project=cls.project, label_sets=[cls.label_set])
 

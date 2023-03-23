@@ -619,8 +619,8 @@ class TestOfflineDataSetup(unittest.TestCase):
         """Initialize the test Project."""
         cls.project = Project(id_=None)
         cls.label = Label(project=cls.project, text='First Offline Label')
-        cls.category = Category(project=cls.project, id_=2)
-        cls.category2 = Category(project=cls.project, id_=3)
+        cls.category = Category(project=cls.project, id_=2, name='category1')
+        cls.category2 = Category(project=cls.project, id_=3, name='category2')
         cls.document = Document(project=cls.project, category=cls.category, text="Hello.")
         cls.label_set = LabelSet(project=cls.project, categories=[cls.category], id_=421)
         cls.label_set.add_label(cls.label)

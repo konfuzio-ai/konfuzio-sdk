@@ -457,9 +457,9 @@ class TestCompare(unittest.TestCase):
     def test_strict_documents_with_different_category(self):
         """Test to not compare two Documents with different Categories."""
         project = Project(id_=None)
-        category = Category(project=project)
+        category = Category(project=project, name='category')
         document_a = Document(project=project, category=category)
-        another_category = Category(project=project)
+        another_category = Category(project=project, name='another_category')
         document_b = Document(project=project, category=another_category)
         with self.assertRaises(ValueError) as context:
             compare(document_a, document_b)

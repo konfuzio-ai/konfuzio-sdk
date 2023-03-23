@@ -64,8 +64,8 @@ class TestAbstractTokenizer(unittest.TestCase):
         cls.tokenizer = DummyTokenizer()
 
         cls.project = Project(id_=None)
-        cls.category_1 = Category(project=cls.project, id_=1)
-        cls.category_2 = Category(project=cls.project, id_=2)
+        cls.category_1 = Category(project=cls.project, id_=1, name='Category1')
+        cls.category_2 = Category(project=cls.project, id_=2, name='Category2')
         label_set = LabelSet(id_=2, project=cls.project, categories=[cls.category_1, cls.category_2])
         label = Label(id_=3, text='LabelName', project=cls.project, label_sets=[label_set])
 
