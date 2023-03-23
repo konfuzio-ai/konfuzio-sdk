@@ -71,11 +71,13 @@
 <li class="toctree-l3"><a class="reference internal" href="#full-mode">Full Mode</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#multilingual-user-interface">Multilingual User Interface</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#how-to-integrate-the-document-validation-ui-into-custom-solutions">How to integrate the Document Validation UI into custom solutions?</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#install-as-an-npm-package">Install as an NPM package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#configure-the-application">Configure the application</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#integrate-with-cdn">Integrate with CDN</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#integrate-by-deploying-the-application">Integrate by deploying the application</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#deploy">Deploy</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#local-development">Local Development</a></li>
@@ -162,6 +164,21 @@
 <p>Please be aware that any variable in the <code class="docutils literal notranslate"><span class="pre">.env</span></code> will have priority from the variables defined in the <code class="docutils literal notranslate"><span class="pre">index.html</span></code>.</p>
 </section>
 </section>
+<section id="multilingual-user-interface">
+<h2>Multilingual User Interface<a class="headerlink" href="#multilingual-user-interface" title="Permalink to this headline">¶</a></h2>
+<p>The Document Validation UI can currently be used in three languages: German (DE), English (EN), and Spanish (ES). You can specify what the default language of the application will be in the <code class="docutils literal notranslate"><span class="pre">.env</span></code> file, like so:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">VUE_APP_I18N_LOCALE</span><span class="o">=</span>
+<span class="n">VUE_APP_I18N_FALLBACK_LOCALE</span><span class="o">=</span>
+</pre></div>
+</div>
+<p>You can also specify the language in the <code class="docutils literal notranslate"><span class="pre">html</span></code> file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">div</span> <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;app&quot;</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">app</span> <span class="n">locale</span><span class="o">=</span><span class="s2">&quot;DE/EN/ES&quot;</span><span class="o">&gt;&lt;/</span><span class="n">app</span><span class="o">&gt;</span>
+  <span class="o">&lt;/</span><span class="n">div</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>You are also welcome to create a new locales file for a language not currently provided by us, considering the data from <a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/tree/main/src/locales">our existing files</a>, and share it with us via a <a class="reference external" href="https://konfuzio.com/en/support/">Support Ticket</a> or create a Pull Request to add it to the repository.</p>
+</section>
 <section id="how-to-integrate-the-document-validation-ui-into-custom-solutions">
 <h2>How to integrate the Document Validation UI into custom solutions?<a class="headerlink" href="#how-to-integrate-the-document-validation-ui-into-custom-solutions" title="Permalink to this headline">¶</a></h2>
 <p>The application requires <code class="docutils literal notranslate"><span class="pre">node</span></code> and <code class="docutils literal notranslate"><span class="pre">npm</span></code> to run. It also requires a connection to the <a class="reference external" href="https://app.konfuzio.com/v3/swagger/">Konfuzio Server API version 3</a>. See <a class="reference external" href="https://dev.konfuzio.com/web/api-v3.html">full documentation</a>.</p>
@@ -221,7 +238,7 @@ module.exports = {
 <section id="webpack-bundle">
 <h6>Webpack bundle<a class="headerlink" href="#webpack-bundle" title="Permalink to this headline">¶</a></h6>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&lt;div id=&quot;app&quot;&gt;
-   &lt;App document=&quot;DOCUMENT_ID&quot; user_token:”USER_TOKEN” locale=&quot;LOCALE&quot;&gt;&lt;/App&gt;
+   &lt;app document=&quot;DOCUMENT_ID&quot; user_token=”USER_TOKEN” locale=&quot;DE/EN/ES&quot;&gt;&lt;/app&gt;
  &lt;/div&gt;
 
   &lt;script src=&quot;/server/bundle/document_validation_ui.js&quot;&gt;&lt;/script&gt;
@@ -233,25 +250,25 @@ module.exports = {
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&lt;head&gt;
     &lt;script
       defer=&quot;defer&quot;
-      src=&quot;node_modules/@konfuzio/document-validation-ui/dist/js/chunk-vendors.a48fca3f.js&quot;
+      src=&quot;node_modules/@konfuzio/document-validation-ui/dist/js/chunk-vendors.js&quot;
     &gt;&lt;/script&gt;
     &lt;script
       defer=&quot;defer&quot;
-      src=&quot;node_modules/@konfuzio/document-validation-ui/dist/js/app.17fe48c4.js&quot;
+      src=&quot;node_modules/@konfuzio/document-validation-ui/dist/js/app.js&quot;
     &gt;&lt;/script&gt;
     &lt;link
-      href=&quot;node_modules/@konfuzio/document-validation-ui/dist/css/chunk-vendors.053b6b6e.css&quot;
+      href=&quot;node_modules/@konfuzio/document-validation-ui/dist/css/chunk-vendors.css&quot;
       rel=&quot;stylesheet&quot;
     /&gt;
     &lt;link
-      href=&quot;node_modules/@konfuzio/document-validation-ui/dist/css/app.0c8973f8.css&quot;
+      href=&quot;node_modules/@konfuzio/document-validation-ui/dist/css/app.css&quot;
       rel=&quot;stylesheet&quot;
     /&gt;
 &lt;/head&gt;
 
 &lt;body&gt;
  &lt;div id=&quot;app&quot;&gt;
-    &lt;App document=&quot;DOCUMENT_ID&quot; user_token:”USER_TOKEN” locale=&quot;LOCALE&quot;&gt;&lt;/App&gt;
+    &lt;app document=&quot;DOCUMENT_ID&quot; user_token=”USER_TOKEN” locale=&quot;DE/EN/ES&quot;&gt;&lt;/app&gt;
   &lt;/div&gt;
 &lt;/body&gt;
 </pre></div>
@@ -259,6 +276,22 @@ module.exports = {
 </section>
 </section>
 </section>
+</section>
+<section id="integrate-with-cdn">
+<h3>Integrate with CDN<a class="headerlink" href="#integrate-with-cdn" title="Permalink to this headline">¶</a></h3>
+<p>An alternative to using <code class="docutils literal notranslate"><span class="pre">npm</span></code> is to load JavaScript and CSS bundles from <a class="reference external" href="https://en.wikipedia.org/wiki/Content_delivery_network">CDN</a>.</p>
+<p>You can simply add the corresponding links in the <code class="docutils literal notranslate"><span class="pre">script</span></code> and <code class="docutils literal notranslate"><span class="pre">link</span></code> tags in your <code class="docutils literal notranslate"><span class="pre">html</span></code>, as shown in the following example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&lt;script defer=&quot;defer&quot; src=&quot;https://unpkg.com/@konfuzio/document-validation-ui@latest/dist/js/chunk-vendors.js&quot;&gt;&lt;/script&gt;
+&lt;script defer=&quot;defer&quot; src=&quot;https://unpkg.com/@konfuzio/document-validation-ui@latest/dist/js/app.js&quot;&gt;&lt;/script&gt;
+&lt;link href=&quot;https://unpkg.com/@konfuzio/document-validation-ui@latest/dist/css/chunk-vendors.css&quot; rel=&quot;stylesheet&quot;&gt;
+&lt;link href=&quot;https://unpkg.com/@konfuzio/document-validation-ui@latest/dist/css/app.css&quot; rel=&quot;stylesheet&quot;&gt;
+
+&lt;div id=&quot;app&quot; style=&quot;height: 100vh&quot;&gt;
+  &lt;app document=&quot;DOCUMENT_ID&quot; user_token=”USER_TOKEN” locale=&quot;DE/EN/ES&quot;
+&gt;&lt;/app&gt;
+&lt;/div&gt;
+</pre></div>
+</div>
 </section>
 <section id="integrate-by-deploying-the-application">
 <h3>Integrate by deploying the application<a class="headerlink" href="#integrate-by-deploying-the-application" title="Permalink to this headline">¶</a></h3>

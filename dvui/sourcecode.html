@@ -65,7 +65,18 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="index.html">What is the Konfuzio Document Validation UI?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="explanations.html">Explanations</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Source Code</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Source Code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#assets">Assets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#components">Components</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#directives">Directives</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#locales">Locales</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#store">Store</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#utils">Utils</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#tests"><strong>Tests</strong></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
 </ul>
 
@@ -95,7 +106,38 @@
              
   <section id="source-code">
 <h1>Source Code<a class="headerlink" href="#source-code" title="Permalink to this headline">¶</a></h1>
-<p>For a better understanding on how the app works, we have included all the relevant details about our source code in our <a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/tree/main/docs#source-code">GitHub repository</a>, such as where the different components are located, what libraries are used, and how to run tests.</p>
+<p>The Document Validation UI is built using <a class="reference external" href="https://v2.vuejs.org/">Vue.js version 2</a>.</p>
+<p>The entry point of the application is the <code class="docutils literal notranslate"><span class="pre">main.js</span></code>, which loads all the Vue libraries and therefore opens the first Vue component, the <code class="docutils literal notranslate"><span class="pre">App.vue</span></code>. This component has the responsibility to tell the store to fetch the API data required to load the components. These files can be found under the <code class="docutils literal notranslate"><span class="pre">src</span></code> folder.</p>
+<p>The <cite>``src`</cite> &lt;<a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/tree/main/src">https://github.com/konfuzio-ai/document-validation-ui/tree/main/src</a>&gt;`_ folder is the root of the project and is divided into:</p>
+<section id="assets">
+<h2>Assets<a class="headerlink" href="#assets" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/tree/main/src/assets">This folder</a> contains all the images and styles. Each component has it’s styles under the <code class="docutils literal notranslate"><span class="pre">scss</span></code> folder. The application uses the <a class="reference external" href="https://buefy.org">Buefy</a> library, so if you want to edit the application theme you can go to the file <code class="docutils literal notranslate"><span class="pre">scss/variables.scss</span></code> and edit all the colors and variables to match the desired design.</p>
+<p>The application uses FontAwesome for the icons. If you need to add new ones, you can do so on the <code class="docutils literal notranslate"><span class="pre">main.js</span></code> file on the icon library setup.</p>
+</section>
+<section id="components">
+<h2>Components<a class="headerlink" href="#components" title="Permalink to this headline">¶</a></h2>
+<p>Vue components that are responsible for making the application work. They are divided into sections related to their function. The different components can be found <a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/tree/main/src/components">here</a>.</p>
+</section>
+<section id="directives">
+<h2>Directives<a class="headerlink" href="#directives" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/tree/main/src/directives">Here</a> are the directives for manipulating the elements in the HTML.</p>
+</section>
+<section id="locales">
+<h2>Locales<a class="headerlink" href="#locales" title="Permalink to this headline">¶</a></h2>
+<p>In <a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/tree/main/src/locales">this folder</a> you can find the translations files, which consist of key-value pairs. There can be as many files as languages needed. Translations are implemented using the library <a class="reference external" href="https://vue-i18n.intlify.dev/">Vue I18n</a>, and the expected value is rendered by using the <code class="docutils literal notranslate"><span class="pre">$t</span></code> translation API and passing the key as an argument.</p>
+</section>
+<section id="store">
+<h2>Store<a class="headerlink" href="#store" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/tree/main/src/store">store</a> is implemented using <a class="reference external" href="https://vuex.vuejs.org/">Vuex</a>. It is responsible for saving all information coming from the API and local information regarding the use of the app, like the display scale. Most of the information is obtained, filtered, grouped and processed in the store files which are separated by their concept.</p>
+</section>
+<section id="utils">
+<h2>Utils<a class="headerlink" href="#utils" title="Permalink to this headline">¶</a></h2>
+<p>All utility functions are added <a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/tree/main/src/utils">here</a>.</p>
+<section id="tests">
+<h3><strong>Tests</strong><a class="headerlink" href="#tests" title="Permalink to this headline">¶</a></h3>
+<p>You can test the application by running <code class="docutils literal notranslate"><span class="pre">npm</span> <span class="pre">run</span> <span class="pre">test:unit</span></code>. Tests are developed using <a class="reference external" href="https://github.com/vuejs/vue-test-utils">Vue Test Utils</a> and are located on the <code class="docutils literal notranslate"><span class="pre">tests</span></code> folder. Mock data is used to get information into the testing environment, so there’s no requirement to connect to an API. The tests are grouped by the different components and are focused on testing the components behavior.</p>
+</section>
+</section>
 </section>
 
 
