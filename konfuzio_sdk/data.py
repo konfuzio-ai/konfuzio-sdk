@@ -794,6 +794,10 @@ class Category(Data):
         """Return string representation of the Category."""
         return f"{self.name} ({self.id_})"
 
+    def __eq__(self, other: 'Category') -> bool:
+        """Compare two Categories."""
+        return self.name == other.name
+
 
 class CategoryAnnotation(Data):
     """Annotate the Category of a Page."""
