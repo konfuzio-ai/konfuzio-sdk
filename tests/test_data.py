@@ -665,6 +665,18 @@ class TestOfflineDataSetup(unittest.TestCase):
         for page in self.document.pages():
             assert page.category == self.category
 
+    def test_category_equality(self):
+        """Test Category equality."""
+        project = Project(id_=None)
+        category = Category(project=project, id_=1, name='category1')
+
+        category2 = Category(project=project, id_=1, name='category2')
+        assert category != category2
+        assert category not in [category2, None]
+
+        with pytest.raises(ValueError, match="is a duplicate and will not be added"):
+            _ = Category(project=project, id_=2, name='category1')
+
     def test_categorize_when_all_pages_have_same_category(self):
         """Test categorizing a Document when all Pages have the same Category."""
         document = Document(project=self.project, text="hello")
