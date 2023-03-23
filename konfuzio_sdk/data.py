@@ -798,6 +798,10 @@ class Category(Data):
         """Compare two Categories."""
         return self.name == other.name
 
+    def __hash__(self):
+        """Make Category hashable."""
+        return hash(str(self.id_local))
+
 
 class CategoryAnnotation(Data):
     """Annotate the Category of a Page."""
