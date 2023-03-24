@@ -1303,11 +1303,11 @@ class Label(Data):
                 max_tps_regex = self.find_regex(category=category)[0]
                 worst_regexes = set()
                 detected_by_worst_spans = set()
-                detected_by_worst_annotations = set()
                 detected_by_best_spans = set()
-                detected_by_best_annotations = set()
                 for regex in sorted_regexes:
                     if len(worst_regexes) < n_regexes:
+                        cur_annotations_worst = set()
+                        cur_annotations_best = set()
                         for annotation in all_annotations:
                             text = annotation.document.text
                             matches = regex_matches(text, regex, keep_full_match=False)
@@ -1315,43 +1315,47 @@ class Label(Data):
                                 for span_match in matches:
                                     span_match_offsets = (span_match['start_offset'], span_match['end_offset'])
                                     if span_match_offsets == (span.start_offset, span.end_offset):
-                                        detected_by_worst_annotations.add(annotation)
+                                        cur_annotations_worst.add(annotation)
                                         detected_by_worst_spans.add(span)
                             matches = regex_matches(text, max_tps_regex, keep_full_match=False)
                             for span in annotation.spans:
                                 for span_match in matches:
                                     span_match_offsets = (span_match['start_offset'], span_match['end_offset'])
                                     if span_match_offsets == (span.start_offset, span.end_offset):
-                                        detected_by_best_annotations.add(annotation)
+                                        cur_annotations_best.add(annotation)
                                         detected_by_best_spans.add(span)
+                        if len(cur_annotations_worst) not in range(
+                            round(len(cur_annotations_best) * 0.5), round(len(cur_annotations_best) * 1.2)
+                        ):
+                            outliers.update(cur_annotations_worst - cur_annotations_best)
+                        for annotation in cur_annotations_worst.union(cur_annotations_best):
+                            if len(annotation.spans) > 1:
+                                text = annotation.document.text
+                                for span in annotation.spans:
+                                    if span not in detected_by_worst_spans.union(detected_by_best_spans):
+                                        cur_regex = None
+                                        if found_regex[category.id_]:
+                                            for top_regex in found_regex[category.id_]:
+                                                matches = regex_matches(
+                                                    text,
+                                                    top_regex,
+                                                    keep_full_match=False,
+                                                )
+                                                if matches:
+                                                    for match in matches:
+                                                        span_match_offsets = (
+                                                            match['start_offset'],
+                                                            match['end_offset'],
+                                                        )
+                                                        if span_match_offsets == (span.start_offset, span.end_offset):
+                                                            cur_regex = top_regex
+                                                    break
+                                        if not cur_regex:
+                                            outliers.add(annotation)
+                                    break
                     else:
                         break
-                if len(detected_by_worst_annotations) not in range(
-                    round(len(detected_by_best_annotations) * 0.7), round(len(detected_by_best_annotations) * 1.1)
-                ):
-                    outliers.update(detected_by_worst_annotations - detected_by_best_annotations)
-                for annotation in detected_by_worst_annotations.union(detected_by_best_annotations):
-                    if len(annotation.spans) > 1:
-                        text = annotation.document.text
-                        for span in annotation.spans:
-                            if span not in detected_by_worst_spans.union(detected_by_best_spans):
-                                cur_regex = None
-                                if found_regex[category.id_]:
-                                    for regex in found_regex[category.id_]:
-                                        matches = regex_matches(
-                                            text,
-                                            regex,
-                                            keep_full_match=False,
-                                        )
-                                        if matches:
-                                            for match in matches:
-                                                span_match_offsets = (match['start_offset'], match['end_offset'])
-                                                if span_match_offsets == (span.start_offset, span.end_offset):
-                                                    cur_regex = regex
-                                            break
-                                if not cur_regex:
-                                    outliers.add(annotation)
-                            break
+
         outliers = list(outliers)
         return outliers
 
