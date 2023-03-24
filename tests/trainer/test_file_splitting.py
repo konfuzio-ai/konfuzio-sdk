@@ -79,12 +79,12 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
 
     def test_load_incompatible_model(self):
         """Test initializing a model that does not pass has_compatible_interface check."""
-        wrong_class = NameBasedCategorizationAI(LocalTextProject())
+        wrong_class = NameBasedCategorizationAI(LocalTextProject().categories)
         assert not self.file_splitting_model.has_compatible_interface(wrong_class)
 
     def test_load_model_from_different_class(self):
         """Test initializing Splitting AI with a model that does not inherit from AbstractFileSplittingModel class."""
-        wrong_class = NameBasedCategorizationAI(LocalTextProject())
+        wrong_class = NameBasedCategorizationAI(LocalTextProject().categories)
         with pytest.raises(ValueError, match="model is not inheriting from AbstractFileSplittingModel"):
             SplittingAI(model=wrong_class)
 
