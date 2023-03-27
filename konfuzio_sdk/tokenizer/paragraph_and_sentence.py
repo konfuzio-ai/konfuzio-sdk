@@ -7,7 +7,8 @@ import time
 from konfuzio_sdk.data import Annotation, Document, Span, Bbox, Label, AnnotationSet
 from konfuzio_sdk.tokenizer.base import AbstractTokenizer, ProcessingStep
 
-from konfuzio_sdk.utils import sdk_isinstance, detectron_get_paragraph_bbox_and_label_name
+from konfuzio_sdk.utils import sdk_isinstance, detectron_get_paragraph_bbox_and_label_name, get_spans_from_bbox, \
+    detectron_get_paragraph_bboxes
 from konfuzio_sdk.api import get_results_from_segmentation
 
 logger = logging.getLogger(__name__)
@@ -40,6 +41,49 @@ class ParagraphTokenizer(AbstractTokenizer):
                 raise TypeError(f'Parameter must be of type int or float. It is {type(height)}.')
         self.height = height
         self.create_detectron_labels = create_detectron_labels
+
+    def _new_detectron_tokenize(self, document: Document) -> Document:
+        """Create one multiline Annotation per paragraph detected by detectron2."""
+        document_id = document.id_ if document.id_ else document.copy_of_id
+
+        # todo cache results
+        detectron_document_results = get_results_from_segmentation(document_id, document.project.id_)
+        all_paragraph_bboxes: List[List['Bbox']] = detectron_get_paragraph_bboxes(detectron_document_results, document)
+
+        # Check if detrectron paragraphs overlap. TODO seems to be the case.
+        for x in all_paragraph_bboxes:
+            for y1 in x:
+                for y2 in x:
+                    assert not y1.check_overlap(y2)
+
+        if self.create_detectron_labels:
+            label_set = document.category.project.get_label_set_by_name(document.category.name)
+            annotation_set = AnnotationSet(document=document, label_set=label_set, id_=1)
+        else:
+            label_set = document.project.no_label_set
+            annotation_set = document.no_label_annotation_set
+
+        for document_paragraph_bboxes in all_paragraph_bboxes:
+            for paragraph_bbox in document_paragraph_bboxes:
+                spans = get_spans_from_bbox(paragraph_bbox)
+
+                if self.create_detectron_labels:
+                    try:
+                        label = document.project.get_label_by_name(paragraph_bbox._label_name)
+                    except IndexError:
+                        label = Label(project=document.project, text=paragraph_bbox._label_name, label_sets=[label_set])
+                else:
+                    label = document.project.no_label
+
+                annotation = Annotation(
+                    document=document,
+                    annotation_set=annotation_set,
+                    label=label,
+                    label_set=document.project.no_label_set,
+                    category=document.category,
+                    spans=spans,
+                )
+        return document
 
     def __repr__(self):
         """Return string representation of the class."""

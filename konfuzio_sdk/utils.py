@@ -23,7 +23,7 @@ from konfuzio_sdk import IMAGE_FILE, PDF_FILE, OFFICE_FILE, SUPPORTED_FILE_TYPES
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from konfuzio_sdk.data import Bbox
+    from konfuzio_sdk.data import Bbox, Span
 
 
 def sdk_isinstance(instance, klass):
@@ -494,6 +494,35 @@ def detectron_get_paragraph_bbox_and_label_name(
     return paragraph_document_bboxes
 
 
+def detectron_get_paragraph_bboxes(
+    detectron_document_results: List[List[Dict]], document
+) -> List[List['Bbox']]:
+    """Call detectron Bbox corresponding to each paragraph."""
+    from konfuzio_sdk.data import Bbox
+
+    assert isinstance(document.project.id_, int)
+    assert len(detectron_document_results) == document.number_of_pages
+
+    paragraph_document_bboxes: List[List['Bbox']] = []
+
+    for page_index, detectron_page_results in enumerate(detectron_document_results):
+        paragraph_page_bboxes = []
+        for detectron_result in detectron_page_results:
+            paragraph_bbox = Bbox.from_image_size(
+                x0=detectron_result['x0'],
+                x1=detectron_result['x1'],
+                y1=detectron_result['y1'],
+                y0=detectron_result['y0'],
+                page=document.get_page_by_index(page_index=page_index),
+            )
+            label_name = detectron_result['label']
+            paragraph_bbox._label_name = label_name
+            paragraph_page_bboxes.append(paragraph_bbox)
+        paragraph_document_bboxes.append(paragraph_page_bboxes)
+    assert len(document.pages()) == len(paragraph_document_bboxes)
+
+    return paragraph_document_bboxes
+
 def select_bboxes(selection_bbox: dict, page_bboxes: list, tolerance: int = 10) -> list:
     """
     Filter the characters bboxes of the Document page according to their x/y values.
@@ -871,3 +900,36 @@ def get_merged_bboxes(doc_bbox: Dict, bboxes: Union[Dict, List], doc_text: Optio
 def get_sdk_version():
     """Get a version of current Konfuzio SDK used."""
     return pkg_resources.get_distribution("konfuzio-sdk").version
+
+def get_spans_from_bbox(selection_bbox: Bbox) -> List['Span']:
+    """
+    """
+    spans = []
+
+    # sort selected bboxes by y first, then x
+    bboxes.sort(key=lambda x: (x.y0, x.x0))
+    from konfuzio_sdk.data import Span
+
+    selected_bboxes = [
+        {"string_offset": int(index), **char_bbox}
+        for index, char_bbox in selection_bbox.page.get_bbox().items()
+        if selection_bbox.check_overlap(char_bbox)
+    ]
+
+    # iterate over each line_number (or bottom, depending on group_by) and all of the character
+    # bboxes that have the same line_number (or bottom)
+    for line_number, line_char_bboxes in itertools.groupby(selected_bboxes, lambda x: x['line_number']):
+        # remove space chars from the line selection so they don't interfere with the merging of bboxes
+        # (a bbox should never start with a space char)
+        trimmed_line_char_bboxes = [char for char in line_char_bboxes if not char['text'].isspace()]
+
+        if len(trimmed_line_char_bboxes) == 0:
+            continue
+
+        # combine all of the found character bboxes on a given line and calculate their combined x0, x1, etc. values
+        start_offset = min(char_bbox['string_offset'] for char_bbox in trimmed_line_char_bboxes)
+        end_offset = max(char_bbox['string_offset'] for char_bbox in trimmed_line_char_bboxes)
+        span = Span(start_offset=start_offset, end_offset=end_offset + 1, document=selection_bbox.page.document)
+        spans.append(span)
+
+    return spans
