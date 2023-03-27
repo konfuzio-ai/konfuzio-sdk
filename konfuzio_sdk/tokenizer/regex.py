@@ -19,6 +19,7 @@ class RegexTokenizer(AbstractTokenizer):
         """Initialize the RegexTokenizer."""
         self.regex = regex
         self.processing_steps = []
+        self.id_ = 0
 
     def __repr__(self):
         """Return string representation of the class."""

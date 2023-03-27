@@ -707,6 +707,7 @@ def process_document_data(
     n_nearest: Union[int, List, Tuple] = 2,
     first_word: bool = True,
     n_nearest_across_lines: bool = False,
+    tokenizer: Optional[ListTokenizer] = None,
 ) -> Tuple[pandas.DataFrame, List, pandas.DataFrame]:
     """
     Convert the json_data from one Document to a DataFrame that can be used for training or prediction.
@@ -895,6 +896,13 @@ def process_document_data(
             if n_nearest_across_lines:
                 span_dict['r_pos' + str(index)] = item['pos']
 
+        # track which Tokenizers found the Span and use this information as features
+        if sdk_isinstance(tokenizer, ListTokenizer):
+            available_tokenizer_ids = [tok.id_ for tok in tokenizer.tokenizers]
+            span_tokenizer_ids = [tok.id_ for tok in span.regex_matching]
+            for id_ in available_tokenizer_ids:
+                span_dict[f'tok_{id_}'] = bool(id_ in span_tokenizer_ids)
+
         # checks for ERRORS
         if span_dict["confidence"] is None and not (span_dict["revised"] is False and span_dict["is_correct"] is True):
             file_error_data.append(span_dict)
@@ -943,6 +951,9 @@ def process_document_data(
 
     abs_pos_feature_list = ["x0", "y0", "x1", "y1", "page_index", "area_quadrant_two", "area"]
     relative_pos_feature_list = ["relative_position_in_page"]
+    tokenizers_feature_list = []
+    if sdk_isinstance(tokenizer, ListTokenizer):
+        tokenizers_feature_list = [f'tok_{tok.id_}' for tok in tokenizer.tokenizers]
 
     feature_list = (
         string_feature_column_order
@@ -951,6 +962,7 @@ def process_document_data(
         + r_keys
         + relative_string_feature_list
         + relative_pos_feature_list
+        + tokenizers_feature_list
     )
     if first_word:
         feature_list += first_word_features
@@ -1852,6 +1864,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             # catchphrase_list=self.catchphrase_features,
             # substring_features=self.substring_features,
             n_nearest_across_lines=self.n_nearest_across_lines,
+            tokenizer=self.tokenizer,
         )
         if self.use_separate_labels:
             df['target'] = df['label_set_name'] + '__' + df['label_name']
@@ -2240,6 +2253,8 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         if retokenize is None:
             if sdk_isinstance(self.tokenizer, ListTokenizer):
                 retokenize = False
+                for i, tokenizer in enumerate(self.tokenizer.tokenizers):
+                    tokenizer.id_ = i + 1
             else:
                 retokenize = True
             logger.info(f'retokenize option set to {retokenize} with tokenizer {self.tokenizer}')
@@ -2309,6 +2324,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
                     new_ann.label_set = ann.label_set
                     new_ann.annotation_set = ann.annotation_set
 
+                self.tokenizer.found_spans(virtual_document)
                 self.tokenizer.tokenize(virtual_document)
 
             no_label_annotations = virtual_document.annotations(
