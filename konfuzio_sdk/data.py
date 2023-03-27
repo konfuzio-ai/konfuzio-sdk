@@ -18,6 +18,7 @@ from enum import Enum
 import dateutil.parser
 from PIL import Image, ImageDraw, ImageFont
 from tqdm import tqdm
+import torch
 
 from konfuzio_sdk.api import (
     konfuzio_session,
@@ -106,6 +107,7 @@ class Page(Data):
         image_size: Tuple[int, int] = (None, None),
         start_offset: Optional[int] = None,
         end_offset: Optional[int] = None,
+        category: Optional['Category'] = None,
         copy_of_id: Optional[int] = None,
     ):
         """
@@ -132,6 +134,7 @@ class Page(Data):
             self.end_offset = self.start_offset + len(page_texts[self.index])
 
         self.copy_of_id = copy_of_id
+        self.text_encoded: List[int] = None
         self.image = None
         self._original_size = original_size
         self.width = self._original_size[0]
@@ -140,7 +143,12 @@ class Page(Data):
         self.image_width = self._image_size[0]
         self.image_height = self._image_size[1]
 
-        self.image_path = os.path.join(self.document.document_folder, f'page_{self.number}.png')
+        document_folder = (
+            self.document.document_folder
+            if self.id_
+            else self.document.project.get_document_by_id(self.document.copy_of_id).document_folder
+        )
+        self.image_path = os.path.join(document_folder, f'page_{self.number}.png')
 
         self._category = self.document._category
         self.category_annotations: List['CategoryAnnotation'] = []
@@ -2215,7 +2223,7 @@ class Document(Data):
         self._pages_char_bboxes = None
         self._bbox_hash = None
         self._bbox_json = bbox
-        self.bboxes_available: bool = True if (self.is_online or self._bbox_json) else False
+        self.bboxes_available: bool = bool(self.is_online or self._bbox_json)
         self._bbox_validation_type = bbox_validation_type
         if bbox_validation_type is None:
             if self.project._strict_data_validation:
@@ -2225,6 +2233,7 @@ class Document(Data):
         self._hocr = None
         self._pages: List[Page] = []
         self._n_pages = None
+        self.text_encoded: List[int] = None
 
         # prepare local setup for Document
         if self.is_online:
@@ -2296,8 +2305,9 @@ class Document(Data):
         path: str,
         project: 'Project',
         dataset_status: int = 0,
-        category_id: Union[None, int] = None,
+        category_id: Optional[int] = None,
         callback_url: str = '',
+        timeout: Optional[int] = None,
     ) -> 'Document':
         """
         Initialize Document from file with synchronous API call.
@@ -2311,6 +2321,7 @@ class Document(Data):
         :param dataset_status: Dataset status of the document (None: 0 Preparation: 1 Training: 2 Test: 3 Excluded: 4)
         :param category_id: Category the Document belongs to (if unset, it will be assigned one by the server)
         :param callback_url: Callback URL receiving POST call once extraction is done
+        :param timeout: Number of seconds to wait for response from the server
         :return: New Document
         """
         response = upload_file_konfuzio_api(
@@ -2320,9 +2331,16 @@ class Document(Data):
             category_id=category_id,
             callback_url=callback_url,
             sync=True,
+            session=konfuzio_session(timeout=timeout),
         )
+        response = response.json()
 
-        new_document_id = json.loads(response.text)['id']
+        if response['status'][0] == 2:
+            logger.debug(f"Document status code {response['status'][0]}: {response['status'][1]}")
+        else:
+            logger.warning(f"Document status code {response['status'][0]}: {response['status'][1]}")
+
+        new_document_id = response['id']
 
         project.init_or_update_document(from_online=True)
         doc = project.get_document_by_id(new_document_id)
@@ -2337,6 +2355,7 @@ class Document(Data):
         dataset_status: int = 0,
         category_id: Union[None, int] = None,
         callback_url: str = '',
+        timeout: Optional[int] = None,
     ) -> int:
         """
         Initialize Document from file with asynchrinous API call.
@@ -2350,7 +2369,8 @@ class Document(Data):
         :param project: If to filter by correct annotations
         :param dataset_status: Dataset status of the document (None: 0 Preparation: 1 Training: 2 Test: 3 Excluded: 4)
         :param category_id: Category the Document belongs to (if unset, it will be assigned one by the server)
-        :param callback_url: Callback URL receiving POST call once extraction is done
+        :param callback_url: Callback URL receiving POST call once extraction is
+        :param timeout: Number of seconds to wait for response from the server
         :return: ID of new Document
         """
         response = upload_file_konfuzio_api(
@@ -2360,6 +2380,7 @@ class Document(Data):
             category_id=category_id,
             callback_url=callback_url,
             sync=False,
+            session=konfuzio_session(timeout=timeout),
         )
 
         new_document_id = json.loads(response.text)['id']
@@ -2841,12 +2862,12 @@ class Document(Data):
             if self.category != self.project.no_category:
                 if annotation.label_set is not None:
                     if annotation.label_set.categories:
-                        if self.category in annotation.label_set.categories:
+                        if (self.category in annotation.label_set.categories) or (annotation.label.name == 'NO_LABEL'):
                             self._annotations.append(annotation)
                         else:
                             exception_or_log_error(
                                 msg=f'We cannot add {annotation} related to {annotation.label_set.categories} to {self}'
-                                f' as the document has {self.category}',
+                                f' as the Document has {self.category}',
                                 fail_loudly=self.project._strict_data_validation,
                                 exception_type=ValueError,
                             )
@@ -3017,7 +3038,7 @@ class Document(Data):
                 document_character = self.text[int(character_index)]
                 if box_character not in [' ', '\f', '\n'] and box_character != document_character:
                     exception_or_log_error(
-                        msg=f'{self} Bbox provides Character "{box_character}" document text refers to '
+                        msg=f'{self} Bbox provides Character "{box_character}" Document text refers to '
                         f'"{document_character}" with ID "{character_index}".',
                         fail_loudly=self.project._strict_data_validation,
                         exception_type=ValueError,
@@ -3119,13 +3140,13 @@ class Document(Data):
         return self._hocr
 
     def update(self):
-        """Update document information."""
+        """Update Document information."""
         self.delete_document_details()
         self.download_document_details()
         return self
 
     def delete_document_details(self):
-        """Delete all local content information for the document."""
+        """Delete all local content information for the Document."""
         try:
             shutil.rmtree(self.document_folder)
         except FileNotFoundError:
@@ -3236,8 +3257,8 @@ class Document(Data):
 
     def get_annotations(self) -> List[Annotation]:
         """Get Annotations of the Document."""
-        if self.category is None:
-            raise ValueError(f'Document {self} without Category must not have Annotations')
+        # if self.category is None:
+        #    raise ValueError(f'Document {self} without Category must not have Annotations')
 
         annotation_file_exists = is_file(self.annotation_file_path, raise_exception=False)
         annotation_set_file_exists = is_file(self.annotation_set_file_path, raise_exception=False)
@@ -3346,6 +3367,66 @@ class Document(Data):
                     i += 1
                     start_offset = end_offset + 1
         return new_doc
+
+    def get_document_classifier_examples(self, text_vocab, category_vocab, max_len, use_image, use_text):
+        """Get the per document examples for the document classifier."""
+        document_image_paths = []
+        document_tokens = []
+        document_labels = []
+        document_ids = []
+        document_page_numbers = []
+
+        # validate the data for the document
+        if use_image:
+            self.get_images()  # gets the images if they do not exist
+            image_paths = [page.image_path for page in self.pages()]  # gets the paths to the images
+            # @TODO move this validation to the Document class or the Page class
+            assert len(image_paths) > 0, f'No images found for document {self.id_}'
+            if not use_text:  # if only using images then make texts a list of None
+                page_texts = [None] * len(image_paths)
+        if use_text:
+            page_texts = self.text.split('\f')
+            # @TODO move this validation to the Document class or the Page class
+            assert len(page_texts) > 0, f'No text found for document {self.id_}'
+            if not use_image:  # if only using text then make images used a list of None
+                image_paths = [None] * len(page_texts)
+
+        # check we have the same number of images and text pages
+        # only useful when we have both an image and a text module
+        # @TODO move this validation to the Document class or the Page class
+        assert len(image_paths) == len(
+            page_texts
+        ), f'No. of images ({len(image_paths)}) != No. of pages {len(page_texts)} for document {self.id_}'
+
+        for page in self.pages():
+            if use_image:
+                # if using an image module, store the path to the image
+                document_image_paths.append(page.image_path)
+            else:
+                # if not using image module then don't need the image paths
+                # so we just have a list of None to keep the lists the same length
+                document_image_paths.append(None)
+            if use_text:
+                # if using a text module, tokenize the page, trim to max length and then numericalize
+                # REPLACE page_tokens = tokenizer.get_tokens(page_text)[:max_len]
+                # page_encoded = [text_vocab.stoi(span.offset_string) for span in
+                # self.spans(start_offset=page.start_offset, end_offset=page.end_offset)]
+                # document_tokens.append(torch.LongTensor(page_encoded))
+                text_vocab.numericalize(page)
+                document_tokens.append(torch.LongTensor(page.text_encoded))
+            else:
+                # if not using text module then don't need the tokens
+                # so we just have a list of None to keep the lists the same length
+                document_tokens.append(None)
+            # get document classification (defined by the category template)
+            category_id = str(self.category.id_) if self.category is not None else 'NO_CATEGORY'
+            # append the classification (category), the document's id number and the page number of each page
+            document_labels.append(torch.LongTensor([category_vocab.stoi(category_id)]))
+            doc_id = self.id_ or self.copy_of_id
+            document_ids.append(torch.LongTensor([doc_id]))
+            document_page_numbers.append(torch.LongTensor([page.index]))
+
+        return document_image_paths, document_tokens, document_labels, document_ids, document_page_numbers
 
 
 class Project(Data):
