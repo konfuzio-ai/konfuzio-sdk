@@ -27,6 +27,10 @@ type of the given Label (meaning that they are not of the same data type themsel
      :language: python
      :lines: 2,6-7,20,21
 
+All three of the methods return a list of Annotations that are deemed outliers by the logic of the current method; the 
+contents of the output are not necessarily wrong, however, they may have some difference from the main body of the 
+Annotations under a given Label.
+
 To have a more thorough check, you can use a method `get_probable_outliers` that allows for combining the 
 aforementioned methods or have them run together and return only those Annotations that were detected by all of them.
 
