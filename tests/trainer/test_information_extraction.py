@@ -373,7 +373,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         assert 5e4 < memory_size_of(evaluation.data) < 2e5
 
     def test_11_extract_test_document(self):
-        """Extract a randomly selected Test Document."""
+        """Test extracting Documents."""
         test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         res_doc = self.pipeline.extract(document=test_document)
 
@@ -387,6 +387,12 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         view_spans = sorted([span for ann in view_annotations for span in ann.spans])
         self.tests_annotations_spans += view_spans
         assert len(self.tests_annotations_spans) == 20
+
+        # Test extracting with Document from different Category
+        quittung_document = self.project.get_document_by_id(89819)
+        quittung_extracted_document = self.pipeline.extract(document=quittung_document)
+
+        assert len(quittung_extracted_document.annotations(use_correct=False))
 
     @parameterized.parameterized.expand(entity_results_data)
     def test_12_test_annotations(self, i, expected):
