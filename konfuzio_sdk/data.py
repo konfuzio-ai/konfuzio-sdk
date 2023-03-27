@@ -1257,7 +1257,7 @@ class Label(Data):
         self._tokens = {}
         self._regex = {}
 
-    def get_probable_outliers(
+    def get_probable_outliers_by_regex(
         self, categories: List[Category], use_test_docs: bool = False, n_regexes: int = 3
     ) -> List['Annotation']:
         """
@@ -1325,7 +1325,7 @@ class Label(Data):
                                         cur_annotations_best.add(annotation)
                                         detected_by_best_spans.add(span)
                         if len(cur_annotations_worst) not in range(
-                            round(len(cur_annotations_best) * 0.5), round(len(cur_annotations_best) * 1.2)
+                            round(len(cur_annotations_best) * 0.5), round(len(cur_annotations_best) * 1.5)
                         ):
                             outliers.update(cur_annotations_worst - cur_annotations_best)
                         for annotation in cur_annotations_worst.union(cur_annotations_best):
@@ -1366,6 +1366,11 @@ class Label(Data):
         Get a list of Annotations with the lowest confidence.
 
         A method iterates over the list of Categories, returning the top N Annotations with the lowest confidence score.
+
+        :param categories: Categories under which the search is done.
+        :type categories: List[Category]
+        :param n_outliers: Number of the outliers to return.
+        :type n_outliers: int
         """
         all_annotations = []
         for category in categories:
@@ -1391,6 +1396,11 @@ class Label(Data):
 
         A method iterates over the list of Categories, returning the Annotations that do not fit into the data type of
         a Label (= have None returned in an attempt of the normalization by the Label's data type).
+
+        :param categories: Categories under which the search is done.
+        :type categories: List[Category]
+        :param n_outliers: Number of the outliers to return.
+        :type n_outliers: int
         """
         outliers = set()
         for category in categories:
@@ -1406,6 +1416,41 @@ class Label(Data):
         else:
             outliers = list(outliers)
         return outliers
+
+    def get_probable_outliers(
+        self,
+        categories: List[Category],
+        regex_search: bool = True,
+        confidence_search: bool = True,
+        normalization_search: bool = True,
+    ) -> List['Annotation']:
+        """
+        Get a list of Annotations that are outliers.
+
+        Outliers are determined by either of three logics or a combination of them applied: found by the worst regex,
+        have the lowest confidence and/or are not normalizeable by the data type of a given Label.
+
+        :param categories: Categories under which the search is done.
+        :type categories: List[Category]
+        :param regex_search: Enable search by top worst regexes.
+        :type regex_search: bool
+        :param confidence_search: Enable search by the lowest-confidence Annotations.
+        :type confidence_search: bool
+        :param normalization_search: Enable search by normalizing Annotations by the Label's data type.
+        :type normalization_search: bool
+        :raises ValueError: When all search options are disabled.
+        """
+        if not regex_search and not confidence_search and not normalization_search:
+            raise ValueError("All search modes disabled, search is impossible. Enable at least one search mode.")
+        results = []
+        if regex_search:
+            results.append(set(self.get_probable_outliers_by_regex(categories)))
+        if confidence_search:
+            results.append(set(self.get_probable_outliers_by_confidence(categories)))
+        if normalization_search:
+            results.append(set(self.get_probable_outliers_by_normalization(categories)))
+        intersection_results = set.intersection(*results)
+        return intersection_results
 
     # def save(self) -> bool:
     #     """
