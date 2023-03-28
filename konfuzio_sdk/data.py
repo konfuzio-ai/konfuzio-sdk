@@ -1282,7 +1282,9 @@ class Label(Data):
 class Span(Data):
     """A Span is a sequence of characters or whitespaces without line break."""
 
-    def __init__(self, start_offset: int, end_offset: int, annotation=None, strict_validation: bool = True):
+    def __init__(
+        self, start_offset: int, end_offset: int, annotation: 'Annotation' = None, strict_validation: bool = True
+    ):
         """
         Initialize the Span without bbox, to save storage.
 
@@ -2710,7 +2712,9 @@ class Document(Data):
         """
         if self._annotations is None:
             self.annotations()
-        if annotation not in self._annotations:
+
+        duplicated = [x for x in self._annotations if x == annotation]
+        if not duplicated:
             # Hotfix Text Annotation Server:
             #  Annotation belongs to a Label / Label Set that does not relate to the Category of the Document.
             # todo: add test that the Label and Label Set of an Annotation belong to the Category of the Document
@@ -2736,7 +2740,6 @@ class Document(Data):
                 else:
                     raise ValueError(f'We cannot add {annotation} to {self} where the Сategory is {self.category}')
         else:
-            duplicated = [x for x in self._annotations if x == annotation]
             exception_or_log_error(
                 msg=f'In {self} the {annotation} is a duplicate of {duplicated} and will not be added.',
                 fail_loudly=self.project._strict_data_validation,

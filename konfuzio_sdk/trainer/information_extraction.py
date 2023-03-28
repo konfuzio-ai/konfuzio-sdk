@@ -1240,19 +1240,22 @@ class Trainer(BaseModel):
 
             extracted_spans = extractions[required_fields].sort_values(by='confidence', ascending=False)
 
-            for span in extracted_spans.to_dict('records'):  # todo: are start_offset and end_offset always ints?
-                annotation = Annotation(
-                    document=document,
-                    label=label,
-                    confidence=span['confidence'],
-                    label_set=label_set,
-                    annotation_set=annotation_set,
-                    spans=[Span(start_offset=span['start_offset'], end_offset=span['end_offset'])],
-                )
-                if annotation.spans[0].offset_string is None:
-                    raise NotImplementedError(
-                        f"Extracted {annotation} does not have a correspondence in the " f"text of {document}."
+            for span in extracted_spans.to_dict('records'):
+                try:
+                    annotation = Annotation(
+                        document=document,
+                        label=label,
+                        confidence=span['confidence'],
+                        label_set=label_set,
+                        annotation_set=annotation_set,
+                        spans=[Span(start_offset=span['start_offset'], end_offset=span['end_offset'])],
                     )
+                    if annotation.spans[0].offset_string is None:
+                        raise NotImplementedError(
+                            f"Extracted {annotation} does not have a correspondence in the " f"text of {document}."
+                        )
+                except ValueError as e:
+                    logger.warning(f'Could not add {span}: {str(e)}')
 
     @classmethod
     def merge_horizontal(cls, res_dict: Dict, doc_text: str) -> Dict:

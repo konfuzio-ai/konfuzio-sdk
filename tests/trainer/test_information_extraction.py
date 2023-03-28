@@ -34,7 +34,6 @@ from konfuzio_sdk.trainer.information_extraction import (
     strip_accents,
     count_string_differences,
     year_month_day_count,
-    # add_extractions_as_annotations,
     load_model,
     RFExtractionAI,
     Trainer,
@@ -1201,6 +1200,51 @@ class TestAddExtractionAsAnnotation(unittest.TestCase):
             annotation_set=annotation_set_1,
         )
         assert document.annotations(use_correct=False) == []
+
+    def test_add_same_offset_extractions_to_document(self):
+        """Test extractions  Document."""
+        document = deepcopy(self.sample_document)
+        annotation_set_1 = AnnotationSet(id_=101, document=document, label_set=self.label_set)
+
+        extraction_df = pd.DataFrame(
+            data=[
+                {
+                    'start_offset': 15,
+                    'end_offset': 20,
+                    'confidence': 0.1,
+                    'page_index': 0,
+                    'x0': 10,
+                    'x1': 20,
+                    'y0': 10,
+                    'y1': 20,
+                    'top': 200,
+                    'bottom': 210,
+                },
+                {
+                    'start_offset': 15,
+                    'end_offset': 20,
+                    'confidence': 0.4,
+                    'page_index': 0,
+                    'x0': 10,
+                    'x1': 20,
+                    'y0': 10,
+                    'y1': 20,
+                    'top': 200,
+                    'bottom': 210,
+                },
+            ]
+        )
+
+        RFExtractionAI().add_extractions_as_annotations(
+            extractions=extraction_df,
+            document=document,
+            label=self.label,
+            label_set=self.label_set,
+            annotation_set=annotation_set_1,
+        )
+
+        assert len(document.annotations(use_correct=False)) == 1
+        assert document.annotations(use_correct=False)[0].confidence == 0.4
 
     def test_add_empty_extraction_to_document(self):
         """Test add empty extraction to a document."""
