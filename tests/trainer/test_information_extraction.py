@@ -1202,7 +1202,7 @@ class TestAddExtractionAsAnnotation(unittest.TestCase):
         assert document.annotations(use_correct=False) == []
 
     def test_add_same_offset_extractions_to_document(self):
-        """Test extractions  Document."""
+        """Test extractions Document."""
         document = deepcopy(self.sample_document)
         annotation_set_1 = AnnotationSet(id_=101, document=document, label_set=self.label_set)
 
@@ -1245,6 +1245,70 @@ class TestAddExtractionAsAnnotation(unittest.TestCase):
 
         assert len(document.annotations(use_correct=False)) == 1
         assert document.annotations(use_correct=False)[0].confidence == 0.4
+
+    def test_add_same_offset_different_labels_extractions_to_document(self):
+        """Test extractions same offset different Labels Document."""
+        document = deepcopy(self.sample_document)
+        label_set_1 = self.label_set
+        label_set_2 = self.project.get_label_set_by_id(1)
+
+        label_1 = self.label
+        label_2 = self.project.get_label_by_id(5)
+
+        annotation_set_1 = AnnotationSet(id_=103, document=document, label_set=label_set_1)
+        annotation_set_2 = AnnotationSet(id_=104, document=document, label_set=label_set_2)
+
+        extraction_df_label_1 = pd.DataFrame(
+            data=[
+                {
+                    'start_offset': 15,
+                    'end_offset': 20,
+                    'confidence': 0.1,
+                    'page_index': 0,
+                    'x0': 10,
+                    'x1': 20,
+                    'y0': 10,
+                    'y1': 20,
+                    'top': 200,
+                    'bottom': 210,
+                },
+            ]
+        )
+        extraction_df_label_2 = pd.DataFrame(
+            data=[
+                {
+                    'start_offset': 15,
+                    'end_offset': 20,
+                    'confidence': 0.4,
+                    'page_index': 0,
+                    'x0': 10,
+                    'x1': 20,
+                    'y0': 10,
+                    'y1': 20,
+                    'top': 200,
+                    'bottom': 210,
+                },
+            ]
+        )
+
+        RFExtractionAI().add_extractions_as_annotations(
+            extractions=extraction_df_label_1,
+            document=document,
+            label=label_1,
+            label_set=label_set_1,
+            annotation_set=annotation_set_1,
+        )
+
+        RFExtractionAI().add_extractions_as_annotations(
+            extractions=extraction_df_label_2,
+            document=document,
+            label=label_2,
+            label_set=label_set_2,
+            annotation_set=annotation_set_2,
+        )
+
+        assert len(document.annotations(use_correct=False)) == 2  # overlapping but different Labels
+        assert document.view_annotations()[0].label == label_2
 
     def test_add_empty_extraction_to_document(self):
         """Test add empty extraction to a document."""
