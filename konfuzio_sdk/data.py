@@ -1360,37 +1360,37 @@ class Label(Data):
         return outliers
 
     def get_probable_outliers_by_confidence(
-        self, categories: List[Category], n_outliers: int = 10
+        self,
+        evaluation_data,
+        confidence: float = 0.5,
     ) -> List['Annotation']:
         """
         Get a list of Annotations with the lowest confidence.
 
         A method iterates over the list of Categories, returning the top N Annotations with the lowest confidence score.
 
-        :param categories: Categories under which the search is done.
-        :type categories: List[Category]
-        :param n_outliers: Number of the outliers to return.
-        :type n_outliers: int
+        :param evaluation_data: An instance of the ExtractionEvaluation class that contains predicted confidence scores.
+        :type evaluation_data: ExtractionEvaluation instance
+        :param confidence: A level of confidence below which the Annotations are returned.
+        :type confidence: float
         """
-        all_annotations = []
-        for category in categories:
-            for annotation in [
-                annotation
-                for annotation in self.annotations(categories=[category])
-                if (annotation.is_correct and annotation.confidence < 0.5)
-            ]:
-                all_annotations.append((annotation, annotation.confidence))
-        if len(all_annotations) >= n_outliers:
-            outliers = list(
-                [annotation[0] for annotation in sorted(all_annotations, key=lambda item: item[1])[:n_outliers]]
-            )
-        else:
-            outliers = list([annotation[0] for annotation in sorted(all_annotations, key=lambda item: item[1])])
+        outliers = []
+        all_annotations = evaluation_data.data[
+            (evaluation_data.data['label_id'] == self.id_)
+            & (evaluation_data.data['confidence_predicted'] < confidence)
+            & (evaluation_data.data['is_correct'])
+        ]
+        for idx, outlier in all_annotations.iterrows():
+            if outlier['id_']:
+                cur_annotation = [
+                    annotation
+                    for annotation in self.annotations(self.project.categories)
+                    if annotation.id_ == outlier['id_']
+                ][0]
+                outliers.append(cur_annotation)
         return outliers
 
-    def get_probable_outliers_by_normalization(
-        self, categories: List[Category], n_outliers: int = 10
-    ) -> List['Annotation']:
+    def get_probable_outliers_by_normalization(self, categories: List[Category]) -> List['Annotation']:
         """
         Get a list of Annotations that do not pass normalization by the data type.
 
@@ -1399,8 +1399,6 @@ class Label(Data):
 
         :param categories: Categories under which the search is done.
         :type categories: List[Category]
-        :param n_outliers: Number of the outliers to return.
-        :type n_outliers: int
         """
         outliers = set()
         for category in categories:
@@ -1411,10 +1409,7 @@ class Label(Data):
                     normalized = normalize(span.offset_string, self.data_type)
                     if not normalized:
                         outliers.add(annotation)
-        if len(outliers) >= n_outliers:
-            outliers = list(outliers)[:n_outliers]
-        else:
-            outliers = list(outliers)
+        outliers = list(outliers)
         return outliers
 
     def get_probable_outliers(
@@ -1449,7 +1444,7 @@ class Label(Data):
             results.append(set(self.get_probable_outliers_by_confidence(categories)))
         if normalization_search:
             results.append(set(self.get_probable_outliers_by_normalization(categories)))
-        intersection_results = set.intersection(*results)
+        intersection_results = list(set.intersection(*results))
         return intersection_results
 
     # def save(self) -> bool:

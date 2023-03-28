@@ -24,7 +24,8 @@ from konfuzio_sdk.data import (
     Bbox,
     BboxValidationTypes,
 )
-
+from konfuzio_sdk.evaluate import ExtractionEvaluation
+from konfuzio_sdk.trainer.information_extraction import RFExtractionAI
 from konfuzio_sdk.utils import is_file
 from tests.variables import (
     OFFLINE_PROJECT,
@@ -33,7 +34,7 @@ from tests.variables import (
     TEST_PAYSLIPS_CATEGORY_ID,
     TEST_RECEIPTS_CATEGORY_ID,
 )
-
+from konfuzio_sdk.tokenizer.base import ListTokenizer
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, RegexTokenizer, ConnectedTextTokenizer
 from konfuzio_sdk.samples import LocalTextProject
 
@@ -461,12 +462,29 @@ class TestOfflineExampleData(unittest.TestCase):
 
     def test_find_outlier_annotations_by_confidence(self):
         """Test finding the Annotations with the least confidence."""
-        label = self.project.get_label_by_name('Firmenname')
-        outliers = label.get_probable_outliers_by_confidence(self.project.categories, 3)
-        assert len(outliers) == 3
-        for annotation in outliers:
-            assert annotation.confidence < 0.5
-            assert annotation.is_correct
+        label = self.project.get_label_by_name('Austellungsdatum')
+        pipeline = RFExtractionAI()
+        pipeline.tokenizer = ListTokenizer(tokenizers=[])
+        pipeline.category = self.project.get_category_by_id(id_=63)
+        train_doc_ids = {44823, 44834, 44839, 44840, 44841}
+        pipeline.documents = [doc for doc in pipeline.category.documents() if doc.id_ in train_doc_ids]
+        for cur_label in pipeline.category.labels:
+            for regex in cur_label.find_regex(category=pipeline.category):
+                pipeline.tokenizer.tokenizers.append(RegexTokenizer(regex=regex))
+        pipeline.test_documents = pipeline.category.test_documents()
+        pipeline.df_train, pipeline.label_feature_list = pipeline.feature_function(
+            documents=pipeline.documents, require_revised_annotations=False
+        )
+        pipeline.fit()
+        predictions = []
+        for doc in pipeline.documents:
+            predicted_doc = pipeline.extract(document=doc)
+            predictions.append(predicted_doc)
+        evaluation = ExtractionEvaluation(documents=list(zip(pipeline.documents, predictions)), strict=False)
+        outliers = label.get_probable_outliers_by_confidence(evaluation, 0.8)
+        assert len(outliers) == 1
+        outlier_spans = [span.offset_string for annotation in outliers for span in annotation.spans]
+        assert '24.05.2018' in outlier_spans
 
     def test_find_outlier_annotations_by_normalization(self):
         """Test finding the Annotations that do not correspond the Label's data type."""
