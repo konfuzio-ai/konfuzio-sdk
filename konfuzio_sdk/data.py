@@ -2721,7 +2721,9 @@ class Document(Data):
             if self.category != self.project.no_category:
                 if annotation.label_set is not None:
                     if annotation.label_set.categories:
-                        if (self.category in annotation.label_set.categories) or (annotation.label.name == 'NO_LABEL'):
+                        if (self.category in annotation.label_set.categories) or (
+                            annotation.label is self.project.no_label
+                        ):
                             self._annotations.append(annotation)
                         else:
                             exception_or_log_error(
@@ -2735,7 +2737,7 @@ class Document(Data):
                 else:
                     raise ValueError(f'{annotation} has no Label Set, which cannot be added to {self}.')
             else:
-                if annotation.label.name == "NO_LABEL" and annotation.label_set.name_clean == "NO_LABEL_SET":
+                if annotation.label is self.project.no_label and annotation.label_set is self.project.no_label_set:
                     self._annotations.append(annotation)
                 else:
                     raise ValueError(f'We cannot add {annotation} to {self} where the Сategory is {self.category}')

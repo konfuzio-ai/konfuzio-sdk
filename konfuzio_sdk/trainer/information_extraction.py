@@ -1255,7 +1255,11 @@ class Trainer(BaseModel):
                             f"Extracted {annotation} does not have a correspondence in the " f"text of {document}."
                         )
                 except ValueError as e:
-                    logger.warning(f'Could not add {span}: {str(e)}')
+                    if 'is a duplicate of' in str(e):
+                        # Second duplicate Span is lower confidence since we sorted spans earlier, so we can ignore it
+                        logger.warning(f'Could not add duplicated {span}: {str(e)}')
+                    else:
+                        raise e
 
     @classmethod
     def merge_horizontal(cls, res_dict: Dict, doc_text: str) -> Dict:

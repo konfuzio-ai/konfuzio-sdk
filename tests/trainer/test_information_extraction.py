@@ -19,7 +19,7 @@ import pandas as pd
 from sklearn.datasets import make_classification
 from sklearn.ensemble import RandomForestClassifier
 
-from konfuzio_sdk.data import Project, Document, AnnotationSet, Annotation, Span
+from konfuzio_sdk.data import Project, Document, AnnotationSet, Annotation, Span, LabelSet
 from konfuzio_sdk.trainer.information_extraction import (
     num_count,
     date_count,
@@ -363,7 +363,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         assert 5e4 < memory_size_of(evaluation.data) < 2e5
 
     def test_10_label_set_clf_quality(self):
-        """Evaluate the LabelSet classifier quality."""
+        """Evaluate the Label Set classifier quality."""
         evaluation = self.pipeline.evaluate_label_set_clf()
 
         assert evaluation.f1(None) == 0.9552238805970149
@@ -1200,6 +1200,67 @@ class TestAddExtractionAsAnnotation(unittest.TestCase):
             annotation_set=annotation_set_1,
         )
         assert document.annotations(use_correct=False) == []
+
+    def test_add_extraction_none_label_set(self):
+        """Test adding an extraction with None Label Set."""
+        document = deepcopy(self.sample_document)
+        annotation_set = AnnotationSet(id_=106, document=document, label_set=self.label_set)
+
+        with pytest.raises(ValueError, match='has no Label Set, which cannot be added'):
+            RFExtractionAI().add_extractions_as_annotations(
+                extractions=self.extraction_df,
+                document=document,
+                label=self.label,
+                label_set=None,
+                annotation_set=annotation_set,
+            )
+
+    def test_add_extraction_invalid_label_set(self):
+        """Test adding an extraction with invalid Label Set."""
+        document = deepcopy(self.sample_document)
+        annotation_set = AnnotationSet(id_=107, document=document, label_set=self.label_set)
+
+        label_set = LabelSet(id_=52, project=self.project, name="TestLabelSet", categories=[])
+
+        with pytest.raises(ValueError, match='uses Label Set without Category, cannot be added'):
+            RFExtractionAI().add_extractions_as_annotations(
+                extractions=self.extraction_df,
+                document=document,
+                label=self.label,
+                label_set=label_set,
+                annotation_set=annotation_set,
+            )
+
+    def test_add_extraction_invalid_label_set_2(self):
+        """Test adding an extraction with invalid Label Set from different Category."""
+        document = deepcopy(self.sample_document)
+        annotation_set = AnnotationSet(id_=108, document=document, label_set=self.label_set)
+
+        label_set = self.project.get_label_set_by_id(2)
+
+        with pytest.raises(ValueError, match='We cannot add .* related to'):
+            RFExtractionAI().add_extractions_as_annotations(
+                extractions=self.extraction_df,
+                document=document,
+                label=self.label,
+                label_set=label_set,
+                annotation_set=annotation_set,
+            )
+
+    def test_add_extraction_no_category_document(self):
+        """Test adding an extraction to a no Category Document."""
+        document = deepcopy(self.sample_document)
+        document.set_category(self.project.no_category)
+        annotation_set = AnnotationSet(id_=108, document=document, label_set=self.label_set)
+
+        with pytest.raises(ValueError, match='We cannot add .* where the Сategory is'):
+            RFExtractionAI().add_extractions_as_annotations(
+                extractions=self.extraction_df,
+                document=document,
+                label=self.label,
+                label_set=self.label_set,
+                annotation_set=annotation_set,
+            )
 
     def test_add_same_offset_extractions_to_document(self):
         """Test extractions Document."""
