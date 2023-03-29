@@ -59,7 +59,7 @@ from konfuzio_sdk.utils import (
     sdk_isinstance,
 )
 
-from konfuzio_sdk.evaluate import Evaluation
+from konfuzio_sdk.evaluate import ExtractionEvaluation
 
 from konfuzio_sdk.tokenizer.base import ListTokenizer
 
@@ -91,8 +91,13 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
     prev_local_id = next(Data.id_iter)
 
     try:
-        with bz2.open(pickle_path, 'rb') as file:
-            model = cloudpickle.load(file)
+        if pickle_path.endswith(".pt"):
+            from konfuzio_sdk.trainer.document_categorization import load_categorization_model
+
+            model = load_categorization_model(pickle_path)
+        else:
+            with bz2.open(pickle_path, 'rb') as file:
+                model = cloudpickle.load(file)
     except OSError:
         raise OSError(f"Pickle file {pickle_path} data is invalid.")
     except AttributeError as err:
@@ -701,9 +706,6 @@ def process_document_data(
     spans: List[Span],
     n_nearest: Union[int, List, Tuple] = 2,
     first_word: bool = True,
-    # tokenize_fn: Optional[Callable] = None,
-    substring_features=None,
-    catchphrase_list=None,
     n_nearest_across_lines: bool = False,
 ) -> Tuple[pandas.DataFrame, List, pandas.DataFrame]:
     """
@@ -749,10 +751,6 @@ def process_document_data(
         line_list.append({'start_offset': char_counter, 'end_offset': char_counter + n_chars_on_line})
         char_counter += n_chars_on_line + 1
 
-    # generate the Catchphrase-Dataframe
-    if catchphrase_list is not None:
-        occurrence_dict = generate_catchphrase_occurrence_dict(line_list, catchphrase_list, document_text)
-
     if first_word:
         first_candidate = get_first_candidate(document_text, document_bbox, line_list)
         first_word_string = first_candidate['offset_string']
@@ -761,23 +759,9 @@ def process_document_data(
         first_word_x1 = first_candidate['x1']
         first_word_y1 = first_candidate['y1']
 
-    # WIP: Word on page feature
-    page_text_list = document_text.split('\f')
-
-    # used to cache the catchphrase features
-    _line_num = -1
-    _catchphrase_dict = None
     candidates_cache = dict()
     for span in spans:
 
-        word_on_page_feature_list = []
-        word_on_page_feature_name_list = []
-
-        # WIP: Word on page feature
-        if substring_features:
-            for index, substring_feature in enumerate(substring_features):
-                word_on_page_feature_list.append(substring_on_page(substring_feature, span, page_text_list))
-                word_on_page_feature_name_list.append(f'word_on_page_feat{index}')
         # if span.annotation.id_:
         #     # Annotation
         #     logger.error(f'{span}')
@@ -801,17 +785,7 @@ def process_document_data(
         # store the line_start_offset so if the next annotation is on the same line then we use the same
         # line_candidiates list and therefore saves us tokenizing the same line again
 
-        # get the catchphrase features
         line_num = span.line_index
-        if catchphrase_list is not None and len(catchphrase_list) != 0:
-            if line_num == _line_num:
-                span.catchphrase_dict = _catchphrase_dict
-            else:
-                _catchphrase_dict = generate_feature_dict_from_occurence_dict(
-                    occurrence_dict, catchphrase_list, line_num
-                )
-                span.catchphrase_dict = _catchphrase_dict
-                _line_num = line_num
 
         line_candidates, candidates_cache = get_line_candidates(
             document_text, document_bbox, line_list, line_num, candidates_cache
@@ -845,7 +819,7 @@ def process_document_data(
                     document_bbox,
                     line_list,
                     line_num - i,
-                    candidates_cache,  # tokenize_fn,
+                    candidates_cache,
                 )
                 for candidate in line_candidates:
                     candidate['dist'] = min(
@@ -868,7 +842,7 @@ def process_document_data(
                     document_bbox,
                     line_list,
                     line_num + i,
-                    candidates_cache,  # tokenize_fn,
+                    candidates_cache,
                 )
                 for candidate in line_candidates:
                     candidate['dist'] = min(
@@ -920,14 +894,6 @@ def process_document_data(
             span_dict['r_offset_string' + str(index)] = item['offset_string']
             if n_nearest_across_lines:
                 span_dict['r_pos' + str(index)] = item['pos']
-
-        # WIP: word on page feature
-        for index, item in enumerate(word_on_page_feature_list):
-            span_dict['word_on_page_feat' + str(index)] = item
-
-        if _catchphrase_dict:
-            for catchphrase, dist in _catchphrase_dict.items():
-                span_dict['catchphrase_dist_' + catchphrase] = dist
 
         # checks for ERRORS
         if span_dict["confidence"] is None and not (span_dict["revised"] is False and span_dict["is_correct"] is True):
@@ -985,15 +951,9 @@ def process_document_data(
         + r_keys
         + relative_string_feature_list
         + relative_pos_feature_list
-        + word_on_page_feature_name_list
     )
     if first_word:
         feature_list += first_word_features
-
-    # append the catchphrase_features to the feature_list
-    if catchphrase_list is not None:
-        for catchphrase in catchphrase_list:
-            feature_list.append('catchphrase_dist_' + catchphrase)
 
     return df, feature_list, df_errors
 
@@ -1008,29 +968,6 @@ def substring_on_page(substring, annotation, page_text_list) -> bool:
         return False
     else:
         return substring in page_text_list[annotation.page_index]
-
-
-def generate_catchphrase_occurrence_dict(line_list, catchphrase_list, document_text) -> Dict:
-    """Generate a dict that stores on which line certain catchphrases occurrence."""
-    _dict = {catchphrase: [] for catchphrase in catchphrase_list}
-
-    for line_num, _line in enumerate(line_list):
-        line_text = document_text[_line['start_offset'] : _line['end_offset']]
-        for catchphrase in catchphrase_list:
-            if catchphrase in line_text:
-                _dict[catchphrase].append(line_num)
-
-    return _dict
-
-
-def generate_feature_dict_from_occurence_dict(occurence_dict, catchphrase_list, line_num) -> Dict:
-    """Generate the fitting catchphrase features."""
-    _dict = {catchphrase: None for catchphrase in catchphrase_list}
-
-    for catchphrase in catchphrase_list:
-        _dict[catchphrase] = next((i - line_num for i in occurence_dict[catchphrase] if i < line_num), -1)
-
-    return _dict
 
 
 class BaseModel(metaclass=abc.ABCMeta):
@@ -1888,9 +1825,6 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         self.no_label_limit = no_label_limit
         self.n_nearest_across_lines = n_nearest_across_lines
 
-        self.substring_features = kwargs.get('substring_features', None)
-        self.catchphrase_features = kwargs.get('catchphrase_features', None)
-
         self.tokenizer = tokenizer
         logger.info(f"{tokenizer=}")
 
@@ -1915,8 +1849,8 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             n_nearest=self.n_nearest,
             first_word=self.first_word,
             # tokenize_fn=self.tokenizer.tokenize,  # todo: we are tokenizing the document multiple times
-            catchphrase_list=self.catchphrase_features,
-            substring_features=self.substring_features,
+            # catchphrase_list=self.catchphrase_features,
+            # substring_features=self.substring_features,
             n_nearest_across_lines=self.n_nearest_across_lines,
         )
         if self.use_separate_labels:
@@ -1970,6 +1904,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         inference_document = deepcopy(document)
 
         # In case document category was changed after RFExtractionAI training
+        inference_document._category = None
         inference_document.set_category(self.category)
 
         # 2. tokenize
@@ -2458,7 +2393,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
     def evaluate_full(
         self, strict: bool = True, use_training_docs: bool = False, use_view_annotations: bool = True
-    ) -> Evaluation:
+    ) -> ExtractionEvaluation:
         """
         Evaluate the full pipeline on the pipeline's Test Documents.
 
@@ -2476,11 +2411,11 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             predicted_doc = self.extract(document=document)
             eval_list.append((document, predicted_doc))
 
-        full_evaluation = Evaluation(eval_list, strict=strict, use_view_annotations=use_view_annotations)
+        full_evaluation = ExtractionEvaluation(eval_list, strict=strict, use_view_annotations=use_view_annotations)
 
         return full_evaluation
 
-    def evaluate_tokenizer(self, use_training_docs: bool = False) -> Evaluation:
+    def evaluate_tokenizer(self, use_training_docs: bool = False) -> ExtractionEvaluation:
         """Evaluate the tokenizer."""
         if not use_training_docs:
             eval_docs = self.test_documents
@@ -2491,7 +2426,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         return evaluation
 
-    def evaluate_clf(self, use_training_docs: bool = False) -> Evaluation:
+    def evaluate_clf(self, use_training_docs: bool = False) -> ExtractionEvaluation:
         """Evaluate the Label classifier."""
         eval_list = []
         if not use_training_docs:
@@ -2521,11 +2456,11 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             predicted_doc = self.extract_from_df(feats_df, virtual_doc)
             eval_list.append((document, predicted_doc))
 
-        clf_evaluation = Evaluation(eval_list, use_view_annotations=False)
+        clf_evaluation = ExtractionEvaluation(eval_list, use_view_annotations=False)
 
         return clf_evaluation
 
-    def evaluate_label_set_clf(self, use_training_docs: bool = False) -> Evaluation:
+    def evaluate_label_set_clf(self, use_training_docs: bool = False) -> ExtractionEvaluation:
         """Evaluate the LabelSet classifier."""
         if self.label_set_clf is None:
             raise AttributeError(f'{self} does not provide a LabelSet Classifier.')
@@ -2560,7 +2495,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
             eval_list.append((document, predicted_doc))
 
-        label_set_clf_evaluation = Evaluation(eval_list, use_view_annotations=False)
+        label_set_clf_evaluation = ExtractionEvaluation(eval_list, use_view_annotations=False)
 
         return label_set_clf_evaluation
 

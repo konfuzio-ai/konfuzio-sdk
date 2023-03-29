@@ -1944,6 +1944,7 @@ class TestAutomatedRegexTokenizer(TestTemplateRegexTokenizer):
 
         label.lose_weight()
 
+        label = self.category.project.get_label_by_name('DefaultLabelName')
         assert label._evaluations == {}
         assert label._tokens == {}
         assert label._regex == {}
