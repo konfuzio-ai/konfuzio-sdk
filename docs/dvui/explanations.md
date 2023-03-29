@@ -327,6 +327,6 @@ _Please note that the default values from the examples below are based on Konfuz
 
 If you want to test the final result before making changes in your application, you can do so [here](https://codepen.io/konfuzio/pen/QWVpKVE).
 
-_The example from Codepen shows the Read only mode of the Document Validation UI, which has limited functionalities. To see all the features the UI has to offer, you can add your [User Token](https://app.konfuzio.com/v3/swagger/#/auth/auth_create) and change the Document id in the_ `app` _tag._
+_The example from Codepen shows the Read only mode of the Document Validation UI, which has limited functionalities. To see all the features the UI has to offer, you can add your [User Token](https://app.konfuzio.com/v3/swagger/#/auth/auth_create) and change the Document id in the `app` tag._
 
 We hope this feature will help you take your branding to the next level and provide an even more engaging experience for your users. If you have any questions or need assistance with customization, please don’t hesitate to contact [support](https://konfuzio.com/en/support/).
