@@ -407,7 +407,7 @@ class Bbox:
     def top(self):
         """Calculate the distance to the top of the Page."""
         if self.page:
-            return self.page.height - self.y1
+            return round(self.page.height - self.y1, 3)
 
     def __repr__(self):
         """Represent the Box."""

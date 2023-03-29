@@ -360,6 +360,7 @@ class TestOfflineExampleData(unittest.TestCase):
         assert box.x0 == 84.28
         assert box.y0 == 532.592
         assert box.y1 == 540.592
+        assert box.top == 301.088
 
     def test_get_category_name_for_fallback_prediction(self):
         """Test turn a category name to lowercase, remove parentheses along with their contents, and trim spaces."""
