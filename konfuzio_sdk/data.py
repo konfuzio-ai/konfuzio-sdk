@@ -9,7 +9,6 @@ import regex as re
 import shutil
 import time
 import zipfile
-import collections
 from copy import deepcopy
 from typing import Optional, List, Union, Tuple, Dict
 from warnings import warn
@@ -450,6 +449,12 @@ class Bbox:
         self.angle: float = 0.0  # not yet used
         self.page: Page = page
         self._valid(validation)
+
+    @property
+    def top(self):
+        """Calculate the distance to the top of the Page."""
+        if self.page:
+            return round(self.page.height - self.y1, 3)
 
     def __repr__(self):
         """Represent the Box."""
@@ -2142,7 +2147,7 @@ class Document(Data):
         project: 'Project',
         id_: Union[int, None] = None,
         file_url: str = None,
-        status: List[Union[int, str]] = None,  # ?
+        status: List[Union[int, str]] = None,
         data_file_name: str = None,
         is_dataset: bool = None,
         dataset_status: int = None,
@@ -2156,7 +2161,7 @@ class Document(Data):
         bbox: dict = None,
         bbox_validation_type=None,
         pages: list = None,
-        update: bool = None,
+        update: bool = False,
         copy_of_id: Union[int, None] = None,
         *args,
         **kwargs,
@@ -2855,14 +2860,18 @@ class Document(Data):
         """
         if self._annotations is None:
             self.annotations()
-        if annotation not in self._annotations:
+
+        duplicated = [x for x in self._annotations if x == annotation]
+        if not duplicated:
             # Hotfix Text Annotation Server:
             #  Annotation belongs to a Label / Label Set that does not relate to the Category of the Document.
             # todo: add test that the Label and Label Set of an Annotation belong to the Category of the Document
             if self.category != self.project.no_category:
                 if annotation.label_set is not None:
                     if annotation.label_set.categories:
-                        if (self.category in annotation.label_set.categories) or (annotation.label.name == 'NO_LABEL'):
+                        if (self.category in annotation.label_set.categories) or (
+                            annotation.label is self.project.no_label
+                        ):
                             self._annotations.append(annotation)
                         else:
                             exception_or_log_error(
@@ -2876,12 +2885,11 @@ class Document(Data):
                 else:
                     raise ValueError(f'{annotation} has no Label Set, which cannot be added to {self}.')
             else:
-                if annotation.label.name == "NO_LABEL" and annotation.label_set.name_clean == "NO_LABEL_SET":
+                if annotation.label is self.project.no_label and annotation.label_set is self.project.no_label_set:
                     self._annotations.append(annotation)
                 else:
                     raise ValueError(f'We cannot add {annotation} to {self} where the Сategory is {self.category}')
         else:
-            duplicated = [x for x in self._annotations if x == annotation]
             exception_or_log_error(
                 msg=f'In {self} the {annotation} is a duplicate of {duplicated} and will not be added.',
                 fail_loudly=self.project._strict_data_validation,
@@ -3229,7 +3237,7 @@ class Document(Data):
 
             if self.is_online and (not annotation_file_exists or not annotation_set_file_exists or self._update):
                 self.update()  # delete the meta of the Document details and download them again
-                self._update = None  # Make sure we don't repeat to load once updated.
+                self._update = False  # Make sure we don't repeat to load once updated.
 
             self._annotation_sets = None  # clean Annotation Sets to not create duplicates
             self.annotation_sets()
@@ -3249,7 +3257,7 @@ class Document(Data):
                     raw_annotation['annotation_set_id'] = raw_annotation.pop('section')
                     raw_annotation['label_set_id'] = raw_annotation.pop('section_label_id')
                     _ = Annotation(document=self, id_=raw_annotation['id'], **raw_annotation)
-                self._update = None  # Make sure we don't repeat to load once loaded.
+                self._update = False  # Make sure we don't repeat to load once loaded.
 
         if self._annotations is None:
             self.annotation_sets()
@@ -3544,7 +3552,7 @@ class Project(Data):
         self.get_labels(reload=True)
         self.get_label_sets(reload=True)
         self.get_categories()
-        self.init_or_update_document()
+        self.init_or_update_document(from_online=False)
         return self
 
     def add_label_set(self, label_set: LabelSet):
@@ -3704,7 +3712,7 @@ class Project(Data):
                     logger.debug(f'{doc} was updated, we will download it again as soon you use it.')
                     n_updated_documents += 1
                 elif new:
-                    doc = Document(project=self, update=True, id_=document_data['id'], **document_data)
+                    doc = Document(project=self, update=from_online, id_=document_data['id'], **document_data)
                     logger.debug(f'{doc} is not available on your machine, we will download it as soon you use it.')
                     n_new_documents += 1
                 else:
