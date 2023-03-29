@@ -2276,6 +2276,25 @@ class TestKonfuzioDataSetup(unittest.TestCase):
             document._text = None
         assert _getsize(prj) == before
 
+    def test_online_project_document_default_update_setting(self):
+        """Test update setting of Document when online Project is initialized."""
+        project = Project(id_=46)
+        document = project.get_document_by_id(TEST_DOCUMENT_ID)
+
+        assert document._update is False
+
+        document.get_annotations()
+
+        assert is_file(document.annotation_file_path, raise_exception=False)
+        assert is_file(document.annotation_set_file_path, raise_exception=False)
+
+        assert document._update is False
+        document._update = True
+
+        document.get_annotations()  # download again
+
+        assert document._update is False
+
     def test_create_new_doc_via_text_and_bbox(self):
         """Test to create a new Document which by a text and a bbox."""
         doc = Project(id_=None, project_folder=OFFLINE_PROJECT).get_document_by_id(TEST_DOCUMENT_ID)
