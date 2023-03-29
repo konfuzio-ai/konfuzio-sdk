@@ -5,7 +5,7 @@
 <meta content="Documentation on how to deploy Konfuzio on premises using Kubernetes and Helm or Docker." name="description" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>On-Premises Guide &mdash; Konfuzio  documentation</title>
+  <title>Installation Guide &mdash; Konfuzio  documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
@@ -59,7 +59,7 @@
 <li class="toctree-l1"><a class="reference internal" href="index.html">What is the Konfuzio Server?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="explanations.html">Explanations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api-v3.html">REST API</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">On-Premises Guide</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation Guide</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#billing-and-license">Billing and License</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#kubernetes">Kubernetes</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#required-tools">Required tools</a><ul>
@@ -80,28 +80,23 @@
 <li class="toctree-l3"><a class="reference internal" href="#upgrade">Upgrade</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#docker">Docker</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#single-vm-setup">Single VM setup</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#download-docker-image">1. Download Docker Image</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#setup-postgresql-redis-blobstorage-filesystemstorage">2. Setup PostgreSQL, Redis, BlobStorage/FileSystemStorage</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#setup-environment-variable-file">3. Setup environment variable file</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#init-the-database-create-first-superuser-via-cli-and-prefill-e-mail-templates">4. Init the database, create first superuser via cli and prefill e-mail templates</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#start-the-container">5. Start the container</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#optional-6-use-flower-to-monitor-tasks">[Optional] 6. Use Flower to monitor tasks</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#optional-7-run-container-for-email-integration">[Optional] 7. Run Container for Email Integration</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#optional-8-use-azure-read-api-on-premises-or-as-service">[Optional] 8. Use Azure Read API (On-Premises or as Service)</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#optional-9-install-document-segmentation-container">[Optional] 9. Install document segmentation container</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#optional-10-install-document-summarization-container">[Optional] 10. Install document summarization container</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#a-upgrade-to-newer-konfuzio-version">11a. Upgrade to newer Konfuzio Version</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#b-downgrade-to-older-konfuzio-version">11b. Downgrade to older Konfuzio Version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#docker-single-vm-setup">Docker - Single VM setup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#requirements">Requirements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#download-docker-image">1. Download Docker Image</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#setup-postgresql-redis-blobstorage-filesystemstorage">2. Setup PostgreSQL, Redis, BlobStorage/FileSystemStorage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#setup-environment-variable-file">3. Setup environment variable file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#init-the-database-create-first-superuser-via-cli-and-prefill-e-mail-templates">4. Init the database, create first superuser via cli and prefill e-mail templates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#start-the-container">5. Start the container</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#optional-6-use-flower-to-monitor-tasks">[Optional] 6. Use Flower to monitor tasks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#optional-7-run-container-for-email-integration">[Optional] 7. Run Container for Email Integration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#optional-8-use-azure-read-api-on-premises-or-as-service">[Optional] 8. Use Azure Read API (On-Premises or as Service)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#optional-9-install-document-segmentation-container">[Optional] 9. Install document segmentation container</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#optional-10-install-document-summarization-container">[Optional] 10. Install document summarization container</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#a-upgrade-to-newer-konfuzio-version">11a. Upgrade to newer Konfuzio Version</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#b-downgrade-to-older-konfuzio-version">11b. Downgrade to older Konfuzio Version</a></li>
 </ul>
 </li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#alternative-deployment-options">Alternative deployment options</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#custom-ai-model-training-via-ci-pipelines">Custom AI model training via CI pipelines</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="#custom-ai-model-training-via-ci-pipelines">Custom AI model training via CI pipelines</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#keycloak-integration">Keycloak Integration</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#set-up">Set up</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#environment-variables">Environment Variables</a></li>
@@ -151,7 +146,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>On-Premises Guide</li>
+      <li>Installation Guide</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/web/on_premises.md.txt" rel="nofollow"> View page source</a>
       </li>
@@ -161,11 +156,28 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="on-premises-guide">
-<span id="server-installation"></span><h1>On-Premises Guide<a class="headerlink" href="#on-premises-guide" title="Permalink to this headline">¶</a></h1>
-<p>On-premises, also known as self-hosted, is a setup that allows Konfuzio to be implemented 100% on your own infrastructure. In practice, it means that you know where your data is stored, how it’s handled and who gets hold of it. This is because you keep the data on your own servers.</p>
+  <section id="installation-guide">
+<span id="server-installation"></span><h1>Installation Guide<a class="headerlink" href="#installation-guide" title="Permalink to this headline">¶</a></h1>
+<p>On-premises, also known as self-hosted, is a setup that allows Konfuzio Server to be implemented 100% on your own infrastructure or any cloud of your choice. In practice, it means that you know where your data is stored, how it’s handled and who gets hold of it.</p>
 <p>A common way to operate a production-ready and scalabe Konfuzio installation is via Kubernetens. An alternative deployment option is the <a class="reference external" href="/web/on_premises.html#alternative-deployment-options">Single VM setup via Docker</a>. We recommend to use the option which is more familiar to you. In general</p>
 <p>On-Premise Konfuzio installations allow to create Superuser accounts which can access all <a class="reference external" href="https://help.konfuzio.com/modules/administration/superuserdocuments/index.html">Documents</a>, <a class="reference external" href="https://help.konfuzio.com/modules/administration/superuserprojects/index.html">Projects</a> and <a class="reference external" href="https://help.konfuzio.com/modules/administration/superuserais/index.html">AIs</a> via a dedicated view as well as creating custom <a class="reference external" href="https://help.konfuzio.com/modules/administration/superuserroles/index.html">Roles</a></p>
+<p>Konfuzio Server has beens successfully installed on various clouds.</p>
+<p>Here you find a few examples:</p>
+<ul class="simple">
+<li><p>Amazon Web Services (AWS)</p></li>
+<li><p>Microsoft Azure</p></li>
+<li><p>Google Cloud Platform (GCP)</p></li>
+<li><p>IBM Cloud</p></li>
+<li><p>Oracle Cloud Infrastructure (OCI)</p></li>
+<li><p>Alibaba Cloud</p></li>
+<li><p>VMware Cloud</p></li>
+<li><p>DigitalOcean</p></li>
+<li><p>Rackspace</p></li>
+<li><p>Salesforce Cloud</p></li>
+<li><p>OVH Cloud</p></li>
+<li><p>Hetzner</p></li>
+<li><p>Telekom Cloud</p></li>
+</ul>
 <section id="billing-and-license">
 <h2>Billing and License<a class="headerlink" href="#billing-and-license" title="Permalink to this headline">¶</a></h2>
 <p>A Konfuzio Server self-hosted license can be purchased <a class="reference external" href="https://konfuzio.com/en/price/">online</a>. After your order has been placed, we will provide you with credentials to <a class="reference external" href="https://dev.konfuzio.com/web/on_premises.html#download-docker-image">download the Konfuzio Docker Images</a> and a BILLING_API_KEY which needs to be set as <a class="reference external" href="/web/on_premises.html#environment-variables-for-konfuzio-server">environment variable</a>. The Konfuzio Container reports the usage once a day to our billing server (i.e. <a class="reference external" href="https://app.konfuzio.com">https://app.konfuzio.com</a>). Konfuzio containers don’t send customer data, such as the image or text that’s being analyzed, to the billing server.</p>
@@ -430,20 +442,21 @@ step. Without a backup, Konfuzio data might be lost if the upgrade fails.
 </ol>
 </section>
 </section>
-<section id="docker">
-<h2>Docker<a class="headerlink" href="#docker" title="Permalink to this headline">¶</a></h2>
-<section id="single-vm-setup">
-<h3>Single VM setup<a class="headerlink" href="#single-vm-setup" title="Permalink to this headline">¶</a></h3>
+<section id="docker-single-vm-setup">
+<h2>Docker - Single VM setup<a class="headerlink" href="#docker-single-vm-setup" title="Permalink to this headline">¶</a></h2>
 <p>Konfuzio can be configured to run on a single virtual machine, without relying on
 Kubernetes. In this scenario, all necessary containers are started manually or with a
 container orchestration tool of your choice.</p>
+<section id="requirements">
+<h3>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h3>
 <p>We recommend a virtual machine with a minimum of 8 vCPU (incl. AVX2 support) and
 32 GB of RAM and an installed Docker runtime. A Nvidia GPU is recommended but not
 required. In this setup Konfuzio is running in the context of the Docker executor,
 therefore there are no strict requirements for the VMs operating systems. However, we
 recommend a Linux VM with Debian, Ubuntu, CentOS,or Redhat Linux.</p>
+</section>
 <section id="download-docker-image">
-<h4>1. Download Docker Image<a class="headerlink" href="#download-docker-image" title="Permalink to this headline">¶</a></h4>
+<h3>1. Download Docker Image<a class="headerlink" href="#download-docker-image" title="Permalink to this headline">¶</a></h3>
 <p>The Konfuzio docker image can be downloaded via “docker pull”. We will provide you
 with the credentials. This action requires an internet connection.</p>
 <p>The internet connection can be turned off once the download is complete. In case there is
@@ -459,16 +472,16 @@ Password: {PROVIDED_BY_KONFUZIO}</p>
 <p>The Tag “latest” should be replaced with an actual version. A list of available tags can be found here: <a class="reference external" href="https://dev.konfuzio.com/web/changelog_app.html">https://dev.konfuzio.com/web/changelog_app.html</a>.</p>
 </section>
 <section id="setup-postgresql-redis-blobstorage-filesystemstorage">
-<h4>2. Setup PostgreSQL, Redis, BlobStorage/FileSystemStorage<a class="headerlink" href="#setup-postgresql-redis-blobstorage-filesystemstorage" title="Permalink to this headline">¶</a></h4>
+<h3>2. Setup PostgreSQL, Redis, BlobStorage/FileSystemStorage<a class="headerlink" href="#setup-postgresql-redis-blobstorage-filesystemstorage" title="Permalink to this headline">¶</a></h3>
 <p>The database credentials are needed in this step. Please ensure your selected <a class="reference external" href="/web/on_premises.html#database-and-storage">databases</a> are setup at this point. You may want to use psql and redis-cli to check if database credentials are working.</p>
 <p>In case you use FileSystemStorage and Docker volume mounts, you need to make sure the volume can be accessed by the konfuzio docker user (uid=999). You might want to run “chown 999:999 -R /konfuzio-vm/text-annotation/data” on the host VM.</p>
 </section>
 <section id="setup-environment-variable-file">
-<h4>3. Setup environment variable file<a class="headerlink" href="#setup-environment-variable-file" title="Permalink to this headline">¶</a></h4>
+<h3>3. Setup environment variable file<a class="headerlink" href="#setup-environment-variable-file" title="Permalink to this headline">¶</a></h3>
 <p>Copy the /code/.env.example file from the container and adapt it to your settings. The .env file can be saved anywhere on the host VM. In this example we use “/konfuzio-vm/text-annotation.env”.</p>
 </section>
 <section id="init-the-database-create-first-superuser-via-cli-and-prefill-e-mail-templates">
-<h4>4. Init the database, create first superuser via cli and prefill e-mail templates<a class="headerlink" href="#init-the-database-create-first-superuser-via-cli-and-prefill-e-mail-templates" title="Permalink to this headline">¶</a></h4>
+<h3>4. Init the database, create first superuser via cli and prefill e-mail templates<a class="headerlink" href="#init-the-database-create-first-superuser-via-cli-and-prefill-e-mail-templates" title="Permalink to this headline">¶</a></h3>
 <p>In this example we store the files on the host VM and mount the directory “/konfuzio-vm/text-annotation/data” into the container. In the first step we create a container with a shell to then start the initialization scripts within the container.
 The container needs to be able to access IP addresses and hostnames used in the .env. This can be ensured using –add.host. In the example we make the host IP 10.0.0.1 available.</p>
 <p>docker run -it –add-host=10.0.0.1 –env-file /konfuzio-vm/text-annotation.env –mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data REGISTRY_URL/konfuzio/text-annotation/master:latest bash</p>
@@ -485,7 +498,7 @@ The container needs to be able to access IP addresses and hostnames used in the 
 </div>
 </section>
 <section id="start-the-container">
-<h4>5. Start the container<a class="headerlink" href="#start-the-container" title="Permalink to this headline">¶</a></h4>
+<h3>5. Start the container<a class="headerlink" href="#start-the-container" title="Permalink to this headline">¶</a></h3>
 <p>In this example we start four containers. The first one to serve the Konfuzio web application.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">p</span> <span class="mi">80</span><span class="p">:</span><span class="mi">8000</span> <span class="o">--</span><span class="n">name</span> <span class="n">web</span> <span class="o">-</span><span class="n">d</span> <span class="o">--</span><span class="n">add</span><span class="o">-</span><span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">:</span><span class="mf">10.0.0.1</span> \
   <span class="o">--</span><span class="n">env</span><span class="o">-</span><span class="n">file</span> <span class="o">/</span><span class="n">konfuzio</span><span class="o">-</span><span class="n">vm</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">.</span><span class="n">env</span> \
@@ -521,7 +534,7 @@ The container needs to be able to access IP addresses and hostnames used in the 
 </div>
 </section>
 <section id="optional-6-use-flower-to-monitor-tasks">
-<h4>[Optional] 6. Use Flower to monitor tasks<a class="headerlink" href="#optional-6-use-flower-to-monitor-tasks" title="Permalink to this headline">¶</a></h4>
+<h3>[Optional] 6. Use Flower to monitor tasks<a class="headerlink" href="#optional-6-use-flower-to-monitor-tasks" title="Permalink to this headline">¶</a></h3>
 <p><a class="reference external" href="https://flower.readthedocs.io/en/latest/screenshots.html">Flower</a> can be used a task monitoring tool. Flower will be only accessible for Konfuzio superusers and is part of the Konfuzio Server Docker Image.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">run</span> <span class="o">--</span><span class="n">name</span> <span class="n">flower</span> <span class="o">-</span><span class="n">d</span> <span class="o">--</span><span class="n">add</span><span class="o">-</span><span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">:</span><span class="mf">10.0.0.1</span>
   <span class="o">--</span><span class="n">env</span><span class="o">-</span><span class="n">file</span> <span class="o">/</span><span class="n">konfuzio</span><span class="o">-</span><span class="n">vm</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">.</span><span class="n">env</span>
@@ -530,7 +543,8 @@ The container needs to be able to access IP addresses and hostnames used in the 
   <span class="n">celery</span> <span class="o">-</span><span class="n">A</span> <span class="n">app</span> <span class="n">flower</span> <span class="o">--</span><span class="n">url_prefix</span><span class="o">=</span><span class="n">flower</span> <span class="o">--</span><span class="n">address</span><span class="o">=</span><span class="mf">0.0.0.0</span> <span class="o">--</span><span class="n">port</span><span class="o">=</span><span class="mi">5555</span>
 </pre></div>
 </div>
-<p>The Konfuzio Server application acts as a reverse proxy an servers the flower application. Therefore, django needs to know the flower url. <code class="docutils literal notranslate"><span class="pre">FLOWER_URL=http://host:5555/flower</span></code>.</p>
+<p>The Konfuzio Server application functions as a reverse proxy and serves the Flower application. In order for Django to correctly access the Flower application, it requires knowledge of the Flower URL. Specifically, the FLOWER_URL should be set to <a class="reference external" href="http://host:5555/flower">http://host:5555/flower</a>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">FLOWER_URL=http://host:5555/flower</span></code></p>
 <div class="mermaid">
             graph LR
 subgraph Network
@@ -543,7 +557,7 @@ end
         </div><p>Please ensure that the Flower container is not exposed externally, as it does not handle authentication and authorization itself.</p>
 </section>
 <section id="optional-7-run-container-for-email-integration">
-<h4>[Optional] 7. Run Container for Email Integration<a class="headerlink" href="#optional-7-run-container-for-email-integration" title="Permalink to this headline">¶</a></h4>
+<h3>[Optional] 7. Run Container for Email Integration<a class="headerlink" href="#optional-7-run-container-for-email-integration" title="Permalink to this headline">¶</a></h3>
 <p>The ability to <a class="reference external" href="https://help.konfuzio.com/integrations/upload-by-email/index.html">upload documents via email</a> can be achieved by starting a dedicated container with the respective environment variables.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">SCAN_EMAIL_HOST</span> <span class="o">=</span> <span class="n">imap</span><span class="o">.</span><span class="n">example</span><span class="o">.</span><span class="n">com</span>
 <span class="n">SCAN_EMAIL_HOST_USER</span> <span class="o">=</span> <span class="n">user</span><span class="nd">@example</span><span class="o">.</span><span class="n">com</span>
@@ -560,7 +574,7 @@ end
 </div>
 </section>
 <section id="optional-8-use-azure-read-api-on-premises-or-as-service">
-<h4>[Optional] 8. Use Azure Read API (On-Premises or as Service)<a class="headerlink" href="#optional-8-use-azure-read-api-on-premises-or-as-service" title="Permalink to this headline">¶</a></h4>
+<h3>[Optional] 8. Use Azure Read API (On-Premises or as Service)<a class="headerlink" href="#optional-8-use-azure-read-api-on-premises-or-as-service" title="Permalink to this headline">¶</a></h3>
 <p>The Konfuzio Server can work together with the [Azure Read API]. There are two options to use the Azure Read API in an on-premises setup.</p>
 <ol class="arabic simple">
 <li><p>Use the Azure Read API as a service from the public Azure cloud.</p></li>
@@ -579,7 +593,7 @@ Please install the Read API Container according to the current <a class="referen
 Please open a support ticket to get an AZURE_OCR_KEY and AZURE_OCR_BASE_URL which is compatible with the container.</p>
 </section>
 <section id="optional-9-install-document-segmentation-container">
-<h4>[Optional] 9. Install document segmentation container<a class="headerlink" href="#optional-9-install-document-segmentation-container" title="Permalink to this headline">¶</a></h4>
+<h3>[Optional] 9. Install document segmentation container<a class="headerlink" href="#optional-9-install-document-segmentation-container" title="Permalink to this headline">¶</a></h3>
 <p>Download the container with the credentials provided by Konfuzio</p>
 <p>Registry URL: {PROVIDED_BY_KONFUZIO}<span class="raw-html-m2r"><br></span>
 Username: {PROVIDED_BY_KONFUZIO}<span class="raw-html-m2r"><br></span>
@@ -598,7 +612,7 @@ Password: {PROVIDED_BY_KONFUZIO}</p>
 </div>
 </section>
 <section id="optional-10-install-document-summarization-container">
-<h4>[Optional] 10. Install document summarization container<a class="headerlink" href="#optional-10-install-document-summarization-container" title="Permalink to this headline">¶</a></h4>
+<h3>[Optional] 10. Install document summarization container<a class="headerlink" href="#optional-10-install-document-summarization-container" title="Permalink to this headline">¶</a></h3>
 <p>Download the container with the credentials provided by Konfuzio</p>
 <p>Registry URL: {PROVIDED_BY_KONFUZIO}<span class="raw-html-m2r"><br></span>
 Username: {PROVIDED_BY_KONFUZIO}<span class="raw-html-m2r"><br></span>
@@ -618,13 +632,13 @@ docker run --env-file /path_to_env_file.env REGISTRY_URL/konfuzio/detectron2:202
 </div>
 </section>
 <section id="a-upgrade-to-newer-konfuzio-version">
-<h4>11a. Upgrade to newer Konfuzio Version<a class="headerlink" href="#a-upgrade-to-newer-konfuzio-version" title="Permalink to this headline">¶</a></h4>
+<h3>11a. Upgrade to newer Konfuzio Version<a class="headerlink" href="#a-upgrade-to-newer-konfuzio-version" title="Permalink to this headline">¶</a></h3>
 <p>Konfuzio upgrades are performed by replacing the Docker Tag to the <a class="reference external" href="https://dev.konfuzio.com/web/changelog_app.html">desired version</a>
 After starting the new Containers Database migrations need to be applied by <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">migrate</span></code> (see 4.).
 In case additional migration steps are needed, they will be mentioned in the release notes.</p>
 </section>
 <section id="b-downgrade-to-older-konfuzio-version">
-<h4>11b. Downgrade to older Konfuzio Version<a class="headerlink" href="#b-downgrade-to-older-konfuzio-version" title="Permalink to this headline">¶</a></h4>
+<h3>11b. Downgrade to older Konfuzio Version<a class="headerlink" href="#b-downgrade-to-older-konfuzio-version" title="Permalink to this headline">¶</a></h3>
 <p>Konfuzio downgrades are performed by creating a fresh Konfuzio installation in which existing Projects can be imported.
 The following steps need to be undertaken:</p>
 <ul class="simple">
@@ -635,16 +649,23 @@ The following steps need to be undertaken:</p>
 </ul>
 </section>
 </section>
-</section>
-<section id="alternative-deployment-options">
-<h2>Alternative deployment options<a class="headerlink" href="#alternative-deployment-options" title="Permalink to this headline">¶</a></h2>
 <section id="custom-ai-model-training-via-ci-pipelines">
-<h3>Custom AI model training via CI pipelines<a class="headerlink" href="#custom-ai-model-training-via-ci-pipelines" title="Permalink to this headline">¶</a></h3>
-<p>Konfuzio uses CI pipelines to allow users to run customAI model code securely. In case
-the Kubernetes deployment option is not used, we recommend a dedicated virtual
-machine to run these pipelines. The selected CI application needs to support Docker
-and webhooks. The CI application needs network access to the Konfuzio installation.</p>
-</section>
+<h2>Custom AI model training via CI pipelines<a class="headerlink" href="#custom-ai-model-training-via-ci-pipelines" title="Permalink to this headline">¶</a></h2>
+<p>Konfuzio is a platform that provides users with the ability to run custom AI workflows securely
+through its Continuous Integration (CI) pipelines. These pipelines enable users to run
+their code automatically and continuously, learning from human feedback on any errors or issues as soon as they occur.</p>
+<p>In situations where the Kubernetes deployment option is not utilized, Konfuzio recommends using
+a dedicated virtual machine to run these pipelines. This ensures that the pipelines are isolated
+from other processes and are therefore less susceptible to interference or interruption.</p>
+<p>To effectively run these CI pipelines, the selected CI application must support Docker and webhooks.
+Docker allows for the creation and management of containers, which are used to package and distribute the
+code to be tested. Webhooks, on the other hand, provide a way for the CI application to trigger the
+pipeline automatically.</p>
+<p>Furthermore, the CI application needs to have network access to the Konfuzio installation.
+This is necessary to enable the CI application to interact with the Konfuzio platform, ensuring
+that the CI pipelines are able to access the necessary resources and dependencies.</p>
+<p>Overall, Konfuzio’s use of CI pipelines provides a powerful tool for advanced users to run their AI workflows securely,
+with the added benefit of automated testing and continuous feedback.</p>
 </section>
 <section id="keycloak-integration">
 <h2>Keycloak Integration<a class="headerlink" href="#keycloak-integration" title="Permalink to this headline">¶</a></h2>

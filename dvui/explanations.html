@@ -58,7 +58,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../web/index.html">What is the Konfuzio Server?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../web/explanations.html">Explanations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../web/api-v3.html">REST API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../web/on_premises.html">On-Premises Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/on_premises.html">Installation Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../web/changelog_app.html">Changelog</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Konfuzio Document Validation UI</span></p>
@@ -95,6 +95,15 @@
 <li class="toctree-l4"><a class="reference internal" href="#customise-the-iframe">Customise the iframe</a></li>
 </ul>
 </li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-customize-the-document-validation-ui">How to customize the Document Validation UI?</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#how-to-add-the-custom-variables-to-your-project">How to add the custom variables to your project?</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id3">HTML</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#css-file">CSS file</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#try-it-out-before-adding-to-your-project">Try it out before adding to your project</a></li>
 </ul>
 </li>
 </ul>
@@ -375,6 +384,49 @@ module.exports = {
 <p>This creates on your page an iframe with 100% width (full width of its container) and a height of 600 pixels that doesn’t have a border. You can customise the iframe‘s size and other options by changing these and other attributes (see <a class="reference external" href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe">iframe documentation</a>).</p>
 <a class="reference external image-reference" href="./images/public_dvui.png"><img alt="public_dvui.png" src="../_images/public_dvui.png" /></a>
 </section>
+</section>
+</section>
+<section id="how-to-customize-the-document-validation-ui">
+<h2>How to customize the Document Validation UI?<a class="headerlink" href="#how-to-customize-the-document-validation-ui" title="Permalink to this headline">¶</a></h2>
+<p>With our software, you have the ability to change the primary color of the user interface to match your brand. This allows you to create a seamless experience for your users and reinforce your brand identity.
+To change the primary color, simply add a <code class="docutils literal notranslate"><span class="pre">:root</span></code> pseudo-class to your <code class="docutils literal notranslate"><span class="pre">css</span></code> file or inside a <code class="docutils literal notranslate"><span class="pre">&lt;style&gt;</span></code> tag in your <code class="docutils literal notranslate"><span class="pre">index.html</span></code>, inside which you can set the variable <code class="docutils literal notranslate"><span class="pre">--primary-color</span></code> to your custom hue to match your exact brand color (see an example <a class="reference external" href="#how-to-add-the-custom-variables-to-your-project">here</a>).
+Once you’ve selected your desired color, the user interface will update in real-time to reflect your changes. This means that you can easily experiment with different color options until you find the perfect match for your brand.</p>
+<p>In addition to the primary color, you also have the ability to customize other aspects of the user interface, such as the button border-radius. Whether your brand has sharp angles or soft curves, we allow you to make the perfect adjustments to achieve the look and feel that you want. For this customization, all you have to do is set a second variable <code class="docutils literal notranslate"><span class="pre">--primary-button</span></code> to the desired value.</p>
+<a class="reference external image-reference" href="./images/buttons.png"><img alt="buttons.png" src="../_images/buttons.png" /></a>
+<section id="how-to-add-the-custom-variables-to-your-project">
+<h3>How to add the custom variables to your project?<a class="headerlink" href="#how-to-add-the-custom-variables-to-your-project" title="Permalink to this headline">¶</a></h3>
+<p>Below are two examples on how to set the custom variables, whether in the <code class="docutils literal notranslate"><span class="pre">index.html</span></code> or in a dedicated <code class="docutils literal notranslate"><span class="pre">css</span></code> file.</p>
+<p><em>Please note that the default values from the examples below are based on Konfuzio’s default styles.</em></p>
+<section id="id3">
+<h4>HTML<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">div</span> <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;app&quot;</span><span class="o">&gt;</span>
+   <span class="o">&lt;</span><span class="n">app</span> <span class="n">document</span><span class="o">=</span><span class="s2">&quot;id&quot;</span> <span class="n">locale</span><span class="o">=</span><span class="s2">&quot;de/en/es&quot;</span> <span class="n">user_token</span><span class="o">=</span><span class="s2">&quot;token&quot;</span><span class="o">&gt;&lt;/</span><span class="n">app</span><span class="o">&gt;</span>
+ <span class="o">&lt;/</span><span class="n">div</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">style</span><span class="o">&gt;</span>
+  <span class="p">:</span><span class="n">root</span> <span class="p">{</span>
+    <span class="o">--</span><span class="n">primary</span><span class="o">-</span><span class="n">color</span><span class="p">:</span> <span class="c1">#41AF85;</span>
+    <span class="o">--</span><span class="n">primary</span><span class="o">-</span><span class="n">button</span><span class="p">:</span> <span class="mi">4</span><span class="n">px</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="o">&lt;/</span><span class="n">style</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+</section>
+<section id="css-file">
+<h4>CSS file<a class="headerlink" href="#css-file" title="Permalink to this headline">¶</a></h4>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>:root {
+    --primary-color: #41AF85 !important;
+    --primary-button: 4px !important;
+  }
+</pre></div>
+</div>
+</section>
+</section>
+<section id="try-it-out-before-adding-to-your-project">
+<h3>Try it out before adding to your project<a class="headerlink" href="#try-it-out-before-adding-to-your-project" title="Permalink to this headline">¶</a></h3>
+<p>If you want to test the final result before making changes in your application, you can do so <a class="reference external" href="https://codepen.io/konfuzio/pen/QWVpKVE">here</a>.</p>
+<p>_The example from Codepen shows the Read only mode of the Document Validation UI, which has limited functionalities. To see all the features the UI has to offer, you can add your <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/auth/auth_create">User Token</a> and change the Document id in <a href="#id6"><span class="problematic" id="id7">the_</span></a> <code class="docutils literal notranslate"><span class="pre">app</span></code> <em>tag.</em></p>
+<p>We hope this feature will help you take your branding to the next level and provide an even more engaging experience for your users. If you have any questions or need assistance with customization, please don’t hesitate to contact <a class="reference external" href="https://konfuzio.com/en/support/">support</a>.</p>
 </section>
 </section>
 </section>
