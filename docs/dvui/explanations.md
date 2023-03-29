@@ -167,7 +167,7 @@ The following examples, based on the two configuration options mentioned before,
 
 An alternative to using `npm` is to load JavaScript and CSS bundles from [CDN](https://en.wikipedia.org/wiki/Content_delivery_network).
 
-You can simply add the corresponding links in the `script` and `link` tags in your `html`, as shown in the following example: 
+You can simply add the corresponding links in the `script` and `link` tags in your `html`, as shown in the following example:
 
 ```
 <script defer="defer" src="https://unpkg.com/@konfuzio/document-validation-ui@latest/dist/js/chunk-vendors.js"></script>
@@ -282,3 +282,57 @@ By default, we provide a bare-bones HTML snippet that looks similar to this:
 This creates on your page an iframe with 100% width (full width of its container) and a height of 600 pixels that doesn’t have a border. You can customise the iframe‘s size and other options by changing these and other attributes (see [iframe documentation](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe)).
 
 ![public_dvui.png](./images/public_dvui.png)
+
+## How to customize the Document Validation UI?
+
+With our software, you have the ability to change the primary color of the user interface to match your brand. This allows you to create a seamless experience for your users and reinforce your brand identity.
+To change the primary color, simply add a `:root` pseudo-class to your `css` file or inside a `<style>` tag in your `index.html`, inside which you can set the variable `--primary-color` to your custom hue to match your exact brand color (see an example [here](#how-to-add-the-custom-variables-to-your-project)).
+Once you’ve selected your desired color, the user interface will update in real-time to reflect your changes. This means that you can easily experiment with different color options until you find the perfect match for your brand.
+
+In addition to the primary color, you also have the ability to customize other aspects of the user interface, such as the button border-radius. Whether your brand has sharp angles or soft curves, we allow you to make the perfect adjustments to achieve the look and feel that you want. For this customization, all you have to do is set a second variable `--primary-button` to the desired value.
+
+![buttons.png](./images/buttons.png)
+
+### How to add the custom variables to your project?
+
+Below are two examples on how to set the custom variables, whether in the `index.html` or in a dedicated `css` file.
+
+_Please note that the default values from the examples below are based on Konfuzio's default styles._
+
+#### HTML
+
+```
+<div id="app">
+   <app document="id" locale="de/en/es" user_token="token"></app>
+ </div>
+
+<style>
+  :root {
+    --primary-color: #41AF85;
+    --primary-button: 4px;
+  }
+</style>
+```
+
+#### CSS file
+
+```
+:root {
+    --primary-color: #41AF85 !important;
+    --primary-button: 4px !important;
+  }
+```
+
+### Try it out before adding to your project
+
+If you want to test the final result before making changes in your application, you can do so [here](https://codepen.io/konfuzio/pen/QWVpKVE).
+
+<iframe height="300" style="width: 100%;" scrolling="no" title="Document Validation UI style customization" src="https://codepen.io/konfuzio/embed/QWVpKVE?default-tab=html%2Cresult" frameborder="no" loading="lazy" allowtransparency="true" allowfullscreen="true">
+  See the Pen <a href="https://codepen.io/konfuzio/pen/QWVpKVE">
+  Document Validation UI style customization</a> by Konfuzio (<a href="https://codepen.io/konfuzio">@konfuzio</a>)
+  on <a href="https://codepen.io">CodePen</a>.
+</iframe>
+
+_The example from Codepen shows the Read only mode of the Document Validation UI, which has limited functionalities. To see all the features the UI has to offer, you can add your [User Token](https://app.konfuzio.com/v3/swagger/#/auth/auth_create) and change the Document id in the_ `app` _tag._
+
+We hope this feature will help you take your branding to the next level and provide an even more engaging experience for your users. If you have any questions or need assistance with customization, please don’t hesitate to contact [support](https://konfuzio.com/en/support/).
