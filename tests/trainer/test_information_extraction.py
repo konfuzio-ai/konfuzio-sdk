@@ -19,7 +19,7 @@ import pandas as pd
 from sklearn.datasets import make_classification
 from sklearn.ensemble import RandomForestClassifier
 
-from konfuzio_sdk.data import Project, Document, AnnotationSet, Annotation, Span
+from konfuzio_sdk.data import Project, Document, AnnotationSet, Annotation, Span, LabelSet
 from konfuzio_sdk.trainer.information_extraction import (
     num_count,
     date_count,
@@ -34,7 +34,6 @@ from konfuzio_sdk.trainer.information_extraction import (
     strip_accents,
     count_string_differences,
     year_month_day_count,
-    # add_extractions_as_annotations,
     load_model,
     RFExtractionAI,
     Trainer,
@@ -364,7 +363,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         assert 5e4 < memory_size_of(evaluation.data) < 2e5
 
     def test_10_label_set_clf_quality(self):
-        """Evaluate the LabelSet classifier quality."""
+        """Evaluate the Label Set classifier quality."""
         evaluation = self.pipeline.evaluate_label_set_clf()
 
         assert evaluation.f1(None) == 0.9552238805970149
@@ -1201,6 +1200,176 @@ class TestAddExtractionAsAnnotation(unittest.TestCase):
             annotation_set=annotation_set_1,
         )
         assert document.annotations(use_correct=False) == []
+
+    def test_add_extraction_none_label_set(self):
+        """Test adding an extraction with None Label Set."""
+        document = deepcopy(self.sample_document)
+        annotation_set = AnnotationSet(id_=106, document=document, label_set=self.label_set)
+
+        with pytest.raises(ValueError, match='has no Label Set, which cannot be added'):
+            RFExtractionAI().add_extractions_as_annotations(
+                extractions=self.extraction_df,
+                document=document,
+                label=self.label,
+                label_set=None,
+                annotation_set=annotation_set,
+            )
+
+    def test_add_extraction_invalid_label_set(self):
+        """Test adding an extraction with invalid Label Set."""
+        document = deepcopy(self.sample_document)
+        annotation_set = AnnotationSet(id_=107, document=document, label_set=self.label_set)
+
+        label_set = LabelSet(id_=52, project=self.project, name="TestLabelSet", categories=[])
+
+        with pytest.raises(ValueError, match='uses Label Set without Category, cannot be added'):
+            RFExtractionAI().add_extractions_as_annotations(
+                extractions=self.extraction_df,
+                document=document,
+                label=self.label,
+                label_set=label_set,
+                annotation_set=annotation_set,
+            )
+
+    def test_add_extraction_invalid_label_set_2(self):
+        """Test adding an extraction with invalid Label Set from different Category."""
+        document = deepcopy(self.sample_document)
+        annotation_set = AnnotationSet(id_=108, document=document, label_set=self.label_set)
+
+        label_set = self.project.get_label_set_by_id(2)
+
+        with pytest.raises(ValueError, match='We cannot add .* related to'):
+            RFExtractionAI().add_extractions_as_annotations(
+                extractions=self.extraction_df,
+                document=document,
+                label=self.label,
+                label_set=label_set,
+                annotation_set=annotation_set,
+            )
+
+    def test_add_extraction_no_category_document(self):
+        """Test adding an extraction to a no Category Document."""
+        document = deepcopy(self.sample_document)
+        document.set_category(self.project.no_category)
+        annotation_set = AnnotationSet(id_=108, document=document, label_set=self.label_set)
+
+        with pytest.raises(ValueError, match='We cannot add .* where the Сategory is'):
+            RFExtractionAI().add_extractions_as_annotations(
+                extractions=self.extraction_df,
+                document=document,
+                label=self.label,
+                label_set=self.label_set,
+                annotation_set=annotation_set,
+            )
+
+    def test_add_same_offset_extractions_to_document(self):
+        """Test extractions Document."""
+        document = deepcopy(self.sample_document)
+        annotation_set_1 = AnnotationSet(id_=101, document=document, label_set=self.label_set)
+
+        extraction_df = pd.DataFrame(
+            data=[
+                {
+                    'start_offset': 15,
+                    'end_offset': 20,
+                    'confidence': 0.1,
+                    'page_index': 0,
+                    'x0': 10,
+                    'x1': 20,
+                    'y0': 10,
+                    'y1': 20,
+                    'top': 200,
+                    'bottom': 210,
+                },
+                {
+                    'start_offset': 15,
+                    'end_offset': 20,
+                    'confidence': 0.4,
+                    'page_index': 0,
+                    'x0': 10,
+                    'x1': 20,
+                    'y0': 10,
+                    'y1': 20,
+                    'top': 200,
+                    'bottom': 210,
+                },
+            ]
+        )
+
+        RFExtractionAI().add_extractions_as_annotations(
+            extractions=extraction_df,
+            document=document,
+            label=self.label,
+            label_set=self.label_set,
+            annotation_set=annotation_set_1,
+        )
+
+        assert len(document.annotations(use_correct=False)) == 1
+        assert document.annotations(use_correct=False)[0].confidence == 0.4
+
+    def test_add_same_offset_different_labels_extractions_to_document(self):
+        """Test extractions same offset different Labels Document."""
+        document = deepcopy(self.sample_document)
+        label_set_1 = self.label_set
+        label_set_2 = self.project.get_label_set_by_id(1)
+
+        label_1 = self.label
+        label_2 = self.project.get_label_by_id(5)
+
+        annotation_set_1 = AnnotationSet(id_=103, document=document, label_set=label_set_1)
+        annotation_set_2 = AnnotationSet(id_=104, document=document, label_set=label_set_2)
+
+        extraction_df_label_1 = pd.DataFrame(
+            data=[
+                {
+                    'start_offset': 15,
+                    'end_offset': 20,
+                    'confidence': 0.1,
+                    'page_index': 0,
+                    'x0': 10,
+                    'x1': 20,
+                    'y0': 10,
+                    'y1': 20,
+                    'top': 200,
+                    'bottom': 210,
+                },
+            ]
+        )
+        extraction_df_label_2 = pd.DataFrame(
+            data=[
+                {
+                    'start_offset': 15,
+                    'end_offset': 20,
+                    'confidence': 0.4,
+                    'page_index': 0,
+                    'x0': 10,
+                    'x1': 20,
+                    'y0': 10,
+                    'y1': 20,
+                    'top': 200,
+                    'bottom': 210,
+                },
+            ]
+        )
+
+        RFExtractionAI().add_extractions_as_annotations(
+            extractions=extraction_df_label_1,
+            document=document,
+            label=label_1,
+            label_set=label_set_1,
+            annotation_set=annotation_set_1,
+        )
+
+        RFExtractionAI().add_extractions_as_annotations(
+            extractions=extraction_df_label_2,
+            document=document,
+            label=label_2,
+            label_set=label_set_2,
+            annotation_set=annotation_set_2,
+        )
+
+        assert len(document.annotations(use_correct=False)) == 2  # overlapping but different Labels
+        assert document.view_annotations()[0].label == label_2
 
     def test_add_empty_extraction_to_document(self):
         """Test add empty extraction to a document."""

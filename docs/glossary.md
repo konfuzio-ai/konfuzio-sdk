@@ -9,6 +9,8 @@ We use several concepts in the Konfuzio Platform. We are capitalize concepts in 
 - Bbox Validation Rules
 - Annotation
 - Annotation Set
+- Categorization AI
+- Categorization Model
 - Category
 - Category Annotation
 - Document
