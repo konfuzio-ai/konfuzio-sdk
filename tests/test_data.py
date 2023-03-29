@@ -454,7 +454,7 @@ class TestOfflineExampleData(unittest.TestCase):
     def test_find_outlier_annotations_by_regex(self):
         """Test finding the possibly incorrect Annotations of a Label."""
         label = self.project.get_label_by_name('Bank inkl. IBAN')
-        outliers = label.get_probable_outliers_by_regex(self.project.categories)
+        outliers = label.get_probable_outliers_by_regex(self.project.categories, top_worst_percentage=1.0)
         outlier_spans = [span.offset_string for annotation in outliers for span in annotation.spans]
         assert len(outliers) == 16
         assert 'Deutsche Bank PGK  Nürnbe' in outlier_spans
@@ -498,7 +498,9 @@ class TestOfflineExampleData(unittest.TestCase):
     def test_find_outlier_annotations(self):
         """Test finding the Annotations that are deemed outliers by several methods of search."""
         label = self.project.get_label_by_name('Austellungsdatum')
-        outliers = label.get_probable_outliers(self.project.categories, confidence_search=False)
+        outliers = label.get_probable_outliers(
+            self.project.categories, regex_worst_percentage=1.0, confidence_search=False
+        )
         outlier_spans = [span.offset_string for annotation in outliers for span in annotation.spans]
         assert len(outliers) == 1
         assert '328927/10103' in outlier_spans
