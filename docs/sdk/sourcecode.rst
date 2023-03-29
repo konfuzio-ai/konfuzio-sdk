@@ -275,7 +275,7 @@ AI Evaluation
 
 Extraction AI Evaluation
 ---------------------
-.. autoclass:: konfuzio_sdk.evaluate.Evaluation
+.. autoclass:: konfuzio_sdk.evaluate.ExtractionEvaluation
    :members:
    :noindex:
 
