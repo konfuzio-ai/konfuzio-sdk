@@ -30,7 +30,7 @@ image_factor = image.copy()
 image = image.resize((int(image.size[0] * factor_x), int(image.size[1] * factor_y)))
 height = image.size[1]
 
-image_characters_bbox = [char_bbox for _, char_bbox in doc_bbox.items() if char_bbox["page_number"] - 1 == page_index]
+image_characters_bbox = [char_bbox for _, char_bbox in page.get_bbox().items()]
 assert len(image_characters_bbox) == 2249
 
 for bbox in image_characters_bbox:
