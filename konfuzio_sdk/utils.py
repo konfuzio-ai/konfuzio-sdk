@@ -494,9 +494,7 @@ def detectron_get_paragraph_bbox_and_label_name(
     return paragraph_document_bboxes
 
 
-def detectron_get_paragraph_bboxes(
-    detectron_document_results: List[List[Dict]], document
-) -> List[List['Bbox']]:
+def detectron_get_paragraph_bboxes(detectron_document_results: List[List[Dict]], document) -> List[List['Bbox']]:
     """Call detectron Bbox corresponding to each paragraph."""
     from konfuzio_sdk.data import Bbox
 
@@ -522,6 +520,7 @@ def detectron_get_paragraph_bboxes(
     assert len(document.pages()) == len(paragraph_document_bboxes)
 
     return paragraph_document_bboxes
+
 
 def select_bboxes(selection_bbox: dict, page_bboxes: list, tolerance: int = 10) -> list:
     """
@@ -901,9 +900,9 @@ def get_sdk_version():
     """Get a version of current Konfuzio SDK used."""
     return pkg_resources.get_distribution("konfuzio-sdk").version
 
-def get_spans_from_bbox(selection_bbox: Bbox) -> List['Span']:
-    """
-    """
+
+def get_spans_from_bbox(selection_bbox: 'Bbox') -> List['Span']:
+    """ """
     spans = []
 
     # sort selected bboxes by y first, then x

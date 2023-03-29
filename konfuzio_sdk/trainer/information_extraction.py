@@ -1994,12 +1994,12 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         self.tokenizer.found_spans(virtual_doc)
 
-        if type(self.tokenizer) not in {ParagraphTokenizer, SentenceTokenizer}:
+        if sdk_isinstance(self.tokenizer, ParagraphTokenizer) or sdk_isinstance(self.tokenizer, SentenceTokenizer):
+            # When using the Paragraph or Sentence tokenizer, we restore the multi-line Annotations they created.
+            virtual_doc = self.merge_vertical_like(virtual_doc, inference_document)
+        else:
             # join document Spans into multi-line Annotation
             virtual_doc = self.merge_vertical(virtual_doc)
-        else:
-            # When using the Paragraph or Sentence tokenizer, we restore the multi-line Annotations they created.
-            virtual_doc.merge_vertical_like(inference_document)
 
         return virtual_doc
 
@@ -2068,6 +2068,49 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
                             buffer.remove(candidate)
                     buffer.append(span)
         return document
+
+    def merge_vertical_like(self, document: Document, template_document: Document):
+        """
+        Merge Annotations the same way as in another copy of the same Document.
+
+        All single-Span Annotations in the current Document (self) are matched with corresponding multi-line
+        Spans in the given Document and are merged in the same way.
+        The Label of the new multi-line Annotations is taken to be the most common Label among the original
+        single-line Annotations that are being merged.
+
+        :param document: Document with multi-line Annotations
+        """
+        logger.info(f"Vertical merging Annotations like {template_document}.")
+        assert (
+            document.text == template_document.text
+        ), f"{self} and {template_document} need to have the same ocr text."
+        span_to_annotation = {
+            (span.start_offset, span.end_offset): hash(span.annotation)
+            for span in template_document.spans(use_correct=False)
+        }
+        ann_to_anns = collections.defaultdict(list)
+        for annotation in document.annotations(use_correct=False):
+            assert (
+                len(annotation.spans) == 1
+            ), f"Cannot use merge_verical_like in {document} with multi-span {annotation}."
+            span_offset_key = (annotation.spans[0].start_offset, annotation.spans[0].end_offset)
+            if span_offset_key in span_to_annotation:
+                ann_to_anns[span_to_annotation[span_offset_key]].append(annotation)
+        for _, self_annotations in ann_to_anns.items():
+            if len(self_annotations) == 1:
+                continue
+            else:
+                self_annotations = sorted(self_annotations)
+                keep_annotation = self_annotations[0]
+                annotation_labels = [keep_annotation.label]
+                for to_merge_annotation in self_annotations[1:]:
+                    annotation_labels.append(to_merge_annotation.label)
+                    span = to_merge_annotation.spans[0]
+                    to_merge_annotation.delete(delete_online=False)
+                    span.annotation = None
+                    keep_annotation.add_span(span)
+                most_common_label = collections.Counter(annotation_labels).most_common(1)[0][0]
+                keep_annotation.label = most_common_label
 
     def separate_labels(self, res_dict: 'Dict') -> 'Dict':
         """

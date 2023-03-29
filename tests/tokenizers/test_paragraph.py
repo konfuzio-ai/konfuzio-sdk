@@ -6,6 +6,7 @@ from copy import deepcopy
 from konfuzio_sdk.data import Project, Span, Annotation
 
 from konfuzio_sdk.tokenizer.paragraph_and_sentence import ParagraphTokenizer
+from konfuzio_sdk.trainer.information_extraction import RFExtractionAI
 
 
 logger = logging.getLogger(__name__)
@@ -152,7 +153,7 @@ class TestLineDistanceParagraphTokenizer(unittest.TestCase):
         assert len(pages[2].annotations(use_correct=False)) == len(virtual_doc_pages[2].spans(use_correct=False))
         assert len(pages[2].annotations(use_correct=False)) == 35
 
-        new_virtual_document.merge_vertical_like(virtual_doc)
+        RFExtractionAI().merge_vertical_like(document=new_virtual_document, template_document=virtual_doc)
 
         assert len(pages[0].annotations(use_correct=False)) == len(virtual_doc_pages[0].annotations(use_correct=False))
         assert len(pages[0].annotations(use_correct=False)) == 8
