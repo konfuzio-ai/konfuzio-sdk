@@ -646,7 +646,20 @@ create your Annotations programmatically.</p>
 existing Annotation Set, or to create a new one. You can refer to the following diagram to decide whether to use
 <cite>annotation_set</cite> or <cite>label_set</cite> in your request.</p>
 </div>
-</section>
+<div class="mermaid">
+            graph TD
+  A[Creating an Annotation in a Document&lt;br&gt;for Label &lt;code&gt;L&lt;/code&gt; and Label Set &lt;code&gt;A&lt;/code&gt;]
+  A --&gt; B[Can the Label Set &lt;code&gt;A&lt;/code&gt; have multiple Annotation Sets?]
+  B --&gt; z[Yes] --&gt; C[Is this Annotation&lt;br&gt;for a new Annotation Set&lt;br&gt;or an existing one &lt;code&gt;B&lt;/code&gt;?]
+  C --&gt; x[New one] --&gt; E[&quot;&lt;code&gt;label=L, label_set=A&lt;/code&gt;&lt;br&gt;(will create a new Annotation Set &lt;code&gt;C&lt;/code&gt;)&quot;]
+  C --&gt; y[Existing] --&gt; D[&lt;code&gt;label=L, annotation_set=B&lt;/code&gt;]
+  B --&gt; f[No] --&gt; F[Does the Label Set &lt;code&gt;A&lt;/code&gt;&lt;br&gt; already have a single&lt;br&gt;corresponding Annotation Set &lt;code&gt;B&lt;/code&gt;?]
+  F --&gt; G[Yes]
+  G --&gt; D
+  G --&gt; I[&quot;&lt;code&gt;label=L, label_set=A&lt;/code&gt;&lt;br&gt;(will reuse the existing Annotation Set &lt;code&gt;B&lt;/code&gt;)&quot;]
+  F --&gt; H[No]
+  H --&gt; E
+        </div></section>
 <section id="create-training-data-and-train-the-ai">
 <h3><a class="toc-backref" href="#id32">Create training data and train the AI</a><a class="headerlink" href="#create-training-data-and-train-the-ai" title="Permalink to this headline">¶</a></h3>
 <p>Once you have uploaded enough Documents and created enough Annotations, you can start training an
