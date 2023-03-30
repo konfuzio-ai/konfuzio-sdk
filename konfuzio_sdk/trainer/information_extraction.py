@@ -1753,7 +1753,7 @@ class GroupAnnotationSets:
 class RFExtractionAI(Trainer, GroupAnnotationSets):
     """Encode visual and textual features to extract text regions.
 
-    Fit a extraction pipeline to extract linked Annotations.
+    Fit an extraction pipeline to extract linked Annotations.
 
     Both Label and Label Set classifiers are using a RandomForestClassifier from scikit-learn to run in a low memory and
     single CPU environment. A random forest classifier is a group of decision trees classifiers, see:
