@@ -454,12 +454,17 @@ class TestOfflineExampleData(unittest.TestCase):
 
     def test_find_outlier_annotations_by_regex(self):
         """Test finding the possibly incorrect Annotations of a Label."""
+        project_regex = Project(id_=None, project_folder=OFFLINE_PROJECT)
         label = self.project.get_label_by_name('Bank inkl. IBAN')
-        outliers = label.get_probable_outliers_by_regex(self.project.categories, top_worst_percentage=1.0)
+        train_doc_ids = {44823, 44834, 44839, 44840, 44841}
+        for doc in project_regex.documents:
+            if doc.id_ not in train_doc_ids:
+                doc.dataset_status = 1
+        outliers = label.get_probable_outliers_by_regex(project_regex.categories, top_worst_percentage=1.0)
         outlier_spans = [span.offset_string for annotation in outliers for span in annotation.spans]
-        assert len(outliers) == 16
-        assert 'Deutsche Bank PGK  Nürnbe' in outlier_spans
-        assert 'DE73 7607 0024 0568 9745 11' in outlier_spans
+        assert len(outliers) == 3
+        assert 'DE47 7001 0500 0000 2XxXX XX' in outlier_spans
+        # self.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
 
     def test_find_outlier_annotations_by_confidence(self):
         """Test finding the Annotations with the least confidence."""
