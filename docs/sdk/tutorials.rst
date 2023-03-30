@@ -17,6 +17,8 @@ Tutorials
 
 .. mdinclude:: examples/document_categorization/index.md
 
+.. mdinclude:: examples/outlier-annotations/index.md
+
 Train a Konfuzio SDK Model to Extract Information From Payslip Documents
 -----------------------------------------------------------
 
