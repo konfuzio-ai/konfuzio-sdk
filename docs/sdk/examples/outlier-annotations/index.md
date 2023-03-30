@@ -13,7 +13,7 @@ performs on the level of 10% in comparison to the best one.
      :lines: 2,10-11,19,13
 
 - `get_probable_outliers_by_confidence` looks for the Annotations with the least confidence level, provided it is lower
-than 0.5. Accepts an instance of EvaluationExtraction class as an input and uses confidence predictions from there.
+than the specified threshold (the default threshold is 0.5). Accepts an instance of EvaluationExtraction class as an input and uses confidence predictions from there.
    
   .. literalinclude:: /sdk/boilerplates/test_outlier_annotations.py
      :language: python
