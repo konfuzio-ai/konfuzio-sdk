@@ -3,13 +3,31 @@
 
 .. _Server Installation:
 
-# On-Premises Guide
+# Installation Guide
 
-On-premises, also known as self-hosted, is a setup that allows Konfuzio to be implemented 100% on your own infrastructure. In practice, it means that you know where your data is stored, how it's handled and who gets hold of it. This is because you keep the data on your own servers.
+On-premises, also known as self-hosted, is a setup that allows Konfuzio Server to be implemented 100% on your own infrastructure or any cloud of your choice. In practice, it means that you know where your data is stored, how it's handled and who gets hold of it.
 
 A common way to operate a production-ready and scalabe Konfuzio installation is via Kubernetens. An alternative deployment option is the [Single VM setup via Docker](/web/on_premises.html#alternative-deployment-options). We recommend to use the option which is more familiar to you. In general
 
 On-Premise Konfuzio installations allow to create Superuser accounts which can access all [Documents](https://help.konfuzio.com/modules/administration/superuserdocuments/index.html), [Projects](https://help.konfuzio.com/modules/administration/superuserprojects/index.html) and [AIs](https://help.konfuzio.com/modules/administration/superuserais/index.html) via a dedicated view as well as creating custom [Roles](https://help.konfuzio.com/modules/administration/superuserroles/index.html)
+
+Konfuzio Server has beens successfully installed on various clouds.
+
+Here you find a few examples:
+
+- Amazon Web Services (AWS)
+- Microsoft Azure
+- Google Cloud Platform (GCP)
+- IBM Cloud
+- Oracle Cloud Infrastructure (OCI)
+- Alibaba Cloud
+- VMware Cloud
+- DigitalOcean
+- Rackspace
+- Salesforce Cloud
+- OVH Cloud
+- Hetzner
+- Telekom Cloud
 
 
 ## Billing and License
@@ -292,13 +310,13 @@ helm install --upgrade my-konfuzio konfuzio-repo/konfuzio-chart --reuse-values -
 
 
 
-## Docker
-
-### Single VM setup
+## Docker - Single VM setup
 
 Konfuzio can be configured to run on a single virtual machine, without relying on
 Kubernetes. In this scenario, all necessary containers are started manually or with a
 container orchestration tool of your choice.
+
+### Requirements
 
 We recommend a virtual machine with a minimum of 8 vCPU (incl. AVX2 support) and
 32 GB of RAM and an installed Docker runtime. A Nvidia GPU is recommended but not
@@ -306,7 +324,7 @@ required. In this setup Konfuzio is running in the context of the Docker executo
 therefore there are no strict requirements for the VMs operating systems. However, we
 recommend a Linux VM with Debian, Ubuntu, CentOS,or Redhat Linux.
 
-#### 1. Download Docker Image
+### 1. Download Docker Image
 
 The Konfuzio docker image can be downloaded via “docker pull”. We will provide you
 with the credentials. This action requires an internet connection.
@@ -326,15 +344,15 @@ docker pull REGISTRY_URL/konfuzio/text-annotation/master:latest
 
 The Tag "latest" should be replaced with an actual version. A list of available tags can be found here: https://dev.konfuzio.com/web/changelog_app.html.
 
-#### 2. Setup PostgreSQL, Redis, BlobStorage/FileSystemStorage
+### 2. Setup PostgreSQL, Redis, BlobStorage/FileSystemStorage
 The database credentials are needed in this step. Please ensure your selected [databases](/web/on_premises.html#database-and-storage) are setup at this point. You may want to use psql and redis-cli to check if database credentials are working.
 
 In case you use FileSystemStorage and Docker volume mounts, you need to make sure the volume can be accessed by the konfuzio docker user (uid=999). You might want to run "chown 999:999 -R /konfuzio-vm/text-annotation/data" on the host VM.
 
-#### 3. Setup environment variable file
+### 3. Setup environment variable file
 Copy the /code/.env.example file from the container and adapt it to your settings. The .env file can be saved anywhere on the host VM. In this example we use "/konfuzio-vm/text-annotation.env".
 
-#### 4. Init the database, create first superuser via cli and prefill e-mail templates
+### 4. Init the database, create first superuser via cli and prefill e-mail templates
 In this example we store the files on the host VM and mount the directory "/konfuzio-vm/text-annotation/data" into the container. In the first step we create a container with a shell to then start the initialization scripts within the container.
 The container needs to be able to access IP addresses and hostnames used in the .env. This can be ensured using --add.host. In the example we make the host IP 10.0.0.1 available.
 
@@ -352,7 +370,7 @@ After completing these steps you can exit and remove the container.
 .. note::
   The username used during the createsuperuser dialog must have the format of a valid e-mail in order to be able to login later.
 
-#### 5. Start the container
+### 5. Start the container
 In this example we start four containers. The first one to serve the Konfuzio web application. 
 
 ```
@@ -392,7 +410,7 @@ docker run --name beats -d --add-host=host:10.0.0.1 \
   celery -A app beat -l INFO -s /tmp/celerybeat-schedule
 ```
 
-#### [Optional] 6. Use Flower to monitor tasks
+### [Optional] 6. Use Flower to monitor tasks
 
 [Flower](https://flower.readthedocs.io/en/latest/screenshots.html) can be used a task monitoring tool. Flower will be only accessible for Konfuzio superusers and is part of the Konfuzio Server Docker Image.
 
@@ -404,7 +422,9 @@ docker run --name flower -d --add-host=host:10.0.0.1 \
   celery -A app flower --url_prefix=flower --address=0.0.0.0 --port=5555
 ```
 
-The Konfuzio Server application acts as a reverse proxy an servers the flower application. Therefore, django needs to know the flower url. `FLOWER_URL=http://host:5555/flower`.
+The Konfuzio Server application functions as a reverse proxy and serves the Flower application. In order for Django to correctly access the Flower application, it requires knowledge of the Flower URL. Specifically, the FLOWER_URL should be set to http://host:5555/flower.
+
+`FLOWER_URL=http://host:5555/flower`
 
 ```mermaid
 graph LR
@@ -418,7 +438,7 @@ end
 ```
 Please ensure that the Flower container is not exposed externally, as it does not handle authentication and authorization itself.  
 
-#### [Optional] 7. Run Container for Email Integration
+### [Optional] 7. Run Container for Email Integration
 
 The ability to [upload documents via email](https://help.konfuzio.com/integrations/upload-by-email/index.html) can be achieved by starting a dedicated container with the respective environment variables.
 
@@ -437,7 +457,7 @@ docker run --name flower -d --add-host=host:10.0.0.1 \
   python manage.py scan_email
 ```
 
-#### [Optional] 8. Use Azure Read API (On-Premises or as Service)
+### [Optional] 8. Use Azure Read API (On-Premises or as Service)
 
 The Konfuzio Server can work together with the [Azure Read API]. There are two options to use the Azure Read API in an on-premises setup.
 1. Use the Azure Read API as a service from the public Azure cloud.
@@ -458,7 +478,7 @@ Please install the Read API Container according to the current [manual](https://
 Please open a support ticket to get an AZURE_OCR_KEY and AZURE_OCR_BASE_URL which is compatible with the container.
 
 
-#### [Optional] 9. Install document segmentation container
+### [Optional] 9. Install document segmentation container
 
 Download the container with the credentials provided by Konfuzio
 
@@ -480,7 +500,7 @@ BROKER_URL=  # Set this to an unused redis database
 RESULT_BACKEND=  # Set this to an unused redis database
 ```
 
-#### [Optional] 10. Install document summarization container
+### [Optional] 10. Install document summarization container
 
 Download the container with the credentials provided by Konfuzio
 
@@ -504,13 +524,13 @@ RESULT_BACKEND=  # Set this to an unised redis database
 
 ```
 
-#### 11a. Upgrade to newer Konfuzio Version
+### 11a. Upgrade to newer Konfuzio Version
 
 Konfuzio upgrades are performed by replacing the Docker Tag to the [desired version](https://dev.konfuzio.com/web/changelog_app.html)
 After starting the new Containers Database migrations need to be applied by `python manage.py migrate` (see 4.).
 In case additional migration steps are needed, they will be mentioned in the release notes.
 
-#### 11b. Downgrade to older Konfuzio Version
+### 11b. Downgrade to older Konfuzio Version
 
 Konfuzio downgrades are performed by creating a fresh Konfuzio installation in which existing Projects can be imported.
 The following steps need to be undertaken:
@@ -520,14 +540,27 @@ The following steps need to be undertaken:
 - Import the projects using ["python manage.py project_import"](https://help.konfuzio.com/integrations/migration-between-konfuzio-server-instances/index.html#migrate-projects-between-konfuzio-server-instances)
 
 
-## Alternative deployment options
+## Custom AI model training via CI pipelines
 
-### Custom AI model training via CI pipelines
+Konfuzio is a platform that provides users with the ability to run custom AI workflows securely
+through its Continuous Integration (CI) pipelines. These pipelines enable users to run
+their code automatically and continuously, learning from human feedback on any errors or issues as soon as they occur.
 
-Konfuzio uses CI pipelines to allow users to run customAI model code securely. In case
-the Kubernetes deployment option is not used, we recommend a dedicated virtual
-machine to run these pipelines. The selected CI application needs to support Docker
-and webhooks. The CI application needs network access to the Konfuzio installation.
+In situations where the Kubernetes deployment option is not utilized, Konfuzio recommends using
+a dedicated virtual machine to run these pipelines. This ensures that the pipelines are isolated
+from other processes and are therefore less susceptible to interference or interruption.
+
+To effectively run these CI pipelines, the selected CI application must support Docker and webhooks.
+Docker allows for the creation and management of containers, which are used to package and distribute the
+code to be tested. Webhooks, on the other hand, provide a way for the CI application to trigger the
+pipeline automatically.
+
+Furthermore, the CI application needs to have network access to the Konfuzio installation.
+This is necessary to enable the CI application to interact with the Konfuzio platform, ensuring
+that the CI pipelines are able to access the necessary resources and dependencies.
+
+Overall, Konfuzio's use of CI pipelines provides a powerful tool for advanced users to run their AI workflows securely,
+with the added benefit of automated testing and continuous feedback.
 
 ## Keycloak Integration
 
