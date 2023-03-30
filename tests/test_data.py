@@ -464,7 +464,6 @@ class TestOfflineExampleData(unittest.TestCase):
         outlier_spans = [span.offset_string for annotation in outliers for span in annotation.spans]
         assert len(outliers) == 3
         assert 'DE47 7001 0500 0000 2XxXX XX' in outlier_spans
-        # self.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
 
     def test_find_outlier_annotations_by_confidence(self):
         """Test finding the Annotations with the least confidence."""
