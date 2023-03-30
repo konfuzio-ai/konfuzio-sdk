@@ -480,6 +480,7 @@ create your Annotations programmatically.
   `annotation_set` or `label_set` in your request.
 
 .. mermaid::
+
   graph TD
     A[Creating an Annotation in a Document<br>for Label <code>L</code> and Label Set <code>A</code>]
     A --> B[Can the Label Set <code>A</code> have multiple Annotation Sets?]
