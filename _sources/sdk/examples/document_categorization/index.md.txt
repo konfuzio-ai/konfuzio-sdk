@@ -16,7 +16,7 @@ If a Document is initialized with no Category, it can be manually set later.
 
 
 If you use a Categorization AI to automatically assign a Category to a Document (such as the 
-[NameBasedCategorizationAI](tutorials.html#categorization-fallback-logic)), each Page will be assigned a 
+[NameBasedCategorizationAI](tutorials.html#name-based-categorization-ai)), each Page will be assigned a 
 Category Annotation with predicted confidence information, and the following properties will be accessible. You can 
 also find these documented under [API Reference - Document](sourcecode.html#document), 
 [API Reference - Page](sourcecode.html#page) and 
@@ -46,7 +46,7 @@ Use the name of the Category as an effective fallback logic to categorize Docume
 
 Build, train and test a Categorization AI using Image Models and Text Models to classify the image and text of each Page.
 
-For a list of available Models see [Available Categorization Models](#id8).
+For a list of available Models see [Available Categorization Models](#id2).
 
 .. literalinclude:: /sdk/boilerplates/test_document_categorization.py
    :language: python

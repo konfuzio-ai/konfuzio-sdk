@@ -49,7 +49,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../explanations.html">Explanations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sourcecode.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../contribution.html">Contribution Guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/releases">Changelog</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Konfuzio Server</span></p>
 <ul>
@@ -64,7 +64,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../dvui/index.html">What is the Konfuzio Document Validation UI?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../dvui/explanations.html">Explanations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../dvui/sourcecode.html">Source Code</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../dvui/changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/releases">Changelog</a></li>
 </ul>
 
         </div>
@@ -94,7 +94,7 @@
   <section id="internal-release-process">
 <h1>Internal release process<a class="headerlink" href="#internal-release-process" title="Permalink to this headline">¶</a></h1>
 <p>Every day at 5:19 AM UTC (3:19 AM UTC+2, see code <a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/.github/workflows/nightly.yml">here</a>) a new nightly release of the SDK (master branch) is released to <a class="reference external" href="https://pypi.org/project/konfuzio-sdk/#history">https://pypi.org/project/konfuzio-sdk/#history</a>.</p>
-<p>Every day at 6:13 AM UTC a new nightly release of the Server using the latest nightly SDK is deployed at <a class="reference external" href="https://nightly-sdk.branch.konfuzio.com/">https://nightly-sdk.branch.konfuzio.com/</a> as a Gitlab schedule from our server repository.</p>
+<p>Every day at 6:13 AM UTC a new nightly release of the Server using the latest nightly SDK is deployed at <a class="reference external" href="https://testing.konfuzio.com/">https://testing.konfuzio.com/</a> as a Gitlab schedule from our Server repository.</p>
 <p>We get an early chance to find bugs with our integration of the SDK with the Konfuzio Server before the official release. During our internal development sprints (2 week periods) we follow the strategy summarized in the table below.</p>
 <table class="docutils align-default">
 <colgroup>
@@ -248,7 +248,7 @@
 <p>The strategy follows a 2 weeks sprint schedule (10 work days). The SDK process is described in the following plan. The process with DVUI is completely analogous:</p>
 <ul class="simple">
 <li><p>On the first week we do development on the SDK / Server / DVUI side, and we open one pull request for each new SDK feature on Github (see the list of currently open SDK pull requests <a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/pulls">here</a>).</p></li>
-<li><p>On the Monday of the second week we merge pull requests to master, which triggers the creation of a SDK nightly release. This becomes available as a Konfuzio Server deployment the next day at <a class="reference external" href="https://nightly-sdk.branch.konfuzio.com/">https://nightly-sdk.branch.konfuzio.com/</a>, as a consequence of a Konfuzio Server Gitlab schedule.</p></li>
+<li><p>On the Monday of the second week we merge pull requests to master, which triggers the creation of a SDK nightly release. This becomes available as a Konfuzio Server deployment the next day at <a class="reference external" href="https://testing.konfuzio.com/">https://testing.konfuzio.com/</a>, as a consequence of a Konfuzio Server Gitlab schedule.</p></li>
 <li><p>We internally test the Konfuzio SDK/Server integration with the nightly deployment and collect any bugs that come up, either from the SDK side or the Server side. For the SDK side, these are scheduled as internal tickets for fixing until Friday, which marks the end of the sprint.</p></li>
 <li><p>On Friday the bug fixing is over, the associated pull requests are merged to master and a new SDK official release is created containing the new features and bugfixes.</p></li>
 <li><p>SDK Release Notes are automatically generated from our pull requests using <a class="reference external" href="https://docs.github.com/en/repositories/releasing-projects-on-github/automatically-generated-release-notes">the Github’s feature</a>. Each pull request includes links to relevant documentation about how to use the new feature, see for example <a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/pull/124">https://github.com/konfuzio-ai/konfuzio-sdk/pull/124</a>.</p></li>
@@ -276,7 +276,7 @@ that the Release was uploaded via having a look on <a class="reference external"
 </section>
 <section id="how-to-use-nightly-builds">
 <h1>How to use nightly builds?<a class="headerlink" href="#how-to-use-nightly-builds" title="Permalink to this headline">¶</a></h1>
-<a class="reference external image-reference" href="/sdk/releasing/new-pypi-release.png"><img alt="New PyPI Python release" src="../../_images/new-pypi-release.png" /></a>
+<img alt="../../_images/new-pypi-release.png" src="../../_images/new-pypi-release.png" />
 <ol class="arabic simple">
 <li><p>Install the latest pre-release <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--pre</span> <span class="pre">konfuzio_sdk</span></code></p></li>
 <li><p>Force to pick the latest pre-release the version <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">konfuzio_sdk&gt;=0.2.3.dev0</span></code>. As PEP440 states: The
@@ -291,7 +291,7 @@ post-releases)</p></li>
 Year-Month-Date-Hour-Minute-Second of last commit date on branch master used to create this release.
 This process allows publish a new package if there are new commits on the master branch.</p>
 </div>
-<a class="reference external image-reference" href="/sdk/releasing/version-number-prerelease.png"><img alt="img.png" src="../../_images/version-number-prerelease.png" /></a>
+<img alt="../../_images/version-number-prerelease.png" src="../../_images/version-number-prerelease.png" />
 </section>
 
 

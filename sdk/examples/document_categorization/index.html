@@ -49,7 +49,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../explanations.html">Explanations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../sourcecode.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../contribution.html">Contribution Guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/releases">Changelog</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Konfuzio Server</span></p>
 <ul>
@@ -64,7 +64,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../dvui/index.html">What is the Konfuzio Document Validation UI?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../dvui/explanations.html">Explanations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../dvui/sourcecode.html">Source Code</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../dvui/changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/releases">Changelog</a></li>
 </ul>
 
         </div>
@@ -116,7 +116,7 @@
 </pre></div>
 </div>
 <p>If you use a Categorization AI to automatically assign a Category to a Document (such as the
-<a class="reference external" href="tutorials.html#categorization-fallback-logic">NameBasedCategorizationAI</a>), each Page will be assigned a
+<a class="reference external" href="tutorials.html#name-based-categorization-ai">NameBasedCategorizationAI</a>), each Page will be assigned a
 Category Annotation with predicted confidence information, and the following properties will be accessible. You can
 also find these documented under <a class="reference external" href="sourcecode.html#document">API Reference - Document</a>,
 <a class="reference external" href="sourcecode.html#page">API Reference - Page</a> and
@@ -198,7 +198,7 @@ also find these documented under <a class="reference external" href="sourcecode.
 <section id="model-based-categorization-ai">
 <h2>Model-based Categorization AI<a class="headerlink" href="#model-based-categorization-ai" title="Permalink to this headline">¶</a></h2>
 <p>Build, train and test a Categorization AI using Image Models and Text Models to classify the image and text of each Page.</p>
-<p>For a list of available Models see <a class="reference external" href="#id8">Available Categorization Models</a>.</p>
+<p>For a list of available Models see <a class="reference external" href="#id2">Available Categorization Models</a>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Document</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">load_model</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.document_categorization</span> <span class="kn">import</span> <span class="n">ImageModel</span><span class="p">,</span> <span class="n">TextModel</span>

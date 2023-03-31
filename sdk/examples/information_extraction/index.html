@@ -4,12 +4,12 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Overview &mdash; Konfuzio  documentation</title>
+  <title>Document Information Extraction &mdash; Konfuzio  documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
     <link rel="shortcut icon" href="../../../_static/full_green_square.png"/>
-    <link rel="canonical" href="https://dev.konfuzio.com/sdk/examples/overview/index.html" />
+    <link rel="canonical" href="https://dev.konfuzio.com/sdk/examples/information_extraction/index.html" />
   <!--[if lt IE 9]>
     <script src="../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -81,9 +81,9 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Overview</li>
+      <li>Document Information Extraction</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../../../_sources/sdk/examples/overview/index.md.txt" rel="nofollow"> View page source</a>
+            <a href="../../../_sources/sdk/examples/information_extraction/index.md.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -91,16 +91,47 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="overview">
-<h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h1>
-<p>The first step we’re going to cover is <a class="reference external" href="tutorials.html#id1">File Splitting</a>
-– this happens when the original Document consists of several smaller sub-Documents and needs to be separated so that each one can be processed individually.</p>
-<p>Second part is on <a class="reference external" href="tutorials.html#document-categorization">Categorization</a>, where a Document is labelled to be of a certain Category within the Project.</p>
-<p>Third part describes <a class="reference external" href="tutorials.html#document-information-extraction">Information Extraction</a>, during which various information is obtained from unstructured texts,
-i.e. Name, Date, Recipient, or any other custom Labels.</p>
-<p>For a more in-depth look at each step, be sure to check out the
-<a class="reference external" href="explanations.html#architecture-sdk-to-server">Architecture Diagram</a> that reflects each step of the
-document-processing pipeline.</p>
+  <section id="document-information-extraction">
+<h1>Document Information Extraction<a class="headerlink" href="#document-information-extraction" title="Permalink to this headline">¶</a></h1>
+<section id="train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents">
+<h2>Train a Konfuzio SDK Model to Extract Information From Payslip Documents<a class="headerlink" href="#train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents" title="Permalink to this headline">¶</a></h2>
+<p>The tutorial <em>RFExtractionAI Demo</em> aims to show you how to use the Konfuzio SDK package to use a simple <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#konfuzio_sdk.tokenizer.regex.WhitespaceTokenizer">Whitespace
+tokenizer</a> and to
+train a “RFExtractionAI” model to find and extract relevant information like Name, Date and Recipient
+from payslip documents.</p>
+<p>You can <img alt="OpenInColab" src="https://colab.research.google.com/assets/colab-badge.svg" /> or download it from <a class="reference external" href="https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/RFExtractionAI%20Demo.ipynb">here</a>
+and try it by yourself.</p>
+</section>
+<section id="evaluate-a-trained-extraction-ai-model">
+<h2>Evaluate a Trained Extraction AI Model<a class="headerlink" href="#evaluate-a-trained-extraction-ai-model" title="Permalink to this headline">¶</a></h2>
+<p>In this example we will see how we can evaluate a trained <code class="docutils literal notranslate"><span class="pre">RFExtractionAI</span></code> model. We will assume that we have a trained
+pickled model available. See <a class="reference external" href="https://dev.konfuzio.com/sdk/examples/examples.html#train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents">here</a>
+for how to train such a model, and check out the <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#ai-evaluation">Evaluation</a>
+documentation for more details.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">load_model</span>
+
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="n">MODEL_PATH</span><span class="p">)</span>
+
+<span class="c1"># To get the evaluation of the full pipeline</span>
+<span class="n">evaluation</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">evaluate_full</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Full evaluation F1 score: </span><span class="si">{</span><span class="n">evaluation</span><span class="o">.</span><span class="n">f1</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Full evaluation recall: </span><span class="si">{</span><span class="n">evaluation</span><span class="o">.</span><span class="n">recall</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Full evaluation precision: </span><span class="si">{</span><span class="n">evaluation</span><span class="o">.</span><span class="n">precision</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># To get the evaluation of the Tokenizer alone</span>
+<span class="n">evaluation</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">evaluate_tokenizer</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tokenizer evaluation F1 score: </span><span class="si">{</span><span class="n">evaluation</span><span class="o">.</span><span class="n">tokenizer_f1</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># To get the evaluation of the Label classifier given perfect tokenization</span>
+<span class="n">evaluation</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">evaluate_clf</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Label classifier evaluation F1 score: </span><span class="si">{</span><span class="n">evaluation</span><span class="o">.</span><span class="n">clf_f1</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># To get the evaluation of the LabelSet given perfect Label classification</span>
+<span class="n">evaluation</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">evaluate_clf</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Label Set evaluation F1 score: </span><span class="si">{</span><span class="n">evaluation</span><span class="o">.</span><span class="n">f1</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
 </section>
 
 

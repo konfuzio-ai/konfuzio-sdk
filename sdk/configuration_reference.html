@@ -49,7 +49,7 @@
 <li class="toctree-l1"><a class="reference internal" href="explanations.html">Explanations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sourcecode.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contribution.html">Contribution Guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/releases">Changelog</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Konfuzio Server</span></p>
 <ul>
@@ -64,7 +64,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../dvui/index.html">What is the Konfuzio Document Validation UI?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../dvui/explanations.html">Explanations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../dvui/sourcecode.html">Source Code</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../dvui/changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/releases">Changelog</a></li>
 </ul>
 
         </div>
@@ -108,7 +108,7 @@ are using PyCharm have a look at <a class="reference external" href="quickstart_
 </ul>
 <p><em>Notes</em>:</p>
 <ul class="simple">
-<li><p>Your coding environment should have Python 3.8, 3.9 or 3.10.</p></li>
+<li><p>Supported Python environments are 3.8, 3.9, 3.10, 3.11.</p></li>
 <li><p>If you are not using a virtual environment, you may need to add the installation directory to your PATH.</p></li>
 </ul>
 </section>
@@ -117,19 +117,18 @@ are using PyCharm have a look at <a class="reference external" href="quickstart_
 <p>After the installation, initialize the package in your working directory with:</p>
 <p><code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span> <span class="pre">init</span></code></p>
 <p>This will require your credentials to access the Konfuzio Server.
-At the end, one file will be created in your working directory: <a href="#id1"><span class="problematic" id="id2">`</span></a>.env.</p>
+At the end, one file will be created in your working directory: <code class="docutils literal notranslate"><span class="pre">.env</span></code>.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">.env</span></code> file contains the credentials to access the app and should not become public.</p>
 </section>
 <section id="download-the-data">
 <h2>4. Download the data<a class="headerlink" href="#download-the-data" title="Permalink to this headline">¶</a></h2>
-<p>To download the data from your Konfuzio project you need to specify the project ID.
-You can check your project ID by selecting the project in the Projects tab in the Web App.
-The ID of the project is shown in the URL.</p>
-<p><code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span> <span class="pre">download_data</span> <span class="pre">123</span></code></p>
-<p>The data from the documents that you uploaded in your Konfuzio project will be downloaded to a folder called “<a href="#id3"><span class="problematic" id="id4">data_</span></a>”
-followed by the ID of the project.</p>
+<p>To download the data from your Konfuzio project you need to specify the Project ID.
+You can check your Project ID by selecting the project in the Projects tab in the Web App.
+The ID of the Project is shown in the URL. Suppose that your Project ID is 123:</p>
+<p><code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span> <span class="pre">export_project</span> <span class="pre">123</span></code></p>
+<p>The data from the documents that you uploaded in your Konfuzio project will be downloaded to a folder called <code class="docutils literal notranslate"><span class="pre">data_123</span></code>.</p>
 <p><em>Note</em>:
-Only documents in the training or test set are downloaded.</p>
+Only Documents in the Training and Test sets are downloaded.</p>
 </section>
 </section>
 

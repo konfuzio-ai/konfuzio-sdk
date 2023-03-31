@@ -70,14 +70,11 @@
 <li class="toctree-l2"><a class="reference internal" href="#coordinates-system">Coordinates System</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#horizontal-merge">Horizontal Merge</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#vertical-merge">Vertical Merge</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#internal-release-process">Internal release process</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#how-to-release-with-github-to-pypi">How to release with GitHub to PyPI</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#how-to-use-nightly-builds">How to use nightly builds?</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="sourcecode.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contribution.html">Contribution Guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/releases">Changelog</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Konfuzio Server</span></p>
 <ul>
@@ -92,7 +89,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../dvui/index.html">What is the Konfuzio Document Validation UI?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../dvui/explanations.html">Explanations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../dvui/sourcecode.html">Source Code</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../dvui/changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/releases">Changelog</a></li>
 </ul>
 
         </div>
@@ -127,10 +124,10 @@
 <h2>Data Layer Concepts<a class="headerlink" href="#data-layer-concepts" title="Permalink to this headline">¶</a></h2>
 <p>The relations between all major Data Layer concepts of the SDK are
 the following: a <a class="reference external" href="#id1">Project</a> consists of multiple <a class="reference external" href="#document">Documents</a>. Each one of the Documents consists of
-the <a class="reference external" href="#page">Pages</a> and belongs to a certain <a class="reference external" href="#category">Category</a>. Text in a Document can be marked by
+the <a class="reference external" href="#page">Pages</a> and belongs to a certain <a class="reference external" href="#id4">Category</a>. Text in a Document can be marked by
 <a class="reference external" href="#annotation">Annotations</a>, which can be multi-line, and where each continuous piece of text contained into an
-Annotation is a <a class="reference external" href="#span">Span</a>. Each Annotation is located within a certain <a class="reference external" href="#id14">Bbox</a> and is defined by a
-<a class="reference external" href="#id11">Label</a> that is a part of one of the <a class="reference external" href="#label-set">Label Sets</a>. An <a class="reference external" href="#id9">Annotation Set</a> is a list of Annotations
+Annotation is a <a class="reference external" href="#id7">Span</a>. Each Annotation is located within a certain <a class="reference external" href="#id15">Bbox</a> and is defined by a
+<a class="reference external" href="#id12">Label</a> that is a part of one of the <a class="reference external" href="#label-set">Label Sets</a>. An <a class="reference external" href="#id10">Annotation Set</a> is a list of Annotations
 that share a Label Set.</p>
 <p>For more detailed information on each concept, follow the link on the concept’s name which leads to the automatically
 generated documentation.</p>
@@ -282,7 +279,7 @@ image representation of a Document Page. These representations are used for comp
 </pre></div>
 </div>
 <p>The coordinates system used has its start in the bottom left corner of the page.</p>
-<a class="reference external image-reference" href="../_static/img/coordinates_schema.png"><img alt="coordinates_system" src="../_images/coordinates_schema.png" /></a>
+<img alt="../_images/coordinates_schema.png" src="../_images/coordinates_schema.png" />
 <p>To visualize the character bounding boxes of a document and overlapping them in the image opened with the python
 library PIL, for example, we can resize the image to the size in which they are based (original_size).
 The following code can be used for this:</p>
@@ -324,7 +321,7 @@ The following code can be used for this:</p>
 <span class="c1"># the image is subtracted to the y coordinates.</span>
 </pre></div>
 </div>
-<a class="reference external image-reference" href="../_static/img/bboxes_characters.png"><img alt="characters_bboxes" src="../_images/bboxes_characters.png" /></a>
+<img alt="../_images/bboxes_characters.png" src="../_images/bboxes_characters.png" />
 <p>The coordinates obtained from the segmentation endpoint of the API are based on the image array shape.
 To visualize the segmentation bounding boxes of a page on an image opened with the python library PIL, for example,
 we can overlap them directly.</p>
@@ -355,7 +352,7 @@ we can overlap them directly.</p>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">block</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
-<a class="reference external image-reference" href="../_static/img/bboxes_segmentation.png"><img alt="segmentation_bboxes" src="../_images/bboxes_segmentation.png" /></a>
+<img alt="../_images/bboxes_segmentation.png" src="../_images/bboxes_segmentation.png" />
 <p>To visualize both at the same time we can convert the coordinates from the segmentation result to be based on the image
 size used for the characters’ bbox.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">cv2</span>
@@ -404,7 +401,7 @@ size used for the characters’ bbox.</p>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">block</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
-<a class="reference external image-reference" href="../_static/img/bboxes_overlap.png"><img alt="characters_and_segmentation_bboxes" src="../_images/bboxes_overlap.png" /></a>
+<img alt="../_images/bboxes_overlap.png" src="../_images/bboxes_overlap.png" />
 <p>Our extraction AI runs a merging logic at two steps in the extraction process. The first is a horizontal merging of Spans right after the Label classifier. This can be particularly useful when using the <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#konfuzio_sdk.tokenizer.regex.WhitespaceTokenizer">Whitespace tokenizer</a> as it can find Spans containing spaces. The second merging logic is a vertical merging of Spans into a single multiline Annotation. Checkout the <a class="reference external" href="https://dev.konfuzio.com/sdk/contribution.html#architecture-sdk-to-server">architecture diagram</a> for more detail.</p>
 </section>
 <section id="horizontal-merge">
@@ -596,208 +593,6 @@ Label Type: <span class="raw-html-m2r"><span style="background-color: #dcdcdc">N
 <p><span class="raw-html-m2r"><span style="background-color: #ff726f">Label 1</span></span><span class="raw-html-m2r"><br></span>
 <span class="raw-html-m2r"><span style="background-color: #86c5da">Label 2</span></span><span class="raw-html-m2r"><br></span>
 <span class="raw-html-m2r"><span style="background-color: #dcdcdc">NO LABEL/Below Label threshold</span></span></p>
-</section>
-<section id="internal-release-process">
-<h2>Internal release process<a class="headerlink" href="#internal-release-process" title="Permalink to this headline">¶</a></h2>
-<p>Every day at 5:19 AM UTC (3:19 AM UTC+2, see code <a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/.github/workflows/nightly.yml">here</a>) a new nightly release of the SDK (master branch) is released to <a class="reference external" href="https://pypi.org/project/konfuzio-sdk/#history">https://pypi.org/project/konfuzio-sdk/#history</a>.</p>
-<p>Every day at 6:13 AM UTC a new nightly release of the Server using the latest nightly SDK is deployed at <a class="reference external" href="https://nightly-sdk.branch.konfuzio.com/">https://nightly-sdk.branch.konfuzio.com/</a> as a Gitlab schedule from our server repository.</p>
-<p>We get an early chance to find bugs with our integration of the SDK with the Konfuzio Server before the official release. During our internal development sprints (2 week periods) we follow the strategy summarized in the table below.</p>
-<table class="docutils align-default">
-<colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
-</colgroup>
-<thead>
-<tr class="row-odd"><th class="head"><p>Key</p></th>
-<th class="head"><p>Meaning</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>T</p></td>
-<td><p>Testing Time</p></td>
-</tr>
-<tr class="row-odd"><td><p>M</p></td>
-<td><p>Merge to next level</p></td>
-</tr>
-<tr class="row-even"><td><p>R</p></td>
-<td><p>Release</p></td>
-</tr>
-<tr class="row-odd"><td><p>B</p></td>
-<td><p>Bug Fixing</p></td>
-</tr>
-</tbody>
-</table>
-<table class="docutils align-default">
-<colgroup>
-<col style="width: 8%" />
-<col style="width: 8%" />
-<col style="width: 8%" />
-<col style="width: 8%" />
-<col style="width: 8%" />
-<col style="width: 8%" />
-<col style="width: 8%" />
-<col style="width: 8%" />
-<col style="width: 8%" />
-<col style="width: 8%" />
-<col style="width: 8%" />
-<col style="width: 8%" />
-</colgroup>
-<thead>
-<tr class="row-odd"><th class="head"><p>Release</p></th>
-<th class="head"></th>
-<th class="head"><p>1</p></th>
-<th class="head"><p>2</p></th>
-<th class="head"><p>3</p></th>
-<th class="head"><p>4</p></th>
-<th class="head"><p>5</p></th>
-<th class="head"><p>6</p></th>
-<th class="head"><p>7</p></th>
-<th class="head"><p>8</p></th>
-<th class="head"><p>9</p></th>
-<th class="head"><p>10</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>Server</p></td>
-<td><p>master Branch Server</p></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td><p>M</p></td>
-</tr>
-<tr class="row-odd"><td><p>Server</p></td>
-<td><p>testing Branch Server</p></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td><p>T</p></td>
-<td><p>B</p></td>
-<td><p>B</p></td>
-<td><p>R</p></td>
-</tr>
-<tr class="row-even"><td><p>Server</p></td>
-<td><p>nightly Build SDK</p></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td><p>T</p></td>
-<td><p>B</p></td>
-<td><p>B</p></td>
-<td><p>R</p></td>
-</tr>
-<tr class="row-odd"><td><p>SDK</p></td>
-<td><p>master Branch</p></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td><p>T</p></td>
-<td><p>T</p></td>
-<td><p>B</p></td>
-<td><p>B</p></td>
-<td><p>R</p></td>
-</tr>
-<tr class="row-even"><td><p>SDK</p></td>
-<td><p>Pull Request</p></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td><p>M</p></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="row-odd"><td><p>DVUI</p></td>
-<td><p>master Branch</p></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td><p>T</p></td>
-<td><p>T</p></td>
-<td><p>B</p></td>
-<td><p>B</p></td>
-<td><p>R</p></td>
-</tr>
-<tr class="row-even"><td><p>DVUI</p></td>
-<td><p>Pull Request</p></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td><p>M</p></td>
-<td></td>
-<td></td>
-<td></td>
-<td><p>–</p></td>
-</tr>
-</tbody>
-</table>
-<p>The strategy follows a 2 weeks sprint schedule (10 work days). The SDK process is described in the following plan. The process with DVUI is completely analogous:</p>
-<ul class="simple">
-<li><p>On the first week we do development on the SDK / Server / DVUI side, and we open one pull request for each new SDK feature on Github (see the list of currently open SDK pull requests <a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/pulls">here</a>).</p></li>
-<li><p>On the Monday of the second week we merge pull requests to master, which triggers the creation of a SDK nightly release. This becomes available as a Konfuzio Server deployment the next day at <a class="reference external" href="https://nightly-sdk.branch.konfuzio.com/">https://nightly-sdk.branch.konfuzio.com/</a>, as a consequence of a Konfuzio Server Gitlab schedule.</p></li>
-<li><p>We internally test the Konfuzio SDK/Server integration with the nightly deployment and collect any bugs that come up, either from the SDK side or the Server side. For the SDK side, these are scheduled as internal tickets for fixing until Friday, which marks the end of the sprint.</p></li>
-<li><p>On Friday the bug fixing is over, the associated pull requests are merged to master and a new SDK official release is created containing the new features and bugfixes.</p></li>
-<li><p>SDK Release Notes are automatically generated from our pull requests using <a class="reference external" href="https://docs.github.com/en/repositories/releasing-projects-on-github/automatically-generated-release-notes">the Github’s feature</a>. Each pull request includes links to relevant documentation about how to use the new feature, see for example <a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/pull/124">https://github.com/konfuzio-ai/konfuzio-sdk/pull/124</a>.</p></li>
-<li><p>The new SDK features are available on Friday evening at the end of each sprint. As we internally test and integrated the Konfuzio Server with each nightly SDK release, a new Server release is also available at app.konfuzio.com on the same Friday evening. See the <a class="reference external" href="https://dev.konfuzio.com/web/changelog_app.html">changelog</a> for full information about each Konfuzio Server release.</p></li>
-</ul>
-</section>
-<section id="how-to-release-with-github-to-pypi">
-<h2>How to release with GitHub to PyPI<a class="headerlink" href="#how-to-release-with-github-to-pypi" title="Permalink to this headline">¶</a></h2>
-<ol class="arabic">
-<li><p>Change the version number in the file VERSION use the format <code class="docutils literal notranslate"><span class="pre">v.X.X.X</span></code> without whitespaces.</p>
-<a class="reference external image-reference" href="/sdk/releasing/update-python-version.png"><img alt="Update Python Package Version" src="../_images/update-python-version.png" /></a>
-</li>
-<li><p>Draft a Release <a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/releases/new">here</a>.</p>
-<a class="reference external image-reference" href="/sdk/releasing/steps-to-draft-a-release.png"><img alt="draft_new_release.png" src="../_images/steps-to-draft-a-release.png" /></a>
-<ol class="arabic simple">
-<li><p>Create a new Tag on master, named as the version number in step 1.</p></li>
-<li><p>Add a title for the release</p></li>
-<li><p>Automatically generate the description using the Names of the merged Pull Requests</p></li>
-</ol>
-</li>
-<li><p>After you press publish release, a new Python Package will be uploaded to PyPI by a GitHub Action, see code
-<a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/.github/workflows/release.yml">here</a>. You can verify
-that the Release was uploaded via having a look on <a class="reference external" href="https://pypi.org/project/konfuzio-sdk/#history">PyPI</a></p></li>
-</ol>
-</section>
-<section id="how-to-use-nightly-builds">
-<h2>How to use nightly builds?<a class="headerlink" href="#how-to-use-nightly-builds" title="Permalink to this headline">¶</a></h2>
-<a class="reference external image-reference" href="/sdk/releasing/new-pypi-release.png"><img alt="New PyPI Python release" src="../_images/new-pypi-release.png" /></a>
-<ol class="arabic simple">
-<li><p>Install the latest pre-release <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--pre</span> <span class="pre">konfuzio_sdk</span></code></p></li>
-<li><p>Force to pick the latest pre-release the version <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">konfuzio_sdk&gt;=0.2.3.dev0</span></code>. As PEP440 states: The
-developmental release segment consists of the string .dev, followed by a non-negative integer value.<span class="raw-html-m2r"><br></span>
-Developmental releases are ordered by their numerical component, immediately before the corresponding  release
-(and before any pre-releases with the same release segment), and following any previous release (including any<span class="raw-html-m2r"><br></span>
-post-releases)</p></li>
-</ol>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Pre-Releases don’t use tags but reference commits. The version number of a pre-release relates to the
-Year-Month-Date-Hour-Minute-Second of last commit date on branch master used to create this release.
-This process allows publish a new package if there are new commits on the master branch.</p>
-</div>
-<a class="reference external image-reference" href="/sdk/releasing/version-number-prerelease.png"><img alt="img.png" src="../_images/version-number-prerelease.png" /></a>
 </section>
 </section>
 

@@ -50,7 +50,7 @@
 <li class="toctree-l1"><a class="reference internal" href="explanations.html">Explanations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sourcecode.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contribution.html">Contribution Guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/releases">Changelog</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Konfuzio Server</span></p>
 <ul>
@@ -65,7 +65,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../dvui/index.html">What is the Konfuzio Document Validation UI?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../dvui/explanations.html">Explanations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../dvui/sourcecode.html">Source Code</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../dvui/changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/releases">Changelog</a></li>
 </ul>
 
         </div>
@@ -120,7 +120,7 @@ image representation of a Document Page. These representations are used for comp
 </pre></div>
 </div>
 <p>The coordinates system used has its start in the bottom left corner of the page.</p>
-<a class="reference external image-reference" href="../_static/img/coordinates_schema.png"><img alt="coordinates_system" src="../_images/coordinates_schema.png" /></a>
+<img alt="../_images/coordinates_schema.png" src="../_images/coordinates_schema.png" />
 <p>To visualize the character bounding boxes of a document and overlapping them in the image opened with the python
 library PIL, for example, we can resize the image to the size in which they are based (original_size).
 The following code can be used for this:</p>
@@ -162,7 +162,7 @@ The following code can be used for this:</p>
 <span class="c1"># the image is subtracted to the y coordinates.</span>
 </pre></div>
 </div>
-<a class="reference external image-reference" href="../_static/img/bboxes_characters.png"><img alt="characters_bboxes" src="../_images/bboxes_characters.png" /></a>
+<img alt="../_images/bboxes_characters.png" src="../_images/bboxes_characters.png" />
 <p>The coordinates obtained from the segmentation endpoint of the API are based on the image array shape.
 To visualize the segmentation bounding boxes of a page on an image opened with the python library PIL, for example,
 we can overlap them directly.</p>
@@ -193,7 +193,7 @@ we can overlap them directly.</p>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">block</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
-<a class="reference external image-reference" href="../_static/img/bboxes_segmentation.png"><img alt="segmentation_bboxes" src="../_images/bboxes_segmentation.png" /></a>
+<img alt="../_images/bboxes_segmentation.png" src="../_images/bboxes_segmentation.png" />
 <p>To visualize both at the same time we can convert the coordinates from the segmentation result to be based on the image
 size used for the characters’ bbox.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">cv2</span>
@@ -242,7 +242,7 @@ size used for the characters’ bbox.</p>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">block</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
-<a class="reference external image-reference" href="../_static/img/bboxes_overlap.png"><img alt="characters_and_segmentation_bboxes" src="../_images/bboxes_overlap.png" /></a>
+<img alt="../_images/bboxes_overlap.png" src="../_images/bboxes_overlap.png" />
 </section>
 
 

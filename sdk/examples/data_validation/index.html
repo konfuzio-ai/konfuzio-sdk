@@ -49,7 +49,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../explanations.html">Explanations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../sourcecode.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../contribution.html">Contribution Guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/releases">Changelog</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Konfuzio Server</span></p>
 <ul>
@@ -64,7 +64,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../dvui/index.html">What is the Konfuzio Document Validation UI?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../dvui/explanations.html">Explanations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../dvui/sourcecode.html">Source Code</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../dvui/changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/releases">Changelog</a></li>
 </ul>
 
         </div>
@@ -100,12 +100,12 @@ Data Validation Rules ensure that Training and Test data is consistent and well 
 AI with that Document.</p>
 <p>More specifically:</p>
 <ul class="simple">
-<li><p>If a Document fails any of the checks described in the <a class="reference external" href="#id4">Bbox Validation Rules</a> section, it
+<li><p>If a Document fails any of the checks described in the <a class="reference external" href="#id7">Bbox Validation Rules</a> section, it
 will not be possible to initialize the Project as a Python object (such as with
 <code class="docutils literal notranslate"><span class="pre">project</span> <span class="pre">=</span> <span class="pre">Project(YOUR_PROJECT_ID)</span></code>), and a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> will be raised. All other Documents in the Project will be
 able to be initialized.</p></li>
 <li><p>If a Document fails any of the checks described in the sections
-<a class="reference external" href="#id2">Annotation Validation Rules</a> and <a class="reference external" href="#id3">Span Validation Rules</a>, it
+<a class="reference external" href="#id5">Annotation Validation Rules</a> and <a class="reference external" href="#id6">Span Validation Rules</a>, it
 will not be possible to retrieve the Annotations (including their Spans) that fail the specific checks (such as with
 <code class="docutils literal notranslate"><span class="pre">annotation</span> <span class="pre">=</span> <span class="pre">document.get_annotation_by_id(YOUR_ANNOTATION_ID)</span></code>), and a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> will be raised. All other
 Annotations in the Document will be retrievable.</p></li>

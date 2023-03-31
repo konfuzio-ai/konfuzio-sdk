@@ -15,7 +15,7 @@ are using PyCharm have a look at [Quickstart with Pycharm](quickstart_pycharm.ht
 
 *Notes*:
 
-* Your coding environment should have Python 3.8, 3.9 or 3.10.
+* Supported Python environments are 3.8, 3.9, 3.10, 3.11.
 * If you are not using a virtual environment, you may need to add the installation directory to your PATH.
 
 ### 3. Initialize the package
@@ -25,20 +25,19 @@ After the installation, initialize the package in your working directory with:
 `konfuzio_sdk init`
 
 This will require your credentials to access the Konfuzio Server.
-At the end, one file will be created in your working directory: `.env.
+At the end, one file will be created in your working directory: `.env`.
 
 The `.env` file contains the credentials to access the app and should not become public.
 
 ### 4. Download the data
 
-To download the data from your Konfuzio project you need to specify the project ID.
-You can check your project ID by selecting the project in the Projects tab in the Web App.
-The ID of the project is shown in the URL.
+To download the data from your Konfuzio project you need to specify the Project ID.
+You can check your Project ID by selecting the project in the Projects tab in the Web App.
+The ID of the Project is shown in the URL. Suppose that your Project ID is 123:
 
-`konfuzio_sdk download_data 123`
+`konfuzio_sdk export_project 123`
 
-The data from the documents that you uploaded in your Konfuzio project will be downloaded to a folder called "data_"
-followed by the ID of the project.
+The data from the documents that you uploaded in your Konfuzio project will be downloaded to a folder called `data_123`.
 
 *Note*:
-Only documents in the training or test set are downloaded.
+Only Documents in the Training and Test sets are downloaded.

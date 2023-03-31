@@ -49,7 +49,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../explanations.html">Explanations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sourcecode.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../contribution.html">Contribution Guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/releases">Changelog</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Konfuzio Server</span></p>
 <ul>
@@ -64,7 +64,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../dvui/index.html">What is the Konfuzio Document Validation UI?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../dvui/explanations.html">Explanations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../dvui/sourcecode.html">Source Code</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../dvui/changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/releases">Changelog</a></li>
 </ul>
 
         </div>
@@ -98,104 +98,32 @@
 <em>Tutorials are learning-oriented.</em></p>
 <section id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
-<p>The first step we’re going to cover is <a class="reference external" href="tutorials.html#splitting-for-multi-file-documents-step-by-step-guide">File Splitting</a>
+<p>The first step we’re going to cover is <a class="reference external" href="tutorials.html#id1">File Splitting</a>
 – this happens when the original Document consists of several smaller sub-Documents and needs to be separated so that each one can be processed individually.</p>
 <p>Second part is on <a class="reference external" href="tutorials.html#document-categorization">Categorization</a>, where a Document is labelled to be of a certain Category within the Project.</p>
-<p>Third part describes <a class="reference external" href="tutorials.html#train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents">Information Extraction</a>, during which various information is obtained from unstructured texts,
+<p>Third part describes <a class="reference external" href="tutorials.html#document-information-extraction">Information Extraction</a>, during which various information is obtained from unstructured texts,
 i.e. Name, Date, Recipient, or any other custom Labels.</p>
 <p>For a more in-depth look at each step, be sure to check out the
 <a class="reference external" href="explanations.html#architecture-sdk-to-server">Architecture Diagram</a> that reflects each step of the
 document-processing pipeline.</p>
 </section>
-<section id="data-validation-rules">
-<h2>Data Validation Rules<a class="headerlink" href="#data-validation-rules" title="Permalink to this headline">¶</a></h2>
-<p>Konfuzio automatically applies a set of rules for validating data within a <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#project">Project</a>.
-Data Validation Rules ensure that Training and Test data is consistent and well formed for training an
-<a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#extraction-ai">Extraction AI</a> with Konfuzio.</p>
-<p>In general, if a Document fails any of the checks described in the next sections, it will not be possible to train an
-AI with that Document.</p>
-<p>More specifically:</p>
-<ul class="simple">
-<li><p>If a Document fails any of the checks described in the <a class="reference external" href="#id4">Bbox Validation Rules</a> section, it
-will not be possible to initialize the Project as a Python object (such as with
-<code class="docutils literal notranslate"><span class="pre">project</span> <span class="pre">=</span> <span class="pre">Project(YOUR_PROJECT_ID)</span></code>), and a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> will be raised. All other Documents in the Project will be
-able to be initialized.</p></li>
-<li><p>If a Document fails any of the checks described in the sections
-<a class="reference external" href="#id2">Annotation Validation Rules</a> and <a class="reference external" href="#id3">Span Validation Rules</a>, it
-will not be possible to retrieve the Annotations (including their Spans) that fail the specific checks (such as with
-<code class="docutils literal notranslate"><span class="pre">annotation</span> <span class="pre">=</span> <span class="pre">document.get_annotation_by_id(YOUR_ANNOTATION_ID)</span></code>), and a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> will be raised. All other
-Annotations in the Document will be retrievable.</p></li>
-</ul>
-<section id="initializing-a-project-with-the-data-validation-rules-enabled">
-<h3>Initializing a Project with the Data Validation Rules enabled<a class="headerlink" href="#initializing-a-project-with-the-data-validation-rules-enabled" title="Permalink to this headline">¶</a></h3>
-<p>By default, any <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#project">Project</a> has the Data Validation Rules enabled, so nothing
-special needs to be done to enable it.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
-
-<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>  <span class="c1"># all the data in this Project will be validated</span>
-</pre></div>
-</div>
-</section>
-<section id="document-validation-rules">
-<h3>Document Validation Rules<a class="headerlink" href="#document-validation-rules" title="Permalink to this headline">¶</a></h3>
-<p>A <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#document">Document</a> passes the Data Validation Rules only if all the
-contained Annotations, Spans and Bboxes pass the Data Validation Rules.
-If at least one Annotation, Span, or Bbox within a Document fails one of the following checks, the entire Document is
-marked as unsuitable for training an Extraction AI.</p>
-</section>
-<section id="id2">
-<h3>Annotation Validation Rules<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
-<p>An <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#annotation">Annotation</a> passes the Data Validation Rules only if:</p>
-<ol class="arabic simple">
-<li><p>The Annotation is not from a Category different from the Document’s Category</p></li>
-<li><p>The Annotation is not entirely overlapping with another Annotation with the same Label</p>
-<ul class="simple">
-<li><p>It implies that partial overlaps with same Labels are allowed</p></li>
-<li><p>It implies that full overlaps with different Labels are allowed</p></li>
-</ul>
-</li>
-<li><p>The Annotation has at least one Span</p></li>
-</ol>
-<p>Please note that the Annotation Validation Rules are indifferent about the values of <code class="docutils literal notranslate"><span class="pre">Annotation.is_correct</span></code> or <code class="docutils literal notranslate"><span class="pre">Annotation.revised</span></code>.
-For more information about what these boolean values mean, see <a class="reference external" href="https://help.konfuzio.com/modules/annotations/index.html">Konfuzio Server - Annotations</a>.</p>
-</section>
-<section id="id3">
-<h3>Span Validation Rules<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
-<p>A <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#span">Span</a> passes the Data Validation Rules only if:</p>
-<ol class="arabic simple">
-<li><p>The Span contains non-empty text (the start offset must be strictly greater than the end offset)</p></li>
-<li><p>The Span is contained within a single line of text (must not be distributed across multiple lines)</p></li>
-</ol>
-</section>
-<section id="id4">
-<h3>Bbox Validation Rules<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
-<p>A <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#bbox">Bbox</a> passes the Data Validation Rules only if:</p>
-<ol class="arabic simple">
-<li><p>The Bbox has non-negative width and height (zero is allowed for compatibility reasons with many OCR engines)</p></li>
-<li><p>The Bbox is entirely contained within the bounds of a Page</p></li>
-<li><p>The character that is mapped by the Bbox must correspond to the text in the Document</p></li>
-</ol>
-</section>
-<section id="initializing-a-project-with-the-data-validation-rules-disabled">
-<h3>Initializing a Project with the Data Validation Rules disabled<a class="headerlink" href="#initializing-a-project-with-the-data-validation-rules-disabled" title="Permalink to this headline">¶</a></h3>
-<p>By default, any <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#project">Project</a> has the Data Validation Rules enabled.</p>
-<p>A possible reason for choosing to disable the Data Validation Rules that come with the Konfuzio SDK, is that an expert user
-wants to define a custom data structure or training pipeline which violates some assumptions normally present in Konfuzio
-Extraction AIs and pipelines.
-If you don’t want to validate your data, you should initialize the Project with <code class="docutils literal notranslate"><span class="pre">strict_data_validation=False</span></code>.</p>
-<p>We highly recommend to keep the Data Validation Rules enabled at all times, as it ensures that Training and Test data
-is consistent for training an Extraction AI. Disabling the Data Validation Rules and training an
-<a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#extraction-ai">Extraction AI</a> with potentially duplicated, malformed,
-or inconsistent data can <strong>decrease the quality of an Extraction AI</strong>. Only disable them if you know what you are doing.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
-
-<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">,</span> <span class="n">strict_data_validation</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-</pre></div>
-</div>
-</section>
-</section>
-<section id="id7">
-<h2>File Splitting<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h2>
+<section id="id1">
+<h2>File Splitting<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<p>There are several tools in the SDK that enable processing Documents that consist of several files and propose splitting
+them into the Sub-Documents accordingly.</p>
+<p>A Context Aware File Splitting Model uses a simple hands-on logic based on scanning Category’s Documents and finding
+strings exclusive for first Pages of all Documents within the Category. Upon predicting whether a Page is a potential
+splitting point (meaning whether it is first or not), we compare Page’s contents to these exclusive first-page strings;
+if there is occurrence of at least one such string, we mark a Page to be first (thus meaning it is a splitting point).
+An instance of the Context Aware File Splitting Model can be used to initially build a File Splitting pipeline and can
+later be replaced with more complex solutions.</p>
+<p>A Context Aware File Splitting Model instance can be used with an interface provided by Splitting AI – this class
+accepts a whole Document instead of a single Page and proposes splitting points or splits the original Documents.</p>
+<p>A Multimodal File Splitting Model is a model that uses an approach that takes both visual and textual parts of the
+Pages and processes them independently via the combined VGG19 architecture (simplified) and LegalBERT, passing the
+resulting outputs together to a Multi-Layered Perceptron. Model’s output is also a prediction of a Page being first or
+non-first.</p>
+<p>For developing a custom File Splitting approach, we propose an abstract class.</p>
 <section id="split-a-file-into-separate-documents">
 <h3>Split a file into separate Documents<a class="headerlink" href="#split-a-file-into-separate-documents" title="Permalink to this headline">¶</a></h3>
 <p>Let’s see how to use the <code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span></code> to automatically split a file into several Documents. We will be using
@@ -234,11 +162,11 @@ that it does not require specifying a Tokenizer explicitly.</p>
 <span class="c1"># save the model</span>
 <span class="n">save_path</span> <span class="o">=</span> <span class="n">file_splitting_model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">include_konfuzio</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-<span class="c1"># run the prediction</span>
+<span class="c1"># run the prediction and see its confidence</span>
 <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">test_document</span><span class="o">.</span><span class="n">pages</span><span class="p">():</span>
     <span class="n">pred</span> <span class="o">=</span> <span class="n">file_splitting_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">pred</span><span class="o">.</span><span class="n">is_first_page</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Page </span><span class="si">{}</span><span class="s1"> is predicted as the first.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">number</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Page </span><span class="si">{}</span><span class="s1"> is predicted as the first. Confidence: </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">number</span><span class="p">,</span> <span class="n">page</span><span class="o">.</span><span class="n">is_first_page_confidence</span><span class="p">))</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Page </span><span class="si">{}</span><span class="s1"> is predicted as the non-first.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">number</span><span class="p">))</span>
 
@@ -263,7 +191,7 @@ that it does not require specifying a Tokenizer explicitly.</p>
 
 <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">new_document</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pages</span><span class="p">():</span>
     <span class="k">if</span> <span class="n">page</span><span class="o">.</span><span class="n">is_first_page</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Page </span><span class="si">{}</span><span class="s1"> is predicted as the first.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">number</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Page </span><span class="si">{}</span><span class="s1"> is predicted as the first. Confidence: </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">number</span><span class="p">,</span> <span class="n">page</span><span class="o">.</span><span class="n">is_first_page_confidence</span><span class="p">))</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Page </span><span class="si">{}</span><span class="s1"> is predicted as the non-first.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">number</span><span class="p">))</span>
 </pre></div>
@@ -399,11 +327,11 @@ exclusive first-page strings.</p>
 <span class="c1"># save the model</span>
 <span class="n">save_path</span> <span class="o">=</span> <span class="n">file_splitting_model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">include_konfuzio</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-<span class="c1"># run the prediction</span>
+<span class="c1"># run the prediction and see its confidence</span>
 <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">test_document</span><span class="o">.</span><span class="n">pages</span><span class="p">():</span>
     <span class="n">pred</span> <span class="o">=</span> <span class="n">file_splitting_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">pred</span><span class="o">.</span><span class="n">is_first_page</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Page </span><span class="si">{}</span><span class="s1"> is predicted as the first.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">number</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Page </span><span class="si">{}</span><span class="s1"> is predicted as the first. Confidence: </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">number</span><span class="p">,</span> <span class="n">page</span><span class="o">.</span><span class="n">is_first_page_confidence</span><span class="p">))</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Page </span><span class="si">{}</span><span class="s1"> is predicted as the non-first.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">number</span><span class="p">))</span>
 
@@ -428,7 +356,7 @@ exclusive first-page strings.</p>
 
 <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">new_document</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pages</span><span class="p">():</span>
     <span class="k">if</span> <span class="n">page</span><span class="o">.</span><span class="n">is_first_page</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Page </span><span class="si">{}</span><span class="s1"> is predicted as the first.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">number</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Page </span><span class="si">{}</span><span class="s1"> is predicted as the first. Confidence: </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">number</span><span class="p">,</span> <span class="n">page</span><span class="o">.</span><span class="n">is_first_page_confidence</span><span class="p">))</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Page </span><span class="si">{}</span><span class="s1"> is predicted as the non-first.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">number</span><span class="p">))</span>
 </pre></div>
@@ -488,7 +416,7 @@ metrics to <code class="docutils literal notranslate"><span class="pre">None</sp
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">fn</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">YOUR_CATEGORY</span><span class="p">))</span>
 </pre></div>
 </div>
-<p>For more details, see the <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#evaluation">Python API Documentation</a> on
+<p>For more details, see the <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#ai-evaluation">Python API Documentation</a> on
 Evaluation.</p>
 <section id="example-of-evaluation-input-and-output">
 <h4>Example of evaluation input and output<a class="headerlink" href="#example-of-evaluation-input-and-output" title="Permalink to this headline">¶</a></h4>
@@ -700,7 +628,7 @@ specify the metrics accordingly at the class’s initialization). Example usage:
 </pre></div>
 </div>
 <p>If you use a Categorization AI to automatically assign a Category to a Document (such as the
-<a class="reference external" href="tutorials.html#categorization-fallback-logic">NameBasedCategorizationAI</a>), each Page will be assigned a
+<a class="reference external" href="tutorials.html#name-based-categorization-ai">NameBasedCategorizationAI</a>), each Page will be assigned a
 Category Annotation with predicted confidence information, and the following properties will be accessible. You can
 also find these documented under <a class="reference external" href="sourcecode.html#document">API Reference - Document</a>,
 <a class="reference external" href="sourcecode.html#page">API Reference - Page</a> and
@@ -782,7 +710,7 @@ also find these documented under <a class="reference external" href="sourcecode.
 <section id="model-based-categorization-ai">
 <h3>Model-based Categorization AI<a class="headerlink" href="#model-based-categorization-ai" title="Permalink to this headline">¶</a></h3>
 <p>Build, train and test a Categorization AI using Image Models and Text Models to classify the image and text of each Page.</p>
-<p>For a list of available Models see <a class="reference external" href="#id8">Available Categorization Models</a>.</p>
+<p>For a list of available Models see <a class="reference external" href="#id2">Available Categorization Models</a>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Document</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">load_model</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.document_categorization</span> <span class="kn">import</span> <span class="n">ImageModel</span><span class="p">,</span> <span class="n">TextModel</span>
@@ -819,8 +747,8 @@ also find these documented under <a class="reference external" href="sourcecode.
 <span class="n">categorization_pipeline_loaded</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">pipeline_path</span><span class="p">)</span>
 </pre></div>
 </div>
-<section id="id8">
-<h4>Available Categorization Models<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h4>
+<section id="id2">
+<h4>Available Categorization Models<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
 <p>When using <code class="docutils literal notranslate"><span class="pre">build_categorization_ai_pipeline</span></code>, you can select which Image Module and/or Text Module to use for
 classification. At least one betweem the Image Model or the Text Model must be specified. Both can also be used
 at the same time.</p>
@@ -864,6 +792,135 @@ to categorize each Page. The Page Categorization Model is a container for Catego
 output layers of each contained Model with a Dropout Layer and a Fully Connected Layer.</p>
 <p><span class="raw-html-m2r"><div class="mxgraph" style="max-width:100%;border:1px solid transparent;" data-mxgraph="{&quot;highlight&quot;:&quot;#0000ff&quot;,&quot;nav&quot;:true,&quot;resize&quot;:true,&quot;toolbar&quot;:&quot;zoom layers tags lightbox&quot;,&quot;edit&quot;:&quot;_blank&quot;,&quot;url&quot;:&quot;https://raw.githubusercontent.com/konfuzio-ai/konfuzio-sdk/master/docs/sdk/examples/document_categorization/CategorizationAI.drawio&quot;}"></div></span></p>
 <script type="text/javascript" src="https://viewer.diagrams.net/embed2.js?&fetch=https%3A%2F%2Fraw.githubusercontent.com%2Fkonfuzio-ai%2Fkonfuzio-sdk%2Fmaster%2Fdocs%2Fsdk%2Fexamples%2Fdocument_categorization%2FCategorizationAI.drawio"></script></section>
+</section>
+<section id="document-information-extraction">
+<h2>Document Information Extraction<a class="headerlink" href="#document-information-extraction" title="Permalink to this headline">¶</a></h2>
+<section id="train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents">
+<h3>Train a Konfuzio SDK Model to Extract Information From Payslip Documents<a class="headerlink" href="#train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents" title="Permalink to this headline">¶</a></h3>
+<p>The tutorial <em>RFExtractionAI Demo</em> aims to show you how to use the Konfuzio SDK package to use a simple <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#konfuzio_sdk.tokenizer.regex.WhitespaceTokenizer">Whitespace
+tokenizer</a> and to
+train a “RFExtractionAI” model to find and extract relevant information like Name, Date and Recipient
+from payslip documents.</p>
+<p>You can <img alt="OpenInColab" src="https://colab.research.google.com/assets/colab-badge.svg" /> or download it from <a class="reference external" href="https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/RFExtractionAI%20Demo.ipynb">here</a>
+and try it by yourself.</p>
+</section>
+<section id="evaluate-a-trained-extraction-ai-model">
+<h3>Evaluate a Trained Extraction AI Model<a class="headerlink" href="#evaluate-a-trained-extraction-ai-model" title="Permalink to this headline">¶</a></h3>
+<p>In this example we will see how we can evaluate a trained <code class="docutils literal notranslate"><span class="pre">RFExtractionAI</span></code> model. We will assume that we have a trained
+pickled model available. See <a class="reference external" href="https://dev.konfuzio.com/sdk/examples/examples.html#train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents">here</a>
+for how to train such a model, and check out the <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#ai-evaluation">Evaluation</a>
+documentation for more details.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">load_model</span>
+
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="n">MODEL_PATH</span><span class="p">)</span>
+
+<span class="c1"># To get the evaluation of the full pipeline</span>
+<span class="n">evaluation</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">evaluate_full</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Full evaluation F1 score: </span><span class="si">{</span><span class="n">evaluation</span><span class="o">.</span><span class="n">f1</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Full evaluation recall: </span><span class="si">{</span><span class="n">evaluation</span><span class="o">.</span><span class="n">recall</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Full evaluation precision: </span><span class="si">{</span><span class="n">evaluation</span><span class="o">.</span><span class="n">precision</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># To get the evaluation of the Tokenizer alone</span>
+<span class="n">evaluation</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">evaluate_tokenizer</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tokenizer evaluation F1 score: </span><span class="si">{</span><span class="n">evaluation</span><span class="o">.</span><span class="n">tokenizer_f1</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># To get the evaluation of the Label classifier given perfect tokenization</span>
+<span class="n">evaluation</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">evaluate_clf</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Label classifier evaluation F1 score: </span><span class="si">{</span><span class="n">evaluation</span><span class="o">.</span><span class="n">clf_f1</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># To get the evaluation of the LabelSet given perfect Label classification</span>
+<span class="n">evaluation</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">evaluate_clf</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Label Set evaluation F1 score: </span><span class="si">{</span><span class="n">evaluation</span><span class="o">.</span><span class="n">f1</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="data-validation-rules">
+<h2>Data Validation Rules<a class="headerlink" href="#data-validation-rules" title="Permalink to this headline">¶</a></h2>
+<p>Konfuzio automatically applies a set of rules for validating data within a <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#project">Project</a>.
+Data Validation Rules ensure that Training and Test data is consistent and well formed for training an
+<a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#extraction-ai">Extraction AI</a> with Konfuzio.</p>
+<p>In general, if a Document fails any of the checks described in the next sections, it will not be possible to train an
+AI with that Document.</p>
+<p>More specifically:</p>
+<ul class="simple">
+<li><p>If a Document fails any of the checks described in the <a class="reference external" href="#id7">Bbox Validation Rules</a> section, it
+will not be possible to initialize the Project as a Python object (such as with
+<code class="docutils literal notranslate"><span class="pre">project</span> <span class="pre">=</span> <span class="pre">Project(YOUR_PROJECT_ID)</span></code>), and a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> will be raised. All other Documents in the Project will be
+able to be initialized.</p></li>
+<li><p>If a Document fails any of the checks described in the sections
+<a class="reference external" href="#id5">Annotation Validation Rules</a> and <a class="reference external" href="#id6">Span Validation Rules</a>, it
+will not be possible to retrieve the Annotations (including their Spans) that fail the specific checks (such as with
+<code class="docutils literal notranslate"><span class="pre">annotation</span> <span class="pre">=</span> <span class="pre">document.get_annotation_by_id(YOUR_ANNOTATION_ID)</span></code>), and a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> will be raised. All other
+Annotations in the Document will be retrievable.</p></li>
+</ul>
+<section id="initializing-a-project-with-the-data-validation-rules-enabled">
+<h3>Initializing a Project with the Data Validation Rules enabled<a class="headerlink" href="#initializing-a-project-with-the-data-validation-rules-enabled" title="Permalink to this headline">¶</a></h3>
+<p>By default, any <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#project">Project</a> has the Data Validation Rules enabled, so nothing
+special needs to be done to enable it.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
+
+<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>  <span class="c1"># all the data in this Project will be validated</span>
+</pre></div>
+</div>
+</section>
+<section id="document-validation-rules">
+<h3>Document Validation Rules<a class="headerlink" href="#document-validation-rules" title="Permalink to this headline">¶</a></h3>
+<p>A <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#document">Document</a> passes the Data Validation Rules only if all the
+contained Annotations, Spans and Bboxes pass the Data Validation Rules.
+If at least one Annotation, Span, or Bbox within a Document fails one of the following checks, the entire Document is
+marked as unsuitable for training an Extraction AI.</p>
+</section>
+<section id="id5">
+<h3>Annotation Validation Rules<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<p>An <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#annotation">Annotation</a> passes the Data Validation Rules only if:</p>
+<ol class="arabic simple">
+<li><p>The Annotation is not from a Category different from the Document’s Category</p></li>
+<li><p>The Annotation is not entirely overlapping with another Annotation with the same Label</p>
+<ul class="simple">
+<li><p>It implies that partial overlaps with same Labels are allowed</p></li>
+<li><p>It implies that full overlaps with different Labels are allowed</p></li>
+</ul>
+</li>
+<li><p>The Annotation has at least one Span</p></li>
+</ol>
+<p>Please note that the Annotation Validation Rules are indifferent about the values of <code class="docutils literal notranslate"><span class="pre">Annotation.is_correct</span></code> or <code class="docutils literal notranslate"><span class="pre">Annotation.revised</span></code>.
+For more information about what these boolean values mean, see <a class="reference external" href="https://help.konfuzio.com/modules/annotations/index.html">Konfuzio Server - Annotations</a>.</p>
+</section>
+<section id="id6">
+<h3>Span Validation Rules<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<p>A <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#span">Span</a> passes the Data Validation Rules only if:</p>
+<ol class="arabic simple">
+<li><p>The Span contains non-empty text (the start offset must be strictly greater than the end offset)</p></li>
+<li><p>The Span is contained within a single line of text (must not be distributed across multiple lines)</p></li>
+</ol>
+</section>
+<section id="id7">
+<h3>Bbox Validation Rules<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
+<p>A <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#bbox">Bbox</a> passes the Data Validation Rules only if:</p>
+<ol class="arabic simple">
+<li><p>The Bbox has non-negative width and height (zero is allowed for compatibility reasons with many OCR engines)</p></li>
+<li><p>The Bbox is entirely contained within the bounds of a Page</p></li>
+<li><p>The character that is mapped by the Bbox must correspond to the text in the Document</p></li>
+</ol>
+</section>
+<section id="initializing-a-project-with-the-data-validation-rules-disabled">
+<h3>Initializing a Project with the Data Validation Rules disabled<a class="headerlink" href="#initializing-a-project-with-the-data-validation-rules-disabled" title="Permalink to this headline">¶</a></h3>
+<p>By default, any <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#project">Project</a> has the Data Validation Rules enabled.</p>
+<p>A possible reason for choosing to disable the Data Validation Rules that come with the Konfuzio SDK, is that an expert user
+wants to define a custom data structure or training pipeline which violates some assumptions normally present in Konfuzio
+Extraction AIs and pipelines.
+If you don’t want to validate your data, you should initialize the Project with <code class="docutils literal notranslate"><span class="pre">strict_data_validation=False</span></code>.</p>
+<p>We highly recommend to keep the Data Validation Rules enabled at all times, as it ensures that Training and Test data
+is consistent for training an Extraction AI. Disabling the Data Validation Rules and training an
+<a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#extraction-ai">Extraction AI</a> with potentially duplicated, malformed,
+or inconsistent data can <strong>decrease the quality of an Extraction AI</strong>. Only disable them if you know what you are doing.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
+
+<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">,</span> <span class="n">strict_data_validation</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
 </section>
 <section id="find-possible-outliers-among-the-ground-truth-annotations">
 <h2>Find possible outliers among the ground-truth Annotations<a class="headerlink" href="#find-possible-outliers-among-the-ground-truth-annotations" title="Permalink to this headline">¶</a></h2>
@@ -915,45 +972,6 @@ three of the search methods are enabled.</p>
 <span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
 <span class="n">label</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="n">YOUR_LABEL_NAME</span><span class="p">)</span>
 <span class="n">outliers</span> <span class="o">=</span> <span class="n">label</span><span class="o">.</span><span class="n">get_probable_outliers</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">categories</span><span class="p">,</span> <span class="n">confidence_search</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-</pre></div>
-</div>
-</section>
-<section id="train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents">
-<h2>Train a Konfuzio SDK Model to Extract Information From Payslip Documents<a class="headerlink" href="#train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents" title="Permalink to this headline">¶</a></h2>
-<p>The tutorial <em>RFExtractionAI Demo</em> aims to show you how to use the Konfuzio SDK package to use a simple <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#konfuzio_sdk.tokenizer.regex.WhitespaceTokenizer">Whitespace
-tokenizer</a> and to
-train a “RFExtractionAI” model to find and extract relevant information like Name, Date and Recipient
-from payslip documents.</p>
-<p>You can <img alt="OpenInColab" src="https://colab.research.google.com/assets/colab-badge.svg" />* or download it from <code class="docutils literal notranslate"><span class="pre">here</span> <span class="pre">&lt;https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/RFExtractionAI%20Demo.ipynb&gt;</span></code>*
-and try it by yourself.</p>
-</section>
-<section id="evaluate-a-trained-extraction-ai-model">
-<h2>Evaluate a Trained Extraction AI Model<a class="headerlink" href="#evaluate-a-trained-extraction-ai-model" title="Permalink to this headline">¶</a></h2>
-<p>In this example we will see how we can evaluate a trained <code class="docutils literal notranslate"><span class="pre">RFExtractionAI</span></code> model. We will assume that we have a trained
-pickled model available. See <a class="reference external" href="https://dev.konfuzio.com/sdk/examples/examples.html#train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents">here</a>
-for how to train such a model, and check out the <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#evaluation">Evaluation</a>
-documentation for more details.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">load_model</span>
-
-<span class="n">pipeline</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="n">MODEL_PATH</span><span class="p">)</span>
-
-<span class="c1"># To get the evaluation of the full pipeline</span>
-<span class="n">evaluation</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">evaluate_full</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Full evaluation F1 score: </span><span class="si">{</span><span class="n">evaluation</span><span class="o">.</span><span class="n">f1</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Full evaluation recall: </span><span class="si">{</span><span class="n">evaluation</span><span class="o">.</span><span class="n">recall</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Full evaluation precision: </span><span class="si">{</span><span class="n">evaluation</span><span class="o">.</span><span class="n">precision</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-<span class="c1"># To get the evaluation of the Tokenizer alone</span>
-<span class="n">evaluation</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">evaluate_tokenizer</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tokenizer evaluation F1 score: </span><span class="si">{</span><span class="n">evaluation</span><span class="o">.</span><span class="n">tokenizer_f1</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-<span class="c1"># To get the evaluation of the Label classifier given perfect tokenization</span>
-<span class="n">evaluation</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">evaluate_clf</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Label classifier evaluation F1 score: </span><span class="si">{</span><span class="n">evaluation</span><span class="o">.</span><span class="n">clf_f1</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-<span class="c1"># To get the evaluation of the LabelSet given perfect Label classification</span>
-<span class="n">evaluation</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">evaluate_clf</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Label Set evaluation F1 score: </span><span class="si">{</span><span class="n">evaluation</span><span class="o">.</span><span class="n">f1</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
