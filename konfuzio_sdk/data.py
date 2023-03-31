@@ -458,7 +458,7 @@ class Bbox:
 
     def __repr__(self):
         """Represent the Box."""
-        return f'{self.__class__.__name__}: {self.x0} {self.x1} {self.y0} {self.y1} on Page {self.page}'
+        return f'{self.__class__.__name__}: x0: {self.x0} x1: {self.x1} y0: {self.y0} y1: {self.y1} on Page {self.page}'
 
     def __hash__(self):
         """Return identical value for a Bounding Box."""
@@ -1707,7 +1707,7 @@ class Span(Data):
         if self.offset_string and len(self.offset_string) < 12:
             offset_string_repr = self.offset_string
         elif self.offset_string:
-            offset_string_repr = f"{self.offset_string[:10]}(...)"
+            offset_string_repr = f"{self.offset_string[:10]}[...]"
         else:
             offset_string_repr = ''
 
