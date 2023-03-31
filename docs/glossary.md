@@ -35,6 +35,7 @@ We use several concepts in the Konfuzio Platform. We are capitalize concepts in 
 - Silk
 - Span
 - Span Validation Rule
+- Superuser
 - Regex Tokenizer
 - Tokenizer
 - True Negative
