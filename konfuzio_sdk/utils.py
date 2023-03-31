@@ -902,11 +902,7 @@ def get_sdk_version():
 
 
 def get_spans_from_bbox(selection_bbox: 'Bbox') -> List['Span']:
-    """ """
-    spans = []
-
-    # sort selected bboxes by y first, then x
-    bboxes.sort(key=lambda x: (x.y0, x.x0))
+    """TODO add testcase. This function re-implemnts some funcitonaluty of get_merged_bboxes(only used in server) in a clean way."""
     from konfuzio_sdk.data import Span
 
     selected_bboxes = [
@@ -917,6 +913,7 @@ def get_spans_from_bbox(selection_bbox: 'Bbox') -> List['Span']:
 
     # iterate over each line_number (or bottom, depending on group_by) and all of the character
     # bboxes that have the same line_number (or bottom)
+    spans = []
     for line_number, line_char_bboxes in itertools.groupby(selected_bboxes, lambda x: x['line_number']):
         # remove space chars from the line selection so they don't interfere with the merging of bboxes
         # (a bbox should never start with a space char)

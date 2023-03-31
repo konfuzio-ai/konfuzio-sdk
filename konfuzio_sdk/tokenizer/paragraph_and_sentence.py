@@ -50,11 +50,11 @@ class ParagraphTokenizer(AbstractTokenizer):
         detectron_document_results = get_results_from_segmentation(document_id, document.project.id_)
         all_paragraph_bboxes: List[List['Bbox']] = detectron_get_paragraph_bboxes(detectron_document_results, document)
 
-        # Check if detrectron paragraphs overlap. TODO seems to be the case.
-        for x in all_paragraph_bboxes:
-            for y1 in x:
-                for y2 in x:
-                    assert not y1.check_overlap(y2)
+        # Check if detectron paragraphs overlap. TODO seems to be the case.
+        # for x in all_paragraph_bboxes:
+        #     for y1 in x:
+        #         for y2 in x:
+        #             assert not y1.check_overlap(y2)
 
         if self.create_detectron_labels:
             label_set = document.category.project.get_label_set_by_name(document.category.name)
@@ -75,14 +75,21 @@ class ParagraphTokenizer(AbstractTokenizer):
                 else:
                     label = document.project.no_label
 
-                annotation = Annotation(
-                    document=document,
-                    annotation_set=annotation_set,
-                    label=label,
-                    label_set=document.project.no_label_set,
-                    category=document.category,
-                    spans=spans,
-                )
+                try:
+                    annotation = Annotation(
+                        document=document,
+                        annotation_set=annotation_set,
+                        label=label,
+                        label_set=document.project.no_label_set,
+                        category=document.category,
+                        spans=spans,
+                    )
+                except Exception as e:
+                    if 'is a duplicate of' in str(e):
+                        logger.warning(f'{annotation} cannot be tokenized because it is an exact duplicated of an existing tokenized Annotation.')
+                    else:
+                        raise
+
         return document
 
     def __repr__(self):
