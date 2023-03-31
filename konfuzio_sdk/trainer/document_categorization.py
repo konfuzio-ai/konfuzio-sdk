@@ -58,6 +58,32 @@ class AbstractCategorizationAI(metaclass=abc.ABCMeta):
         """Convert class name to machine-readable name."""
         return f'{self.name.lower().strip()}'
 
+    @property
+    def temp_pkl_file_path(self) -> str:
+        """
+        Generate a path for temporary pickle file.
+
+        :returns: A string with the path.
+        """
+        temp_pkl_file_path = os.path.join(
+            self.project.project_folder,
+            f'{get_timestamp()}_{self.project.id_}_{self.name_lower()}_tmp.pkl',
+        )
+        return temp_pkl_file_path
+
+    @property
+    def pkl_file_path(self) -> str:
+        """
+        Generate a path for a resulting pickle file.
+
+        :returns: A string with the path.
+        """
+        pkl_file_path = os.path.join(
+            self.project.project_folder,
+            f'{get_timestamp()}_{self.project.id_}_{self.name_lower()}.pkl',
+        )
+        return pkl_file_path
+
     @abc.abstractmethod
     def fit(self) -> None:
         """Train the Categorization AI."""
@@ -123,7 +149,13 @@ class AbstractCategorizationAI(metaclass=abc.ABCMeta):
         return self.evaluation
 
     def check_is_ready(self):
-        """Check if Categorization AI instance is ready for inference."""
+        """
+        Check if Categorization AI instance is ready for inference.
+
+        It is assumed that the model is ready when there is at least one Category passed as the input.
+
+        :raises AttributeError: When no Categories are passed into the model.
+        """
         if not self.categories:
             raise AttributeError(f'{self} requires Categories.')
 
@@ -346,10 +378,10 @@ class NBOWSelfAttention(AbstractTextCategorizationModel):
 
 class LSTM(AbstractTextCategorizationModel):
     """
-    The LSTM (long short-term memory) is a variant of a RNN (recurrent neural network).
+    The LSTM (long short-term memory) is a variant of an RNN (recurrent neural network).
 
     It feeds the input tokens through an embedding layer and then processes them sequentially with the LSTM, outputting
-    a hidden state for each token. If the LSTM is bi-directional then it trains a forward and backward LSTM per layer
+    a hidden state for each token. If the LSTM is bidirectional then it trains a forward and backward LSTM per layer
     and concatenates the forward and backward hidden states for each token.
 
     :param emb_dim: The dimensions of the embedding vector.
@@ -412,7 +444,7 @@ class BERT(AbstractTextCategorizationModel):
     """
     Wraps around pre-trained BERT-type models from the HuggingFace library.
 
-    BERT (bi-directional encoder representations from Transformers) is a family of large Transformer models. The
+    BERT (bidirectional encoder representations from Transformers) is a family of large Transformer models. The
     available BERT variants are all pre-trained models provided by the transformers library. It is usually infeasible
     to train a BERT model from scratch due to the significant amount of computation required. However, the pre-trained
     models can be easily fine-tuned on desired data.

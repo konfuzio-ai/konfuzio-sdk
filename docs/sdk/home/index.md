@@ -2,10 +2,10 @@
 
 The relations between all major Data Layer concepts of the SDK are 
 the following: a [Project](#id1) consists of multiple [Documents](#document). Each one of the Documents consists of 
-the [Pages](#page) and belongs to a certain [Category](#category). Text in a Document can be marked by 
+the [Pages](#page) and belongs to a certain [Category](#id4). Text in a Document can be marked by 
 [Annotations](#annotation), which can be multi-line, and where each continuous piece of text contained into an 
-Annotation is a [Span](#span). Each Annotation is located within a certain [Bbox](#id14) and is defined by a 
-[Label](#id11) that is a part of one of the [Label Sets](#label-set). An [Annotation Set](#id9) is a list of Annotations
+Annotation is a [Span](#id7). Each Annotation is located within a certain [Bbox](#id15) and is defined by a 
+[Label](#id12) that is a part of one of the [Label Sets](#label-set). An [Annotation Set](#id10) is a list of Annotations
 that share a Label Set. 
 
 For more detailed information on each concept, follow the link on the concept's name which leads to the automatically 
