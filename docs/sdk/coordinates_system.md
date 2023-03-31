@@ -22,7 +22,7 @@ image representation of a Document Page. These representations are used for comp
 
 The coordinates system used has its start in the bottom left corner of the page.
 
-![coordinates_system](../_static/img/coordinates_schema.png)
+.. image:: /_static/img/coordinates_schema.png
 
 
 To visualize the character bounding boxes of a document and overlapping them in the image opened with the python
@@ -33,7 +33,7 @@ The following code can be used for this:
    :language: python
    :lines: 2-6,9-16,18-23,26-27,30-33,35-39,52-57
 
-![characters_bboxes](../_static/img/bboxes_characters.png)
+.. image:: /_static/img/bboxes_characters.png
 
 The coordinates obtained from the segmentation endpoint of the API are based on the image array shape.
 To visualize the segmentation bounding boxes of a page on an image opened with the python library PIL, for example,
@@ -43,7 +43,7 @@ we can overlap them directly.
    :language: python
    :lines: 2-7,9-15,17,20,27,41-47,53-54
 
-![segmentation_bboxes](../_static/img/bboxes_segmentation.png)
+.. image:: /_static/img/bboxes_segmentation.png
 
 To visualize both at the same time we can convert the coordinates from the segmentation result to be based on the image
 size used for the characters' bbox.
@@ -52,4 +52,4 @@ size used for the characters' bbox.
    :language: python
    :lines: 2-7,9-23,26-33,35-41,47-54
 
-![characters_and_segmentation_bboxes](../_static/img/bboxes_overlap.png)
+.. image:: /_static/img/bboxes_overlap.png
