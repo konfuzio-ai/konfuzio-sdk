@@ -1707,10 +1707,10 @@ class Span(Data):
 
     def __repr__(self):
         """Return string representation."""
-        if self.offset_string and len(self.offset_string) < 12:
+        if self.offset_string and len(self.offset_string) < 16:
             offset_string_repr = self.offset_string
         elif self.offset_string:
-            offset_string_repr = f"{self.offset_string[:10]}[...]"
+            offset_string_repr = f"{self.offset_string[:14]}[...]"
         else:
             offset_string_repr = ''
 

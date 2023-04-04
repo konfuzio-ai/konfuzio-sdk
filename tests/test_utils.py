@@ -3,9 +3,14 @@ import importlib.metadata
 import os
 import unittest
 
+from tests.variables import (
+    OFFLINE_PROJECT,
+    TEST_DOCUMENT_ID,
+)
+
 import pytest
 from konfuzio_sdk import IMAGE_FILE, PDF_FILE, OFFICE_FILE
-from konfuzio_sdk.data import Project, Document, Annotation, Span, Label, LabelSet, Category
+from konfuzio_sdk.data import Project, Document, Annotation, Span, Label, LabelSet, Category, Bbox
 from konfuzio_sdk.utils import (
     get_id,
     get_timestamp,
@@ -24,6 +29,7 @@ from konfuzio_sdk.utils import (
     normalize_memory,
     exception_or_log_error,
     get_sdk_version,
+    get_spans_from_bbox,
 )
 
 TEST_STRING = "sample string"
@@ -497,6 +503,31 @@ def test_iter_before_and_after():
             assert before + 1 == i
         elif after:
             assert after - 1 == i
+
+
+def test_get_spans_from_bbox():
+    """Test to get Spans in a bounding box."""
+    project = Project(id_=None, project_folder=OFFLINE_PROJECT)
+    document = project.get_document_by_id(document_id=TEST_DOCUMENT_ID)
+    page = document.get_page_by_index(0)
+    bbox = Bbox(x0=0, y0=0, x1=500, y1=100, page=page)
+
+    spans = get_spans_from_bbox(selection_bbox=bbox)
+
+    assert len(spans) == 7
+    assert spans[0].start_offset == 3588
+    assert spans[0].end_offset == 3677
+    assert spans[6].start_offset == 4322
+    assert spans[6].end_offset == 4427
+
+    bbox_2 = Bbox(x0=300, y0=400, x1=400, y1=550, page=page)
+    spans_2 = get_spans_from_bbox(selection_bbox=bbox_2)
+
+    assert len(spans_2) == 2
+    assert spans_2[0].start_offset == 1694
+    assert spans_2[0].end_offset == 1717
+    assert spans_2[1].start_offset == 1926
+    assert spans_2[1].end_offset == 1932
 
 
 def test_get_sdk_version():
