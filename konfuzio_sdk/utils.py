@@ -465,35 +465,6 @@ def map_offsets(characters_bboxes: list) -> dict:
     return offsets_map
 
 
-def detectron_get_paragraph_bbox_and_label_name(
-    detectron_document_results: List[List[Dict]], document
-) -> List[List[Tuple['Bbox', str]]]:
-    """Call detectron Bbox corresponding to each paragraph."""
-    from konfuzio_sdk.data import Bbox
-
-    assert isinstance(document.project.id_, int)
-    assert len(detectron_document_results) == document.number_of_pages
-
-    paragraph_document_bboxes: List[List['Bbox']] = []
-
-    for page_index, detectron_page_results in enumerate(detectron_document_results):
-        paragraph_page_bboxes = []
-        for detectron_result in detectron_page_results:
-            paragraph_bbox = Bbox.from_image_size(
-                x0=detectron_result['x0'],
-                x1=detectron_result['x1'],
-                y1=detectron_result['y1'],
-                y0=detectron_result['y0'],
-                page=document.get_page_by_index(page_index=page_index),
-            )
-            label_name = detectron_result['label']
-            paragraph_page_bboxes.append((paragraph_bbox, label_name))
-        paragraph_document_bboxes.append(paragraph_page_bboxes)
-    assert len(document.pages()) == len(paragraph_document_bboxes)
-
-    return paragraph_document_bboxes
-
-
 def detectron_get_paragraph_bboxes(detectron_document_results: List[List[Dict]], document) -> List[List['Bbox']]:
     """Call detectron Bbox corresponding to each paragraph."""
     from konfuzio_sdk.data import Bbox
@@ -902,7 +873,7 @@ def get_sdk_version():
 
 
 def get_spans_from_bbox(selection_bbox: 'Bbox') -> List['Span']:
-    """TODO add testcase. This function re-implemnts some funcitonaluty of get_merged_bboxes(only used in server) in a clean way."""
+    """Re-implements some functionality of get_merged_bboxes(only used in server) in a clean way."""
     from konfuzio_sdk.data import Span
 
     selected_bboxes = [
@@ -914,7 +885,7 @@ def get_spans_from_bbox(selection_bbox: 'Bbox') -> List['Span']:
     # iterate over each line_number (or bottom, depending on group_by) and all of the character
     # bboxes that have the same line_number (or bottom)
     spans = []
-    for line_number, line_char_bboxes in itertools.groupby(selected_bboxes, lambda x: x['line_number']):
+    for _, line_char_bboxes in itertools.groupby(selected_bboxes, lambda x: x['line_number']):
         # remove space chars from the line selection so they don't interfere with the merging of bboxes
         # (a bbox should never start with a space char)
         trimmed_line_char_bboxes = [char for char in line_char_bboxes if not char['text'].isspace()]

@@ -30,8 +30,8 @@ class TestDetectronParagraphTokenizer(unittest.TestCase):
 
         virtual_doc = self.tokenizer.tokenize(virtual_doc)
 
-        assert len(virtual_doc.annotations(use_correct=False)) == 26
-        assert len(virtual_doc.spans(use_correct=False)) == 99
+        assert len(virtual_doc.annotations(use_correct=False)) == 30
+        assert len(virtual_doc.spans(use_correct=False)) == 144
 
         assert len(virtual_doc.annotations(use_correct=False)[10].spans) == 7
         assert virtual_doc.annotations(use_correct=False)[10].spans[0].start_offset == 3145
@@ -42,8 +42,8 @@ class TestDetectronParagraphTokenizer(unittest.TestCase):
         assert len(pages) == 3
 
         assert len(pages[0].annotations(use_correct=False)) == 8
-        assert len(pages[1].annotations(use_correct=False)) == 10
-        assert len(pages[2].annotations(use_correct=False)) == 8
+        assert len(pages[1].annotations(use_correct=False)) == 12
+        assert len(pages[2].annotations(use_correct=False)) == 10
 
     def test_paragraph_document_1_use_detectron_labels(self):
         """Test detectron Paragraph tokenizer on Lorem ipsum Document with create_detectron_labels option."""
@@ -53,16 +53,21 @@ class TestDetectronParagraphTokenizer(unittest.TestCase):
 
         virtual_doc = tokenizer(virtual_doc)
 
-        assert len(virtual_doc.annotations(use_correct=False)) == 26
-        assert len(virtual_doc.spans(use_correct=False)) == 99
+        assert len(virtual_doc.annotations(use_correct=False)) == 31
+        assert len(virtual_doc.spans(use_correct=False)) == 144
 
         pages = virtual_doc.pages()
 
         assert len(pages) == 3
 
         assert len(pages[0].annotations(use_correct=False)) == 8
-        assert len(pages[1].annotations(use_correct=False)) == 10
-        assert len(pages[2].annotations(use_correct=False)) == 8
+        assert len(pages[1].annotations(use_correct=False)) == 12
+
+        page_2_annotations = pages[2].annotations(use_correct=False)
+        assert len(page_2_annotations) == 11
+        assert page_2_annotations[0].spans == page_2_annotations[1].spans
+        page_2_annotations[0].label.name == 'title'
+        page_2_annotations[1].label.name == 'text'
 
         assert virtual_doc.annotations(use_correct=False)[0].label.name == 'title'
         assert virtual_doc.annotations(use_correct=False)[1].label.name == 'text'
@@ -72,8 +77,8 @@ class TestDetectronParagraphTokenizer(unittest.TestCase):
         virtual_doc = deepcopy(self.document_2)
 
         doc = self.tokenizer.tokenize(virtual_doc)
-        assert len(doc.annotations(use_correct=False)) == 78
-        assert len(doc.spans(use_correct=False)) == 599
+        assert len(doc.annotations(use_correct=False)) == 79
+        assert len(doc.spans(use_correct=False)) == 603
 
         assert len(doc.annotations(use_correct=False)[20].spans) == 10
         assert doc.annotations(use_correct=False)[20].spans[0].start_offset == 8157
@@ -85,7 +90,7 @@ class TestDetectronParagraphTokenizer(unittest.TestCase):
         assert len(pages[0].annotations(use_correct=False)) == 16
         assert len(pages[1].annotations(use_correct=False)) == 10
         assert len(pages[2].annotations(use_correct=False)) == 12
-        assert len(pages[3].annotations(use_correct=False)) == 14
+        assert len(pages[3].annotations(use_correct=False)) == 15
         assert len(pages[4].annotations(use_correct=False)) == 12
         assert len(pages[5].annotations(use_correct=False)) == 10
         assert len(pages[6].annotations(use_correct=False)) == 4

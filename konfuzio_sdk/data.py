@@ -448,6 +448,7 @@ class Bbox:
         self.y1: int = y1
         self.angle: float = 0.0  # not yet used
         self.page: Page = page
+        self._label_name: Optional[str] = None  # used in detectron tokenizer
         self._valid(validation)
 
     @property
