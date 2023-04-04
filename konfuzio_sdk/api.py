@@ -552,10 +552,7 @@ def get_results_from_segmentation(doc_id: int, project_id: int, session=konfuzio
     """
     segmentation_url = get_document_segmentation_details_url(doc_id, project_id)
     response = session.get(segmentation_url)
-    try:
-        response.raise_for_status()
-    except HTTPError as e:
-        raise HTTPError(response.text) from e
+
     segmentation_result = response.json()
     return segmentation_result
 
@@ -576,7 +573,6 @@ def upload_ai_model(ai_model_path: str, category_ids: List[int] = None, session=
             multipart_form_data = {'ai_model': (model_name, f)}
             headers = {"Prefer": "respond-async"}
             r = session.post(url, files=multipart_form_data, headers=headers)
-            r.raise_for_status()
     data = r.json()
     ai_model_id = data['id']
     ai_model = data['ai_model']
@@ -585,8 +581,7 @@ def upload_ai_model(ai_model_path: str, category_ids: List[int] = None, session=
         url = get_update_ai_model_url(ai_model_id)
         data = {'templates': category_ids}
         headers = {'content-type': 'application/json'}
-        response = session.patch(url, data=json.dumps(data), headers=headers)
-        response.raise_for_status()
+        session.patch(url, data=json.dumps(data), headers=headers)
 
     logger.info(f'New AI Model uploaded {ai_model} to {url}')
     return ai_model
