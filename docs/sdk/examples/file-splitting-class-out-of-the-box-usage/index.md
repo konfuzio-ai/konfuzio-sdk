@@ -1,3 +1,5 @@
+.. _file-splitting-tutorials:
+
 ## File Splitting 
 
 You can train your own File Splitting AI on the data from any Project of your choice. For that purpose, there are 
