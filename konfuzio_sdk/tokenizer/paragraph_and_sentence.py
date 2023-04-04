@@ -67,7 +67,8 @@ class ParagraphTokenizer(AbstractTokenizer):
             )
 
         if self.mode == 'detectron':
-            self._detectron_tokenize(document=document)
+            # self._detectron_tokenize(document=document)
+            self._new_detectron_tokenize(document=document)
         elif self.mode == 'line_distance':
             self._line_distance_tokenize(document=document)
 
@@ -77,6 +78,13 @@ class ParagraphTokenizer(AbstractTokenizer):
         self.processing_steps.append(ProcessingStep(self, document, time.monotonic() - t0))
 
         return document
+
+    def _new_detectron_tokenize(self, document: Document) -> Document:
+        """"""
+        document_id = document.id_ if document.id_ else document.copy_of_id
+
+        detectron_document_results = get_results_from_segmentation(document_id, document.project.id_)
+        all_paragraph_bboxes: List[List['Bbox']] = detectron_get_paragraph_bboxes(detectron_document_results, document)
 
     def _detectron_tokenize(self, document: Document) -> Document:
         """Create one multiline Annotation per paragraph detected by detectron2."""

@@ -900,3 +900,7 @@ def get_spans_from_bbox(selection_bbox: 'Bbox') -> List['Span']:
         spans.append(span)
 
     return spans
+
+
+def get_sentence_spans_from_bbox(selection_bbox: 'Bbox') -> List['Span']:
+    """"""
