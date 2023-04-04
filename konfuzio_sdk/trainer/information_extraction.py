@@ -2127,6 +2127,8 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
                 most_common_label = collections.Counter(annotation_labels).most_common(1)[0][0]
                 keep_annotation.label = most_common_label
 
+        return document
+
     def separate_labels(self, res_dict: 'Dict') -> 'Dict':
         """
         Undo the renaming of the labels.
