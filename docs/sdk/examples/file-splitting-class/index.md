@@ -1,8 +1,11 @@
-### Splitting for multi-Document files: Step-by-step guide
+### Develop and save a custom File Splitting AI
+
+In this tutorial, you will learn how to train a custom File Splitting AI on the data from a Project of your choice and 
+save a trained model for further usage.
 
 #### Intro
 
-It's common for multipage files to not be perfectly organized, and in some cases, multiple independent Documents may be 
+It's common for multi-paged files to not be perfectly organized, and in some cases, multiple independent Documents may be 
 included in a single file. To ensure that these Documents are properly processed and separated, we will be discussing a 
 method for identifying and splitting them into individual, independent Sub-documents.
 
