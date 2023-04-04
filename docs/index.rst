@@ -41,7 +41,7 @@ Review the release notes and and the source code on `GitHub <https://github.com/
    sdk/explanations.md
    sdk/sourcecode.rst
    sdk/contribution.md
-   sdk/changelog.md
+   Changelog <https://github.com/konfuzio-ai/konfuzio-sdk/releases>
 
 .. toctree::
    :caption: Konfuzio Server
@@ -63,5 +63,5 @@ Review the release notes and and the source code on `GitHub <https://github.com/
    dvui/explanations.md
    dvui/guides.md
    dvui/sourcecode.md
-   dvui/changelog.md
+   Changelog <https://github.com/konfuzio-ai/document-validation-ui/releases>
    

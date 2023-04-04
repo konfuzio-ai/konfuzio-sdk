@@ -1404,6 +1404,8 @@ class Label(Data):
                         true_positives[regex] = document.evaluate_regex(regex, self)['count_correct_annotations']
             if not true_positives:
                 logger.warning(f"No regex was found for {self} in {category}.")
+            elif not sum(true_positives.values()):
+                logger.warning(f"No resultative regexes found for {self} in {category}.")
             else:
                 regexes_with_percentages = {k: v / sum(true_positives.values()) for k, v in true_positives.items()}
                 sorted_regexes = dict(sorted(regexes_with_percentages.items(), key=lambda item: item[1]))

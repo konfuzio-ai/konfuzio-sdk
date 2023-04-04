@@ -1873,7 +1873,15 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         return df, _feature_list, _temp_df_raw_errors
 
     def check_is_ready(self):
-        """Check if Tokenizer is set and the classifiers set and trained."""
+        """
+        Check if the ExtractionAI is ready for the inference.
+
+        It is assumed that the model is ready if a Tokenizer and a Category were set, Classifiers were set and trained.
+
+        :raises AttributeError: When no Tokenizer is specified.
+        :raises AttributeError: When no Category is specified.
+        :raises AttributeError: When no Label Classifier has been provided.
+        """
         logger.info(f"Checking if {self} is ready for extraction.")
         if self.tokenizer is None:
             raise AttributeError(f'{self} missing Tokenizer.')
@@ -2559,14 +2567,16 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
     def temp_pkl_file_path(self) -> str:
         """Generate a path for temporary pickle file."""
         temp_pkl_file_path = os.path.join(
-            self.output_dir, f'{get_timestamp()}_{self.category.name.lower()}_tmp.cloudpickle'
+            self.output_dir, f'{get_timestamp()}_{self.category.name.lower()}_{self.name_lower()}_tmp.cloudpickle'
         )
         return temp_pkl_file_path
 
     @property
     def pkl_file_path(self) -> str:
         """Generate a path for a resulting pickle file."""
-        pkl_file_path = os.path.join(self.output_dir, f'{get_timestamp()}_{self.category.name.lower()}.pkl')
+        pkl_file_path = os.path.join(
+            self.output_dir, f'{get_timestamp()}_{self.category.name.lower()}_' f'{self.name_lower()}_.pkl'
+        )
         return pkl_file_path
 
     def reduce_model_weight(self):
