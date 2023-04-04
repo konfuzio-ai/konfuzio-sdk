@@ -1993,7 +1993,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         no_label_res_dict = self.remove_empty_dataframes_from_extraction(no_label_res_dict)
 
         # res_dict = self.filter_low_confidence_extractions(res_dict)
-        if type(self.tokenizer) not in {ParagraphTokenizer, SentenceTokenizer}:
+        if sdk_isinstance(self.tokenizer, ParagraphTokenizer) or sdk_isinstance(self.tokenizer, SentenceTokenizer):
             # We assume that Paragraph or Sentence tokenizers have correctly tokenized the Document
             res_dict = self.merge_horizontal(res_dict, inference_document.text)
 
