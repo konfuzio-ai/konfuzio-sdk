@@ -41,7 +41,7 @@ It is also possible to look at the metrics calculated by each Category independe
    :language: python
    :lines: 79
 
-For more details, see the [Python API Documentation](https://dev.konfuzio.com/sdk/sourcecode.html#evaluation) on 
+For more details, see the [Python API Documentation](https://dev.konfuzio.com/sdk/sourcecode.html#ai-evaluation) on 
 Evaluation.
 
 #### Example of evaluation input and output 

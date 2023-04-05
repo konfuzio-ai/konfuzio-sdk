@@ -38,7 +38,7 @@ Some other optional variables you can include are:
 - The default language of the app
 - The Category ID
 
-Please be aware that any variable in the `.env` will have priority from the variables defined in the `index.html`.
+You can also set the Document ID through the URL query parameteres like `?document=ID`. This will have priority from any other Document ID that is set on `.env` or in  `index.html`. For the other variables, the `.env` will also have priority from the ones defined in the html.
 
 ## Multilingual User Interface
 

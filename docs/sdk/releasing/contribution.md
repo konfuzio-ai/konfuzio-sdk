@@ -1,13 +1,3 @@
-.. meta::
-:description: How to contribute to the open source OCR, NLP and Computer Vision Python Package.
-
-# Contribution Guide
-
-First, please contact us via our [contact form](https://konfuzio.com/en/contact/). Some tests are data dependent.
-Please request access to this data. The access is free of charge and without any obligation.
-
-The [Architecture SDK to Server](explanations.html#architecture-sdk-to-server) can be useful for details about how 
-the Konfuzio SDK interacts with the Konfuzio Server.
 
 ## How to open a PR
 
@@ -166,7 +156,7 @@ its ID: *ms-vscode-remote.remote-containers*). Install the extension.
 
 <!--[extensions tab](images/vscode_docker/extensions.PNG)-->
 
-![remote development extension](../_static/img/vscode_docker/remote_dev_extension.png)
+.. image:: /_static/img/vscode_docker/remote_dev_extension.png
 
 ### 4. Set up your remote development environment
 
@@ -174,12 +164,12 @@ You should now be able to find the remote extension's symbol (arrows on a green 
 the VS Code window (picture below). Clicking on the symbol opens the extension's command pallet, which from now on is
 going to be our main access point to the extension.
 
-![green arrows](../_static/img/vscode_docker/green_arrows.png)
+.. image:: /_static/img/vscode_docker/green_arrows.png
 
 In the Command Pallet (*'View' > 'Command Pallet'*) select *'Remote-Containers: Add Development Container Configuration
 Files' > 'From $your_dockerfile'*
 
-![command pallet](../_static/img/vscode_docker/command_pallet.png)
+.. image:: /_static/img/vscode_docker/command_pallet.png
 
 Now you should see in the file explorer under *.devcontainer* your *devcontainer.json* file. Open it. These are the
 basic
@@ -188,7 +178,7 @@ the 'name' variable. Additionally, you should specify all the ports you need ins
 'forwardPorts'.
 If you are working with the sample project you do not need to specify any ports.
 
-![devcontainer.json](../_static/img/vscode_docker/devcontainer.png)
+.. image:: /_static/img/vscode_docker/devcontainer.png
 
 ### 5. Build and run your Docker container
 
@@ -199,7 +189,7 @@ can take quite a bit of time.
 To confirm that you are now inside the container look again to the bottom left. You should now be able to
 see *'Dev Container: $your_name'* next to the two arrows.
 
-![green arrows with text](../_static/img/vscode_docker/green_arrows_with_text.png)
+.. image:: /_static/img/vscode_docker/green_arrows_with_text.png
 
 ### 6. Install the Python extension inside the Docker container to debug and run Python files
 
@@ -214,7 +204,7 @@ the run/debug icon that should be now available on the left taskbar.
 Click *‘Run and Debug’ > ‘Python File’* and you are good to go. Before make sure to set the needed breakpoints by
 clicking to the left of the line numbers.
 
-![debug point](../_static/img/vscode_docker/debug_point.png)
+.. image:: /_static/img/vscode_docker/debug_point.png
 
 If you want to evaluate certain expressions while debugging, open up the terminal (if it is not open already) by
 clicking *‘View’ > ‘Terminal’*. One of the terminal's tabs is the debug console, where you can evaluate any expression.
@@ -227,7 +217,7 @@ pytest - m
 local
 ```
 
-![tests](../_static/img/vscode_docker/tests.png)
+.. image:: /_static/img/vscode_docker/tests.png
 
 ### Additional Tips
 

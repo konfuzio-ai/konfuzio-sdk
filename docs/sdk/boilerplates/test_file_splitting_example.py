@@ -38,11 +38,11 @@ file_splitting_model.fit(allow_empty_categories=True)
 # save the model
 save_path = file_splitting_model.save(include_konfuzio=True)
 
-# run the prediction
+# run the prediction and see its confidence
 for page in test_document.pages():
     pred = file_splitting_model.predict(page)
     if pred.is_first_page:
-        print('Page {} is predicted as the first.'.format(page.number))
+        print('Page {} is predicted as the first. Confidence: {}.'.format(page.number, page.is_first_page_confidence))
     else:
         print('Page {} is predicted as the non-first.'.format(page.number))
 
@@ -67,6 +67,6 @@ print(new_document)
 
 for page in new_document[0].pages():
     if page.is_first_page:
-        print('Page {} is predicted as the first.'.format(page.number))
+        print('Page {} is predicted as the first. Confidence: {}.'.format(page.number, page.is_first_page_confidence))
     else:
         print('Page {} is predicted as the non-first.'.format(page.number))
