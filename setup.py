@@ -78,7 +78,7 @@ setuptools.setup(
         'filetype==1.0.7',  # Used to check that files are in the correct format
         'nltk',
         'numpy>=1.22.4',
-        'pandas>=1.3.5',
+        'pandas>=1.3.5,<2.0.0',
         'Pillow>=8.4.0',
         'python-dateutil',
         'python-decouple',  # todo add ==3.3 ?
