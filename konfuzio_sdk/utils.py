@@ -906,17 +906,14 @@ def get_sentence_spans_from_bbox(selection_bbox: 'Bbox', punctuation={'.', '!', 
     from konfuzio_sdk.data import Span
 
     spans = get_spans_from_bbox(selection_bbox)
-    if len(spans) == 0:
+    if not spans:
         return []
-
-    # get the text of the document
-    doc_text = selection_bbox.page.document.text
 
     # get the sentence spans
     sentence_spans: List[List[Span]] = [[]]
     for span in spans:
         # get the text of the span
-        span_text = doc_text[span.start_offset : span.end_offset]
+        span_text = span.offset_string
 
         # find the start and end offsets of each sentence in the span
         prev_sentence_start_offset = 0

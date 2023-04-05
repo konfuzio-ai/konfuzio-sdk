@@ -681,7 +681,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
 @parameterized.parameterized_class(
     ('mode', 'n_extracted_annotations', 'n_extracted_spans', 'fp'),
     [
-        ('detectron', 26, 144, 4),
+        ('detectron', 26, 99, 2),
         ('line_distance', 29, 99, 2),
     ],
 )
@@ -743,15 +743,15 @@ class TestParagraphRFExtractionAI(unittest.TestCase):
     def test_06_data_quality(self):
         """Evaluate on training documents."""
         evaluation = self.pipeline.evaluate_full(use_training_docs=True)  # only one training doc available for eval
-        assert evaluation.f1() >= 0.93
-        assert evaluation.fp() == self.fp  # 2 lines are unannotated; detectron finds 2 additional overlapping lines
+        assert evaluation.f1() >= 0.97
+        assert evaluation.fp() == self.fp  # 2 lines are unannotated
 
 
 @parameterized.parameterized_class(
     ('mode', 'n_extracted_annotations', 'n_extracted_spans', 'min_eval_f1', 'eval_tp', 'eval_fp'),
     [
-        ('detectron', 102, 225, 0.74, 26, 16),
-        ('line_distance', 97, 222, 0.25, 10, 21),  # line distance method does not work well with 2 column documents
+        ('detectron', 112, 223, 0.74, 26, 16),
+        ('line_distance', 98, 222, 0.25, 10, 21),  # line distance method does not work well with 2 column documents
     ],
 )
 class TestSentenceRFExtractionAI(unittest.TestCase):
