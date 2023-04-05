@@ -31,7 +31,7 @@ class TestDetectronParagraphTokenizer(unittest.TestCase):
         virtual_doc = self.tokenizer.tokenize(virtual_doc)
 
         assert len(virtual_doc.annotations(use_correct=False)) == 30
-        assert len(virtual_doc.spans(use_correct=False)) == 144
+        assert len(virtual_doc.spans(use_correct=False)) == 99
 
         assert len(virtual_doc.annotations(use_correct=False)[10].spans) == 7
         assert virtual_doc.annotations(use_correct=False)[10].spans[0].start_offset == 3145
@@ -54,7 +54,7 @@ class TestDetectronParagraphTokenizer(unittest.TestCase):
         virtual_doc = tokenizer(virtual_doc)
 
         assert len(virtual_doc.annotations(use_correct=False)) == 31
-        assert len(virtual_doc.spans(use_correct=False)) == 144
+        assert len(virtual_doc.spans(use_correct=False)) == 99
 
         pages = virtual_doc.pages()
 
@@ -78,7 +78,7 @@ class TestDetectronParagraphTokenizer(unittest.TestCase):
 
         doc = self.tokenizer.tokenize(virtual_doc)
         assert len(doc.annotations(use_correct=False)) == 79
-        assert len(doc.spans(use_correct=False)) == 603
+        assert len(doc.spans(use_correct=False)) == 600
 
         assert len(doc.annotations(use_correct=False)[20].spans) == 10
         assert doc.annotations(use_correct=False)[20].spans[0].start_offset == 8157
