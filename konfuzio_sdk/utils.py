@@ -877,10 +877,9 @@ def get_spans_from_bbox(selection_bbox: 'Bbox') -> List['Span']:
     from konfuzio_sdk.data import Span
 
     selected_bboxes = [
-        {"string_offset": int(index), **char_bbox}
-        for index, char_bbox in selection_bbox.page.get_bbox().items()
-        if selection_bbox.check_overlap(char_bbox)
+        char_bbox for _, char_bbox in selection_bbox.page.get_bbox().items() if selection_bbox.check_overlap(char_bbox)
     ]
+    selected_bboxes = sorted(selected_bboxes, key=lambda x: x['char_index'])
 
     # iterate over each line_number (or bottom, depending on group_by) and all of the character
     # bboxes that have the same line_number (or bottom)
@@ -894,13 +893,43 @@ def get_spans_from_bbox(selection_bbox: 'Bbox') -> List['Span']:
             continue
 
         # combine all of the found character bboxes on a given line and calculate their combined x0, x1, etc. values
-        start_offset = min(char_bbox['string_offset'] for char_bbox in trimmed_line_char_bboxes)
-        end_offset = max(char_bbox['string_offset'] for char_bbox in trimmed_line_char_bboxes)
+        start_offset = min(char_bbox['char_index'] for char_bbox in trimmed_line_char_bboxes)
+        end_offset = max(char_bbox['char_index'] for char_bbox in trimmed_line_char_bboxes)
         span = Span(start_offset=start_offset, end_offset=end_offset + 1, document=selection_bbox.page.document)
         spans.append(span)
 
     return spans
 
 
-def get_sentence_spans_from_bbox(selection_bbox: 'Bbox') -> List['Span']:
-    """"""
+def get_sentence_spans_from_bbox(selection_bbox: 'Bbox', punctuation={'.', '!', '?'}) -> List[List['Span']]:
+    """Return a list of Spans corresponding to sentences in the given Bbox."""
+    from konfuzio_sdk.data import Span
+
+    spans = get_spans_from_bbox(selection_bbox)
+    if len(spans) == 0:
+        return []
+
+    # get the text of the document
+    doc_text = selection_bbox.page.document.text
+
+    # get the sentence spans
+    sentence_spans: List[List[Span]] = [[]]
+    for span in spans:
+        # get the text of the span
+        span_text = doc_text[span.start_offset : span.end_offset]
+
+        # find the start and end offsets of each sentence in the span
+        prev_sentence_start_offset = 0
+        for index, char in enumerate(span_text):
+            if char in punctuation:
+                sentence_start_offset = span.start_offset + prev_sentence_start_offset
+                sentence_end_offset = span.start_offset + index + 1
+                sentence_spans.append([Span(start_offset=sentence_start_offset, end_offset=sentence_end_offset)])
+                prev_sentence_start_offset = index + 1
+
+        if prev_sentence_start_offset < len(span_text):
+            sentence_start_offset = span.start_offset + prev_sentence_start_offset
+            sentence_end_offset = span.end_offset
+            sentence_spans[-1].append(Span(start_offset=sentence_start_offset, end_offset=sentence_end_offset))
+
+    return sentence_spans

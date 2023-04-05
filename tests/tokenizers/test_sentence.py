@@ -28,14 +28,14 @@ class TestDetectronSentenceTokenizer(unittest.TestCase):
 
         doc = self.tokenizer.tokenize(virtual_doc)
 
-        assert len(doc.annotations(use_correct=False)) == 102
+        assert len(doc.annotations(use_correct=False)) == 111
 
         pages = doc.pages()
 
         assert len(pages) == 2
 
-        assert len(pages[0].annotations(use_correct=False)) == 37
-        assert len(pages[1].annotations(use_correct=False)) == 65
+        assert len(pages[0].annotations(use_correct=False)) == 38
+        assert len(pages[1].annotations(use_correct=False)) == 73
 
     def test_sentence_document_1_use_detectron_labels(self):
         """Test detectron Sentence tokenizer on 2 Page YOLO9000 Document with create_detectron_labels option."""
@@ -45,19 +45,19 @@ class TestDetectronSentenceTokenizer(unittest.TestCase):
 
         virtual_doc = tokenizer(virtual_doc)
 
-        assert len(virtual_doc.annotations(use_correct=False)) == 102
+        assert len(virtual_doc.annotations(use_correct=False)) == 111
         assert len(virtual_doc.spans(use_correct=False)) == 225
 
         pages = virtual_doc.pages()
 
         assert len(pages) == 2
 
-        assert len(pages[0].annotations(use_correct=False)) == 37
-        assert len(pages[1].annotations(use_correct=False)) == 65
+        assert len(pages[0].annotations(use_correct=False)) == 38
+        assert len(pages[1].annotations(use_correct=False)) == 73
 
         assert virtual_doc.annotations(use_correct=False)[0].label.name == 'title'
         assert virtual_doc.annotations(use_correct=False)[1].label.name == 'text'
-        assert virtual_doc.annotations(use_correct=False)[5].label.name == 'title'
+        assert virtual_doc.annotations(use_correct=False)[4].label.name == 'title'
 
 
 class TestLineDistanceSentenceTokenizer(unittest.TestCase):

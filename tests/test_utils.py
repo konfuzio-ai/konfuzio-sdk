@@ -530,6 +530,10 @@ def test_get_spans_from_bbox():
     assert spans_2[1].end_offset == 1932
 
 
+def test_get_sentence_spans_from_bbox():
+    """Test to get sentence Spans in a bounding box."""
+
+
 def test_get_sdk_version():
     """Test to get a current SDK version."""
     version = get_sdk_version()
