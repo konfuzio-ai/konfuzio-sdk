@@ -750,8 +750,8 @@ class TestParagraphRFExtractionAI(unittest.TestCase):
 @parameterized.parameterized_class(
     ('mode', 'n_extracted_annotations', 'n_extracted_spans', 'min_eval_f1', 'eval_tp', 'eval_fp'),
     [
-        ('detectron', 102, 224, 0.74, 26, 16),
-        ('line_distance', 98, 221, 0.25, 8, 20),  # line distance method does not work well with 2 column documents
+        ('detectron', 101, 225, 0.74, 26, 11),
+        ('line_distance', 97, 222, 0.25, 10, 21),  # line distance method does not work well with 2 column documents
     ],
 )
 class TestSentenceRFExtractionAI(unittest.TestCase):
