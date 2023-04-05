@@ -918,10 +918,13 @@ def get_sentence_spans_from_bbox(selection_bbox: 'Bbox', punctuation={'.', '!', 
         # find the start and end offsets of each sentence in the span
         prev_sentence_start_offset = 0
         for index, char in enumerate(span_text):
+            if char == ' ':
+                continue
             if char in punctuation:
                 sentence_start_offset = span.start_offset + prev_sentence_start_offset
                 sentence_end_offset = span.start_offset + index + 1
-                sentence_spans.append([Span(start_offset=sentence_start_offset, end_offset=sentence_end_offset)])
+                sentence_spans[-1].append(Span(start_offset=sentence_start_offset, end_offset=sentence_end_offset))
+                sentence_spans.append([])
                 prev_sentence_start_offset = index + 1
 
         if prev_sentence_start_offset < len(span_text):
