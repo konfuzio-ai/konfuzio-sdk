@@ -923,13 +923,25 @@ def get_sentence_spans_from_bbox(selection_bbox: 'Bbox', punctuation={'.', '!', 
             if char in punctuation:
                 sentence_start_offset = span.start_offset + prev_sentence_start_offset
                 sentence_end_offset = span.start_offset + index + 1
-                sentence_spans[-1].append(Span(start_offset=sentence_start_offset, end_offset=sentence_end_offset))
+                sentence_spans[-1].append(
+                    Span(
+                        start_offset=sentence_start_offset,
+                        end_offset=sentence_end_offset,
+                        document=selection_bbox.page.document,
+                    )
+                )
                 sentence_spans.append([])
                 prev_sentence_start_offset = index + 1
 
         if prev_sentence_start_offset < len(span_text):
             sentence_start_offset = span.start_offset + prev_sentence_start_offset
             sentence_end_offset = span.end_offset
-            sentence_spans[-1].append(Span(start_offset=sentence_start_offset, end_offset=sentence_end_offset))
+            sentence_spans[-1].append(
+                Span(
+                    start_offset=sentence_start_offset,
+                    end_offset=sentence_end_offset,
+                    document=selection_bbox.page.document,
+                )
+            )
 
     return sentence_spans
