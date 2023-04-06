@@ -72,3 +72,25 @@ A vertical merging is valid only if:
 <span style="background-color: #ff726f">Label 1</span><br>
 <span style="background-color: #86c5da">Label 2</span><br>
 <span style="background-color: #dcdcdc">NO LABEL/Below Label threshold</span>
+
+
+## Horizontal and Vertical Merge with the Paragraph and Sentence Tokenizers
+
+When using the [Paragraph](https://dev.konfuzio.com/sdk/sourcecode.html#paragraph-tokenizer) or [Sentence Tokenizer](https://dev.konfuzio.com/sdk/sourcecode.html#sentence-tokenizer) together with our [Extraction AI model](https://dev.konfuzio.com/sdk/sourcecode.html#extraction-ai), we do not use the rule based vertical and horizontal merge logic above, and instead use the sentence/paragraph segmentation provided by the Tokenizer.
+
+The logic is as follows:
+
+```mermaid
+
+   graph TD
+      A[Virtual Document] -->|Paragraph/Sentence Tokenizer|B(Document_A with NO_LABEL\n Paragraph/Sentence Annotations)
+      B --> |RFExtractionAI feature extraction|C(Span features)
+      C --> |RFExtractionAI labeling|D(Labeled Spans)
+      D --> |extraction_result_to_document |E(Document B with labeled single-Span Annotations)
+      E --> |"RFExtractionAI().merge_vertical_like(Document_B, Document_A)" |F(Document_B with labeled multi-line Annotations)
+```
+
+
+And here's an illustrated example of the merge logic in action:
+
+.. image:: /_static/img/merge_docs_gif.gif
