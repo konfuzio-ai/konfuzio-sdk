@@ -2572,22 +2572,31 @@ class DonutExtractionAI(BaseModel):
         for label in raw_result:
             if isinstance(raw_result[label], dict):
                 self.extraction_result.append(self._traverse_extraction_result(raw_result[label]))
+            elif isinstance(raw_result[label], list):
+                for cur_label in raw_result[label]:
+                    self.extraction_result.append(self._traverse_extraction_result(cur_label))
             else:
                 self.extraction_result.append((label, raw_result[label]))
+        self.extraction_result = [annotation for annotation in self.extraction_result if annotation]
 
-    def extract(self, document: Document) -> Document:
+    def extract(self, document: Document, rewrite_annotations: bool = False) -> Document:
         """
         Extract Label-Annotation pairs from the Documents.
 
         :param document: Document to run extraction on.
         :type document: Document
+        :param rewrite_annotations: Whether to remove any prior existing Annotations and create new from scratch.
+        :type rewrite_annotations: bool
         """
         self.check_is_ready()
         for page in document.pages():
             if not os.path.exists(page.image_path):
                 page.get_image()
-        document = deepcopy(document)
-        document = self.tokenizer.tokenize(document)
+        spans = [span.offset_string for annotation in document.annotations() for span in annotation.spans]
+        tokenized_document = self.tokenizer.tokenize(deepcopy(document))
+        if rewrite_annotations:
+            for annotation in tokenized_document.annotations():
+                annotation.delete()
         for page in document.pages():
             input_img = Image.open(page.image_path).convert('RGB')
             decoder_input_ids = self.processor.tokenizer(
@@ -2614,25 +2623,22 @@ class DonutExtractionAI(BaseModel):
             result = self.processor.token2json(sequence)
             self._traverse_extraction_result(result)
             for element in self.extraction_result:
-                if element[1] in [
-                    span.offset_string for annotation in document.get_annotations() for span in annotation.spans
-                ]:
-                    span = [
-                        span
-                        for annotation in document.get_annotations()
-                        for span in annotation.spans
-                        if span.offset_string == element[1]
-                    ][0]
-                    label = Label(project=self.project, text=element, label_sets=[self.label_set])
-                    _ = Annotation(
-                        document=document,
-                        spans=[Span(start_offset=span.start_offset, end_offset=span.end_offset)],
-                        label=label,
-                        label_set=self.label_set,
-                        accuracy=1.0,
-                        is_correct=True,
-                    )
-        return document
+                if element[0] != 'nm':
+                    if element[1] in spans:
+                        span = [span for span in document.spans() if span.offset_string == element[1]][0]
+                        if element[0] in [label.name for label in self.project.labels]:
+                            label = self.project.get_label_by_name(element[0])
+                        else:
+                            label = Label(project=self.project, text=element[0], label_sets=self.project.label_sets)
+                        _ = Annotation(
+                            document=tokenized_document,
+                            spans=[Span(start_offset=span.start_offset, end_offset=span.end_offset)],
+                            label=label,
+                            label_set=self.label_set,
+                            accuracy=1.0,
+                            is_correct=True,
+                        )
+        return tokenized_document
 
     def fit(self):
         """Contain a placeholder that does not return anything since the model does not need fitting."""
