@@ -23,6 +23,7 @@ import itertools
 import logging
 import os
 import pathlib
+import re
 import shutil
 import sys
 import time
@@ -34,12 +35,15 @@ from inspect import signature
 from typing import Tuple, Optional, List, Union, Dict
 from warnings import warn
 
+import cloudpickle
 import numpy
 import pandas
-import cloudpickle
+import torch
+from PIL import Image
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.utils.validation import check_is_fitted
 from tabulate import tabulate
+from transformers import DonutProcessor, VisionEncoderDecoderModel
 
 from konfuzio_sdk.data import Data, Document, Annotation, Category, AnnotationSet, Label, LabelSet, Span  # , Page
 
@@ -1133,7 +1137,7 @@ class BaseModel(metaclass=abc.ABCMeta):
 
 
 class Trainer(BaseModel):
-    """Parent class for all Extraction AIs, to extract information from unstructured human readable text."""
+    """Parent class for all Extraction AIs, to extract information from unstructured human-readable text."""
 
     def __init__(self, category: Category, *args, **kwargs):
         """Initialize ExtractionModel."""
@@ -2534,3 +2538,161 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         """Remove all non-strictly necessary parameters before saving."""
         super().reduce_model_weight()
         self.df_train = None
+
+
+class DonutExtractionAI(BaseModel):
+    """
+    Extraction AI based on the Donut transformer for Document understanding.
+
+    Aims at extraction from Documents that do not have a model trained on their respective Category.
+    """
+
+    def __init__(self, project=None, tokenizer=None):
+        """
+        Initialize the Extraction AI.
+
+        :param project: A Project from which the Document comes.
+        :type project: Project
+        :param tokenizer: Tokenizer to process the Documents.
+        """
+        logging.info('Initializing Donut Extraction AI.')
+        super().__init__()
+        self.project = project
+        self.tokenizer = tokenizer
+        self.extraction_result = []
+        self.label_set = LabelSet(self.project, categories=self.project.categories)
+        logger.info('Initializing Donut model and processor.')
+        self.model = VisionEncoderDecoderModel.from_pretrained('naver-clova-ix/donut-base-finetuned-cord-v2')
+        self.processor = DonutProcessor.from_pretrained('naver-clova-ix/donut-base-finetuned-cord-v2')
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.model.to(self.device)
+
+    def _traverse_extraction_result(self, raw_result):
+        """Go through AI's initial return that comes as a nested dictionary."""
+        for label in raw_result:
+            if isinstance(raw_result[label], dict):
+                self.extraction_result.append(self._traverse_extraction_result(raw_result[label]))
+            else:
+                self.extraction_result.append((label, raw_result[label]))
+
+    def extract(self, document: Document) -> Document:
+        """
+        Extract Label-Annotation pairs from the Documents.
+
+        :param document: Document to run extraction on.
+        :type document: Document
+        """
+        self.check_is_ready()
+        for page in document.pages():
+            if not os.path.exists(page.image_path):
+                page.get_image()
+        document = deepcopy(document)
+        document = self.tokenizer.tokenize(document)
+        for page in document.pages():
+            input_img = Image.open(page.image_path).convert('RGB')
+            decoder_input_ids = self.processor.tokenizer(
+                '<s_cord-v2>', add_special_tokens=False, return_tensors="pt"
+            ).input_ids
+            pixel_values = self.processor(input_img, return_tensors="pt").pixel_values
+            outputs = self.model.generate(
+                pixel_values.to(self.device),
+                decoder_input_ids=decoder_input_ids.to(self.device),
+                max_length=self.model.decoder.config.max_position_embeddings,
+                early_stopping=True,
+                pad_token_id=self.processor.tokenizer.pad_token_id,
+                eos_token_id=self.processor.tokenizer.eos_token_id,
+                use_cache=True,
+                num_beams=1,
+                bad_words_ids=[[self.processor.tokenizer.unk_token_id]],
+                return_dict_in_generate=True,
+            )
+            sequence = self.processor.batch_decode(outputs.sequences)[0]
+            sequence = sequence.replace(self.processor.tokenizer.eos_token, "").replace(
+                self.processor.tokenizer.pad_token, ""
+            )
+            sequence = re.sub(r"<.*?>", "", sequence, count=1).strip()
+            result = self.processor.token2json(sequence)
+            self._traverse_extraction_result(result)
+            for element in self.extraction_result:
+                if element[1] in [
+                    span.offset_string for annotation in document.get_annotations() for span in annotation.spans
+                ]:
+                    span = [
+                        span
+                        for annotation in document.get_annotations()
+                        for span in annotation.spans
+                        if span.offset_string == element[1]
+                    ][0]
+                    label = Label(project=self.project, text=element, label_sets=[self.label_set])
+                    _ = Annotation(
+                        document=document,
+                        spans=[Span(start_offset=span.start_offset, end_offset=span.end_offset)],
+                        label=label,
+                        label_set=self.label_set,
+                        accuracy=1.0,
+                        is_correct=True,
+                    )
+        return document
+
+    def fit(self):
+        """Contain a placeholder that does not return anything since the model does not need fitting."""
+
+    def check_is_ready(self):
+        """
+        Check if the AI is ready for extraction.
+
+        :raises AttributeError: When no Tokenizer have been provided.
+        """
+        if not self.tokenizer:
+            raise AttributeError('No Tokenizer provided. Please provide the Tokenizer.')
+
+    @property
+    def temp_pkl_file_path(self) -> str:
+        """
+        Generate a path for temporary pickle file.
+
+        :returns: A string with the path.
+        """
+        temp_pkl_file_path = os.path.join(
+            self.output_dir,
+            f'{get_timestamp()}_{self.project.id_}_{self.name_lower()}_tmp.pkl',
+        )
+        return temp_pkl_file_path
+
+    @property
+    def pkl_file_path(self) -> str:
+        """
+        Generate a path for a resulting pickle file.
+
+        :returns: A string with the path.
+        """
+        pkl_file_path = os.path.join(
+            self.output_dir,
+            f'{get_timestamp()}_{self.project.id_}_{self.name_lower()}.pkl',
+        )
+        return pkl_file_path
+
+    @staticmethod
+    def has_compatible_interface(other) -> bool:
+        """
+        Validate that an instance of a Donut Extraction AI implements the same interface as Trainer.
+
+        An Extraction AI should implement methods with the same signature as:
+        - Trainer.__init__
+        - Trainer.fit
+        - Trainer.extract
+        - Trainer.check_is_ready
+
+        :param other: An instance of a Donut Extraction AI to compare with.
+        """
+        try:
+            return (
+                signature(other.extract).parameters['document'].annotation.__name__ == 'Document'
+                and signature(other.extract).return_annotation.__name__ == 'Document'
+                and signature(other.fit)
+                and signature(other.check_is_ready)
+            )
+        except KeyError:
+            return False
+        except AttributeError:
+            return False

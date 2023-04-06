@@ -3033,7 +3033,7 @@ class TestFillOperation(unittest.TestCase):
             assert "is a duplicate of" in context.exception
 
     def test_correct_text_offset(self):
-        """Test if the the sorted Spans can create the offset text."""
+        """Test if the sorted Spans can create the offset text."""
         offsets = [sorted_span.offset_string for sorted_span in self.sorted_spans]
         span_text = "".join(offsets)
         self.assertEqual(self.doc.text[1498:1590], span_text)
