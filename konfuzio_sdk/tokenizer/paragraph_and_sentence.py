@@ -214,7 +214,7 @@ class SentenceTokenizer(AbstractTokenizer):
         return hash(repr(self))
 
     def tokenize(self, document: Document) -> Document:
-        """Create one multiline Annotation per paragraph detected."""
+        """Create one multiline Annotation per sentence detected."""
         assert sdk_isinstance(document, Document)
 
         before_none = len(document.annotations(use_correct=False, label=document.project.no_label))

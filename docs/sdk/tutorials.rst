@@ -17,6 +17,8 @@ Tutorials
 
 .. mdinclude:: examples/information_extraction/index.md
 
+.. mdinclude:: examples/paragraph_and_sentence_tokenizer/index.md
+
 .. mdinclude:: examples/data_validation/index.md
 
 .. mdinclude:: examples/outlier-annotations/index.md
