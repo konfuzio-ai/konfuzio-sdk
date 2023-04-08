@@ -10,7 +10,7 @@ from konfuzio_sdk.utils import (
     sdk_isinstance,
     get_spans_from_bbox,
     detectron_get_paragraph_bboxes,
-    get_sentence_spans_from_bbox,
+    get_sentence_from_spans,
 )  # detectron_get_paragraph_bbox_and_label_name
 from konfuzio_sdk.api import get_results_from_segmentation
 
@@ -254,11 +254,12 @@ class SentenceTokenizer(AbstractTokenizer):
 
         for document_paragraph_bboxes in all_paragraph_bboxes:
             for paragraph_bbox in document_paragraph_bboxes:
-                sentence_spans = get_sentence_spans_from_bbox(paragraph_bbox, punctuation=self.punctuation)
-                for spans in sentence_spans:
-                    if not spans:
-                        continue
+                spans = get_spans_from_bbox(paragraph_bbox)
+                if not spans:
+                    continue
 
+                sentence_spans = get_sentence_from_spans(spans=spans, punctuation=self.punctuation)
+                for spans in sentence_spans:
                     if self.create_detectron_labels:
                         try:
                             label = document.project.get_label_by_name(paragraph_bbox._label_name)
