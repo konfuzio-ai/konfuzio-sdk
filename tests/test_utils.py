@@ -30,7 +30,7 @@ from konfuzio_sdk.utils import (
     exception_or_log_error,
     get_sdk_version,
     get_spans_from_bbox,
-    get_sentence_spans_from_bbox,
+    get_sentence_from_spans,
 )
 
 TEST_STRING = "sample string"
@@ -539,7 +539,7 @@ def test_get_sentence_spans_from_bbox():
 
     bbox = Bbox(x0=50, y0=77, x1=288, y1=125, page=page)
 
-    sentences_spans = get_sentence_spans_from_bbox(selection_bbox=bbox)
+    sentences_spans = get_sentence_from_spans(selection_bbox=bbox)
 
     assert len(sentences_spans) == 3
     first_sentence = sentences_spans[0]

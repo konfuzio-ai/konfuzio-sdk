@@ -12,7 +12,7 @@ import zipfile
 from contextlib import contextmanager
 from io import BytesIO
 from pympler import asizeof
-from typing import Union, List, Tuple, Dict, Optional, Type, TYPE_CHECKING
+from typing import Union, List, Tuple, Dict, Optional, Type, TYPE_CHECKING, Iterable
 from warnings import warn
 
 import filetype
@@ -901,13 +901,12 @@ def get_spans_from_bbox(selection_bbox: 'Bbox') -> List['Span']:
     return spans
 
 
-def get_sentence_spans_from_bbox(selection_bbox: 'Bbox', punctuation={'.', '!', '?'}) -> List[List['Span']]:
-    """Return a list of Spans corresponding to sentences in the given Bbox."""
+def get_sentence_from_spans(spans: Iterable['Span'], punctuation=None) -> List[List['Span']]:
+    """Return a list of Spans corresponding to Sentences separated by Punctuation."""
     from konfuzio_sdk.data import Span
 
-    spans = get_spans_from_bbox(selection_bbox)
-    if not spans:
-        return []
+    if punctuation is None:
+        punctuation = {'.', '!', '?'}
 
     # get the sentence spans
     sentence_spans: List[List[Span]] = [[]]
@@ -927,7 +926,7 @@ def get_sentence_spans_from_bbox(selection_bbox: 'Bbox', punctuation={'.', '!', 
                     Span(
                         start_offset=sentence_start_offset,
                         end_offset=sentence_end_offset,
-                        document=selection_bbox.page.document,
+                        document=span.page.document,
                     )
                 )
                 sentence_spans.append([])
@@ -940,8 +939,9 @@ def get_sentence_spans_from_bbox(selection_bbox: 'Bbox', punctuation={'.', '!', 
                 Span(
                     start_offset=sentence_start_offset,
                     end_offset=sentence_end_offset,
-                    document=selection_bbox.page.document,
+                    document=span.page.document,
                 )
             )
 
+    sentence_spans = [x for x in sentence_spans if len(x)]
     return sentence_spans
