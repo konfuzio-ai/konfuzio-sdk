@@ -94,6 +94,7 @@ setuptools.setup(
         'scikit-learn>=1.0.2',
         'timm==0.6.7',  # for extra pytorch models, i.e. EfficientNet
         'spacy>=2.3.5',  # used for spaCy tokenization
+        'boto3==1.26.107',
     ],
     extras_require={
         'dev': [

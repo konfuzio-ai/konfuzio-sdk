@@ -24,7 +24,6 @@ import itertools
 import logging
 import os
 import pathlib
-import re
 import shutil
 import sys
 import time
@@ -39,14 +38,11 @@ from warnings import warn
 import cloudpickle
 import numpy
 import pandas
-import torch
-from PIL import Image
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.utils.validation import check_is_fitted
 from tabulate import tabulate
-from transformers import DonutProcessor, VisionEncoderDecoderModel
 
-from konfuzio_sdk.data import Data, Document, Annotation, Category, AnnotationSet, Label, LabelSet, Span  # , Page
+from konfuzio_sdk.data import Data, Document, Annotation, Category, AnnotationSet, Label, LabelSet, Span
 
 from konfuzio_sdk.normalize import (
     normalize_to_float,
@@ -2548,7 +2544,7 @@ class QAExtractionAI(AbstractExtractionAI):
     Aims at extraction from Documents that do not have a model trained on their respective Category.
     """
 
-    def __init__(self, category: Category, project=None, tokenizer=None, extraction_mode='textract'):
+    def __init__(self, category: Category, project=None, tokenizer=None):
         """
         Initialize the Extraction AI.
 
@@ -2558,34 +2554,14 @@ class QAExtractionAI(AbstractExtractionAI):
         """
         logging.info('Initializing Question-Answer Extraction AI.')
         super().__init__(category=category)
-        self.extraction_mode = extraction_mode
         self.category = category
         self.project = project
         self.tokenizer = tokenizer
         self.extraction_result = []
         self.label_set = LabelSet(self.project, categories=[self.category])
-        if self.extraction_mode == 'textract':
-            session = boto3.Session(profile_name='ee')
-            self.s3_connection = session.resource('s3')
-            self.client = session.client('textract', region_name='us-west-2')
-        else:
-            logger.info('Initializing Question-Answer model and processor.')
-            self.model = VisionEncoderDecoderModel.from_pretrained('naver-clova-ix/donut-base-finetuned-cord-v2')
-            self.processor = DonutProcessor.from_pretrained('naver-clova-ix/donut-base-finetuned-cord-v2')
-            self.device = "cuda" if torch.cuda.is_available() else "cpu"
-            self.model.to(self.device)
-
-    def _traverse_extraction_result(self, raw_result):
-        """Go through AI's initial return that comes as a nested dictionary."""
-        for label in raw_result:
-            if isinstance(raw_result[label], dict):
-                self.extraction_result.append(self._traverse_extraction_result(raw_result[label]))
-            elif isinstance(raw_result[label], list):
-                for cur_label in raw_result[label]:
-                    self.extraction_result.append(self._traverse_extraction_result(cur_label))
-            else:
-                self.extraction_result.append((label, raw_result[label]))
-        self.extraction_result = [annotation for annotation in self.extraction_result if annotation]
+        session = boto3.Session(profile_name='ee')
+        self.s3_connection = session.resource('s3')
+        self.client = session.client('textract', region_name='us-west-2')
 
     def extract(self, document: Document) -> Document:
         """
@@ -2601,74 +2577,32 @@ class QAExtractionAI(AbstractExtractionAI):
         tokenized_document = self.tokenizer.tokenize(deepcopy(document))
         spans = [span.offset_string for span in tokenized_document.spans()]
         for page in document.pages():
-            if self.extraction_mode == 'textract':
-                with open(page.image_path, 'rb') as img_file:
-                    img_bytes = img_file.read()
-                    response = self.client.analyze_expense(Document={'Bytes': img_bytes})
-                for expense_doc in response["ExpenseDocuments"]:
-                    for label in expense_doc["SummaryFields"]:
-                        if "LabelDetection" in label and label['Type']['Text'] != 'OTHER':
-                            if label['LabelDetection']['Text'] in spans:
-                                span = [
-                                    span
-                                    for span in tokenized_document.spans()
-                                    if span.offset_string == label['LabelDetection']['Text']
-                                ][0]
-                                if label['Type']['Text'] in [label.name for label in self.project.labels]:
-                                    cur_label = self.project.get_label_by_name(label['Type']['Text'])
-                                else:
-                                    cur_label = Label(
-                                        project=self.project,
-                                        text=label['Type']['Text'],
-                                        label_sets=self.project.label_sets,
-                                    )
-                                _ = Annotation(
-                                    document=tokenized_document,
-                                    spans=[Span(start_offset=span.start_offset, end_offset=span.end_offset)],
-                                    label=cur_label,
-                                    label_set=self.label_set,
-                                    accuracy=label['Type']['Confidence'],
-                                    is_correct=True,
-                                )
-            else:
-                input_img = Image.open(page.image_path).convert('RGB')
-                decoder_input_ids = self.processor.tokenizer(
-                    '<s_cord-v2>', add_special_tokens=False, return_tensors="pt"
-                ).input_ids
-                pixel_values = self.processor(input_img, return_tensors="pt").pixel_values
-                outputs = self.model.generate(
-                    pixel_values.to(self.device),
-                    decoder_input_ids=decoder_input_ids.to(self.device),
-                    max_length=self.model.decoder.config.max_position_embeddings,
-                    early_stopping=True,
-                    pad_token_id=self.processor.tokenizer.pad_token_id,
-                    eos_token_id=self.processor.tokenizer.eos_token_id,
-                    use_cache=True,
-                    num_beams=1,
-                    bad_words_ids=[[self.processor.tokenizer.unk_token_id]],
-                    return_dict_in_generate=True,
-                )
-                sequence = self.processor.batch_decode(outputs.sequences)[0]
-                sequence = sequence.replace(self.processor.tokenizer.eos_token, "").replace(
-                    self.processor.tokenizer.pad_token, ""
-                )
-                sequence = re.sub(r"<.*?>", "", sequence, count=1).strip()
-                result = self.processor.token2json(sequence)
-                self._traverse_extraction_result(result)
-                for element in self.extraction_result:
-                    if element[0] != 'nm':
-                        if element[1] in spans:
-                            span = [span for span in document.spans() if span.offset_string == element[1]][0]
-                            if element[0] in [label.name for label in self.project.labels]:
-                                label = self.project.get_label_by_name(element[0])
+            with open(page.image_path, 'rb') as img_file:
+                img_bytes = img_file.read()
+                response = self.client.analyze_expense(Document={'Bytes': img_bytes})
+            for expense_doc in response["ExpenseDocuments"]:
+                for label in expense_doc["SummaryFields"]:
+                    if "LabelDetection" in label and label['Type']['Text'] != 'OTHER':
+                        if label['LabelDetection']['Text'] in spans:
+                            span = [
+                                span
+                                for span in tokenized_document.spans()
+                                if span.offset_string == label['LabelDetection']['Text']
+                            ][0]
+                            if label['Type']['Text'] in [label.name for label in self.project.labels]:
+                                cur_label = self.project.get_label_by_name(label['Type']['Text'])
                             else:
-                                label = Label(project=self.project, text=element[0], label_sets=self.project.label_sets)
+                                cur_label = Label(
+                                    project=self.project,
+                                    text=label['Type']['Text'],
+                                    label_sets=self.project.label_sets,
+                                )
                             _ = Annotation(
                                 document=tokenized_document,
                                 spans=[Span(start_offset=span.start_offset, end_offset=span.end_offset)],
-                                label=label,
+                                label=cur_label,
                                 label_set=self.label_set,
-                                accuracy=1.0,
+                                accuracy=label['Type']['Confidence'],
                                 is_correct=True,
                             )
         return tokenized_document
