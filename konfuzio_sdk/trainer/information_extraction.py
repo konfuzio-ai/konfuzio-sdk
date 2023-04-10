@@ -15,6 +15,7 @@ Sun, H., Kuang, Z., Yue, X., Lin, C., & Zhang, W. (2021). Spatial Dual-Modality 
 Extraction. arXiv. https://doi.org/10.48550/ARXIV.2103.14470
 """
 import abc
+import boto3
 import bz2
 import collections
 import difflib
@@ -129,7 +130,7 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
     from konfuzio_sdk.trainer.file_splitting import AbstractFileSplittingModel
 
     if not (
-        Trainer.has_compatible_interface(model)
+        AbstractExtractionAI.has_compatible_interface(model)
         or AbstractFileSplittingModel.has_compatible_interface(model)
         or AbstractCategorizationAI.has_compatible_interface(model)
     ):
@@ -139,7 +140,7 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
         )
 
     if not hasattr(model, "name"):
-        raise TypeError("Saved model file needs to be a Konfuzio Trainer instance.")
+        raise TypeError("Saved model file needs to be a Konfuzio AbstractExtractionAI instance.")
     elif model.name in {
         "DocumentAnnotationMultiClassModel",
         "DocumentEntityMulticlassModel",
@@ -1136,7 +1137,7 @@ class BaseModel(metaclass=abc.ABCMeta):
         return pkl_file_path
 
 
-class Trainer(BaseModel):
+class AbstractExtractionAI(BaseModel):
     """Parent class for all Extraction AIs, to extract information from unstructured human-readable text."""
 
     def __init__(self, category: Category, *args, **kwargs):
@@ -1396,13 +1397,13 @@ class Trainer(BaseModel):
     @staticmethod
     def has_compatible_interface(other) -> bool:
         """
-        Validate that an instance of an Extraction AI implements the same interface as Trainer.
+        Validate that an instance of an Extraction AI implements the same interface as AbstractExtractionAI.
 
         An Extraction AI should implement methods with the same signature as:
-        - Trainer.__init__
-        - Trainer.fit
-        - Trainer.extract
-        - Trainer.check_is_ready
+        - AbstractExtractionAI.__init__
+        - AbstractExtractionAI.fit
+        - AbstractExtractionAI.extract
+        - AbstractExtractionAI.check_is_ready
 
         :param other: An instance of an Extraction AI to compare with.
         """
@@ -1754,7 +1755,7 @@ class GroupAnnotationSets:
         return new_res_dict
 
 
-class RFExtractionAI(Trainer, GroupAnnotationSets):
+class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
     """Encode visual and textual features to extract text regions.
 
     Fit an extraction pipeline to extract linked Annotations.
@@ -2540,14 +2541,14 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         self.df_train = None
 
 
-class DonutExtractionAI(BaseModel):
+class QAExtractionAI(AbstractExtractionAI):
     """
     Extraction AI based on the Donut transformer for Document understanding.
 
     Aims at extraction from Documents that do not have a model trained on their respective Category.
     """
 
-    def __init__(self, project=None, tokenizer=None):
+    def __init__(self, category: Category, project=None, tokenizer=None, extraction_mode='textract'):
         """
         Initialize the Extraction AI.
 
@@ -2555,17 +2556,24 @@ class DonutExtractionAI(BaseModel):
         :type project: Project
         :param tokenizer: Tokenizer to process the Documents.
         """
-        logging.info('Initializing Donut Extraction AI.')
-        super().__init__()
+        logging.info('Initializing Question-Answer Extraction AI.')
+        super().__init__(category=category)
+        self.extraction_mode = extraction_mode
+        self.category = category
         self.project = project
         self.tokenizer = tokenizer
         self.extraction_result = []
-        self.label_set = LabelSet(self.project, categories=self.project.categories)
-        logger.info('Initializing Donut model and processor.')
-        self.model = VisionEncoderDecoderModel.from_pretrained('naver-clova-ix/donut-base-finetuned-cord-v2')
-        self.processor = DonutProcessor.from_pretrained('naver-clova-ix/donut-base-finetuned-cord-v2')
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.model.to(self.device)
+        self.label_set = LabelSet(self.project, categories=[self.category])
+        if self.extraction_mode == 'textract':
+            session = boto3.Session(profile_name='ee')
+            self.s3_connection = session.resource('s3')
+            self.client = session.client('textract', region_name='us-west-2')
+        else:
+            logger.info('Initializing Question-Answer model and processor.')
+            self.model = VisionEncoderDecoderModel.from_pretrained('naver-clova-ix/donut-base-finetuned-cord-v2')
+            self.processor = DonutProcessor.from_pretrained('naver-clova-ix/donut-base-finetuned-cord-v2')
+            self.device = "cuda" if torch.cuda.is_available() else "cpu"
+            self.model.to(self.device)
 
     def _traverse_extraction_result(self, raw_result):
         """Go through AI's initial return that comes as a nested dictionary."""
@@ -2579,65 +2587,90 @@ class DonutExtractionAI(BaseModel):
                 self.extraction_result.append((label, raw_result[label]))
         self.extraction_result = [annotation for annotation in self.extraction_result if annotation]
 
-    def extract(self, document: Document, rewrite_annotations: bool = False) -> Document:
+    def extract(self, document: Document) -> Document:
         """
         Extract Label-Annotation pairs from the Documents.
 
         :param document: Document to run extraction on.
         :type document: Document
-        :param rewrite_annotations: Whether to remove any prior existing Annotations and create new from scratch.
-        :type rewrite_annotations: bool
         """
         self.check_is_ready()
         for page in document.pages():
             if not os.path.exists(page.image_path):
                 page.get_image()
-        spans = [span.offset_string for annotation in document.annotations() for span in annotation.spans]
         tokenized_document = self.tokenizer.tokenize(deepcopy(document))
-        if rewrite_annotations:
-            for annotation in tokenized_document.annotations():
-                annotation.delete()
+        spans = [span.offset_string for span in tokenized_document.spans()]
         for page in document.pages():
-            input_img = Image.open(page.image_path).convert('RGB')
-            decoder_input_ids = self.processor.tokenizer(
-                '<s_cord-v2>', add_special_tokens=False, return_tensors="pt"
-            ).input_ids
-            pixel_values = self.processor(input_img, return_tensors="pt").pixel_values
-            outputs = self.model.generate(
-                pixel_values.to(self.device),
-                decoder_input_ids=decoder_input_ids.to(self.device),
-                max_length=self.model.decoder.config.max_position_embeddings,
-                early_stopping=True,
-                pad_token_id=self.processor.tokenizer.pad_token_id,
-                eos_token_id=self.processor.tokenizer.eos_token_id,
-                use_cache=True,
-                num_beams=1,
-                bad_words_ids=[[self.processor.tokenizer.unk_token_id]],
-                return_dict_in_generate=True,
-            )
-            sequence = self.processor.batch_decode(outputs.sequences)[0]
-            sequence = sequence.replace(self.processor.tokenizer.eos_token, "").replace(
-                self.processor.tokenizer.pad_token, ""
-            )
-            sequence = re.sub(r"<.*?>", "", sequence, count=1).strip()
-            result = self.processor.token2json(sequence)
-            self._traverse_extraction_result(result)
-            for element in self.extraction_result:
-                if element[0] != 'nm':
-                    if element[1] in spans:
-                        span = [span for span in document.spans() if span.offset_string == element[1]][0]
-                        if element[0] in [label.name for label in self.project.labels]:
-                            label = self.project.get_label_by_name(element[0])
-                        else:
-                            label = Label(project=self.project, text=element[0], label_sets=self.project.label_sets)
-                        _ = Annotation(
-                            document=tokenized_document,
-                            spans=[Span(start_offset=span.start_offset, end_offset=span.end_offset)],
-                            label=label,
-                            label_set=self.label_set,
-                            accuracy=1.0,
-                            is_correct=True,
-                        )
+            if self.extraction_mode == 'textract':
+                with open(page.image_path, 'rb') as img_file:
+                    img_bytes = img_file.read()
+                    response = self.client.analyze_expense(Document={'Bytes': img_bytes})
+                for expense_doc in response["ExpenseDocuments"]:
+                    for label in expense_doc["SummaryFields"]:
+                        if "LabelDetection" in label and label['Type']['Text'] != 'OTHER':
+                            if label['LabelDetection']['Text'] in spans:
+                                span = [
+                                    span
+                                    for span in tokenized_document.spans()
+                                    if span.offset_string == label['LabelDetection']['Text']
+                                ][0]
+                                if label['Type']['Text'] in [label.name for label in self.project.labels]:
+                                    cur_label = self.project.get_label_by_name(label['Type']['Text'])
+                                else:
+                                    cur_label = Label(
+                                        project=self.project,
+                                        text=label['Type']['Text'],
+                                        label_sets=self.project.label_sets,
+                                    )
+                                _ = Annotation(
+                                    document=tokenized_document,
+                                    spans=[Span(start_offset=span.start_offset, end_offset=span.end_offset)],
+                                    label=cur_label,
+                                    label_set=self.label_set,
+                                    accuracy=label['Type']['Confidence'],
+                                    is_correct=True,
+                                )
+            else:
+                input_img = Image.open(page.image_path).convert('RGB')
+                decoder_input_ids = self.processor.tokenizer(
+                    '<s_cord-v2>', add_special_tokens=False, return_tensors="pt"
+                ).input_ids
+                pixel_values = self.processor(input_img, return_tensors="pt").pixel_values
+                outputs = self.model.generate(
+                    pixel_values.to(self.device),
+                    decoder_input_ids=decoder_input_ids.to(self.device),
+                    max_length=self.model.decoder.config.max_position_embeddings,
+                    early_stopping=True,
+                    pad_token_id=self.processor.tokenizer.pad_token_id,
+                    eos_token_id=self.processor.tokenizer.eos_token_id,
+                    use_cache=True,
+                    num_beams=1,
+                    bad_words_ids=[[self.processor.tokenizer.unk_token_id]],
+                    return_dict_in_generate=True,
+                )
+                sequence = self.processor.batch_decode(outputs.sequences)[0]
+                sequence = sequence.replace(self.processor.tokenizer.eos_token, "").replace(
+                    self.processor.tokenizer.pad_token, ""
+                )
+                sequence = re.sub(r"<.*?>", "", sequence, count=1).strip()
+                result = self.processor.token2json(sequence)
+                self._traverse_extraction_result(result)
+                for element in self.extraction_result:
+                    if element[0] != 'nm':
+                        if element[1] in spans:
+                            span = [span for span in document.spans() if span.offset_string == element[1]][0]
+                            if element[0] in [label.name for label in self.project.labels]:
+                                label = self.project.get_label_by_name(element[0])
+                            else:
+                                label = Label(project=self.project, text=element[0], label_sets=self.project.label_sets)
+                            _ = Annotation(
+                                document=tokenized_document,
+                                spans=[Span(start_offset=span.start_offset, end_offset=span.end_offset)],
+                                label=label,
+                                label_set=self.label_set,
+                                accuracy=1.0,
+                                is_correct=True,
+                            )
         return tokenized_document
 
     def fit(self):
@@ -2681,15 +2714,15 @@ class DonutExtractionAI(BaseModel):
     @staticmethod
     def has_compatible_interface(other) -> bool:
         """
-        Validate that an instance of a Donut Extraction AI implements the same interface as Trainer.
+        Validate that an instance of a QA Extraction AI implements the same interface as AbstractExtractionAI.
 
         An Extraction AI should implement methods with the same signature as:
-        - Trainer.__init__
-        - Trainer.fit
-        - Trainer.extract
-        - Trainer.check_is_ready
+        - AbstractExtractionAI.__init__
+        - AbstractExtractionAI.fit
+        - AbstractExtractionAI.extract
+        - AbstractExtractionAI.check_is_ready
 
-        :param other: An instance of a Donut Extraction AI to compare with.
+        :param other: An instance of a Question-Answer Extraction AI to compare with.
         """
         try:
             return (

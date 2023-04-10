@@ -144,10 +144,10 @@ Base Model
    :members:
    :noindex:
 
-Trainer
+AbstractExtractionAI
 ---------------------
 
-.. autoclass:: Trainer
+.. autoclass:: AbstractExtractionAI
    :members:
    :noindex:
 
