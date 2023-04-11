@@ -2576,35 +2576,48 @@ class QAExtractionAI(AbstractExtractionAI):
                 page.get_image()
         tokenized_document = self.tokenizer.tokenize(deepcopy(document))
         spans = [span.offset_string for span in tokenized_document.spans()]
+        for annotation in tokenized_document.annotations():
+            annotation.delete()
         for page in document.pages():
             with open(page.image_path, 'rb') as img_file:
                 img_bytes = img_file.read()
                 response = self.client.analyze_expense(Document={'Bytes': img_bytes})
             for expense_doc in response["ExpenseDocuments"]:
                 for label in expense_doc["SummaryFields"]:
-                    if "LabelDetection" in label and label['Type']['Text'] != 'OTHER':
-                        if label['LabelDetection']['Text'] in spans:
-                            span = [
-                                span
-                                for span in tokenized_document.spans()
-                                if span.offset_string == label['LabelDetection']['Text']
-                            ][0]
-                            if label['Type']['Text'] in [label.name for label in self.project.labels]:
-                                cur_label = self.project.get_label_by_name(label['Type']['Text'])
-                            else:
-                                cur_label = Label(
-                                    project=self.project,
-                                    text=label['Type']['Text'],
-                                    label_sets=self.project.label_sets,
-                                )
-                            _ = Annotation(
-                                document=tokenized_document,
-                                spans=[Span(start_offset=span.start_offset, end_offset=span.end_offset)],
-                                label=cur_label,
-                                label_set=self.label_set,
-                                accuracy=label['Type']['Confidence'],
-                                is_correct=True,
-                            )
+                    cur_label_name = label['Type']['Text']
+                    cur_label_text = label['ValueDetection']['Text']
+                    if cur_label_text in spans:
+                        cur_span = [
+                            span for span in tokenized_document.spans() if span.offset_string == cur_label_text
+                        ][0]
+                    else:
+                        start_offset = document.text.find(cur_label_text)
+                        if start_offset != -1:
+                            end_offset = start_offset + len(cur_label_text)
+                            cur_span = Span(start_offset=start_offset, end_offset=end_offset)
+                        else:
+                            break
+                    if cur_label_name in [label.name for label in self.project.labels]:
+                        cur_label = self.project.get_label_by_name(cur_label_name)
+                    else:
+                        cur_label = Label(
+                            project=self.project,
+                            text=cur_label_name,
+                            label_sets=self.project.label_sets,
+                        )
+                    if not [
+                        annotation
+                        for annotation in tokenized_document.annotations()
+                        if annotation.start_offset == cur_span.start_offset
+                    ]:
+                        _ = Annotation(
+                            document=tokenized_document,
+                            spans=[Span(start_offset=cur_span.start_offset, end_offset=cur_span.end_offset)],
+                            label=cur_label,
+                            label_set=self.label_set,
+                            accuracy=label['Type']['Confidence'],
+                            is_correct=True,
+                        )
         return tokenized_document
 
     def fit(self):
