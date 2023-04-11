@@ -15,7 +15,6 @@ Sun, H., Kuang, Z., Yue, X., Lin, C., & Zhang, W. (2021). Spatial Dual-Modality 
 Extraction. arXiv. https://doi.org/10.48550/ARXIV.2103.14470
 """
 import abc
-import boto3
 import bz2
 import collections
 import difflib
@@ -2539,15 +2538,18 @@ class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
 
 class QAExtractionAI(AbstractExtractionAI):
     """
-    Extraction AI based on the Donut transformer for Document understanding.
+    Extraction AI for Document understanding.
 
     Aims at extraction from Documents that do not have a model trained on their respective Category.
     """
 
-    def __init__(self, category: Category, project=None, tokenizer=None):
+    def __init__(self, category: Category, aws_client, project=None, tokenizer=None):
         """
         Initialize the Extraction AI.
 
+        :param category: A Category within which the extraction takes place.
+        :type category: Category
+        :param aws_client: An instance of Session connection to the S3.
         :param project: A Project from which the Document comes.
         :type project: Project
         :param tokenizer: Tokenizer to process the Documents.
@@ -2559,9 +2561,7 @@ class QAExtractionAI(AbstractExtractionAI):
         self.tokenizer = tokenizer
         self.extraction_result = []
         self.label_set = LabelSet(self.project, categories=[self.category])
-        session = boto3.Session(profile_name='ee')
-        self.s3_connection = session.resource('s3')
-        self.client = session.client('textract', region_name='us-west-2')
+        self.client = aws_client
 
     def extract(self, document: Document) -> Document:
         """
@@ -2596,7 +2596,7 @@ class QAExtractionAI(AbstractExtractionAI):
                             end_offset = start_offset + len(cur_label_text)
                             cur_span = Span(start_offset=start_offset, end_offset=end_offset)
                         else:
-                            break
+                            continue
                     if cur_label_name in [label.name for label in self.project.labels]:
                         cur_label = self.project.get_label_by_name(cur_label_name)
                     else:
