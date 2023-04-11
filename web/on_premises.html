@@ -473,8 +473,18 @@ Password: {PROVIDED_BY_KONFUZIO}</p>
 </section>
 <section id="setup-postgresql-redis-blobstorage-filesystemstorage">
 <h3>2. Setup PostgreSQL, Redis, BlobStorage/FileSystemStorage<a class="headerlink" href="#setup-postgresql-redis-blobstorage-filesystemstorage" title="Permalink to this headline">¶</a></h3>
-<p>The database credentials are created in this step. Please choose your selected <a class="reference external" href="/web/on_premises.html#database-and-storage">databases</a> at this point. You need to be able to connect to your PostgreSQL via psql and to your Redis server via redis-cli before continuing the installation.</p>
+<p>The databases and credentials to access them are created in this step. Please choose your selected <a class="reference external" href="/web/on_premises.html#database-and-storage">databases</a> at this point. You need to be able to connect to your PostgreSQL via psql and to your Redis server via redis-cli before continuing the installation.</p>
 <p>In case you use FileSystemStorage and Docker volume mounts, you need to make sure the volume can be accessed by the konfuzio docker user (uid=999). You might want to run <code class="docutils literal notranslate"><span class="pre">chown</span> <span class="pre">999:999</span> <span class="pre">-R</span> <span class="pre">/konfuzio-vm/text-annotation/data</span></code> on the host VM.</p>
+<p>The PostgreSQL database connection can be verified via psql and a connection string in the <a class="reference external" href="https://github.com/jazzband/dj-database-url#url-schema">following format</a>.
+This connection string is later set as <code class="docutils literal notranslate"><span class="pre">DATABASE_URL</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">psql</span> <span class="o">-</span><span class="n">H</span> <span class="n">postgres</span><span class="p">:</span><span class="o">//</span><span class="n">USER</span><span class="p">:</span><span class="n">PASSWORD</span><span class="nd">@HOST</span><span class="p">:</span><span class="n">PORT</span><span class="o">/</span><span class="n">NAME</span>
+</pre></div>
+</div>
+<p>The Redis connection can be verified using redis-cli and a connection string.
+To use the connection string for BROKER_URL, RESULT_BACKEND and DEFENDER_REDIS_URL you need to append the database selector (e.g. redis://default:PASSWORD&#64;HOST:PORT/0)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">redis</span><span class="o">-</span><span class="n">cli</span> <span class="o">-</span><span class="n">u</span> <span class="n">redis</span><span class="p">:</span><span class="o">//</span><span class="n">default</span><span class="p">:</span><span class="n">PASSWORD</span><span class="nd">@HOST</span><span class="p">:</span><span class="n">PORT</span>
+</pre></div>
+</div>
 </section>
 <section id="setup-the-environment-variable-file">
 <h3>3. Setup the environment variable file<a class="headerlink" href="#setup-the-environment-variable-file" title="Permalink to this headline">¶</a></h3>
