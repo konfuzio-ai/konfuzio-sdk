@@ -84,7 +84,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#requirements">Requirements</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#download-docker-image">1. Download Docker Image</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#setup-postgresql-redis-blobstorage-filesystemstorage">2. Setup PostgreSQL, Redis, BlobStorage/FileSystemStorage</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#setup-environment-variable-file">3. Setup environment variable file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#setup-the-environment-variable-file">3. Setup the environment variable file</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#init-the-database-create-first-superuser-via-cli-and-prefill-e-mail-templates">4. Init the database, create first superuser via cli and prefill e-mail templates</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#start-the-container">5. Start the container</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#optional-6-use-flower-to-monitor-tasks">[Optional] 6. Use Flower to monitor tasks</a></li>
@@ -473,18 +473,23 @@ Password: {PROVIDED_BY_KONFUZIO}</p>
 </section>
 <section id="setup-postgresql-redis-blobstorage-filesystemstorage">
 <h3>2. Setup PostgreSQL, Redis, BlobStorage/FileSystemStorage<a class="headerlink" href="#setup-postgresql-redis-blobstorage-filesystemstorage" title="Permalink to this headline">¶</a></h3>
-<p>The database credentials are needed in this step. Please ensure your selected <a class="reference external" href="/web/on_premises.html#database-and-storage">databases</a> are setup at this point. You may want to use psql and redis-cli to check if database credentials are working.</p>
-<p>In case you use FileSystemStorage and Docker volume mounts, you need to make sure the volume can be accessed by the konfuzio docker user (uid=999). You might want to run “chown 999:999 -R /konfuzio-vm/text-annotation/data” on the host VM.</p>
+<p>The database credentials are created in this step. Please choose your selected <a class="reference external" href="/web/on_premises.html#database-and-storage">databases</a> at this point. You need to be able to connect to your PostgreSQL via psql and to your Redis server via redis-cli before continuing the installation.</p>
+<p>In case you use FileSystemStorage and Docker volume mounts, you need to make sure the volume can be accessed by the konfuzio docker user (uid=999). You might want to run <code class="docutils literal notranslate"><span class="pre">chown</span> <span class="pre">999:999</span> <span class="pre">-R</span> <span class="pre">/konfuzio-vm/text-annotation/data</span></code> on the host VM.</p>
 </section>
-<section id="setup-environment-variable-file">
-<h3>3. Setup environment variable file<a class="headerlink" href="#setup-environment-variable-file" title="Permalink to this headline">¶</a></h3>
+<section id="setup-the-environment-variable-file">
+<h3>3. Setup the environment variable file<a class="headerlink" href="#setup-the-environment-variable-file" title="Permalink to this headline">¶</a></h3>
 <p>Copy the /code/.env.example file from the container and adapt it to your settings. The .env file can be saved anywhere on the host VM. In this example we use “/konfuzio-vm/text-annotation.env”.</p>
 </section>
 <section id="init-the-database-create-first-superuser-via-cli-and-prefill-e-mail-templates">
 <h3>4. Init the database, create first superuser via cli and prefill e-mail templates<a class="headerlink" href="#init-the-database-create-first-superuser-via-cli-and-prefill-e-mail-templates" title="Permalink to this headline">¶</a></h3>
 <p>In this example we store the files on the host VM and mount the directory “/konfuzio-vm/text-annotation/data” into the container. In the first step we create a container with a shell to then start the initialization scripts within the container.
 The container needs to be able to access IP addresses and hostnames used in the .env. This can be ensured using –add.host. In the example we make the host IP 10.0.0.1 available.</p>
-<p>docker run -it –add-host=10.0.0.1 –env-file /konfuzio-vm/text-annotation.env –mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data REGISTRY_URL/konfuzio/text-annotation/master:latest bash</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">it</span> <span class="o">--</span><span class="n">add</span><span class="o">-</span><span class="n">host</span><span class="o">=</span><span class="mf">10.0.0.1</span> \
+  <span class="o">--</span><span class="n">env</span><span class="o">-</span><span class="n">file</span> <span class="o">/</span><span class="n">konfuzio</span><span class="o">-</span><span class="n">vm</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">.</span><span class="n">env</span> \
+  <span class="o">--</span><span class="n">mount</span> <span class="nb">type</span><span class="o">=</span><span class="n">bind</span><span class="p">,</span><span class="n">source</span><span class="o">=/</span><span class="n">konfuzio</span><span class="o">-</span><span class="n">vm</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">/</span><span class="n">data</span><span class="p">,</span><span class="n">target</span><span class="o">=/</span><span class="n">data</span> \
+  <span class="n">REGISTRY_URL</span><span class="o">/</span><span class="n">konfuzio</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">/</span><span class="n">master</span><span class="p">:</span><span class="n">latest</span> <span class="n">bash</span>
+</pre></div>
+</div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">manage</span><span class="o">.</span><span class="n">py</span> <span class="n">migrate</span>
 <span class="n">python</span> <span class="n">manage</span><span class="o">.</span><span class="n">py</span> <span class="n">createsuperuser</span>
 <span class="n">python</span> <span class="n">manage</span><span class="o">.</span><span class="n">py</span> <span class="n">init_email_templates</span>
@@ -634,7 +639,7 @@ docker run --env-file /path_to_env_file.env REGISTRY_URL/konfuzio/detectron2:202
 <section id="a-upgrade-to-newer-konfuzio-version">
 <h3>11a. Upgrade to newer Konfuzio Version<a class="headerlink" href="#a-upgrade-to-newer-konfuzio-version" title="Permalink to this headline">¶</a></h3>
 <p>Konfuzio upgrades are performed by replacing the Docker Tag to the <a class="reference external" href="https://dev.konfuzio.com/web/changelog_app.html">desired version</a>
-After starting the new Containers Database migrations need to be applied by <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">migrate</span></code> (see 4.).
+After starting the new containers, database migrations need to be applied by <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">migrate</span></code> and new email-templates need to be initialized <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">init_email_templates</span></code> (see 4.).
 In case additional migration steps are needed, they will be mentioned in the release notes.</p>
 </section>
 <section id="b-downgrade-to-older-konfuzio-version">
