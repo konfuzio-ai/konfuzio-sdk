@@ -356,7 +356,7 @@ psql -H postgres://USER:PASSWORD@HOST:PORT/NAME
 ```
 
 The Redis connection can be verified using redis-cli and a connection string. 
-To use the connection string for BROKER_URL, RESULT_BACKEND and DEFENDER_REDIS_URL you need to append the database selector (e.g. redis://default:PASSWORD@HOST:PORT/0) 
+To use the connection string for `BROKER_URL`, `RESULT_BACKEND` and `DEFENDER_REDIS_URL` you need to append the database selector (e.g. redis://default:PASSWORD@HOST:PORT/0) 
 ```
 redis-cli -u redis://default:PASSWORD@HOST:PORT
 ```
