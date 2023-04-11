@@ -1097,6 +1097,9 @@ class BaseModel(metaclass=abc.ABCMeta):
 
         sys.setrecursionlimit(999999)
 
+        if self.has_compatible_interface(QAExtractionAI):
+            self.client = None
+
         if include_konfuzio:
             import konfuzio_sdk
 
