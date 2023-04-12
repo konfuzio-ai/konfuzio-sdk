@@ -164,8 +164,13 @@ class TestOnlineProject(unittest.TestCase):
         doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         assert Span(start_offset=1590, end_offset=1602) not in doc.spans()
         label = self.project.get_label_by_name('Lohnart')
+
+        default_annotation_set = doc.annotation_sets()[0]
+        assert default_annotation_set.label_set.is_default
+
         annotation = Annotation(
             document=doc,
+            annotation_set=default_annotation_set,
             spans=[Span(start_offset=1590, end_offset=1602)],
             label=label,
             label_set=label.label_sets[0],

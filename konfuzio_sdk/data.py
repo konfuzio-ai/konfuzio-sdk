@@ -2204,7 +2204,7 @@ class Annotation(Data):
                 confidence=self.confidence,
                 is_correct=self.is_correct,
                 revised=self.revised,
-                annotation_set=self.annotation_set,
+                annotation_set=self.annotation_set.id_,
                 # bboxes=self.bboxes,
                 # selection_bbox=self.selection_bbox,
                 page_number=self.page_number,
