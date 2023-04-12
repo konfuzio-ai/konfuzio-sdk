@@ -1411,6 +1411,22 @@ class Trainer(BaseModel):
         except AttributeError:
             return False
 
+    @property
+    def temp_pkl_file_path(self) -> str:
+        """Generate a path for temporary pickle file."""
+        temp_pkl_file_path = os.path.join(
+            self.output_dir, f'{get_timestamp()}_{self.category.name.lower()}_{self.name_lower()}_tmp.cloudpickle'
+        )
+        return temp_pkl_file_path
+
+    @property
+    def pkl_file_path(self) -> str:
+        """Generate a path for a resulting pickle file."""
+        pkl_file_path = os.path.join(
+            self.output_dir, f'{get_timestamp()}_{self.category.name.lower()}_' f'{self.name_lower()}_.pkl'
+        )
+        return pkl_file_path
+
 
 class GroupAnnotationSets:
     """Groups Annotation into Annotation Sets."""
@@ -1754,6 +1770,71 @@ class GroupAnnotationSets:
             continue
 
         return new_res_dict
+
+
+class DetectronExtractionAI(Trainer):
+    """Extract and label text regions using Detectron2."""
+
+    def __init__(
+        self,
+        category: Category = None,
+        tokenizer=None,
+        *args,
+        **kwargs,
+    ):
+        """DetectronExtractionAI."""
+        logger.info("Initializing DetectronExtractionAI.")
+        super().__init__(category, *args, **kwargs)
+        self.tokenizer = tokenizer
+
+    @property
+    def project(self):
+        """Get RFExtractionAI Project."""
+        if not self.category:
+            raise AttributeError(f'{self} has no Category.')
+        return self.category.project
+
+    def extract(self, document: Document) -> Document:
+        """
+        Infer information from a given Document.
+
+        :param document: Document object
+        :return: Document with predicted labels
+
+        :raises:
+         AttributeError: When missing a Tokenizer
+         NotFittedError: When CLF is not fitted
+        """
+        logger.info(f"Starting extraction of {document}.")
+
+        self.check_is_ready()
+
+        # inference_document = deepcopy(document)
+        inference_document = document
+
+        # inference_document._category = None
+        # inference_document.set_category(self.category)
+        inference_document.project = self.project
+
+        inference_document = self.tokenizer.tokenize(inference_document)
+
+        return inference_document
+
+    def check_is_ready(self):
+        """
+        Check if the ExtractionAI is ready for the inference.
+
+        It is assumed that the model is ready if a Tokenizer and a Category were set.
+
+        :raises AttributeError: When no Tokenizer is specified.
+        :raises AttributeError: When no Category is specified.
+        """
+        logger.info(f"Checking if {self} is ready for extraction.")
+        if self.tokenizer is None:
+            raise AttributeError(f'{self} missing Tokenizer.')
+
+        if not self.category:
+            raise AttributeError(f'{self} requires a Category.')
 
 
 class RFExtractionAI(Trainer, GroupAnnotationSets):
@@ -2566,22 +2647,6 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         label_set_clf_evaluation = ExtractionEvaluation(eval_list, use_view_annotations=False)
 
         return label_set_clf_evaluation
-
-    @property
-    def temp_pkl_file_path(self) -> str:
-        """Generate a path for temporary pickle file."""
-        temp_pkl_file_path = os.path.join(
-            self.output_dir, f'{get_timestamp()}_{self.category.name.lower()}_{self.name_lower()}_tmp.cloudpickle'
-        )
-        return temp_pkl_file_path
-
-    @property
-    def pkl_file_path(self) -> str:
-        """Generate a path for a resulting pickle file."""
-        pkl_file_path = os.path.join(
-            self.output_dir, f'{get_timestamp()}_{self.category.name.lower()}_' f'{self.name_lower()}_.pkl'
-        )
-        return pkl_file_path
 
     def reduce_model_weight(self):
         """Remove all non-strictly necessary parameters before saving."""
