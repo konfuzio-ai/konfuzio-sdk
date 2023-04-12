@@ -1,4 +1,4 @@
-## Find possible outliers among the ground-truth Annotations
+### Find possible outliers among the ground-truth Annotations
 
 If you want to ensure that Annotations of a Label are consistent and check for possible outliers, you can use one of 
 the `Label` class's methods. There are three of them available.

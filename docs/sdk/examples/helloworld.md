@@ -1,4 +1,4 @@
-## Create Regex-based Annotations
+### Create Regex-based Annotations
 
 **Pro Tip**: Read our technical blog post [Automated Regex](https://helm-nagel.com/Automated-Regex-Generation-based-on-examples) to find out how we use Regex to detect outliers in our annotated data.
 
@@ -11,7 +11,7 @@ You can follow the example below to post annotations of a certain word or expres
    :lines: 2-5,8-17,19-21,23-28,30-44,46
 
 
-## Train Label Regex Tokenizer
+### Train Label Regex Tokenizer
 
 You can use the `konfuzio_sdk` package to train a custom Regex tokenizer. 
 
@@ -22,7 +22,7 @@ training data.
    :language: python
    :lines: 2-5,8-21
 
-## Finding Spans of a Label Not Found by a Tokenizer
+### Finding Spans of a Label Not Found by a Tokenizer
 
 Here is an example of how to use the `Label.spans_not_found_by_tokenizer` method. This will allow you to determine if a RegexTokenizer is suitable at finding the Spans of a Label, or what Spans might have been annotated wrong. Say, you have a number of annotations assigned to the `IBAN` Label and want to know which Spans would not be found when using the WhiteSpace Tokenizer. You can follow this example to find all the relevant Spans.
 
