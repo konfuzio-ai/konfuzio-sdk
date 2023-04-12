@@ -345,18 +345,36 @@ docker pull REGISTRY_URL/konfuzio/text-annotation/master:latest
 The Tag "latest" should be replaced with an actual version. A list of available tags can be found here: https://dev.konfuzio.com/web/changelog_app.html.
 
 ### 2. Setup PostgreSQL, Redis, BlobStorage/FileSystemStorage
-The database credentials are needed in this step. Please ensure your selected [databases](/web/on_premises.html#database-and-storage) are setup at this point. You may want to use psql and redis-cli to check if database credentials are working.
+The databases and credentials to access them are created in this step. Please choose your selected [databases](/web/on_premises.html#database-and-storage) at this point. You need to be able to connect to your PostgreSQL via psql and to your Redis server via redis-cli before continuing the installation.
 
-In case you use FileSystemStorage and Docker volume mounts, you need to make sure the volume can be accessed by the konfuzio docker user (uid=999). You might want to run "chown 999:999 -R /konfuzio-vm/text-annotation/data" on the host VM.
+In case you use FileSystemStorage and Docker volume mounts, you need to make sure the volume can be accessed by the konfuzio docker user (uid=999). You might want to run `chown 999:999 -R /konfuzio-vm/text-annotation/data` on the host VM.
 
-### 3. Setup environment variable file
+The PostgreSQL database connection can be verified via psql and a connection string in the [following format](https://github.com/jazzband/dj-database-url#url-schema).
+This connection string is later set as `DATABASE_URL`.
+```
+psql -H postgres://USER:PASSWORD@HOST:PORT/NAME
+```
+
+The Redis connection can be verified using redis-cli and a connection string. 
+To use the connection string for `BROKER_URL`, `RESULT_BACKEND` and `DEFENDER_REDIS_URL` you need to append the database selector (e.g. redis://default:PASSWORD@HOST:PORT/0) 
+```
+redis-cli -u redis://default:PASSWORD@HOST:PORT
+```
+
+
+### 3. Setup the environment variable file
 Copy the /code/.env.example file from the container and adapt it to your settings. The .env file can be saved anywhere on the host VM. In this example we use "/konfuzio-vm/text-annotation.env".
 
 ### 4. Init the database, create first superuser via cli and prefill e-mail templates
 In this example we store the files on the host VM and mount the directory "/konfuzio-vm/text-annotation/data" into the container. In the first step we create a container with a shell to then start the initialization scripts within the container.
 The container needs to be able to access IP addresses and hostnames used in the .env. This can be ensured using --add.host. In the example we make the host IP 10.0.0.1 available.
 
-docker run -it --add-host=10.0.0.1 --env-file /konfuzio-vm/text-annotation.env --mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data REGISTRY_URL/konfuzio/text-annotation/master:latest bash
+```
+docker run -it --add-host=10.0.0.1 \
+  --env-file /konfuzio-vm/text-annotation.env \
+  --mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \
+  REGISTRY_URL/konfuzio/text-annotation/master:latest bash
+```
 
 ```
 python manage.py migrate
@@ -527,7 +545,7 @@ RESULT_BACKEND=  # Set this to an unised redis database
 ### 11a. Upgrade to newer Konfuzio Version
 
 Konfuzio upgrades are performed by replacing the Docker Tag to the [desired version](https://dev.konfuzio.com/web/changelog_app.html)
-After starting the new Containers Database migrations need to be applied by `python manage.py migrate` (see 4.).
+After starting the new containers, database migrations need to be applied by `python manage.py migrate` and new email-templates need to be initialized `python manage.py init_email_templates` (see 4.).
 In case additional migration steps are needed, they will be mentioned in the release notes.
 
 ### 11b. Downgrade to older Konfuzio Version
