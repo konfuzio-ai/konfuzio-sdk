@@ -127,8 +127,8 @@ contained Annotations, Spans and Bboxes pass the Data Validation Rules.
 If at least one Annotation, Span, or Bbox within a Document fails one of the following checks, the entire Document is
 marked as unsuitable for training an Extraction AI.</p>
 </section>
-<section id="id2">
-<h2>Annotation Validation Rules<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<section id="annotation-validation">
+<span id="id2"></span><h2>Annotation Validation Rules<a class="headerlink" href="#annotation-validation" title="Permalink to this headline">¶</a></h2>
 <p>An <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#annotation">Annotation</a> passes the Data Validation Rules only if:</p>
 <ol class="arabic simple">
 <li><p>The Annotation is not from a Category different from the Document’s Category</p></li>
@@ -143,16 +143,16 @@ marked as unsuitable for training an Extraction AI.</p>
 <p>Please note that the Annotation Validation Rules are indifferent about the values of <code class="docutils literal notranslate"><span class="pre">Annotation.is_correct</span></code> or <code class="docutils literal notranslate"><span class="pre">Annotation.revised</span></code>.
 For more information about what these boolean values mean, see <a class="reference external" href="https://help.konfuzio.com/modules/annotations/index.html">Konfuzio Server - Annotations</a>.</p>
 </section>
-<section id="id3">
-<h2>Span Validation Rules<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<section id="span-validation">
+<span id="id3"></span><h2>Span Validation Rules<a class="headerlink" href="#span-validation" title="Permalink to this headline">¶</a></h2>
 <p>A <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#span">Span</a> passes the Data Validation Rules only if:</p>
 <ol class="arabic simple">
 <li><p>The Span contains non-empty text (the start offset must be strictly greater than the end offset)</p></li>
 <li><p>The Span is contained within a single line of text (must not be distributed across multiple lines)</p></li>
 </ol>
 </section>
-<section id="id4">
-<h2>Bbox Validation Rules<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
+<section id="bbox-validation">
+<span id="id4"></span><h2>Bbox Validation Rules<a class="headerlink" href="#bbox-validation" title="Permalink to this headline">¶</a></h2>
 <p>A <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#bbox">Bbox</a> passes the Data Validation Rules only if:</p>
 <ol class="arabic simple">
 <li><p>The Bbox has non-negative width and height (zero is allowed for compatibility reasons with many OCR engines)</p></li>
