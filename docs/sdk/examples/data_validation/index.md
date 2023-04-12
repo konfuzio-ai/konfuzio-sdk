@@ -34,6 +34,8 @@ contained Annotations, Spans and Bboxes pass the Data Validation Rules.
 If at least one Annotation, Span, or Bbox within a Document fails one of the following checks, the entire Document is 
 marked as unsuitable for training an Extraction AI.
 
+.. _annotation-validation:
+
 ### Annotation Validation Rules
 
 An [Annotation](https://dev.konfuzio.com/sdk/sourcecode.html#annotation) passes the Data Validation Rules only if:
@@ -47,12 +49,16 @@ An [Annotation](https://dev.konfuzio.com/sdk/sourcecode.html#annotation) passes 
 Please note that the Annotation Validation Rules are indifferent about the values of `Annotation.is_correct` or `Annotation.revised`.
 For more information about what these boolean values mean, see [Konfuzio Server - Annotations](https://help.konfuzio.com/modules/annotations/index.html).
 
+.. _span-validation:
+
 ### Span Validation Rules
 
 A [Span](https://dev.konfuzio.com/sdk/sourcecode.html#span) passes the Data Validation Rules only if:
 
 1. The Span contains non-empty text (the start offset must be strictly greater than the end offset)
 2. The Span is contained within a single line of text (must not be distributed across multiple lines)
+
+.. _bbox-validation:
 
 ### Bbox Validation Rules
 
