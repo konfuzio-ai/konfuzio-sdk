@@ -299,6 +299,8 @@ Below are two examples on how to set the custom variables, whether in the `index
 
 _Please note that the default values from the examples below are based on Konfuzio's default styles._
 
+.. _custom-variables-html:
+
 #### HTML
 
 ```
@@ -313,6 +315,8 @@ _Please note that the default values from the examples below are based on Konfuz
   }
 </style>
 ```
+
+.. _custom-variables-css:
 
 #### CSS file
 

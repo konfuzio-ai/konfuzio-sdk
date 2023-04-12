@@ -11,6 +11,8 @@ that share a Label Set.
 For more detailed information on each concept, follow the link on the concept's name which leads to the automatically 
 generated documentation.
 
+.. _project-concept:
+
 ### Project
 [Project](sourcecode.html#project) is essentially a dataset that contains Documents 
 belonging to different Categories or not having any Category assigned. To initialize it, call `Project(id_=YOUR_PROJECT_ID)`. 
@@ -26,6 +28,8 @@ Here are the some of properties and methods of the Project you might need when w
 - `project.test_documents` – test Documents within the Project;
 - `project.get_category_by_id(YOUR_CATEGORY_ID).documents()` – Documents filtered by a Category of your choice; 
 - `project.get_document_by_id(YOUR_DOCUMENT_ID)` – access a particular Document from the Project if you know its ID.
+
+.. _document-concept:
 
 ### Document
 [Document](sourcecode.html#document) is one of the files that constitute a Project. It 
@@ -48,6 +52,8 @@ the Smartview;
 - `document.get_images()` – download PNG images of the Pages in the Document; can be used if you wish to use the visual 
 data for training your own models, for example;
 
+.. _category-concept:
+
 ### Category
 [Category](sourcecode.html#category) is a group of Documents united by common feature or type, i.e. invoice or receipt.
 
@@ -57,16 +63,22 @@ To get `documents` or `test_documents` under the Category, use `category.documen
 
 You can also observe all Categories available in the Project via the Smartview: they are listed on the Project's page in the menu on the right.
 
+.. _page-concept:
+
 ### Page
 [Page](sourcecode.html#page) is a constituent part of the Document. Here are some of the properties and methods of the Page you might need when working with the SDK:
 - `page.text` – get text of the Page;
 - `page.spans()` – get a list of Spans on the Page;
 - `page.number` – get Page's number, starting from 1.
 
+.. _span-concept:
+
 ### Span
 [Span](sourcecode.html#span) is a part of the Document's text without the line breaks. Each Span has `start_offset` and `end_offset` denoting its starting and finishing characters in `document.text`. 
 
 To access Span's text, you can call `span.offset_string`. We are going to use it later when collecting the Spans from the Documents.
+
+.. _annotation-concept:
 
 ### Annotation 
 [Annotation](sourcecode.html#annotation) is a combination of Spans that has a certain Label  (i.e. Issue_Date, Auszahlungsbetrag) assigned to it. They typically denote a certain type of entity that is found in the text. Annotations can be predicted by AI or human-added. 
@@ -75,18 +87,26 @@ Like Spans, Annotations also have `start_offset` and `end_offset` denoting the s
 
 To see the Annotation in the Smartview, you can call `annotation.get_link()` and open the returned URL. 
 
+.. _annotation-set-concept:
+
 ### Annotation Set
 [Annotation Set](sourcecode.html#annotation-set) is a group of Annotations united by Labels 
 belonging to the same Label Set. To see Annotations in the set, call `annotation_set.annotations()`.
+
+.. _label-concept:
 
 ### Label
 [Label](sourcecode.html#label) defines what the Annotation is about (i.e. Issue_Date, 
 Auszahlungsbetrag). Labels are grouped into Label Sets. To see Annotations with a current Label, 
 call `label.annotations()` .
 
+.. _label-set-concept:
+
 ### Label Set
 [Label Set](sourcecode.html#label-set) is a group of Labels united. A Label Set can belong 
 to different Categories and multiple Annotation Sets.
+
+.. _bbox-concept:
 
 ### Bbox
 [Bbox](sourcecode.html#bbox) is an area of the Page denoted by four rectangle-like 
