@@ -4,18 +4,19 @@ version: "3.9"
 ######  Do not skip. These variables need to be customized.                  ######
 ###################################################################################
 x-user-variables: &user-variables
-  HOST_NAME: *********
-  SECRET_KEY: ****
-  AZURE_OCR_KEY: *********
+  HOST_NAME: 
+  SECRET_KEY: 
+  AZURE_OCR_KEY: 
 
 x-user-azure-ocr-variables: &user-azure-ocr-variables
   Eula: accept
-  Billing: https://*********.cognitiveservices.azure.com/
-  ApiKey: *********
+  Billing: 
+  ApiKey: 
 
 konfuzio_image: &konfuzio_image
-  image: git.konfuzio.com:5050/konfuzio/text-annotation/master:*********
+  image: git.konfuzio.com:5050/konfuzio/text-annotation/master:<<INSERT_DOCKER_TAG>>
 ##################################################################################
+
 
 
 ##################################################################################
@@ -28,7 +29,8 @@ x-common-variables: &common-variables
   RESULT_BACKEND: redis://:eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81@redis:6379/1
   ACCOUNT_EMAIL_VERIFICATION: none
   EMAIL_BACKEND: django.core.mail.backends.smtp.EmailBackend
-  AZURE_OCR_BASE_URL: 'http://azure-ocr:5000'
+  AZURE_OCR_BASE_URL: http://azure-ocr:5000
+  FLOWER_URL: http://flower:5555/flower
 ##################################################################################
 
 ##################################################################################
@@ -37,33 +39,37 @@ x-common-variables: &common-variables
 ##################################################################################
 services:
   web:
-    image: <<: *konfuzio_image
+    <<: *konfuzio_image
     ports:
       - "81:8000"
     volumes: 
       - konfuzio:/data
     environment:
-      <<: *common-variables
-      <<: *user-variables
+      <<: [*common-variables, *user-variables]
     depends_on:
-      - migration      
+      - migration  
+  flower:
+    <<: *konfuzio_image
+    command: celery -A app flower --url_prefix=flower --address=0.0.0.0 --port=5555
+    environment:
+      <<: [*common-variables, *user-variables]
+    depends_on:
+      - migration 
   migration:
-    image: <<: *konfuzio_image
+    <<: *konfuzio_image
     command: >
       bash -c "python manage.py migrate --noinput && python manage.py init_user_permissions && python manage.py init_email_templates"
     volumes: 
       - konfuzio:/data
     environment:
-      <<: *common-variables
-      <<: *user-variables
+      <<: [*common-variables, *user-variables]
     depends_on:
       - db
   worker:
-    image: <<: *konfuzio_image
+    <<: *konfuzio_image
     command: celery -A app worker -l INFO --concurrency 1 -Q celery,extract,processing,local_ocr,ocr,training,training_heavy,finalize,categorize
     environment:
-     <<: *common-variables    
-     <<: *user-variables
+      <<: [*common-variables, *user-variables]
     depends_on:
       - web
     volumes: 
