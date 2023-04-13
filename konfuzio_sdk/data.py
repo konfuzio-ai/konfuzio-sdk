@@ -12,6 +12,7 @@ import zipfile
 from copy import deepcopy
 from typing import Optional, List, Union, Tuple, Dict
 from warnings import warn
+from requests import HTTPError
 from enum import Enum
 
 import dateutil.parser
@@ -2197,15 +2198,15 @@ class Annotation(Data):
             response = post_document_annotation(
                 project_id=self.document.project.id_,
                 document_id=self.document.id_,
-                start_offset=self.start_offset,
-                end_offset=self.end_offset,
+                # start_offset=self.start_offset,
+                # end_offset=self.end_offset,
                 label_id=self.label.id_,
                 label_set_id=label_set_id,
                 confidence=self.confidence,
                 is_correct=self.is_correct,
                 revised=self.revised,
                 annotation_set=self.annotation_set.id_,
-                # bboxes=self.bboxes,
+                bboxes=self.bboxes,
                 # selection_bbox=self.selection_bbox,
                 page_number=self.page_number,
             )
@@ -2507,7 +2508,10 @@ class Document(Data):
 
         for annotation in self.annotations(use_correct=False):
             if not annotation.is_online:
-                annotation.save()
+                try:
+                    annotation.save()
+                except HTTPError as e:
+                    logger.error(str(e))
 
     @classmethod
     def from_file_sync(
