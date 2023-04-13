@@ -107,6 +107,9 @@ class ParagraphTokenizer(AbstractTokenizer):
                     label = document.project.no_label
 
                 try:
+                    confidence = None
+                    if self.create_detectron_labels:
+                        confidence = 1.0
                     annotation = Annotation(
                         document=document,
                         annotation_set=annotation_set,
@@ -114,6 +117,7 @@ class ParagraphTokenizer(AbstractTokenizer):
                         label_set=document.project.no_label_set,
                         category=document.category,
                         spans=spans,
+                        confidence=confidence,
                     )
                 except ValueError as e:
                     if 'is a duplicate of' in str(e):
