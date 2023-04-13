@@ -26,7 +26,7 @@ from konfuzio_sdk.data import (
 )
 from konfuzio_sdk.evaluate import ExtractionEvaluation
 from konfuzio_sdk.trainer.information_extraction import RFExtractionAI
-from konfuzio_sdk.utils import is_file
+from konfuzio_sdk.utils import is_file, get_spans_from_bbox
 from tests.variables import (
     OFFLINE_PROJECT,
     TEST_DOCUMENT_ID,
@@ -49,7 +49,7 @@ class TestOnlineProject(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Initialize the test Project."""
-        cls.project = Project(id_=TEST_PROJECT_ID)
+        cls.project = Project(id_=TEST_PROJECT_ID, strict_data_validation=False)
 
     def test_document(self):
         """Test properties of a specific Documents in the test Project."""
@@ -191,6 +191,24 @@ class TestOnlineProject(unittest.TestCase):
         # Test3: delete the Annotation from the Document online.
         annotation.delete()  # doc.update() performed internally when delete_online=True, which is default
         assert annotation not in doc.get_annotations()
+
+    def test_get_sentence_spans_from_bbox(self):
+        """Test to get sentence Spans in a bounding box."""
+        project = Project(id_=458)
+        document = project.get_document_by_id(615403)
+        page = document.get_page_by_index(0)
+
+        bbox = Bbox(x0=50, y0=77, x1=288, y1=125, page=page)
+
+        spans = get_spans_from_bbox(selection_bbox=bbox)
+
+        sentences_spans = Span.get_sentence_from_spans(spans=spans)
+
+        assert len(sentences_spans) == 3
+        first_sentence = sentences_spans[0]
+        assert len(first_sentence) == 2
+        assert first_sentence[0].offset_string == "We would like detection to scale to level of object clas-"
+        assert first_sentence[1].offset_string == "siﬁcation."
 
     def test_merge_documents(self):
         """Merge documents into a new document."""

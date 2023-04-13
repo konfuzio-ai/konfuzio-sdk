@@ -30,7 +30,6 @@ from konfuzio_sdk.utils import (
     exception_or_log_error,
     get_sdk_version,
     get_spans_from_bbox,
-    get_sentence_from_spans,
 )
 
 TEST_STRING = "sample string"
@@ -529,25 +528,6 @@ def test_get_spans_from_bbox():
     assert spans_2[0].end_offset == 1717
     assert spans_2[1].start_offset == 1926
     assert spans_2[1].end_offset == 1932
-
-
-def test_get_sentence_spans_from_bbox():
-    """Test to get sentence Spans in a bounding box."""
-    project = Project(id_=458)
-    document = project.get_document_by_id(615403)
-    page = document.get_page_by_index(0)
-
-    bbox = Bbox(x0=50, y0=77, x1=288, y1=125, page=page)
-
-    spans = get_spans_from_bbox(selection_bbox=bbox)
-
-    sentences_spans = get_sentence_from_spans(spans=spans)
-
-    assert len(sentences_spans) == 3
-    first_sentence = sentences_spans[0]
-    assert len(first_sentence) == 2
-    assert first_sentence[0].offset_string == "We would like detection to scale to level of object clas-"
-    assert first_sentence[1].offset_string == "siﬁcation."
 
 
 def test_get_sdk_version():

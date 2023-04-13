@@ -12,7 +12,7 @@ import zipfile
 from contextlib import contextmanager
 from io import BytesIO
 from pympler import asizeof
-from typing import Union, List, Tuple, Dict, Optional, Type, TYPE_CHECKING, Iterable
+from typing import Union, List, Tuple, Dict, Optional, Type, TYPE_CHECKING
 from warnings import warn
 
 import filetype
@@ -899,49 +899,3 @@ def get_spans_from_bbox(selection_bbox: 'Bbox') -> List['Span']:
         spans.append(span)
 
     return spans
-
-
-def get_sentence_from_spans(spans: Iterable['Span'], punctuation=None) -> List[List['Span']]:
-    """Return a list of Spans corresponding to Sentences separated by Punctuation."""
-    from konfuzio_sdk.data import Span
-
-    if punctuation is None:
-        punctuation = {'.', '!', '?'}
-
-    # get the sentence spans
-    sentence_spans: List[List[Span]] = [[]]
-    for span in spans:
-        # get the text of the span
-        span_text = span.offset_string
-
-        # find the start and end offsets of each sentence in the span
-        prev_sentence_start_offset = 0
-        for index, char in enumerate(span_text):
-            if char == ' ':
-                continue
-            if char in punctuation:
-                sentence_start_offset = span.start_offset + prev_sentence_start_offset
-                sentence_end_offset = span.start_offset + index + 1
-                sentence_spans[-1].append(
-                    Span(
-                        start_offset=sentence_start_offset,
-                        end_offset=sentence_end_offset,
-                        document=span.page.document,
-                    )
-                )
-                sentence_spans.append([])
-                prev_sentence_start_offset = index + 1
-
-        if prev_sentence_start_offset < len(span_text):
-            sentence_start_offset = span.start_offset + prev_sentence_start_offset
-            sentence_end_offset = span.end_offset
-            sentence_spans[-1].append(
-                Span(
-                    start_offset=sentence_start_offset,
-                    end_offset=sentence_end_offset,
-                    document=span.page.document,
-                )
-            )
-
-    sentence_spans = [x for x in sentence_spans if len(x)]
-    return sentence_spans
