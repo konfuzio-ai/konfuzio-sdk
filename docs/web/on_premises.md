@@ -256,19 +256,6 @@ kubectl exec --stdin --tty my-konfuzio-* --  bash
 python manage.py createsuperuser
 ```
 
-<!--
-#### Initial login
-
-You can access the Konfuzio instance by visiting the domain specified during
-installation. If you manually created the secret for initial root password, you can use that
-to sign in as `root` user. If not, Konfuzio would've automatically created a random
-password for `root` user. This can be extracted by the following command (replace
-`<name>` by name of the release - which is `konfuzio` if you used the command above).
-
-`kubectl get secret <name>-konfuzio-initial-root-password`  
-`-ojsonpath='{.data.password}' | base64 --decode ; echo`  
--->
-
 ### Quick Start via Kubernetes and Helm
 
 The following commands allow you to get a Konfuzio Server installation running with minimal configuration effort and relying on the [default values](https://git.konfuzio.com/shared/charts/-/blob/master/values.yaml) of the Chart. This uses Postgres, Redis and S3 via [MinIO](https://min.io/) as in-cluster deployments. This setup is not suited for production and may use insecure defaults.
@@ -316,14 +303,13 @@ Konfuzio can be configured to run on a single virtual machine, without relying o
 Kubernetes. In this scenario, all necessary containers are started manually or with a
 container orchestration tool of your choice.
 
-### Requirements
+### VM Requirements
 
 We recommend a virtual machine with a minimum of 8 vCPU (incl. AVX2 support) and
 32 GB of RAM and an installed Docker runtime. A Nvidia GPU is recommended but not
 required. In this setup Konfuzio is running in the context of the Docker executor,
 therefore there are no strict requirements for the VMs operating systems. However, we
 recommend a Linux VM with Debian, Ubuntu, CentOS,or Redhat Linux.
-
 
 ### Login to the Konfuzio Docker Image Registry
 
@@ -343,18 +329,16 @@ docker login REGISTRY_URL
 
 The Tag "latest" should be replaced with an actual version. A list of available tags can be found here: https://dev.konfuzio.com/web/changelog_app.html.
 
-
 ### Quick Start via Docker-Compose
 
-The fastest way to get Konfuzio Server running via Docker is by using Docker-Compose. We provide a docker-compose file.
+The fastest method for deploying Konfuzio Server using Docker is through Docker-Compose. To get started, follow these steps:
 
-- Install Docker-Compose in a version which is compatible with [Compose file format 3.9](https://docs.docker.com/compose/compose-file/compose-versioning/)
-- Download the [docker-compose.yml](https://dev.konfuzio.com/_static/docker-compose.yml) file
-- Enter the mandatory variables into the first section of the docker-compose file
-- Start Konfuzio Server by running `docker-compose up -d'
+- Install Docker-Compose in a version that is compatible with Compose file format 3.9.
+- Download the [docker-compose.yml](https://dev.konfuzio.com/_static/docker-compose.yml) file.
+- Fill in the mandatory variables in the first section of the docker-compose file.
+- Launch Konfuzio Server by running `docker-compose up -d`.
 
-If you want to use Docker only, we explain the container setup by going through each necessary step (Step 1-9).  
-
+If you prefer to use Docker exclusively, we provide detailed instructions for setting up the containers in each necessary step (Step 1-9).
 
 ### 1. Download Docker Image
 
@@ -381,7 +365,6 @@ To use the connection string for `BROKER_URL`, `RESULT_BACKEND` and `DEFENDER_RE
 ```
 redis-cli -u redis://default:PASSWORD@HOST:PORT
 ```
-
 
 ### 3. Setup the environment variable file
 Copy the /code/.env.example file from the container and adapt it to your settings. The .env file can be saved anywhere on the host VM. In this example we use "/konfuzio-vm/text-annotation.env".
