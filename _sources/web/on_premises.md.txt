@@ -334,10 +334,10 @@ The Tag "latest" should be replaced with an actual version. A list of available 
 The fastest method for deploying Konfuzio Server using Docker is through Docker-Compose. To get started, follow these steps:
 
 - Install Docker-Compose in a version that is compatible with Compose file format 3.9.
-- Run `docker-compose version` to verify that Docker-Compose is available.
+- Run `docker compose version` to verify that Docker-Compose is available.
 - Download the [docker-compose.yml](https://dev.konfuzio.com/_static/docker-compose.yml) file.
 - Fill in the mandatory variables in the first section of the docker-compose file.
-- Launch Konfuzio Server by running `docker-compose up -d`.
+- Launch Konfuzio Server by running `docker compose up -d`.
 
 If you prefer to use Docker exclusively, we provide detailed instructions for setting up the containers in each necessary step (Step 1-9).
 
