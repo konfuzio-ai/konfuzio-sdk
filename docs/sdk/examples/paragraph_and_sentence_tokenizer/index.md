@@ -15,7 +15,11 @@ For example, to tokenize a Document into paragraphs using the `ParagraphTokenize
 
 .. literalinclude:: /sdk/boilerplates/test_paragraph_tokenizer.py
    :language: python
-   :lines: 2-9,13-17
+   :lines: 2-9,13-16
+
+The resulting Annotations will look like this:
+
+.. image:: /_static/img/paragraph_tokenizer.png
 
 ### Sentence Tokenizer
 
@@ -24,4 +28,8 @@ Annotations for each individual sentence in a text Document. To use it, you can 
 
 .. literalinclude:: /sdk/boilerplates/test_sentence_tokenizer.py
    :language: python
-   :lines: 2-9,13-17
+   :lines: 2-9,13-16
+
+The resulting Annotations will look like this:
+
+.. image:: /_static/img/sentence_tokenizer.png
