@@ -1203,8 +1203,21 @@ argument.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">get_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Get Document Page as PNG.</p>
+<span class="sig-name descname"><span class="pre">get_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">PIL.Image.Image</span></span></span></dt>
+<dd><p>Get Page as a Pillow Image object.</p>
+<p>The Page image is loaded from a PNG file at <cite>Page.image_path</cite>.
+If the file is not present, or if <cite>update</cite> is True, it will be downloaded from the Konfuzio Host.
+Alternatively, if you don’t want to use a file, you can provide the image as bytes to <cite>Page.image_bytes</cite>. Then
+call this method to convert the bytes into a Pillow Image.
+In every case, the return value of this method and the attribute <cite>Page.image</cite> will be a Pillow Image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>update</strong> – Whether to force download the Page PNG file.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A Pillow Image object for this Page’s image.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py property">
