@@ -123,8 +123,8 @@ class Page(Data):
 
         self.copy_of_id = copy_of_id
         self.text_encoded: List[int] = None
-        self.image: Image.Image = None
-        self.image_bytes: bytes = None
+        self.image: Optional[Image.Image] = None
+        self.image_bytes: Optional[bytes] = None
         self._original_size = original_size
         self.width = self._original_size[0]
         self.height = self._original_size[1]
