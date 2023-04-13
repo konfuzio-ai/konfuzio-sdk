@@ -124,6 +124,7 @@ class Page(Data):
         self.copy_of_id = copy_of_id
         self.text_encoded: List[int] = None
         self.image = None
+        self.img_bytes = None
         self._original_size = original_size
         self.width = self._original_size[0]
         self.height = self._original_size[1]
@@ -172,6 +173,11 @@ class Page(Data):
 
     def get_image(self, update: bool = False):
         """Get Document Page as PNG."""
+        if not update:
+            if self.img_bytes is not None:
+                self.image = Image.open(io.BytesIO(self.img_bytes))
+            if self.image is not None:
+                return self.image
         if self.document.status[0] == 2 and (not is_file(self.image_path, raise_exception=False) or update):
             page_id = self.id_ if self.id_ else self.copy_of_id
             png_content = get_page_image(page_id)
