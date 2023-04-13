@@ -188,16 +188,15 @@ class Page(Data):
 
     def get_image(self, update: bool = False) -> Image:
         """Get Document Page as PNG."""
-        if (self.document.status and self.document.status[0] == 2) and (
-            not is_file(self.image_path, raise_exception=False) or update
-        ):
-            page_id = self.id_ if self.id_ else self.copy_of_id
+        page_id = self.id_ if self.id_ else self.copy_of_id
+        if is_file(self.image_path, raise_exception=False) and not update:
+            self.image = Image.open(self.image_path)
+        elif not is_file(self.image_path, raise_exception=False) or update:
             png_content = get_page_image(page_id)
             with open(self.image_path, "wb") as f:
                 f.write(png_content)
                 self.image = Image.open(io.BytesIO(png_content))
-        elif is_file(self.image_path, raise_exception=False):
-            self.image = Image.open(self.image_path)
+
         return self.image
 
     def get_annotations_image(self, display_all: bool = False) -> Image:
