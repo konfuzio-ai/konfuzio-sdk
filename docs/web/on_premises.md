@@ -269,7 +269,7 @@ password for `root` user. This can be extracted by the following command (replac
 `-ojsonpath='{.data.password}' | base64 --decode ; echo`  
 -->
 
-### Minimal Setup
+### Quick Start via Kubernetes and Helm
 
 The following commands allow you to get a Konfuzio Server installation running with minimal configuration effort and relying on the [default values](https://git.konfuzio.com/shared/charts/-/blob/master/values.yaml) of the Chart. This uses Postgres, Redis and S3 via [MinIO](https://min.io/) as in-cluster deployments. This setup is not suited for production and may use insecure defaults.
 
@@ -324,10 +324,10 @@ required. In this setup Konfuzio is running in the context of the Docker executo
 therefore there are no strict requirements for the VMs operating systems. However, we
 recommend a Linux VM with Debian, Ubuntu, CentOS,or Redhat Linux.
 
-### 1. Download Docker Image
 
-The Konfuzio docker image can be downloaded via “docker pull”. We will provide you
-with the credentials. This action requires an internet connection.
+### Login to the Konfuzio Docker Image Registry
+
+We will provide you with the credentials to login into our Docker Image Registry, which allows you to access and download our Docker Images. This action requires an internet connection.
 
 The internet connection can be turned off once the download is complete. In case there is
 no internet connection available during setup, the container must be transferred with an
@@ -339,6 +339,27 @@ Password: {PROVIDED_BY_KONFUZIO}
 
 ```
 docker login REGISTRY_URL
+```
+
+The Tag "latest" should be replaced with an actual version. A list of available tags can be found here: https://dev.konfuzio.com/web/changelog_app.html.
+
+
+### Quick Start via Docker-Compose
+
+The fastest way to get Konfuzio Server running via Docker is by using Docker-Compose. We provide a docker-compose file.
+
+- Install Docker-Compose in a version which is compatible with [Compose file format 3.9](https://docs.docker.com/compose/compose-file/compose-versioning/)
+- Download the [docker-compose.yml](https://dev.konfuzio.com/_static/docker-compose.yml) file
+- Enter the mandatory variables into the first section of the docker-compose file
+- Start Konfuzio Server by running `docker-compose up -d'
+
+If you want to use Docker only, we explain the container setup by going through each necessary step (Step 1-9).  
+
+
+### 1. Download Docker Image
+
+After you have connected to the Registry, the Konfuzio docker image can be downloaded via “docker pull”.
+```
 docker pull REGISTRY_URL/konfuzio/text-annotation/master:latest
 ```
 
