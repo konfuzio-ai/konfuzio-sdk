@@ -146,7 +146,7 @@ class TestOnlineProject(unittest.TestCase):
         image_in_bytes_format = open(page.image_path, 'rb').read()
         # reset image data
         page.image = None
-        page.img_bytes = image_in_bytes_format
+        page.image_bytes = image_in_bytes_format
         # page.get_image() will bypass Pillow loading page.image_path file and instead use the provided bytes
         image = page.get_image()
         # check correspondence between the two loading methods
