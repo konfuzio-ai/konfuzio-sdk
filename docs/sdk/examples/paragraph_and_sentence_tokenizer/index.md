@@ -10,6 +10,18 @@ the `create_detectron_labels` setting to create Annotations with the label given
 
 ### Paragraph Tokenizer
 
+For example, to tokenize a Document into paragraphs using the `ParagraphTokenizer` in `detectron` mode and the 
+`create_detectron_labels` option to use the labels provided by our Detectron model, you can use the following code:
+
 .. literalinclude:: /sdk/boilerplates/test_paragraph_tokenizer.py
    :language: python
-   :lines: 2
+   :lines: 2-9,13-17
+
+### Sentence Tokenizer
+
+If you are interested in a more fine grained tokenization, you can use the `SentenceTokenizer`. It can be used to create 
+Annotations for each individual sentence in a text Document. To use it, you can use the following code:
+
+.. literalinclude:: /sdk/boilerplates/test_sentence_tokenizer.py
+   :language: python
+   :lines: 2-9,13-17
