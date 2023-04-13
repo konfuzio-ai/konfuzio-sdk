@@ -4,19 +4,18 @@ version: "3.9"
 ######  Do not skip. These variables need to be customized.                  ######
 ###################################################################################
 x-user-variables: &user-variables
-  HOST_NAME: 
-  SECRET_KEY: 
-  AZURE_OCR_KEY: 
+  HOST_NAME: http://localhost:81
+  SECRET_KEY: ""
+  AZURE_OCR_KEY: ""
 
 x-user-azure-ocr-variables: &user-azure-ocr-variables
   Eula: accept
-  Billing: 
-  ApiKey: 
+  Billing: ""
+  ApiKey: ""
 
-konfuzio_image: &konfuzio_image
+x-konfuzio_image: &konfuzio_image
   image: git.konfuzio.com:5050/konfuzio/text-annotation/master:<<INSERT_DOCKER_TAG>>
 ##################################################################################
-
 
 
 ##################################################################################
@@ -31,7 +30,10 @@ x-common-variables: &common-variables
   EMAIL_BACKEND: django.core.mail.backends.smtp.EmailBackend
   AZURE_OCR_BASE_URL: http://azure-ocr:5000
   FLOWER_URL: http://flower:5555/flower
+  SESSION_COOKIE_SECURE: False
+  CSRF_COOKIE_SECURE: False
 ##################################################################################
+
 
 ##################################################################################
 ######  This section starts the Containers, for more details see:                #
@@ -42,24 +44,24 @@ services:
     <<: *konfuzio_image
     ports:
       - "81:8000"
-    volumes: 
+    volumes:
       - konfuzio:/data
     environment:
       <<: [*common-variables, *user-variables]
     depends_on:
-      - migration  
+      - migration
   flower:
     <<: *konfuzio_image
     command: celery -A app flower --url_prefix=flower --address=0.0.0.0 --port=5555
     environment:
       <<: [*common-variables, *user-variables]
     depends_on:
-      - migration 
+      - migration
   migration:
     <<: *konfuzio_image
     command: >
       bash -c "python manage.py migrate --noinput && python manage.py init_user_permissions && python manage.py init_email_templates"
-    volumes: 
+    volumes:
       - konfuzio:/data
     environment:
       <<: [*common-variables, *user-variables]
@@ -72,8 +74,8 @@ services:
       <<: [*common-variables, *user-variables]
     depends_on:
       - web
-    volumes: 
-      - konfuzio:/data    
+    volumes:
+      - konfuzio:/data
     deploy:
       mode: replicated
       replicas: 1
@@ -89,7 +91,7 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=konfuzio
-    volumes: 
+    volumes:
       - db:/var/lib/postgresql/data
   redis:
     image: redis:6.2-alpine
@@ -97,11 +99,11 @@ services:
     ports:
       - '6379:6379'
     command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
-    volumes: 
+    volumes:
       - redis:/data
   azure-ocr:
     image: 'mcr.microsoft.com/azure-cognitive-services/vision/read:3.2-model-2022-04-30'
-    restart: always 
+    restart: always
     environment:
       <<: *user-azure-ocr-variables
 ##################################################################################
@@ -115,7 +117,7 @@ volumes:
   db:
     driver: local
   redis:
-    driver: local    
+    driver: local
   konfuzio:
-    driver: local        
-##################################################################################    
+    driver: local
+##################################################################################
