@@ -345,9 +345,22 @@ docker pull REGISTRY_URL/konfuzio/text-annotation/master:latest
 The Tag "latest" should be replaced with an actual version. A list of available tags can be found here: https://dev.konfuzio.com/web/changelog_app.html.
 
 ### 2. Setup PostgreSQL, Redis, BlobStorage/FileSystemStorage
-The database credentials are created in this step. Please choose your selected [databases](/web/on_premises.html#database-and-storage) at this point. You need to be able to connect to your PostgreSQL via psql and to your Redis server via redis-cli before continuing the installation.
+The databases and credentials to access them are created in this step. Please choose your selected [databases](/web/on_premises.html#database-and-storage) at this point. You need to be able to connect to your PostgreSQL via psql and to your Redis server via redis-cli before continuing the installation.
 
 In case you use FileSystemStorage and Docker volume mounts, you need to make sure the volume can be accessed by the konfuzio docker user (uid=999). You might want to run `chown 999:999 -R /konfuzio-vm/text-annotation/data` on the host VM.
+
+The PostgreSQL database connection can be verified via psql and a connection string in the [following format](https://github.com/jazzband/dj-database-url#url-schema).
+This connection string is later set as `DATABASE_URL`.
+```
+psql -H postgres://USER:PASSWORD@HOST:PORT/NAME
+```
+
+The Redis connection can be verified using redis-cli and a connection string. 
+To use the connection string for `BROKER_URL`, `RESULT_BACKEND` and `DEFENDER_REDIS_URL` you need to append the database selector (e.g. redis://default:PASSWORD@HOST:PORT/0) 
+```
+redis-cli -u redis://default:PASSWORD@HOST:PORT
+```
+
 
 ### 3. Setup the environment variable file
 Copy the /code/.env.example file from the container and adapt it to your settings. The .env file can be saved anywhere on the host VM. In this example we use "/konfuzio-vm/text-annotation.env".
