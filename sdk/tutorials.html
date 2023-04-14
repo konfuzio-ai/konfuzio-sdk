@@ -78,6 +78,11 @@
 <li class="toctree-l3"><a class="reference internal" href="#evaluate-a-trained-extraction-ai-model">Evaluate a Trained Extraction AI Model</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#paragraph-and-sentence-tokenizer">Paragraph and Sentence Tokenizer</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#paragraph-tokenizer">Paragraph Tokenizer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sentence-tokenizer">Sentence Tokenizer</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#data-validation-rules">Data Validation Rules</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#initializing-a-project-with-the-data-validation-rules-enabled">Initializing a Project with the Data Validation Rules enabled</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#document-validation-rules">Document Validation Rules</a></li>
@@ -1006,6 +1011,58 @@ documentation for more details.</p>
 </div>
 </section>
 </section>
+<section id="paragraph-and-sentence-tokenizer">
+<h2>Paragraph and Sentence Tokenizer<a class="headerlink" href="#paragraph-and-sentence-tokenizer" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">ParagraphTokenizer</span></code> and <code class="docutils literal notranslate"><span class="pre">SentenceTokenizer</span></code> are used to split a document into paragraphs and sentences
+respectively. They both come with two different modes: <code class="docutils literal notranslate"><span class="pre">detectron</span></code> and <code class="docutils literal notranslate"><span class="pre">line_distance</span></code>. The <code class="docutils literal notranslate"><span class="pre">detectron</span></code> mode uses a
+fine tuned <a class="reference external" href="https://github.com/facebookresearch/detectron2">Detectron2</a> model to detect paragraph Annotations. The
+<code class="docutils literal notranslate"><span class="pre">line_distance</span></code> mode uses a rule based approach, and is therefore faster, but tends to be less accurate. In particular,
+it fails to handle documents with two columns. The <code class="docutils literal notranslate"><span class="pre">detectron</span></code> mode is the default. It can also be used together with
+the <code class="docutils literal notranslate"><span class="pre">create_detectron_labels</span></code> setting to create Annotations with the label given by our <a class="reference external" href="https://github.com/facebookresearch/detectron2">Detectron2</a> model:
+<code class="docutils literal notranslate"><span class="pre">figure</span></code>, <code class="docutils literal notranslate"><span class="pre">table</span></code>, <code class="docutils literal notranslate"><span class="pre">list</span></code>, <code class="docutils literal notranslate"><span class="pre">text</span></code> and <code class="docutils literal notranslate"><span class="pre">title</span></code>.</p>
+<section id="paragraph-tokenizer">
+<h3>Paragraph Tokenizer<a class="headerlink" href="#paragraph-tokenizer" title="Permalink to this headline">¶</a></h3>
+<p>For example, to tokenize a Document into paragraphs using the <code class="docutils literal notranslate"><span class="pre">ParagraphTokenizer</span></code> in <code class="docutils literal notranslate"><span class="pre">detectron</span></code> mode and the
+<code class="docutils literal notranslate"><span class="pre">create_detectron_labels</span></code> option to use the labels provided by our Detectron model, you can use the following code:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.paragraph_and_sentence</span> <span class="kn">import</span> <span class="n">ParagraphTokenizer</span>
+<span class="kn">from</span> <span class="nn">variables</span> <span class="kn">import</span> <span class="n">YOUR_PROJECT_ID</span><span class="p">,</span> <span class="n">YOUR_DOCUMENT_ID</span>
+
+<span class="c1"># initialize a Project and fetch a Document to tokenize</span>
+
+<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
+<span class="n">document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
+
+<span class="c1"># create the ParagraphTokenizer and tokenize the Document</span>
+
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">ParagraphTokenizer</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;detectron&#39;</span><span class="p">,</span> <span class="n">create_detectron_labels</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The resulting Annotations will look like this:</p>
+<img alt="../_images/paragraph_tokenizer.png" src="../_images/paragraph_tokenizer.png" />
+</section>
+<section id="sentence-tokenizer">
+<h3>Sentence Tokenizer<a class="headerlink" href="#sentence-tokenizer" title="Permalink to this headline">¶</a></h3>
+<p>If you are interested in a more fine grained tokenization, you can use the <code class="docutils literal notranslate"><span class="pre">SentenceTokenizer</span></code>. It can be used to create
+Annotations for each individual sentence in a text Document. To use it, you can use the following code:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.paragraph_and_sentence</span> <span class="kn">import</span> <span class="n">SentenceTokenizer</span>
+<span class="kn">from</span> <span class="nn">variables</span> <span class="kn">import</span> <span class="n">YOUR_PROJECT_ID</span><span class="p">,</span> <span class="n">YOUR_DOCUMENT_ID</span>
+
+<span class="c1"># initialize a Project and fetch a Document to tokenize</span>
+
+<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
+<span class="n">document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
+
+<span class="c1"># create the SentenceTokenizer and tokenize the Document</span>
+
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">SentenceTokenizer</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;line_distance&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The resulting Annotations will look like this:</p>
+<img alt="../_images/sentence_tokenizer.png" src="../_images/sentence_tokenizer.png" />
+</section>
+</section>
 <section id="data-validation-rules">
 <h2>Data Validation Rules<a class="headerlink" href="#data-validation-rules" title="Permalink to this headline">¶</a></h2>
 <p>Konfuzio automatically applies a set of rules for validating data within a <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#project">Project</a>.
@@ -1043,7 +1100,7 @@ If at least one Annotation, Span, or Bbox within a Document fails one of the fol
 marked as unsuitable for training an Extraction AI.</p>
 </section>
 <section id="annotation-validation">
-<span id="id5"></span><h3>Annotation Validation Rules<a class="headerlink" href="#annotation-validation" title="Permalink to this headline">¶</a></h3>
+<span id="id6"></span><h3>Annotation Validation Rules<a class="headerlink" href="#annotation-validation" title="Permalink to this headline">¶</a></h3>
 <p>An <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#annotation">Annotation</a> passes the Data Validation Rules only if:</p>
 <ol class="arabic simple">
 <li><p>The Annotation is not from a Category different from the Document’s Category</p></li>
@@ -1059,7 +1116,7 @@ marked as unsuitable for training an Extraction AI.</p>
 For more information about what these boolean values mean, see <a class="reference external" href="https://help.konfuzio.com/modules/annotations/index.html">Konfuzio Server - Annotations</a>.</p>
 </section>
 <section id="span-validation">
-<span id="id6"></span><h3>Span Validation Rules<a class="headerlink" href="#span-validation" title="Permalink to this headline">¶</a></h3>
+<span id="id7"></span><h3>Span Validation Rules<a class="headerlink" href="#span-validation" title="Permalink to this headline">¶</a></h3>
 <p>A <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#span">Span</a> passes the Data Validation Rules only if:</p>
 <ol class="arabic simple">
 <li><p>The Span contains non-empty text (the start offset must be strictly greater than the end offset)</p></li>
@@ -1067,7 +1124,7 @@ For more information about what these boolean values mean, see <a class="referen
 </ol>
 </section>
 <section id="bbox-validation">
-<span id="id7"></span><h3>Bbox Validation Rules<a class="headerlink" href="#bbox-validation" title="Permalink to this headline">¶</a></h3>
+<span id="id8"></span><h3>Bbox Validation Rules<a class="headerlink" href="#bbox-validation" title="Permalink to this headline">¶</a></h3>
 <p>A <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#bbox">Bbox</a> passes the Data Validation Rules only if:</p>
 <ol class="arabic simple">
 <li><p>The Bbox has non-negative width and height (zero is allowed for compatibility reasons with many OCR engines)</p></li>

@@ -285,6 +285,20 @@ Label Type: <span class="raw-html-m2r"><span style="background-color: #dcdcdc">N
 <span class="raw-html-m2r"><span style="background-color: #86c5da">Label 2</span></span><span class="raw-html-m2r"><br></span>
 <span class="raw-html-m2r"><span style="background-color: #dcdcdc">NO LABEL/Below Label threshold</span></span></p>
 </section>
+<section id="horizontal-and-vertical-merge-with-the-paragraph-and-sentence-tokenizers">
+<h2>Horizontal and Vertical Merge with the Paragraph and Sentence Tokenizers<a class="headerlink" href="#horizontal-and-vertical-merge-with-the-paragraph-and-sentence-tokenizers" title="Permalink to this headline">¶</a></h2>
+<p>When using the <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#paragraph-tokenizer">Paragraph</a> or <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#sentence-tokenizer">Sentence Tokenizer</a> together with our <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#extraction-ai">Extraction AI model</a>, we do not use the rule based vertical and horizontal merge logic above, and instead use the sentence/paragraph segmentation provided by the Tokenizer.</p>
+<p>The logic is as follows:</p>
+<div class="mermaid">
+            graph TD
+   A[Virtual Document] --&gt;|Paragraph/Sentence Tokenizer|B(Document_A with NO_LABEL\n Paragraph/Sentence Annotations)
+   B --&gt; |RFExtractionAI feature extraction|C(Span features)
+   C --&gt; |RFExtractionAI labeling|D(Labeled Spans)
+   D --&gt; |extraction_result_to_document |E(Document B with labeled single-Span Annotations)
+   E --&gt; |&quot;RFExtractionAI().merge_vertical_like(Document_B, Document_A)&quot; |F(Document_B with labeled multi-line Annotations)
+        </div><p>And here’s an illustrated example of the merge logic in action:</p>
+<img alt="../../_images/merge_docs_gif.gif" src="../../_images/merge_docs_gif.gif" />
+</section>
 </section>
 
 
