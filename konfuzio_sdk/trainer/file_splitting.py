@@ -200,18 +200,18 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         :type data: List[Document]
         :returns: Three lists of strings – paths to Pages' images, Pages' texts and Pages' labels.
         """
-        page_image_paths = []
+        page_images = []
         texts = []
         labels = []
         for doc in data:
             for page in doc.pages():
-                page_image_paths.append(page.image_path)
+                page_images.append(page.image_path)
                 texts.append(page.text)
                 if page.is_first_page:
                     labels.append(1)
                 else:
                     labels.append(0)
-        return page_image_paths, texts, labels
+        return page_images, texts, labels
 
     def _image_transformation(self, page_image_paths: List[str]) -> List[np.ndarray]:
         """
