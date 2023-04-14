@@ -1803,14 +1803,12 @@ class DetectronExtractionAI(Trainer):
 
         :raises:
          AttributeError: When missing a Tokenizer
-         NotFittedError: When CLF is not fitted
         """
         logger.info(f"Starting extraction of {document}.")
 
         self.check_is_ready()
 
-        # inference_document = deepcopy(document)
-        inference_document = document
+        inference_document = deepcopy(document)
 
         # inference_document._category = None
         # inference_document.set_category(self.category)

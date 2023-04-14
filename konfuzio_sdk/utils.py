@@ -873,7 +873,7 @@ def get_sdk_version():
 
 
 def get_spans_from_bbox(selection_bbox: 'Bbox') -> List['Span']:
-    """Re-implements some functionality of get_merged_bboxes(only used in server) in a clean way."""
+    """Get a list of Spans for all the text contained within a Bbox."""
     from konfuzio_sdk.data import Span
 
     selected_bboxes = [
