@@ -8,7 +8,7 @@ from copy import deepcopy
 
 import pandas as pd
 
-from konfuzio_sdk.data import Document, Category, Span, Page
+from konfuzio_sdk.data import Document, Span, Page
 from konfuzio_sdk.evaluate import compare, ExtractionEvaluation
 from konfuzio_sdk.utils import sdk_isinstance
 
@@ -205,17 +205,17 @@ class AbstractTokenizer(metaclass=abc.ABCMeta):
         """Return string representation of the class."""
         return f"{self.__class__.__name__}"
 
-    @abc.abstractmethod
     def __eq__(self, other) -> bool:
         """Check if two Tokenizers are the same."""
+        return hash(self) == hash(other)
+
+    def __call__(self, document: Document) -> Document:
+        """Tokenize the Document with this Tokenizer."""
+        return self.tokenize(document=document)
 
     @abc.abstractmethod
     def __hash__(self):
         """Get unique hash for Tokenizer."""
-
-    @abc.abstractmethod
-    def fit(self, category: Category):
-        """Fit the tokenizer accordingly with the Documents of the Category."""
 
     @abc.abstractmethod
     def found_spans(self, document: Document) -> List[Span]:
@@ -313,13 +313,6 @@ class ListTokenizer(AbstractTokenizer):
     def __hash__(self):
         """Get unique hash for ListTokenizer."""
         return hash(tuple(self.tokenizers))
-
-    def fit(self, category: Category):
-        """Call fit on all tokenizers."""
-        assert sdk_isinstance(category, Category)
-
-        for tokenizer in self.tokenizers:
-            tokenizer.fit(category)
 
     def _tokenize(self, document: Document) -> List[Span]:
         raise NotImplementedError

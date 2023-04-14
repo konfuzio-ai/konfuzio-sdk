@@ -130,6 +130,20 @@ Regex Tokenizer
 .. automodule:: konfuzio_sdk.tokenizer.regex
     :members:
 
+.. automodule:: konfuzio_sdk.tokenizer.paragraph_and_sentence
+
+Paragraph Tokenizer
+---------------------
+.. autoclass:: ParagraphTokenizer
+   :members:
+   :noindex:
+
+Sentence Tokenizer
+---------------------
+.. autoclass:: SentenceTokenizer
+   :members:
+   :noindex:
+
 Extraction AI
 =====================
 
