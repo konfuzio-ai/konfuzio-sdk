@@ -2,6 +2,7 @@
 import abc
 import logging
 import os
+import PIL
 import torch
 
 import numpy as np
@@ -191,13 +192,13 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         """Remove all non-strictly necessary parameters before saving."""
         self.project.lose_weight()
 
-    def _preprocess_documents(self, data: List[Document]) -> (List[str], List[str], List[int]):
+    def _preprocess_documents(self, data: List[Document]) -> (List[PIL.Image.Image], List[str], List[int]):
         """
-        Take a list of Documents and extract paths to its Pages' images, texts and labels of first or non-first class.
+        Take a list of Documents and obtain Pages' images, texts and labels of first or non-first class.
 
         :param data: A list of Documents to preprocess.
         :type data: List[Document]
-        :returns: Three lists of strings – paths to Pages' images, Pages' texts and Pages' labels.
+        :returns: Three lists – Pages' images, Pages' texts and Pages' labels.
         """
         page_images = []
         texts = []
@@ -212,7 +213,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
                     labels.append(0)
         return page_images, texts, labels
 
-    def _image_transformation(self, page_images: List[str]) -> List[np.ndarray]:
+    def _image_transformation(self, page_images: List[PIL.Image.Image]) -> List[np.ndarray]:
         """
         Take an image and transform it into the format acceptable by the model's architecture.
 
