@@ -1,6 +1,6 @@
 ## Overview
 
-The first step we're going to cover is [File Splitting](tutorials.html#id1) 
+The first step we're going to cover is [File Splitting](tutorials.html#file-splitting-tutorials)
 – this happens when the original Document consists of several smaller sub-Documents and needs to be separated so that each one can be processed individually.
 
 Second part is on [Categorization](tutorials.html#document-categorization), where a Document is labelled to be of a certain Category within the Project. 
