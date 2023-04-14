@@ -35,12 +35,16 @@ class CustomExtractionAI(Trainer):
         super.__init__(*args, **kwargs)
 
     def extract(self, document: Document) -> Document:
-        # Define how the model extracts information from Documents.
+        # Define how the AI extracts information from Documents.
+
         # **NB:** The result of extraction must be a copy of the input Document.
         result_document = deepcopy(document)
-        # Access the text of the document with result_document.text
-        
-        # Suppose the document's text is "Name: John\nSurname: Doe" and we want to extract "John" and "Doe".
+    
+        # You can access the text of the document with result_document.text
+        # Example:
+        # >>> result_document.text
+        # "Name: John\nSurname: Doe\nA Software Company Ltd.\nOther text here"
+        # Suppose we want to extract "John" and "Doe".
         # We can match that text using regular expressions:
         name_tokenizer = RegexTokenizer(regex=r"Name:[ ]([A-Z][a-z]+)")
         surname_tokenizer = RegexTokenizer(regex=r"Surname:[ ]([A-Z][a-z]+)")
@@ -65,41 +69,58 @@ class CustomExtractionAI(Trainer):
                   annotation.label = surname_label
                   break
 
+        # Suppose we want to extract "A Software Company Ltd.", which does not have a clear regex pattern, but
+        # we know it's always the third line in the Document. We can explicitly create an Annotation based on a 
+        # substring of the Document's text.
+        company_label = self.project.get_label_by_name("Company")
+        company_substring = result_document.split('\n')[2]  # third line of the Document
+        start_offset = result_document.find(company_substring)
+        end_offset = start_offset + len(company_substring)
+        _ = Annotation(document=result_document, label=company_label, spans=[Span(start_offset, end_offset)])
+
+        # The resulting Document has 3 extractions. You can double check that they are there with:
+        # >>> result_document.annotations(use_correct=False)
+        # [
+        #     Annotation Name (6, 10),
+        #     Annotation Surname (20, 23),
+        #     Annotation Company (24, 27)
+        # ]
         return result_document
 ```
 
-Example usage of your Custom Extraction AI:
+Example usage of the interface of your Custom Extraction AI:
 ```python
 from konfuzio_sdk.data import Project, Document
 from konfuzio_sdk.trainer.information_extraction import load_model
+from konfuzio_sdk.evaluate import ExtractionEvaluation
 
 # Initialize Project and provide the AI training and test data
-project = Project(id_=YOUR_PROJECT_ID)  # see https://dev.konfuzio.com/sdk/get_started.html#example-usage
+project = Project(id_=YOUR_PROJECT_ID)  # also see https://dev.konfuzio.com/sdk/get_started.html#example-usage
 
 extraction_pipeline = CustomExtractionAI(*args, **kwargs)
 extraction_pipeline.category = project.get_category_by_id(id_=YOUR_CATEGORY_ID)
+
+# Provide Training and Test Documents for evaluation
 extraction_pipeline.documents = extraction_pipeline.category.documents()
 extraction_pipeline.test_documents = extraction_pipeline.category.test_documents()
 
-# Train the AI
-extraction_pipeline.fit()
-
 # Evaluate the AI
-data_quality = extraction_pipeline.evaluate_full(use_training_docs=True)
-ai_quality = extraction_pipeline.evaluate_full(use_training_docs=False)
+data_quality: ExtractionEvaluation = extraction_pipeline.evaluate_full(use_training_docs=True)
+ai_quality: ExtractionEvaluation = extraction_pipeline.evaluate_full(use_training_docs=False)
 
 # Extract a Document
 document = self.project.get_document_by_id(YOUR_DOCUMENT_ID)
 extraction_result: Document = extraction_pipeline.extract(document=document)
+print(f"Extractions: {extraction_result.annotations(use_correct=False)}")
 
 # Save and load a pickle file for the model
-pickle_model_path = extraction_pipeline.save(output_dir=project.model_folder, include_konfuzio=True)
-extraction_pipeline_loaded = load_model(pickle_model_path)
+pickle_ai_path = extraction_pipeline.save(output_dir=project.model_folder, include_konfuzio=True)
+extraction_pipeline_loaded = load_model(pickle_ai_path)
 ```
 After saving the AI's pickle file, this can be uploaded to a Konfuzio Server instance to extract new Documents.
 
-For a more in depth tutorial about the usage of Extraction AIs in the SDK see 
-[Train a Konfuzio SDK Model to Extract Information From Payslip Documents](examples/examples.html#train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents).
+For an example notebook about the usage of Extraction AIs in the SDK see 
+[Train a Konfuzio SDK Model to Extract Information From Payslip Documents](tutorials.html#train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents).
 
 ### Customize Categorization AI
 
@@ -114,35 +135,51 @@ class CustomCategorizationAI(AbstractCategorizationModel):
 
     def __init__(self, *args, **kwargs):
         # initialize key variables required by the custom AI
+        super.__init__(*args, **kwargs)
 
-    def fit(self):
-        # Define architecture and training that the model undergoes, i.e. a NN architecture or a custom hardcoded logic
-        # This method is allowed to be implemented as a no-op if you provide the trained model in other ways
-    
     def _categorize_page(self, page: Page) -> Page:
-        # define how the model assigns a Category to a Page
-        # **NB:** The result of extraction must be the input Page with added Categorization attribute `Page.category`
+        # Define how the AI assigns a Category to a Page.
+
+        # The image of the Page is accessible as a Pillow Image object
+        # Example:
+        # >>> page.get_image()
+        # <PIL.JpegImagePlugin.JpegImageFile image mode=RGB size=1764x3778 at 0x7F75D5396190>
+        # The text of the Page is accessible as a string
+        # Simplified example:
+        # >>> page.text
+        # "TAX INVOICE\n\nBilling Address: ADDRESS_HERE\n\nInvoice No: 02\nDate: 26.11.2019\nOTHER_INVOICE_INFORMATION"
+
+        # Let's say you have a Project with invoices and delivery notes:
+        # >>> self.categories
+        # [Invoices (INVOICE_CATEGORY_ID), Delivery Notes (DELIVERY_NOTE_CATEGORY_ID)]
+        # Your Custom AI predicts an Invoice (or Delivery Note) for this Page, according to some logic:
+        predicted_category = self.categories[0]  # or self.categories[1]
+        confidence = 1.0  # choose a confidence value between 0.0 and 1.0
+
+        # **NB:** The result of categorization must be the input Page with added CategoryAnnotation object
+        _ = CategoryAnnotation(category=predicted_category, confidence=confidence, page=page)
+        return page
 ```
 
 Example usage of your Custom Categorization AI:
 ```python
 from konfuzio_sdk.data import Project
 from konfuzio_sdk.trainer.information_extraction import load_model
+from konfuzio_sdk.evaluate import CategorizationEvaluation
 
 # Initialize Project and provide the AI training and test data
 project = Project(id_=YOUR_PROJECT_ID)  # see https://dev.konfuzio.com/sdk/get_started.html#example-usage
 
 categorization_pipeline = CustomCategorizationAI(*args, **kwargs)
 categorization_pipeline.categories = project.categories
+
+# Provide Training and Test Documents for evaluation
 categorization_pipeline.documents = [category.documents for category in categorization_pipeline.categories]
 categorization_pipeline.test_documents = [category.test_documents() for category in categorization_pipeline.categories]
 
-# Calculate features and train the AI
-categorization_pipeline.fit()
-
 # Evaluate the AI
-data_quality = categorization_pipeline.evaluate(use_training_docs=True)
-ai_quality = categorization_pipeline.evaluate(use_training_docs=False)
+data_quality: CategorizationEvaluation = categorization_pipeline.evaluate(use_training_docs=True)
+ai_quality: CategorizationEvaluation = categorization_pipeline.evaluate(use_training_docs=False)
 
 # Categorize a Document
 document = self.project.get_document_by_id(YOUR_DOCUMENT_ID)
@@ -152,11 +189,11 @@ for page in categorization_result.pages():
 print(f"Found category {categorization_result.category} for {result_doc}")
 
 # Save and load a pickle file for the model
-pickle_model_path = categorization_pipeline.save(output_dir=project.model_folder, include_konfuzio=True)
-categorization_pipeline_loaded = load_model(pickle_model_path)
+pickle_ai_path = categorization_pipeline.save(output_dir=project.model_folder, include_konfuzio=True)
+categorization_pipeline_loaded = load_model(pickle_ai_path)
 ```
 
-For a more in depth tutorial about the usage of Categorization AIs in the SDK see 
+To see more code examples about the usage of Categorization AIs in the SDK see 
 [Tutorials - Document Categorization](tutorials.html#document-categorization).
 
 ### Customize File Splitting AI
@@ -172,17 +209,26 @@ class CustomFileSplittingModel(AbstractFileSplittingModel):
 
     def __init__(self, *args, **kwargs):
         # initialize key variables required by the custom AI
-
-    def fit(self):
-        # Define architecture and training that the model undergoes, i.e. a NN architecture or a custom hardcoded logic
-        # This method is allowed to be implemented as a no-op if you provide the trained model in other ways
+        super.__init__(*args, **kwargs)
 
     def predict(self, page: Page) -> Page:
-        # Define how the model determines a split point for a Page
-        # **NB:** The classification needs to be ran on the Page level, not the Document level – the result of 
-        # classification is reflected in `is_first_page` attribute value, which is unique to the Page class and is not 
-        # present in Document class. Pages with `is_first_page = True` become splitting points, thus, each new 
-        # sub-Document has a Page predicted as first as its starting point.
+        # Define how the AI determines a split point for a Page.
+
+        # The image of the Page is accessible as a Pillow Image object
+        # Example:
+        # >>> page.get_image()
+        # <PIL.JpegImagePlugin.JpegImageFile image mode=RGB size=1764x3778 at 0x7F75D5396190>
+        # The text of the Page is accessible as a string
+        # Simplified example:
+        # >>> page.text
+        # "TAX INVOICE\n\nBilling Address: ADDRESS_HERE\n\nInvoice No: 02\nDate: 26.11.2019\nOTHER_INVOICE_INFORMATION"
+
+        # **NB:** The split points need to be specified on the Page level by using a boolean flag to 
+        # mark which Pages are the at the beginning of a new Document.
+        # Thus, if your Custom AI predicts that this page is (not) a split point, according to some logic, then:
+        page.is_first_page = True  # or False
+        page.is_first_page_confidence = 1.0  # choose a confidence value between 0.0 and 1.0
+        return page
 ```
 
 Example usage of your Custom File Splitting AI:
@@ -195,13 +241,12 @@ from konfuzio_sdk.trainer.information_extraction import load_model
 project = Project(id_=YOUR_PROJECT_ID)  # see https://dev.konfuzio.com/sdk/get_started.html#example-usage
 
 file_splitting_model = CustomFileSplittingModel(categories=project.categories, *args, *kwargs)
+
+# Provide Training and Test Documents for evaluation
 file_splitting_model.documents = [category.documents for category in categorization_pipeline.categories]
 file_splitting_model.test_documents = [category.test_documents() for category in categorization_pipeline.categories]
 
-# Calculate features and train the AI
-file_splitting_model.fit()
-
-# Initialize the Splitting pipeline by providing the trained model
+# Initialize the Splitting pipeline by providing the custom model
 file_splitting_pipeline = SplittingAI(file_splitting_model)
 
 # Evaluate the AI
