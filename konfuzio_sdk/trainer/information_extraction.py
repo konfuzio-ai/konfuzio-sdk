@@ -2563,7 +2563,8 @@ class QAExtractionAI(AbstractExtractionAI):
         self.project = project
         self.tokenizer = tokenizer
         self.extraction_result = []
-        self.label_set = LabelSet(self.project, categories=[self.category], name='Key-Value-Pair')
+        if 'Key-Value-Pair' not in [label_set.name for label_set in self.project.label_sets]:
+            self.label_set = LabelSet(self.project, categories=[self.category], name='Key-Value-Pair')
         self.client = aws_client
         self.key_label = Label(project=self.project, text='Key', label_sets=[self.label_set])
         self.value_label = Label(project=self.project, text='Value', label_sets=[self.label_set])
@@ -2590,7 +2591,9 @@ class QAExtractionAI(AbstractExtractionAI):
         for page in document.pages():
             with open(page.image_path, 'rb') as img_file:
                 img_bytes = img_file.read()
-                response = self.client.analyze_expense(Document={'Bytes': img_bytes})
+                response = self.client.analyze_document(
+                    Document={'Bytes': img_bytes}, FeatureTypes=["TABLES", "FORMS", "SIGNATURES"]
+                )
             for expense_doc in response["ExpenseDocuments"]:
                 for label in expense_doc["SummaryFields"]:
                     annotation_set = AnnotationSet(
