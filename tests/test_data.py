@@ -121,8 +121,36 @@ class TestOnlineProject(unittest.TestCase):
         """Test to download page files."""
         doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         for page in doc.pages():
-            image = page.get_image()
+            image = page.get_image(update=True)
             assert type(image) is PngImageFile
+
+    def test_load_externally_provided_image(self):
+        """Test loading a Page image provided from an external source rather than loaded from the Project's folder."""
+        # Why this testcase? Because if you need to retrieve a Page image from a blob storage, there is no image path.
+        import numpy
+        from PIL import Image
+
+        external_image = Image.fromarray(numpy.zeros((5, 5)))
+        doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        page = doc.pages()[0]
+        page.image = external_image  # provide an image for the Page ad-hoc
+        image = page.get_image()
+        assert image is external_image
+
+    def test_load_image_from_bytes(self):
+        """Test loading a Page image provided as bytes rather than loaded from the Project's folder."""
+        doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        page = doc.pages()[0]
+        original_image = page.get_image(update=True)  # Pillow loads from page.image_path file
+        assert type(original_image) is PngImageFile
+        image_in_bytes_format = open(page.image_path, 'rb').read()
+        # reset image data
+        page.image = None
+        page.image_bytes = image_in_bytes_format
+        # page.get_image() will bypass Pillow loading page.image_path file and instead use the provided bytes
+        image = page.get_image()
+        # check correspondence between the two loading methods
+        assert type(image) is PngImageFile
 
     def test_get_annotation_by_id(self):
         """Test to find an online Annotation by its ID."""
