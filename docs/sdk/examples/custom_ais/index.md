@@ -161,7 +161,7 @@ class CustomCategorizationAI(AbstractCategorizationModel):
         return page
 ```
 
-Example usage of your Custom Categorization AI:
+Example usage of the interface of your Custom Categorization AI:
 ```python
 from konfuzio_sdk.data import Project
 from konfuzio_sdk.trainer.information_extraction import load_model
@@ -231,7 +231,7 @@ class CustomFileSplittingModel(AbstractFileSplittingModel):
         return page
 ```
 
-Example usage of your Custom File Splitting AI:
+Example usage of the interface of your Custom File Splitting AI:
 ```python
 from konfuzio_sdk.data import Project
 from konfuzio_sdk.trainer.file_splitting import SplittingAI
