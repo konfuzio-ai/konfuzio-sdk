@@ -2,6 +2,7 @@
 import abc
 import logging
 import os
+import PIL
 import torch
 
 import numpy as np
@@ -9,7 +10,6 @@ import tensorflow as tf
 
 from copy import deepcopy
 from inspect import signature
-from PIL import Image
 from tensorflow.keras import Input
 from tensorflow.keras.layers import Dense, Conv2D, MaxPool2D, Flatten, Concatenate
 from tensorflow.keras.models import Model
@@ -192,38 +192,38 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         """Remove all non-strictly necessary parameters before saving."""
         self.project.lose_weight()
 
-    def _preprocess_documents(self, data: List[Document]) -> (List[str], List[str], List[int]):
+    def _preprocess_documents(self, data: List[Document]) -> (List[PIL.Image.Image], List[str], List[int]):
         """
-        Take a list of Documents and extract paths to its Pages' images, texts and labels of first or non-first class.
+        Take a list of Documents and obtain Pages' images, texts and labels of first or non-first class.
 
         :param data: A list of Documents to preprocess.
         :type data: List[Document]
-        :returns: Three lists of strings – paths to Pages' images, Pages' texts and Pages' labels.
+        :returns: Three lists – Pages' images, Pages' texts and Pages' labels.
         """
-        page_image_paths = []
+        page_images = []
         texts = []
         labels = []
         for doc in data:
             for page in doc.pages():
-                page_image_paths.append(page.image_path)
+                page_images.append(page.get_image())
                 texts.append(page.text)
                 if page.is_first_page:
                     labels.append(1)
                 else:
                     labels.append(0)
-        return page_image_paths, texts, labels
+        return page_images, texts, labels
 
-    def _image_transformation(self, page_image_paths: List[str]) -> List[np.ndarray]:
+    def _image_transformation(self, page_images: List[PIL.Image.Image]) -> List[np.ndarray]:
         """
         Take an image and transform it into the format acceptable by the model's architecture.
 
-        :param page_image_paths: A list of Pages' images to be transformed.
-        :type page_image_paths: List[str]
+        :param page_images: A list of Pages' images to be transformed.
+        :type page_images: List[str]
         :returns: A list of processed images.
         """
         images = []
-        for page_image_path in page_image_paths:
-            image = Image.open(page_image_path).convert('RGB')
+        for page_image in page_images:
+            image = page_image.convert('RGB')
             image = image.resize((224, 224))
             image = img_to_array(image)
             image = image.reshape((1, image.shape[0], image.shape[1], image.shape[2]))
@@ -342,7 +342,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         txt_data = [output.pooler_output]
         txt_data = [np.asarray(x).astype('float32') for x in txt_data]
         txt_data = np.asarray(txt_data)
-        image = Image.open(page.image_path).convert('RGB')
+        image = page.get_image().convert('RGB')
         image = image.resize((224, 224))
         image = img_to_array(image)
         image = image.reshape((1, image.shape[0], image.shape[1], image.shape[2]))

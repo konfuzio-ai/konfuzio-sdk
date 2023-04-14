@@ -123,7 +123,8 @@ class Page(Data):
 
         self.copy_of_id = copy_of_id
         self.text_encoded: List[int] = None
-        self.image = None
+        self.image: Optional[Image.Image] = None
+        self.image_bytes: Optional[bytes] = None
         self._original_size = original_size
         self.width = self._original_size[0]
         self.height = self._original_size[1]
@@ -170,9 +171,25 @@ class Page(Data):
         """Return the name of the Document incl. the ID."""
         return f"Page {self.index} in {self.document}"
 
-    def get_image(self, update: bool = False):
-        """Get Document Page as PNG."""
-        if self.document.status[0] == 2 and (not is_file(self.image_path, raise_exception=False) or update):
+    def get_image(self, update: bool = False) -> Image.Image:
+        """
+        Get Page as a Pillow Image object.
+
+        The Page image is loaded from a PNG file at `Page.image_path`.
+        If the file is not present, or if `update` is True, it will be downloaded from the Konfuzio Host.
+        Alternatively, if you don't want to use a file, you can provide the image as bytes to `Page.image_bytes`. Then
+        call this method to convert the bytes into a Pillow Image.
+        In every case, the return value of this method and the attribute `Page.image` will be a Pillow Image.
+
+        :param update: Whether to force download the Page PNG file.
+        :return: A Pillow Image object for this Page's image.
+        """
+        if not update:
+            if self.image_bytes is not None:
+                self.image = Image.open(io.BytesIO(self.image_bytes))
+            if self.image is not None:
+                return self.image
+        if self.document.status[0] == Document.DONE and (not is_file(self.image_path, raise_exception=False) or update):
             page_id = self.id_ if self.id_ else self.copy_of_id
             png_content = get_page_image(page_id)
             with open(self.image_path, "wb") as f:
@@ -2205,6 +2222,16 @@ class Annotation(Data):
 class Document(Data):
     """Access the information about one Document, which is available online."""
 
+    # Define the status of a Document's processing
+    QUEUING_FOR_OCR = 0
+    OCR_IN_PROGRESS = 10
+    QUEUING_FOR_EXTRACTION = 1
+    EXTRACTION_IN_PROGRESS = 20
+    QUEUING_FOR_CATEGORIZATION = 3
+    CATEGORIZATION_IN_PROGRESS = 30
+    DONE = 2
+    COULD_NOT_BE_PROCESSED = 111
+
     def __init__(
         self,
         project: 'Project',
@@ -2872,7 +2899,9 @@ class Document(Data):
         else:
             file_path = self.file_path
 
-        if self.status[0] == 2 and (not file_path or not is_file(file_path, raise_exception=False) or update):
+        if self.status[0] == Document.DONE and (
+            not file_path or not is_file(file_path, raise_exception=False) or update
+        ):
             pdf_content = download_file_konfuzio_api(self.id_, ocr=ocr_version, session=self.session)
             with open(file_path, "wb") as f:
                 f.write(pdf_content)
@@ -2890,7 +2919,7 @@ class Document(Data):
 
     def download_document_details(self):
         """Retrieve data from a Document online in case Document has finished processing."""
-        if self.is_online and self.status and self.status[0] == 2:
+        if self.is_online and self.status and self.status[0] == Document.DONE:
             data = get_document_details(document_id=self.id_, project_id=self.project.id_, session=self.session)
 
             # write a file, even there are no annotations to support offline work
@@ -3044,7 +3073,7 @@ class Document(Data):
         elif is_file(self.bbox_file_path, raise_exception=False):
             with zipfile.ZipFile(self.bbox_file_path, "r") as archive:
                 bbox = json.loads(archive.read('bbox.json5'))
-        elif self.is_online and self.status and self.status[0] == 2:
+        elif self.is_online and self.status and self.status[0] == Document.DONE:
             # todo check for self.project.id_ and self.id_ and ?
             logger.info(f'Start downloading bbox files of {len(self.text)} characters for {self}.')
             bbox = get_document_details(document_id=self.id_, project_id=self.project.id_, extra_fields="bbox")['bbox']
@@ -3184,7 +3213,7 @@ class Document(Data):
             with open(self.hocr_file_path, "r", encoding="utf-8") as f:
                 self._hocr = f.read()
         else:
-            if self.status[0] == 2:
+            if self.status[0] == Document.DONE:
                 data = get_document_details(
                     document_id=self.id_, project_id=self.project.id_, session=self.session, extra_fields="hocr"
                 )
