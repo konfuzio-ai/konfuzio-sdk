@@ -1772,20 +1772,19 @@ class GroupAnnotationSets:
         return new_res_dict
 
 
-class DetectronExtractionAI(Trainer):
+class ParagraphExtractionAI(Trainer):
     """Extract and label text regions using Detectron2."""
 
     def __init__(
         self,
-        category: Category = None,
-        tokenizer=None,
+        category: Category,
         *args,
         **kwargs,
     ):
-        """DetectronExtractionAI."""
-        logger.info("Initializing DetectronExtractionAI.")
-        super().__init__(category, *args, **kwargs)
-        self.tokenizer = tokenizer
+        """ParagraphExtractionAI."""
+        logger.info("Initializing ParagraphExtractionAI.")
+        super().__init__(category=category, *args, **kwargs)
+        self.tokenizer = ParagraphTokenizer(mode='detectron', create_detectron_labels=True)
 
     @property
     def project(self):
@@ -1810,8 +1809,6 @@ class DetectronExtractionAI(Trainer):
 
         inference_document = deepcopy(document)
 
-        # inference_document._category = None
-        # inference_document.set_category(self.category)
         inference_document.project = self.project
 
         inference_document = self.tokenizer.tokenize(inference_document)
@@ -1824,13 +1821,9 @@ class DetectronExtractionAI(Trainer):
 
         It is assumed that the model is ready if a Tokenizer and a Category were set.
 
-        :raises AttributeError: When no Tokenizer is specified.
         :raises AttributeError: When no Category is specified.
         """
         logger.info(f"Checking if {self} is ready for extraction.")
-        if self.tokenizer is None:
-            raise AttributeError(f'{self} missing Tokenizer.')
-
         if not self.category:
             raise AttributeError(f'{self} requires a Category.')
 

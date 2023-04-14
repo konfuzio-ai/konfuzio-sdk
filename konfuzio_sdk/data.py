@@ -204,7 +204,7 @@ class Page(Data):
             page_id = self.id_ if self.id_ else self.copy_of_id
             if self.image_bytes:
                 self.image = Image.open(io.BytesIO(self.image_bytes))
-            elif is_file(self.image_path) and not update:
+            elif is_file(self.image_path, raise_exception=False) and not update:
                 self.image = Image.open(self.image_path)
             elif (not is_file(self.image_path, raise_exception=False) or update) and page_id:
                 png_content = get_page_image(page_id)
