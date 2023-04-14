@@ -200,17 +200,17 @@ class Page(Data):
         :param update: Whether to force download the Page PNG file.
         :return: A Pillow Image object for this Page's image.
         """
-        if not update:
-            if self.image_bytes is not None:
-                self.image = Image.open(io.BytesIO(self.image_bytes))
-            if self.image is not None:
-                return self.image
-        if self.document.status[0] == Document.DONE and (not is_file(self.image_path, raise_exception=False) or update):
+        if not self.image or update:
             page_id = self.id_ if self.id_ else self.copy_of_id
-            png_content = get_page_image(page_id)
-            with open(self.image_path, "wb") as f:
-                f.write(png_content)
-                self.image = Image.open(io.BytesIO(png_content))
+            if self.image_bytes:
+                self.image = Image.open(io.BytesIO(self.image_bytes))
+            elif is_file(self.image_path) and not update:
+                self.image = Image.open(self.image_path)
+            elif (not is_file(self.image_path, raise_exception=False) or update) and page_id:
+                png_content = get_page_image(page_id)
+                with open(self.image_path, "wb") as f:
+                    f.write(png_content)
+                    self.image = Image.open(io.BytesIO(png_content))
 
         return self.image
 
