@@ -9,6 +9,10 @@ On-premises, also known as self-hosted, is a setup that allows Konfuzio Server t
 
 A common way to operate a production-ready and scalabe Konfuzio installation is via Kubernetens. An alternative deployment option is the [Single VM setup via Docker](/web/on_premises.html#alternative-deployment-options). We recommend to use the option which is more familiar to you. In general
 
+<div class="video-container">
+    <iframe class="video" src="https://www.youtube.com/embed/KXc8FTU-2NM" allowfullscreen></iframe>
+</div>
+
 On-Premise Konfuzio installations allow to create Superuser accounts which can access all [Documents](https://help.konfuzio.com/modules/administration/superuserdocuments/index.html), [Projects](https://help.konfuzio.com/modules/administration/superuserprojects/index.html) and [AIs](https://help.konfuzio.com/modules/administration/superuserais/index.html) via a dedicated view as well as creating custom [Roles](https://help.konfuzio.com/modules/administration/superuserroles/index.html)
 
 Konfuzio Server has beens successfully installed on various clouds.
