@@ -34,14 +34,15 @@ from inspect import signature
 from typing import Tuple, Optional, List, Union, Dict
 from warnings import warn
 
-import cloudpickle
 import numpy
 import pandas
+import cloudpickle
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.utils.validation import check_is_fitted
-from tabulate import tabulate
 
 from konfuzio_sdk.data import Data, Document, Annotation, Category, AnnotationSet, Label, LabelSet, Span
+
+from konfuzio_sdk.tokenizer.paragraph_and_sentence import ParagraphTokenizer, SentenceTokenizer
 
 from konfuzio_sdk.normalize import (
     normalize_to_float,
@@ -150,26 +151,6 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
     Data.id_iter = itertools.count(max(prev_local_id, curr_local_id))
 
     return model
-
-
-def substring_count(list: list, substring: str) -> list:
-    """Given a list of strings returns the occurrence of a certain substring and returns the results as a list."""
-    r_list = [0] * len(list)
-
-    for index in range(len(list)):
-        r_list[index] = list[index].lower().count(substring)
-
-    return r_list
-
-
-def dict_to_dataframe(res_dict):
-    """Convert a Dict to Dataframe add label as column."""
-    df = pandas.DataFrame()
-    for name in res_dict.keys():
-        label_df = res_dict[name]
-        label_df['result_name'] = name
-        df = df.append(label_df, sort=True)
-    return df
 
 
 # # existent model classes
@@ -346,7 +327,7 @@ def dict_to_dataframe(res_dict):
 
 def convert_to_feat(offset_string_list: list, ident_str: str = '') -> pandas.DataFrame:
     """Return a df containing all the features generated using the offset_string."""
-    df = pandas.DataFrame()
+    df = dict()  # pandas.DataFrame()
 
     # strip all accents
     offset_string_list_accented = offset_string_list
@@ -415,7 +396,19 @@ def convert_to_feat(offset_string_list: list, ident_str: str = '') -> pandas.Dat
     df[ident_str + "feat_ends_with_plus"] = ends_with_substring(offset_string_list, "+")
     df[ident_str + "feat_ends_with_minus"] = ends_with_substring(offset_string_list, "-")
 
+    df = pandas.DataFrame(df)
+
     return df
+
+
+def substring_count(list: list, substring: str) -> list:
+    """Given a list of strings returns the occurrence of a certain substring and returns the results as a list."""
+    r_list = [0] * len(list)
+
+    for index in range(len(list)):
+        r_list[index] = list[index].lower().count(substring)
+
+    return r_list
 
 
 def starts_with_substring(list: list, substring: str) -> list:
@@ -484,11 +477,13 @@ def date_count(s: str) -> int:
     # checks the format
     if len(s) > 5:
         if (s[2] == '.' and s[5] == '.') or (s[2] == '/' and s[5] == '/'):
-            date1 = pandas.to_datetime("01.01.2010")
-            date2 = pandas.to_datetime(s, errors='ignore')
+            date1 = pandas.to_datetime("01.01.2010", dayfirst=True)
+            date2 = normalize_to_date(s)
+            if not date2:
+                return 0
+            date2 = pandas.to_datetime(date2, errors='ignore')
             if date2 == s:
                 return 0
-
             else:
                 try:
                     diff = int((date2 - date1) / numpy.timedelta64(1, 'D'))
@@ -581,75 +576,76 @@ def unique_char_count(s: str) -> int:
     return len(set(list(s)))
 
 
-def _convert_to_relative_dict(dict: dict):
-    """Convert a dict with absolute numbers as values to the same dict with the relative probabilities as values."""
-    return_dict = {}
-    abs_num = sum(dict.values())
-    for key, value in dict.items():
-        return_dict[key] = value / abs_num
-    return return_dict
+# def _convert_to_relative_dict(dict: dict):
+#     """Convert a dict with absolute numbers as values to the same dict with the relative probabilities as values."""
+#     return_dict = {}
+#     abs_num = sum(dict.values())
+#     for key, value in dict.items():
+#         return_dict[key] = value / abs_num
+#     return return_dict
 
 
-def plot_label_distribution(df_list: list, df_name_list=None) -> None:
-    """Plot the label-distribution of given DataFrames side-by-side."""
-    # check if any of the input df are empty
-    for df in df_list:
-        if df.empty:
-            logger.error('One of the Dataframes in df_list is empty.')
-            return None
+# def plot_label_distribution(df_list: list, df_name_list=None) -> None:
+#     """Plot the label-distribution of given DataFrames side-by-side."""
+#     from tabulate import tabulate
+#     # check if any of the input df are empty
+#     for df in df_list:
+#         if df.empty:
+#             logger.error('One of the Dataframes in df_list is empty.')
+#             return None
 
-    # helper function
-    def Convert(tup, di):
-        for a, b in tup:
-            di.setdefault(a, []).append(b)
-        return di
+#     # helper function
+#     def Convert(tup, di):
+#         for a, b in tup:
+#             di.setdefault(a, []).append(b)
+#         return di
 
-    # plot the relative distributions
-    logger.info('Percentage of total samples (per dataset) that have a certain label:')
-    rel_dict_list = []
-    for df in df_list:
-        rel_dict_list.append(_convert_to_relative_dict(collections.Counter(list(df['label_name']))))
-    logger.info(
-        '\n'
-        + tabulate(
-            pandas.DataFrame(rel_dict_list, index=df_name_list).transpose(),
-            floatfmt=".1%",
-            headers="keys",
-            tablefmt="pipe",
-        )
-        + '\n'
-    )
+#     # plot the relative distributions
+#     logger.info('Percentage of total samples (per dataset) that have a certain label:')
+#     rel_dict_list = []
+#     for df in df_list:
+#         rel_dict_list.append(_convert_to_relative_dict(collections.Counter(list(df['label_name']))))
+#     logger.info(
+#         '\n'
+#         + tabulate(
+#             pandas.DataFrame(rel_dict_list, index=df_name_list).transpose(),
+#             floatfmt=".1%",
+#             headers="keys",
+#             tablefmt="pipe",
+#         )
+#         + '\n'
+#     )
 
-    # print the number of documents in total and in the splits given
-    # total_count = 0
-    for index, df in enumerate(df_list):
-        doc_name = df_name_list[index] if df_name_list else str(index)
-        doc_count = len(set(df['document_id']))
-        logger.info(doc_name + ' contains ' + str(doc_count) + ' different documents.')
-        # total_count += doc_count
-    # logger.info(str(total_count) + ' documents in total.')
+#     # print the number of documents in total and in the splits given
+#     # total_count = 0
+#     for index, df in enumerate(df_list):
+#         doc_name = df_name_list[index] if df_name_list else str(index)
+#         doc_count = len(set(df['document_id']))
+#         logger.info(doc_name + ' contains ' + str(doc_count) + ' different documents.')
+#         # total_count += doc_count
+#     # logger.info(str(total_count) + ' documents in total.')
 
-    # plot the number of documents with at least one of a certain label
-    logger.info('Percentage of documents per split that contain a certain label at least once:')
-    doc_count_dict_list = []
-    for df in df_list:
-        doc_count_dict = {}
-        doc_count = len(set(df['document_id']))
-        toup_list = list(zip(list(df['label_name']), list(df['document_id'])))
-        list_dict = Convert(toup_list, {})
-        for key, value in list_dict.items():
-            doc_count_dict[key] = float(len(set(value)) / doc_count)
-        doc_count_dict_list.append(doc_count_dict)
-    logger.info(
-        '\n'
-        + tabulate(
-            pandas.DataFrame(doc_count_dict_list, index=df_name_list).transpose(),
-            floatfmt=".1%",
-            headers="keys",
-            tablefmt="pipe",
-        )
-        + '\n'
-    )
+#     # plot the number of documents with at least one of a certain label
+#     logger.info('Percentage of documents per split that contain a certain label at least once:')
+#     doc_count_dict_list = []
+#     for df in df_list:
+#         doc_count_dict = {}
+#         doc_count = len(set(df['document_id']))
+#         toup_list = list(zip(list(df['label_name']), list(df['document_id'])))
+#         list_dict = Convert(toup_list, {})
+#         for key, value in list_dict.items():
+#             doc_count_dict[key] = float(len(set(value)) / doc_count)
+#         doc_count_dict_list.append(doc_count_dict)
+#     logger.info(
+#         '\n'
+#         + tabulate(
+#             pandas.DataFrame(doc_count_dict_list, index=df_name_list).transpose(),
+#             floatfmt=".1%",
+#             headers="keys",
+#             tablefmt="pipe",
+#         )
+#         + '\n'
+#     )
 
 
 def get_first_candidate(document_text, document_bbox, line_list):
@@ -1418,6 +1414,22 @@ class AbstractExtractionAI(BaseModel):
         except AttributeError:
             return False
 
+    @property
+    def temp_pkl_file_path(self) -> str:
+        """Generate a path for temporary pickle file."""
+        temp_pkl_file_path = os.path.join(
+            self.output_dir, f'{get_timestamp()}_{self.category.name.lower()}_{self.name_lower()}_tmp.cloudpickle'
+        )
+        return temp_pkl_file_path
+
+    @property
+    def pkl_file_path(self) -> str:
+        """Generate a path for a resulting pickle file."""
+        pkl_file_path = os.path.join(
+            self.output_dir, f'{get_timestamp()}_{self.category.name.lower()}_' f'{self.name_lower()}_.pkl'
+        )
+        return pkl_file_path
+
 
 class GroupAnnotationSets:
     """Groups Annotation into Annotation Sets."""
@@ -1666,6 +1678,16 @@ class GroupAnnotationSets:
         global_df['text'] = lines
         return global_df.fillna(0)
 
+    @classmethod
+    def dict_to_dataframe(cls, res_dict):
+        """Convert a Dict to Dataframe add label as column."""
+        df = pandas.DataFrame()
+        for name in res_dict.keys():
+            label_df = res_dict[name]
+            label_df['result_name'] = name
+            df = df.append(label_df, sort=True)
+        return df
+
     def extract_template_with_clf(self, text, res_dict):
         """Run LabelSet classifier to find AnnotationSets."""
         logger.info('Extract AnnotationSets.')
@@ -1673,7 +1695,7 @@ class GroupAnnotationSets:
             logger.warning('res_dict is empty')
             return res_dict
         n_nearest = self.n_nearest_template if hasattr(self, 'n_nearest_template') else 0
-        feature_df = self.build_document_template_feature_X(text, dict_to_dataframe(res_dict)).filter(
+        feature_df = self.build_document_template_feature_X(text, self.dict_to_dataframe(res_dict)).filter(
             self.template_feature_list, axis=1
         )
         feature_df = feature_df.reindex(columns=self.template_feature_list).fillna(0)
@@ -1751,6 +1773,62 @@ class GroupAnnotationSets:
             continue
 
         return new_res_dict
+
+
+class ParagraphExtractionAI(AbstractExtractionAI):
+    """Extract and label text regions using Detectron2."""
+
+    def __init__(
+        self,
+        category: Category,
+        *args,
+        **kwargs,
+    ):
+        """ParagraphExtractionAI."""
+        logger.info("Initializing ParagraphExtractionAI.")
+        super().__init__(category=category, *args, **kwargs)
+        self.tokenizer = ParagraphTokenizer(mode='detectron', create_detectron_labels=True)
+
+    @property
+    def project(self):
+        """Get RFExtractionAI Project."""
+        if not self.category:
+            raise AttributeError(f'{self} has no Category.')
+        return self.category.project
+
+    def extract(self, document: Document) -> Document:
+        """
+        Infer information from a given Document.
+
+        :param document: Document object
+        :return: Document with predicted labels
+
+        :raises:
+         AttributeError: When missing a Tokenizer
+        """
+        logger.info(f"Starting extraction of {document}.")
+
+        self.check_is_ready()
+
+        inference_document = deepcopy(document)
+
+        inference_document.project = self.project
+
+        inference_document = self.tokenizer.tokenize(inference_document)
+
+        return inference_document
+
+    def check_is_ready(self):
+        """
+        Check if the ExtractionAI is ready for the inference.
+
+        It is assumed that the model is ready if a Tokenizer and a Category were set.
+
+        :raises AttributeError: When no Category is specified.
+        """
+        logger.info(f"Checking if {self} is ready for extraction.")
+        if not self.category:
+            raise AttributeError(f'{self} requires a Category.')
 
 
 class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
@@ -1962,11 +2040,6 @@ class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
 
         # Main Logic -------------------------
 
-        # Do column renaming to be compatible with text-annotation
-        # todo: how can multilines be created via SDK
-        # todo: why do we need to adjust the woring for Server?
-        # todo: which other attributes could be send in the extraction method?
-
         # Convert DataFrame to Dict with labels as keys and label dataframes as value.
         res_dict = {}
         for result_name in set(df['result_name']):
@@ -1995,8 +2068,11 @@ class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
         no_label_res_dict = self.remove_empty_dataframes_from_extraction(no_label_res_dict)
 
         # res_dict = self.filter_low_confidence_extractions(res_dict)
-
-        res_dict = self.merge_horizontal(res_dict, inference_document.text)
+        if not sdk_isinstance(self.tokenizer, ParagraphTokenizer) and not sdk_isinstance(
+            self.tokenizer, SentenceTokenizer
+        ):
+            # We assume that Paragraph or Sentence tokenizers have correctly tokenized the Document
+            res_dict = self.merge_horizontal(res_dict, inference_document.text)
 
         # Try to calculate sections based on template classifier.
         if self.label_set_clf is not None and res_dict:  # todo smarter handling of multiple clf
@@ -2010,9 +2086,12 @@ class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
 
         self.tokenizer.found_spans(virtual_doc)
 
-        # join document Spans into multi-line Annotation
-        # virtual_doc.merge_vertical()
-        virtual_doc = self.merge_vertical(virtual_doc)
+        if sdk_isinstance(self.tokenizer, ParagraphTokenizer) or sdk_isinstance(self.tokenizer, SentenceTokenizer):
+            # When using the Paragraph or Sentence tokenizer, we restore the multi-line Annotations they created.
+            virtual_doc = self.merge_vertical_like(virtual_doc, inference_document)
+        else:
+            # join document Spans into multi-line Annotation
+            virtual_doc = self.merge_vertical(virtual_doc)
 
         return virtual_doc
 
@@ -2080,6 +2159,51 @@ class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
                             candidate.annotation.add_span(span)
                             buffer.remove(candidate)
                     buffer.append(span)
+        return document
+
+    def merge_vertical_like(self, document: Document, template_document: Document):
+        """
+        Merge Annotations the same way as in another copy of the same Document.
+
+        All single-Span Annotations in the current Document (self) are matched with corresponding multi-line
+        Spans in the given Document and are merged in the same way.
+        The Label of the new multi-line Annotations is taken to be the most common Label among the original
+        single-line Annotations that are being merged.
+
+        :param document: Document with multi-line Annotations
+        """
+        logger.info(f"Vertical merging Annotations like {template_document}.")
+        assert (
+            document.text == template_document.text
+        ), f"{self} and {template_document} need to have the same ocr text."
+        span_to_annotation = {
+            (span.start_offset, span.end_offset): hash(span.annotation)
+            for span in template_document.spans(use_correct=False)
+        }
+        ann_to_anns = collections.defaultdict(list)
+        for annotation in document.annotations(use_correct=False):
+            assert (
+                len(annotation.spans) == 1
+            ), f"Cannot use merge_verical_like in {document} with multi-span {annotation}."
+            span_offset_key = (annotation.spans[0].start_offset, annotation.spans[0].end_offset)
+            if span_offset_key in span_to_annotation:
+                ann_to_anns[span_to_annotation[span_offset_key]].append(annotation)
+        for _, self_annotations in ann_to_anns.items():
+            if len(self_annotations) == 1:
+                continue
+            else:
+                self_annotations = sorted(self_annotations)
+                keep_annotation = self_annotations[0]
+                annotation_labels = [keep_annotation.label]
+                for to_merge_annotation in self_annotations[1:]:
+                    annotation_labels.append(to_merge_annotation.label)
+                    span = to_merge_annotation.spans[0]
+                    to_merge_annotation.delete(delete_online=False)
+                    span.annotation = None
+                    keep_annotation.add_span(span)
+                most_common_label = collections.Counter(annotation_labels).most_common(1)[0][0]
+                keep_annotation.label = most_common_label
+
         return document
 
     def separate_labels(self, res_dict: 'Dict') -> 'Dict':
@@ -2248,6 +2372,7 @@ class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
         :param documents: List of documents to extract features from.
         :param no_label_limit: Int or Float to limit number of new annotations to create during tokenization.
         :param retokenize: Bool for whether to recreate annotations from scratch or use already existing annotations.
+        :param require_revised_annotations: Only allow calculation of features if no unrevised Annotation present.
         :return: Dataframe of features and list of feature names.
         """
         logger.info(f'Start generating features for {len(documents)} documents.')
@@ -2516,22 +2641,6 @@ class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
         label_set_clf_evaluation = ExtractionEvaluation(eval_list, use_view_annotations=False)
 
         return label_set_clf_evaluation
-
-    @property
-    def temp_pkl_file_path(self) -> str:
-        """Generate a path for temporary pickle file."""
-        temp_pkl_file_path = os.path.join(
-            self.output_dir, f'{get_timestamp()}_{self.category.name.lower()}_{self.name_lower()}_tmp.cloudpickle'
-        )
-        return temp_pkl_file_path
-
-    @property
-    def pkl_file_path(self) -> str:
-        """Generate a path for a resulting pickle file."""
-        pkl_file_path = os.path.join(
-            self.output_dir, f'{get_timestamp()}_{self.category.name.lower()}_' f'{self.name_lower()}_.pkl'
-        )
-        return pkl_file_path
 
     def reduce_model_weight(self):
         """Remove all non-strictly necessary parameters before saving."""

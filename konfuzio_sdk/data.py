@@ -10,8 +10,9 @@ import shutil
 import time
 import zipfile
 from copy import deepcopy
-from typing import Optional, List, Union, Tuple, Dict
+from typing import Optional, List, Union, Tuple, Dict, Iterable
 from warnings import warn
+from requests import HTTPError
 from enum import Enum
 
 import dateutil.parser
@@ -103,12 +104,23 @@ class Page(Data):
         document: 'Document',
         number: int,
         original_size: Tuple[float, float],
+        image_size: Tuple[int, int] = (None, None),
         start_offset: Optional[int] = None,
         end_offset: Optional[int] = None,
         category: Optional['Category'] = None,
         copy_of_id: Optional[int] = None,
     ):
-        """Create a Page for a Document."""
+        """
+        Create a Page for a Document.
+
+        :param id_: ID of the Page
+        :param document: Document the Page belongs to
+        :param start_offset: Start of the Page in the text of the Document
+        :param end_offset: End of the Page in the text of the Document
+        :param number: Page number in Document (1-based indexing)
+        :param original_size: Size of original Document file Page (all Document Bboxes are based on this scale)
+        :param image_size: Size of the image representation of the Page
+        """
         self.id_ = id_
         self.document = document
         self.number = number
@@ -123,10 +135,15 @@ class Page(Data):
 
         self.copy_of_id = copy_of_id
         self.text_encoded: List[int] = None
-        self.image = None
+        self.image: Optional[Image.Image] = None
+        self.image_bytes: Optional[bytes] = None
         self._original_size = original_size
         self.width = self._original_size[0]
         self.height = self._original_size[1]
+        self._image_size = image_size
+        self.image_width = self._image_size[0]
+        self.image_height = self._image_size[1]
+
         document_folder = (
             self.document.document_folder
             if self.id_
@@ -160,7 +177,7 @@ class Page(Data):
 
     def __hash__(self):
         """Define that one Page per Document is unique."""
-        return (self.document, self.index)
+        return hash((self.document, self.index))
 
     def __eq__(self, other: 'Page') -> bool:
         """Define how one Page is identical."""
@@ -170,50 +187,73 @@ class Page(Data):
         """Return the name of the Document incl. the ID."""
         return f"Page {self.index} in {self.document}"
 
-    def get_image(self, update: bool = False):
-        """Get Document Page as PNG."""
-        if self.document.status[0] == 2 and (not is_file(self.image_path, raise_exception=False) or update):
+    def get_image(self, update: bool = False) -> Image.Image:
+        """
+        Get Page as a Pillow Image object.
+
+        The Page image is loaded from a PNG file at `Page.image_path`.
+        If the file is not present, or if `update` is True, it will be downloaded from the Konfuzio Host.
+        Alternatively, if you don't want to use a file, you can provide the image as bytes to `Page.image_bytes`. Then
+        call this method to convert the bytes into a Pillow Image.
+        In every case, the return value of this method and the attribute `Page.image` will be a Pillow Image.
+
+        :param update: Whether to force download the Page PNG file.
+        :return: A Pillow Image object for this Page's image.
+        """
+        if not self.image or update:
             page_id = self.id_ if self.id_ else self.copy_of_id
-            png_content = get_page_image(page_id)
-            with open(self.image_path, "wb") as f:
-                f.write(png_content)
-                self.image = Image.open(io.BytesIO(png_content))
-        elif is_file(self.image_path, raise_exception=False):
-            self.image = Image.open(self.image_path)
+            if self.image_bytes:
+                self.image = Image.open(io.BytesIO(self.image_bytes))
+            elif is_file(self.image_path, raise_exception=False) and not update:
+                self.image = Image.open(self.image_path)
+            elif (not is_file(self.image_path, raise_exception=False) or update) and page_id:
+                png_content = get_page_image(page_id)
+                with open(self.image_path, "wb") as f:
+                    f.write(png_content)
+                    self.image = Image.open(io.BytesIO(png_content))
+
         return self.image
 
-    def get_annotations_image(self, image: Image = None):
+    def get_annotations_image(self, display_all: bool = False) -> Image:
         """Get Document Page as PNG with Annotations shown."""
-        if image is None and self.document.id_ is not None:
-            image = self.get_image()
-        elif image is None and self.document.copy_of_id is not None:
-            original_doc = self.document.project.get_document_by_id(self.document.copy_of_id)
-            image = original_doc.get_page_by_index(self.index).get_image()
+        image = self.get_image()
         image = image.convert('RGB')
-        # bbox information are based on a downscaled image
-        scale_mult = image.size[1] / self.height
 
-        anns = self.view_annotations()
+        draw = ImageDraw.Draw(image)
 
-        for ann in anns:
-            pos = [
-                scale_mult * ann.spans[0].bbox().x0,
-                scale_mult * (self.height - ann.spans[0].bbox().y0),
-                scale_mult * ann.spans[0].bbox().x1,
-                scale_mult * (self.height - ann.spans[0].bbox().y1),
-            ]
-            draw = ImageDraw.Draw(image)
-            draw.rectangle(pos, outline='blue', width=2)
+        try:
+            # We try to get a ttf font to be able to change bounding box label text size
+            font = ImageFont.truetype(
+                "/usr/share/fonts/truetype/liberation/LiberationSerif-Bold.ttf", 24, encoding="unic"
+            )
+        except OSError:
+            logger.warning('Font not found. Loading default.')
+            font = ImageFont.load_default()
 
-            try:
-                font = ImageFont.truetype(
-                    "/usr/share/fonts/truetype/liberation/LiberationSerif-Bold.ttf", 24, encoding="unic"
+        if not display_all:
+            annotations = self.view_annotations()
+        else:
+            annotations = self.annotations(use_correct=False)
+        for annotation in annotations:
+            annotation_image_bbox = (
+                annotation.bbox().x0_image,
+                annotation.bbox().y0_image,
+                annotation.bbox().x1_image,
+                annotation.bbox().y1_image,
+            )
+            draw.rectangle(annotation_image_bbox, outline='blue', width=2)
+            draw.text(
+                (annotation_image_bbox[0], annotation_image_bbox[1] - 24), annotation.label.name, fill='blue', font=font
+            )
+            for span in annotation.spans:
+                span_image_bbox = (
+                    span.bbox().x0_image,
+                    span.bbox().y0_image,
+                    span.bbox().x1_image,
+                    span.bbox().y1_image,
                 )
-            except OSError:
-                logger.warning('Font not found. Loading default.')
-                font = ImageFont.load_default()
+                draw.rectangle(span_image_bbox, outline='green', width=1)
 
-            draw.text((pos[0], pos[3] - 24), ann.label.name, fill='blue', font=font)
         return image
 
     @property
@@ -250,10 +290,34 @@ class Page(Data):
 
         return sorted(spans)
 
+    def lines(self) -> List['Span']:
+        """Return sorted list of Spans for each line in the Page."""
+        lines_spans = []
+        char_bboxes = self.get_bbox().values()
+        char_bboxes = sorted(char_bboxes, key=lambda x: x['char_index'])
+
+        # iterate over each line_number and all of the character bboxes with that line number
+
+        for _, line_char_bboxes in itertools.groupby(char_bboxes, lambda x: x['line_number']):
+
+            # (a line should never start with a space char)
+            trimmed_line_char_bboxes = [char for char in line_char_bboxes if not char['text'].isspace()]
+
+            if len(trimmed_line_char_bboxes) == 0:
+                continue
+
+            # create Span from the line characters bboxes
+            start_offset = min((char_bbox['char_index'] for char_bbox in trimmed_line_char_bboxes))
+            end_offset = max((char_bbox['char_index'] for char_bbox in trimmed_line_char_bboxes)) + 1
+            span = Span(start_offset=start_offset, end_offset=end_offset, document=self.document)
+
+            lines_spans.append(span)
+
+        return lines_spans
+
     def get_bbox(self):
         """Get bbox information per character of Page."""
-        doc_bbox = self.document.get_bbox()
-        page_bbox = {k: doc_bbox[k] for k in doc_bbox.keys() if doc_bbox[k]["page_number"] == self.number}
+        page_bbox = self.document.get_bbox_by_page(self.index)
         return page_bbox
 
     def annotations(
@@ -401,6 +465,7 @@ class Bbox:
         self.y1: int = y1
         self.angle: float = 0.0  # not yet used
         self.page: Page = page
+        self._label_name: Optional[str] = None  # used in detectron tokenizer
         self._valid(validation)
 
     @property
@@ -411,11 +476,11 @@ class Bbox:
 
     def __repr__(self):
         """Represent the Box."""
-        return f'{self.__class__.__name__}: {self.x0} {self.x1} {self.y0} {self.y1} on Page {self.page}'
+        return f'{self.__class__.__name__}: x0: {self.x0} x1: {self.x1} y0: {self.y0} y1: {self.y1} on Page {self.page}'
 
     def __hash__(self):
         """Return identical value for a Bounding Box."""
-        return (self.x0, self.x1, self.y0, self.y1, self.page)
+        return hash((self.x0, self.x1, self.y0, self.y1, self.page))
 
     def __eq__(self, other: 'Bbox') -> bool:
         """Define that one Bounding Box on the same page is identical."""
@@ -493,10 +558,62 @@ class Bbox:
                 handler=handler,
             )
 
+    def check_overlap(self, bbox: Union['Bbox', Dict]) -> bool:
+        """Verify if there's overlap between two Bboxes."""
+        if type(bbox) is dict and (
+            bbox['x0'] <= self.x1 and bbox['x1'] >= self.x0 and bbox['y0'] <= self.y1 and bbox['y1'] >= self.y0
+        ):
+            return True
+        elif type(bbox) is type(self) and (
+            bbox.x0 <= self.x1 and bbox.x1 >= self.x0 and bbox.y0 <= self.y1 and bbox.y1 >= self.y0
+        ):
+            return True
+        else:
+            return False
+
     @property
     def area(self):
         """Return area covered by the Bbox."""
         return round(abs(self.x0 - self.x1) * abs(self.y0 - self.y1), 3)
+
+    @classmethod
+    def from_image_size(self, x0, x1, y0, y1, page: Page) -> 'Bbox':
+        """Create Bbox from the image dimensions based result to the scale of the characters Bboxes of the Document.
+
+        :return: Bbox with the rescaled dimensions.
+        """
+        factor_y = page.height / page.image_height
+        factor_x = page.width / page.image_width
+        image_height = page.image_height
+
+        temp_y0 = (image_height - y0) * factor_y
+        temp_y1 = (image_height - y1) * factor_y
+        y0 = temp_y1
+        y1 = temp_y0
+        x0 = x0 * factor_x
+        x1 = x1 * factor_x
+
+        return Bbox(x0=x0, x1=x1, y0=y0, y1=y1, page=page)
+
+    @property
+    def x0_image(self):
+        """Get the x0 coordinate in the context of the Page image."""
+        return self.x0 * (self.page.image_width / self.page.width)
+
+    @property
+    def x1_image(self):
+        """Get the x1 coordinate in the context of the Page image."""
+        return self.x1 * (self.page.image_width / self.page.width)
+
+    @property
+    def y0_image(self):
+        """Get the y0 coordinate in the context of the Page image."""
+        return self.page.image_height - self.y1 * (self.page.image_height / self.page.height)
+
+    @property
+    def y1_image(self):
+        """Get the y1 coordinate in the context of the Page image."""
+        return self.page.image_height - self.y0 * (self.page.image_height / self.page.height)
 
 
 class AnnotationSet(Data):
@@ -655,7 +772,7 @@ class LabelSet(Data):
 
     def __repr__(self):
         """Return string representation of the Label Set."""
-        return f"{self.name} ({self.id_})"
+        return f"LabelSet: {self.name} ({self.id_})"
 
     def add_category(self, category: 'Category'):
         """
@@ -798,7 +915,7 @@ class Category(Data):
 
     def __repr__(self):
         """Return string representation of the Category."""
-        return f"{self.name} ({self.id_})"
+        return f"Category: {self.name} ({self.id_})"
 
 
 class CategoryAnnotation(Data):
@@ -1200,8 +1317,7 @@ class Label(Data):
         ]
 
         logger.info(
-            f'We compare {len(evaluations)} regex for {len(all_annotations)} correct Annotations for Category '
-            f'{category}.'
+            f'We compare {len(evaluations)} regex for {len(all_annotations)} correct Annotations for {category}.'
         )
 
         try:
@@ -1492,7 +1608,12 @@ class Span(Data):
     """A Span is a sequence of characters or whitespaces without line break."""
 
     def __init__(
-        self, start_offset: int, end_offset: int, annotation: 'Annotation' = None, strict_validation: bool = True
+        self,
+        start_offset: int,
+        end_offset: int,
+        annotation: 'Annotation' = None,
+        document: 'Document' = None,
+        strict_validation: bool = True,
     ):
         """
         Initialize the Span without bbox, to save storage.
@@ -1501,12 +1622,20 @@ class Span(Data):
 
         :param start_offset: Start of the offset string (int)
         :param end_offset: Ending of the offset string (int)
-        :param annotation: The Annotation the Span belong to
+        :param annotation: The Annotation the Span belongs to. If not set, the Span is considered "virtual"
+        :param document: Document the Span belongs to. If not specified, the annotation document is used.
         :param strict_validation: Whether to apply strict validation rules.
         See https://dev.konfuzio.com/sdk/tutorials.html#data-validation-rules.
         """
         self.id_local = next(Data.id_iter)
+
+        self.document: Document = document
+        if annotation and document:
+            assert annotation.document is document
         self.annotation: Annotation = annotation
+        if annotation:
+            self.document = annotation.document
+
         self.start_offset = start_offset
         self.end_offset = end_offset
         self.top = None
@@ -1560,23 +1689,23 @@ class Span(Data):
     @property
     def page(self) -> Page:
         """Return Page of Span."""
-        if self.annotation is None or self.annotation.document is None:
+        if self.document is None:
             raise NotImplementedError
-        elif self.annotation.document.text is None:
-            logger.error(f'{self.annotation.document} does not provide text.')
+        elif self.document.text is None:
+            logger.error(f'{self.document} does not provide text.')
             pass
-        elif self._page is None and self.annotation.document.pages():
-            text = self.annotation.document.text[: self.start_offset]
+        elif self._page is None and self.document.pages():
+            text = self.document.text[: self.start_offset]
             page_index = len(text.split('\f')) - 1
-            self._page = self.annotation.document.get_page_by_index(page_index=page_index)
+            self._page = self.document.get_page_by_index(page_index=page_index)
         return self._page
 
     @property
     def line_index(self) -> int:
         """Return index of the line of the Span."""
         self._valid()
-        if self.annotation.document.text and self._line_index is None:
-            line_number = len(self.annotation.document.text[: self.start_offset].replace('\f', '\n').split('\n'))
+        if self.document.text and self._line_index is None:
+            line_number = len(self.document.text[: self.start_offset].replace('\f', '\n').split('\n'))
             self._line_index = line_number - 1
 
         return self._line_index
@@ -1595,7 +1724,19 @@ class Span(Data):
 
     def __repr__(self):
         """Return string representation."""
-        return f"{self.__class__.__name__} ({self.start_offset}, {self.end_offset})"
+        if self.offset_string and len(self.offset_string) < 16:
+            offset_string_repr = self.offset_string
+        elif self.offset_string:
+            offset_string_repr = f"{self.offset_string[:14]}[...]"
+        else:
+            offset_string_repr = ''
+
+        if not self.annotation:
+            return (
+                f"Virtual {self.__class__.__name__} ({self.start_offset}, {self.end_offset}): \"{offset_string_repr}\""
+            )
+        else:
+            return f"{self.__class__.__name__} ({self.start_offset}, {self.end_offset}): \"{offset_string_repr}\""
 
     def __hash__(self):
         """Make any online or local concept hashable. See https://stackoverflow.com/a/7152650."""
@@ -1615,13 +1756,13 @@ class Span(Data):
 
     def bbox(self) -> Bbox:
         """Calculate the bounding box of a text sequence."""
-        if not self.annotation:
+        if not self.document:
             raise NotImplementedError
         if not self.page:
             logger.warning(f'{self} does not have a Page.')
             return None
-        if not self.annotation.document.bboxes_available:
-            logger.warning(f'{self.annotation.document} of {self} does not provide Bboxes.')
+        if not self.document.bboxes_available:
+            logger.warning(f'{self.document} of {self} does not provide Bboxes.')
             return None
         _ = self.line_index  # quick validate if start and end is in the same line of text
 
@@ -1629,19 +1770,17 @@ class Span(Data):
             warn('WIP: Modifications before the next stable release expected.', FutureWarning, stacklevel=2)
             # todo: verify that one Span relates to Character in on line of text
             character_range = range(self.start_offset, self.end_offset)
-            document = self.annotation.document
+            document = self.document
             characters = {key: document.bboxes.get(key) for key in character_range if document.text[key] != ' '}
             if not all(characters.values()):
-                logger.error(
-                    f'{self} in {self.annotation.document} contains Characters that don\'t provide a Bounding Box.'
-                )
+                logger.error(f'{self} in {self.document} contains Characters that don\'t provide a Bounding Box.')
             self._bbox = Bbox(
                 x0=min([ch.x0 for c, ch in characters.items() if ch is not None]),
                 x1=max([ch.x1 for c, ch in characters.items() if ch is not None]),
-                y0=min([ch.y0 for c, ch in characters.items() if ch is not None]),
+                y0=max(0, min([ch.y0 for c, ch in characters.items() if ch is not None])),
                 y1=max([ch.y1 for c, ch in characters.items() if ch is not None]),
                 page=self.page,
-                validation=self.annotation.document._bbox_validation_type,
+                validation=self.document._bbox_validation_type,
             )
         return self._bbox
 
@@ -1671,8 +1810,8 @@ class Span(Data):
     @property
     def offset_string(self) -> Union[str, None]:
         """Calculate the offset string of a Span."""
-        if self.annotation and self.annotation.document and self.annotation.document.text:
-            return self.annotation.document.text[self.start_offset : self.end_offset]
+        if self.document and self.document.text:
+            return self.document.text[self.start_offset : self.end_offset]
         else:
             return None
 
@@ -1738,9 +1877,9 @@ class Span(Data):
                 "label_set_id": self.annotation.label_set.id_,
                 "annotation_id": self.annotation.id_,
                 "annotation_set_id": self.annotation.annotation_set.id_,
-                "document_id": self.annotation.document.id_,
-                "document_id_local": self.annotation.document.id_local,
-                "category_id": self.annotation.document.category.id_,
+                "document_id": self.document.id_,
+                "document_id_local": self.document.id_local,
+                "category_id": self.document.category.id_,
                 "line_index": self.line_index,
                 "data_type": self.annotation.label.data_type,
             }
@@ -1763,18 +1902,58 @@ class Span(Data):
                 span_dict["x1_relative"] = self.bbox().x1 / self.page.width
                 span_dict["y0_relative"] = self.bbox().y0 / self.page.height
                 span_dict["y1_relative"] = self.bbox().y1 / self.page.height
-                span_dict["page_index_relative"] = self.page.index / self.annotation.document.number_of_pages
+                span_dict["page_index_relative"] = self.page.index / self.document.number_of_pages
 
-            document_id = (
-                self.annotation.document.id_
-                if self.annotation.document.id_ is not None
-                else self.annotation.document.copy_of_id
-            )
+            document_id = self.document.id_ if self.document.id_ is not None else self.document.copy_of_id
             span_dict["document_id"] = document_id
             span_dict["label_name"] = self.annotation.label.name if self.annotation.label else None
             span_dict["label_set_name"] = self.annotation.label_set.name if self.annotation.label_set else None
 
         return span_dict
+
+    @staticmethod
+    def get_sentence_from_spans(spans: Iterable['Span'], punctuation=None) -> List[List['Span']]:
+        """Return a list of Spans corresponding to Sentences separated by Punctuation."""
+        if punctuation is None:
+            punctuation = {'.', '!', '?'}
+
+        # get the sentence spans
+        sentence_spans: List[List[Span]] = [[]]
+        for span in spans:
+            # get the text of the span
+            span_text = span.offset_string
+
+            # find the start and end offsets of each sentence in the span
+            prev_sentence_start_offset = 0
+            for index, char in enumerate(span_text):
+                if char == ' ':
+                    continue
+                if char in punctuation:
+                    sentence_start_offset = span.start_offset + prev_sentence_start_offset
+                    sentence_end_offset = span.start_offset + index + 1
+                    sentence_spans[-1].append(
+                        Span(
+                            start_offset=sentence_start_offset,
+                            end_offset=sentence_end_offset,
+                            document=span.page.document,
+                        )
+                    )
+                    sentence_spans.append([])
+                    prev_sentence_start_offset = index + 1
+
+            if prev_sentence_start_offset < len(span_text):
+                sentence_start_offset = span.start_offset + prev_sentence_start_offset
+                sentence_end_offset = span.end_offset
+                sentence_spans[-1].append(
+                    Span(
+                        start_offset=sentence_start_offset,
+                        end_offset=sentence_end_offset,
+                        document=span.page.document,
+                    )
+                )
+
+        sentence_spans = [x for x in sentence_spans if len(x)]
+        return sentence_spans
 
 
 class Annotation(Data):
@@ -1833,6 +2012,10 @@ class Annotation(Data):
             self.custom_offset_string = None
         self.id_ = id_  # Annotations can have None id_, if they are not saved online and are only available locally
         self._spans: List[Span] = []
+
+        self._bbox = None
+
+        self._bbox = None
 
         if accuracy is not None:  # it's a confidence
             self.confidence = accuracy
@@ -1969,7 +2152,12 @@ class Annotation(Data):
 
     def __hash__(self):
         """Identity of Annotation that does not change over time."""
-        return hash((self.start_offset, self.end_offset, self.label_set, self.document, self.label))
+        return hash((self.id_local, self.document))
+
+    @property
+    def page(self) -> Page:
+        """Return Page of Annotation."""
+        return self.spans[0].page
 
     @property
     def is_multiline(self) -> int:
@@ -2022,6 +2210,7 @@ class Annotation(Data):
                 raise ValueError(f'{span} should be added to {self} but relates to {span.annotation}.')
             else:
                 span.annotation = self  # todo feature to link one Span to many Annotations
+                span.document = self.document
         else:
             raise ValueError(f'In {self} the {span} is a duplicate and will not be added.')
         return self
@@ -2067,15 +2256,15 @@ class Annotation(Data):
             response = post_document_annotation(
                 project_id=self.document.project.id_,
                 document_id=self.document.id_,
-                start_offset=self.start_offset,
-                end_offset=self.end_offset,
+                # start_offset=self.start_offset,
+                # end_offset=self.end_offset,
                 label_id=self.label.id_,
                 label_set_id=label_set_id,
                 confidence=self.confidence,
                 is_correct=self.is_correct,
                 revised=self.revised,
-                annotation_set=self.annotation_set,
-                # bboxes=self.bboxes,
+                annotation_set=self.annotation_set.id_,
+                bboxes=self.bboxes,
                 # selection_bbox=self.selection_bbox,
                 page_number=self.page_number,
             )
@@ -2183,6 +2372,18 @@ class Annotation(Data):
         else:
             self.document._annotations.remove(self)
 
+    def bbox(self) -> Bbox:
+        """Get Bbox encompassing all Annotation Spans."""
+        if self._bbox is None:
+            self._bbox = Bbox(
+                x0=min([span.bbox().x0 for span in self.spans]),
+                x1=max([span.bbox().x1 for span in self.spans]),
+                y0=min([span.bbox().y0 for span in self.spans]),
+                y1=max([span.bbox().y1 for span in self.spans]),
+                page=self.page,
+            )
+        return self._bbox
+
     @property
     def spans(self) -> List[Span]:
         """Return default entry to get all Spans of the Annotation."""
@@ -2204,6 +2405,16 @@ class Annotation(Data):
 
 class Document(Data):
     """Access the information about one Document, which is available online."""
+
+    # Define the status of a Document's processing
+    QUEUING_FOR_OCR = 0
+    OCR_IN_PROGRESS = 10
+    QUEUING_FOR_EXTRACTION = 1
+    EXTRACTION_IN_PROGRESS = 20
+    QUEUING_FOR_CATEGORIZATION = 3
+    CATEGORIZATION_IN_PROGRESS = 30
+    DONE = 2
+    COULD_NOT_BE_PROCESSED = 111
 
     def __init__(
         self,
@@ -2288,6 +2499,7 @@ class Document(Data):
         self._text: str = text
         self._text_hash = None
         self._characters: Dict[int, Bbox] = None
+        self._pages_char_bboxes = None
         self._bbox_hash = None
         self._bbox_json = bbox
         self.bboxes_available: bool = bool(self.is_online or self._bbox_json)
@@ -2364,7 +2576,10 @@ class Document(Data):
 
         for annotation in self.annotations(use_correct=False):
             if not annotation.is_online:
-                annotation.save()
+                try:
+                    annotation.save()
+                except HTTPError as e:
+                    logger.error(str(e))
 
     @classmethod
     def from_file_sync(
@@ -2657,6 +2872,7 @@ class Document(Data):
                 copy_of_id=copy_id,
                 number=page.number,
                 original_size=(page.width, page.height),
+                image_size=(page.image_width, page.image_height),
             )
         return document
 
@@ -2872,7 +3088,9 @@ class Document(Data):
         else:
             file_path = self.file_path
 
-        if self.status[0] == 2 and (not file_path or not is_file(file_path, raise_exception=False) or update):
+        if self.status[0] == Document.DONE and (
+            not file_path or not is_file(file_path, raise_exception=False) or update
+        ):
             pdf_content = download_file_konfuzio_api(self.id_, ocr=ocr_version, session=self.session)
             with open(file_path, "wb") as f:
                 f.write(pdf_content)
@@ -2890,7 +3108,7 @@ class Document(Data):
 
     def download_document_details(self):
         """Retrieve data from a Document online in case Document has finished processing."""
-        if self.is_online and self.status and self.status[0] == 2:
+        if self.is_online and self.status and self.status[0] == Document.DONE:
             data = get_document_details(document_id=self.id_, project_id=self.project.id_, session=self.session)
 
             # write a file, even there are no annotations to support offline work
@@ -3044,7 +3262,7 @@ class Document(Data):
         elif is_file(self.bbox_file_path, raise_exception=False):
             with zipfile.ZipFile(self.bbox_file_path, "r") as archive:
                 bbox = json.loads(archive.read('bbox.json5'))
-        elif self.is_online and self.status and self.status[0] == 2:
+        elif self.is_online and self.status and self.status[0] == Document.DONE:
             # todo check for self.project.id_ and self.id_ and ?
             logger.info(f'Start downloading bbox files of {len(self.text)} characters for {self}.')
             bbox = get_document_details(document_id=self.id_, project_id=self.project.id_, extra_fields="bbox")['bbox']
@@ -3063,6 +3281,15 @@ class Document(Data):
             bbox = {}
 
         return bbox
+
+    def get_bbox_by_page(self, page_index: int) -> Dict[str, Dict]:
+        """Return list of all bboxes in a Page."""
+        if not self._pages_char_bboxes:
+            self._pages_char_bboxes: List[Dict[str, Dict]] = [{} for _ in self.pages()]
+            for char_index, bbox in self.get_bbox().items():
+                bbox['char_index'] = int(char_index)
+                self._pages_char_bboxes[bbox['page_number'] - 1][char_index] = bbox
+        return self._pages_char_bboxes[page_index]
 
     @property
     def _hashable_characters(self) -> Optional[frozenset]:
@@ -3167,6 +3394,7 @@ class Document(Data):
                     document=self,
                     number=page_data['number'],
                     original_size=page_data['original_size'],
+                    image_size=page_data['size'],
                     start_offset=start_offset,
                     end_offset=end_offset,
                 )
@@ -3184,7 +3412,7 @@ class Document(Data):
             with open(self.hocr_file_path, "r", encoding="utf-8") as f:
                 self._hocr = f.read()
         else:
-            if self.status[0] == 2:
+            if self.status[0] == Document.DONE:
                 data = get_document_details(
                     document_id=self.id_, project_id=self.project.id_, session=self.session, extra_fields="hocr"
                 )

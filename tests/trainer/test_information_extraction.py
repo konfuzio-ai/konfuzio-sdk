@@ -41,6 +41,7 @@ from konfuzio_sdk.trainer.information_extraction import (
 
 from konfuzio_sdk.api import upload_ai_model
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, RegexTokenizer
+from konfuzio_sdk.tokenizer.paragraph_and_sentence import ParagraphTokenizer, SentenceTokenizer
 from konfuzio_sdk.tokenizer.base import ListTokenizer
 from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
 from konfuzio_sdk.samples import LocalTextProject
@@ -677,6 +678,141 @@ class TestRegexRFExtractionAI(unittest.TestCase):
             os.remove(cls.pipeline.pipeline_path_no_konfuzio_sdk)
 
 
+@parameterized.parameterized_class(
+    ('mode', 'n_extracted_annotations', 'n_extracted_spans', 'fp'),
+    [
+        ('detectron', 26, 99, 2),
+        ('line_distance', 29, 99, 2),
+    ],
+)
+class TestParagraphRFExtractionAI(unittest.TestCase):
+    """Test New SDK Information Extraction."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Set up the Data and Pipeline."""
+        cls.project = Project(id_=458, update=True)
+        category = cls.project.get_category_by_id(16436)
+        cls.pipeline = RFExtractionAI(category=category, use_separate_labels=True)
+
+        cls.tests_annotations_spans = list()
+
+    def test_01_configure_pipeline(self):
+        """Make sure the Data and Pipeline is configured."""
+        self.pipeline.tokenizer = ParagraphTokenizer(mode=self.mode)
+
+        train_doc_ids = {601418}
+        for doc in self.pipeline.category.documents():
+            if doc.id_ not in train_doc_ids:
+                doc.dataset_status = 1
+        self.pipeline.documents = self.pipeline.category.documents()
+
+    def test_02_make_features(self):
+        """Make sure the Data and Pipeline is configured."""
+        self.pipeline.df_train, self.pipeline.label_feature_list = self.pipeline.feature_function(
+            documents=self.pipeline.documents, retokenize=False, require_revised_annotations=False
+        )
+
+    def test_03_fit(self) -> None:
+        """Start to train the Model."""
+        self.pipeline.fit()
+
+    def test_04_save_model(self):
+        """Save the model."""
+        self.pipeline.pipeline_path = self.pipeline.save(
+            output_dir=self.project.model_folder,
+            include_konfuzio=True,
+            reduce_weight=True,
+            keep_documents=False,
+            max_ram="500KB",
+        )
+
+        assert os.path.isfile(self.pipeline.pipeline_path)
+        os.remove(self.pipeline.pipeline_path)
+
+    def test_05_extract_document(self):
+        """Test document extraction."""
+        document = self.pipeline.documents[0]  # 601418
+        assert len(document.annotations()) == 22
+        assert len(document.spans()) == 97
+
+        virtual_document = self.pipeline.extract(document)
+        assert len(virtual_document.annotations(use_correct=False)) == self.n_extracted_annotations
+        assert len(virtual_document.spans(use_correct=False)) == self.n_extracted_spans
+
+    def test_06_data_quality(self):
+        """Evaluate on training documents."""
+        evaluation = self.pipeline.evaluate_full(use_training_docs=True)  # only one training doc available for eval
+        assert evaluation.f1() >= 0.97
+        assert evaluation.fp() == self.fp  # 2 lines are unannotated
+
+
+@parameterized.parameterized_class(
+    ('mode', 'n_extracted_annotations', 'n_extracted_spans', 'min_eval_f1', 'eval_tp', 'eval_fp'),
+    [
+        ('detectron', 101, 225, 0.6, 20, 18),
+        ('line_distance', 97, 222, 0.25, 10, 21),  # line distance method does not work well with 2 column documents
+    ],
+)
+class TestSentenceRFExtractionAI(unittest.TestCase):
+    """Test New SDK Information Extraction."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Set up the Data and Pipeline."""
+        cls.project = Project(id_=458, update=True)
+        category = cls.project.get_category_by_id(16587)
+        cls.pipeline = RFExtractionAI(category=category, use_separate_labels=True)
+
+        cls.tests_annotations_spans = list()
+
+    def test_01_configure_pipeline(self):
+        """Make sure the Data and Pipeline is configured."""
+        self.pipeline.tokenizer = SentenceTokenizer(mode=self.mode)
+
+        self.pipeline.documents = self.pipeline.category.documents()
+
+    def test_02_make_features(self):
+        """Make sure the Data and Pipeline is configured."""
+        self.pipeline.df_train, self.pipeline.label_feature_list = self.pipeline.feature_function(
+            documents=self.pipeline.documents, retokenize=False, require_revised_annotations=False
+        )
+
+    def test_03_fit(self) -> None:
+        """Start to train the Model."""
+        self.pipeline.fit()
+
+    def test_04_save_model(self):
+        """Save the model."""
+        self.pipeline.pipeline_path = self.pipeline.save(
+            output_dir=self.project.model_folder,
+            include_konfuzio=True,
+            reduce_weight=True,
+            keep_documents=False,
+            max_ram="500KB",
+        )
+
+        assert os.path.isfile(self.pipeline.pipeline_path)
+        os.remove(self.pipeline.pipeline_path)
+
+    def test_05_extract_document(self):
+        """Test document extraction."""
+        document = self.pipeline.documents[0]  # 615403
+        assert len(document.annotations()) == 13
+        assert len(document.spans()) == 27
+
+        virtual_document = self.pipeline.extract(document)
+        assert len(virtual_document.annotations(use_correct=False)) == self.n_extracted_annotations
+        assert len(virtual_document.spans(use_correct=False)) == self.n_extracted_spans
+
+    def test_06_data_quality(self):
+        """Evaluate on training documents."""
+        evaluation = self.pipeline.evaluate_full(use_training_docs=True)  # only one training doc available for eval
+        assert evaluation.f1() >= self.min_eval_f1
+        assert evaluation.tp() == self.eval_tp
+        assert evaluation.fp() == self.eval_fp
+
+
 @unittest.skip(reason='Slow. Only use to debug memory use.')
 def test_tracemalloc_memory():
     """Set up the Data and Pipeline."""
@@ -881,6 +1017,27 @@ class TestInformationExtraction(unittest.TestCase):
         assert feature_names[42] == 'feat_substring_count_h'
         assert feature_names[60] == 'l_pos0'
         assert feature_names[65] == 'r_pos1'
+
+    def test_time_feature_extraction(self):
+        """Test time it takes to extract the features from a Document."""
+        project = Project(id_=458)
+        category = project.get_category_by_id(16436)
+        pipeline = RFExtractionAI(category=category, use_separate_labels=True)
+
+        pipeline.tokenizer = WhitespaceTokenizer()
+
+        document = deepcopy(pipeline.category.project.get_document_by_id(601418))
+        pipeline.tokenizer.tokenize(document)
+
+        its = []
+        for _ in range(1):
+            start_t = time.process_time()
+            pipeline.features(document)
+            its.append(time.process_time() - start_t)
+
+        logger.info(f"This took {sum(its)/len(its)}s on average.")
+
+        assert sum(its) / len(its) < 2
 
     def test_extract_with_unfitted_clf(self):
         """Test to extract a Document."""

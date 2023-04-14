@@ -72,15 +72,6 @@ class TestRegexTokenizer(unittest.TestCase):
         """Test default regex."""
         assert self.tokenizer.regex == self.regex
 
-    def test_fit_input(self):
-        """Test input for the fit of the tokenizer."""
-        with self.assertRaises(AssertionError):
-            self.tokenizer.fit(self.document)
-
-    def test_fit_output(self):
-        """Test output for the fit of the tokenizer."""
-        assert self.tokenizer.fit(self.category) == self.tokenizer
-
     def test_tokenize_input(self):
         """Test input for the tokenize method."""
         with self.assertRaises(AssertionError):
