@@ -35,7 +35,6 @@ class ParagraphTokenizer(AbstractTokenizer):
         :param create_detectron_labels: Apply the labels given by the detectron model. If they don't exist, they are
         created.
         """
-        super().__init__()
         self.mode = mode
         self.line_height_ratio = line_height_ratio
         if height is not None:
@@ -197,8 +196,9 @@ class SentenceTokenizer(AbstractTokenizer):
         :param mode: line_distance or detectron
         :param line_height_ratio: ratio of the median line height to use as threshold to create new paragraph.
         :param height: Height line threshold to use instead of the automatically calulated one.
+        :param create_detectron_labels: Apply the labels given by the detectron model. If they don't exist, they are
+        created.
         """
-        super().__init__()
         self.mode = mode
         self.line_height_ratio = line_height_ratio
         if height is not None:
