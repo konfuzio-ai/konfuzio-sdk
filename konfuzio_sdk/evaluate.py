@@ -101,7 +101,9 @@ def compare(
     df_a = pandas.DataFrame(doc_a.eval_dict(use_correct=only_use_correct))
     df_b = pandas.DataFrame(
         doc_b.eval_dict(
-            use_view_annotations=use_view_annotations, use_correct=False, ignore_below_threshold=ignore_below_threshold
+            use_view_annotations=strict and use_view_annotations,  # view_annotations only available for strict mode
+            use_correct=False,
+            ignore_below_threshold=ignore_below_threshold,
         )
     )
     if doc_a.category != doc_b.category:

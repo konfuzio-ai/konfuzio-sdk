@@ -454,6 +454,73 @@ class TestCompare(unittest.TestCase):
         assert evaluation["false_negative"].sum() == 0
         assert evaluation["tokenizer_true_positive"].sum() == 0
 
+    @unittest.skip(reason='Feature needed')
+    def test_non_strict_filters_out_fps_and_fns(self):
+        """Test that weak evaluation should filter out the case where a Label should only appear once."""
+        # After we have calculated the results for the AnnotationSet, we filter out the case where a Label should only
+        # appear once per AnnotationSet but has been annotated multiple times. In this case, if any of the predictions
+        # is a TP then we keep one and discard FPs/FNs. If no TPs, if any of the predictions is a FP then we keep one
+        # and discard the FNs. If no FPs, then we keep a FN. The prediction we keep is always the first in terms of
+        # start_offset.
+        project = Project(id_=None)
+        category = Category(project=project)
+        label_set = LabelSet(id_=33, project=project, categories=[category])
+        label = Label(id_=22, project=project, label_sets=[label_set], threshold=0.1, has_multiple_top_candidates=False)
+        # create a Document A with text: "1234567890"; and annotations: "34"
+        document_a = Document(project=project, category=category, text="1234567890")
+        # Annotation Set
+        span_1 = Span(start_offset=2, end_offset=4)
+        annotation_set_a = AnnotationSet(id_=2, document=document_a, label_set=label_set)
+        _ = Annotation(
+            id_=2,
+            document=document_a,
+            is_correct=True,
+            annotation_set=annotation_set_a,
+            label=label,
+            label_set=label_set,
+            spans=[span_1],
+        )
+        # create a Document B with text: "1234567890"; and annotations "3" and "67"
+        document_b = Document(project=project, category=category, text="1234567890")
+        # Annotation Set
+        span_2 = Span(start_offset=2, end_offset=3)
+        span_3 = Span(start_offset=5, end_offset=7)
+        annotation_set_b = AnnotationSet(id_=3, document=document_b, label_set=label_set)
+        _ = Annotation(
+            id_=4,
+            document=document_b,
+            confidence=0.5,
+            is_correct=False,
+            annotation_set=annotation_set_b,
+            label=label,
+            label_set=label_set,
+            spans=[span_2],
+        )
+        _ = Annotation(
+            id_=5,
+            document=document_b,
+            confidence=0.5,
+            is_correct=False,
+            annotation_set=annotation_set_b,
+            label=label,
+            label_set=label_set,
+            spans=[span_3],
+        )
+
+        evaluation_strict = compare(document_a, document_b)
+        assert len(evaluation_strict) == 3
+        assert evaluation_strict["true_positive"].sum() == 0
+        assert evaluation_strict["false_positive"].sum() == 2
+        assert evaluation_strict["false_negative"].sum() == 1
+        assert evaluation_strict["tokenizer_true_positive"].sum() == 0
+
+        evaluation = compare(document_a, document_b, strict=False)
+        assert len(evaluation) == 1
+        assert evaluation["true_positive"].sum() == 1
+        assert evaluation["false_positive"].sum() == 0
+        assert evaluation["false_negative"].sum() == 0
+        assert evaluation["tokenizer_true_positive"].sum() == 0
+
     def test_strict_documents_with_different_category(self):
         """Test to not compare two Documents with different Categories."""
         project = Project(id_=None)
