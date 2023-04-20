@@ -488,7 +488,7 @@ def date_count(s: str) -> int:
                 try:
                     diff = int((date2 - date1) / numpy.timedelta64(1, 'D'))
                 except TypeError as e:
-                    logger.error(f'Could not substract for string {s} because of >>{e}<<.')
+                    logger.debug(f'Could not substract for string {s} because of >>{e}<<.')
                     return 0
 
             if diff == 0:

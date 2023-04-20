@@ -105,6 +105,7 @@ class TimeoutHTTPAdapter(HTTPAdapter):
 
     def send(self, request, *args, **kwargs):
         """Use timeout policy if not otherwise declared."""
+        logger.debug(f"Sending request: {request.url}, {request.method}, {request.headers}")
         if request.headers['Authorization'] == 'Token None':
             raise PermissionError(f'Your Token to connect to {KONFUZIO_HOST} is missing, e.g. use "konfuzio_sdk init"')
         timeout = kwargs.get("timeout")
@@ -115,6 +116,7 @@ class TimeoutHTTPAdapter(HTTPAdapter):
     def build_response(self, req, resp):
         """Throw error for any HTTPError that is not part of the retry strategy."""
         response = super().build_response(req, resp)
+        logger.debug(f"Received response: {response.status_code}, {response.reason}, {response.url}")
         # handle status code one by one as some status codes will cause a retry, see konfuzio_session
         if response.status_code in [403, 404]:
             # Fallback to None if there's no detail, for whatever reason.
