@@ -11,6 +11,7 @@ from konfuzio_sdk.evaluate import compare, grouped, ExtractionEvaluation, Evalua
 
 from konfuzio_sdk.samples import LocalTextProject
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
+
 from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel, SplittingAI, FileSplittingEvaluation
 from tests.variables import TEST_DOCUMENT_ID
 
@@ -397,10 +398,10 @@ class TestCompare(unittest.TestCase):
         assert evaluation_strict["tokenizer_true_positive"].sum() == 0
 
         evaluation = compare(document_a, document_b, strict=False)
-        assert len(evaluation) == 3
+        assert len(evaluation) == 2
         assert evaluation["true_positive"].sum() == 1
         assert evaluation["false_positive"].sum() == 1
-        assert evaluation["false_negative"].sum() == 1
+        assert evaluation["false_negative"].sum() == 0
         assert evaluation["tokenizer_true_positive"].sum() == 0  # we don't find it with the tokenizer but only parts
 
     def test_non_strict_is_better_than_strict(self):
@@ -454,14 +455,8 @@ class TestCompare(unittest.TestCase):
         assert evaluation["false_negative"].sum() == 0
         assert evaluation["tokenizer_true_positive"].sum() == 0
 
-    @unittest.skip(reason='Feature needed')
     def test_non_strict_filters_out_fps_and_fns(self):
         """Test that weak evaluation should filter out the case where a Label should only appear once."""
-        # After we have calculated the results for the AnnotationSet, we filter out the case where a Label should only
-        # appear once per AnnotationSet but has been annotated multiple times. In this case, if any of the predictions
-        # is a TP then we keep one and discard FPs/FNs. If no TPs, if any of the predictions is a FP then we keep one
-        # and discard the FNs. If no FPs, then we keep a FN. The prediction we keep is always the first in terms of
-        # start_offset.
         project = Project(id_=None)
         category = Category(project=project)
         label_set = LabelSet(id_=33, project=project, categories=[category])
