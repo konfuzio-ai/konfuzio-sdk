@@ -233,12 +233,17 @@ def compare(
     )
 
     if not strict:
-        # After we have calculated the TPs, FPs, FNs for the Document, we filter out the case where a Label should only
-        # appear once per AnnotationSet but has been predicted multiple times. In this case, if any of the predictions
-        # is a TP then we keep one and discard FPs/FNs. If no TPs, if any of the predictions is a FP then we keep one
-        # and discard the FNs. If no FPs, then we keep a FN. The prediction we keep is always the first in terms of
-        # start_offset.
+
         def prioritize_rows(group):
+            """
+            Apply a filter when a Label should only appear once per AnnotationSet but has been predicted multiple times.
+
+            After we have calculated the TPs, FPs, FNs for the Document, we filter out the case where a Label should
+            only appear once per AnnotationSet but has been predicted multiple times. In this case, if any of the
+            predictions is a TP then we keep one and discard FPs/FNs. If no TPs, if any of the predictions is a FP
+            then we keep one and discard the FNs. If no FPs, then we keep a FN. The prediction we keep is always the
+            first in terms of start_offset.
+            """
             group = group[~group['label_has_multiple_top_candidates_predicted']]
             if group.empty:
                 return group
