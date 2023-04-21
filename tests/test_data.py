@@ -24,7 +24,6 @@ from konfuzio_sdk.data import (
     Bbox,
     BboxValidationTypes,
 )
-from konfuzio_sdk.evaluate import ExtractionEvaluation
 from konfuzio_sdk.trainer.information_extraction import RFExtractionAI
 from konfuzio_sdk.utils import is_file, get_spans_from_bbox
 from tests.variables import (
@@ -532,11 +531,7 @@ class TestOfflineExampleData(unittest.TestCase):
             documents=pipeline.documents, require_revised_annotations=False
         )
         pipeline.fit()
-        predictions = []
-        for doc in pipeline.documents:
-            predicted_doc = pipeline.extract(document=doc)
-            predictions.append(predicted_doc)
-        evaluation = ExtractionEvaluation(documents=list(zip(pipeline.documents, predictions)), strict=False)
+        evaluation = pipeline.evaluate_full(strict=False, use_training_docs=True)
         outliers = label.get_probable_outliers_by_confidence(evaluation, 0.8)
         assert len(outliers) == 1
         outlier_spans = [span.offset_string for annotation in outliers for span in annotation.spans]

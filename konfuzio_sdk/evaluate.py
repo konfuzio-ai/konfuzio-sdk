@@ -244,7 +244,7 @@ def compare(
             then we keep one and discard the FNs. If no FPs, then we keep a FN. The prediction we keep is always the
             first in terms of start_offset.
             """
-            group = group[~group['label_has_multiple_top_candidates_predicted']]
+            group = group[~(group['label_has_multiple_top_candidates_predicted'].astype(bool))]
             if group.empty:
                 return group
 
@@ -258,9 +258,7 @@ def compare(
             else:
                 return first_false_negative
 
-        spans = spans.groupby(['annotation_set_id_predicted', 'label_id_predicted'], group_keys=False).apply(
-            prioritize_rows
-        )
+        spans = spans.groupby(['annotation_set_id_predicted', 'label_id_predicted']).apply(prioritize_rows)
 
     spans = spans.replace({numpy.nan: None})
     # one Span must not be defined as TP or FP or FN more than once
