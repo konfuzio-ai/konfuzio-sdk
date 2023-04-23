@@ -116,7 +116,19 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#id7">Environment Variables</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#environment-variables-for-konfuzio-server">Environment Variables for Konfuzio Server</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#environment-variables-for-konfuzio-server">Environment Variables for Konfuzio Server</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#general-settings">General Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#background-tasks-via-celery">Background Tasks via Celery</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ocr-settings">OCR Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#blob-storage-settings">Blob Storage Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#email-sending-settings">Email Sending Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#email-polling-settings">Email Polling Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#time-limits-for-background-tasks">Time limits for background tasks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#keycloak-sso-settings">Keycloak / SSO Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#test-settings-for-keycloak-sso-settings">Test Settings for Keycloak / SSO Settings</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#example-env-file-for-konfuzio-server">Example .env file for Konfuzio Server</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#environment-variables-for-read-api-container">Environment Variables for Read API Container</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#environment-variables-for-detectron-container">Environment Variables for Detectron Container</a></li>
 </ul>
@@ -863,6 +875,476 @@ The first argument is the path to the export folder, the second is the project n
 <h2>Environment Variables<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h2>
 <section id="environment-variables-for-konfuzio-server">
 <h3>Environment Variables for Konfuzio Server<a class="headerlink" href="#environment-variables-for-konfuzio-server" title="Permalink to this headline">¶</a></h3>
+<section id="general-settings">
+<h4>General Settings<a class="headerlink" href="#general-settings" title="Permalink to this headline">¶</a></h4>
+<section id="host-name">
+<h5>HOST_NAME<a class="headerlink" href="#host-name" title="Permalink to this headline">¶</a></h5>
+<p>The HOSTNAME variable is used in the E-Mail templates: <a class="reference external" href="https://example.konfuzio.com">https://example.konfuzio.com</a> or <a class="reference external" href="http://localhost:8000">http://localhost:8000</a> for local development.</p>
+<p>Note: Please include the protocol (e.g. <a class="reference external" href="http://">http://</a>) even the variable is named HOST_NAME.</p>
+<p><em>This is mandatory. Type: string</em></p>
+</section>
+<section id="allowed-hosts">
+<h5>ALLOWED_HOSTS<a class="headerlink" href="#allowed-hosts" title="Permalink to this headline">¶</a></h5>
+<p>Default: HOST_NAME variable without the protocol.</p>
+<p>A list of strings representing the host/domain names that Konfuzio can serve.
+This is a security measure to prevent HTTP Host header attacks, which are possible even under many seemingly-safe web server configurations.
+See <a class="reference external" href="https://docs.djangoproject.com/en/4.2/ref/settings/#allowed-hosts">https://docs.djangoproject.com/en/4.2/ref/settings/#allowed-hosts</a></p>
+<p><em>Type: List[string]</em></p>
+</section>
+<section id="billing-api-key">
+<h5>BILLING_API_KEY<a class="headerlink" href="#billing-api-key" title="Permalink to this headline">¶</a></h5>
+<p>The Billing API Key to connect with the Konfuzio License Server.<span class="raw-html-m2r"><br></span>
+See <a class="reference external" href="https://dev.konfuzio.com/web/on_premises.html#billing-and-license">https://dev.konfuzio.com/web/on_premises.html#billing-and-license</a></p>
+<p><em>This is mandatory. Type: string</em></p>
+</section>
+<section id="debug">
+<h5>DEBUG<a class="headerlink" href="#debug" title="Permalink to this headline">¶</a></h5>
+<p>Default: False</p>
+<p>Use False for production and True for local development.
+See <a class="reference external" href="https://docs.djangoproject.com/en/3.2/ref/settings/#std:setting-DEBUG">https://docs.djangoproject.com/en/3.2/ref/settings/#std:setting-DEBUG</a></p>
+<p><em>Type: boolean</em></p>
+</section>
+<section id="secret-key">
+<h5>SECRET_KEY<a class="headerlink" href="#secret-key" title="Permalink to this headline">¶</a></h5>
+<p>Insert random secret key.
+See <a class="reference external" href="https://docs.djangoproject.com/en/4.0/ref/settings/#secret-key">https://docs.djangoproject.com/en/4.0/ref/settings/#secret-key</a></p>
+<p><em>This is mandatory. Type: string</em></p>
+</section>
+<section id="database-url">
+<h5>DATABASE_URL<a class="headerlink" href="#database-url" title="Permalink to this headline">¶</a></h5>
+<p>Please enter a Postgres Database (<a class="reference external" href="https://github.com/kennethreitz/dj-database-url#url-schema">https://github.com/kennethreitz/dj-database-url#url-schema</a>).</p>
+<p><em>This is mandatory. Type: string</em></p>
+</section>
+<section id="database-url-ssl-require">
+<h5>DATABASE_URL_SSL_REQUIRE<a class="headerlink" href="#database-url-ssl-require" title="Permalink to this headline">¶</a></h5>
+<p>Default: False</p>
+<p>Specify whether the database connection requires SSL.</p>
+<p><em>Type: boolean</em></p>
+</section>
+<section id="maintenance-mode">
+<h5>MAINTENANCE_MODE<a class="headerlink" href="#maintenance-mode" title="Permalink to this headline">¶</a></h5>
+<p>Default: False</p>
+<p>Set maintenance mode, shows 503 error page when maintenance-mode is on.</p>
+<p><em>Type: boolean</em></p>
+</section>
+</section>
+<section id="background-tasks-via-celery">
+<h4>Background Tasks via Celery<a class="headerlink" href="#background-tasks-via-celery" title="Permalink to this headline">¶</a></h4>
+<p>Settings related to <a class="reference external" href="BackgroundTasks">https://dev.konfuzio.com/web/explanations.html#background-processes</a>,</p>
+<section id="brokel-url">
+<h5>BROKEL_URL<a class="headerlink" href="#brokel-url" title="Permalink to this headline">¶</a></h5>
+<p>Enter a Redis Database.
+<a class="reference external" href="https://docs.celeryq.dev/en/stable/userguide/configuration.html#std-setting-broker_url">https://docs.celeryq.dev/en/stable/userguide/configuration.html#std-setting-broker_url</a></p>
+<p><em>This is mandatory. Type: string</em></p>
+</section>
+<section id="result-backend">
+<h5>RESULT_BACKEND<a class="headerlink" href="#result-backend" title="Permalink to this headline">¶</a></h5>
+<p>Enter a Redis Database.
+<a class="reference external" href="https://docs.celeryq.dev/en/stable/userguide/configuration.html#std-setting-result_backend">https://docs.celeryq.dev/en/stable/userguide/configuration.html#std-setting-result_backend</a></p>
+<p><em>This is mandatory. Type: string</em></p>
+</section>
+<section id="task-always-eager">
+<h5>TASK_ALWAYS_EAGER<a class="headerlink" href="#task-always-eager" title="Permalink to this headline">¶</a></h5>
+<p>Default: False</p>
+<p>When this is True, all background processes are executed in synchronously.
+See <a class="reference external" href="https://docs.celeryq.dev/en/stable/userguide/configuration.html#std-setting-task_always_eager">https://docs.celeryq.dev/en/stable/userguide/configuration.html#std-setting-task_always_eager</a></p>
+<p><em>Type: boolean</em></p>
+</section>
+<section id="worker-max-tasks-per-child">
+<h5>WORKER_MAX_TASKS_PER_CHILD<a class="headerlink" href="#worker-max-tasks-per-child" title="Permalink to this headline">¶</a></h5>
+<p>Default: 50</p>
+<p>After 50 tasks we replace a worker process to prevent and mitigate memory leaks.</p>
+<p><em>Type: integer</em></p>
+</section>
+<section id="worker-send-task-events">
+<h5>WORKER_SEND_TASK_EVENTS<a class="headerlink" href="#worker-send-task-events" title="Permalink to this headline">¶</a></h5>
+<p>Default: False</p>
+<p>See <a class="reference external" href="https://docs.celeryproject.org/en/stable/userguide/configuration.html#worker-send-task-events">https://docs.celeryproject.org/en/stable/userguide/configuration.html#worker-send-task-events</a></p>
+<p><em>Type: boolean</em></p>
+</section>
+<section id="task-send-sent-event">
+<h5>TASK_SEND_SENT_EVENT<a class="headerlink" href="#task-send-sent-event" title="Permalink to this headline">¶</a></h5>
+<p>Default: True</p>
+<p>See <a class="reference external" href="https://docs.celeryproject.org/en/stable/userguide/configuration.html#task-send-sent-event">https://docs.celeryproject.org/en/stable/userguide/configuration.html#task-send-sent-event</a></p>
+<p><em>Type: boolean</em></p>
+</section>
+<section id="task-track-started-config-task-track-started-cast-bool-default-true">
+<h5>TASK_TRACK_STARTED = config(‘TASK_TRACK_STARTED’, cast=bool, default=True)<a class="headerlink" href="#task-track-started-config-task-track-started-cast-bool-default-true" title="Permalink to this headline">¶</a></h5>
+<p>Default: True</p>
+<p>See <a class="reference external" href="https://docs.celeryproject.org/en/stable/userguide/configuration.html#task-track-started">https://docs.celeryproject.org/en/stable/userguide/configuration.html#task-track-started</a></p>
+<p><em>Type: boolean</em></p>
+</section>
+<section id="worker-max-memory-per-child">
+<h5>WORKER_MAX_MEMORY_PER_CHILD<a class="headerlink" href="#worker-max-memory-per-child" title="Permalink to this headline">¶</a></h5>
+<p>Default: 100000</p>
+<p>After allocation of 100MB we replace a worker process to mitigate memory leaks.</p>
+<p><em>Type: integer</em></p>
+</section>
+<section id="task-acks-on-failure-or-timeout">
+<h5>TASK_ACKS_ON_FAILURE_OR_TIMEOUT<a class="headerlink" href="#task-acks-on-failure-or-timeout" title="Permalink to this headline">¶</a></h5>
+<p>Default: True</p>
+<p>See <a class="reference external" href="https://docs.celeryproject.org/en/stable/userguide/configuration.html#std-setting-task_acks_on_failure_or_timeout">https://docs.celeryproject.org/en/stable/userguide/configuration.html#std-setting-task_acks_on_failure_or_timeout</a></p>
+<p><em>Type: boolean</em></p>
+</section>
+<section id="task-acks-late">
+<h5>TASK_ACKS_LATE<a class="headerlink" href="#task-acks-late" title="Permalink to this headline">¶</a></h5>
+<p>Default: True</p>
+<p>See <a class="reference external" href="https://docs.celeryproject.org/en/stable/userguide/optimizing.html#reserve-one-task-at-a-time">https://docs.celeryproject.org/en/stable/userguide/optimizing.html#reserve-one-task-at-a-time</a></p>
+<p><em>Type: boolean</em></p>
+</section>
+<section id="broker-master-name">
+<h5>BROKER_MASTER_NAME<a class="headerlink" href="#broker-master-name" title="Permalink to this headline">¶</a></h5>
+<p>Default: None</p>
+<p>The name of the Broker Master when using Redis Sentinel.
+<a class="reference external" href="https://docs.celeryq.dev/en/stable/getting-started/backends-and-brokers/redis.html">https://docs.celeryq.dev/en/stable/getting-started/backends-and-brokers/redis.html</a></p>
+<p><em>Type: string</em></p>
+</section>
+<section id="result-backend-master-name">
+<h5>RESULT_BACKEND_MASTER_NAME<a class="headerlink" href="#result-backend-master-name" title="Permalink to this headline">¶</a></h5>
+<p>Default: None</p>
+<p>The name of the Result Backend Master when using Redis Sentinel.
+<a class="reference external" href="https://docs.celeryq.dev/en/stable/getting-started/backends-and-brokers/redis.html">https://docs.celeryq.dev/en/stable/getting-started/backends-and-brokers/redis.html</a></p>
+<p><em>Type: string</em></p>
+</section>
+<section id="threshold-for-heavy-training">
+<h5>THRESHOLD_FOR_HEAVY_TRAINING<a class="headerlink" href="#threshold-for-heavy-training" title="Permalink to this headline">¶</a></h5>
+<p>Default: 150</p>
+<p>The Number of Document that indicate a heavy training. Heavy training are executed via a dedicated queue.
+A “training_heavy” worker must be running in order to complete these trainings.</p>
+<p><em>Type: integer</em></p>
+</section>
+</section>
+<section id="ocr-settings">
+<h4>OCR Settings<a class="headerlink" href="#ocr-settings" title="Permalink to this headline">¶</a></h4>
+<section id="azure-ocr-key">
+<h5>AZURE_OCR_KEY<a class="headerlink" href="#azure-ocr-key" title="Permalink to this headline">¶</a></h5>
+<p>Default: None</p>
+<p>Get the API KEY from portal.azure.com for Microsoft.CognitiveServices.</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="azure-ocr-base-url">
+<h5>AZURE_OCR_BASE_URL<a class="headerlink" href="#azure-ocr-base-url" title="Permalink to this headline">¶</a></h5>
+<p>Default: None</p>
+<p>Get the API URL from portal.azure.com for Microsoft.CognitiveServices</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="azure-ocr-version">
+<h5>AZURE_OCR_VERSION<a class="headerlink" href="#azure-ocr-version" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘v3.2’</p>
+<p>Get the AZURE_OCR_VERSION from portal.azure.com for Microsoft.Cognitives.</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="azure-ocr-model-version">
+<h5>AZURE_OCR_MODEL_VERSION<a class="headerlink" href="#azure-ocr-model-version" title="Permalink to this headline">¶</a></h5>
+<p>Default=’latest’</p>
+<p>Get the AZURE_OCR_MODEL_VERSION from portal.azure.com for Microsoft.Cognitives.</p>
+<p><em>Type: string</em></p>
+</section>
+</section>
+<section id="blob-storage-settings">
+<h4>Blob Storage Settings<a class="headerlink" href="#blob-storage-settings" title="Permalink to this headline">¶</a></h4>
+<section id="default-file-storage">
+<h5>DEFAULT_FILE_STORAGE<a class="headerlink" href="#default-file-storage" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘django.core.files.storage.FileSystemStorage’</p>
+<p>By default, the file system is used as file storage.
+To use an Azure Storage Account set ‘storage.MultiAzureStorage’.
+To use an S3-compatible storage set: ‘storage.MultiS3Boto3Storage’.
+See <a class="reference external" href="https://docs.djangoproject.com/en/4.0/ref/settings/#default-file-storage">https://docs.djangoproject.com/en/4.0/ref/settings/#default-file-storage</a></p>
+<p><em>Type: string</em></p>
+</section>
+<section id="azure-account-key">
+<h5>AZURE_ACCOUNT_KEY:<a class="headerlink" href="#azure-account-key" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>The Azure account key.</p>
+<p>_This is mandatory if DEFAULT_FILE<em>STORAGE=’storage.MultiAzureStorage’. Type: string</em></p>
+</section>
+<section id="azure-account-name">
+<h5>AZURE_ACCOUNT_NAME:<a class="headerlink" href="#azure-account-name" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>The name if the Azure account name.</p>
+<p>_This is mandatory if DEFAULT_FILE<em>STORAGE=’storage.MultiAzureStorage’. Type: string</em></p>
+</section>
+<section id="azure-container">
+<h5>AZURE_CONTAINER:<a class="headerlink" href="#azure-container" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>The name if the Azure storage container.</p>
+<p>_This is mandatory if DEFAULT_FILE<em>STORAGE=’storage.MultiAzureStorage’. Type: string</em></p>
+</section>
+<section id="aws-access-key-id">
+<h5>AWS_ACCESS_KEY_ID<a class="headerlink" href="#aws-access-key-id" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>_This is mandatory if DEFAULT_FILE<em>STORAGE=’storage.MultiS3Boto3Storage’. Type: string</em></p>
+</section>
+<section id="aws-secret-access-key">
+<h5>AWS_SECRET_ACCESS_KEY<a class="headerlink" href="#aws-secret-access-key" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>The access key of the S3-Service.</p>
+<p>_This is mandatory if DEFAULT_FILE<em>STORAGE=’storage.MultiS3Boto3Storage’. Type: string</em></p>
+</section>
+<section id="aws-storage-bucket-name">
+<h5>AWS_STORAGE_BUCKET_NAME<a class="headerlink" href="#aws-storage-bucket-name" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>The bucket name of the S3-Service.</p>
+<p>_This is mandatory if DEFAULT_FILE<em>STORAGE=’storage.MultiS3Boto3Storage’. Type: string</em></p>
+</section>
+<section id="aws-s3-region-name">
+<h5>AWS_S3_REGION_NAME<a class="headerlink" href="#aws-s3-region-name" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>The region name of the S3-Service.</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="aws-s3-endpoint-url">
+<h5>AWS_S3_ENDPOINT_URL<a class="headerlink" href="#aws-s3-endpoint-url" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>Custom S3 URL to use when connecting to S3, including scheme.</p>
+<p><em>Type: string</em></p>
+</section>
+</section>
+<section id="email-sending-settings">
+<h4>Email Sending Settings<a class="headerlink" href="#email-sending-settings" title="Permalink to this headline">¶</a></h4>
+<section id="email-backend">
+<h5>EMAIL_BACKEND<a class="headerlink" href="#email-backend" title="Permalink to this headline">¶</a></h5>
+<p>Default: django.core.mail.backends.smtp.EmailBackend
+The SMTP backend for sending E-Mails.
+See <a class="reference external" href="https://docs.djangoproject.com/en/4.0/ref/settings/#email-backend">https://docs.djangoproject.com/en/4.0/ref/settings/#email-backend</a></p>
+<p><em>Type: string</em></p>
+</section>
+<section id="email-host">
+<h5>EMAIL_HOST<a class="headerlink" href="#email-host" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>The host to use for sending email.</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="email-host-password">
+<h5>EMAIL_HOST_PASSWORD<a class="headerlink" href="#email-host-password" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>Password to use for the SMTP server defined in EMAIL_HOST. This setting is used in conjunction with EMAIL_HOST_USER when authenticating to the SMTP server. If either of these settings is empty, we won’t attempt authentication.</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="email-host-user">
+<h5>EMAIL_HOST_USER<a class="headerlink" href="#email-host-user" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>Username to use for the SMTP server defined in EMAIL_HOST. If empty, we won’t attempt authentication.</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="email-port">
+<h5>EMAIL_PORT<a class="headerlink" href="#email-port" title="Permalink to this headline">¶</a></h5>
+<p>Default: 25</p>
+<p>Port to use for the SMTP server defined in EMAIL_HOST.
+See <a class="reference external" href="https://docs.djangoproject.com/en/4.2/ref/settings/#std-setting-EMAIL_PORT">https://docs.djangoproject.com/en/4.2/ref/settings/#std-setting-EMAIL_PORT</a></p>
+<p><em>Type: int</em></p>
+</section>
+<section id="email-use-tls">
+<h5>EMAIL_USE_TLS<a class="headerlink" href="#email-use-tls" title="Permalink to this headline">¶</a></h5>
+<p>Default: False</p>
+<p>See <a class="reference external" href="https://docs.djangoproject.com/en/4.0/ref/settings/#email-use-tls">https://docs.djangoproject.com/en/4.0/ref/settings/#email-use-tls</a></p>
+<p><em>Type: boolean</em></p>
+</section>
+<section id="email-use-ssl">
+<h5>EMAIL_USE_SSL:<a class="headerlink" href="#email-use-ssl" title="Permalink to this headline">¶</a></h5>
+<p>Default: False</p>
+<p>See <a class="reference external" href="https://docs.djangoproject.com/en/4.0/ref/settings/#email-use-ssl">https://docs.djangoproject.com/en/4.0/ref/settings/#email-use-ssl</a></p>
+<p><em>Type: boolean</em></p>
+</section>
+<section id="default-from-email">
+<h5>DEFAULT_FROM_EMAIL<a class="headerlink" href="#default-from-email" title="Permalink to this headline">¶</a></h5>
+<p>Default: default: ‘Konfuzio.com <a class="reference external" href="mailto:support&#37;&#52;&#48;konfuzio&#46;net">support<span>&#64;</span>konfuzio<span>&#46;</span>net</a></p>
+<p>Specifies the email address to use as the “From” address when sending emails.</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="sendgrid-api-key">
+<h5>SENDGRID_API_KEY<a class="headerlink" href="#sendgrid-api-key" title="Permalink to this headline">¶</a></h5>
+<p>Default: None</p>
+<p>In order to sent emails via sendgrid, set EMAIL_BACKEND=’sendgrid_backend.SendgridBackend’ and specify the Sendgrid API Key here.</p>
+<p><em>Type: string</em></p>
+</section>
+</section>
+<section id="email-polling-settings">
+<h4>Email Polling Settings<a class="headerlink" href="#email-polling-settings" title="Permalink to this headline">¶</a></h4>
+<section id="scan-email-host">
+<h5>SCAN_EMAIL_HOST<a class="headerlink" href="#scan-email-host" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>The host to use for polling emails.</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="scan-email-host-user">
+<h5>SCAN_EMAIL_HOST_USER<a class="headerlink" href="#scan-email-host-user" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>Username to use for the SMTP server defined in SCAN_EMAIL_HOST.</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="scan-email-recipient">
+<h5>SCAN_EMAIL_RECIPIENT<a class="headerlink" href="#scan-email-recipient" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>Recipient email address to be polled. Emails sent to this address will be polled into Konfuzio.</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="scan-email-host-password">
+<h5>SCAN_EMAIL_HOST_PASSWORD<a class="headerlink" href="#scan-email-host-password" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>The password to use for the SMTP server defined in SCAN_EMAIL_HOST.</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="scan-email-sleep-time">
+<h5>SCAN_EMAIL_SLEEP_TIME<a class="headerlink" href="#scan-email-sleep-time" title="Permalink to this headline">¶</a></h5>
+<p>Default: 60</p>
+<p>The polling interval in seconds.</p>
+<p><em>Type: int</em></p>
+</section>
+</section>
+<section id="time-limits-for-background-tasks">
+<h4>Time limits for background tasks<a class="headerlink" href="#time-limits-for-background-tasks" title="Permalink to this headline">¶</a></h4>
+<p>More info about backgrounds tasks and their defaults can be viewed here: <a class="reference external" href="https://dev.konfuzio.com/web/explanations.html#celery-tasks">https://dev.konfuzio.com/web/explanations.html#celery-tasks</a>.</p>
+<section id="extraction-time-limit">
+<h5>EXTRACTION_TIME_LIMIT<a class="headerlink" href="#extraction-time-limit" title="Permalink to this headline">¶</a></h5>
+<p>Default: 3600</p>
+<p>The maximum extraction time in seconds.</p>
+<p><em>Type: int</em></p>
+</section>
+<section id="categorization-time-limit">
+<h5>CATEGORIZATION_TIME_LIMIT<a class="headerlink" href="#categorization-time-limit" title="Permalink to this headline">¶</a></h5>
+<p>Default: 180</p>
+<p>The maximum categorization time in seconds.</p>
+<p><em>Type: int</em></p>
+</section>
+<section id="evaluation-time-limit">
+<h5>EVALUATION_TIME_LIMIT<a class="headerlink" href="#evaluation-time-limit" title="Permalink to this headline">¶</a></h5>
+<p>Default: 3600</p>
+<p>The maximum evaluation time in seconds.</p>
+<p><em>Type: int</em></p>
+</section>
+<section id="training-extraction-time-limit">
+<h5>TRAINING_EXTRACTION_TIME_LIMIT<a class="headerlink" href="#training-extraction-time-limit" title="Permalink to this headline">¶</a></h5>
+<p>Default: 72000</p>
+<p>The maximum extraction AI training time in seconds.</p>
+<p><em>Type: int</em></p>
+</section>
+<section id="training-categorization-time-limit">
+<h5>TRAINING_CATEGORIZATION_TIME_LIMIT<a class="headerlink" href="#training-categorization-time-limit" title="Permalink to this headline">¶</a></h5>
+<p>Default: 36000</p>
+<p>The maximum categorization AI training time in seconds.</p>
+<p><em>Type: int</em></p>
+</section>
+<section id="sandwich-pdf-time-limit">
+<h5>SANDWICH_PDF_TIME_LIMIT<a class="headerlink" href="#sandwich-pdf-time-limit" title="Permalink to this headline">¶</a></h5>
+<p>Default: 1800</p>
+<p>The maximum time to generate the sandwich PDF.</p>
+<p><em>Type: int</em></p>
+</section>
+<section id="document-text-and-bboxes-time-limit">
+<h5>DOCUMENT_TEXT_AND_BBOXES_TIME_LIMIT<a class="headerlink" href="#document-text-and-bboxes-time-limit" title="Permalink to this headline">¶</a></h5>
+<p>Default: 3600</p>
+<p>The maximum time build a Document’s text and bboxes.</p>
+<p><em>Type: int</em></p>
+</section>
+<section id="clean-deleted-document-time-limit">
+<h5>CLEAN_DELETED_DOCUMENT_TIME_LIMIT<a class="headerlink" href="#clean-deleted-document-time-limit" title="Permalink to this headline">¶</a></h5>
+<p>Default: 3600</p>
+<p>The maximum time hard delete Documents, that are marked for deletion.
+See <a class="reference external" href="https://help.konfuzio.com/modules/projects/index.html">https://help.konfuzio.com/modules/projects/index.html</a>?#auto-deletion-of-documents</p>
+<p><em>Type: int</em></p>
+</section>
+<section id="clean-document-without-dataset-time-limit">
+<h5>CLEAN_DOCUMENT_WITHOUT_DATASET_TIME_LIMIT<a class="headerlink" href="#clean-document-without-dataset-time-limit" title="Permalink to this headline">¶</a></h5>
+<p>Default: 3600</p>
+<p>The maximum time to delete Documents which have reached the auto-deletion date.
+See <a class="reference external" href="https://help.konfuzio.com/modules/projects/index.html">https://help.konfuzio.com/modules/projects/index.html</a>?#auto-deletion-of-documents</p>
+<p><em>Type: int</em></p>
+</section>
+<section id="document-workflow-time-limit">
+<h5>DOCUMENT_WORKFLOW_TIME_LIMIT<a class="headerlink" href="#document-workflow-time-limit" title="Permalink to this headline">¶</a></h5>
+<p>Default: 7200</p>
+<p>The maximum time for the whole Document workflow.</p>
+<p><em>Type: int</em></p>
+<!--
+#### Configure Azure OCR (optional).
+AZURE_OCR_KEY=
+AZURE_OCR_VERSION=
+AZURE_OCR_BASE_URL=
+--></section>
+</section>
+<section id="keycloak-sso-settings">
+<h4>Keycloak / SSO Settings<a class="headerlink" href="#keycloak-sso-settings" title="Permalink to this headline">¶</a></h4>
+<p>The following values establish a keycloak connection through the
+mozilla oidc package (<a class="reference external" href="https://mozilla-django-oidc.readthedocs.io/en/stable/settings.html">https://mozilla-django-oidc.readthedocs.io/en/stable/settings.html</a>).</p>
+<section id="sso-enabled">
+<h5>SSO_ENABLED<a class="headerlink" href="#sso-enabled" title="Permalink to this headline">¶</a></h5>
+<p>Default: True</p>
+<p>Set to True active SSO login via Keycloak.</p>
+<p><em>Type: boolean</em></p>
+</section>
+<section id="keycloak-url">
+<h5>KEYCLOAK_URL<a class="headerlink" href="#keycloak-url" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘127.0.0.1:8080/’</p>
+<p>If you use keycloak version 17 and later set url like: http(s)://{keycloak_address}:{port}/ (optional).
+If you use keycloak version 16 and earlier set url like: http(s)://{keycloak_address}:{port}/auth/ (optional).</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="keycloak-realm">
+<h5>KEYCLOAK_REALM<a class="headerlink" href="#keycloak-realm" title="Permalink to this headline">¶</a></h5>
+<p>Default: master</p>
+<p>The Realm to be used.</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="oidc-rp-client-id">
+<h5>OIDC_RP_CLIENT_ID<a class="headerlink" href="#oidc-rp-client-id" title="Permalink to this headline">¶</a></h5>
+<p>Default: None</p>
+<p>The OIDC Client ID. For Keycloak client creation see: <a class="reference external" href="https://www.keycloak.org/docs/latest/server_admin/#assembly-managing-clients_server_administration_guide">https://www.keycloak.org/docs/latest/server_admin/#assembly-managing-clients_server_administration_guide</a> (optional).</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="oidc-rp-client-secret">
+<h5>OIDC_RP_CLIENT_SECRET<a class="headerlink" href="#oidc-rp-client-secret" title="Permalink to this headline">¶</a></h5>
+<p>Default: None</p>
+<p>The OIDC Client Secret. See <a class="reference external" href="https://mozilla-django-oidc.readthedocs.io/en/stable/settings.html#OIDC_RP_CLIENT_SECRET">https://mozilla-django-oidc.readthedocs.io/en/stable/settings.html#OIDC_RP_CLIENT_SECRET</a></p>
+<p><em>Type: string</em></p>
+</section>
+<section id="oidc-rp-sign-algo">
+<h5>OIDC_RP_SIGN_ALGO<a class="headerlink" href="#oidc-rp-sign-algo" title="Permalink to this headline">¶</a></h5>
+<p>Default: RS256</p>
+<p>Sets the algorithm the IdP uses to sign ID tokens.
+See <a class="reference external" href="https://mozilla-django-oidc.readthedocs.io/en/stable/settings.html#OIDC_RP_SIGN_ALGO">https://mozilla-django-oidc.readthedocs.io/en/stable/settings.html#OIDC_RP_SIGN_ALGO</a></p>
+<p><em>Type: string</em></p>
+</section>
+</section>
+<section id="test-settings-for-keycloak-sso-settings">
+<h4>Test Settings for Keycloak / SSO Settings<a class="headerlink" href="#test-settings-for-keycloak-sso-settings" title="Permalink to this headline">¶</a></h4>
+<p>These variables are only used for Keycloak integration tests:
+The admin variables are for login keycloak admin panel, the test variables are for login to Konfuzio server.
+The Keycloak Integration test can be run by installing Chromedriver and Selenium.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">update</span> <span class="o">&amp;&amp;</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="o">-</span><span class="n">y</span> <span class="n">fonts</span><span class="o">-</span><span class="n">liberation</span> <span class="n">libatk</span><span class="o">-</span><span class="n">bridge2</span><span class="mf">.0</span><span class="o">-</span><span class="mi">0</span> <span class="n">libatk1</span><span class="mf">.0</span><span class="o">-</span><span class="mi">0</span> <span class="n">libatspi2</span><span class="mf">.0</span><span class="o">-</span><span class="mi">0</span> <span class="n">libgbm1</span> <span class="n">libgtk</span><span class="o">-</span><span class="mi">3</span><span class="o">-</span><span class="mi">0</span> <span class="n">libxcomposite1</span> <span class="n">libxkbcommon0</span> <span class="n">xdg</span><span class="o">-</span><span class="n">utils</span> <span class="n">libu2f</span><span class="o">-</span><span class="n">udev</span>
+<span class="n">wget</span> <span class="o">-</span><span class="n">q</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">dl</span><span class="o">.</span><span class="n">google</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">linux</span><span class="o">/</span><span class="n">direct</span><span class="o">/</span><span class="n">google</span><span class="o">-</span><span class="n">chrome</span><span class="o">-</span><span class="n">stable_current_amd64</span><span class="o">.</span><span class="n">deb</span> <span class="o">&amp;&amp;</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="o">-</span><span class="n">y</span> <span class="o">./</span><span class="n">google</span><span class="o">-</span><span class="n">chrome</span><span class="o">-</span><span class="n">stable_current_amd64</span><span class="o">.</span><span class="n">deb</span>
+<span class="n">pip3</span> <span class="n">install</span> <span class="n">coverage</span> <span class="n">chromedriver</span><span class="o">-</span><span class="n">binary</span><span class="o">-</span><span class="n">auto</span> <span class="n">chromedriver_binary</span>
+<span class="n">python</span> <span class="n">manage</span><span class="o">.</span><span class="n">py</span> <span class="n">test</span> <span class="o">-</span><span class="n">t</span> <span class="o">.</span> <span class="n">server</span> <span class="o">--</span><span class="n">tag</span><span class="o">=</span><span class="n">selenium</span><span class="o">-</span><span class="n">required</span>
+</pre></div>
+</div>
+<section id="keycloak-admin-username">
+<h5>KEYCLOAK_ADMIN_USERNAME<a class="headerlink" href="#keycloak-admin-username" title="Permalink to this headline">¶</a></h5>
+<p>Default: admin</p>
+<p>The Keycloak admin username.</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="keycloak-admin-password">
+<h5>KEYCLOAK_ADMIN_PASSWORD<a class="headerlink" href="#keycloak-admin-password" title="Permalink to this headline">¶</a></h5>
+<p>Default: admin</p>
+<p>The Keycloak admin password.</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="keycloak-test-username">
+<h5>KEYCLOAK_TEST_USERNAME<a class="headerlink" href="#keycloak-test-username" title="Permalink to this headline">¶</a></h5>
+<p>Default: <a class="reference external" href="mailto:fake&#37;&#52;&#48;f&#46;com">fake<span>&#64;</span>f<span>&#46;</span>com</a></p>
+<p>Username for Keycloak integration test.</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="keycloak-test-password">
+<h5>KEYCLOAK_TEST_PASSWORD<a class="headerlink" href="#keycloak-test-password" title="Permalink to this headline">¶</a></h5>
+<p>Default: pass1234</p>
+<p>Password of User for Keycloak integration test.</p>
+<p><em>Type: string</em></p>
+</section>
+</section>
+</section>
+<section id="example-env-file-for-konfuzio-server">
+<h3>Example .env file for Konfuzio Server<a class="headerlink" href="#example-env-file-for-konfuzio-server" title="Permalink to this headline">¶</a></h3>
 <p>Konfuzio Server is fully configured via environment variables, these can be passed as dedicated environment variables or a single .env to the Konfuzio Server containers (REGISTRY_URL/konfuzio/text-annotation/master). A template for a .env file is provided here:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span># False for production, True for local development (mandatory).
 # See https://docs.djangoproject.com/en/3.2/ref/settings/#std:setting-DEBUG
@@ -941,7 +1423,6 @@ EMAIL_USE_TLS=False
 # See https://docs.djangoproject.com/en/4.0/ref/settings/#email-use-ssl
 EMAIL_USE_SSL=False
 # See https://docs.djangoproject.com/en/4.0/ref/settings/#email-timeout
-EMAIL_TIMEOUT=
 DEFAULT_FROM_EMAIL=
 
 # Customize the email verification (optional)
