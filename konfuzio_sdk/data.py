@@ -2597,15 +2597,15 @@ class Document(Data):
 
         This class method will wait for the document to be processed by the server
         and then return the new Document. This may take a bit of time. When uploading
-        many documents, it is advised to use the Document.from_file_async method.
+        many Documents, it is advised to set the sync option to False method.
 
         :param path: Path to file to be uploaded
         :param project: If to filter by correct annotations
-        :param dataset_status: Dataset status of the document (None: 0 Preparation: 1 Training: 2 Test: 3 Excluded: 4)
+        :param dataset_status: Dataset status of the Document (None: 0 Preparation: 1 Training: 2 Test: 3 Excluded: 4)
         :param category_id: Category the Document belongs to (if unset, it will be assigned one by the server)
         :param callback_url: Callback URL receiving POST call once extraction is done
         :param timeout: Number of seconds to wait for response from the server
-        :param sync: Whether to wait for the document to be processed by the server
+        :param sync: Whether to wait for the file to be processed by the server
         :return: New Document
         """
         response = upload_file_konfuzio_api(

@@ -186,24 +186,28 @@ Boxes).
 
 #### Upload Document
 To upload a new file (see [Supported File Types](https://help.konfuzio.com/specification/supported_file_types/index.html)) 
-in your Project using the SDK, you have the option between two Document methods: `from_file_sync` and `from_file_async`. 
+in your Project using the SDK, you can use the `Document.from_file` method. You can choose to create the Document in 
+a synchronous or asynchronous way. The synchronous way will wait for the Document to be processed and return a ready
+Document. The asynchronous way will only return an empty Document object which you can use to check the status of the
+processing. Simply call `document.update()` to check if the Document is ready and the OCR processing is done.
 
-If you want to upload a Document, and start working with it as soon as the OCR processing step is done, we recommend 
-`from_file_sync` as it will wait for the Document to be processed and then return a ready Document. Beware, this may 
-take from a few seconds up to over a minute. 
+If you want to upload a file, and start working with it as soon as the OCR processing step is done, we recommend 
+using `from_file` with `sync` set to True as it will wait for the Document to be processed and then return a ready 
+Document. Beware, this may take from a few seconds up to over a minute depending on the size of the file.
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
    :lines: 44
 
 If however you are trying to upload a large number of files and don't want to wait for them to be processed you can use 
-the asynchronous function which only returns a Document ID:
+the asynchronous option which returns an empty Document object. You can then use the `update` method to check if the
+Document is ready and the OCR processing is done.
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
    :lines: 48
 
-Later, you can load the processed Document and get your Document with:
+Once the OCR process is done, you can get the Document OCR results with:
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python

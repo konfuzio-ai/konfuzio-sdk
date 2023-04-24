@@ -41,11 +41,11 @@ document.update()
 document.delete()
 my_project = Project(id_=46, update=True)
 
-document = Document.from_file_sync(FILE_PATH, project=my_project)
+document = Document.from_file(FILE_PATH, project=my_project, sync=True)
 document = my_project._documents[-1]
 document.dataset_status = 0
 document.delete(delete_online=True)
-document_async = Document.from_file_async(FILE_PATH, project=my_project)
+document_async = Document.from_file(FILE_PATH, project=my_project, sync=False)
 document = my_project._documents[-1]
 
 my_project.init_or_update_document(from_online=False)
@@ -60,5 +60,5 @@ document.save_meta_data()
 time.sleep(30)
 my_project = Project(id_=YOUR_PROJECT_ID, update=True)
 assert len(my_project.documents) == 26
-my_project.get_document_by_id(document_async).delete(delete_online=True)
+my_project.get_document_by_id(document_async.id_).delete(delete_online=True)
 assert len(my_project._documents) == 81
