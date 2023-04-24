@@ -105,9 +105,9 @@ class TimeoutHTTPAdapter(HTTPAdapter):
 
     def send(self, request, *args, **kwargs):
         """Use timeout policy if not otherwise declared."""
-        logger.debug(f"Sending request: {request.url}, {request.method}, {request.headers}")
         if request.headers['Authorization'] == 'Token None':
             raise PermissionError(f'Your Token to connect to {KONFUZIO_HOST} is missing, e.g. use "konfuzio_sdk init"')
+        logger.debug(f"Sending request: {request.url}, {request.method}, {request.headers}")
         timeout = kwargs.get("timeout")
         if timeout is None:
             kwargs["timeout"] = self.timeout

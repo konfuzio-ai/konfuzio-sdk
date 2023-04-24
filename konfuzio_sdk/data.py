@@ -2645,7 +2645,7 @@ class Document(Data):
                 dataset_status=dataset_status,
             )
 
-        project.add_document(self)
+        project.add_document(document)
         return document
 
     @property
