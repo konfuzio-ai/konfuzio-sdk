@@ -699,7 +699,7 @@ Konfuzio Server will create a total of 43 tables and use the following data type
 
 ### Environment Variables for Konfuzio Server
 
-#### General Settings
+#### 1. General Settings
 
 ##### HOST_NAME
 The HOSTNAME variable is used in the E-Mail templates: https://example.konfuzio.com or http://localhost:8000 for local development.
@@ -738,7 +738,7 @@ See https://docs.djangoproject.com/en/4.0/ref/settings/#secret-key
 _This is mandatory. Type: string_
 
 ##### DATABASE_URL
-Please enter a Postgres Database (https://github.com/kennethreitz/dj-database-url#url-schema).
+Please enter a Postgres Database in the format of "postgres://USER:PASSWORD@HOST:PORT/NAME" (https://github.com/kennethreitz/dj-database-url#url-schema).
 
 _This is mandatory. Type: string_
 
@@ -756,9 +756,9 @@ Set maintenance mode, shows 503 error page when maintenance-mode is on.
 
 _Type: boolean_
 
-#### Background Tasks via Celery
+#### 2. Background Tasks via Celery
 
-Settings related to [https://dev.konfuzio.com/web/explanations.html#background-processes](Background Tasks), 
+Settings related to [https://dev.konfuzio.com/web/explanations.html#background-processes](Background Tasks).
 
 ##### BROKEL_URL
 Enter a Redis Database.
@@ -853,7 +853,7 @@ A "training_heavy" worker must be running in order to complete these trainings.
 
 _Type: integer_
 
-#### OCR Settings
+#### 3. OCR Settings
 
 ##### AZURE_OCR_KEY
 Default: None
@@ -883,7 +883,7 @@ Get the AZURE_OCR_MODEL_VERSION from portal.azure.com for Microsoft.Cognitives.
 
 _Type: string_
 
-#### Blob Storage Settings
+#### 4. Blob Storage Settings
 
 ##### DEFAULT_FILE_STORAGE
 Default: 'django.core.files.storage.FileSystemStorage'
@@ -949,7 +949,7 @@ Custom S3 URL to use when connecting to S3, including scheme.
 
 _Type: string_
 
-#### Email Sending Settings
+#### 5. Email Sending Settings
 
 ##### EMAIL_BACKEND
 Default: django.core.mail.backends.smtp.EmailBackend
@@ -1016,7 +1016,7 @@ In order to sent emails via sendgrid, set EMAIL_BACKEND='sendgrid_backend.Sendgr
 
 _Type: string_
 
-#### Email Polling Settings
+#### 6. Email Polling Settings
 
 ##### SCAN_EMAIL_HOST
 Default: ''
@@ -1053,8 +1053,7 @@ The polling interval in seconds.
 
 _Type: int_
 
-
-#### Time limits for background tasks
+#### 7. Time limits for background tasks
 
 More info about backgrounds tasks and their defaults can be viewed here: https://dev.konfuzio.com/web/explanations.html#celery-tasks.
 
@@ -1137,7 +1136,7 @@ AZURE_OCR_VERSION=
 AZURE_OCR_BASE_URL=
 -->
 
-#### Keycloak / SSO Settings
+#### 8. Keycloak / SSO Settings
 
 The following values establish a keycloak connection through the
 mozilla oidc package (https://mozilla-django-oidc.readthedocs.io/en/stable/settings.html).
@@ -1186,8 +1185,7 @@ See https://mozilla-django-oidc.readthedocs.io/en/stable/settings.html#OIDC_RP_S
 
 _Type: string_
 
-
-#### Test Settings for Keycloak / SSO Settings
+#### 9. Test Settings for Keycloak / SSO Settings
 
 These variables are only used for Keycloak integration tests: 
 The admin variables are for login keycloak admin panel, the test variables are for login to Konfuzio server.
