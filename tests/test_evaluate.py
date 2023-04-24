@@ -471,6 +471,8 @@ class TestCompare(unittest.TestCase):
         with "34", which counts as a TP. And because the Label associated to this Annotation has
         has_multiple_top_candidates=False, which means that as soon as 1 TP is found, FPs and FNs are discarded.
         Thus, the "67" extraction is not considered in the weak evaluation.
+
+        For more details see https://help.konfuzio.com/modules/extractions/index.html#evaluation
         """
         project = Project(id_=None)
         category = Category(project=project)
