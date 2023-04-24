@@ -456,12 +456,27 @@ class TestCompare(unittest.TestCase):
         assert evaluation["tokenizer_true_positive"].sum() == 0
 
     def test_non_strict_filters_out_fps_and_fns(self):
-        """Test that weak evaluation should filter out the case where a Label should only appear once."""
+        """
+        Test that weak evaluation should filter out the case where a Label should only appear once.
+
+        We will create two Documents to demonstrate non-strict evaluation.
+        Document A with text: "1234567890"; and Annotations: "34" (ground truth)
+        # Document B with text: "1234567890"; and Annotations "3" and "67" (predicted)
+
+        According to strict evaluation, there would be 2 FP and 1 FN,
+        because 2 Annotations were found that did not correspond to anything in the ground truth,
+        and because 1 Annotation in the ground truth was not matched in the predicted Document.
+
+        According to non-strict (weak) evaluation, there would be only 1 TP, because "3" is partially overlapping
+        with "34", which counts as a TP. And because the Label associated to this Annotation has
+        has_multiple_top_candidates=False, which means that as soon as 1 TP is found, FPs and FNs are discarded.
+        Thus, the "67" extraction is not considered in the weak evaluation.
+        """
         project = Project(id_=None)
         category = Category(project=project)
         label_set = LabelSet(id_=33, project=project, categories=[category])
         label = Label(id_=22, project=project, label_sets=[label_set], threshold=0.1, has_multiple_top_candidates=False)
-        # create a Document A with text: "1234567890"; and annotations: "34"
+        # create a Document A with text: "1234567890"; and Annotations: "34"
         document_a = Document(project=project, category=category, text="1234567890")
         # Annotation Set
         span_1 = Span(start_offset=2, end_offset=4)
@@ -475,7 +490,7 @@ class TestCompare(unittest.TestCase):
             label_set=label_set,
             spans=[span_1],
         )
-        # create a Document B with text: "1234567890"; and annotations "3" and "67"
+        # create a Document B with text: "1234567890"; and Annotations "3" and "67"
         document_b = Document(project=project, category=category, text="1234567890")
         # Annotation Set
         span_2 = Span(start_offset=2, end_offset=3)

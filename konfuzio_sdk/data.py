@@ -1860,9 +1860,6 @@ class Span(Data):
                 "data_type": None,
             }
         else:
-            label_has_multiple_top_candidates = None
-            if self.annotation is not None:
-                label_has_multiple_top_candidates = self.annotation.label.has_multiple_top_candidates
             span_dict = {
                 "id_local": self.annotation.id_local,
                 "id_": self.annotation.id_,
@@ -1878,7 +1875,7 @@ class Span(Data):
                 "revised": self.annotation.revised,
                 "label_threshold": self.annotation.label.threshold,  # todo: allow to optimize threshold
                 "label_id": self.annotation.label.id_,
-                "label_has_multiple_top_candidates": label_has_multiple_top_candidates,
+                "label_has_multiple_top_candidates": self.annotation.label.has_multiple_top_candidates,
                 "label_set_id": self.annotation.label_set.id_,
                 "annotation_id": self.annotation.id_,
                 "annotation_set_id": self.annotation.annotation_set.id_,
