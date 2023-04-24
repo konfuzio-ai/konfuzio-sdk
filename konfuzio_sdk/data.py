@@ -4010,8 +4010,6 @@ class Project(Data):
         """Delete Document by its ID."""
         document = self.get_document_by_id(document_id)
 
-        self._documents.remove(document)
-
         if delete_online:
             delete_file_konfuzio_api(document_id)
             self.write_meta_of_files()
@@ -4020,6 +4018,9 @@ class Project(Data):
                 shutil.rmtree(document.document_folder)
             except FileNotFoundError:
                 pass
+
+        self._documents.remove(document)
+
         return None
 
     def get_label_by_name(self, name: str) -> Label:

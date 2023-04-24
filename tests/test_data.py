@@ -294,17 +294,13 @@ class TestOnlineProject(unittest.TestCase):
     def test_create_modify_and_delete_document(self):
         """Test the creation of an online Document from a file, modification, and then deletion of the Document."""
         # Test Document creation
-        doc = Document.from_file_sync('test_data/pdf.pdf', self.project, dataset_status=1)
+        doc = Document.from_file('test_data/pdf.pdf', self.project, dataset_status=1)
         doc_id = doc.id_
 
         # Test Document modification
         assert doc.dataset_status == 1
 
         doc.dataset_status = 0
-
-        doc.project.init_or_update_document()
-
-        assert doc.dataset_status == 1  # didn't save, so reloading the old dataset status
 
         with pytest.raises(HTTPError, match="You cannot delete documents which are part of a dataset"):
             # Cannot delete Document with dataset_status != 0
@@ -314,7 +310,7 @@ class TestOnlineProject(unittest.TestCase):
         doc.assignee = 1234
         doc.save_meta_data()
 
-        doc.project.init_or_update_document(from_online=True)
+        doc.update()
 
         assert doc.dataset_status == 0
         assert doc.assignee == 1234
@@ -324,9 +320,9 @@ class TestOnlineProject(unittest.TestCase):
         with pytest.raises(IndexError, match="was not found in"):
             doc = self.project.get_document_by_id(doc_id)
 
-        self.project.init_or_update_document()
+        self.project.init_or_update_document(from_online=True)  # retrieve online version of the Document
 
-        doc = self.project.get_document_by_id(doc_id)  # works because local meta-data still has it listed
+        doc = self.project.get_document_by_id(doc_id)
 
         doc.delete(delete_online=True)
         self.project.init_or_update_document()
