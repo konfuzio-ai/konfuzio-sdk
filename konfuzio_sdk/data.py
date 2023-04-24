@@ -2625,12 +2625,16 @@ class Document(Data):
                 logger.debug(f"Document status code {response['status'][0]}: {response['status'][1]}")
             else:
                 logger.warning(f"Document status code {response['status'][0]}: {response['status'][1]}")
-            project.write_meta_of_files()
-            project.get_meta(reload=True)
-            document_data = [
-                document_data for document_data in project.meta_data if document_data['id'] == new_document_id
-            ][0]
-            document = Document(project=self, update=True, id_=document_data['id'], **document_data)
+            assert project.id_ == response['project'], "Project id_ of uploaded file does not match"
+            document = Document(
+                id_=new_document_id,
+                project=project,
+                update=True,
+                category_template=category_id if category_id else response['category_template'],
+                text=response['text'],
+                status=response['status'],
+                dataset_status=dataset_status,
+            )
         else:
             document = Document(
                 id_=new_document_id,
@@ -2641,49 +2645,8 @@ class Document(Data):
                 dataset_status=dataset_status,
             )
 
+        project.add_document(self)
         return document
-
-    # @classmethod
-    # def from_file_async(
-    #     self,
-    #     path: str,
-    #     project: 'Project',
-    #     dataset_status: int = 0,
-    #     category_id: Union[None, int] = None,
-    #     callback_url: str = '',
-    #     timeout: Optional[int] = None,
-    # ) -> int:
-    #     """
-    #     Initialize Document from file with asynchrinous API call.
-
-    #     This class method asynchronously uploads a file, to the Konfuzio API and returns the ID of
-    #     the newly created document. Use this method to create a new Document and don't want to wait
-    #     for the document to be processed by the server. This requires to update the Project at a
-    #     later point to be able to work with the new Document.
-
-    #     :param path: Path to file to be uploaded
-    #     :param project: If to filter by correct annotations
-    #     :param dataset_status: Dataset status of the document (None: 0 Preparation: 1 Training: 2 Test: 3 Excluded: 4)
-    #     :param category_id: Category the Document belongs to (if unset, it will be assigned one by the server)
-    #     :param callback_url: Callback URL receiving POST call once extraction is
-    #     :param timeout: Number of seconds to wait for response from the server
-    #     :return: ID of new Document
-    #     """
-    #     response = upload_file_konfuzio_api(
-    #         path,
-    #         project_id=project.id_,
-    #         dataset_status=dataset_status,
-    #         category_id=category_id,
-    #         callback_url=callback_url,
-    #         sync=False,
-    #         session=konfuzio_session(timeout=timeout),
-    #     )
-
-    #     new_document_id = json.loads(response.text)['id']
-    #     document = Document(
-    #             id_=new_document_id, project=project, category_template=category_id, dataset_status=dataset_status
-    #         )
-    #     return document  # new_document_id
 
     @property
     def file_path(self):
@@ -3124,9 +3087,13 @@ class Document(Data):
 
     def download_document_details(self):
         """Retrieve data from a Document online in case Document has finished processing."""
-        if self.is_online and self.status and self.status[0] not in (0, 10, 111):  # Document.DONE:
+        if self.is_online:
             data = get_document_details(document_id=self.id_, project_id=self.project.id_, session=self.session)
-
+            self.status = data["status"]
+            self.updated_at = dateutil.parser.isoparse(data["updated_at"])
+            if data["category_template"]:
+                self._category = self.project.get_category_by_id(data["category_template"])
+            # TODO: update rest of metadata with APIv3
             # write a file, even there are no annotations to support offline work
             with open(self.annotation_file_path, "w") as f:
                 json.dump(data["annotations"], f, indent=2, sort_keys=True)
@@ -3135,12 +3102,11 @@ class Document(Data):
                 json.dump(data["sections"], f, indent=2, sort_keys=True)
 
             with open(self.txt_file_path, "w", encoding="utf-8") as f:
-                f.write(data["text"])
+                if data["text"]:
+                    f.write(data["text"])
 
             with open(self.pages_file_path, "w") as f:
                 json.dump(data["pages"], f, indent=2, sort_keys=True)
-        elif self.is_online:
-            logger.warning(f"Document {self.id_} is not ready yet. Status: {self.status}. Cannot download details.")
         else:
             raise NotImplementedError
 
