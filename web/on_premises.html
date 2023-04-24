@@ -117,15 +117,15 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#id7">Environment Variables</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#environment-variables-for-konfuzio-server">Environment Variables for Konfuzio Server</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#general-settings">General Settings</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#background-tasks-via-celery">Background Tasks via Celery</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ocr-settings">OCR Settings</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#blob-storage-settings">Blob Storage Settings</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#email-sending-settings">Email Sending Settings</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#email-polling-settings">Email Polling Settings</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#time-limits-for-background-tasks">Time limits for background tasks</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#keycloak-sso-settings">Keycloak / SSO Settings</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#test-settings-for-keycloak-sso-settings">Test Settings for Keycloak / SSO Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#general-settings">1. General Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#background-tasks-via-celery">2. Background Tasks via Celery</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ocr-settings">3. OCR Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#blob-storage-settings">4. Blob Storage Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#email-sending-settings">5. Email Sending Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#email-polling-settings">6. Email Polling Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#time-limits-for-background-tasks">7. Time limits for background tasks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#keycloak-sso-settings">8. Keycloak / SSO Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#test-settings-for-keycloak-sso-settings">9. Test Settings for Keycloak / SSO Settings</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#example-env-file-for-konfuzio-server">Example .env file for Konfuzio Server</a></li>
@@ -876,7 +876,7 @@ The first argument is the path to the export folder, the second is the project n
 <section id="environment-variables-for-konfuzio-server">
 <h3>Environment Variables for Konfuzio Server<a class="headerlink" href="#environment-variables-for-konfuzio-server" title="Permalink to this headline">¶</a></h3>
 <section id="general-settings">
-<h4>General Settings<a class="headerlink" href="#general-settings" title="Permalink to this headline">¶</a></h4>
+<h4>1. General Settings<a class="headerlink" href="#general-settings" title="Permalink to this headline">¶</a></h4>
 <section id="host-name">
 <h5>HOST_NAME<a class="headerlink" href="#host-name" title="Permalink to this headline">¶</a></h5>
 <p>The HOSTNAME variable is used in the E-Mail templates: <a class="reference external" href="https://example.konfuzio.com">https://example.konfuzio.com</a> or <a class="reference external" href="http://localhost:8000">http://localhost:8000</a> for local development.</p>
@@ -912,7 +912,7 @@ See <a class="reference external" href="https://docs.djangoproject.com/en/4.0/re
 </section>
 <section id="database-url">
 <h5>DATABASE_URL<a class="headerlink" href="#database-url" title="Permalink to this headline">¶</a></h5>
-<p>Please enter a Postgres Database (<a class="reference external" href="https://github.com/kennethreitz/dj-database-url#url-schema">https://github.com/kennethreitz/dj-database-url#url-schema</a>).</p>
+<p>Please enter a Postgres Database in the format of “postgres://USER:PASSWORD&#64;HOST:PORT/NAME” (https://github.com/kennethreitz/dj-database-url#url-schema).</p>
 <p><em>This is mandatory. Type: string</em></p>
 </section>
 <section id="database-url-ssl-require">
@@ -929,8 +929,8 @@ See <a class="reference external" href="https://docs.djangoproject.com/en/4.0/re
 </section>
 </section>
 <section id="background-tasks-via-celery">
-<h4>Background Tasks via Celery<a class="headerlink" href="#background-tasks-via-celery" title="Permalink to this headline">¶</a></h4>
-<p>Settings related to <a class="reference external" href="BackgroundTasks">https://dev.konfuzio.com/web/explanations.html#background-processes</a>,</p>
+<h4>2. Background Tasks via Celery<a class="headerlink" href="#background-tasks-via-celery" title="Permalink to this headline">¶</a></h4>
+<p>Settings related to <a class="reference external" href="BackgroundTasks">https://dev.konfuzio.com/web/explanations.html#background-processes</a>.</p>
 <section id="brokel-url">
 <h5>BROKEL_URL<a class="headerlink" href="#brokel-url" title="Permalink to this headline">¶</a></h5>
 <p>Enter a Redis Database.
@@ -1015,7 +1015,7 @@ A “training_heavy” worker must be running in order to complete these trainin
 </section>
 </section>
 <section id="ocr-settings">
-<h4>OCR Settings<a class="headerlink" href="#ocr-settings" title="Permalink to this headline">¶</a></h4>
+<h4>3. OCR Settings<a class="headerlink" href="#ocr-settings" title="Permalink to this headline">¶</a></h4>
 <section id="azure-ocr-key">
 <h5>AZURE_OCR_KEY<a class="headerlink" href="#azure-ocr-key" title="Permalink to this headline">¶</a></h5>
 <p>Default: None</p>
@@ -1042,7 +1042,7 @@ A “training_heavy” worker must be running in order to complete these trainin
 </section>
 </section>
 <section id="blob-storage-settings">
-<h4>Blob Storage Settings<a class="headerlink" href="#blob-storage-settings" title="Permalink to this headline">¶</a></h4>
+<h4>4. Blob Storage Settings<a class="headerlink" href="#blob-storage-settings" title="Permalink to this headline">¶</a></h4>
 <section id="default-file-storage">
 <h5>DEFAULT_FILE_STORAGE<a class="headerlink" href="#default-file-storage" title="Permalink to this headline">¶</a></h5>
 <p>Default: ‘django.core.files.storage.FileSystemStorage’</p>
@@ -1101,7 +1101,7 @@ See <a class="reference external" href="https://docs.djangoproject.com/en/4.0/re
 </section>
 </section>
 <section id="email-sending-settings">
-<h4>Email Sending Settings<a class="headerlink" href="#email-sending-settings" title="Permalink to this headline">¶</a></h4>
+<h4>5. Email Sending Settings<a class="headerlink" href="#email-sending-settings" title="Permalink to this headline">¶</a></h4>
 <section id="email-backend">
 <h5>EMAIL_BACKEND<a class="headerlink" href="#email-backend" title="Permalink to this headline">¶</a></h5>
 <p>Default: django.core.mail.backends.smtp.EmailBackend
@@ -1160,7 +1160,7 @@ See <a class="reference external" href="https://docs.djangoproject.com/en/4.2/re
 </section>
 </section>
 <section id="email-polling-settings">
-<h4>Email Polling Settings<a class="headerlink" href="#email-polling-settings" title="Permalink to this headline">¶</a></h4>
+<h4>6. Email Polling Settings<a class="headerlink" href="#email-polling-settings" title="Permalink to this headline">¶</a></h4>
 <section id="scan-email-host">
 <h5>SCAN_EMAIL_HOST<a class="headerlink" href="#scan-email-host" title="Permalink to this headline">¶</a></h5>
 <p>Default: ‘’</p>
@@ -1193,7 +1193,7 @@ See <a class="reference external" href="https://docs.djangoproject.com/en/4.2/re
 </section>
 </section>
 <section id="time-limits-for-background-tasks">
-<h4>Time limits for background tasks<a class="headerlink" href="#time-limits-for-background-tasks" title="Permalink to this headline">¶</a></h4>
+<h4>7. Time limits for background tasks<a class="headerlink" href="#time-limits-for-background-tasks" title="Permalink to this headline">¶</a></h4>
 <p>More info about backgrounds tasks and their defaults can be viewed here: <a class="reference external" href="https://dev.konfuzio.com/web/explanations.html#celery-tasks">https://dev.konfuzio.com/web/explanations.html#celery-tasks</a>.</p>
 <section id="extraction-time-limit">
 <h5>EXTRACTION_TIME_LIMIT<a class="headerlink" href="#extraction-time-limit" title="Permalink to this headline">¶</a></h5>
@@ -1264,7 +1264,7 @@ AZURE_OCR_BASE_URL=
 --></section>
 </section>
 <section id="keycloak-sso-settings">
-<h4>Keycloak / SSO Settings<a class="headerlink" href="#keycloak-sso-settings" title="Permalink to this headline">¶</a></h4>
+<h4>8. Keycloak / SSO Settings<a class="headerlink" href="#keycloak-sso-settings" title="Permalink to this headline">¶</a></h4>
 <p>The following values establish a keycloak connection through the
 mozilla oidc package (<a class="reference external" href="https://mozilla-django-oidc.readthedocs.io/en/stable/settings.html">https://mozilla-django-oidc.readthedocs.io/en/stable/settings.html</a>).</p>
 <section id="sso-enabled">
@@ -1307,7 +1307,7 @@ See <a class="reference external" href="https://mozilla-django-oidc.readthedocs.
 </section>
 </section>
 <section id="test-settings-for-keycloak-sso-settings">
-<h4>Test Settings for Keycloak / SSO Settings<a class="headerlink" href="#test-settings-for-keycloak-sso-settings" title="Permalink to this headline">¶</a></h4>
+<h4>9. Test Settings for Keycloak / SSO Settings<a class="headerlink" href="#test-settings-for-keycloak-sso-settings" title="Permalink to this headline">¶</a></h4>
 <p>These variables are only used for Keycloak integration tests:
 The admin variables are for login keycloak admin panel, the test variables are for login to Konfuzio server.
 The Keycloak Integration test can be run by installing Chromedriver and Selenium.</p>
