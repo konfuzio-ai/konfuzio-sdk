@@ -15,7 +15,7 @@ YOUR_CATEGORY_ID = project.categories[0].id_
 
 # Initialize the Categorization Model.
 categorization_model = NameBasedCategorizationAI(project.categories)
-categorization_model.categories = project.categories
+
 
 # Retrieve a Document to categorize.
 test_document = project.get_document_by_id(YOUR_DOCUMENT_ID)
@@ -66,7 +66,14 @@ categorization_pipeline = build_categorization_ai_pipeline(
 )
 
 # Train the AI.
-categorization_pipeline.fit(n_epochs=10)
+categorization_pipeline.fit(
+    document_training_config={
+        'batch_size': 1,
+        'max_len': None,
+        'n_epochs': 1,
+        'optimizer': {'name': 'Adam'},
+    }
+)
 
 # Evaluate the AI
 data_quality = categorization_pipeline.evaluate(use_training_docs=True)
