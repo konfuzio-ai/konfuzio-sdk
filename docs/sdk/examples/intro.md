@@ -211,7 +211,7 @@ Once the OCR process is done, you can get the Document OCR results with:
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 51-53
+   :lines: 49
 
 #### Modify Document
 
