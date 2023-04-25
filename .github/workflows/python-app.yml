@@ -38,7 +38,8 @@ jobs:
         pip install --upgrade --upgrade-strategy eager -e .[dev]
     - name: Test the code examples in documentation
       run: |
-        python docs/sdk/boilerplates/*.py
+        cd docs/sdk/boilerplates/
+        pytest --durations=5
         python -m doctest -v konfuzio_sdk/trainer/file_splitting.py
       env:
         KONFUZIO_PROJECT_ID: ${{ secrets.KONFUZIO_PROJECT_ID }}
