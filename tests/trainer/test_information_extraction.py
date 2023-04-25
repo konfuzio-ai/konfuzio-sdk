@@ -1867,6 +1867,17 @@ def test_load_old_ai_model_2():
         load_model(path)
 
 
+def test_load_ai_model():
+    """Test loading trained model."""
+    path = "trainer/2023-04-25-15-56-42_lohnabrechnung_rfextractionai_.pkl"
+    project = Project(id_=None, project_folder=OFFLINE_PROJECT)
+    pipeline = load_model(path)
+
+    test_document = project.get_document_by_id(TEST_DOCUMENT_ID)
+    res_doc = pipeline.extract(document=test_document)
+    assert len(res_doc.annotations(use_correct=False, ignore_below_threshold=True)) == 19
+
+
 def test_feat_num_count():
     """Test string conversion."""
     # Debug code for df: df[df[self.label_feature_list].isin([np.nan, np.inf, -np.inf]).any(1)]

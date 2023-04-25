@@ -972,8 +972,8 @@ class BaseModel(metaclass=abc.ABCMeta):
     def __init__(self):
         """Initialize a BaseModel class."""
         self.output_dir = None
-        self.documents = None
-        self.test_documents = None
+        self.documents = []
+        self.test_documents = []
         self.python_version = '.'.join([str(v) for v in sys.version_info[:3]])
         self.konfuzio_sdk_version = get_sdk_version()
 
@@ -1079,7 +1079,11 @@ class BaseModel(metaclass=abc.ABCMeta):
         if reduce_weight:
             project_docs = self.project._documents  # to restore project documents after save
             self.reduce_model_weight()
-        if not keep_documents:
+
+        if keep_documents:
+            # keep reference to Documents at Project level in case they were removed in the reduce_model_weight step
+            self.project._documents = self.documents + self.test_documents
+        else:
             logger.info('Removing documents before save')
             # to restore Model train and test documents after save
             restore_documents = self.documents
