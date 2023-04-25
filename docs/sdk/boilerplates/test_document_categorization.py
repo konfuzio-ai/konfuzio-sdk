@@ -14,7 +14,7 @@ project = Project(id_=YOUR_PROJECT_ID)
 YOUR_CATEGORY_ID = project.categories[0].id_
 
 # Initialize the Categorization Model.
-categorization_model = NameBasedCategorizationAI(project)
+categorization_model = NameBasedCategorizationAI(project.categories)
 categorization_model.categories = project.categories
 
 # Retrieve a Document to categorize.

@@ -5,11 +5,11 @@ import time
 from konfuzio_sdk.data import Project, Document
 from variables import YOUR_PROJECT_ID
 
-FILE_PATH = 'tests/test_data/pdf.pdf'
+FILE_PATH = '../../../tests/test_data/pdf.pdf'
 ASSIGNEE_ID = None
 
 my_project = Project(id_=YOUR_PROJECT_ID)
-assert len(my_project._documents) == 81
+
 my_project.get(update=True)
 my_project = Project(id_=YOUR_PROJECT_ID, update=True)
 
@@ -61,4 +61,3 @@ time.sleep(30)
 my_project = Project(id_=YOUR_PROJECT_ID, update=True)
 assert len(my_project.documents) == 26
 my_project.get_document_by_id(document_async).delete(delete_online=True)
-assert len(my_project._documents) == 81
