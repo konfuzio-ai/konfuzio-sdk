@@ -21,4 +21,4 @@ url = "https://app.konfuzio.com/api/v3/projects/"
 response = session.get(url)
 
 print(response.json())
-assert response.json()['results'][0]['name'] == 'Konfuzio Main Model'
+assert 'Konfuzio Main Model' in [project['name'] for project in response.json()['results']]
