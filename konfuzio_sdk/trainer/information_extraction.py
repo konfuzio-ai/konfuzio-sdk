@@ -1775,6 +1775,9 @@ class GroupAnnotationSets:
 class ParagraphExtractionAI(Trainer):
     """Extract and label text regions using Detectron2."""
 
+    requires_text = True
+    requires_images = True
+
     def __init__(
         self,
         category: Category,
