@@ -2253,6 +2253,7 @@ class Annotation(Data):
             # update_annotation(id_=self.id_, document_id=self.document.id_, project_id=self.project.id_)
 
         if not self.is_online:
+            annotation_set_id = self.annotation_set.id_ if self.annotation_set else None
             response = post_document_annotation(
                 project_id=self.document.project.id_,
                 document_id=self.document.id_,
@@ -2263,7 +2264,7 @@ class Annotation(Data):
                 confidence=self.confidence,
                 is_correct=self.is_correct,
                 revised=self.revised,
-                annotation_set=self.annotation_set.id_,
+                annotation_set=annotation_set_id,
                 bboxes=self.bboxes,
                 # selection_bbox=self.selection_bbox,
                 page_number=self.page_number,
