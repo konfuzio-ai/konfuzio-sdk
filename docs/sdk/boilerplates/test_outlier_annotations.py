@@ -4,11 +4,12 @@ from konfuzio_sdk.evaluate import ExtractionEvaluation
 from konfuzio_sdk.tokenizer.base import ListTokenizer
 from konfuzio_sdk.tokenizer.regex import RegexTokenizer
 from konfuzio_sdk.trainer.information_extraction import RFExtractionAI
-from variables import YOUR_PROJECT_ID
+
 
 YOUR_LABEL_NAME = 'Austellungsdatum'
 
-project = Project(id_=YOUR_PROJECT_ID)
+
+project = Project(id_=None, project_folder='../../../tests/example_project_data')
 label = project.get_label_by_name('Bank inkl. IBAN')
 outliers = label.get_probable_outliers_by_regex(project.categories)
 outliers = label.get_probable_outliers_by_regex(project.categories, top_worst_percentage=1.0)
