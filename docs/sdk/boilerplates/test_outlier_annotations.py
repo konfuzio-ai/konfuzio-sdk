@@ -39,7 +39,7 @@ for doc in pipeline.documents:
 evaluation = ExtractionEvaluation(documents=list(zip(pipeline.documents, predictions)), strict=False)
 outliers = label.get_probable_outliers_by_confidence(evaluation)
 outliers = label.get_probable_outliers_by_confidence(evaluation, 0.9)
-assert len(outliers) == 1
+assert len(outliers) == 2
 for outlier in outliers:
     assert outlier.confidence < 0.95
 outlier_spans = [span.offset_string for annotation in outliers for span in annotation.spans]
