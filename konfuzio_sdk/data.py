@@ -3669,7 +3669,7 @@ class Document(Data):
                 # so we just have a list of None to keep the lists the same length
                 document_tokens.append(None)
             # get document classification (defined by the category template)
-            category_id = str(self.category.id_) if self.category is not None else 'NO_CATEGORY'
+            category_id = str(self.category.id_) if self.category != self.project.no_category else 'NO_CATEGORY'
             # append the classification (category), the document's id number and the page number of each page
             document_labels.append(torch.LongTensor([category_vocab.stoi(category_id)]))
             doc_id = self.id_ or self.copy_of_id

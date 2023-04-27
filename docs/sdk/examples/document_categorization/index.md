@@ -40,7 +40,7 @@ Use the name of the Category as an effective fallback logic to categorize Docume
 
 .. literalinclude:: /sdk/boilerplates/test_document_categorization.py
    :language: python
-   :lines: 2-3,11-13,15-30,32-37
+   :lines: 2-3,11-13,15-17,19-30,32-37
 
 ### Model-based Categorization AI
 
@@ -50,7 +50,7 @@ For a list of available Models see [Available Categorization Models](#categoriza
 
 .. literalinclude:: /sdk/boilerplates/test_document_categorization.py
    :language: python
-   :lines: 2,4,6,5,11-13,57-72,76,80-83,85-87,88-89,91
+   :lines: 2,4,6,5,11-13,59-78,79-81,85,89-92,94-95,96-100
 
 .. _categorization-models:
 #### Available Categorization Models
@@ -63,7 +63,7 @@ The list of available Categorization Models is implemented as an Enum containing
 
 .. literalinclude:: /sdk/boilerplates/test_document_categorization.py
    :language: python
-   :lines: 6,95-115
+   :lines: 6,104-124
 
 See more details about these Categorization Models under [API Reference - Categorization AI](sourcecode.html#categorization-ai).
 

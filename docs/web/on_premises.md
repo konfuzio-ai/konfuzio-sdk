@@ -801,7 +801,7 @@ See https://docs.celeryproject.org/en/stable/userguide/configuration.html#task-s
 
 _Type: boolean_
 
-##### TASK_TRACK_STARTED = config('TASK_TRACK_STARTED', cast=bool, default=True)
+##### TASK_TRACK_STARTED
 Default: True
 
 See https://docs.celeryproject.org/en/stable/userguide/configuration.html#task-track-started
