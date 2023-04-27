@@ -1545,6 +1545,7 @@ class Label(Data):
         regex_search: bool = True,
         regex_worst_percentage: float = 0.1,
         confidence_search: bool = True,
+        evaluation_data=None,
         normalization_search: bool = True,
     ) -> List['Annotation']:
         """
@@ -1573,7 +1574,7 @@ class Label(Data):
                 set(self.get_probable_outliers_by_regex(categories, top_worst_percentage=regex_worst_percentage))
             )
         if confidence_search:
-            results.append(set(self.get_probable_outliers_by_confidence(categories)))
+            results.append(set(self.get_probable_outliers_by_confidence(evaluation_data)))
         if normalization_search:
             results.append(set(self.get_probable_outliers_by_normalization(categories)))
         intersection_results = list(set.intersection(*results))

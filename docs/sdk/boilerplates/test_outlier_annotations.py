@@ -4,12 +4,13 @@ from konfuzio_sdk.evaluate import ExtractionEvaluation
 from konfuzio_sdk.tokenizer.base import ListTokenizer
 from konfuzio_sdk.tokenizer.regex import RegexTokenizer
 from konfuzio_sdk.trainer.information_extraction import RFExtractionAI
-
+from variables import YOUR_PROJECT_ID
 
 YOUR_LABEL_NAME = 'Austellungsdatum'
 
+project = Project(id_=YOUR_PROJECT_ID)
+project = Project(id_=YOUR_PROJECT_ID, strict_data_validation=False)
 
-project = Project(id_=None, project_folder='../../../tests/example_project_data')
 label = project.get_label_by_name('Bank inkl. IBAN')
 outliers = label.get_probable_outliers_by_regex(project.categories)
 outliers = label.get_probable_outliers_by_regex(project.categories, top_worst_percentage=1.0)
@@ -36,15 +37,16 @@ for doc in pipeline.documents:
     predicted_doc = pipeline.extract(document=doc)
     predictions.append(predicted_doc)
 evaluation = ExtractionEvaluation(documents=list(zip(pipeline.documents, predictions)), strict=False)
-outliers = label.get_probable_outliers_by_confidence(evaluation, 0.8)
-assert len(outliers) == 1
 outliers = label.get_probable_outliers_by_confidence(evaluation)
+outliers = label.get_probable_outliers_by_confidence(evaluation, 0.9)
+assert len(outliers) == 1
+for outlier in outliers:
+    assert outlier.confidence < 0.95
 outlier_spans = [span.offset_string for annotation in outliers for span in annotation.spans]
 assert '24.05.2018' in outlier_spans
-outliers = label.get_probable_outliers_by_confidence()
-assert len(outliers) == 3
+outliers = label.get_probable_outliers_by_confidence(evaluation, 1)
+assert len(outliers) == 4
 for annotation in outliers:
-    assert annotation.confidence < 0.5
     assert annotation.is_correct
 outliers = label.get_probable_outliers_by_normalization(project.categories)
 outlier_spans = [span.offset_string for annotation in outliers for span in annotation.spans]
@@ -52,6 +54,7 @@ assert len(outliers) == 1
 assert '328927/10103' in outlier_spans
 assert '22.05.2018' in outlier_spans
 outliers = label.get_probable_outliers(project.categories, confidence_search=False)
+outliers = label.get_probable_outliers(project.categories, confidence_search=False, regex_worst_percentage=1)
 outlier_spans = [span.offset_string for annotation in outliers for span in annotation.spans]
 assert len(outliers) == 1
 assert '328927/10103' in outlier_spans
