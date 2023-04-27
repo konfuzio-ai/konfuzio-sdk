@@ -969,6 +969,9 @@ def substring_on_page(substring, annotation, page_text_list) -> bool:
 class BaseModel(metaclass=abc.ABCMeta):
     """Base model to define common methods for all AIs."""
 
+    requires_text = False
+    requires_images = False
+
     def __init__(self):
         """Initialize a BaseModel class."""
         self.output_dir = None
@@ -1130,6 +1133,9 @@ class BaseModel(metaclass=abc.ABCMeta):
 
 class Trainer(BaseModel):
     """Parent class for all Extraction AIs, to extract information from unstructured human readable text."""
+
+    requires_text = True
+    requires_images = False
 
     def __init__(self, category: Category, *args, **kwargs):
         """Initialize ExtractionModel."""
@@ -1775,6 +1781,10 @@ class GroupAnnotationSets:
 class ParagraphExtractionAI(Trainer):
     """Extract and label text regions using Detectron2."""
 
+    requires_text = True
+    requires_images = True
+    requires_segmentation = True
+
     def __init__(
         self,
         category: Category,
@@ -1920,7 +1930,16 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         self.output_dir = None
 
-        # self.doc_object = Document
+    @property
+    def requires_segmentation(self):
+        """Return True if the model requires detectron segmentation results to process Documents."""
+        if (
+            sdk_isinstance(self.tokenizer, ParagraphTokenizer) or sdk_isinstance(self.tokenizer, SentenceTokenizer)
+        ) and self.tokenizer.mode == 'detectron':
+            return True
+        elif self.tokenizer is None:
+            logger.warning('Tokenizer is not set. Assuming no segmentation results is required.')
+        return False
 
     def features(self, document: Document):
         """Calculate features using the best working default values that can be overwritten with self values."""
