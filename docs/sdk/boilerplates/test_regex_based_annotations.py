@@ -5,7 +5,7 @@ from konfuzio_sdk.data import Project, Annotation, Span
 
 from variables import YOUR_PROJECT_ID
 
-my_project = Project(id_=YOUR_PROJECT_ID)
+my_project = Project(id_=YOUR_PROJECT_ID, strict_data_validation=False)
 
 # Word/expression to annotate in the Document
 # should match an existing one in your Document
