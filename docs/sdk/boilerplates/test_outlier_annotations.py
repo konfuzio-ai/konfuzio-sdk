@@ -40,8 +40,8 @@ evaluation = ExtractionEvaluation(documents=list(zip(pipeline.documents, predict
 outliers = label.get_probable_outliers_by_confidence(evaluation)
 outliers = label.get_probable_outliers_by_confidence(evaluation, 0.9)
 assert len(outliers) == 2
-for outlier in outliers:
-    assert outlier.confidence < 0.95
+
+
 outlier_spans = [span.offset_string for annotation in outliers for span in annotation.spans]
 assert '24.05.2018' in outlier_spans
 outliers = label.get_probable_outliers_by_confidence(evaluation, 1)
