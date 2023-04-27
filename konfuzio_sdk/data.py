@@ -151,7 +151,7 @@ class Page(Data):
         )
         self.image_path = os.path.join(document_folder, f'page_{self.number}.png')
 
-        self._category = self.document._category
+        self._category = category if category else self.document._category
         self.category_annotations: List['CategoryAnnotation'] = []
         self._human_chosen_category_annotation: Optional[CategoryAnnotation] = None
         self.is_first_page = None
@@ -3599,6 +3599,7 @@ class Document(Data):
                         end_offset=end_offset,
                         copy_of_id=page_id,
                         number=i,
+                        category=page.category,
                     )
                     i += 1
                     start_offset = end_offset + 1
@@ -3612,6 +3613,7 @@ class Document(Data):
                         end_offset=end_offset,
                         copy_of_id=page_id,
                         number=i,
+                        category=page.category,
                     )
                     i += 1
                     start_offset = end_offset + 1
