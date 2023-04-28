@@ -43,7 +43,7 @@ Important note: This release changes the internal format of saved AIs. Therefore
 
 ## released-2023-03-18_13-32-19
 
-This version uses Konfuzio Trainer in version v.0.3.23, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Document Validation UI in version 0.1.3.
+This version uses Konfuzio AbstractExtractionAI in version v.0.3.23, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Document Validation UI in version 0.1.3.
 
 ### Added
 - [Contract Managers can invite Users to join their subscription](https://app.konfuzio.com/admin/billing/contract/) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10583)).
@@ -53,7 +53,7 @@ This version uses Konfuzio Trainer in version v.0.3.23, the Konfuzio Python SDK 
 
 ## released-2023-03-06_21-09-18
 
-This version uses Konfuzio Trainer in version v.0.3.23, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Document Validation UI in version 0.1.2.
+This version uses Konfuzio AbstractExtractionAI in version v.0.3.23, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Document Validation UI in version 0.1.2.
 
 ### Added
 - [Add the overall processing time of a Document to the API V3](https://app.konfuzio.com/v3/swagger/#/documents/documents_retrieve) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10660)).
@@ -63,7 +63,7 @@ This version uses Konfuzio Trainer in version v.0.3.23, the Konfuzio Python SDK 
 
 ## released-2023-02-17_14-27-57
 
-This version uses Konfuzio Trainer in version v.0.3.23, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Document Validation UI in version [0.1.1](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
+This version uses Konfuzio AbstractExtractionAI in version v.0.3.23, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Document Validation UI in version [0.1.1](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
 
 ### Added
 - [Allow to add multiple Annotations and Annotation Sets in one API request](https://app.konfuzio.com/v3/swagger/#/annotations/annotations_create) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10315)).
@@ -77,7 +77,7 @@ This version uses Konfuzio Trainer in version v.0.3.23, the Konfuzio Python SDK 
 
 ## released-2023-02-08_10-58-15
 
-This version uses Konfuzio Trainer in version v.0.3.23, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Capture Vue in version [0.1.1](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
+This version uses Konfuzio AbstractExtractionAI in version v.0.3.23, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Capture Vue in version [0.1.1](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
 
 ### Added
 - [For self-hosted installations, allow to upload customized AIs](https://app.konfuzio.com/v3/swagger/#/extraction-ais/extraction_ais_upload_create) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9432)).
@@ -92,7 +92,7 @@ This version uses Konfuzio Trainer in version v.0.3.23, the Konfuzio Python SDK 
 
 ## released-2023-01-23_22-14-45
 
-This version uses Konfuzio Trainer in version v.0.3.23, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Capture Vue in version [0.1.0](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
+This version uses Konfuzio AbstractExtractionAI in version v.0.3.23, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Capture Vue in version [0.1.0](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
 
 ### Added
 - [Set the Limit of objects returned from the Document List endpoint in API V2 to 10 000](https://dev.konfuzio.com/web/api-v3.html#content-limits) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9975)).
@@ -104,7 +104,7 @@ This version uses Konfuzio Trainer in version v.0.3.23, the Konfuzio Python SDK 
 
 ## released-2023-01-23_14-32-08
 
-This version uses Konfuzio Trainer in version v.0.3.23, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Capture Vue in version [0.1.0](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
+This version uses Konfuzio AbstractExtractionAI in version v.0.3.23, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Capture Vue in version [0.1.0](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
 
 ### Added
 - [Allow new Users to use to use Konfuzio SaaS Basic](https://konfuzio.com/de/preise/) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10489)).
@@ -115,7 +115,7 @@ This version uses Konfuzio Trainer in version v.0.3.23, the Konfuzio Python SDK 
 
 ## released-2023-01-15_19-35-28
 
-This version uses Konfuzio Trainer in version v.0.3.23, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Document Validation UI in version [0.1.0](https://github.com/konfuzio-ai/document-validation-ui/releases/).
+This version uses Konfuzio AbstractExtractionAI in version v.0.3.23, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Document Validation UI in version [0.1.0](https://github.com/konfuzio-ai/document-validation-ui/releases/).
 
 ### Added
 
@@ -128,7 +128,7 @@ This version uses Konfuzio Trainer in version v.0.3.23, the Konfuzio Python SDK 
 
 ## released-2022-12-22_11-03-21
 
-This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Document Validation UI in version [0.0.11-pre-release-5](https://github.com/konfuzio-ai/document-validation-ui/releases/).
+This version uses Konfuzio AbstractExtractionAI in version v.0.3.21, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Document Validation UI in version [0.0.11-pre-release-5](https://github.com/konfuzio-ai/document-validation-ui/releases/).
 
 ### Fixed
 
@@ -136,7 +136,7 @@ This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK 
 
 ## released-2022-12-20_11-23-04
 
-This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Document Validation UI in version [0.0.11-pre-release-5](https://github.com/konfuzio-ai/document-validation-ui/releases/).
+This version uses Konfuzio AbstractExtractionAI in version v.0.3.21, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Document Validation UI in version [0.0.11-pre-release-5](https://github.com/konfuzio-ai/document-validation-ui/releases/).
 
 ### Added
 
@@ -152,7 +152,7 @@ This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK 
 
 ## released-2022-12-05_19-18-47
 
-This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Document Validation UI in version [0.0.11-pre-release-1](https://github.com/konfuzio-ai/document-validation-ui/releases/).
+This version uses Konfuzio AbstractExtractionAI in version v.0.3.21, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Document Validation UI in version [0.0.11-pre-release-1](https://github.com/konfuzio-ai/document-validation-ui/releases/).
 
 Please note: When you upgrade to this version (or a newer one) we recommend to run "python manage.py init_email_templates" as the email templates have been updated. This needs to be run after the usual update actions.
 
@@ -192,7 +192,7 @@ Please note: When you upgrade to this version (or a newer one) we recommend to r
 
 ## released-2022-11-11_13-19-29
 
-This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Document Validation UI in version [0.0.10-pre-release-7](https://github.com/konfuzio-ai/document-validation-ui/releases/).
+This version uses Konfuzio AbstractExtractionAI in version v.0.3.21, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Document Validation UI in version [0.0.10-pre-release-7](https://github.com/konfuzio-ai/document-validation-ui/releases/).
 
 Please note: When you upgrade to this version (or a newer one) you need to run "python manage.py init_user_permissions". This needs to be run after the usual [update actions](https://dev.konfuzio.com/web/on_premises.html#a-upgrade-to-newer-konfuzio-version).
 
@@ -238,7 +238,7 @@ Please note: When you upgrade to this version (or a newer one) you need to run "
 
 ## released-2022-09-21_12-00-31
 
-This version uses Konfuzio Trainer in version v.0.3.22, the Konfuzio Python SDK in version [v.0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15) and Konfuzio Document Validation UI in version [0.0.8](https://github.com/konfuzio-ai/document-validation-ui/releases/).
+This version uses Konfuzio AbstractExtractionAI in version v.0.3.22, the Konfuzio Python SDK in version [v.0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15) and Konfuzio Document Validation UI in version [0.0.8](https://github.com/konfuzio-ai/document-validation-ui/releases/).
 
 ### Fixed
 
@@ -247,7 +247,7 @@ This version uses Konfuzio Trainer in version v.0.3.22, the Konfuzio Python SDK 
 
 ## released-2022-09-04_09-11-18
 
-This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK in version [v.0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15) and Konfuzio Document Validation UI in version [0.0.8](https://github.com/konfuzio-ai/document-validation-ui/releases/).
+This version uses Konfuzio AbstractExtractionAI in version v.0.3.21, the Konfuzio Python SDK in version [v.0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15) and Konfuzio Document Validation UI in version [0.0.8](https://github.com/konfuzio-ai/document-validation-ui/releases/).
 
 ### Added
 
@@ -275,7 +275,7 @@ This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK 
 
 ## released-2022-07-28_15-55-29
 
-This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK in version [v.0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15) and Konfuzio Document Validation UI in version [0.0.6](https://github.com/konfuzio-ai/document-validation-ui/releases/).
+This version uses Konfuzio AbstractExtractionAI in version v.0.3.21, the Konfuzio Python SDK in version [v.0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15) and Konfuzio Document Validation UI in version [0.0.6](https://github.com/konfuzio-ai/document-validation-ui/releases/).
 
 ### Changed
 
@@ -306,7 +306,7 @@ This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK 
 
 ## released-2022-07-05_19-35-21
 
-This version uses Konfuzio Trainer in version v.0.3.15, the Konfuzio Python SDK in version [v.0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15) and Konfuzio Document Validation UI in version [0.4.0](https://github.com/konfuzio-ai/document-validation-ui/releases/).
+This version uses Konfuzio AbstractExtractionAI in version v.0.3.15, the Konfuzio Python SDK in version [v.0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15) and Konfuzio Document Validation UI in version [0.4.0](https://github.com/konfuzio-ai/document-validation-ui/releases/).
 
 ### Added
 
@@ -321,7 +321,7 @@ This version uses Konfuzio Trainer in version v.0.3.15, the Konfuzio Python SDK 
 
 ## released-2022-06-10_15-32-19
 
-This version uses Konfuzio Trainer in version v.0.3.15 and the Konfuzio Python SDK in version [v.0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15).
+This version uses Konfuzio AbstractExtractionAI in version v.0.3.15 and the Konfuzio Python SDK in version [v.0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15).
 
 ### Added
 
@@ -403,7 +403,7 @@ This version uses Konfuzio Trainer in version v.0.3.15 and the Konfuzio Python S
 
 ## released-2021-11-26_08-11-36
 
-This version uses Konfuzio Trainer in version [v.0.3.0](https://dev.konfuzio.com/training/changelog.html). We recommend to use the Konfuzio Python SDK in version [0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15)
+This version uses Konfuzio AbstractExtractionAI in version [v.0.3.0](https://dev.konfuzio.com/training/changelog.html). We recommend to use the Konfuzio Python SDK in version [0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15)
 
 ### Added
 
@@ -443,7 +443,7 @@ This version uses Konfuzio Trainer in version [v.0.3.0](https://dev.konfuzio.com
 
 ## released-2021-10-25_20-12-18
 
-This version uses Konfuzio Trainer in version [2021-10-20_18-29-25](https://dev.konfuzio.com/training/changelog.html#id1). We recommend to use the Konfuzio Python SDK in version [0.1.10](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-10)
+This version uses Konfuzio AbstractExtractionAI in version [2021-10-20_18-29-25](https://dev.konfuzio.com/training/changelog.html#id1). We recommend to use the Konfuzio Python SDK in version [0.1.10](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-10)
 
 ### Added
 

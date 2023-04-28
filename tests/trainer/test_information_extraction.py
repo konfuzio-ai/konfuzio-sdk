@@ -36,7 +36,7 @@ from konfuzio_sdk.trainer.information_extraction import (
     year_month_day_count,
     load_model,
     RFExtractionAI,
-    Trainer,
+    AbstractExtractionAI,
 )
 
 from konfuzio_sdk.api import upload_ai_model
@@ -1171,7 +1171,7 @@ class TestInformationExtraction(unittest.TestCase):
             ),
         }
 
-        merged_res_dict = Trainer.merge_horizontal(res_dict=res_dict, doc_text=doc_text)
+        merged_res_dict = AbstractExtractionAI.merge_horizontal(res_dict=res_dict, doc_text=doc_text)
 
         assert len(merged_res_dict['label1']) == 3
         assert round(merged_res_dict['label1'].iloc[0]['confidence'], 1) == 0.4
@@ -1237,7 +1237,7 @@ class TestInformationExtraction(unittest.TestCase):
             for i, span_row in res_dict[label].iterrows():
                 assert span_row['offset_string'] == doc_text[span_row['start_offset'] : span_row['end_offset']]
 
-        new_res_dict = Trainer.merge_horizontal(res_dict=res_dict, doc_text=doc_text)
+        new_res_dict = AbstractExtractionAI.merge_horizontal(res_dict=res_dict, doc_text=doc_text)
 
         assert len(new_res_dict['label1']) == 4
         assert len(new_res_dict['label2']) == 4
