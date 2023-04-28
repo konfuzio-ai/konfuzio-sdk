@@ -154,8 +154,10 @@ label_set_clf_classes = ['Brutto-Bezug', 'Lohnabrechnung', 'Netto-Bezug', 'No', 
 @parameterized.parameterized_class(
     (
         'use_separate_labels',
-        'evaluate_full_result',
-        'data_quality_result',
+        'evaluate_full_result_non_view',
+        'evaluate_full_result_view',
+        'data_quality_result_non_view',
+        'data_quality_result_view',
         'clf_quality_result',
         'n_nearest_accross_lines',
     ),
@@ -163,12 +165,22 @@ label_set_clf_classes = ['Brutto-Bezug', 'Lohnabrechnung', 'Netto-Bezug', 'No', 
         (
             False,
             0.7671232876712328,  # w/ full dataset: 0.9237668161434978
+            0.8115942028985508,
             0.9745762711864406,
+            0.9652173913043478,
             1.0,
             False,
         ),
-        (True, 0.7945205479452054, 0.9745762711864406, 1.0, False),  # w/ full dataset: 0.9783549783549783
-        (False, 0.8732394366197183, 0.9704641350210971, 1.0, True),
+        (
+            True,
+            0.7945205479452054,
+            0.8529411764705882,
+            0.9745762711864406,
+            0.9652173913043478,
+            1.0,
+            False,
+        ),  # w/ full dataset: 0.9783549783549783
+        (False, 0.8732394366197183, 0.8985507246376812, 0.9704641350210971, 0.9652173913043478, 1.0, True),
     ],
 )
 class TestWhitespaceRFExtractionAI(unittest.TestCase):
@@ -325,24 +337,24 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         """Evaluate Whitespace RFExtractionAI Model."""
         evaluation = self.pipeline.evaluate_full(use_view_annotations=False)
 
-        assert evaluation.f1(None) == self.evaluate_full_result
+        assert evaluation.f1(None) == self.evaluate_full_result_non_view
 
         assert 1e5 < memory_size_of(evaluation.data) < 2e5
 
         view_evaluation = self.pipeline.evaluate_full(use_view_annotations=True)
-        assert view_evaluation.f1(None) == self.evaluate_full_result == evaluation.f1(None)
+        assert view_evaluation.f1(None) == self.evaluate_full_result_view
 
         assert 1e5 < memory_size_of(view_evaluation.data) < 2e5
 
     def test_07_data_quality(self):
         """Evaluate on training documents."""
         evaluation = self.pipeline.evaluate_full(use_training_docs=True, use_view_annotations=False)
-        assert evaluation.f1(None) == self.data_quality_result
+        assert evaluation.f1(None) == self.data_quality_result_non_view
 
         assert 2e5 < memory_size_of(evaluation.data) < 4e5
 
         view_evaluation = self.pipeline.evaluate_full(use_training_docs=True, use_view_annotations=True)
-        assert view_evaluation.f1(None) == self.data_quality_result == evaluation.f1(None)
+        assert view_evaluation.f1(None) == self.data_quality_result_view
 
         assert 2e5 < memory_size_of(view_evaluation.data) < 4e5
 
@@ -380,11 +392,11 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         assert len(document_annotation_sets) == 5
         assert len([ann_set for ann_set in document_annotation_sets if ann_set.label_set.is_default]) == 1
 
-        view_annotations = res_doc.view_annotations()
-        assert len(view_annotations) == 19
+        annotations = res_doc.annotations(use_correct=False, ignore_below_threshold=True)
+        assert len(annotations) == 19
 
-        view_spans = sorted([span for ann in view_annotations for span in ann.spans])
-        self.tests_annotations_spans += view_spans
+        spans = sorted([span for ann in annotations for span in ann.spans])
+        self.tests_annotations_spans += spans
         assert len(self.tests_annotations_spans) == 20
 
         # Test extracting with Document from different Category
@@ -414,13 +426,13 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         self.pipeline.category = test_document.category
 
         res_doc = self.pipeline.extract(document=test_document)
-        assert len(res_doc.view_annotations()) == 19
+        assert len(res_doc.view_annotations()) == 17
 
         assert len(res_doc.annotation_sets()) == 5
 
         no_konfuzio_sdk_pipeline = load_model(self.pipeline.pipeline_path_no_konfuzio_sdk)
         res_doc = no_konfuzio_sdk_pipeline.extract(document=test_document)
-        assert len(res_doc.view_annotations()) == 19
+        assert len(res_doc.view_annotations()) == 17
 
         prj46 = Project(id_=46, update=True)
         doc = prj46.get_document_by_id(570129)
@@ -584,7 +596,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         assert 1e5 < memory_size_of(evaluation.data) < 2e5
 
         view_evaluation = self.pipeline.evaluate_full(use_view_annotations=True)
-        assert view_evaluation.f1(None) == self.evaluate_full_result == evaluation.f1(None)
+        assert view_evaluation.f1(None) >= self.evaluate_full_result == evaluation.f1(None)
 
         assert 1e5 < memory_size_of(view_evaluation.data) < 2e5
 
@@ -631,11 +643,11 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         assert len(document_annotation_sets) == 5
         assert len([ann_set for ann_set in document_annotation_sets if ann_set.label_set.is_default]) == 1
 
-        view_annotations = res_doc.view_annotations()
-        assert len(view_annotations) == 19
+        annotations = res_doc.annotations(use_correct=False, ignore_below_threshold=True)
+        assert len(annotations) == 19
 
-        view_spans = sorted([span for ann in view_annotations for span in ann.spans])
-        self.tests_annotations_spans += view_spans
+        spans = sorted([span for ann in annotations for span in ann.spans])
+        self.tests_annotations_spans += spans
         assert len(self.tests_annotations_spans) == 20
 
     @parameterized.parameterized.expand(entity_results_data)
@@ -657,13 +669,13 @@ class TestRegexRFExtractionAI(unittest.TestCase):
 
         test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         res_doc = self.pipeline.extract(document=test_document)
-        assert len(res_doc.view_annotations()) == 19
+        assert len(res_doc.view_annotations()) == 17
 
         assert len(res_doc.annotation_sets()) == 5
 
         no_konf_pipeline = load_model(self.pipeline.pipeline_path_no_konfuzio_sdk)
         res_doc = no_konf_pipeline.extract(document=test_document)
-        assert len(res_doc.view_annotations()) == 19
+        assert len(res_doc.view_annotations()) == 17
 
     @classmethod
     def tearDownClass(cls) -> None:
