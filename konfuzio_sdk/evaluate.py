@@ -92,7 +92,11 @@ def compare(
     :param doc_a: Document which is assumed to be correct
     :param doc_b: Document which needs to be evaluated
     :param only_use_correct: Unrevised feedback in doc_a is assumed to be correct.
-    :param use_view_annotations: Use view_annotations filter to evaluate doc_b
+    :param use_view_annotations: Will filter for top confidence annotations. Only available when strict=True.
+     When use_view_annotations=True, it will compare only the highest confidence extractions to the ground truth
+     Annotations. When False (default), it compares all extractions to the ground truth Annotations. This setting is
+     ignored when strict=False, as the Default Evaluation (which uses strict=False) needs to compare all extractions.
+     For more details see https://help.konfuzio.com/modules/extractions/index.html#evaluation
     :param ignore_below_threshold: Ignore Annotations below detection threshold of the Label (only affects TNs)
     :param strict: Evaluate on a Character exact level without any postprocessing, an amount Span "5,55 " will not be
      exact with "5,55"
@@ -102,7 +106,7 @@ def compare(
     df_a = pandas.DataFrame(doc_a.eval_dict(use_correct=only_use_correct))
     df_b = pandas.DataFrame(
         doc_b.eval_dict(
-            use_view_annotations=strict and use_view_annotations,  # view_annotations only available for strict mode
+            use_view_annotations=strict and use_view_annotations,  # view_annotations only available for strict=True
             use_correct=False,
             ignore_below_threshold=ignore_below_threshold,
         )
