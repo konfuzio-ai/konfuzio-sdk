@@ -2719,7 +2719,9 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         annotations = label.annotations(categories=[self.prj.get_category_by_id(63)])
         self.assertEqual(self.document_count, len(annotations))
 
-    @unittest.skip(reason="Skip: Changes in Trainer Annotation needed to require a Label for every Annotation init.")
+    @unittest.skip(
+        reason="Skip: Changes in AbstractExtractionAI Annotation needed to require a Label for every Annotation init."
+    )
     def test_document_add_new_annotation_without_label(self):
         """Test adding a new Annotation."""
         with self.assertRaises(AttributeError) as _:
@@ -2735,7 +2737,10 @@ class TestKonfuzioDataSetup(unittest.TestCase):
             )
         # TODO: expand assert to check for specific error message
 
-    @unittest.skip(reason="Skip: Changes in Trainer Annotation needed to require a Document for every Annotation init.")
+    @unittest.skip(
+        reason="Skip: Changes in AbstractExtractionAI Annotation needed to require a Document for every "
+        "Annotation init."
+    )
     def test_init_annotation_without_document(self):
         """Test adding a new Annotation."""
         with self.assertRaises(AttributeError) as _:
@@ -3074,7 +3079,7 @@ class TestFillOperation(unittest.TestCase):
             assert "is a duplicate of" in context.exception
 
     def test_correct_text_offset(self):
-        """Test if the the sorted Spans can create the offset text."""
+        """Test if the sorted Spans can create the offset text."""
         offsets = [sorted_span.offset_string for sorted_span in self.sorted_spans]
         span_text = "".join(offsets)
         self.assertEqual(self.doc.text[1498:1590], span_text)
