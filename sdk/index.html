@@ -168,24 +168,27 @@ to be directly uploaded to the Konfuzio Server (see <a class="reference external
 </section>
 <section id="customize-extraction-ai">
 <h3>Customize Extraction AI<a class="headerlink" href="#customize-extraction-ai" title="Permalink to this headline">¶</a></h3>
-<p>Any Custom <a class="reference external" href="sourcecode.html#extraction-ai">Extraction AI</a> (derived from the Konfuzio <code class="docutils literal notranslate"><span class="pre">Trainer</span></code> class) should implement
+<p>Any Custom <a class="reference external" href="sourcecode.html#extraction-ai">Extraction AI</a> (derived from the Konfuzio <code class="docutils literal notranslate"><span class="pre">AbstractExtractionAI</span></code> class) should implement
 the following interface:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">Trainer</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">AbstractExtractionAI</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Document</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
 
-<span class="k">class</span> <span class="nc">CustomExtractionAI</span><span class="p">(</span><span class="n">Trainer</span><span class="p">):</span>
+
+<span class="k">class</span> <span class="nc">CustomExtractionAI</span><span class="p">(</span><span class="n">AbstractExtractionAI</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="c1"># initialize key variables required by the custom AI</span>
+
+    <span class="c1"># initialize key variables required by the custom AI</span>
 
     <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c1"># Define architecture and training that the model undergoes, i.e. a NN architecture or a custom hardcoded logic</span>
-        <span class="c1"># This method is allowed to be implemented as a no-op if you provide the trained model in other ways</span>
+
+    <span class="c1"># Define architecture and training that the model undergoes, i.e. a NN architecture or a custom hardcoded logic</span>
+    <span class="c1"># This method is allowed to be implemented as a no-op if you provide the trained model in other ways</span>
 
     <span class="k">def</span> <span class="nf">extract</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document</span><span class="p">:</span> <span class="n">Document</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Document</span><span class="p">:</span>
-        <span class="c1"># define how the model extracts information from Documents</span>
-        <span class="c1"># **NB:** The result of extraction must be a copy of the input Document with added Annotations attribute `Document._annotations`</span>
+<span class="c1"># define how the model extracts information from Documents</span>
+<span class="c1"># **NB:** The result of extraction must be a copy of the input Document with added Annotations attribute `Document._annotations`</span>
 </pre></div>
 </div>
 <p>Example usage of your Custom Extraction AI:</p>

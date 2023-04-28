@@ -76,7 +76,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#extraction-ai">Extraction AI</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#base-model">Base Model</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#trainer">Trainer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#abstractextractionai">AbstractExtractionAI</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#random-forest-extraction-ai">Random Forest Extraction AI</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#load-saved-ai-model">Load Saved AI Model</a></li>
 </ul>
@@ -2043,12 +2043,12 @@ the entire pickle file in memory.</p>
 </dd></dl>
 
 </section>
-<section id="trainer">
-<h3>Trainer<a class="headerlink" href="#trainer" title="Permalink to this headline">¶</a></h3>
+<section id="abstractextractionai">
+<h3>AbstractExtractionAI<a class="headerlink" href="#abstractextractionai" title="Permalink to this headline">¶</a></h3>
 <dl class="py class">
 <dt class="sig sig-object py">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.trainer.information_extraction.</span></span><span class="sig-name descname"><span class="pre">Trainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">category</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">konfuzio_sdk.data.Category</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Parent class for all Extraction AIs, to extract information from unstructured human readable text.</p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.trainer.information_extraction.</span></span><span class="sig-name descname"><span class="pre">AbstractExtractionAI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">category</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">konfuzio_sdk.data.Category</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Parent class for all Extraction AIs, to extract information from unstructured human-readable text.</p>
 <dl class="py method">
 <dt class="sig sig-object py">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">add_extractions_as_annotations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">extractions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.core.frame.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">document</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">konfuzio_sdk.data.Document</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">konfuzio_sdk.data.Label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_set</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">konfuzio_sdk.data.LabelSet</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotation_set</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">konfuzio_sdk.data.AnnotationSet</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span></dt>
@@ -2089,12 +2089,12 @@ the entire pickle file in memory.</p>
 <dl class="py method">
 <dt class="sig sig-object py">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">has_compatible_interface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span></dt>
-<dd><p>Validate that an instance of an Extraction AI implements the same interface as Trainer.</p>
+<dd><p>Validate that an instance of an Extraction AI implements the same interface as AbstractExtractionAI.</p>
 <p>An Extraction AI should implement methods with the same signature as:
-- Trainer.__init__
-- Trainer.fit
-- Trainer.extract
-- Trainer.check_is_ready</p>
+- AbstractExtractionAI.__init__
+- AbstractExtractionAI.fit
+- AbstractExtractionAI.extract
+- AbstractExtractionAI.check_is_ready</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>other</strong> – An instance of an Extraction AI to compare with.</p>
