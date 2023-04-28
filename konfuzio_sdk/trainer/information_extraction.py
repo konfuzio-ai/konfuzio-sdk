@@ -488,7 +488,7 @@ def date_count(s: str) -> int:
                 try:
                     diff = int((date2 - date1) / numpy.timedelta64(1, 'D'))
                 except TypeError as e:
-                    logger.error(f'Could not substract for string {s} because of >>{e}<<.')
+                    logger.debug(f'Could not substract for string {s} because of >>{e}<<.')
                     return 0
 
             if diff == 0:
@@ -2537,7 +2537,7 @@ class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
         """
         Evaluate the full pipeline on the pipeline's Test Documents.
 
-        :param strict: List of documents to extract features from.
+        :param strict: Evaluate on a Character exact level without any postprocessing.
         :param use_training_docs: Bool for whether to evaluate on the training documents instead of testing documents.
         :return: Evaluation object.
         """
