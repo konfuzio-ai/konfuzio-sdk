@@ -171,6 +171,7 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
         pred = splitting_ai.propose_split_documents(test_document)
         assert len(pred) == 1
         assert len(pred[0].pages()) == 2
+        assert test_document.pages()[0].category == pred[0].pages()[0].category
 
     def test_splitting_ai_evaluate_full_on_training(self):
         """Test Splitting AI's evaluate_full on training Documents."""
