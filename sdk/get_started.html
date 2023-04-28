@@ -325,22 +325,24 @@ Boxes).</p>
 <section id="upload-document">
 <h4>Upload Document<a class="headerlink" href="#upload-document" title="Permalink to this headline">¶</a></h4>
 <p>To upload a new file (see <a class="reference external" href="https://help.konfuzio.com/specification/supported_file_types/index.html">Supported File Types</a>)
-in your Project using the SDK, you have the option between two Document methods: <code class="docutils literal notranslate"><span class="pre">from_file_sync</span></code> and <code class="docutils literal notranslate"><span class="pre">from_file_async</span></code>.</p>
-<p>If you want to upload a Document, and start working with it as soon as the OCR processing step is done, we recommend
-<code class="docutils literal notranslate"><span class="pre">from_file_sync</span></code> as it will wait for the Document to be processed and then return a ready Document. Beware, this may
-take from a few seconds up to over a minute.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span> <span class="o">=</span> <span class="n">Document</span><span class="o">.</span><span class="n">from_file_sync</span><span class="p">(</span><span class="n">FILE_PATH</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">my_project</span><span class="p">)</span>
+in your Project using the SDK, you can use the <code class="docutils literal notranslate"><span class="pre">Document.from_file</span></code> method. You can choose to create the Document in
+a synchronous or asynchronous way. The synchronous way will wait for the Document to be processed and return a ready
+Document. The asynchronous way will only return an empty Document object which you can use to check the status of the
+processing. Simply call <code class="docutils literal notranslate"><span class="pre">document.update()</span></code> to check if the Document is ready and the OCR processing is done.</p>
+<p>If you want to upload a file, and start working with it as soon as the OCR processing step is done, we recommend
+using <code class="docutils literal notranslate"><span class="pre">from_file</span></code> with <code class="docutils literal notranslate"><span class="pre">sync</span></code> set to True as it will wait for the Document to be processed and then return a ready
+Document. Beware, this may take from a few seconds up to over a minute depending on the size of the file.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span> <span class="o">=</span> <span class="n">Document</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">FILE_PATH</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">my_project</span><span class="p">,</span> <span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>If however you are trying to upload a large number of files and don’t want to wait for them to be processed you can use
-the asynchronous function which only returns a Document ID:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document_async</span> <span class="o">=</span> <span class="n">Document</span><span class="o">.</span><span class="n">from_file_async</span><span class="p">(</span><span class="n">FILE_PATH</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">my_project</span><span class="p">)</span>
+the asynchronous option which returns an empty Document object. You can then use the <code class="docutils literal notranslate"><span class="pre">update</span></code> method to check if the
+Document is ready and the OCR processing is done.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span> <span class="o">=</span> <span class="n">Document</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">FILE_PATH</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">my_project</span><span class="p">,</span> <span class="n">sync</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Later, you can load the processed Document and get your Document with:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_project</span><span class="o">.</span><span class="n">init_or_update_document</span><span class="p">(</span><span class="n">from_online</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="n">document_id</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">id_</span>
-<span class="n">document</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">document_id</span><span class="p">)</span>
+<p>Once the OCR process is done, you can get the Document OCR results with:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>
