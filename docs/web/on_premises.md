@@ -760,7 +760,7 @@ _Type: boolean_
 
 Settings related to [https://dev.konfuzio.com/web/explanations.html#background-processes](Background Tasks).
 
-##### BROKEL_URL
+##### BROKER_URL
 Enter a Redis Database.
 https://docs.celeryq.dev/en/stable/userguide/configuration.html#std-setting-broker_url
 
@@ -852,6 +852,12 @@ The Number of Document that indicate a heavy training. Heavy training are execut
 A "training_heavy" worker must be running in order to complete these trainings.
 
 _Type: integer_
+
+##### CSV_EXPORT_ROW_LIMIT
+Default: 100
+
+The (approximate) number of rows that an exported CSV file of extraction results can include.
+Set to 0 for no limit, but beware of timeouts as the CSV files are exported synchronously.
 
 #### 3. OCR Settings
 
