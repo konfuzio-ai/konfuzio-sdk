@@ -1,7 +1,7 @@
 """Test code examples for evaluation of the Extraction AI in the documentation."""
 from konfuzio_sdk.trainer.information_extraction import load_model
 
-MODEL_PATH = '../../../tests/trainer/2023-04-25-15-56-42_lohnabrechnung_rfextractionai_.pkl'
+MODEL_PATH = '../../../tests/trainer/2023-04-28-12-10-45_lohnabrechnung_rfextractionai_.pkl'
 pipeline = load_model(MODEL_PATH)
 
 # To get the evaluation of the full pipeline
