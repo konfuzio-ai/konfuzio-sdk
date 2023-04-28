@@ -2,6 +2,7 @@
 import os
 
 from konfuzio_sdk.data import Project, Document
+
 from variables import YOUR_PROJECT_ID
 
 FILE_PATH = '../../../tests/test_data/pdf.pdf'
@@ -44,10 +45,9 @@ document = Document.from_file(FILE_PATH, project=my_project, sync=True)
 document = my_project._documents[-1]
 document.dataset_status = 0
 document.delete(delete_online=True)
-document_async = Document.from_file(FILE_PATH, project=my_project, sync=False)
+document = Document.from_file(FILE_PATH, project=my_project, sync=False)
 document.update()
 
-my_project.init_or_update_document(from_online=False)
 document_id = document.id_
 document = my_project.get_document_by_id(document_id)
 
@@ -58,5 +58,4 @@ document.dataset_status = 2
 document.save_meta_data()
 my_project = Project(id_=YOUR_PROJECT_ID, update=True)
 assert len(my_project.documents) == 26
-my_project.get_document_by_id(document_async).delete(delete_online=True)
-
+my_project.get_document_by_id(document_id).delete(delete_online=True)

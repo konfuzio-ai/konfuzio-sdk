@@ -220,14 +220,14 @@ it like this:
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 56-59
+   :lines: 55-58
 
 #### Update Document
 If there are changes in the Document in the Konfuzio Server, you can update the Document with:
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 40
+   :lines: 49
 
 If a Document is part of the Training or Test set, you can also update it by updating the entire Project via
 `project.get(update=True)`. However, for Projects with many Documents it can be faster to update only the relevant Documents.
