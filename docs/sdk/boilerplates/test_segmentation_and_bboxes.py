@@ -4,9 +4,9 @@ from konfuzio_sdk.data import Project
 from konfuzio_sdk.api import get_results_from_segmentation
 from variables import YOUR_PROJECT_ID
 
-my_project = Project(id_=YOUR_PROJECT_ID)
+my_project = Project(id_=YOUR_PROJECT_ID, strict_data_validation=False)
 # first Document uploaded
-document = my_project.documents[0]
+document = my_project.documents[1]
 # index of the Page to test
 page_index = 0
 
