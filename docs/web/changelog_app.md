@@ -25,11 +25,11 @@ You can think of the _Planned_ section as a _Roadmap_ that lists Konfuzio Server
 
 Upcoming...
 
-## released-2023-04-15_10-17-52
+## released-2023-04-23_18-48-59
 
 This version uses the Konfuzio Python SDK in version v.0.2.15 and Konfuzio Document Validation UI in version v.0.1.4.
 
-Important note: This release changes the internal format of saved AIs. Therefore, you need to migrate existing AIs, before updating to this Konfuzio Server version. Please run "python manage.py resave_all_with_cloudpickle" to do so. This needs to be run after the usual [update actions](https://dev.konfuzio.com/web/on_premises.html#a-upgrade-to-newer-konfuzio-version). In case you need help or experience an issue with the migration please contact is via https://konfuzio.com/support. This Konfuzio Server will not start if unmigrated AIs are present.
+Important note: This release changes the internal format of saved AIs. Therefore, you need to migrate existing AIs, before updating to this Konfuzio Server version. Please run "python manage.py resave_all_with_cloudpickle" to do so. In case you need help or experience an issue with the migration please contact is via https://konfuzio.com/support. This Konfuzio Server will not start if unmigrated AIs are present. Finally,th usual [update actions](https://dev.konfuzio.com/web/on_premises.html#a-upgrade-to-newer-konfuzio-version) need to be run. 
 
 ### Added
 - Calculate and access Tokenizers via the web interface ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9271)).

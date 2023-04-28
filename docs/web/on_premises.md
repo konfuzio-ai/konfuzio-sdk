@@ -699,6 +699,536 @@ Konfuzio Server will create a total of 43 tables and use the following data type
 
 ### Environment Variables for Konfuzio Server
 
+#### 1. General Settings
+
+##### HOST_NAME
+The HOSTNAME variable is used in the E-Mail templates: https://example.konfuzio.com or http://localhost:8000 for local development.
+
+Note: Please include the protocol (e.g. http://) even the variable is named HOST_NAME.
+
+_This is mandatory. Type: string_
+
+##### ALLOWED_HOSTS
+Default: HOST_NAME variable without the protocol.
+
+A list of strings representing the host/domain names that Konfuzio can serve. 
+This is a security measure to prevent HTTP Host header attacks, which are possible even under many seemingly-safe web server configurations.
+See https://docs.djangoproject.com/en/4.2/ref/settings/#allowed-hosts
+
+_Type: List[string]_
+
+##### BILLING_API_KEY
+The Billing API Key to connect with the Konfuzio License Server.  
+See https://dev.konfuzio.com/web/on_premises.html#billing-and-license
+
+_This is mandatory. Type: string_
+
+##### DEBUG
+Default: False
+
+Use False for production and True for local development.
+See https://docs.djangoproject.com/en/3.2/ref/settings/#std:setting-DEBUG
+
+_Type: boolean_
+
+##### SECRET_KEY
+Insert random secret key.
+See https://docs.djangoproject.com/en/4.0/ref/settings/#secret-key
+
+_This is mandatory. Type: string_
+
+##### DATABASE_URL
+Please enter a Postgres Database in the format of "postgres://USER:PASSWORD@HOST:PORT/NAME" (https://github.com/kennethreitz/dj-database-url#url-schema).
+
+_This is mandatory. Type: string_
+
+##### DATABASE_URL_SSL_REQUIRE
+Default: False
+
+Specify whether the database connection requires SSL.
+
+_Type: boolean_
+
+##### MAINTENANCE_MODE
+Default: False
+
+Set maintenance mode, shows 503 error page when maintenance-mode is on.
+
+_Type: boolean_
+
+#### 2. Background Tasks via Celery
+
+Settings related to [https://dev.konfuzio.com/web/explanations.html#background-processes](Background Tasks).
+
+##### BROKEL_URL
+Enter a Redis Database.
+https://docs.celeryq.dev/en/stable/userguide/configuration.html#std-setting-broker_url
+
+_This is mandatory. Type: string_
+
+##### RESULT_BACKEND
+Enter a Redis Database.
+https://docs.celeryq.dev/en/stable/userguide/configuration.html#std-setting-result_backend
+
+_This is mandatory. Type: string_
+
+##### TASK_ALWAYS_EAGER
+Default: False
+
+When this is True, all background processes are executed in synchronously. 
+See https://docs.celeryq.dev/en/stable/userguide/configuration.html#std-setting-task_always_eager
+
+_Type: boolean_
+
+##### WORKER_MAX_TASKS_PER_CHILD
+Default: 50
+
+After 50 tasks we replace a worker process to prevent and mitigate memory leaks.
+
+_Type: integer_
+
+##### WORKER_SEND_TASK_EVENTS
+Default: False
+
+See https://docs.celeryproject.org/en/stable/userguide/configuration.html#worker-send-task-events
+
+_Type: boolean_
+
+##### TASK_SEND_SENT_EVENT
+Default: True
+
+See https://docs.celeryproject.org/en/stable/userguide/configuration.html#task-send-sent-event
+
+_Type: boolean_
+
+##### TASK_TRACK_STARTED
+Default: True
+
+See https://docs.celeryproject.org/en/stable/userguide/configuration.html#task-track-started
+
+_Type: boolean_
+
+##### WORKER_MAX_MEMORY_PER_CHILD
+Default: 100000
+
+After allocation of 100MB we replace a worker process to mitigate memory leaks.
+
+_Type: integer_
+
+##### TASK_ACKS_ON_FAILURE_OR_TIMEOUT
+Default: True
+
+See https://docs.celeryproject.org/en/stable/userguide/configuration.html#std-setting-task_acks_on_failure_or_timeout
+
+_Type: boolean_
+
+##### TASK_ACKS_LATE
+Default: True
+
+See https://docs.celeryproject.org/en/stable/userguide/optimizing.html#reserve-one-task-at-a-time
+
+_Type: boolean_
+
+##### BROKER_MASTER_NAME
+Default: None
+
+The name of the Broker Master when using Redis Sentinel.
+https://docs.celeryq.dev/en/stable/getting-started/backends-and-brokers/redis.html
+
+_Type: string_
+
+##### RESULT_BACKEND_MASTER_NAME
+Default: None
+
+The name of the Result Backend Master when using Redis Sentinel.
+https://docs.celeryq.dev/en/stable/getting-started/backends-and-brokers/redis.html
+
+_Type: string_
+
+##### THRESHOLD_FOR_HEAVY_TRAINING
+Default: 150
+
+The Number of Document that indicate a heavy training. Heavy training are executed via a dedicated queue.
+A "training_heavy" worker must be running in order to complete these trainings.
+
+_Type: integer_
+
+#### 3. OCR Settings
+
+##### AZURE_OCR_KEY
+Default: None
+
+Get the API KEY from portal.azure.com for Microsoft.CognitiveServices.
+
+_Type: string_
+
+##### AZURE_OCR_BASE_URL
+Default: None
+
+Get the API URL from portal.azure.com for Microsoft.CognitiveServices
+
+_Type: string_
+
+##### AZURE_OCR_VERSION 
+Default: 'v3.2'
+
+Get the AZURE_OCR_VERSION from portal.azure.com for Microsoft.Cognitives.
+
+_Type: string_
+
+##### AZURE_OCR_MODEL_VERSION
+Default='latest'
+
+Get the AZURE_OCR_MODEL_VERSION from portal.azure.com for Microsoft.Cognitives.
+
+_Type: string_
+
+#### 4. Blob Storage Settings
+
+##### DEFAULT_FILE_STORAGE
+Default: 'django.core.files.storage.FileSystemStorage'
+
+By default, the file system is used as file storage. 
+To use an Azure Storage Account set 'storage.MultiAzureStorage'.
+To use an S3-compatible storage set: 'storage.MultiS3Boto3Storage'.
+See https://docs.djangoproject.com/en/4.0/ref/settings/#default-file-storage
+
+_Type: string_
+
+##### AZURE_ACCOUNT_KEY:
+Default: ''
+
+The Azure account key.
+
+_This is mandatory if DEFAULT_FILE_STORAGE='storage.MultiAzureStorage'. Type: string_
+
+##### AZURE_ACCOUNT_NAME:
+Default: ''
+
+The name if the Azure account name.
+
+_This is mandatory if DEFAULT_FILE_STORAGE='storage.MultiAzureStorage'. Type: string_
+
+##### AZURE_CONTAINER:
+Default: ''
+
+The name if the Azure storage container.
+
+_This is mandatory if DEFAULT_FILE_STORAGE='storage.MultiAzureStorage'. Type: string_
+
+##### AWS_ACCESS_KEY_ID
+Default: ''
+
+_This is mandatory if DEFAULT_FILE_STORAGE='storage.MultiS3Boto3Storage'. Type: string_
+
+##### AWS_SECRET_ACCESS_KEY
+Default: ''
+
+The access key of the S3-Service.
+
+_This is mandatory if DEFAULT_FILE_STORAGE='storage.MultiS3Boto3Storage'. Type: string_
+
+##### AWS_STORAGE_BUCKET_NAME
+Default: ''
+
+The bucket name of the S3-Service.
+
+_This is mandatory if DEFAULT_FILE_STORAGE='storage.MultiS3Boto3Storage'. Type: string_
+
+##### AWS_S3_REGION_NAME
+Default: ''
+
+The region name of the S3-Service.
+
+_Type: string_
+
+##### AWS_S3_ENDPOINT_URL
+Default: ''
+
+Custom S3 URL to use when connecting to S3, including scheme. 
+
+_Type: string_
+
+#### 5. Email Sending Settings
+
+##### EMAIL_BACKEND
+Default: django.core.mail.backends.smtp.EmailBackend
+The SMTP backend for sending E-Mails.
+See https://docs.djangoproject.com/en/4.0/ref/settings/#email-backend
+
+_Type: string_
+
+##### EMAIL_HOST
+Default: ''
+
+The host to use for sending email.
+
+_Type: string_
+
+##### EMAIL_HOST_PASSWORD
+Default: '' 
+
+Password to use for the SMTP server defined in EMAIL_HOST. This setting is used in conjunction with EMAIL_HOST_USER when authenticating to the SMTP server. If either of these settings is empty, we won’t attempt authentication.
+
+_Type: string_
+
+##### EMAIL_HOST_USER
+Default: '' 
+
+Username to use for the SMTP server defined in EMAIL_HOST. If empty, we won’t attempt authentication.
+
+_Type: string_
+
+##### EMAIL_PORT
+Default: 25
+
+Port to use for the SMTP server defined in EMAIL_HOST.
+See https://docs.djangoproject.com/en/4.2/ref/settings/#std-setting-EMAIL_PORT
+
+_Type: int_
+
+##### EMAIL_USE_TLS
+Default: False
+
+See https://docs.djangoproject.com/en/4.0/ref/settings/#email-use-tls
+
+_Type: boolean_
+
+##### EMAIL_USE_SSL:
+Default: False
+
+See https://docs.djangoproject.com/en/4.0/ref/settings/#email-use-ssl
+
+_Type: boolean_
+
+##### DEFAULT_FROM_EMAIL
+Default: default: 'Konfuzio.com <support@konfuzio.net>
+
+Specifies the email address to use as the "From" address when sending emails.
+
+_Type: string_
+
+
+##### SENDGRID_API_KEY
+Default: None
+
+In order to sent emails via sendgrid, set EMAIL_BACKEND='sendgrid_backend.SendgridBackend' and specify the Sendgrid API Key here.
+
+_Type: string_
+
+#### 6. Email Polling Settings
+
+##### SCAN_EMAIL_HOST
+Default: ''
+
+The host to use for polling emails.
+
+_Type: string_
+
+##### SCAN_EMAIL_HOST_USER
+Default: ''
+
+Username to use for the SMTP server defined in SCAN_EMAIL_HOST.
+
+_Type: string_
+
+##### SCAN_EMAIL_RECIPIENT
+Default: ''
+
+Recipient email address to be polled. Emails sent to this address will be polled into Konfuzio.
+
+_Type: string_
+
+##### SCAN_EMAIL_HOST_PASSWORD
+Default: ''
+
+The password to use for the SMTP server defined in SCAN_EMAIL_HOST.
+
+_Type: string_
+
+##### SCAN_EMAIL_SLEEP_TIME
+Default: 60
+
+The polling interval in seconds.
+
+_Type: int_
+
+#### 7. Time limits for background tasks
+
+More info about backgrounds tasks and their defaults can be viewed here: https://dev.konfuzio.com/web/explanations.html#celery-tasks.
+
+##### EXTRACTION_TIME_LIMIT 
+Default: 3600
+
+The maximum extraction time in seconds.
+
+_Type: int_
+
+##### CATEGORIZATION_TIME_LIMIT 
+Default: 180
+
+The maximum categorization time in seconds.
+
+_Type: int_
+
+##### EVALUATION_TIME_LIMIT 
+Default: 3600
+
+The maximum evaluation time in seconds.
+
+_Type: int_
+
+##### TRAINING_EXTRACTION_TIME_LIMIT 
+Default: 72000
+
+The maximum extraction AI training time in seconds.
+
+_Type: int_
+
+##### TRAINING_CATEGORIZATION_TIME_LIMIT 
+Default: 36000
+
+The maximum categorization AI training time in seconds.
+
+_Type: int_
+
+##### SANDWICH_PDF_TIME_LIMIT 
+Default: 1800
+
+The maximum time to generate the sandwich PDF.
+
+_Type: int_
+
+##### DOCUMENT_TEXT_AND_BBOXES_TIME_LIMIT 
+Default: 3600
+
+The maximum time build a Document's text and bboxes.
+
+_Type: int_
+
+##### CLEAN_DELETED_DOCUMENT_TIME_LIMIT 
+Default: 3600
+
+The maximum time hard delete Documents, that are marked for deletion.
+See https://help.konfuzio.com/modules/projects/index.html?#auto-deletion-of-documents
+
+_Type: int_
+
+##### CLEAN_DOCUMENT_WITHOUT_DATASET_TIME_LIMIT
+Default: 3600
+
+The maximum time to delete Documents which have reached the auto-deletion date.
+See https://help.konfuzio.com/modules/projects/index.html?#auto-deletion-of-documents
+
+_Type: int_
+
+##### DOCUMENT_WORKFLOW_TIME_LIMIT
+Default: 7200
+
+The maximum time for the whole Document workflow.
+
+_Type: int_
+
+<!--
+#### Configure Azure OCR (optional).
+AZURE_OCR_KEY=
+AZURE_OCR_VERSION=
+AZURE_OCR_BASE_URL=
+-->
+
+#### 8. Keycloak / SSO Settings
+
+The following values establish a keycloak connection through the
+mozilla oidc package (https://mozilla-django-oidc.readthedocs.io/en/stable/settings.html).
+
+##### SSO_ENABLED
+Default: True
+
+Set to True active SSO login via Keycloak.
+
+_Type: boolean_
+
+##### KEYCLOAK_URL
+Default: '127.0.0.1:8080/'
+
+If you use keycloak version 17 and later set url like: http(s)://{keycloak_address}:{port}/ (optional).
+If you use keycloak version 16 and earlier set url like: http(s)://{keycloak_address}:{port}/auth/ (optional).
+
+_Type: string_
+
+##### KEYCLOAK_REALM
+Default: master
+
+The Realm to be used.
+
+_Type: string_
+
+##### OIDC_RP_CLIENT_ID
+Default: None
+
+The OIDC Client ID. For Keycloak client creation see: https://www.keycloak.org/docs/latest/server_admin/#assembly-managing-clients_server_administration_guide (optional).
+
+_Type: string_
+
+##### OIDC_RP_CLIENT_SECRET
+Default: None
+
+The OIDC Client Secret. See https://mozilla-django-oidc.readthedocs.io/en/stable/settings.html#OIDC_RP_CLIENT_SECRET
+
+_Type: string_
+
+##### OIDC_RP_SIGN_ALGO
+Default: RS256
+
+Sets the algorithm the IdP uses to sign ID tokens.
+See https://mozilla-django-oidc.readthedocs.io/en/stable/settings.html#OIDC_RP_SIGN_ALGO
+
+_Type: string_
+
+#### 9. Test Settings for Keycloak / SSO Settings
+
+These variables are only used for Keycloak integration tests: 
+The admin variables are for login keycloak admin panel, the test variables are for login to Konfuzio server.
+The Keycloak Integration test can be run by installing Chromedriver and Selenium.
+
+```
+apt-get update && apt-get install -y fonts-liberation libatk-bridge2.0-0 libatk1.0-0 libatspi2.0-0 libgbm1 libgtk-3-0 libxcomposite1 libxkbcommon0 xdg-utils libu2f-udev
+wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && apt-get install -y ./google-chrome-stable_current_amd64.deb
+pip3 install coverage chromedriver-binary-auto chromedriver_binary
+python manage.py test -t . server --tag=selenium-required
+```
+
+##### KEYCLOAK_ADMIN_USERNAME
+Default: admin
+
+The Keycloak admin username.
+
+_Type: string_
+
+##### KEYCLOAK_ADMIN_PASSWORD
+Default: admin
+
+The Keycloak admin password.
+
+_Type: string_
+
+##### KEYCLOAK_TEST_USERNAME
+Default: fake@f.com
+
+Username for Keycloak integration test.
+
+_Type: string_
+
+##### KEYCLOAK_TEST_PASSWORD
+Default: pass1234
+
+Password of User for Keycloak integration test.
+
+_Type: string_
+
+
+### Example .env file for Konfuzio Server
+
 Konfuzio Server is fully configured via environment variables, these can be passed as dedicated environment variables or a single .env to the Konfuzio Server containers (REGISTRY_URL/konfuzio/text-annotation/master). A template for a .env file is provided here:
 
 ```text
@@ -779,7 +1309,6 @@ EMAIL_USE_TLS=False
 # See https://docs.djangoproject.com/en/4.0/ref/settings/#email-use-ssl
 EMAIL_USE_SSL=False
 # See https://docs.djangoproject.com/en/4.0/ref/settings/#email-timeout
-EMAIL_TIMEOUT=
 DEFAULT_FROM_EMAIL=
 
 # Customize the email verification (optional)
