@@ -5,6 +5,8 @@ We use several concepts in the Konfuzio Platform. We are capitalize concepts in 
 
 - AI
 - AI Evaluation
+- Default Evaluation
+- Strict Evaluation
 - Bbox
 - Bbox Validation Rules
 - Annotation
