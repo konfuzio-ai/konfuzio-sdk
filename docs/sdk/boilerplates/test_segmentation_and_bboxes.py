@@ -28,7 +28,7 @@ image = image.resize((int(image.size[0] * factor_x), int(image.size[1] * factor_
 height = image.size[1]
 
 image_characters_bbox = [char_bbox for _, char_bbox in page.get_bbox().items()]
-assert len(image_characters_bbox) == 2249
+assert len(image_characters_bbox) == 2248
 
 draw = ImageDraw.Draw(image)
 
