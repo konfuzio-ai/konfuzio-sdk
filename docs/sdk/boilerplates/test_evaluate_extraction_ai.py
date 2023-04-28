@@ -1,8 +1,14 @@
 """Test code examples for evaluation of the Extraction AI in the documentation."""
+from konfuzio_sdk.data import Project
+from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
 from konfuzio_sdk.trainer.information_extraction import load_model
 
 MODEL_PATH = '../../../tests/trainer/2023-04-28-12-10-45_lohnabrechnung_rfextractionai_.pkl'
 pipeline = load_model(MODEL_PATH)
+
+project = Project(id_=None, project_folder=OFFLINE_PROJECT)
+test_document = project.get_document_by_id(TEST_DOCUMENT_ID)
+pipeline.test_documents = [test_document]
 
 # To get the evaluation of the full pipeline
 evaluation = pipeline.evaluate_full()
