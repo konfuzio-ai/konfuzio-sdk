@@ -46,6 +46,9 @@ jobs:
         KONFUZIO_USER: ${{ secrets.KONFUZIO_USER }}
         KONFUZIO_PASSWORD: ${{ secrets.KONFUZIO_PASSWORD }}
         KONFUZIO_TOKEN: ${{ secrets.KONFUZIO_TOKEN }}
+    - name: Test documentation for broken links
+      run: |
+        sphinx-build -d _build/doctrees docs _build/html -b linkcheck
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
