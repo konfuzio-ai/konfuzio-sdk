@@ -595,6 +595,36 @@ The endpoint accepts a list of objects, each one representing a single output Do
 splitting functionality, this list should only contain one document). The `pages` property you send determines the
 content of the Document.
 
+### Document splitting suggestions
+
+.. note::
+  [Contact us](https://konfuzio.com/en/support/) to enable this functionality.
+
+The training data that was [previously created](#create-training-data-and-train-the-ai) can also be used to train a
+Splitting AI to automatically propose splitting suggestions for uploaded documents.
+
+To get started, you should "Enable Document splitting" in your
+[Project settings](https://help.konfuzio.com/modules/projects/index.html#project-details); then, you can use our
+[Splitting AI endpoints](https://app.konfuzio.com/v3/swagger/#/splitting-ais) to create a new Splitting AI, similar to
+[how you train an Extraction AI](#create-training-data-and-train-the-ai).
+
+Once this is done, when uploading a Document, you will notice an additional `proposed_split` field in the response.
+This field contains a list of different Documents the AI thinks your original Document should be split into; each one
+includes a Category, if it was found, and the list of Page IDs that should be part of that new Document. You can feed
+this list, either as it is or after editing it and changing details, into the
+[postprocess endpoint](https://app.konfuzio.com/v3/swagger/#/documents/documents_postprocess_create) to actualize
+the AI's suggestions. You can also pass a list with one Document and all the page IDs to effectively reject the
+suggestions and proceed with the original Document.
+
+.. note::
+  Once Document Splitting is enabled for a Project, newly uploaded Documents where splitting is detected will stay in
+  the "Waiting for splitting confirmation" (`41`) status until the user takes action on the AI's suggestions. After
+  that, extraction will run as usual on the resulting Documents.
+
+After being split, the new Documents will keep a reference to the original "Document Set" via the `document_set`
+property. Querying the [Document Sets endpoint](https://app.konfuzio.com/v3/swagger/#/document-sets) with that ID will
+return all the existing Documents derived from the same original Document.
+
 ### Download the OCR version of an uploaded Document
 
 After uploading a Document, the Konfuzio server also creates a [PDF OCR version](#ocr-processing) of it with indexed and 
