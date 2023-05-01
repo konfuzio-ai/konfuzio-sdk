@@ -21,9 +21,15 @@ You can think of the _Planned_ section as a _Roadmap_ that lists Konfuzio Server
 - Allow administrators of Konfuzio on-premise installations to run a speedtest ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9870)).
 - Start automatic AI retraining after User confirms that he has finished a annotation review ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9166)).
 
-## Next Release (estimated release date: 28th April 2023)
+## Next Release (estimated release date: 12th May 2023)
+
+Upcoming....
+
+## released-2023-05-01_16-38-06
 
 This version uses the Konfuzio Python SDK in version v.0.2.17 and Konfuzio Document Validation UI in version v.0.1.5.
+
+Please Note: If you upgrade from a version before 'released-2023-04-23_18-48-59' you must conduct the migration steps described in the release notes of released-2023-04-23_18-48-59.
 
 ### Added
 - [Allow to connect to Redis Sentinel for processing of Background Tasks by setting BROKER_MASTER_NAME and RESULT_BACKEND_MASTER_NAME](https://dev.konfuzio.com/web/on_premises.html#broker-master-name) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10911)).
