@@ -756,19 +756,35 @@ Set maintenance mode, shows 503 error page when maintenance-mode is on.
 
 _Type: boolean_
 
+##### CSV_EXPORT_ROW_LIMIT
+Default: 100
+
+The (approximate) number of rows that an exported CSV file of extraction results can include.
+Set to 0 for no limit, but beware of timeouts as the CSV files are exported synchronously.
+
+_Type: integer_
+
+##### ACCOUNT_BLOCK_FREE_EMAIL_PROVIDERS
+Default: False
+
+Block registration for users with an email address from a free provider according to
+[the blocklist](https://github.com/Kikobeats/free-email-domains/blob/master/domains.json).
+
+_Type: boolean_
+
 #### 2. Background Tasks via Celery
 
-Settings related to [https://dev.konfuzio.com/web/explanations.html#background-processes](Background Tasks).
+Settings related to [Background Tasks](https://dev.konfuzio.com/web/explanations.html#background-processes).
 
-##### BROKEL_URL
+##### BROKER_URL
 Enter a Redis Database.
-https://docs.celeryq.dev/en/stable/userguide/configuration.html#std-setting-broker_url
+See https://docs.celeryq.dev/en/stable/userguide/configuration.html#std-setting-broker_url
 
 _This is mandatory. Type: string_
 
 ##### RESULT_BACKEND
 Enter a Redis Database.
-https://docs.celeryq.dev/en/stable/userguide/configuration.html#std-setting-result_backend
+See https://docs.celeryq.dev/en/stable/userguide/configuration.html#std-setting-result_backend
 
 _This is mandatory. Type: string_
 
@@ -1002,12 +1018,11 @@ See https://docs.djangoproject.com/en/4.0/ref/settings/#email-use-ssl
 _Type: boolean_
 
 ##### DEFAULT_FROM_EMAIL
-Default: default: 'Konfuzio.com <support@konfuzio.net>
+Default: 'support@konfuzio.net'
 
 Specifies the email address to use as the "From" address when sending emails.
 
 _Type: string_
-
 
 ##### SENDGRID_API_KEY
 Default: None
