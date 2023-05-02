@@ -38,25 +38,29 @@ to be directly uploaded to the Konfuzio Server (see [Upload Extraction or Catego
 
 ### Customize Extraction AI
 
-Any Custom [Extraction AI](sourcecode.html#extraction-ai) (derived from the Konfuzio `Trainer` class) should implement 
+Any Custom [Extraction AI](sourcecode.html#extraction-ai) (derived from the Konfuzio `AbstractExtractionAI` class) should implement 
 the following interface:
+
 ```python
-from konfuzio_sdk.trainer.information_extraction import Trainer
+from konfuzio_sdk.trainer.information_extraction import AbstractExtractionAI
 from konfuzio_sdk.data import Document
 from typing import List
 
-class CustomExtractionAI(Trainer):
+
+class CustomExtractionAI(AbstractExtractionAI):
 
     def __init__(self, *args, **kwargs):
-        # initialize key variables required by the custom AI
+
+    # initialize key variables required by the custom AI
 
     def fit(self):
-        # Define architecture and training that the model undergoes, i.e. a NN architecture or a custom hardcoded logic
-        # This method is allowed to be implemented as a no-op if you provide the trained model in other ways
+
+    # Define architecture and training that the model undergoes, i.e. a NN architecture or a custom hardcoded logic
+    # This method is allowed to be implemented as a no-op if you provide the trained model in other ways
 
     def extract(self, document: Document) -> Document:
-        # define how the model extracts information from Documents
-        # **NB:** The result of extraction must be a copy of the input Document with added Annotations attribute `Document._annotations`
+# define how the model extracts information from Documents
+# **NB:** The result of extraction must be a copy of the input Document with added Annotations attribute `Document._annotations`
 ```
 
 Example usage of your Custom Extraction AI:

@@ -1833,6 +1833,7 @@ class Span(Data):
                 "revised": None,
                 "label_threshold": None,
                 "label_id": None,
+                "label_has_multiple_top_candidates": None,
                 "label_set_id": None,
                 "annotation_id": None,
                 "annotation_set_id": 0,  # to allow grouping to compare boolean
@@ -1874,6 +1875,7 @@ class Span(Data):
                 "revised": self.annotation.revised,
                 "label_threshold": self.annotation.label.threshold,  # todo: allow to optimize threshold
                 "label_id": self.annotation.label.id_,
+                "label_has_multiple_top_candidates": self.annotation.label.has_multiple_top_candidates,
                 "label_set_id": self.annotation.label_set.id_,
                 "annotation_id": self.annotation.id_,
                 "annotation_set_id": self.annotation.annotation_set.id_,
@@ -2582,7 +2584,7 @@ class Document(Data):
                     logger.error(str(e))
 
     @classmethod
-    def from_file_sync(
+    def from_file(
         self,
         path: str,
         project: 'Project',
@@ -2590,20 +2592,22 @@ class Document(Data):
         category_id: Optional[int] = None,
         callback_url: str = '',
         timeout: Optional[int] = None,
+        sync: bool = True,
     ) -> 'Document':
         """
         Initialize Document from file with synchronous API call.
 
         This class method will wait for the document to be processed by the server
         and then return the new Document. This may take a bit of time. When uploading
-        many documents, it is advised to use the Document.from_file_async method.
+        many Documents, it is advised to set the sync option to False method.
 
         :param path: Path to file to be uploaded
         :param project: If to filter by correct annotations
-        :param dataset_status: Dataset status of the document (None: 0 Preparation: 1 Training: 2 Test: 3 Excluded: 4)
+        :param dataset_status: Dataset status of the Document (None: 0 Preparation: 1 Training: 2 Test: 3 Excluded: 4)
         :param category_id: Category the Document belongs to (if unset, it will be assigned one by the server)
         :param callback_url: Callback URL receiving POST call once extraction is done
         :param timeout: Number of seconds to wait for response from the server
+        :param sync: Whether to wait for the file to be processed by the server
         :return: New Document
         """
         response = upload_file_konfuzio_api(
@@ -2612,62 +2616,38 @@ class Document(Data):
             dataset_status=dataset_status,
             category_id=category_id,
             callback_url=callback_url,
-            sync=True,
+            sync=sync,
             session=konfuzio_session(timeout=timeout),
         )
         response = response.json()
-
-        if response['status'][0] == 2:
-            logger.debug(f"Document status code {response['status'][0]}: {response['status'][1]}")
-        else:
-            logger.warning(f"Document status code {response['status'][0]}: {response['status'][1]}")
-
         new_document_id = response['id']
 
-        project.init_or_update_document(from_online=True)
-        doc = project.get_document_by_id(new_document_id)
+        if sync:
+            if response['status'][0] == 2:
+                logger.debug(f"Document status code {response['status'][0]}: {response['status'][1]}")
+            else:
+                logger.warning(f"Document status code {response['status'][0]}: {response['status'][1]}")
+            assert project.id_ == response['project'], "Project id_ of uploaded file does not match"
+            document = Document(
+                id_=new_document_id,
+                project=project,
+                update=True,
+                category_template=category_id if category_id else response['category_template'],
+                text=response['text'],
+                status=response['status'],
+                dataset_status=dataset_status,
+            )
+        else:
+            document = Document(
+                id_=new_document_id,
+                project=project,
+                update=True,
+                category_template=category_id,
+                status=[0, "Queuing for OCR"],
+                dataset_status=dataset_status,
+            )
 
-        return doc
-
-    @classmethod
-    def from_file_async(
-        self,
-        path: str,
-        project: 'Project',
-        dataset_status: int = 0,
-        category_id: Union[None, int] = None,
-        callback_url: str = '',
-        timeout: Optional[int] = None,
-    ) -> int:
-        """
-        Initialize Document from file with asynchrinous API call.
-
-        This class method asynchronously uploads a file, to the Konfuzio API and returns the ID of
-        the newly created document. Use this method to create a new Document and don't want to wait
-        for the document to be processed by the server. This requires to update the Project at a
-        later point to be able to work with the new Document.
-
-        :param path: Path to file to be uploaded
-        :param project: If to filter by correct annotations
-        :param dataset_status: Dataset status of the document (None: 0 Preparation: 1 Training: 2 Test: 3 Excluded: 4)
-        :param category_id: Category the Document belongs to (if unset, it will be assigned one by the server)
-        :param callback_url: Callback URL receiving POST call once extraction is
-        :param timeout: Number of seconds to wait for response from the server
-        :return: ID of new Document
-        """
-        response = upload_file_konfuzio_api(
-            path,
-            project_id=project.id_,
-            dataset_status=dataset_status,
-            category_id=category_id,
-            callback_url=callback_url,
-            sync=False,
-            session=konfuzio_session(timeout=timeout),
-        )
-
-        new_document_id = json.loads(response.text)['id']
-
-        return new_document_id
+        return document
 
     @property
     def file_path(self):
@@ -3108,9 +3088,13 @@ class Document(Data):
 
     def download_document_details(self):
         """Retrieve data from a Document online in case Document has finished processing."""
-        if self.is_online and self.status and self.status[0] == Document.DONE:
+        if self.is_online:
             data = get_document_details(document_id=self.id_, project_id=self.project.id_, session=self.session)
-
+            self.status = data["status"]
+            self.updated_at = dateutil.parser.isoparse(data["updated_at"])
+            if data["category_template"]:
+                self._category = self.project.get_category_by_id(data["category_template"])
+            # TODO: update rest of metadata with APIv3
             # write a file, even there are no annotations to support offline work
             with open(self.annotation_file_path, "w") as f:
                 json.dump(data["annotations"], f, indent=2, sort_keys=True)
@@ -3119,7 +3103,8 @@ class Document(Data):
                 json.dump(data["sections"], f, indent=2, sort_keys=True)
 
             with open(self.txt_file_path, "w", encoding="utf-8") as f:
-                f.write(data["text"])
+                if data["text"]:
+                    f.write(data["text"])
 
             with open(self.pages_file_path, "w") as f:
                 json.dump(data["pages"], f, indent=2, sort_keys=True)
@@ -3978,32 +3963,32 @@ class Project(Data):
         n_unchanged_documents = 0
         for document_data in self.meta_data:
             updated_docs_ids_set.add(document_data['id'])
-            if document_data['status'][0] == 2:  # NOQA - hotfix for Text Annotation Server # todo add test
+            # if document_data['status'][0] == 2:  # NOQA - hotfix for Text Annotation Server # todo add test
 
-                new_date = document_data["updated_at"]
-                updated = False
-                new = document_data["id"] not in local_docs_dict
-                if not new:
-                    last_date = local_docs_dict[document_data['id']].updated_at
-                    updated = dateutil.parser.isoparse(new_date) > last_date if last_date is not None else True
+            new_date = document_data["updated_at"]
+            updated = False
+            new = document_data["id"] not in local_docs_dict
+            if not new:
+                last_date = local_docs_dict[document_data['id']].updated_at
+                updated = dateutil.parser.isoparse(new_date) > last_date if last_date is not None else True
 
-                if updated:
-                    doc = local_docs_dict[document_data['id']]
-                    doc.update_meta_data(**document_data)
-                    doc.update()
-                    logger.debug(f'{doc} was updated, we will download it again as soon you use it.')
-                    n_updated_documents += 1
-                elif new:
-                    doc = Document(project=self, update=from_online, id_=document_data['id'], **document_data)
-                    logger.debug(f'{doc} is not available on your machine, we will download it as soon you use it.')
-                    n_new_documents += 1
-                else:
-                    doc = local_docs_dict[document_data['id']]
-                    doc.update_meta_data(**document_data)  # reset any Document level meta data changes
-                    logger.debug(f'Unchanged local version of {doc} from {new_date}.')
-                    n_unchanged_documents += 1
+            if updated:
+                doc = local_docs_dict[document_data['id']]
+                doc.update_meta_data(**document_data)
+                doc.update()
+                logger.debug(f'{doc} was updated, we will download it again as soon you use it.')
+                n_updated_documents += 1
+            elif new:
+                doc = Document(project=self, update=from_online, id_=document_data['id'], **document_data)
+                logger.debug(f'{doc} is not available on your machine, we will download it as soon you use it.')
+                n_new_documents += 1
             else:
-                logger.debug(f"Not loading Document {[document_data['id']]} with status {document_data['status'][0]}.")
+                doc = local_docs_dict[document_data['id']]
+                doc.update_meta_data(**document_data)  # reset any Document level meta data changes
+                logger.debug(f'Unchanged local version of {doc} from {new_date}.')
+                n_unchanged_documents += 1
+            # else:
+            #    logger.debug(f"Not loading Document {[document_data['id']]} with status {document_data['status'][0]}.")
 
         to_delete_ids = set(local_docs_dict.keys()) - updated_docs_ids_set
         n_deleted_documents = len(to_delete_ids)
@@ -4028,8 +4013,6 @@ class Project(Data):
         """Delete Document by its ID."""
         document = self.get_document_by_id(document_id)
 
-        self._documents.remove(document)
-
         if delete_online:
             delete_file_konfuzio_api(document_id)
             self.write_meta_of_files()
@@ -4038,6 +4021,9 @@ class Project(Data):
                 shutil.rmtree(document.document_folder)
             except FileNotFoundError:
                 pass
+
+        self._documents.remove(document)
+
         return None
 
     def get_label_by_name(self, name: str) -> Label:
