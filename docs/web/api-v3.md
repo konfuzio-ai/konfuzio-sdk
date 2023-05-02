@@ -427,7 +427,7 @@ The API will return the uploaded Document's ID and its current status. You can t
 the [Document retrieve endpoint](https://app.konfuzio.com/v3/swagger/#/documents/documents_retrieve) to check if the
 Document has finished processing, and if so, retrieve the extracted data.
 
-### Create an Anotation
+### Create an Annotation
 
 [Annotations](https://help.konfuzio.com/modules/annotations/) are automatically created by the extraction process when
 you upload a Document, but if some data is missing you can annotate it manually to train the AI model to recognize it.
@@ -525,11 +525,41 @@ will be automatically set as the active one only if its
 [evaluation results](https://help.konfuzio.com/modules/extractions/index.html?highlight=evaluation#evaluation) are
 better than the previous AI's.
 
-### Revise machine-generated annotations
+### Review a Document
 
-You can revise the Annotations that are created automatically by an Extraction AI: this will help the next Extraction AI
-training you create, as it will tell the system the points where the information it extract was correct and the points
-where it was not.
+When working on a Document, the ultimate goal is to mark it as "reviewed", which means that all its Annotations have
+been revised and the information inside them is correct.
+
+To clarify how reviewing works, let's take a look at the statuses this data can go through:
+
+.. mermaid::
+
+  flowchart TD
+    A(Feedback Required<br><small>Annotations created by AI)
+    B(Unfilled<br><small>Potential Annotations that are<br>not found by the AI)
+    C[Created by Human]
+    D[Not Found<br><small>Missing Annotation instances</small>]
+    E[Accepted]
+    F[Declined]
+    A --> E
+    A --> F
+    F --> B
+    B --> C
+    B --> D
+
+- Annotations created by an AI extraction are initially marked as **Feedback Required**.
+- They can be **Accepted**, which means that the information they contain is correct.
+- They can be **Declined**, in case the information is wrong.
+- Once an Annotation is Declined, or in case no Annotation was found for a specific Label, the Label (in the
+  context of its Annotation Set) is considered **Unfilled**, and needs to be acted on.
+- The user can manually select the part of the Document where the Unfilled Label is actually present to create an
+  Annotation that is **Created by Human**.
+- The user can signal that the Unfilled Label is **Not Found** in this Document by creating a Missing Annotation
+  instance for this specific Label/Annotation Set combination.
+
+This procedure will help the next Extraction AI training you create, as it will tell the system the where the
+information it extracted was correct and the points where it was not. Once there are no "Feedback Required" and
+"Unfilled" items, the Document can be marked as "reviewed".
 
 To retrieve the list of Annotations for a document, you can use the Annotation list endpoint:
 
@@ -579,7 +609,35 @@ curl --request PATCH \
   --data '{"revised": true, "is_correct": false}'
 ```
 
-Once there are no unrevised Annotations left in the document, the document is considered _reviewed_.
+If a specific Label does not exist at all in a Document, you can use the
+[Missing Annotation endpoint](https://app.konfuzio.com/v3/swagger/#/missing-annotations) to tell the system about it:
+
+```
+curl --request POST \
+  --url https://app.konfuzio.com/api/v3/missing-annotations/ \
+  --header 'Content-Type: application/json' \
+  --header 'Authorization: Token YOUR_TOKEN' \
+  --data '{"document": DOCUMENT_ID, "label": LABEL_ID, "label_set": LABEL_SET_ID}'
+```
+
+You can also see a list of all Missing Annotations that have been created for a document:
+
+```
+curl --request GET \
+  --url https://app.konfuzio.com/api/v3/missing-annotations/?document=DOCUMENT_ID \
+  --header 'Authorization: Token YOUR_TOKEN'
+```
+
+Once there are no Annotations left to be reviewed, and there are no Unfilled Labels, you can mark the Document as
+"reviewed":
+
+```
+curl --request PATCH \
+  --url https://app.konfuzio.com/api/v3/documents/DOCUMENT_ID/ \
+  --header 'Content-Type: application/json' \
+  --header 'Authorization: Token YOUR_TOKEN' \
+  --data '{"is_reviewed": true}'
+```
 
 ### Post-process a document: split, rotate and sort pages
 
