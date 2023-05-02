@@ -927,20 +927,34 @@ See <a class="reference external" href="https://docs.djangoproject.com/en/4.0/re
 <p>Set maintenance mode, shows 503 error page when maintenance-mode is on.</p>
 <p><em>Type: boolean</em></p>
 </section>
+<section id="csv-export-row-limit">
+<h5>CSV_EXPORT_ROW_LIMIT<a class="headerlink" href="#csv-export-row-limit" title="Permalink to this headline">¶</a></h5>
+<p>Default: 100</p>
+<p>The (approximate) number of rows that an exported CSV file of extraction results can include.
+Set to 0 for no limit, but beware of timeouts as the CSV files are exported synchronously.</p>
+<p><em>Type: integer</em></p>
+</section>
+<section id="account-block-free-email-providers">
+<h5>ACCOUNT_BLOCK_FREE_EMAIL_PROVIDERS<a class="headerlink" href="#account-block-free-email-providers" title="Permalink to this headline">¶</a></h5>
+<p>Default: False</p>
+<p>Block registration for users with an email address from a free provider according to
+<a class="reference external" href="https://github.com/Kikobeats/free-email-domains/blob/master/domains.json">the blocklist</a>.</p>
+<p><em>Type: boolean</em></p>
+</section>
 </section>
 <section id="background-tasks-via-celery">
 <h4>2. Background Tasks via Celery<a class="headerlink" href="#background-tasks-via-celery" title="Permalink to this headline">¶</a></h4>
-<p>Settings related to <a class="reference external" href="BackgroundTasks">https://dev.konfuzio.com/web/explanations.html#background-processes</a>.</p>
-<section id="brokel-url">
-<h5>BROKEL_URL<a class="headerlink" href="#brokel-url" title="Permalink to this headline">¶</a></h5>
+<p>Settings related to <a class="reference external" href="https://dev.konfuzio.com/web/explanations.html#background-processes">Background Tasks</a>.</p>
+<section id="broker-url">
+<h5>BROKER_URL<a class="headerlink" href="#broker-url" title="Permalink to this headline">¶</a></h5>
 <p>Enter a Redis Database.
-<a class="reference external" href="https://docs.celeryq.dev/en/stable/userguide/configuration.html#std-setting-broker_url">https://docs.celeryq.dev/en/stable/userguide/configuration.html#std-setting-broker_url</a></p>
+See <a class="reference external" href="https://docs.celeryq.dev/en/stable/userguide/configuration.html#std-setting-broker_url">https://docs.celeryq.dev/en/stable/userguide/configuration.html#std-setting-broker_url</a></p>
 <p><em>This is mandatory. Type: string</em></p>
 </section>
 <section id="result-backend">
 <h5>RESULT_BACKEND<a class="headerlink" href="#result-backend" title="Permalink to this headline">¶</a></h5>
 <p>Enter a Redis Database.
-<a class="reference external" href="https://docs.celeryq.dev/en/stable/userguide/configuration.html#std-setting-result_backend">https://docs.celeryq.dev/en/stable/userguide/configuration.html#std-setting-result_backend</a></p>
+See <a class="reference external" href="https://docs.celeryq.dev/en/stable/userguide/configuration.html#std-setting-result_backend">https://docs.celeryq.dev/en/stable/userguide/configuration.html#std-setting-result_backend</a></p>
 <p><em>This is mandatory. Type: string</em></p>
 </section>
 <section id="task-always-eager">
@@ -1148,7 +1162,7 @@ See <a class="reference external" href="https://docs.djangoproject.com/en/4.2/re
 </section>
 <section id="default-from-email">
 <h5>DEFAULT_FROM_EMAIL<a class="headerlink" href="#default-from-email" title="Permalink to this headline">¶</a></h5>
-<p>Default: default: ‘Konfuzio.com <a class="reference external" href="mailto:support&#37;&#52;&#48;konfuzio&#46;net">support<span>&#64;</span>konfuzio<span>&#46;</span>net</a></p>
+<p>Default: <a class="reference external" href="mailto:'support&#37;&#52;&#48;konfuzio&#46;net">‘support<span>&#64;</span>konfuzio<span>&#46;</span>net</a>’</p>
 <p>Specifies the email address to use as the “From” address when sending emails.</p>
 <p><em>Type: string</em></p>
 </section>
