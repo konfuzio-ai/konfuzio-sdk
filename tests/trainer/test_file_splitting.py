@@ -214,7 +214,6 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
     def test_splitting_with_inplace(self):
         """Test Context Aware File Splitting Model's predict method with inplace=True."""
         splitting_ai = SplittingAI(self.file_splitting_model)
-        # test_document = self.file_splitting_model.tokenizer.tokenize(self.test_document)
         pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True, inplace=True)[0]
         for page in pred.pages():
             if page.number in (1, 3, 5):
@@ -227,7 +226,6 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
     def test_suggest_first_pages(self):
         """Test Splitting AI's suggesting first Pages."""
         splitting_ai = SplittingAI(self.file_splitting_model)
-        # test_document = self.file_splitting_model.tokenizer.tokenize(deepcopy(self.test_document))
         pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)[0]
         for page in pred.pages():
             if page.number in (1, 3, 5):
