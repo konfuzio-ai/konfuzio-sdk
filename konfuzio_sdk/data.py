@@ -2540,6 +2540,11 @@ class Document(Data):
         else:
             return f"Document {self.name} ({self.id_})"
 
+    @property
+    def ocr_ready(self):
+        """Check if Document OCR is ."""
+        return self.text is not None
+
     def update_meta_data(
         self,
         assignee: int = None,

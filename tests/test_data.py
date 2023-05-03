@@ -53,6 +53,7 @@ class TestOnlineProject(unittest.TestCase):
     def test_document(self):
         """Test properties of a specific Documents in the test Project."""
         doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        assert doc.ocr_ready is True
         assert doc.category.name == 'Lohnabrechnung'
         label = self.project.labels[0]
         annotations = label.annotations(categories=[self.project.get_category_by_id(63)])

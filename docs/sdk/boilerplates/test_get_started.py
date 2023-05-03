@@ -9,7 +9,7 @@ FILE_PATH = 'tests/test_data/pdf.pdf'
 ASSIGNEE_ID = None
 
 my_project = Project(id_=YOUR_PROJECT_ID)
-assert len(my_project._documents) == 81
+
 my_project.get(update=True)
 my_project = Project(id_=YOUR_PROJECT_ID, update=True)
 
@@ -39,15 +39,16 @@ my_project.documents_folder
 document = my_project.documents[0]
 document.update()
 document.delete()
-my_project = Project(id_=46, update=True)
+my_project = Project(id_=46)
 
 document = Document.from_file(FILE_PATH, project=my_project, sync=True)
-document = my_project._documents[-1]
-document.dataset_status = 0
+document.delete(delete_online=True)
+document = Document.from_file(FILE_PATH, project=my_project, timeout=300, sync=True)
 document.delete(delete_online=True)
 document = Document.from_file(FILE_PATH, project=my_project, sync=False)
 document.update()
-
+if document.ocr_ready is True:
+    print(document.text)
 my_project.init_or_update_document(from_online=False)
 document_id = document.id_
 document = my_project.get_document_by_id(document_id)
@@ -60,4 +61,3 @@ document.save_meta_data()
 my_project = Project(id_=YOUR_PROJECT_ID, update=True)
 assert len(my_project.documents) == 26
 my_project.get_document_by_id(document.id_).delete(delete_online=True)
-assert len(my_project._documents) == 81

@@ -199,19 +199,26 @@ Document. Beware, this may take from a few seconds up to over a minute depending
    :language: python
    :lines: 44
 
-If however you are trying to upload a large number of files and don't want to wait for them to be processed you can use 
-the asynchronous option which returns an empty Document object. You can then use the `update` method to check if the
-Document is ready and the OCR processing is done.
+By default, the server request will timeout after 2 minutes. If you are uploading a larger file, you can increase the
+timeout by setting the `timeout` parameter to a higher value like this:
+
+.. literalinclude:: /sdk/boilerplates/test_get_started.py
+   :language: python
+   :lines: 46
+
+Another option for larger files, or if you are trying to upload a large number of files and don't want to wait for 
+them to be processed would be to use the asynchronous option which returns an empty Document object. You can then 
+use the `update` method to check if the Document is ready and the OCR processing is done.
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
    :lines: 48
 
-Once the OCR process is done, you can get the Document OCR results with:
+You can update the Document and check if the OCR output is available like this:
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 49
+   :lines: 49-51
 
 #### Modify Document
 
@@ -220,7 +227,7 @@ it like this:
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 56-59
+   :lines: 57-60
 
 #### Update Document
 If there are changes in the Document in the Konfuzio Server, you can update the Document with:
