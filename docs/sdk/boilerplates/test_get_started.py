@@ -52,7 +52,7 @@ if document.ocr_ready is True:
 my_project.init_or_update_document(from_online=False)
 document_id = document.id_
 document = my_project.get_document_by_id(document_id)
-
+document.dataset_status = 0
 document = my_project.documents[0]
 document.assignee = ASSIGNEE_ID
 document.dataset_status = 2

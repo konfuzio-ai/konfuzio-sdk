@@ -302,7 +302,7 @@ If you would like to delete a Document in the remote server you can simply use t
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 46,50,59,47
+   :lines: 55,43,60,45
 
 If `delete_online` is set to False (the default), the Document will only be deleted on your local machine, and will be 
 reloaded next time you load the Project, or if you run the `Project.init_or_update_document` method directly.
