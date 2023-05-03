@@ -2542,7 +2542,7 @@ class Document(Data):
 
     @property
     def ocr_ready(self):
-        """Check if Document OCR is ."""
+        """Check if Document OCR is ready."""
         return self.text is not None
 
     def update_meta_data(
