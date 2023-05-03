@@ -22,7 +22,7 @@ from konfuzio_sdk import IMAGE_FILE, PDF_FILE, OFFICE_FILE, SUPPORTED_FILE_TYPES
 
 logger = logging.getLogger(__name__)
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # only import when type checking to prevent circular import errors
     from konfuzio_sdk.data import Bbox, Span
 
 
