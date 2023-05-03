@@ -1076,8 +1076,8 @@ class BaseModel(metaclass=abc.ABCMeta):
         temp_pkl_file_path = self.temp_pkl_file_path
         pkl_file_path = self.pkl_file_path
 
+        project_docs = self.project._documents  # to restore project documents after save
         if reduce_weight:
-            project_docs = self.project._documents  # to restore project documents after save
             self.reduce_model_weight()
 
         if keep_documents:
@@ -1093,7 +1093,15 @@ class BaseModel(metaclass=abc.ABCMeta):
 
         logger.info(f'Model size: {memory_size_of(self) / 1_000_000} MB')
 
-        self.ensure_model_memory_usage_within_limit(max_ram)
+        try:
+            self.ensure_model_memory_usage_within_limit(max_ram)
+        except MemoryError as e:
+            # restore Documents so that the Project can still be used
+            self.project._documents = project_docs
+            if not keep_documents:
+                self.documents = restore_documents
+                self.test_documents = restore_test_documents
+            raise e
 
         sys.setrecursionlimit(999999)
 
@@ -1126,8 +1134,7 @@ class BaseModel(metaclass=abc.ABCMeta):
         if not keep_documents:
             self.documents = restore_documents
             self.test_documents = restore_test_documents
-        if reduce_weight:
-            self.project._documents = project_docs
+        self.project._documents = project_docs
 
         return pkl_file_path
 
