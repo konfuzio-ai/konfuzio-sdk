@@ -577,7 +577,7 @@ class Bbox:
         return round(abs(self.x0 - self.x1) * abs(self.y0 - self.y1), 3)
 
     @classmethod
-    def from_image_size(self, x0, x1, y0, y1, page: Page) -> 'Bbox':
+    def from_image_size(cls, x0, x1, y0, y1, page: Page) -> 'Bbox':
         """Create Bbox from the image dimensions based result to the scale of the characters Bboxes of the Document.
 
         :return: Bbox with the rescaled dimensions.
@@ -593,7 +593,7 @@ class Bbox:
         x0 = x0 * factor_x
         x1 = x1 * factor_x
 
-        return Bbox(x0=x0, x1=x1, y0=y0, y1=y1, page=page)
+        return cls(x0=x0, x1=x1, y0=y0, y1=y1, page=page)
 
     @property
     def x0_image(self):
