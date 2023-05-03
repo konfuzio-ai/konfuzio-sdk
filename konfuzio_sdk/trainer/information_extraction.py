@@ -40,7 +40,7 @@ import cloudpickle
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.utils.validation import check_is_fitted
 
-from konfuzio_sdk.data import Data, Document, Annotation, Category, AnnotationSet, Label, LabelSet, Span  # , Page
+from konfuzio_sdk.data import Data, Document, Annotation, Category, AnnotationSet, Label, LabelSet, Span
 
 from konfuzio_sdk.tokenizer.paragraph_and_sentence import ParagraphTokenizer, SentenceTokenizer
 
@@ -126,7 +126,7 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
     from konfuzio_sdk.trainer.file_splitting import AbstractFileSplittingModel
 
     if not (
-        Trainer.has_compatible_interface(model)
+        AbstractExtractionAI.has_compatible_interface(model)
         or AbstractFileSplittingModel.has_compatible_interface(model)
         or AbstractCategorizationAI.has_compatible_interface(model)
     ):
@@ -136,7 +136,7 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
         )
 
     if not hasattr(model, "name"):
-        raise TypeError("Saved model file needs to be a Konfuzio Trainer instance.")
+        raise TypeError("Saved model file needs to be a Konfuzio AbstractExtractionAI instance.")
     elif model.name in {
         "DocumentAnnotationMultiClassModel",
         "DocumentEntityMulticlassModel",
@@ -488,7 +488,7 @@ def date_count(s: str) -> int:
                 try:
                     diff = int((date2 - date1) / numpy.timedelta64(1, 'D'))
                 except TypeError as e:
-                    logger.error(f'Could not substract for string {s} because of >>{e}<<.')
+                    logger.debug(f'Could not substract for string {s} because of >>{e}<<.')
                     return 0
 
             if diff == 0:
@@ -1128,8 +1128,8 @@ class BaseModel(metaclass=abc.ABCMeta):
         return pkl_file_path
 
 
-class Trainer(BaseModel):
-    """Parent class for all Extraction AIs, to extract information from unstructured human readable text."""
+class AbstractExtractionAI(BaseModel):
+    """Parent class for all Extraction AIs, to extract information from unstructured human-readable text."""
 
     def __init__(self, category: Category, *args, **kwargs):
         """Initialize ExtractionModel."""
@@ -1388,13 +1388,13 @@ class Trainer(BaseModel):
     @staticmethod
     def has_compatible_interface(other) -> bool:
         """
-        Validate that an instance of an Extraction AI implements the same interface as Trainer.
+        Validate that an instance of an Extraction AI implements the same interface as AbstractExtractionAI.
 
         An Extraction AI should implement methods with the same signature as:
-        - Trainer.__init__
-        - Trainer.fit
-        - Trainer.extract
-        - Trainer.check_is_ready
+        - AbstractExtractionAI.__init__
+        - AbstractExtractionAI.fit
+        - AbstractExtractionAI.extract
+        - AbstractExtractionAI.check_is_ready
 
         :param other: An instance of an Extraction AI to compare with.
         """
@@ -1772,7 +1772,7 @@ class GroupAnnotationSets:
         return new_res_dict
 
 
-class ParagraphExtractionAI(Trainer):
+class ParagraphExtractionAI(AbstractExtractionAI):
     """Extract and label text regions using Detectron2."""
 
     requires_text = True
@@ -1831,7 +1831,7 @@ class ParagraphExtractionAI(Trainer):
             raise AttributeError(f'{self} requires a Category.')
 
 
-class RFExtractionAI(Trainer, GroupAnnotationSets):
+class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
     """Encode visual and textual features to extract text regions.
 
     Fit an extraction pipeline to extract linked Annotations.
@@ -2540,7 +2540,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         """
         Evaluate the full pipeline on the pipeline's Test Documents.
 
-        :param strict: List of documents to extract features from.
+        :param strict: Evaluate on a Character exact level without any postprocessing.
         :param use_training_docs: Bool for whether to evaluate on the training documents instead of testing documents.
         :return: Evaluation object.
         """
