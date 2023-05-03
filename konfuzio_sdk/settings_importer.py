@@ -1,4 +1,5 @@
 """Central place to collect settings from Projects and make them available in the konfuzio_sdk package."""
+import importlib
 import logging
 import os
 import sys
@@ -24,6 +25,28 @@ LOG_FORMAT = (
     "%(asctime)s [%(name)-20.20s] [%(threadName)-10.10s] [%(levelname)-8.8s] "
     "[%(funcName)-20.20s][%(lineno)-4.4d] %(message)-10s"
 )
+
+dependencies = ['cloudpickle', 'transformers', 'torch', 'spacy', 'sklearn', 'torchvision', 'timm', 'tensorflow']
+installed_dependencies = []
+
+for dependency in dependencies:
+    try:
+        successful_import = importlib.import_module(dependency)
+        installed_dependencies.append(dependency)
+        del successful_import
+    except ImportError:
+        pass
+
+if 'sklearn' in installed_dependencies:
+    EXTRAS_INSTALLED = 'extraction'
+elif 'timm' in installed_dependencies:
+    EXTRAS_INSTALLED = 'categorization'
+elif 'tensorflow' in installed_dependencies:
+    EXTRAS_INSTALLED = 'file_splitting'
+elif 'transformers' in installed_dependencies and 'sklearn' in installed_dependencies:
+    EXTRAS_INSTALLED = 'all'
+else:
+    EXTRAS_INSTALLED = None
 
 
 def get_handlers():
