@@ -529,11 +529,12 @@ class SplittingAI:
         """
         if not self.model.requires_images:
             if inplace:
-                document = self.tokenizer.tokenize(document)
+                processed_document = self.tokenizer.tokenize(document)
             else:
-                document = self.tokenizer.tokenize(deepcopy(document))
-            for page in document.pages():
+                processed_document = self.tokenizer.tokenize(deepcopy(document))
+            for page in processed_document.pages():
                 self.model.predict(page)
+                page.set_category(page.get_original_page().category)
         else:
             for page in document.pages():
                 self.model.predict(page)

@@ -454,7 +454,7 @@ class TestOfflineExampleData(unittest.TestCase):
     def test_category_annotations_with_predictions(self):
         """Test Category Annotations for a Document with no user defined Category but with AI Category predictions."""
         document = deepcopy(self.project.get_document_by_id(89928))
-        document.set_category(None)
+        document.set_category(self.project.no_category)
         for page in document.pages():  # this Document has 2 Pages
             assert page.category_annotations == []
             # simulate the prediction of a Categorization AI by adding Category Annotations to the Pages
@@ -473,7 +473,7 @@ class TestOfflineExampleData(unittest.TestCase):
     def test_category_annotations_with_predictions_and_user_revised_category(self):
         """Test Category Annotations for a Document with both user defined Category and AI Category predictions."""
         document = deepcopy(self.project.get_document_by_id(89928))
-        document.set_category(None)
+        document.set_category(self.project.no_category)
         for page in document.pages():  # this Document has 2 Pages
             assert page.category_annotations == []
             # simulate the prediction of a Categorization AI by adding Category Annotations to the Pages
@@ -551,6 +551,20 @@ class TestOfflineExampleData(unittest.TestCase):
         assert len(outliers) == 1
         assert '328927/10103' in outlier_spans
         assert '22.05.2018' in outlier_spans
+
+    def test_get_original_page_from_copy(self):
+        """Test getting an original Page from a copy of a Page."""
+        document = self.project.get_document_by_id(44823)
+        copied_document = deepcopy(document)
+        copied_page = copied_document.pages()[0]
+        page = copied_page.get_original_page()
+        assert page == document.pages()[0]
+
+    def test_get_page_by_id(self):
+        """Test getting a Page from the Document by the ID."""
+        document = self.project.get_document_by_id(44823)
+        page = document.get_page_by_id(1923)
+        assert page == document.pages()[0]
 
 
 class TestEqualityAnnotation(unittest.TestCase):
@@ -732,7 +746,7 @@ class TestOfflineDataSetup(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
-        assert len(cls.project.virtual_documents) == 62
+        assert len(cls.project.virtual_documents) == 63
 
     def test_document_only_needs_project(self):
         """Test that a Document can be created without Category."""
@@ -836,14 +850,14 @@ class TestOfflineDataSetup(unittest.TestCase):
                 number=i + 1,
                 original_size=(0, 0),
             )
-            page_category = [self.category, self.category2, None][i]
+            page_category = [self.category, self.category2, self.project.no_category][i]
             page.set_category(page_category)
-            if page_category not in [None, self.project.no_category]:
+            if page_category != self.project.no_category:
                 assert page.maximum_confidence_category_annotation.category == page_category
                 assert page.maximum_confidence_category_annotation.confidence == 1.0
                 assert len(page.category_annotations) == 1
             else:
-                assert page.category is None
+                assert page.category is self.project.no_category
                 assert page.maximum_confidence_category_annotation is None
                 assert len(page.category_annotations) == 0
         assert len(document.category_annotations) == 2
@@ -1962,6 +1976,15 @@ class TestOfflineDataSetup(unittest.TestCase):
                 page=page,
             )
             bbox_invalid._valid()
+
+    def test_page_none_category(self):
+        """Test that Page always has a Category and never can have a Category = None."""
+        document = Document(project=self.project, text="text")
+        for i in range(2):
+            page = Page(id_=None, document=document, start_offset=0, end_offset=0, number=i + 1, original_size=(0, 0))
+            assert page.category == self.project.no_category
+            with pytest.raises(ValueError, match='forbid'):
+                page.set_category(None)
 
 
 class TestSeparateLabels(unittest.TestCase):

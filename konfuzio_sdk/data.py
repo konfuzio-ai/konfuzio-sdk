@@ -107,7 +107,6 @@ class Page(Data):
         image_size: Tuple[int, int] = (None, None),
         start_offset: Optional[int] = None,
         end_offset: Optional[int] = None,
-        category: Optional['Category'] = None,
         copy_of_id: Optional[int] = None,
     ):
         """
@@ -151,7 +150,7 @@ class Page(Data):
         )
         self.image_path = os.path.join(document_folder, f'page_{self.number}.png')
 
-        self._category = category if category else self.document._category
+        self._category = self.document._category
         self.category_annotations: List['CategoryAnnotation'] = []
         self._human_chosen_category_annotation: Optional[CategoryAnnotation] = None
         self.is_first_page = None
@@ -396,9 +395,11 @@ class Page(Data):
 
         :param category: The Category to set for the Page.
         """
+        if not category:
+            raise ValueError("We forbid setting a Page's Category to None.")
         logger.info(f'Setting {self} Category to {category}.')
         self._category = category
-        if category is None:
+        if category is self.document.project.no_category:
             self.category_annotations = []
             self._human_chosen_category_annotation = None
             return
@@ -430,6 +431,18 @@ class Page(Data):
             return self.maximum_confidence_category_annotation.category
         else:
             return self._category
+
+    def get_original_page(self) -> 'Page':
+        """Return an original Page in case the current Page is a copy without an ID."""
+        if self.id_ and self.document.id_:
+            return self
+        elif self.copy_of_id:
+            if self.document.id_:
+                return self.document.get_page_by_id(self.copy_of_id)
+            else:
+                return self.document.project.get_document_by_id(self.document.copy_of_id).get_page_by_id(
+                    self.copy_of_id
+                )
 
 
 class BboxValidationTypes(Enum):
@@ -2725,9 +2738,11 @@ class Document(Data):
 
     def set_category(self, category: Category) -> None:
         """Set the Category of the Document and the Category of all of its Pages as revised."""
+        if not category:
+            raise ValueError("We forbid setting a Document's Category to None.")
         logger.info(f"Setting Category of {self} to {category}.")
-        if (self._category not in [None, self.project.no_category]) and (
-            category not in [self._category, None, self.project.no_category]
+        if (self._category != self.project.no_category) and (
+            category not in [self._category, self.project.no_category]
         ):
             raise ValueError(
                 "We forbid changing Category when already existing, because this requires some validations that are "
@@ -3584,7 +3599,6 @@ class Document(Data):
                         end_offset=end_offset,
                         copy_of_id=page_id,
                         number=i,
-                        category=page.category,
                     )
                     i += 1
                     start_offset = end_offset + 1
@@ -3598,7 +3612,6 @@ class Document(Data):
                         end_offset=end_offset,
                         copy_of_id=page_id,
                         number=i,
-                        category=page.category,
                     )
                     i += 1
                     start_offset = end_offset + 1
@@ -3663,6 +3676,23 @@ class Document(Data):
             document_page_numbers.append(torch.LongTensor([page.index]))
 
         return document_image_paths, document_tokens, document_labels, document_ids, document_page_numbers
+
+    def get_page_by_id(self, page_id: int, original: bool = False) -> Page:
+        """
+        Get a Page by its ID.
+
+        :param page_id: An ID of the Page to fetch.
+        :type page_id: int
+        """
+        for page in self.pages():
+            if page.id_ == page_id:
+                return page
+            if original:
+                raise IndexError(f'Page id {page_id} was not found in {self}.')
+            else:
+                if not page.id_ and page.copy_of_id == page_id:
+                    logger.warning(f'Page id {page_id} was not found in {self}, only a Page copy.')
+                    return page
 
 
 class Project(Data):
