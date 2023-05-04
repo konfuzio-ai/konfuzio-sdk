@@ -433,7 +433,12 @@ class Page(Data):
             return self._category
 
     def get_original_page(self) -> 'Page':
-        """Return an original Page in case the current Page is a copy without an ID."""
+        """
+        Return an original Page in case the current Page is a copy without an ID.
+
+        The method is used in the File Splitting pipeline to allow retaining the original Document's information in
+        the Sub-Documents that were created from its splitting.
+        """
         if self.id_ and self.document.id_:
             return self
         elif self.copy_of_id:
