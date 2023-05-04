@@ -2721,10 +2721,10 @@ class Document(Data):
         """
         if self.maximum_confidence_category_annotation is not None:
             return self.maximum_confidence_category_annotation.category
-        return None
+        return self.project.no_category
 
     @property
-    def category(self) -> Optional[Category]:
+    def category(self) -> Category:
         """
         Return the Category of the Document.
 

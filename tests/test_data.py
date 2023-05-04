@@ -338,6 +338,24 @@ class TestOnlineProject(unittest.TestCase):
         assert _.category == self.project.no_category
         _.delete()
 
+    @pytest.mark.xfail(reason='WIP')
+    def test_create_categoriless_document(self):
+        """Test that creation of a Document with no Category passed is impossible."""
+        with pytest.raises(ValueError, match='missing attribute'):
+            _ = Document(project=self.project, category=None)
+
+    def test_none_category_document_property(self):
+        """Test the return of a Document with Category == None."""
+        _ = Document(project=self.project, category=None)
+        assert _.category == self.project.no_category
+        _.delete()
+
+    def test_document_underscore_category(self):
+        """Test the value of the underscore Category attribute."""
+        _ = Document(project=self.project, category=None)
+        assert _._category == self.project.no_category
+        _.delete()
+
 
 class TestOfflineExampleData(unittest.TestCase):
     """Test data features without real data."""
@@ -427,7 +445,7 @@ class TestOfflineExampleData(unittest.TestCase):
         assert document.category_annotations[1].category == self.receipts_category
         assert document.category_annotations[1].confidence == 0.0
         assert document.maximum_confidence_category_annotation is None
-        assert document.maximum_confidence_category is None
+        assert document.maximum_confidence_category == self.project.no_category
         # test that no annotations are attached to the Pages
         for page in document.pages():
             assert page.category_annotations == []
@@ -808,7 +826,7 @@ class TestOfflineDataSetup(unittest.TestCase):
             assert page.category == self.project.no_category
             assert page.maximum_confidence_category_annotation is None
             assert len(page.category_annotations) == 0
-        assert document.maximum_confidence_category is None
+        assert document.maximum_confidence_category is document.project.no_category
         assert document.category is document.project.no_category
 
     def test_categorize_when_pages_have_different_categories(self):
