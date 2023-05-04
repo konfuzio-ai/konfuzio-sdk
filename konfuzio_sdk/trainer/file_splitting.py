@@ -536,9 +536,10 @@ class SplittingAI:
                 self.model.predict(page)
                 page.set_category(page.get_original_page().category)
         else:
+            processed_document = document
             for page in document.pages():
                 self.model.predict(page)
-        return [document]
+        return [processed_document]
 
     def _suggest_page_split(self, document: Document) -> List[Document]:
         """
