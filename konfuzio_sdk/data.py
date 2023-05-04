@@ -3042,16 +3042,16 @@ class Document(Data):
             if spans_num & filled:
                 # if there's overlap
                 continue
-            # if (
-            #     annotation.is_correct is False
-            #     and annotation.label.has_multiple_top_candidates is False
-            #     and annotation.label.id_ in no_label_duplicates
-            # ):
-            #     continue
+            if (
+                annotation.is_correct is False
+                and annotation.label.has_multiple_top_candidates is False
+                and (annotation.label.id_, annotation.annotation_set.id_) in no_label_duplicates
+            ):
+                continue
             annotations.append(annotation)
             filled |= spans_num
             if not annotation.label.has_multiple_top_candidates:
-                no_label_duplicates.add(annotation.label.id_)
+                no_label_duplicates.add((annotation.label.id_, annotation.annotation_set.id_))
 
         return sorted(annotations)
 
