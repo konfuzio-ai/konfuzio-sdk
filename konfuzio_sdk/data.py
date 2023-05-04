@@ -2744,7 +2744,7 @@ class Document(Data):
     def set_category(self, category: Category) -> None:
         """Set the Category of the Document and the Category of all of its Pages as revised."""
         if not category:
-            raise ValueError("We forbid setting a Document's Category to None.")
+            raise ValueError("We forbid setting a Document's Category to None. Use Project.no_category instead.")
         logger.info(f"Setting Category of {self} to {category}.")
         if (self._category != self.project.no_category) and (
             category not in [self._category, self.project.no_category]
