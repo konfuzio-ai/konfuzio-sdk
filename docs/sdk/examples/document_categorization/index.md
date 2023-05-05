@@ -6,13 +6,13 @@ You can initialize a Document with a Category, which will count as if a human ma
 
 .. literalinclude:: /sdk/boilerplates/test_document_categorization.py
    :language: python
-   :lines: 13,39-42,44
+   :lines: 13,41-44,46
 
 If a Document is initialized with no Category, it can be manually set later.
 
 .. literalinclude:: /sdk/boilerplates/test_document_categorization.py
    :language: python
-   :lines: 46,48-54
+   :lines: 48,50-56
 
 
 If you use a Categorization AI to automatically assign a Category to a Document (such as the 
@@ -40,7 +40,7 @@ Use the name of the Category as an effective fallback logic to categorize Docume
 
 .. literalinclude:: /sdk/boilerplates/test_document_categorization.py
    :language: python
-   :lines: 2-3,11-13,15-17,19-30,32-37
+   :lines: 2-3,11-13,17-19,21-32,34-39
 
 ### Model-based Categorization AI
 
@@ -50,7 +50,7 @@ For a list of available Models see [Available Categorization Models](#categoriza
 
 .. literalinclude:: /sdk/boilerplates/test_document_categorization.py
    :language: python
-   :lines: 2,4,6,5,11-13,59-78,79-81,85,89-92,94-95,96-100
+   :lines: 2,4,6,5,11-13,61-80,81-83,85,87-90,92-93,94-96,98
 
 .. _categorization-models:
 #### Available Categorization Models
@@ -63,7 +63,7 @@ The list of available Categorization Models is implemented as an Enum containing
 
 .. literalinclude:: /sdk/boilerplates/test_document_categorization.py
    :language: python
-   :lines: 6,104-124
+   :lines: 6,102-126
 
 See more details about these Categorization Models under [API Reference - Categorization AI](sourcecode.html#categorization-ai).
 
