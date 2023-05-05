@@ -604,8 +604,9 @@ Document has finished processing, and if so, retrieve the extracted data.</p>
 <p><a class="reference external" href="https://help.konfuzio.com/modules/annotations/">Annotations</a> are automatically created by the extraction process when
 you upload a Document, but if some data is missing you can annotate it manually to train the AI model to recognize it.</p>
 <p>Creating an Annotation via the API requires the client to provide the bounding box coordinates of the relevant text
-snippet, which is usually done in a friendly user interface like our SmartView. The request to create an Annotation
-usually looks like this:</p>
+snippet, which is usually done in a friendly user interface like our SmartView (see below for other options).
+The <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/annotations/annotations_create">Annotations create endpoint</a> accepts
+requests that look like this:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">--</span><span class="n">request</span> <span class="n">POST</span> \
   <span class="o">--</span><span class="n">url</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">app</span><span class="o">.</span><span class="n">konfuzio</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v3</span><span class="o">/</span><span class="n">annotations</span><span class="o">/</span> \
   <span class="o">--</span><span class="n">header</span> <span class="s1">&#39;Authorization: Token YOUR_TOKEN&#39;</span> \
@@ -638,10 +639,21 @@ has <code class="docutils literal notranslate"><span class="pre">has_multiple_se
 <li><p><code class="docutils literal notranslate"><span class="pre">span</span></code> is a <a class="reference external" href="#coordinates-and-bounding-boxes">list of spans</a>.</p></li>
 <li><p>Other fields are optional.</p></li>
 </ul>
-<p>To generate the correct <code class="docutils literal notranslate"><span class="pre">span</span></code> for your Annotation, we also provide the
-<a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/documents/documents_bbox_retrieve">Document bbox retrieve endpoint</a>, which
-can be called via <code class="docutils literal notranslate"><span class="pre">GET</span></code> to return a list of all the words in the Document with their bounding boxes, that you can use to
-create your Annotations programmatically.</p>
+<p>As the <code class="docutils literal notranslate"><span class="pre">span</span></code> identifies a <em>position</em> on the page, there are multiple ways to identify the correct one for the
+Annotation you want to create:</p>
+<ol class="arabic simple">
+<li><p>The <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/documents/documents_bbox_retrieve">document bbox endpoint</a> returns an
+object with all the <em>characters</em> from the Document with their coordinates. The characters can be identified by their
+offset (the keys in the object) and they can be easily converted in a list for the <code class="docutils literal notranslate"><span class="pre">span</span></code> attribute. You can also
+send a POST call to this endpoint with some coordinates to return a subset of the Document’s characters that is
+completely contained into the sent coordinates.</p></li>
+<li><p>The <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/documents/documents_pages_retrieve">document page endpoint</a> has an
+<code class="docutils literal notranslate"><span class="pre">entities</span></code> attribute that contains all the <em>words</em> from the Document with their coordinates. These can be easily
+converted in a list for the <code class="docutils literal notranslate"><span class="pre">span</span></code> attribute.</p></li>
+<li><p>The <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/documents/documents_search_create">document search endpoint</a> takes a
+string as input and returns a list of all its occurrences in the Document. These can be fed directly to the <code class="docutils literal notranslate"><span class="pre">span</span></code>
+attribute.</p></li>
+</ol>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Annotation Sets are never created directly. When you create an Annotation, you can specify whether to re-use an
