@@ -675,6 +675,7 @@ In either case, you can use the same Docker image for the Konfuzio Server, which
 
 ## Load Scenario for Single VM with 32GB
 
+Scenario 1: With self-hosted OCR
 1 Self-Hosted OCR worker 8GB: 1200 Seiten / Stunde (Not needed if external API Service is used)
 1 Generic Celery Worker 4GB:  500 Seiten Extraktion oder Kategorisierung / Stunde
 1 Generic Celery Worker 4GB:  500 Seiten Extraktion oder Kategorisierung / Stunde
@@ -682,7 +683,20 @@ In either case, you can use the same Docker image for the Konfuzio Server, which
 1 Web Container 4GB:
 all other containers 4GB
 
-Note: In case you train very large AI Models (~500 Training Documetns and more) more than 4GB for Workers are needed.
+Around 1200 Pages can be processed (OCR and Extraction) per hour.
+
+Scenario 2: Without self-hosted OCR
+1 Generic Celery Worker 4GB:  500 Seiten Extraktion oder Kategorisierung / Stunde
+1 Generic Celery Worker 4GB:  500 Seiten Extraktion oder Kategorisierung / Stunde
+1 Generic Celery Worker 4GB:  500 Seiten Extraktion oder Kategorisierung / Stunde
+1 Generic Celery Worker 4GB:  500 Seiten Extraktion oder Kategorisierung / Stunde
+1 Generic Celery Worker 4GB:  500 Seiten Extraktion oder Kategorisierung / Stunde
+1 Web Container 4GB:
+all other containers 4GB
+
+Around 2500 Pages can be processed (OCR and Extraction) per hour.
+
+Note: In case you train very large AI Models (~500 Training Documents and more) more than 4GB for Generic Celery Workers are needed.
 
 ## Database and Storage
 
