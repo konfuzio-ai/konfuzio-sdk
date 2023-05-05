@@ -433,8 +433,9 @@ Document has finished processing, and if so, retrieve the extracted data.
 you upload a Document, but if some data is missing you can annotate it manually to train the AI model to recognize it.
 
 Creating an Annotation via the API requires the client to provide the bounding box coordinates of the relevant text
-snippet, which is usually done in a friendly user interface like our SmartView. The request to create an Annotation
-usually looks like this:
+snippet, which is usually done in a friendly user interface like our SmartView (see below for other options).
+The [Annotations create endpoint](https://app.konfuzio.com/v3/swagger/#/annotations/annotations_create) accepts
+requests that look like this:
 
 ```
 curl --request POST \
