@@ -433,8 +433,9 @@ Document has finished processing, and if so, retrieve the extracted data.
 you upload a Document, but if some data is missing you can annotate it manually to train the AI model to recognize it.
 
 Creating an Annotation via the API requires the client to provide the bounding box coordinates of the relevant text
-snippet, which is usually done in a friendly user interface like our SmartView. The request to create an Annotation
-usually looks like this:
+snippet, which is usually done in a friendly user interface like our SmartView (see below for other options).
+The [Annotations create endpoint](https://app.konfuzio.com/v3/swagger/#/annotations/annotations_create) accepts
+requests that look like this:
 
 ```
 curl --request POST \
@@ -469,10 +470,20 @@ In this request:
 - `span` is a [list of spans](#coordinates-and-bounding-boxes).
 - Other fields are optional.
 
-To generate the correct `span` for your Annotation, we also provide the
-[Document bbox retrieve endpoint](https://app.konfuzio.com/v3/swagger/#/documents/documents_bbox_retrieve), which
-can be called via `GET` to return a list of all the words in the Document with their bounding boxes, that you can use to
-create your Annotations programmatically.
+As the `span` identifies a *position* on the page, there are multiple ways to identify the correct one for the
+Annotation you want to create:
+
+1. The [document bbox endpoint](https://app.konfuzio.com/v3/swagger/#/documents/documents_bbox_retrieve) returns an
+   object with all the *characters* from the Document with their coordinates. The characters can be identified by their
+   offset (the keys in the object) and they can be easily converted in a list for the `span` attribute. You can also
+   send a POST call to this endpoint with some coordinates to return a subset of the Document's characters that is
+   completely contained into the sent coordinates.
+2. The [document page endpoint](https://app.konfuzio.com/v3/swagger/#/documents/documents_pages_retrieve) has an
+   `entities` attribute that contains all the *words* from the Document with their coordinates. These can be easily 
+   converted in a list for the `span` attribute.
+3. The [document search endpoint](https://app.konfuzio.com/v3/swagger/#/documents/documents_search_create) takes a
+   string as input and returns a list of all its occurrences in the Document. These can be fed directly to the `span`
+   attribute.
 
 .. note::
   Annotation Sets are never created directly. When you create an Annotation, you can specify whether to re-use an
