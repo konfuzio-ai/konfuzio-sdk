@@ -661,6 +661,18 @@ Alternatively, you can merge the Project export into an existing Project.
 python manage.py project_import "/konfuzio-target-system/data_123/" --merge_project_id <EXISTING_PROJECT_ID>
 ```
 
+## Docker-Compose vs Kubernetes
+
+When it comes to running the Konfuzio Server, the choice between Docker Compose and Kubernetes will depend on your specific requirements and use case.
+
+Docker Compose can be a good choice if you are running Konfuzio Server on a single host in production or for testing and development purposes. With Docker Compose, you can define and customize the services required for the Konfuzio Server in a YAML file we provide, and then use a single command to start all the containers.
+
+On the other hand, Kubernetes is more suitable for production environments where you need to run Konfuzio Server at scale, across multiple hosts, and with features such as auto-scaling and self-healing. Kubernetes has a steep learning curve, but it provides advanced features for managing and scaling containerized applications.
+
+Regarding the use of Docker Compose in multiple VMs, while it's possible to use Docker Compose in a distributed environment, managing multiple VMs can be more work than using a dedicated orchestration platform like Kubernetes. Kubernetes provides built-in support for managing distributed systems and is designed to handle the complexities of running containers at scale.
+
+In either case, you can use the same Docker image for the Konfuzio Server, which will ensure consistency and portability across different environments. Overall, the choice between Docker Compose and Kubernetes will depend on your specific needs, level of expertise, and infrastructure requirements
+
 ## Database and Storage
 
 ### Overview
@@ -718,7 +730,8 @@ See https://docs.djangoproject.com/en/4.2/ref/settings/#allowed-hosts
 _Type: List[string]_
 
 ##### BILLING_API_KEY
-The Billing API Key to connect with the Konfuzio License Server.  
+The Billing API 
+to connect with the Konfuzio License Server.  
 See https://dev.konfuzio.com/web/on_premises.html#billing-and-license
 
 _This is mandatory. Type: string_
