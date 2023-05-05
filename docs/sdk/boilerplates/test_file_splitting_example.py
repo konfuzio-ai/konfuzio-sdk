@@ -10,8 +10,9 @@ from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel
 from konfuzio_sdk.trainer.information_extraction import load_model
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
 
-from variables import YOUR_PROJECT_ID
+from tests.variables import TEST_PROJECT_ID
 
+YOUR_PROJECT_ID = TEST_PROJECT_ID
 logger = logging.getLogger(__name__)
 YOUR_DOCUMENT_ID = 44865
 [List, Page, Category, AbstractFileSplittingModel]  # for referencing in the imports and passing the linting

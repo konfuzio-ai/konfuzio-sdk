@@ -7,7 +7,7 @@ from konfuzio_sdk.trainer.information_extraction import load_model
 if sys.version_info[:2] != (3, 8):
     sys.exit()
 
-MODEL_PATH = '../../../tests/trainer/2023-04-28-12-10-45_lohnabrechnung_rfextractionai_.pkl'
+MODEL_PATH = 'tests/trainer/2023-04-28-12-10-45_lohnabrechnung_rfextractionai_.pkl'
 pipeline = load_model(MODEL_PATH)
 
 project = Project(id_=None, project_folder=OFFLINE_PROJECT)

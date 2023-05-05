@@ -5,8 +5,9 @@ from konfuzio_sdk.trainer.information_extraction import load_model
 from konfuzio_sdk.trainer.document_categorization import build_categorization_ai_pipeline
 from konfuzio_sdk.trainer.document_categorization import ImageModel, TextModel
 
-from variables import YOUR_PROJECT_ID
+from tests.variables import TEST_PROJECT_ID
 
+YOUR_PROJECT_ID = TEST_PROJECT_ID
 YOUR_DOCUMENT_ID = 44865
 
 # Set up your Project.

@@ -4,8 +4,9 @@ from konfuzio_sdk.evaluate import ExtractionEvaluation
 from konfuzio_sdk.tokenizer.base import ListTokenizer
 from konfuzio_sdk.tokenizer.regex import RegexTokenizer
 from konfuzio_sdk.trainer.information_extraction import RFExtractionAI
-from variables import YOUR_PROJECT_ID
+from tests.variables import TEST_PROJECT_ID
 
+YOUR_PROJECT_ID = TEST_PROJECT_ID
 YOUR_LABEL_NAME = 'Austellungsdatum'
 
 project = Project(id_=YOUR_PROJECT_ID)

@@ -3,9 +3,10 @@ import os
 
 from konfuzio_sdk.data import Project, Document
 
-from variables import YOUR_PROJECT_ID
+from tests.variables import TEST_PROJECT_ID
 
-FILE_PATH = '../../../tests/test_data/pdf.pdf'
+YOUR_PROJECT_ID = TEST_PROJECT_ID
+FILE_PATH = 'tests/test_data/pdf.pdf'
 ASSIGNEE_ID = None
 
 my_project = Project(id_=YOUR_PROJECT_ID)

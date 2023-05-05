@@ -2,8 +2,9 @@
 from PIL import Image, ImageDraw
 from konfuzio_sdk.data import Project
 from konfuzio_sdk.api import get_results_from_segmentation
-from variables import YOUR_PROJECT_ID, TEST_DOCUMENT_ID
+from tests.variables import TEST_PROJECT_ID, TEST_DOCUMENT_ID
 
+YOUR_PROJECT_ID, YOUR_DOCUMENT_ID = TEST_PROJECT_ID, TEST_DOCUMENT_ID
 my_project = Project(id_=YOUR_PROJECT_ID, strict_data_validation=False)
 # first Document uploaded
 document = my_project.get_document_by_id(TEST_DOCUMENT_ID)
