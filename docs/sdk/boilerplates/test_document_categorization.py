@@ -12,6 +12,8 @@ YOUR_DOCUMENT_ID = 44865
 # Set up your Project.
 project = Project(id_=YOUR_PROJECT_ID)
 YOUR_CATEGORY_ID = project.categories[0].id_
+for document in project.documents[3:] + project.test_documents[1:]:
+    document.dataset_status = 4  # remove documents from the dataset to make these testcases faster
 
 # Initialize the Categorization Model.
 categorization_model = NameBasedCategorizationAI(project.categories)
@@ -79,12 +81,8 @@ categorization_pipeline.fit(
 
 # Evaluate the AI
 data_quality = categorization_pipeline.evaluate(use_training_docs=True)
-# assert data_quality.f1(categorization_pipeline.categories[0]) == 1.0
-# assert data_quality.f1(categorization_pipeline.categories[1]) == 1.0
 assert data_quality.f1(None) == 1.0
 ai_quality = categorization_pipeline.evaluate()
-# assert ai_quality.f1(categorization_pipeline.categories[0]) == 1.0
-# assert ai_quality.f1(categorization_pipeline.categories[1]) == 1.0
 assert ai_quality.f1(None) == 1.0
 
 # Categorize a Document
