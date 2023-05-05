@@ -96,8 +96,14 @@
 <li class="toctree-l3"><a class="reference internal" href="#optional-10-install-document-summarization-container">[Optional] 10. Install document summarization container</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#a-upgrade-to-newer-konfuzio-version">11a. Upgrade to newer Konfuzio Version</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#b-downgrade-to-older-konfuzio-version">11b. Downgrade to older Konfuzio Version</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#load-scenario-for-single-vm-with-32gb">Load Scenario for Single VM with 32GB</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#scenario-1-with-self-hosted-ocr">Scenario 1: With self-hosted OCR</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#scenario-2-without-self-hosted-ocr">Scenario 2: Without self-hosted OCR</a></li>
 </ul>
 </li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#docker-compose-vs-kubernetes">Docker-Compose vs Kubernetes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#custom-ai-model-training-via-ci-pipelines">Custom AI model training via CI pipelines</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#keycloak-integration">Keycloak Integration</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#set-up">Set up</a></li>
@@ -110,8 +116,6 @@
 <li class="toctree-l3"><a class="reference internal" href="#migrate-a-project">Migrate a Project</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#docker-compose-vs-kubernetes">Docker-Compose vs Kubernetes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#load-scenario-for-single-vm-with-32gb">Load Scenario for Single VM with 32GB</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#database-and-storage">Database and Storage</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#overview">Overview</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#usage-of-postgresql">Usage of PostgreSQL</a></li>
@@ -688,6 +692,26 @@ The following steps need to be undertaken:</p>
 <li><p>Import the projects using <a class="reference external" href="https://help.konfuzio.com/integrations/migration-between-konfuzio-server-instances/index.html#migrate-projects-between-konfuzio-server-instances">“python manage.py project_import”</a></p></li>
 </ul>
 </section>
+<section id="load-scenario-for-single-vm-with-32gb">
+<h3>Load Scenario for Single VM with 32GB<a class="headerlink" href="#load-scenario-for-single-vm-with-32gb" title="Permalink to this headline">¶</a></h3>
+<section id="scenario-1-with-self-hosted-ocr">
+<h4>Scenario 1: With self-hosted OCR<a class="headerlink" href="#scenario-1-with-self-hosted-ocr" title="Permalink to this headline">¶</a></h4>
+<p>Around 1200 Pages can be processed (OCR and Extraction) per hour with this setup.</p>
+</section>
+<section id="scenario-2-without-self-hosted-ocr">
+<h4>Scenario 2: Without self-hosted OCR<a class="headerlink" href="#scenario-2-without-self-hosted-ocr" title="Permalink to this headline">¶</a></h4>
+<p>Around 2500 Pages can be processed (OCR and Extraction) per hour with this hout.</p>
+<p>Note: In case you train very large AI Models (~500 Training Documents and more) more than 4GB for Generic Celery Workers are needed.</p>
+</section>
+</section>
+</section>
+<section id="docker-compose-vs-kubernetes">
+<h2>Docker-Compose vs Kubernetes<a class="headerlink" href="#docker-compose-vs-kubernetes" title="Permalink to this headline">¶</a></h2>
+<p>When it comes to running the Konfuzio Server, the choice between Docker Compose and Kubernetes will depend on your specific requirements and use case.</p>
+<p>Docker Compose can be a good choice if you are running Konfuzio Server on a single host in production or for testing and development purposes. With Docker Compose, you can define and customize the services required for the Konfuzio Server in a YAML file we provide, and then use a single command to start all the containers.</p>
+<p>On the other hand, Kubernetes is more suitable for production environments where you need to run Konfuzio Server at scale, across multiple hosts, and with features such as auto-scaling and self-healing. Kubernetes has a steep learning curve, but it provides advanced features for managing and scaling containerized applications.</p>
+<p>Regarding the use of Docker Compose in multiple VMs, while it’s possible to use Docker Compose in a distributed environment, managing multiple VMs can be more work than using a dedicated orchestration platform like Kubernetes. Kubernetes provides built-in support for managing distributed systems and is designed to handle the complexities of running containers at scale.</p>
+<p>In either case, you can use the same Docker image for the Konfuzio Server, which will ensure consistency and portability across different environments. Overall, the choice between Docker Compose and Kubernetes will depend on your specific needs, level of expertise, and infrastructure requirements.</p>
 </section>
 <section id="custom-ai-model-training-via-ci-pipelines">
 <h2>Custom AI model training via CI pipelines<a class="headerlink" href="#custom-ai-model-training-via-ci-pipelines" title="Permalink to this headline">¶</a></h2>
@@ -779,35 +803,6 @@ The first argument is the path to the export folder, the second is the project n
 </pre></div>
 </div>
 </section>
-</section>
-<section id="docker-compose-vs-kubernetes">
-<h2>Docker-Compose vs Kubernetes<a class="headerlink" href="#docker-compose-vs-kubernetes" title="Permalink to this headline">¶</a></h2>
-<p>When it comes to running the Konfuzio Server, the choice between Docker Compose and Kubernetes will depend on your specific requirements and use case.</p>
-<p>Docker Compose can be a good choice if you are running Konfuzio Server on a single host in production or for testing and development purposes. With Docker Compose, you can define and customize the services required for the Konfuzio Server in a YAML file we provide, and then use a single command to start all the containers.</p>
-<p>On the other hand, Kubernetes is more suitable for production environments where you need to run Konfuzio Server at scale, across multiple hosts, and with features such as auto-scaling and self-healing. Kubernetes has a steep learning curve, but it provides advanced features for managing and scaling containerized applications.</p>
-<p>Regarding the use of Docker Compose in multiple VMs, while it’s possible to use Docker Compose in a distributed environment, managing multiple VMs can be more work than using a dedicated orchestration platform like Kubernetes. Kubernetes provides built-in support for managing distributed systems and is designed to handle the complexities of running containers at scale.</p>
-<p>In either case, you can use the same Docker image for the Konfuzio Server, which will ensure consistency and portability across different environments. Overall, the choice between Docker Compose and Kubernetes will depend on your specific needs, level of expertise, and infrastructure requirements</p>
-</section>
-<section id="load-scenario-for-single-vm-with-32gb">
-<h2>Load Scenario for Single VM with 32GB<a class="headerlink" href="#load-scenario-for-single-vm-with-32gb" title="Permalink to this headline">¶</a></h2>
-<p>Scenario 1: With self-hosted OCR
-1 Self-Hosted OCR worker 8GB: 1200 Seiten / Stunde (Not needed if external API Service is used)
-1 Generic Celery Worker 4GB:  500 Seiten Extraktion oder Kategorisierung / Stunde
-1 Generic Celery Worker 4GB:  500 Seiten Extraktion oder Kategorisierung / Stunde
-1 Generic Celery Worker 4GB:  500 Seiten Extraktion oder Kategorisierung / Stunde
-1 Web Container 4GB:
-all other containers 4GB</p>
-<p>Around 1200 Pages can be processed (OCR and Extraction) per hour.</p>
-<p>Scenario 2: Without self-hosted OCR
-1 Generic Celery Worker 4GB:  500 Seiten Extraktion oder Kategorisierung / Stunde
-1 Generic Celery Worker 4GB:  500 Seiten Extraktion oder Kategorisierung / Stunde
-1 Generic Celery Worker 4GB:  500 Seiten Extraktion oder Kategorisierung / Stunde
-1 Generic Celery Worker 4GB:  500 Seiten Extraktion oder Kategorisierung / Stunde
-1 Generic Celery Worker 4GB:  500 Seiten Extraktion oder Kategorisierung / Stunde
-1 Web Container 4GB:
-all other containers 4GB</p>
-<p>Around 2500 Pages can be processed (OCR and Extraction) per hour.</p>
-<p>Note: In case you train very large AI Models (~500 Training Documents and more) more than 4GB for Generic Celery Workers are needed.</p>
 </section>
 <section id="database-and-storage">
 <h2>Database and Storage<a class="headerlink" href="#database-and-storage" title="Permalink to this headline">¶</a></h2>
