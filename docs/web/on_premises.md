@@ -673,6 +673,17 @@ Regarding the use of Docker Compose in multiple VMs, while it's possible to use 
 
 In either case, you can use the same Docker image for the Konfuzio Server, which will ensure consistency and portability across different environments. Overall, the choice between Docker Compose and Kubernetes will depend on your specific needs, level of expertise, and infrastructure requirements
 
+## Load Scenario for Single VM with 32GB
+
+1 Self-Hosted OCR worker 8GB: 1200 Seiten / Stunde (Not needed if external API Service is used)
+1 Generic Celery Worker 4GB:  500 Seiten Extraktion oder Kategorisierung / Stunde
+1 Generic Celery Worker 4GB:  500 Seiten Extraktion oder Kategorisierung / Stunde
+1 Generic Celery Worker 4GB:  500 Seiten Extraktion oder Kategorisierung / Stunde
+1 Web Container 4GB:
+all other containers 4GB
+
+Note: In case you train very large AI Models (~500 Training Documetns and more) more than 4GB for Workers are needed.
+
 ## Database and Storage
 
 ### Overview
