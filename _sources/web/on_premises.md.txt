@@ -570,22 +570,26 @@ The following steps need to be undertaken:
 
 #### Scenario 1: With self-hosted OCR
 
-| Number of Container | Container Type         | RAM | Capacity                                                                    |
+
+| Number of Container | Container Type | RAM | Capacity |
 | --- | --- | --- | --- |
 | 1                   | Web Container          | 4GB |                                                                             |
 | 3                   | Generic Celery Worker  | 4GB | 1500 (3 x 500) Pages of Extraction oder Kategorization per hour             |
 | 1                   | Self-Hosted OCR worker | 8GB | 1200 (1 y 1200) Pages)/ hours (Not needed if external API Service is used)  |
 | N                   | remaining Containers   | 4GB |                                                                             |
 
+
 Around 1200 Pages can be processed (OCR and Extraction) per hour with this setup.
 
 #### Scenario 2: Without self-hosted OCR
 
-| Number of Container | Container Type         | RAM | Capacity                                                                    |
+
+| Number of Container | Container Type | RAM | Capacity |
 | --- | --- | --- | --- |
 | 1                   | Web Container          | 4GB |                                                                             |
 | 5                   | Generic Celery Worker  | 4GB | 2500 (3 x 500) Pages of Extraction oder Kategorization per hour             |
 | N                   | remaining Containers   | 4GB |                                                                             |
+
 
 Around 2500 Pages can be processed (OCR and Extraction) per hour with this hout.
 
