@@ -696,10 +696,79 @@ The following steps need to be undertaken:</p>
 <h3>Load Scenario for Single VM with 32GB<a class="headerlink" href="#load-scenario-for-single-vm-with-32gb" title="Permalink to this headline">¶</a></h3>
 <section id="scenario-1-with-self-hosted-ocr">
 <h4>Scenario 1: With self-hosted OCR<a class="headerlink" href="#scenario-1-with-self-hosted-ocr" title="Permalink to this headline">¶</a></h4>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Number of Container</p></th>
+<th class="head"><p>Container Type</p></th>
+<th class="head"><p>RAM</p></th>
+<th class="head"><p>Capacity</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>Web Container</p></td>
+<td><p>4GB</p></td>
+<td><p>…</p></td>
+</tr>
+<tr class="row-odd"><td><p>3</p></td>
+<td><p>Generic Celery Worker</p></td>
+<td><p>4GB</p></td>
+<td><p>1500 (3 x 500) Pages of Extraction oder Kategorization per hour</p></td>
+</tr>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>Self-Hosted OCR worker</p></td>
+<td><p>8GB</p></td>
+<td><p>1200 (1 y 1200) Pages)/ hours (Not needed if external API Service is used)</p></td>
+</tr>
+<tr class="row-odd"><td><p>N</p></td>
+<td><p>remaining Containers</p></td>
+<td><p>4GB</p></td>
+<td><p>…</p></td>
+</tr>
+</tbody>
+</table>
 <p>Around 1200 Pages can be processed (OCR and Extraction) per hour with this setup.</p>
 </section>
 <section id="scenario-2-without-self-hosted-ocr">
 <h4>Scenario 2: Without self-hosted OCR<a class="headerlink" href="#scenario-2-without-self-hosted-ocr" title="Permalink to this headline">¶</a></h4>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Number of Container</p></th>
+<th class="head"><p>Container Type</p></th>
+<th class="head"><p>RAM</p></th>
+<th class="head"><p>Capacity</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>Web Container</p></td>
+<td><p>4GB</p></td>
+<td><p>…</p></td>
+</tr>
+<tr class="row-odd"><td><p>5</p></td>
+<td><p>Generic Celery Worker</p></td>
+<td><p>4GB</p></td>
+<td><p>2500 (3 x 500) Pages of Extraction oder Kategorization per hour</p></td>
+</tr>
+<tr class="row-even"><td><p>N</p></td>
+<td><p>remaining Containers</p></td>
+<td><p>4GB</p></td>
+<td><p>…</p></td>
+</tr>
+</tbody>
+</table>
 <p>Around 2500 Pages can be processed (OCR and Extraction) per hour with this hout.</p>
 <p>Note: In case you train very large AI Models (~500 Training Documents and more) more than 4GB for Generic Celery Workers are needed.</p>
 </section>
