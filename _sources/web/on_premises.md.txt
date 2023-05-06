@@ -594,7 +594,7 @@ Around 2500 Pages can be processed (OCR and Extraction) per hour with this hout.
 
 Note: In case you train very large AI Models (~500 Training Documents and more) more than 4GB for Generic Celery Workers are needed.
 
-## Docker-Compose vs Kubernetes
+## Docker-Compose vs. Kubernetes
 
 When it comes to running the Konfuzio Server, the choice between Docker Compose and Kubernetes will depend on your specific requirements and use case.
 
