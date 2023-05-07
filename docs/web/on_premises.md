@@ -1180,7 +1180,7 @@ _Type: int_
 ##### DOCUMENT_WORKFLOW_TIME_LIMIT
 Default: 7200
 
-The maximum time for the whole Document workflow.
+The maximum time for the whole Document workflow in seconds. If a Document workflow does not complete within this time, the Document is set to an error state.
 
 _Type: int_
 
