@@ -32,6 +32,7 @@ from konfuzio_sdk.api import (
     delete_document_annotation,
     delete_file_konfuzio_api,
     upload_file_konfuzio_api,
+    get_results_from_segmentation
 )
 from konfuzio_sdk.normalize import normalize
 from konfuzio_sdk.regex import get_best_regex, regex_matches, suggest_regex_for_string, merge_regex
@@ -154,6 +155,7 @@ class Page(Data):
         self._category = category if category else self.document._category
         self.category_annotations: List['CategoryAnnotation'] = []
         self._human_chosen_category_annotation: Optional[CategoryAnnotation] = None
+        self._segmentation = None
         self.is_first_page = None
         self.is_first_page_confidence = None
         if self.document.dataset_status in (2, 3):
@@ -2723,6 +2725,18 @@ class Document(Data):
             self._category = self.project.no_category
         return self._category
 
+    def get_segmentation(self) -> List:
+        if any(page._segmentation is None for page in self.pages()):
+            document_id = self.id_ if self.id_ else self.copy_of_id
+            detectron_document_results = get_results_from_segmentation(document_id, self.project.id_)
+            assert len(detectron_document_results) == self.number_of_pages
+            for page_index, detectron_page_result in enumerate(detectron_document_results):
+                self.get_page_by_index(page_index)._segmentation = detectron_page_result
+        else:
+            detectron_document_results = [page._segmentation for page in self.pages()]
+
+        return detectron_document_results
+
     def set_category(self, category: Category) -> None:
         """Set the Category of the Document and the Category of all of its Pages as revised."""
         logger.info(f"Setting Category of {self} to {category}.")
@@ -2844,7 +2858,7 @@ class Document(Data):
         )
         for page in self.pages():
             copy_id = page.id_ if page.id_ else page.copy_of_id
-            _ = Page(
+            _page = Page(
                 id_=None,
                 document=document,
                 start_offset=page.start_offset,
@@ -2854,6 +2868,7 @@ class Document(Data):
                 original_size=(page.width, page.height),
                 image_size=(page.image_width, page.image_height),
             )
+            _page._segmentation = page._segmentation
         return document
 
     def check_annotations(self, update_document: bool = False) -> bool:

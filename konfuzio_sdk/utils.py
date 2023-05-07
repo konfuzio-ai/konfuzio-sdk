@@ -469,7 +469,8 @@ def detectron_get_paragraph_bboxes(detectron_document_results: List[List[Dict]],
     """Call detectron Bbox corresponding to each paragraph."""
     from konfuzio_sdk.data import Bbox
 
-    assert isinstance(document.project.id_, int)
+    # Why is this needed, the Server does not set it at the moment.
+    # assert isinstance(document.project.id_, int)
     assert len(detectron_document_results) == document.number_of_pages
 
     paragraph_document_bboxes: List[List['Bbox']] = []

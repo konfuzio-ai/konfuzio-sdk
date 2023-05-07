@@ -1700,63 +1700,64 @@ class GroupAnnotationSets:
         return new_res_dict
 
 
-class ParagraphExtractionAI(AbstractExtractionAI):
-    """Extract and label text regions using Detectron2."""
-
-    requires_text = True
-    requires_images = True
-
-    def __init__(
-        self,
-        category: Category,
-        *args,
-        **kwargs,
-    ):
-        """ParagraphExtractionAI."""
-        logger.info("Initializing ParagraphExtractionAI.")
-        super().__init__(category=category, *args, **kwargs)
-        self.tokenizer = ParagraphTokenizer(mode='detectron', create_detectron_labels=True)
-
-    @property
-    def project(self):
-        """Get RFExtractionAI Project."""
-        if not self.category:
-            raise AttributeError(f'{self} has no Category.')
-        return self.category.project
-
-    def extract(self, document: Document) -> Document:
-        """
-        Infer information from a given Document.
-
-        :param document: Document object
-        :return: Document with predicted labels
-
-        :raises:
-         AttributeError: When missing a Tokenizer
-        """
-        logger.info(f"Starting extraction of {document}.")
-
-        self.check_is_ready()
-
-        inference_document = deepcopy(document)
-
-        inference_document.project = self.project
-
-        inference_document = self.tokenizer.tokenize(inference_document)
-
-        return inference_document
-
-    def check_is_ready(self):
-        """
-        Check if the ExtractionAI is ready for the inference.
-
-        It is assumed that the model is ready if a Tokenizer and a Category were set.
-
-        :raises AttributeError: When no Category is specified.
-        """
-        logger.info(f"Checking if {self} is ready for extraction.")
-        if not self.category:
-            raise AttributeError(f'{self} requires a Category.')
+# This seems not to be used. As Paragraph Detection Mode is implemented as Tokenizer.
+# class ParagraphExtractionAI(AbstractExtractionAI):
+#     """Extract and label text regions using Detectron2."""
+#
+#     requires_text = True
+#     requires_images = True
+#
+#     def __init__(
+#         self,
+#         category: Category,
+#         *args,
+#         **kwargs,
+#     ):
+#         """ParagraphExtractionAI."""
+#         logger.info("Initializing ParagraphExtractionAI.")
+#         super().__init__(category=category, *args, **kwargs)
+#         self.tokenizer = ParagraphTokenizer(mode='detectron', create_detectron_labels=True)
+#
+#     @property
+#     def project(self):
+#         """Get RFExtractionAI Project."""
+#         if not self.category:
+#             raise AttributeError(f'{self} has no Category.')
+#         return self.category.project
+#
+#     def extract(self, document: Document) -> Document:
+#         """
+#         Infer information from a given Document.
+#
+#         :param document: Document object
+#         :return: Document with predicted labels
+#
+#         :raises:
+#          AttributeError: When missing a Tokenizer
+#         """
+#         logger.info(f"Starting extraction of {document}.")
+#
+#         self.check_is_ready()
+#
+#         inference_document = deepcopy(document)
+#
+#         inference_document.project = self.project
+#
+#         inference_document = self.tokenizer.tokenize(inference_document)
+#
+#         return inference_document
+#
+#     def check_is_ready(self):
+#         """
+#         Check if the ExtractionAI is ready for the inference.
+#
+#         It is assumed that the model is ready if a Tokenizer and a Category were set.
+#
+#         :raises AttributeError: When no Category is specified.
+#         """
+#         logger.info(f"Checking if {self} is ready for extraction.")
+#         if not self.category:
+#             raise AttributeError(f'{self} requires a Category.')
 
 
 class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
@@ -1874,6 +1875,11 @@ class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
         else:
             df['target'] = df['label_name']
         return df, _feature_list, _temp_df_raw_errors
+
+    @property
+    def requires_segmentation(self) -> bool:
+        """Check if the Tokenizer of Extraction AI requires segmentation."""
+        return self.tokenizer and hasattr(self.tokenizer, 'mode') and self.tokenizer.mode == 'detectron'
 
     def check_is_ready(self):
         """
