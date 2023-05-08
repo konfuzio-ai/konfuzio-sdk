@@ -574,7 +574,7 @@ The following steps need to be undertaken:
 | --- | --- | --- |----------------------------------------------------------------------------|
 | 1                   | Web Container          | 4GB | ...                                                                        |
 | 3                   | Generic Celery Worker  | 4GB | 1500 (3 x 500) Pages of Extraction oder Categorization per hour            |
-| 1                   | Self-Hosted OCR worker | 8GB | 1200 (1 y 1200) Pages)/ hours (Not needed if external API Service is used) |
+| 1                   | Self-Hosted OCR worker | 8GB | 1200 (1 y 1200) Pages) / hours (Not needed if external API Service is used) |
 | N                   | remaining Containers   | 4GB | ...                                                                        |
 
 
@@ -591,7 +591,18 @@ With this setup, around 1200 Pages per hour can be processed using OCR and Extra
 
 With this setup, around 2500 Pages per hour can be processed using OCR and Extraction, around 1250 Pages per hour can be processed if OCR, Categorization and Extraction are active.
 
-Note: In case you train very large AI Models (~200 Training Pages and more) more than 4GB for Generic Celery Workers are needed. The Benchmark used an Extraction AI with "word" detection mode and 10 Labels in 1 Label Set.
+Note: In case you train large AI Models (>100 Training Pages) more than 4GB for Generic Celery Workers are needed. The Benchmark used an Extraction AI with "word" detection mode and 10 Labels in 1 Label Set. The capacity is shared between all Users using the Konfuzio Server setup.
+
+The level of parallelity of task processing and therefore throughput can be increased by the number of running "Generic Celery Workers". 
+
+The performance of any system that processes documents can be affected by various factors, including the number of simultaneous connections, the size of the documents being processed, and the available resources such as RAM and processing power.
+
+The number of simultaneous connections can also impact performance. If multiple users are uploading and processing large documents simultaneously, it can put a strain on the system's resources, leading to slower processing times.
+
+Other factors that can affect performance include network latency, disk speed, and the complexity of the processing algorithms. It's essential to consider all these factors when designing and deploying document processing systems to ensure optimal performance.
+
+
+
 
 ## Docker-Compose vs. Kubernetes
 
