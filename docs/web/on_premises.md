@@ -7,7 +7,7 @@
 
 On-premises, also known as self-hosted, is a setup that allows Konfuzio Server to be implemented 100% on your own infrastructure or any cloud of your choice. In practice, it means that you know where your data is stored, how it's handled and who gets hold of it.
 
-A common way to operate a production-ready and scalabe Konfuzio installation is via Kubernetens. An alternative deployment option is the [Single VM setup via Docker](/web/on_premises.html#alternative-deployment-options). We recommend to use the option which is more familiar to you. In general
+A common way to operate a production-ready and scalabe Konfuzio installation is via Kubernetens. An alternative deployment option is the [Single VM setup via Docker](/web/on_premises.html#docker-single-vm-setup). We recommend to use the option which is more familiar to you. In general
 
 <div class="video-container">
     <iframe class="video" src="https://www.youtube.com/embed/KXc8FTU-2NM" allowfullscreen></iframe>
