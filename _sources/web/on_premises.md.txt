@@ -685,7 +685,7 @@ Click `SSO` on login page to log in to Konfuzio using keycloak
 
 ## Migrate AIs and Projects
 
-### Overview of migration methods
+### Overview of Migration Methods
 
 This table shows the two migration methods, "Project Export" and "AI File," for moving various elements Projects and Konfuzio Server environments. The table includes a list of elements such as Annotations, Categories, Label Sets, Labels, and more, and indicates which method is applicable for each element. The "Project Export" method is used for exporting whole Projects, while the "AI File" method is used for exporting elements that are specifically relevant for just running the AI on a different Konfuzio Server environments.
 
