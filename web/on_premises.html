@@ -1209,6 +1209,19 @@ See <a class="reference external" href="https://docs.djangoproject.com/en/4.0/re
 <p>Custom S3 URL to use when connecting to S3, including scheme.</p>
 <p><em>Type: string</em></p>
 </section>
+<section id="aws-s3-use-ssl">
+<h5>AWS_S3_USE_SSL<a class="headerlink" href="#aws-s3-use-ssl" title="Permalink to this headline">¶</a></h5>
+<p>Default: True</p>
+<p>Whether or not to use SSL when connecting to S3, this is passed to the boto3 session resource constructor.
+See</p>
+<p><em>Type: boolean</em></p>
+</section>
+<section id="aws-s3-verify">
+<h5>AWS_S3_VERIFY<a class="headerlink" href="#aws-s3-verify" title="Permalink to this headline">¶</a></h5>
+<p>Default: None</p>
+<p>Whether or not to verify the connection to S3. Can be set to False to not verify certificates or a path to a CA cert bundle.</p>
+<p><em>Type: string</em></p>
+</section>
 </section>
 <section id="email-sending-settings">
 <h4>5. Email Sending Settings<a class="headerlink" href="#email-sending-settings" title="Permalink to this headline">¶</a></h4>

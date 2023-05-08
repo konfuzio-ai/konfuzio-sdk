@@ -1004,6 +1004,21 @@ Custom S3 URL to use when connecting to S3, including scheme.
 
 _Type: string_
 
+##### AWS_S3_USE_SSL
+Default: True
+
+Whether or not to use SSL when connecting to S3, this is passed to the boto3 session resource constructor.
+See 
+
+_Type: boolean_
+
+##### AWS_S3_VERIFY
+Default: None
+
+Whether or not to verify the connection to S3. Can be set to False to not verify certificates or a path to a CA cert bundle.
+
+_Type: string_
+
 #### 5. Email Sending Settings
 
 ##### EMAIL_BACKEND
