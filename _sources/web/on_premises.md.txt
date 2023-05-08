@@ -591,15 +591,16 @@ With this setup, around 1200 Pages per hour can be processed using OCR and Extra
 
 With this setup, around 2500 Pages per hour can be processed using OCR and Extraction, around 1250 Pages per hour can be processed if OCR, Categorization and Extraction are active.
 
-Note: In case you train large AI Models (>100 Training Pages) more than 4GB for Generic Celery Workers are needed. The Benchmark used an Extraction AI with "word" detection mode and 10 Labels in 1 Label Set. The capacity is shared between all Users using the Konfuzio Server setup.
+.. note::
+  In case you train large AI Models (>100 Training Pages) more than 4GB for Generic Celery Workers are needed. The Benchmark used an Extraction AI with "word" detection mode and 10 Labels in 1 Label Set. The capacity is shared between all Users using the Konfuzio Server setup.
 
-The level of parallelity of task processing and therefore throughput can be increased by the number of running "Generic Celery Workers". 
+  The level of parallelity of task processing and therefore throughput can be increased by the number of running "Generic Celery Workers". 
 
-The performance of any system that processes documents can be affected by various factors, including the number of simultaneous connections, the size of the documents being processed, and the available resources such as RAM and processing power.
+  The performance of any system that processes documents can be affected by various factors, including the number of simultaneous connections, the size of the documents being processed, and the available resources such as RAM and processing power.
 
-The number of simultaneous connections can also impact performance. If multiple users are uploading and processing large documents simultaneously, it can put a strain on the system's resources, leading to slower processing times.
+  The number of simultaneous connections can also impact performance. If multiple users are uploading and processing large documents simultaneously, it can put a strain on the system's resources, leading to slower processing times.
 
-Other factors that can affect performance include network latency, disk speed, and the complexity of the processing algorithms. It's essential to consider all these factors when designing and deploying document processing systems to ensure optimal performance.
+  Other factors that can affect performance include network latency, disk speed, and the complexity of the processing algorithms. It's essential to consider all these factors when designing and deploying document processing systems to ensure optimal performance.
 
 
 

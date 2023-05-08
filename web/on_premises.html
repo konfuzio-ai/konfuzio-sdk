@@ -770,11 +770,14 @@ The following steps need to be undertaken:</p>
 </tbody>
 </table>
 <p>With this setup, around 2500 Pages per hour can be processed using OCR and Extraction, around 1250 Pages per hour can be processed if OCR, Categorization and Extraction are active.</p>
-<p>Note: In case you train large AI Models (&gt;100 Training Pages) more than 4GB for Generic Celery Workers are needed. The Benchmark used an Extraction AI with “word” detection mode and 10 Labels in 1 Label Set. The capacity is shared between all Users using the Konfuzio Server setup.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In case you train large AI Models (&gt;100 Training Pages) more than 4GB for Generic Celery Workers are needed. The Benchmark used an Extraction AI with “word” detection mode and 10 Labels in 1 Label Set. The capacity is shared between all Users using the Konfuzio Server setup.</p>
 <p>The level of parallelity of task processing and therefore throughput can be increased by the number of running “Generic Celery Workers”.</p>
 <p>The performance of any system that processes documents can be affected by various factors, including the number of simultaneous connections, the size of the documents being processed, and the available resources such as RAM and processing power.</p>
 <p>The number of simultaneous connections can also impact performance. If multiple users are uploading and processing large documents simultaneously, it can put a strain on the system’s resources, leading to slower processing times.</p>
 <p>Other factors that can affect performance include network latency, disk speed, and the complexity of the processing algorithms. It’s essential to consider all these factors when designing and deploying document processing systems to ensure optimal performance.</p>
+</div>
 </section>
 </section>
 </section>
