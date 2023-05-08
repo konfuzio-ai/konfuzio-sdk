@@ -1,17 +1,17 @@
 """Test code examples for Get Started section of the documentation."""
 import os
 
-from konfuzio_sdk.data import Project, Document
-
-from tests.variables import TEST_PROJECT_ID
-
-YOUR_PROJECT_ID = TEST_PROJECT_ID
-FILE_PATH = 'tests/test_data/pdf.pdf'
-ASSIGNEE_ID = None
-
 
 def test_get_started():
     """Test Get Started section of the documentation."""
+    from konfuzio_sdk.data import Project, Document
+
+    from tests.variables import TEST_PROJECT_ID
+
+    YOUR_PROJECT_ID = TEST_PROJECT_ID
+    FILE_PATH = 'tests/test_data/pdf.pdf'
+    ASSIGNEE_ID = None
+
     my_project = Project(id_=YOUR_PROJECT_ID)
 
     my_project.get(update=True)

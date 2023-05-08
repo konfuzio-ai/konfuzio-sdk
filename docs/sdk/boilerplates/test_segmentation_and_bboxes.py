@@ -1,32 +1,33 @@
 """Test code examples for visualizing segmentation and bboxes in the documentation."""
-from PIL import Image, ImageDraw
-from konfuzio_sdk.data import Project
-from konfuzio_sdk.api import get_results_from_segmentation
-from tests.variables import TEST_PROJECT_ID, TEST_DOCUMENT_ID
-
-YOUR_PROJECT_ID, YOUR_DOCUMENT_ID = TEST_PROJECT_ID, TEST_DOCUMENT_ID
 
 
 def test_segmentation_and_bboxes():
     """Test segmentation and bboxes."""
+    from PIL import ImageDraw
+    from konfuzio_sdk.data import Project
+    from konfuzio_sdk.api import get_results_from_segmentation
+    from tests.variables import TEST_PROJECT_ID, TEST_DOCUMENT_ID
+
+    YOUR_PROJECT_ID, YOUR_DOCUMENT_ID = TEST_PROJECT_ID, TEST_DOCUMENT_ID
+
     my_project = Project(id_=YOUR_PROJECT_ID, strict_data_validation=False)
     # first Document uploaded
-    document = my_project.get_document_by_id(TEST_DOCUMENT_ID)
+    document = my_project.get_document_by_id(YOUR_DOCUMENT_ID)
     # index of the Page to test
     page_index = 0
 
-    document.get_bbox()
-    document.get_images()
-    page = document.pages()[page_index]
-    img = page.get_image(update=True)
-    image_path = document.pages()[page_index].image_path
+    width = document.pages()[page_index].width
+    height = document.pages()[page_index].height
 
-    factor_x = page.width / img.width
-    factor_y = page.height / img.height
+    page = document.pages()[page_index]
+    image = page.get_image(update=True)
+
+    factor_x = width / image.width
+    factor_y = height / image.height
     assert 0.42 < factor_x < 0.43
     assert 0.42 < factor_y < 0.43
 
-    image = Image.open(image_path).convert('RGB')
+    image = image.convert('RGB')
 
     image = image.resize((int(image.size[0] * factor_x), int(image.size[1] * factor_y)))
     height = image.size[1]
@@ -43,7 +44,7 @@ def test_segmentation_and_bboxes():
             int(bbox["x1"]),
             int((height - bbox["y0"])),
         )
-        draw.rectangle(image_bbox, outline='blue', width=1)
+        draw.rectangle(image_bbox, outline='green', width=1)
 
     image_segmentation_bboxes = get_results_from_segmentation(document.id_, my_project.id_)
 
@@ -63,7 +64,7 @@ def test_segmentation_and_bboxes():
             int(bbox["x1"] * factor_x),
             int(bbox["y1"] * factor_y),
         )
-        draw.rectangle(image_bbox, outline='blue', width=1)
+        draw.rectangle(image_bbox, outline='red', width=1)
 
     image
 

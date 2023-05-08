@@ -1,14 +1,15 @@
 """Test File Splitting evaluation documentation examples."""
-from konfuzio_sdk.data import Document, Page
-from konfuzio_sdk.evaluate import FileSplittingEvaluation, EvaluationCalculator
-from konfuzio_sdk.trainer.file_splitting import SplittingAI
-from konfuzio_sdk.samples import LocalTextProject
-from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
-from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel
 
 
 def test_file_splitting_evaluation():
     """Test File Splitting evaluation."""
+    from konfuzio_sdk.data import Document, Page
+    from konfuzio_sdk.evaluate import FileSplittingEvaluation, EvaluationCalculator
+    from konfuzio_sdk.trainer.file_splitting import SplittingAI
+    from konfuzio_sdk.samples import LocalTextProject
+    from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
+    from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel
+
     YOUR_PROJECT = LocalTextProject()
     YOUR_CATEGORY_1 = YOUR_PROJECT.get_category_by_id(3)
     YOUR_CATEGORY_2 = YOUR_PROJECT.get_category_by_id(4)

@@ -1,11 +1,12 @@
 """Test code examples for using the token in the documentation."""
-import requests
-from konfuzio_sdk import KONFUZIO_TOKEN
-from konfuzio_sdk.api import konfuzio_session
 
 
 def test_rest_api():
     """Test Konfuzio rest api."""
+    import requests
+    from konfuzio_sdk import KONFUZIO_TOKEN
+    from konfuzio_sdk.api import konfuzio_session
+
     url = "https://app.konfuzio.com/api/v3/auth/"
 
     payload = {"username": "example@example.org", "password": "examplepassword"}

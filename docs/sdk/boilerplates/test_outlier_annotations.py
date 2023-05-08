@@ -1,17 +1,18 @@
 """Test searching for the outlier Annotations under a given Label."""
-from konfuzio_sdk.data import Project
-from konfuzio_sdk.evaluate import ExtractionEvaluation
-from konfuzio_sdk.tokenizer.base import ListTokenizer
-from konfuzio_sdk.tokenizer.regex import RegexTokenizer
-from konfuzio_sdk.trainer.information_extraction import RFExtractionAI
-from tests.variables import TEST_PROJECT_ID
-
-YOUR_PROJECT_ID = TEST_PROJECT_ID
-YOUR_LABEL_NAME = 'Austellungsdatum'
 
 
 def test_outlier_annotations():
     """Test outlier annotations."""
+    from konfuzio_sdk.data import Project
+    from konfuzio_sdk.evaluate import ExtractionEvaluation
+    from konfuzio_sdk.tokenizer.base import ListTokenizer
+    from konfuzio_sdk.tokenizer.regex import RegexTokenizer
+    from konfuzio_sdk.trainer.information_extraction import RFExtractionAI
+    from tests.variables import TEST_PROJECT_ID
+
+    YOUR_PROJECT_ID = TEST_PROJECT_ID
+    YOUR_LABEL_NAME = 'Austellungsdatum'
+
     project = Project(id_=YOUR_PROJECT_ID)
     project = Project(id_=YOUR_PROJECT_ID, strict_data_validation=False)
 

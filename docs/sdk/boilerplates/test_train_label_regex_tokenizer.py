@@ -1,15 +1,16 @@
 """Test code examples for training a Label regex Tokenizer."""
-from konfuzio_sdk.data import Project
-from konfuzio_sdk.tokenizer.regex import RegexTokenizer
-from konfuzio_sdk.tokenizer.base import ListTokenizer
-
-from tests.variables import TEST_PROJECT_ID, TEST_DOCUMENT_ID
-
-YOUR_PROJECT_ID, YOUR_CATEGORY_ID, YOUR_DOCUMENT_ID = TEST_PROJECT_ID, 63, TEST_DOCUMENT_ID
 
 
 def test_train_label_regex_tokenizer():
     """Test train label regex tokenizer."""
+    from konfuzio_sdk.data import Project
+    from konfuzio_sdk.tokenizer.regex import RegexTokenizer
+    from konfuzio_sdk.tokenizer.base import ListTokenizer
+
+    from tests.variables import TEST_PROJECT_ID, TEST_DOCUMENT_ID
+
+    YOUR_PROJECT_ID, YOUR_CATEGORY_ID, YOUR_DOCUMENT_ID = TEST_PROJECT_ID, 63, TEST_DOCUMENT_ID
+
     my_project = Project(id_=YOUR_PROJECT_ID)
     category = my_project.get_category_by_id(id_=YOUR_CATEGORY_ID)
 

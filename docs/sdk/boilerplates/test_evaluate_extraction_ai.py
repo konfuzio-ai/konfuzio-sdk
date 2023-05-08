@@ -1,16 +1,16 @@
 """Test code examples for evaluation of the Extraction AI in the documentation."""
 import sys
 import unittest
-from konfuzio_sdk.data import Project
-from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
-from konfuzio_sdk.trainer.information_extraction import load_model
-
-MODEL_PATH = 'tests/trainer/2023-04-28-12-10-45_lohnabrechnung_rfextractionai_.pkl'
 
 
 @unittest.skipIf(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
 def test_evaluate_extraction_ai():
     """Test evaluation of the Extraction AI."""
+    from konfuzio_sdk.data import Project
+    from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
+    from konfuzio_sdk.trainer.information_extraction import load_model
+
+    MODEL_PATH = 'tests/trainer/2023-04-28-12-10-45_lohnabrechnung_rfextractionai_.pkl'
     pipeline = load_model(MODEL_PATH)
 
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)

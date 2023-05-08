@@ -1,18 +1,19 @@
 """Test Document Categorization code examples from the documentation."""
-from konfuzio_sdk.data import Project, Document
-from konfuzio_sdk.trainer.document_categorization import NameBasedCategorizationAI
-from konfuzio_sdk.trainer.information_extraction import load_model
-from konfuzio_sdk.trainer.document_categorization import build_categorization_ai_pipeline
-from konfuzio_sdk.trainer.document_categorization import ImageModel, TextModel
-
-from tests.variables import TEST_PROJECT_ID
-
-YOUR_PROJECT_ID = TEST_PROJECT_ID
-YOUR_DOCUMENT_ID = 44865
 
 
 def test_document_categorization():
-    """Test Document Categorization.""" ""
+    """Test Document Categorization."""
+    from konfuzio_sdk.data import Project, Document
+    from konfuzio_sdk.trainer.document_categorization import NameBasedCategorizationAI
+    from konfuzio_sdk.trainer.information_extraction import load_model
+    from konfuzio_sdk.trainer.document_categorization import build_categorization_ai_pipeline
+    from konfuzio_sdk.trainer.document_categorization import ImageModel, TextModel
+
+    from tests.variables import TEST_PROJECT_ID
+
+    YOUR_PROJECT_ID = TEST_PROJECT_ID
+    YOUR_DOCUMENT_ID = 44865
+
     # Set up your Project.
     project = Project(id_=YOUR_PROJECT_ID)
     YOUR_CATEGORY_ID = project.categories[0].id_

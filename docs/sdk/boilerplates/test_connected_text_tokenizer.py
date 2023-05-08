@@ -1,10 +1,11 @@
 """Test a ConnectedTextTokenizer instance."""
-from konfuzio_sdk.samples import LocalTextProject
-from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
 
 
 def test_connected_text_tokenizer():
     """Test a ConnectedTextTokenizer."""
+    from konfuzio_sdk.samples import LocalTextProject
+    from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
+
     project = LocalTextProject()
     tokenizer = ConnectedTextTokenizer()
     YOUR_DOCUMENT_ID = 9

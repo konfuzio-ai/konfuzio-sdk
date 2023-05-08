@@ -1,14 +1,15 @@
 """Test code examples for finding Spans of a Label not found by the Tokenizer."""
-from konfuzio_sdk.data import Project
-from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
-
-from tests.variables import TEST_PROJECT_ID
-
-YOUR_PROJECT_ID = TEST_PROJECT_ID
 
 
 def test_spans_not_found_label():
     """Test finding spans not found label."""
+    from konfuzio_sdk.data import Project
+    from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
+
+    from tests.variables import TEST_PROJECT_ID
+
+    YOUR_PROJECT_ID = TEST_PROJECT_ID
+
     my_project = Project(id_=YOUR_PROJECT_ID)
     category = my_project.categories[0]
 

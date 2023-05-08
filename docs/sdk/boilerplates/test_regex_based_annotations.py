@@ -1,13 +1,14 @@
 """Test code examples for regex-based Annotations in the documentation."""
-import re
-from konfuzio_sdk.data import Project, Annotation, Span
-from tests.variables import TEST_PROJECT_ID
-
-YOUR_PROJECT_ID = TEST_PROJECT_ID
 
 
 def test_regex_based_annotations():
     """Test regex-based Annotations."""
+    import re
+    from konfuzio_sdk.data import Project, Annotation, Span
+    from tests.variables import TEST_PROJECT_ID
+
+    YOUR_PROJECT_ID = TEST_PROJECT_ID
+
     my_project = Project(id_=YOUR_PROJECT_ID, strict_data_validation=False)
 
     # Word/expression to annotate in the Document

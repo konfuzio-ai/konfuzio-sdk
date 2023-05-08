@@ -1,27 +1,23 @@
 """Test a code example for the File Splitting section of the documentation."""
-import logging
-
 from typing import List
-
-from konfuzio_sdk.data import Page, Category, Project
-from konfuzio_sdk.trainer.file_splitting import AbstractFileSplittingModel
-from konfuzio_sdk.trainer.file_splitting import SplittingAI
-from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel
-from konfuzio_sdk.trainer.information_extraction import load_model
-from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
-
-from tests.variables import TEST_PROJECT_ID
-
-YOUR_PROJECT_ID = TEST_PROJECT_ID
-logger = logging.getLogger(__name__)
-YOUR_DOCUMENT_ID = 44865
-[List, Page, Category, AbstractFileSplittingModel]  # for referencing in the imports and passing the linting
 
 
 def test_file_splitting():
     """Test the File Splitting section of the documentation."""
-    # initialize a Project and fetch a test Document of your choice
+    from konfuzio_sdk.data import Page, Category, Project
+    from konfuzio_sdk.trainer.file_splitting import AbstractFileSplittingModel
+    from konfuzio_sdk.trainer.file_splitting import SplittingAI
+    from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel
+    from konfuzio_sdk.trainer.information_extraction import load_model
+    from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
 
+    from tests.variables import TEST_PROJECT_ID
+
+    YOUR_PROJECT_ID = TEST_PROJECT_ID
+    YOUR_DOCUMENT_ID = 44865
+    [List, Page, Category, AbstractFileSplittingModel]  # for referencing in the imports and passing the linting
+
+    # initialize a Project and fetch a test Document of your choice
     project = Project(id_=YOUR_PROJECT_ID)
     test_document = project.get_document_by_id(YOUR_DOCUMENT_ID)
 
