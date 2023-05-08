@@ -6,14 +6,17 @@ from tests.variables import TEST_PROJECT_ID, TEST_DOCUMENT_ID
 YOUR_PROJECT_ID, YOUR_DOCUMENT_ID = TEST_PROJECT_ID, TEST_DOCUMENT_ID
 # initialize a Project and fetch a Document to tokenize
 
-project = Project(id_=YOUR_PROJECT_ID)
-document = project.get_document_by_id(YOUR_DOCUMENT_ID)
 
-project = Project(id_=458)
-document = project.get_document_by_id(601418)
+def test_sentence_tokenizer():
+    """Test sentence tokenizer."""
+    project = Project(id_=YOUR_PROJECT_ID)
+    document = project.get_document_by_id(YOUR_DOCUMENT_ID)
 
-# create the SentenceTokenizer and tokenize the Document
+    project = Project(id_=458)
+    document = project.get_document_by_id(601418)
 
-tokenizer = SentenceTokenizer(mode='line_distance')
+    # create the SentenceTokenizer and tokenize the Document
 
-document = tokenizer(document)
+    tokenizer = SentenceTokenizer(mode='line_distance')
+
+    document = tokenizer(document)
