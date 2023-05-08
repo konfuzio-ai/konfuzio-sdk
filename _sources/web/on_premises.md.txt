@@ -685,6 +685,23 @@ Click `SSO` on login page to log in to Konfuzio using keycloak
 
 ## Migrate AIs and Projects
 
+### Overview of migration methods
+
+This table shows the two migration methods, "Project Export" and "AI File," for moving various elements Projects and Konfuzio Server environments. The table includes a list of elements such as Annotations, Categories, Label Sets, Labels, and more, and indicates which method is applicable for each element. The "Project Export" method is used for exporting whole Projects, while the "AI File" method is used for exporting elements that are specifically relevant for just running the AI on a different Konfuzio Server environments.
+
+|                          | [Project Export](/web/on_premises.html#migrate-a-project) | [AI File](/web/on_premises.html#migrate-an-extraction-or-categorization-ai) |
+|--------------------------|----------------|---------|
+| Annotations              |        X       | -       |
+| Categories               |        X       | -       |
+| Categorization AI        |        -       |    X    |
+| All Documents            |        -       | -       |
+| Test-/Training Documents |        X       | -       |
+| Extraction AI            |        -       |    x    |
+| Label Sets               |        X       |    X    |
+| Labels                   |        X       |    X    |
+| Members                  |        -       |    -    |
+
+
 ### Migrate an Extraction or Categorization AI
 
 Superusers can migrate Extraction and Categorization AIs via the webinterface. This is explained on [https://help.konfuzio.com](https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html). 
