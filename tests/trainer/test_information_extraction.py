@@ -1879,6 +1879,7 @@ def test_load_old_ai_model_2():
         load_model(path)
 
 
+@unittest.skipIf(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
 def test_load_ai_model():
     """Test loading trained model."""
     path = "tests/trainer/2023-04-25-15-56-42_lohnabrechnung_rfextractionai_.pkl"
