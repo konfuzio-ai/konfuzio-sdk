@@ -1456,7 +1456,7 @@ class TestEvaluationFileSplitting(unittest.TestCase):
         splitting_ai = SplittingAI(self.file_splitting_model)
         pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)[0]
         pred.copy_of_id = 9999999
-        with pytest.raises(ValueError, match='Prediction has to be a copy of'):
+        with pytest.raises(ValueError, match='Incorrect prediction'):
             FileSplittingEvaluation([self.test_document], [pred])
 
     def test_evaluation_pred_input_no_is_first_page_attr(self):
