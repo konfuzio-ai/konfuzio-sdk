@@ -592,7 +592,7 @@ Around 1200 Pages can be processed (OCR and Extraction) per hour with this setup
 
 Around 2500 Pages can be processed (OCR and Extraction) per hour with this hout.
 
-Note: In case you train very large AI Models (~500 Training Documents and more) more than 4GB for Generic Celery Workers are needed.
+Note: In case you train very large AI Models (~200 Training Pages and more) more than 4GB for Generic Celery Workers are needed. The Benchmark used an Extraction AI with "word" detection mode and 10 Labels in 1 Label Set.
 
 ## Docker-Compose vs. Kubernetes
 
