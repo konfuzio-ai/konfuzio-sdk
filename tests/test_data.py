@@ -77,6 +77,8 @@ class TestOnlineProject(unittest.TestCase):
             label_set=self.project.no_label_set,
             spans=[span],
         )
+        with pytest.raises(ValueError, match='save Annotations with Label NO_LABEL'):
+            _.save()
         assert len(document.annotations(use_correct=False, label=self.project.no_label)) == 1
         document.update()
         assert len(document.annotations(use_correct=False, label=self.project.no_label)) == 0
@@ -527,6 +529,12 @@ class TestOfflineExampleData(unittest.TestCase):
         outlier_spans = [span.offset_string for annotation in outliers for span in annotation.spans]
         assert len(outliers) == 3
         assert 'DE47 7001 0500 0000 2XxXX XX' in outlier_spans
+        outliers_with_test = label.get_probable_outliers_by_regex(
+            project_regex.categories, use_test_docs=True, top_worst_percentage=1.0
+        )
+        outlier_test_spans = [span.offset_string for annotation in outliers_with_test for span in annotation.spans]
+        assert len(outlier_test_spans) == 6
+        assert 'DE38 7609 0900 0001 2XXX XX' in outlier_test_spans
 
     def test_find_outlier_annotations_by_confidence(self):
         """Test finding the Annotations with the least confidence."""
@@ -569,6 +577,14 @@ class TestOfflineExampleData(unittest.TestCase):
         assert len(outliers) == 1
         assert '328927/10103' in outlier_spans
         assert '22.05.2018' in outlier_spans
+
+    def test_find_outlier_annotations_error(self):
+        """Test impossibility of running outlier Annotation search with all modes disabled."""
+        label = self.project.get_label_by_name('Austellungsdatum')
+        with pytest.raises(ValueError, match='search modes disabled'):
+            label.get_probable_outliers(
+                self.project.categories, regex_search=False, confidence_search=False, normalization_search=False
+            )
 
     def test_get_original_page_from_copy(self):
         """Test getting an original Page from a copy of a Page."""

@@ -3602,7 +3602,6 @@ class Document(Data):
                         end_offset=end_offset,
                         copy_of_id=page_id,
                         number=i,
-                        category=page.category,
                     )
                     i += 1
                     start_offset = end_offset + 1
@@ -3616,14 +3615,13 @@ class Document(Data):
                         end_offset=end_offset,
                         copy_of_id=page_id,
                         number=i,
-                        category=page.category,
                     )
                     i += 1
                     start_offset = end_offset + 1
         return new_doc
 
     def get_document_classifier_examples(self, text_vocab, category_vocab, max_len, use_image, use_text):
-        """Get the per document examples for the document classifier."""
+        """Get the per-Document examples for the Document classifier."""
         document_image_paths = []
         document_tokens = []
         document_labels = []
