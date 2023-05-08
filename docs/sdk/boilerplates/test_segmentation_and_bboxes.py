@@ -55,7 +55,7 @@ def test_segmentation_and_bboxes():
             int(bbox["x1"]),
             int(bbox["y1"]),
         )
-        draw.rectangle(image_bbox, outline='blue', width=1)
+        draw.rectangle(image_bbox, outline='red', width=1)
 
     for bbox in image_segmentation_bboxes[page_index]:
         image_bbox = (
