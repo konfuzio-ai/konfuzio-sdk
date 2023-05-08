@@ -573,12 +573,12 @@ The following steps need to be undertaken:
 | Number of Container | Container Type | RAM | Capacity                                                                   |
 | --- | --- | --- |----------------------------------------------------------------------------|
 | 1                   | Web Container          | 4GB | ...                                                                        |
-| 3                   | Generic Celery Worker  | 4GB | 1500 (3 x 500) Pages of Extraction oder Kategorization per hour            |
+| 3                   | Generic Celery Worker  | 4GB | 1500 (3 x 500) Pages of Extraction oder Categorization per hour            |
 | 1                   | Self-Hosted OCR worker | 8GB | 1200 (1 y 1200) Pages)/ hours (Not needed if external API Service is used) |
 | N                   | remaining Containers   | 4GB | ...                                                                        |
 
 
-Around 1200 Pages can be processed (OCR and Extraction) per hour with this setup.
+With this setup, around 1200 Pages per hour can be processed using OCR and Extraction, around 750 Pages per hour can be processed if OCR, Categorization and Extraction are active.
 
 #### Scenario 2: Without self-hosted OCR
 
@@ -586,11 +586,10 @@ Around 1200 Pages can be processed (OCR and Extraction) per hour with this setup
 | Number of Container | Container Type | RAM | Capacity                                                        |
 | --- | --- | --- |-----------------------------------------------------------------|
 | 1                   | Web Container          | 4GB | ...                                                             |
-| 5                   | Generic Celery Worker  | 4GB | 2500 (3 x 500) Pages of Extraction oder Kategorization per hour |
+| 5                   | Generic Celery Worker  | 4GB | 2500 (3 x 500) Pages of Extraction oder Categorization per hour |
 | N                   | remaining Containers   | 4GB | ...                                                             |
 
-
-Around 2500 Pages can be processed (OCR and Extraction) per hour with this hout.
+With this setup, around 2500 Pages per hour can be processed using OCR and Extraction, around 1250 Pages per hour can be processed if OCR, Categorization and Extraction are active.
 
 Note: In case you train very large AI Models (~200 Training Pages and more) more than 4GB for Generic Celery Workers are needed. The Benchmark used an Extraction AI with "word" detection mode and 10 Labels in 1 Label Set.
 
