@@ -719,7 +719,7 @@ The following steps need to be undertaken:</p>
 <tr class="row-odd"><td><p>3</p></td>
 <td><p>Generic Celery Worker</p></td>
 <td><p>4GB</p></td>
-<td><p>1500 (3 x 500) Pages of Extraction oder Kategorization per hour</p></td>
+<td><p>1500 (3 x 500) Pages of Extraction oder Categorization per hour</p></td>
 </tr>
 <tr class="row-even"><td><p>1</p></td>
 <td><p>Self-Hosted OCR worker</p></td>
@@ -733,7 +733,7 @@ The following steps need to be undertaken:</p>
 </tr>
 </tbody>
 </table>
-<p>Around 1200 Pages can be processed (OCR and Extraction) per hour with this setup.</p>
+<p>With this setup, around 1200 Pages per hour can be processed using OCR and Extraction, around 750 Pages per hour can be processed if OCR, Categorization and Extraction are active.</p>
 </section>
 <section id="scenario-2-without-self-hosted-ocr">
 <h4>Scenario 2: Without self-hosted OCR<a class="headerlink" href="#scenario-2-without-self-hosted-ocr" title="Permalink to this headline">¶</a></h4>
@@ -760,7 +760,7 @@ The following steps need to be undertaken:</p>
 <tr class="row-odd"><td><p>5</p></td>
 <td><p>Generic Celery Worker</p></td>
 <td><p>4GB</p></td>
-<td><p>2500 (3 x 500) Pages of Extraction oder Kategorization per hour</p></td>
+<td><p>2500 (3 x 500) Pages of Extraction oder Categorization per hour</p></td>
 </tr>
 <tr class="row-even"><td><p>N</p></td>
 <td><p>remaining Containers</p></td>
@@ -769,7 +769,7 @@ The following steps need to be undertaken:</p>
 </tr>
 </tbody>
 </table>
-<p>Around 2500 Pages can be processed (OCR and Extraction) per hour with this hout.</p>
+<p>With this setup, around 2500 Pages per hour can be processed using OCR and Extraction, around 1250 Pages per hour can be processed if OCR, Categorization and Extraction are active.</p>
 <p>Note: In case you train very large AI Models (~200 Training Pages and more) more than 4GB for Generic Celery Workers are needed. The Benchmark used an Extraction AI with “word” detection mode and 10 Labels in 1 Label Set.</p>
 </section>
 </section>
