@@ -2726,9 +2726,7 @@ class Document(Data):
     def set_category(self, category: Category) -> None:
         """Set the Category of the Document and the Category of all of its Pages as revised."""
         logger.info(f"Setting Category of {self} to {category}.")
-        if (self._category not in [None, self.project.no_category]) and (
-            category not in [self._category, None, self.project.no_category]
-        ):
+        if (self._category.name != 'NO_CATEGORY') and (category not in [self._category, self.project.no_category]):
             raise ValueError(
                 "We forbid changing Category when already existing, because this requires some validations that are "
                 "currently implemented in the Konfuzio Server. We recommend changing the Category of a Document via "

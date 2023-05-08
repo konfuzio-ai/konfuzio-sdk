@@ -1831,7 +1831,7 @@ def test_load_model_wrong_pickle_data():
 def test_load_ai_model_konfuzio_sdk_not_included():
     """Test loading of trained model with include_konfuzio setting set to False."""
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-    path = "trainer/2023-01-31-14-39-44_lohnabrechnung_no_konfuzio_sdk.pkl"
+    path = "trainer/2023-05-05-14-44-38_lohnabrechnung_no_konfuzio_sdk.pkl"
     pipeline = load_model(path)
 
     test_document = project.get_document_by_id(TEST_DOCUMENT_ID)
