@@ -22,7 +22,7 @@ from konfuzio_sdk import IMAGE_FILE, PDF_FILE, OFFICE_FILE, SUPPORTED_FILE_TYPES
 
 logger = logging.getLogger(__name__)
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # only import when type checking to prevent circular import errors
     from konfuzio_sdk.data import Bbox, Span
 
 
@@ -469,7 +469,6 @@ def detectron_get_paragraph_bboxes(detectron_document_results: List[List[Dict]],
     """Call detectron Bbox corresponding to each paragraph."""
     from konfuzio_sdk.data import Bbox
 
-    assert isinstance(document.project.id_, int)
     assert len(detectron_document_results) == document.number_of_pages
 
     paragraph_document_bboxes: List[List['Bbox']] = []
