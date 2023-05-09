@@ -383,6 +383,7 @@ sequenceDiagram
 ```
 
 A Webhook is sent after processing, if the URL via `callback_url` is given when uploading the Document.
+If you want to configure additional webhooks, please feel free to [contact us](https://konfuzio.com/kontakt/).
 
 ```
 curl --request POST \
