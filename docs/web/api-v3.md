@@ -391,6 +391,15 @@ our [Document creation endpoint](https://app.konfuzio.com/v3/swagger/#/documents
 .. note::
   Unlike most other endpoints, the Document creation endpoint only supports `multipart/form-data` requests (to support
   file uploading), so you won't have to JSON-encode your request this time.
+  
+  
+```mermaid
+sequenceDiagram
+    Customer Software->>Konfuzio Server: Document POST
+    Konfuzio Server-->>Customer Software: Webhook*
+```
+
+A Webhook is sent after processing, if the URL via `callback_url` is given when uploading the document.
 
 ```
 curl --request POST \
