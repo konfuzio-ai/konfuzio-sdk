@@ -63,7 +63,3 @@ def test_get_started():
     my_project = Project(id_=YOUR_PROJECT_ID, update=True)
     assert len(my_project.documents) == 26
     my_project.get_document_by_id(document_id).delete(delete_online=True)
-
-    def test_placeholder():
-        """Placeholder for pytest."""
-        pass

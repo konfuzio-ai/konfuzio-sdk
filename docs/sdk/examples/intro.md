@@ -8,7 +8,8 @@ Retrieve all information available for your Project:
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 11
+   :lines: 15
+   :dedent: 4
 
 The information will be stored in the folder that you defined to allocate the data in the package initialization.
 A subfolder will be created for each Document in the Project.
@@ -17,13 +18,15 @@ Every time that there are changes in the Project in the Konfuzio Server, the loc
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 13
+   :lines: 17
+   :dedent: 4
 
 To make sure that your Project is loaded with all the latest data:
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 14
+   :lines: 18
+   :dedent: 4
 
 ### Documents
 
@@ -31,7 +34,8 @@ To access the Documents in the Project you can use:
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 16
+   :lines: 20
+   :dedent: 4
 
 
 By default, it will get the Documents with training status (dataset_status = 2). The code for the status is:
@@ -46,7 +50,8 @@ The Test Documents can be accessed directly by:
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 17
+   :lines: 21
+   :dedent: 4
 
 For more details, you can check out the [Project documentation](https://dev.konfuzio.com/sdk/sourcecode.html#project).
 
@@ -197,7 +202,8 @@ Document. Beware, this may take from a few seconds up to over a minute depending
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 44
+   :lines: 48
+   :dedent: 4
 
 If however you are trying to upload a large number of files and don't want to wait for them to be processed you can use 
 the asynchronous option which returns an empty Document object. You can then use the `update` method to check if the
@@ -205,13 +211,15 @@ Document is ready and the OCR processing is done.
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 48
+   :lines: 52
+   :dedent: 4
 
 Once the OCR process is done, you can get the Document OCR results with:
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 49
+   :lines: 53
+   :dedent: 4
 
 #### Modify Document
 
@@ -220,14 +228,16 @@ it like this:
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 55-58
+   :lines: 59-62
+   :dedent: 4
 
 #### Update Document
 If there are changes in the Document in the Konfuzio Server, you can update the Document with:
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 49
+   :lines: 53
+   :dedent: 4
 
 If a Document is part of the Training or Test set, you can also update it by updating the entire Project via
 `project.get(update=True)`. However, for Projects with many Documents it can be faster to update only the relevant Documents.
@@ -237,7 +247,8 @@ To get the PDFs of the Documents, you can use `get_file()`.
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 21-22
+   :lines: 25-26
+   :dedent: 4
 
 This will download the OCR version of the Document which contains the text, the Bounding Boxes
 information of the characters and the image of the Document.
@@ -248,7 +259,8 @@ If you want to original version of the Document (without OCR) you can use `ocr_v
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 24-25
+   :lines: 28-29
+   :dedent: 4
 
 In the Document folder, you will see a new file with the original name.
 
@@ -257,7 +269,8 @@ To get the Pages of the Document as png images, you can use `get_images()`.
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 28-29
+   :lines: 32-33
+   :dedent: 4
 
 You will get one png image named "page_number_of_page.png" for each Page in the Document.
 
@@ -266,7 +279,8 @@ To get the Bounding Boxes information of the characters, you can use `get_bbox()
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 33-34
+   :lines: 37-38
+   :dedent: 4
 
 You will get a file named "bbox.json5".
 
@@ -275,7 +289,8 @@ For example, you can get the path to the file with the Document text with:
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 38
+   :lines: 42
+   :dedent: 4
 
 #### Delete Document
 
@@ -284,7 +299,8 @@ To locally delete a Document, you can use:
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 41
+   :lines: 45
+   :dedent: 4
 
 The Document will be deleted from your local data folder, but it will remain in the Konfuzio Server.
 If you want to get it again you can update the Project.
@@ -295,7 +311,8 @@ If you would like to delete a Document in the remote server you can simply use t
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 46,50,59,47
+   :lines: 50,54,62,51
+   :dedent: 4
 
 If `delete_online` is set to False (the default), the Document will only be deleted on your local machine, and will be 
 reloaded next time you load the Project, or if you run the `Project.init_or_update_document` method directly.
