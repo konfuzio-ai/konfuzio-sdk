@@ -8,7 +8,8 @@ You can follow the example below to post annotations of a certain word or expres
 
 .. literalinclude:: /sdk/boilerplates/test_regex_based_annotations.py
    :language: python
-   :lines: 2-5,8-17,19-21,23-28,30-44,46
+   :lines: 6,9,7,11-12,15-22,24-26,28-33,35-49,51
+   :dedent: 4
 
 
 ## Train Label Regex Tokenizer
