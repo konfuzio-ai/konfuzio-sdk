@@ -116,13 +116,15 @@ To get a token:
 
 .. literalinclude:: ../sdk/boilerplates/test_rest_api.py
    :language: python
-   :lines: 2,5-10,22-23
+   :lines: 6,9-14,26-27
+   :dedent: 4
 
 To use the token:
 
 .. literalinclude:: ../sdk/boilerplates/test_rest_api.py
    :language: python
-   :lines: 2,5-7,13-15,22-23
+   :lines: 6,9-11,16-19,26-27
+   :dedent: 4
 
 #### Accessing and using the token via the Konfuzio SDK
 
@@ -132,7 +134,8 @@ To use a token:
 
 .. literalinclude:: ../sdk/boilerplates/test_rest_api.py
    :language: python
-   :lines: 3-5,18-23
+   :lines: 7-9,22-27
+   :dedent: 4
 
 To access this and other information via SDK's Data layer concepts, see [SDK Quickstart](https://dev.konfuzio.com/sdk/home/index.html) page.
 
