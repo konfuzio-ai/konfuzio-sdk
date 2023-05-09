@@ -71,14 +71,14 @@ To begin, we will make all the necessary imports:
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_example.py
    :language: python
-   :lines: 2-8,10-11
+   :lines: 7-9,11-12
+   :dedent: 4
 
 Then, let's initialize the `ContextAwareFileSplittingModel` class:
 
 .. literalinclude:: ../../konfuzio_sdk/trainer/file_splitting.py
    :language: python
    :lines: 386,394,407-411
-   :dedent: 4
 
 The class inherits from `AbstractFileSplittingModel`, so we run `super().__init__(categories=categories)` to properly 
 inherit its attributes. The `tokenizer` attribute will be used to process the text within the Document, separating it 
@@ -133,4 +133,5 @@ A quick example of the class's usage:
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_example.py
    :language: python
-   :lines: 19-26,32-72
+   :lines: 20-28,34-78
+   :dedent: 4
