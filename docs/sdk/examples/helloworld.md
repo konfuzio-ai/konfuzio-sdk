@@ -21,7 +21,8 @@ training data.
 
 .. literalinclude:: /sdk/boilerplates/test_train_label_regex_tokenizer.py
    :language: python
-   :lines: 2-5,8-21
+   :lines: 6-9,14-27
+   :dedent: 4
 
 ## Finding Spans of a Label Not Found by a Tokenizer
 
@@ -29,4 +30,5 @@ Here is an example of how to use the `Label.spans_not_found_by_tokenizer` method
 
 .. literalinclude:: /sdk/boilerplates/test_spans_not_found_label.py
    :language: python
-   :lines: 2-4,7-14,16-18
+   :lines: 6-8,13-20,22-24
+   :dedent: 4
