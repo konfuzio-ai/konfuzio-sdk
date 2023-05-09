@@ -78,6 +78,7 @@ Then, let's initialize the `ContextAwareFileSplittingModel` class:
 .. literalinclude:: ../../konfuzio_sdk/trainer/file_splitting.py
    :language: python
    :lines: 386,394,407-411
+   :dedent: 4
 
 The class inherits from `AbstractFileSplittingModel`, so we run `super().__init__(categories=categories)` to properly 
 inherit its attributes. The `tokenizer` attribute will be used to process the text within the Document, separating it 
@@ -93,7 +94,8 @@ An example of how ConnectedTextTokenizer works:
 
 .. literalinclude:: /sdk/boilerplates/test_connected_text_tokenizer.py
    :language: python
-   :lines: 9-14,20-23,26-32,35-38
+   :lines: 13-19,25-28,31-37,40-42
+   :dedent: 4
 
 The first method to define will be the `fit()` method. For each Category, we call `exclusive_first_page_strings` method, 
 which allows us to gather the strings that appear on the first Page of each Document. `allow_empty_categories` allows 
@@ -103,6 +105,7 @@ This means that those Categories would not be used in the prediction process.
 .. literalinclude:: ../../konfuzio_sdk/trainer/file_splitting.py
    :language: python
    :lines: 413,431-444
+   :dedent: 4
 
 Next, we define `predict()` method. The method accepts a Page as an input and checks its Span set for containing 
 first-page strings for each of the Categories. If there is at least one intersection, the Page is predicted to be a 

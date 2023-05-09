@@ -22,4 +22,5 @@ documentation for more details.
 
 .. literalinclude:: /sdk/boilerplates/test_evaluate_extraction_ai.py
    :language: python
-   :lines: 4-5,7-8,13-14,16,18,20-23,25-28,30-33,35
+   :lines: 11-12,14-15,20-21,23,25,27-30,32-35,37-40,42
+   :dedent: 4
