@@ -53,7 +53,7 @@ size used for the characters' bbox.
 
 .. literalinclude:: /sdk/boilerplates/test_segmentation_and_bboxes.py
    :language: python
-   :lines: 6-8,12-26,29-35,37-50,60-70
+   :lines: 6-8,12-26,29-35,37-50,60-69
    :dedent: 4
 
 .. image:: /_static/img/bboxes_overlap.png
