@@ -7,23 +7,6 @@ v3. For a more thorough description of the available endpoints and their paramet
 browse our [Swagger documentation](http:/app.konfuzio.com/v3/swagger/), which also provides an OpenAPI specification
 that can be used to generate language-specific API clients.
 
-<style>
-.video-container {
-  position: relative;
-  width: 100%;
-  padding-bottom: 56.25%;
-  margin: 15px 0px;
-}
-.video {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border: 0;
-}
-</style>
-
 <div class="video-container">
     <iframe class="video" src="https://www.youtube.com/embed/tSk4dCKIQBg" allowfullscreen></iframe>
 </div>
@@ -394,6 +377,16 @@ our [Document creation endpoint](https://app.konfuzio.com/v3/swagger/#/documents
 .. note::
   Unlike most other endpoints, the Document creation endpoint only supports `multipart/form-data` requests (to support
   file uploading), so you won't have to JSON-encode your request this time.
+  
+  
+```mermaid
+sequenceDiagram
+    Customer Software->>Konfuzio Server: Document POST
+    Konfuzio Server-->>Customer Software: Webhook*
+```
+
+A Webhook is sent after processing, if the URL via `callback_url` is given when uploading the Document.
+If you want to configure additional webhooks, please feel free to [contact us](https://konfuzio.com/kontakt/).
 
 ```
 curl --request POST \
