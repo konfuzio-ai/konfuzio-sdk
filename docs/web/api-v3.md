@@ -399,7 +399,7 @@ sequenceDiagram
     Konfuzio Server-->>Customer Software: Webhook*
 ```
 
-A Webhook is sent after processing, if the URL via `callback_url` is given when uploading the document.
+A Webhook is sent after processing, if the URL via `callback_url` is given when uploading the Document.
 
 ```
 curl --request POST \
