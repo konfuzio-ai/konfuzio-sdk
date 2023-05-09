@@ -18,6 +18,6 @@ def test_sentence_tokenizer():
 
     # create the SentenceTokenizer and tokenize the Document
 
-    tokenizer = SentenceTokenizer(mode='line_distance')
+    tokenizer = SentenceTokenizer(mode='detectron')
 
     document = tokenizer(document)
