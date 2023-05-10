@@ -2534,8 +2534,6 @@ class Document(Data):
         bbox_file_exists = is_file(self.bbox_file_path, raise_exception=False)
         self.bboxes_available: bool = self.is_online or self._bbox_json or bbox_file_exists
 
-        self.segmentation = None  # to store detectron segmentation results
-
         if pages:
             self.pages()  # create Page instances
 
