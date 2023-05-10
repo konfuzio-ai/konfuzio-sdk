@@ -13,9 +13,6 @@ def test_paragraph_tokenizer():
     project = Project(id_=YOUR_PROJECT_ID)
     document = project.get_document_by_id(YOUR_DOCUMENT_ID)
 
-    project = Project(id_=458)
-    document = project.get_document_by_id(601418)
-
     # create the ParagraphTokenizer and tokenize the Document
 
     tokenizer = ParagraphTokenizer(mode='detectron', create_detectron_labels=True)

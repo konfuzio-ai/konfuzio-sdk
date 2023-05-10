@@ -13,9 +13,6 @@ def test_sentence_tokenizer():
     project = Project(id_=YOUR_PROJECT_ID)
     document = project.get_document_by_id(YOUR_DOCUMENT_ID)
 
-    project = Project(id_=458)
-    document = project.get_document_by_id(601418)
-
     # create the SentenceTokenizer and tokenize the Document
 
     tokenizer = SentenceTokenizer(mode='detectron')
