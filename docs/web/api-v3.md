@@ -97,30 +97,24 @@ curl --request GET \
 
 To get a token:
 
-.. literalinclude:: ../sdk/boilerplates/test_rest_api.py
+.. literalinclude:: ../web/boilerplates/test_rest_api.py
    :language: python
    :lines: 6,9-14,26-27
    :dedent: 4
 
 To use the token:
 
-.. literalinclude:: ../sdk/boilerplates/test_rest_api.py
+.. literalinclude:: ../web/boilerplates/test_rest_api.py
    :language: python
    :lines: 6,9-11,16-19,26-27
    :dedent: 4
 
 #### Accessing and using the token via the Konfuzio SDK
 
-To get a token, access it via `from konfuzio_sdk import KONFUZIO_TOKEN` (available only after `konfuzio_sdk init`).
+To get an acces token, simply run `konfuzio_sdk init` in the terminal and enter your login credentials. The token will
+be stored in the `.env` file in your working directory. Then you are good to go and can use the SDK to access the API.
 
-To use a token:
-
-.. literalinclude:: ../sdk/boilerplates/test_rest_api.py
-   :language: python
-   :lines: 7-9,22-27
-   :dedent: 4
-
-To access this and other information via SDK's Data layer concepts, see [SDK Quickstart](https://dev.konfuzio.com/sdk/home/index.html) page.
+For more information on this and other information on what you can do with the SDK, see the [SDK Get Started](https://dev.konfuzio.com/sdk/get_started.html#initialize-the-package) page.
 
 #### Authenticating with a Token as a Query Parameter (_Upcoming feature_)
 
