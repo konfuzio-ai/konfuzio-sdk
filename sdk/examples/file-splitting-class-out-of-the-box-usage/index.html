@@ -128,16 +128,13 @@ that it does not require specifying a Tokenizer explicitly.</p>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">load_model</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.regex</span> <span class="kn">import</span> <span class="n">ConnectedTextTokenizer</span>
 
-<span class="c1"># initialize a Project and fetch a test Document of your choice</span>
-
-<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
-<span class="n">test_document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
-
 <span class="c1"># initialize a Context Aware File Splitting Model and fit it</span>
 
-<span class="n">file_splitting_model</span> <span class="o">=</span> <span class="n">ContextAwareFileSplittingModel</span><span class="p">(</span><span class="n">categories</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">categories</span><span class="p">,</span> <span class="n">tokenizer</span><span class="o">=</span><span class="n">ConnectedTextTokenizer</span><span class="p">())</span>
-<span class="c1"># to run a Multimodal File Splitting Model instead, replace the line above with the following lines. note that training</span>
-<span class="c1"># a Multimodal File Splitting Model can take longer that Context Aware File Splitting Model.</span>
+<span class="n">file_splitting_model</span> <span class="o">=</span> <span class="n">ContextAwareFileSplittingModel</span><span class="p">(</span>
+    <span class="n">categories</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">categories</span><span class="p">,</span> <span class="n">tokenizer</span><span class="o">=</span><span class="n">ConnectedTextTokenizer</span><span class="p">()</span>
+<span class="p">)</span>
+<span class="c1"># to run a Multimodal File Splitting Model instead, replace the line above with the following lines. note that</span>
+<span class="c1"># training a Multimodal File Splitting Model can take longer that Context Aware File Splitting Model.</span>
 <span class="c1">#</span>
 <span class="c1"># from konfuzio_sdk.trainer.file_splitting import MultimodalFileSplittingModel</span>
 <span class="c1"># file_splitting_model = MultimodalFileSplittingModel(categories=project.categories)</span>
@@ -154,7 +151,9 @@ that it does not require specifying a Tokenizer explicitly.</p>
 <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">test_document</span><span class="o">.</span><span class="n">pages</span><span class="p">():</span>
     <span class="n">pred</span> <span class="o">=</span> <span class="n">file_splitting_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">pred</span><span class="o">.</span><span class="n">is_first_page</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Page </span><span class="si">{}</span><span class="s1"> is predicted as the first. Confidence: </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">number</span><span class="p">,</span> <span class="n">page</span><span class="o">.</span><span class="n">is_first_page_confidence</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="s1">&#39;Page </span><span class="si">{}</span><span class="s1"> is predicted as the first. Confidence: </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">number</span><span class="p">,</span> <span class="n">page</span><span class="o">.</span><span class="n">is_first_page_confidence</span><span class="p">)</span>
+        <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Page </span><span class="si">{}</span><span class="s1"> is predicted as the non-first.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">number</span><span class="p">))</span>
 
@@ -167,8 +166,8 @@ that it does not require specifying a Tokenizer explicitly.</p>
 
 <span class="c1"># Splitting AI is a more high-level interface to Context Aware File Splitting Model and any other models that can be</span>
 <span class="c1"># developed for File Splitting purposes. It takes a Document as an input, rather than individual Pages, because it</span>
-<span class="c1"># utilizes page-level prediction of possible split points and returns Document or Documents with changes depending on</span>
-<span class="c1"># the prediction mode.</span>
+<span class="c1"># utilizes page-level prediction of possible split points and returns Document or Documents with changes depending</span>
+<span class="c1"># on the prediction mode.</span>
 
 <span class="c1"># Splitting AI can be run in two modes: returning a list of Sub-Documents as the result of the input Document</span>
 <span class="c1"># splitting or returning a copy of the input Document with Pages predicted as first having an attribute</span>
@@ -179,7 +178,9 @@ that it does not require specifying a Tokenizer explicitly.</p>
 
 <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">new_document</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pages</span><span class="p">():</span>
     <span class="k">if</span> <span class="n">page</span><span class="o">.</span><span class="n">is_first_page</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Page </span><span class="si">{}</span><span class="s1"> is predicted as the first. Confidence: </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">number</span><span class="p">,</span> <span class="n">page</span><span class="o">.</span><span class="n">is_first_page_confidence</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="s1">&#39;Page </span><span class="si">{}</span><span class="s1"> is predicted as the first. Confidence: </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">number</span><span class="p">,</span> <span class="n">page</span><span class="o">.</span><span class="n">is_first_page_confidence</span><span class="p">)</span>
+        <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Page </span><span class="si">{}</span><span class="s1"> is predicted as the non-first.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">number</span><span class="p">))</span>
 </pre></div>

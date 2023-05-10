@@ -71,7 +71,8 @@ To begin, we will make all the necessary imports:
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_example.py
    :language: python
-   :lines: 2-8,10-11
+   :lines: 7-9,11-12
+   :dedent: 4
 
 Then, let's initialize the `ContextAwareFileSplittingModel` class:
 
@@ -93,7 +94,8 @@ An example of how ConnectedTextTokenizer works:
 
 .. literalinclude:: /sdk/boilerplates/test_connected_text_tokenizer.py
    :language: python
-   :lines: 9-14,20-23,26-32,35-38
+   :lines: 13-19,25-28,31-37,40-42
+   :dedent: 4
 
 The first method to define will be the `fit()` method. For each Category, we call `exclusive_first_page_strings` method, 
 which allows us to gather the strings that appear on the first Page of each Document. `allow_empty_categories` allows 
@@ -130,4 +132,5 @@ A quick example of the class's usage:
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_example.py
    :language: python
-   :lines: 19-26,32-72
+   :lines: 20-28,34-78
+   :dedent: 4

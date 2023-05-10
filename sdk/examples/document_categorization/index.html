@@ -172,8 +172,7 @@ also find these documented under <a class="reference external" href="sourcecode.
 <span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
 
 <span class="c1"># Initialize the Categorization Model.</span>
-<span class="n">categorization_model</span> <span class="o">=</span> <span class="n">NameBasedCategorizationAI</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
-<span class="n">categorization_model</span><span class="o">.</span><span class="n">categories</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">categories</span>
+<span class="n">categorization_model</span> <span class="o">=</span> <span class="n">NameBasedCategorizationAI</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">categories</span><span class="p">)</span>
 
 <span class="c1"># Retrieve a Document to categorize.</span>
 <span class="n">test_document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
@@ -186,6 +185,7 @@ also find these documented under <a class="reference external" href="sourcecode.
 
 <span class="c1"># Each Page is categorized individually.</span>
 <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">result_doc</span><span class="o">.</span><span class="n">pages</span><span class="p">():</span>
+    <span class="k">assert</span> <span class="n">page</span><span class="o">.</span><span class="n">category</span> <span class="o">==</span> <span class="n">project</span><span class="o">.</span><span class="n">categories</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found category </span><span class="si">{</span><span class="n">page</span><span class="o">.</span><span class="n">category</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">page</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 <span class="c1"># The Category of the Document is defined when all pages&#39; Categories are equal.</span>
@@ -201,8 +201,8 @@ also find these documented under <a class="reference external" href="sourcecode.
 <p>For a list of available Models see <a class="reference external" href="#categorization-models">Available Categorization Models</a>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Document</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">load_model</span>
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.document_categorization</span> <span class="kn">import</span> <span class="n">ImageModel</span><span class="p">,</span> <span class="n">TextModel</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.document_categorization</span> <span class="kn">import</span> <span class="n">build_categorization_ai_pipeline</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.document_categorization</span> <span class="kn">import</span> <span class="n">ImageModel</span><span class="p">,</span> <span class="n">TextModel</span>
 
 <span class="c1"># Set up your Project.</span>
 <span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
@@ -218,7 +218,14 @@ also find these documented under <a class="reference external" href="sourcecode.
 <span class="p">)</span>
 
 <span class="c1"># Train the AI.</span>
-<span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">n_epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+    <span class="n">document_training_config</span><span class="o">=</span><span class="p">{</span>
+        <span class="s1">&#39;batch_size&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s1">&#39;max_len&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s1">&#39;n_epochs&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s1">&#39;optimizer&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Adam&#39;</span><span class="p">},</span>
+    <span class="p">}</span>
+<span class="p">)</span>
 
 <span class="c1"># Evaluate the AI</span>
 <span class="n">data_quality</span> <span class="o">=</span> <span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">use_training_docs</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -232,7 +239,7 @@ also find these documented under <a class="reference external" href="sourcecode.
 
 <span class="c1"># Save and load a pickle file for the AI</span>
 <span class="n">pickle_ai_path</span> <span class="o">=</span> <span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
-<span class="n">categorization_pipeline_loaded</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">pipeline_path</span><span class="p">)</span>
+<span class="n">categorization_pipeline</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="n">pickle_ai_path</span><span class="p">)</span>
 </pre></div>
 </div>
 <section id="id1">
