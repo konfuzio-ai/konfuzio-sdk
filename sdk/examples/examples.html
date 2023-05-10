@@ -870,9 +870,6 @@ the <code class="docutils literal notranslate"><span class="pre">create_detectro
 <span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
 <span class="n">document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
 
-<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="mi">458</span><span class="p">)</span>
-<span class="n">document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="mi">601418</span><span class="p">)</span>
-
 <span class="c1"># create the ParagraphTokenizer and tokenize the Document</span>
 
 <span class="n">tokenizer</span> <span class="o">=</span> <span class="n">ParagraphTokenizer</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;detectron&#39;</span><span class="p">,</span> <span class="n">create_detectron_labels</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -893,9 +890,6 @@ Annotations for each individual sentence in a text Document. To use it, you can 
 <span class="c1"># initialize a Project and fetch a Document to tokenize</span>
 <span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
 <span class="n">document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
-
-<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="mi">458</span><span class="p">)</span>
-<span class="n">document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="mi">601418</span><span class="p">)</span>
 
 <span class="c1"># create the SentenceTokenizer and tokenize the Document</span>
 
