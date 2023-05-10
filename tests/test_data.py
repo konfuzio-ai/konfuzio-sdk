@@ -305,7 +305,7 @@ class TestOnlineProject(unittest.TestCase):
     def test_create_modify_and_delete_document(self):
         """Test the creation of an online Document from a file, modification, and then deletion of the Document."""
         # Test Document creation
-        doc = Document.from_file('test_data/pdf.pdf', self.project, dataset_status=1)
+        doc = Document.from_file('tests/test_data/pdf.pdf', self.project, dataset_status=1)
         doc_id = doc.id_
 
         # Test Document modification

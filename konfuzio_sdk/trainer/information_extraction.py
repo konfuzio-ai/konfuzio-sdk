@@ -903,8 +903,8 @@ class BaseModel(metaclass=abc.ABCMeta):
     def __init__(self):
         """Initialize a BaseModel class."""
         self.output_dir = None
-        self.documents = None
-        self.test_documents = None
+        self.documents = []
+        self.test_documents = []
         self.python_version = '.'.join([str(v) for v in sys.version_info[:3]])
         self.konfuzio_sdk_version = get_sdk_version()
 
@@ -1007,10 +1007,14 @@ class BaseModel(metaclass=abc.ABCMeta):
         temp_pkl_file_path = self.temp_pkl_file_path
         pkl_file_path = self.pkl_file_path
 
+        project_docs = self.project._documents  # to restore project documents after save
         if reduce_weight:
-            project_docs = self.project._documents  # to restore project documents after save
             self.reduce_model_weight()
-        if not keep_documents:
+
+        if keep_documents:
+            # keep reference to Documents at Project level in case they were removed in the reduce_model_weight step
+            self.project._documents = self.documents + self.test_documents
+        else:
             logger.info('Removing documents before save')
             # to restore Model train and test documents after save
             restore_documents = self.documents
@@ -1020,7 +1024,15 @@ class BaseModel(metaclass=abc.ABCMeta):
 
         logger.info(f'Model size: {memory_size_of(self) / 1_000_000} MB')
 
-        self.ensure_model_memory_usage_within_limit(max_ram)
+        try:
+            self.ensure_model_memory_usage_within_limit(max_ram)
+        except MemoryError as e:
+            # restore Documents so that the Project can still be used
+            self.project._documents = project_docs
+            if not keep_documents:
+                self.documents = restore_documents
+                self.test_documents = restore_test_documents
+            raise e
 
         sys.setrecursionlimit(999999)
 
@@ -1053,8 +1065,7 @@ class BaseModel(metaclass=abc.ABCMeta):
         if not keep_documents:
             self.documents = restore_documents
             self.test_documents = restore_test_documents
-        if reduce_weight:
-            self.project._documents = project_docs
+        self.project._documents = project_docs
 
         return pkl_file_path
 

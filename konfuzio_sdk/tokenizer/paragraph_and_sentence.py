@@ -115,10 +115,11 @@ class ParagraphTokenizer(AbstractTokenizer):
                         spans=spans,
                         confidence=confidence,
                     )
+                    logger.debug(f"Created new Annotation {annotation}.")
                 except ValueError as e:
                     if 'is a duplicate of' in str(e):
                         logger.warning(
-                            f'{annotation} cannot be tokenized because it is an exact '
+                            f'New Annotation with {spans} cannot be tokenized because it is an exact '
                             'duplicated of an existing tokenized Annotation.'
                         )
                     else:
@@ -278,10 +279,11 @@ class SentenceTokenizer(AbstractTokenizer):
                             category=document.category,
                             spans=spans,
                         )
+                        logger.debug(f"Created new Annotation {annotation}.")
                     except ValueError as e:
                         if 'is a duplicate of' in str(e):
                             logger.warning(
-                                f'{annotation} cannot be tokenized because it is an exact '
+                                f'New Annotation with {spans} cannot be tokenized because it is an exact '
                                 'duplicated of an existing tokenized Annotation.'
                             )
                         else:
