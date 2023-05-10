@@ -340,23 +340,19 @@ class TestOnlineProject(unittest.TestCase):
         assert _.category == self.project.no_category
         _.delete()
 
-    @pytest.mark.xfail(reason='WIP')
-    def test_create_categoriless_document(self):
-        """Test that creation of a Document with no Category passed is impossible."""
-        with pytest.raises(ValueError, match='missing attribute'):
-            _ = Document(project=self.project, category=None)
-
     def test_none_category_document_property(self):
         """Test the return of a Document with Category == None."""
         _ = Document(project=self.project, category=None)
         assert _.category == self.project.no_category
-        _.delete()
-
-    def test_document_underscore_category(self):
-        """Test the value of the underscore Category attribute."""
-        _ = Document(project=self.project, category=None)
         assert _._category == self.project.no_category
         _.delete()
+
+    def test_set_none_category(self):
+        """Test that setting Category to None gives the Document NO_CATEGORY."""
+        test_document = self.project.get_document_by_id(44823)
+        test_document.set_category(None)
+        assert test_document.category == self.project.no_category
+        assert test_document._category == self.project.no_category
 
 
 class TestOfflineExampleData(unittest.TestCase):

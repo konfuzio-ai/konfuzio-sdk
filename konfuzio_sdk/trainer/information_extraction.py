@@ -1816,16 +1816,8 @@ class ParagraphExtractionAI(AbstractExtractionAI):
         return inference_document
 
     def check_is_ready(self):
-        """
-        Check if the ExtractionAI is ready for the inference.
-
-        It is assumed that the model is ready if a Tokenizer and a Category were set.
-
-        :raises AttributeError: When no Category is specified.
-        """
-        logger.info(f"Checking if {self} is ready for extraction.")
-        if not self.category:
-            raise AttributeError(f'{self} requires a Category.')
+        """Construct a placeholder for an Abstract method."""
+        pass
 
 
 class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
