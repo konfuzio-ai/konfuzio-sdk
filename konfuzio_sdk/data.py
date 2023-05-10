@@ -1545,6 +1545,7 @@ class Label(Data):
         regex_search: bool = True,
         regex_worst_percentage: float = 0.1,
         confidence_search: bool = True,
+        evaluation_data=None,
         normalization_search: bool = True,
     ) -> List['Annotation']:
         """
@@ -1573,7 +1574,7 @@ class Label(Data):
                 set(self.get_probable_outliers_by_regex(categories, top_worst_percentage=regex_worst_percentage))
             )
         if confidence_search:
-            results.append(set(self.get_probable_outliers_by_confidence(categories)))
+            results.append(set(self.get_probable_outliers_by_confidence(evaluation_data)))
         if normalization_search:
             results.append(set(self.get_probable_outliers_by_normalization(categories)))
         intersection_results = list(set.intersection(*results))
@@ -2255,6 +2256,7 @@ class Annotation(Data):
             # update_annotation(id_=self.id_, document_id=self.document.id_, project_id=self.project.id_)
 
         if not self.is_online:
+            annotation_set_id = self.annotation_set.id_ if self.annotation_set else None
             response = post_document_annotation(
                 project_id=self.document.project.id_,
                 document_id=self.document.id_,
@@ -2265,7 +2267,7 @@ class Annotation(Data):
                 confidence=self.confidence,
                 is_correct=self.is_correct,
                 revised=self.revised,
-                annotation_set=self.annotation_set.id_,
+                annotation_set=annotation_set_id,
                 bboxes=self.bboxes,
                 # selection_bbox=self.selection_bbox,
                 page_number=self.page_number,
@@ -3655,7 +3657,7 @@ class Document(Data):
                 # so we just have a list of None to keep the lists the same length
                 document_tokens.append(None)
             # get document classification (defined by the category template)
-            category_id = str(self.category.id_) if self.category is not None else 'NO_CATEGORY'
+            category_id = str(self.category.id_) if self.category != self.project.no_category else 'NO_CATEGORY'
             # append the classification (category), the document's id number and the page number of each page
             document_labels.append(torch.LongTensor([category_vocab.stoi(category_id)]))
             doc_id = self.id_ or self.copy_of_id

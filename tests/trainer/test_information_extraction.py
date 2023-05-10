@@ -1827,14 +1827,14 @@ def test_load_model_no_file():
 
 def test_load_model_corrupt_file():
     """Test loading of corrupted model file."""
-    path = "trainer/corrupt.pkl"
+    path = "tests/trainer/corrupt.pkl"
     with pytest.raises(OSError, match="data is invalid."):
         load_model(path)
 
 
 def test_load_model_wrong_pickle_data():
     """Test loading of wrong pickle data."""
-    path = "trainer/list_test.pkl"
+    path = "tests/trainer/list_test.pkl"
     with pytest.raises(TypeError, match="Loaded model's interface is not compatible with any AIs"):
         load_model(path)
 
@@ -1843,7 +1843,7 @@ def test_load_model_wrong_pickle_data():
 def test_load_ai_model_konfuzio_sdk_not_included():
     """Test loading of trained model with include_konfuzio setting set to False."""
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-    path = "trainer/2023-01-31-14-39-44_lohnabrechnung_no_konfuzio_sdk.pkl"
+    path = "tests/trainer/2023-01-31-14-39-44_lohnabrechnung_no_konfuzio_sdk.pkl"
     pipeline = load_model(path)
 
     test_document = project.get_document_by_id(TEST_DOCUMENT_ID)
@@ -1855,7 +1855,7 @@ def test_load_ai_model_konfuzio_sdk_not_included():
 def test_load_ai_model_konfuzio_sdk_included():
     """Test loading of trained model with include_konfuzio setting set to True."""
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-    path = "trainer/2023-01-31-14-37-11_lohnabrechnung.pkl"
+    path = "tests/trainer/2023-01-31-14-37-11_lohnabrechnung.pkl"
     pipeline = load_model(path)
 
     test_document = project.get_document_by_id(TEST_DOCUMENT_ID)
@@ -1866,7 +1866,7 @@ def test_load_ai_model_konfuzio_sdk_included():
 @unittest.skipIf(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
 def test_load_old_ai_model():
     """Test loading of an old trained model."""
-    path = "trainer/2022-03-10-15-14-51_lohnabrechnung_old_model.pkl"
+    path = "tests/trainer/2022-03-10-15-14-51_lohnabrechnung_old_model.pkl"
     with pytest.raises(TypeError, match="Loaded model's interface is not compatible with any AIs"):
         load_model(path)
 
@@ -1874,9 +1874,21 @@ def test_load_old_ai_model():
 @unittest.skipIf(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
 def test_load_old_ai_model_2():
     """Test loading of a newer old trained model."""
-    path = "trainer/2023-01-09-17-47-50_lohnabrechnung.pkl"
+    path = "tests/trainer/2023-01-09-17-47-50_lohnabrechnung.pkl"
     with pytest.raises(TypeError, match="Loaded model's interface is not compatible with any AIs"):
         load_model(path)
+
+
+@unittest.skipIf(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
+def test_load_ai_model():
+    """Test loading trained model."""
+    path = "tests/trainer/2023-04-25-15-56-42_lohnabrechnung_rfextractionai_.pkl"
+    project = Project(id_=None, project_folder=OFFLINE_PROJECT)
+    pipeline = load_model(path)
+
+    test_document = project.get_document_by_id(TEST_DOCUMENT_ID)
+    res_doc = pipeline.extract(document=test_document)
+    assert len(res_doc.annotations(use_correct=False, ignore_below_threshold=True)) == 19
 
 
 def test_feat_num_count():
