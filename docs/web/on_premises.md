@@ -840,6 +840,22 @@ Block registration for users with an email address from a free provider accordin
 
 _Type: boolean_
 
+##### DETECTRON_URL 
+Default: None
+
+This is used to connect to the optional [segmentation container](https://dev.konfuzio.com/web/on_premises.html#optional-9-install-document-segmentation-container). This is a URL in the form of 'http://detectron-service:8181/predict'.
+You might need to adjust the detectron-service to your service name or IP.
+
+_Type: string_
+
+##### SUMMARIZATION_URL
+Default: None
+
+This is used to connect to the optional [summarization container](https://dev.konfuzio.com/web/on_premises.html#optional-10-install-document-summarization-container). This is a URL in the form of 'http://summarization-service:8181/predict'.
+You might need to adjust the summarization-service to your service name or IP.
+
+_Type: string_
+
 #### 2. Background Tasks via Celery
 
 Settings related to [Background Tasks](https://dev.konfuzio.com/web/explanations.html#background-processes).
