@@ -639,22 +639,24 @@ Please open a support ticket to get an AZURE_OCR_KEY and AZURE_OCR_BASE_URL whic
 </section>
 <section id="optional-9-install-document-segmentation-container">
 <h3>[Optional] 9. Install document segmentation container<a class="headerlink" href="#optional-9-install-document-segmentation-container" title="Permalink to this headline">¶</a></h3>
-<p>Download the container with the credentials provided by Konfuzio</p>
+<p>Download the container with the credentials provided by Konfuzio.</p>
 <p>Registry URL: {PROVIDED_BY_KONFUZIO}<span class="raw-html-m2r"><br></span>
 Username: {PROVIDED_BY_KONFUZIO}<span class="raw-html-m2r"><br></span>
 Password: {PROVIDED_BY_KONFUZIO}</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">login</span> <span class="n">REGISTRY_URL</span>
-<span class="n">docker</span> <span class="n">pull</span> <span class="n">REGISTRY_URL</span><span class="o">/</span><span class="n">konfuzio</span><span class="o">/</span><span class="n">detectron2</span><span class="p">:</span><span class="mi">2022</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">30_20</span><span class="o">-</span><span class="mi">56</span><span class="o">-</span><span class="mi">28</span>
-<span class="n">docker</span> <span class="n">run</span> <span class="o">--</span><span class="n">env</span><span class="o">-</span><span class="n">file</span> <span class="o">/</span><span class="n">path_to_env_file</span><span class="o">.</span><span class="n">env</span> <span class="n">REGISTRY_URL</span><span class="o">/</span><span class="n">konfuzio</span><span class="o">/</span><span class="n">detectron2</span><span class="p">:</span><span class="mi">2022</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">30_20</span><span class="o">-</span><span class="mi">56</span><span class="o">-</span><span class="mi">28</span> <span class="n">bash</span> <span class="o">-</span><span class="n">c</span> <span class="s2">&quot;export LC_ALL=C.UTF-8; export LANG=C.UTF-8;./run_celery.sh</span>
+<span class="n">docker</span> <span class="n">pull</span> <span class="n">REGISTRY_URL</span><span class="o">/</span><span class="n">konfuzio</span><span class="o">/</span><span class="n">detectron2</span><span class="o">/</span><span class="n">master</span><span class="p">:</span><span class="mi">2022</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">24_08</span><span class="o">-</span><span class="mi">46</span><span class="o">-</span><span class="mi">17</span>
+<span class="n">docker</span> <span class="n">run</span> <span class="o">--</span><span class="n">env</span><span class="o">-</span><span class="n">file</span> <span class="o">/</span><span class="n">path_to_env_file</span><span class="o">.</span><span class="n">env</span> <span class="n">REGISTRY_URL</span><span class="o">/</span><span class="n">konfuzio</span><span class="o">/</span><span class="n">detectron2</span><span class="o">/</span><span class="n">master</span><span class="p">:</span><span class="mi">2022</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">30_20</span><span class="o">-</span><span class="mi">56</span><span class="o">-</span><span class="mi">28</span> <span class="n">bash</span> <span class="o">-</span><span class="n">c</span> <span class="s2">&quot;export LC_ALL=C.UTF-8; export LANG=C.UTF-8;./run_celery.sh</span>
 </pre></div>
 </div>
 <p>The segmentation container needs to be started with the following environment variables which you can enter into your .env file</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">GPU</span><span class="o">=</span><span class="kc">True</span>  <span class="c1"># If GPU is present</span>
 <span class="n">C_FORCE_ROOT</span><span class="o">=</span><span class="kc">True</span>
-<span class="n">BROKER_URL</span><span class="o">=</span>  <span class="c1"># Set this to an unused redis database</span>
-<span class="n">RESULT_BACKEND</span><span class="o">=</span>  <span class="c1"># Set this to an unused redis database</span>
+<span class="n">BROKER_URL</span><span class="o">=</span>  <span class="c1"># Set this to an unused Redis database</span>
+<span class="n">RESULT_BACKEND</span><span class="o">=</span>  <span class="c1"># Set this to an unused Redis database</span>
 </pre></div>
 </div>
+<p>We recommend to run the segmentation container with 8GB of RAM. The segmentation container can be started and used with less RAM, however this may not work on large images.
+After the segmentation is running you need to set the DETECTRON_URL to point to the segmentation container.</p>
 </section>
 <section id="optional-10-install-document-summarization-container">
 <h3>[Optional] 10. Install document summarization container<a class="headerlink" href="#optional-10-install-document-summarization-container" title="Permalink to this headline">¶</a></h3>
@@ -662,19 +664,21 @@ Password: {PROVIDED_BY_KONFUZIO}</p>
 <p>Registry URL: {PROVIDED_BY_KONFUZIO}<span class="raw-html-m2r"><br></span>
 Username: {PROVIDED_BY_KONFUZIO}<span class="raw-html-m2r"><br></span>
 Password: {PROVIDED_BY_KONFUZIO}</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>docker login REGISTRY_URL
-docker pull REGISTRY_URL/konfuzio/detectron2:2022-01-30_20-56-28
-docker run --env-file /path_to_env_file.env REGISTRY_URL/konfuzio/detectron2:2022-01-30_20-56-28 bash -c &quot;export LC_ALL=C.UTF-8; export LANG=C.UTF-8;./run_celery.sh&quot;`
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">login</span> <span class="n">REGISTRY_URL</span>
+<span class="n">docker</span> <span class="n">pull</span> <span class="n">REGISTRY_URL</span><span class="o">/</span><span class="n">konfuzio</span><span class="o">/</span><span class="n">summarization</span><span class="o">/</span><span class="n">main</span><span class="p">:</span><span class="mi">2022</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">29_21</span><span class="o">-</span><span class="mi">55</span><span class="o">-</span><span class="mi">57</span>
+<span class="n">docker</span> <span class="n">run</span> <span class="o">--</span><span class="n">env</span><span class="o">-</span><span class="n">file</span> <span class="o">/</span><span class="n">path_to_env_file</span><span class="o">.</span><span class="n">env</span> <span class="n">REGISTRY_URL</span><span class="o">/</span><span class="n">konfuzio</span><span class="o">/</span><span class="n">summarization</span><span class="o">/</span><span class="n">main</span><span class="p">:</span><span class="mi">2022</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">29_21</span><span class="o">-</span><span class="mi">55</span><span class="o">-</span><span class="mi">57</span>
 </pre></div>
 </div>
-<p>The segmentation container needs to be started with the following environment variables which you can enter into your .env file</p>
+<p>The summarization container needs to be started with the following environment variables which you can enter into your .env file</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">GPU</span><span class="o">=</span><span class="kc">True</span>  <span class="c1"># If GPU is present</span>
 <span class="n">TASK_ALWAYS_EAGER</span><span class="o">=</span><span class="kc">False</span>
 <span class="n">C_FORCE_ROOT</span><span class="o">=</span><span class="kc">True</span>
-<span class="n">BROKER_URL</span><span class="o">=</span>  <span class="c1"># Set this to an unused redis database</span>
-<span class="n">RESULT_BACKEND</span><span class="o">=</span>  <span class="c1"># Set this to an unised redis database</span>
+<span class="n">BROKER_URL</span><span class="o">=</span>  <span class="c1"># Set this to an unused Redis database</span>
+<span class="n">RESULT_BACKEND</span><span class="o">=</span>  <span class="c1"># Set this to an unused Redis database</span>
 </pre></div>
 </div>
+<p>We recommend to run the segmentation container with 4GB of RAM. The segmentation container can be started and used with less RAM, however this may not work on large images.
+After the summarization is running you need to set the SUMMARIZATION_URL to point to the segmentation container.</p>
 </section>
 <section id="a-upgrade-to-newer-konfuzio-version">
 <h3>11a. Upgrade to newer Konfuzio Version<a class="headerlink" href="#a-upgrade-to-newer-konfuzio-version" title="Permalink to this headline">¶</a></h3>
@@ -1099,6 +1103,20 @@ Set to 0 for no limit, but beware of timeouts as the CSV files are exported sync
 <p>Block registration for users with an email address from a free provider according to
 <a class="reference external" href="https://github.com/Kikobeats/free-email-domains/blob/master/domains.json">the blocklist</a>.</p>
 <p><em>Type: boolean</em></p>
+</section>
+<section id="detectron-url">
+<h5>DETECTRON_URL<a class="headerlink" href="#detectron-url" title="Permalink to this headline">¶</a></h5>
+<p>Default: None</p>
+<p>This is used to connect to the optional <a class="reference external" href="/web/on_premises.html#optional-9-install-document-segmentation-container">segmentation container</a>. This is a URL in the form of ‘<a class="reference external" href="http://detectron-service:8181/predict">http://detectron-service:8181/predict</a>’.
+You might need to adjust the detectron-service to your service name or IP.</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="summarization-url">
+<h5>SUMMARIZATION_URL<a class="headerlink" href="#summarization-url" title="Permalink to this headline">¶</a></h5>
+<p>Default: None</p>
+<p>This is used to connect to the optional <a class="reference external" href="/web/on_premises.html#optional-10-install-document-summarization-container">summarization container</a>. This is a URL in the form of ‘<a class="reference external" href="http://summarization-service:8181/predict">http://summarization-service:8181/predict</a>’.
+You might need to adjust the summarization-service to your service name or IP.</p>
+<p><em>Type: string</em></p>
 </section>
 </section>
 <section id="background-tasks-via-celery">
