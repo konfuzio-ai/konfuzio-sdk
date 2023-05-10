@@ -32,7 +32,7 @@ from konfuzio_sdk.api import (
     delete_document_annotation,
     delete_file_konfuzio_api,
     upload_file_konfuzio_api,
-    get_results_from_segmentation
+    get_results_from_segmentation,
 )
 from konfuzio_sdk.normalize import normalize
 from konfuzio_sdk.regex import get_best_regex, regex_matches, suggest_regex_for_string, merge_regex
@@ -2731,10 +2731,9 @@ class Document(Data):
 
     def get_segmentation(self) -> List:
         """
-        Retrieves the segmentation results for the Document.
+        Retrieve the segmentation results for the Document.
 
-        Returns:
-            A list of segmentation results for each Page in the Document.
+        :return: A list of segmentation results for each Page in the Document.
         """
         if any(page._segmentation is None for page in self.pages()):
             document_id = self.id_ if self.id_ else self.copy_of_id
@@ -2869,7 +2868,7 @@ class Document(Data):
         )
         for page in self.pages():
             copy_id = page.id_ if page.id_ else page.copy_of_id
-            _page = Page(
+            _ = Page(
                 id_=None,
                 document=document,
                 start_offset=page.start_offset,
