@@ -711,7 +711,14 @@ class TestParagraphRFExtractionAI(unittest.TestCase):
 
     def test_01_configure_pipeline(self):
         """Make sure the Data and Pipeline is configured."""
+        assert self.pipeline.requires_segmentation is False
         self.pipeline.tokenizer = ParagraphTokenizer(mode=self.mode)
+        if self.mode == 'detectron':
+            assert self.pipeline.requires_segmentation is True
+        elif self.mode == 'line_distance':
+            assert self.pipeline.requires_segmentation is False
+        else:
+            raise ValueError(f'Unknown mode {self.mode}')
 
         train_doc_ids = {601418}
         for doc in self.pipeline.category.documents():
@@ -781,6 +788,12 @@ class TestSentenceRFExtractionAI(unittest.TestCase):
     def test_01_configure_pipeline(self):
         """Make sure the Data and Pipeline is configured."""
         self.pipeline.tokenizer = SentenceTokenizer(mode=self.mode)
+        if self.mode == 'detectron':
+            assert self.pipeline.requires_segmentation is True
+        elif self.mode == 'line_distance':
+            assert self.pipeline.requires_segmentation is False
+        else:
+            raise ValueError(f'Unknown mode {self.mode}')
 
         self.pipeline.documents = self.pipeline.category.documents()
 
