@@ -105,7 +105,6 @@ This means that those Categories would not be used in the prediction process.
 .. literalinclude:: ../../konfuzio_sdk/trainer/file_splitting.py
    :language: python
    :lines: 413,431-444
-   :dedent: 4
 
 Next, we define `predict()` method. The method accepts a Page as an input and checks its Span set for containing 
 first-page strings for each of the Categories. If there is at least one intersection, the Page is predicted to be a 
