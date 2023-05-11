@@ -515,8 +515,8 @@ Password: {PROVIDED_BY_KONFUZIO}
 
 ```
 docker login REGISTRY_URL  
-docker pull REGISTRY_URL/konfuzio/detectron2/master:2022-11-24_08-46-17
-docker run --env-file /path_to_env_file.env REGISTRY_URL/konfuzio/detectron2/master:2022-01-30_20-56-28 bash -c "export LC_ALL=C.UTF-8; export LANG=C.UTF-8;./run_celery.sh
+docker pull REGISTRY_URL/konfuzio/text-annotation/detectron2/master:released-2022-11-24_08-46-17
+docker run --env-file /path_to_env_file.env REGISTRY_URL/konfuzio/text-annotation/detectron2/master:released-2022-11-24_08-46-17 bash -c "export LC_ALL=C.UTF-8; export LANG=C.UTF-8;./run_celery.sh
 ```
 
 The segmentation container needs to be started with the following environment variables which you can enter into your .env file
@@ -528,7 +528,7 @@ RESULT_BACKEND=  # Set this to an unused Redis database
 ```
 
 We recommend to run the segmentation container with 8GB of RAM. The segmentation container can be started and used with less RAM, however this may not work on large images. 
-After the segmentation is running you need to set the DETECTRON_URL to point to the segmentation container. 
+After the segmentation container is running you need to set the [DETECTRON_URL](/web/on_premises.html#detectron-url) to point to the segmentation container. 
 
 
 ### [Optional] 10. Install document summarization container
@@ -541,8 +541,8 @@ Password: {PROVIDED_BY_KONFUZIO}
 
 ```
 docker login REGISTRY_URL
-docker pull REGISTRY_URL/konfuzio/summarization/main:2022-11-29_21-55-57
-docker run --env-file /path_to_env_file.env REGISTRY_URL/konfuzio/summarization/main:2022-11-29_21-55-57
+docker pull REGISTRY_URL/konfuzio/text-annotation/summarization/main:released-2022-11-29_21-55-57
+docker run --env-file /path_to_env_file.env REGISTRY_URL/konfuzio/text-annotation/summarization/main:released-2022-11-29_21-55-57
 ```
 
 The summarization container needs to be started with the following environment variables which you can enter into your .env file
@@ -556,7 +556,7 @@ RESULT_BACKEND=  # Set this to an unused Redis database
 ```
 
 We recommend to run the segmentation container with 4GB of RAM. The segmentation container can be started and used with less RAM, however this may not work on large images. 
-After the summarization is running you need to set the SUMMARIZATION_URL to point to the segmentation container. 
+After the summarization container is running you need to set the [SUMMARIZATION_URL](/web/on_premises.html#summarization-url) to point to the segmentation container. 
 
 
 ### 11a. Upgrade to newer Konfuzio Version
