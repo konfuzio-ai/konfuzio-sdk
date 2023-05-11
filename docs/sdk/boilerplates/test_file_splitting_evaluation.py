@@ -18,32 +18,17 @@ def test_file_splitting_evaluation():
     # If you uploaded your Document to the Konfuzio Server, you can just retrieve it with:
     # document_1 = project.get_document_by_id(YOUR_DOCUMENT_ID)
     text_1 = "Hi all,\nI like bread.\nI hope to get everything done soon.\nHave you seen it?"
-    document_1 = Document(id_=None, project=YOUR_PROJECT, category=YOUR_CATEGORY_1, text=text_1, dataset_status=3)
+    document_1 = Document(id_=20, project=YOUR_PROJECT, category=YOUR_CATEGORY_1, text=text_1, dataset_status=3)
     _ = Page(
-        id_=None,
-        original_size=(320, 240),
-        document=document_1,
-        start_offset=0,
-        end_offset=21,
-        number=1,
+        id_=None, original_size=(320, 240), document=document_1, start_offset=0, end_offset=21, number=1, copy_of_id=29
     )
 
     _ = Page(
-        id_=None,
-        original_size=(320, 240),
-        document=document_1,
-        start_offset=22,
-        end_offset=57,
-        number=2,
+        id_=None, original_size=(320, 240), document=document_1, start_offset=22, end_offset=57, number=2, copy_of_id=30
     )
 
     _ = Page(
-        id_=None,
-        original_size=(320, 240),
-        document=document_1,
-        start_offset=58,
-        end_offset=75,
-        number=3,
+        id_=None, original_size=(320, 240), document=document_1, start_offset=58, end_offset=75, number=3, copy_of_id=31
     )
 
     assert len(document_1.pages()) == 3
@@ -51,13 +36,23 @@ def test_file_splitting_evaluation():
     # As with the previous example Document, you can just retrieve an online Document with
     # document_2 = project.get_document_by_id(YOUR_DOCUMENT_ID)
     text_2 = "Evening,\nthank you for coming.\nI like fish.\nI need it.\nEvening."
-    document_2 = Document(id_=None, project=YOUR_PROJECT, category=YOUR_CATEGORY_2, text=text_2, dataset_status=3)
-    _ = Page(id_=None, original_size=(320, 240), document=document_2, start_offset=0, end_offset=8, number=1)
-    _ = Page(id_=None, original_size=(320, 240), document=document_2, start_offset=9, end_offset=30, number=2)
-    _ = Page(id_=None, original_size=(320, 240), document=document_2, start_offset=31, end_offset=43, number=3)
+    document_2 = Document(id_=21, project=YOUR_PROJECT, category=YOUR_CATEGORY_2, text=text_2, dataset_status=3)
+    _ = Page(
+        id_=None, original_size=(320, 240), document=document_2, start_offset=0, end_offset=8, number=1, copy_of_id=32
+    )
+    _ = Page(
+        id_=None, original_size=(320, 240), document=document_2, start_offset=9, end_offset=30, number=2, copy_of_id=33
+    )
+    _ = Page(
+        id_=None, original_size=(320, 240), document=document_2, start_offset=31, end_offset=43, number=3, copy_of_id=34
+    )
     _.is_first_page = True
-    _ = Page(id_=None, original_size=(320, 240), document=document_2, start_offset=44, end_offset=54, number=4)
-    _ = Page(id_=None, original_size=(320, 240), document=document_2, start_offset=55, end_offset=63, number=5)
+    _ = Page(
+        id_=None, original_size=(320, 240), document=document_2, start_offset=44, end_offset=54, number=4, copy_of_id=35
+    )
+    _ = Page(
+        id_=None, original_size=(320, 240), document=document_2, start_offset=55, end_offset=63, number=5, copy_of_id=36
+    )
     _.is_first_page = True
     assert len(document_2.pages()) == 5
 
