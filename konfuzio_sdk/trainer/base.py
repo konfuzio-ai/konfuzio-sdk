@@ -58,6 +58,11 @@ class BaseModel(metaclass=abc.ABCMeta):
         :param other: An instance of an AI to compare with.
         """
 
+    @staticmethod
+    @abc.abstractmethod
+    def load_model():
+        """Load a previously saved instance of the model."""
+
     def reduce_model_weight(self):
         """Remove all non-strictly necessary parameters before saving."""
         self.project.lose_weight()
