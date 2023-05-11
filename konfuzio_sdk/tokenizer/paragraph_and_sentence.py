@@ -35,7 +35,6 @@ class ParagraphTokenizer(AbstractTokenizer):
         :param create_detectron_labels: Apply the labels given by the detectron model. If they don't exist, they are
         created.
         """
-        super().__init__()
         self.mode = mode
         self.line_height_ratio = line_height_ratio
         if height is not None:
@@ -79,9 +78,7 @@ class ParagraphTokenizer(AbstractTokenizer):
 
     def _detectron_tokenize(self, document: Document) -> Document:
         """Create one multiline Annotation per paragraph detected by detectron2."""
-        document_id = document.id_ if document.id_ else document.copy_of_id
-
-        detectron_document_results = get_results_from_segmentation(document_id, document.project.id_)
+        detectron_document_results = document.get_segmentation()
         all_paragraph_bboxes: List[List['Bbox']] = detectron_get_paragraph_bboxes(detectron_document_results, document)
 
         if self.create_detectron_labels:
@@ -118,10 +115,11 @@ class ParagraphTokenizer(AbstractTokenizer):
                         spans=spans,
                         confidence=confidence,
                     )
+                    logger.debug(f"Created new Annotation {annotation}.")
                 except ValueError as e:
                     if 'is a duplicate of' in str(e):
                         logger.warning(
-                            f'{annotation} cannot be tokenized because it is an exact '
+                            f'New Annotation with {spans} cannot be tokenized because it is an exact '
                             'duplicated of an existing tokenized Annotation.'
                         )
                     else:
@@ -197,8 +195,9 @@ class SentenceTokenizer(AbstractTokenizer):
         :param mode: line_distance or detectron
         :param line_height_ratio: ratio of the median line height to use as threshold to create new paragraph.
         :param height: Height line threshold to use instead of the automatically calulated one.
+        :param create_detectron_labels: Apply the labels given by the detectron model. If they don't exist, they are
+        created.
         """
-        super().__init__()
         self.mode = mode
         self.line_height_ratio = line_height_ratio
         if height is not None:
@@ -243,9 +242,7 @@ class SentenceTokenizer(AbstractTokenizer):
 
     def _detectron_tokenize(self, document: Document) -> Document:
         """Create one multiline Annotation per sentence detected in paragraph detected by detectron."""
-        document_id = document.id_ if document.id_ else document.copy_of_id
-
-        detectron_document_results = get_results_from_segmentation(document_id, document.project.id_)
+        detectron_document_results = document.get_segmentation()
         all_paragraph_bboxes: List[List['Bbox']] = detectron_get_paragraph_bboxes(detectron_document_results, document)
 
         if self.create_detectron_labels:
@@ -282,10 +279,11 @@ class SentenceTokenizer(AbstractTokenizer):
                             category=document.category,
                             spans=spans,
                         )
+                        logger.debug(f"Created new Annotation {annotation}.")
                     except ValueError as e:
                         if 'is a duplicate of' in str(e):
                             logger.warning(
-                                f'{annotation} cannot be tokenized because it is an exact '
+                                f'New Annotation with {spans} cannot be tokenized because it is an exact '
                                 'duplicated of an existing tokenized Annotation.'
                             )
                         else:
