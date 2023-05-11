@@ -412,6 +412,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         span_tuple = (span.annotation.label.name, span.start_offset, span.end_offset)
         assert span_tuple == expected
 
+    @unittest.skipIf(sys.version_info[:2] == (3, 11), 'Throws "TypeError: code() argument 13 must be str, not int"')
     def test_13_load_ai_model(self):
         """Test loading of trained model."""
         self.pipeline = load_model(self.pipeline.pipeline_path)
@@ -438,6 +439,15 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         doc = prj46.get_document_by_id(570129)
         res_doc = self.pipeline.extract(document=doc)
 
+        test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        res_doc = self.pipeline.extract(document=test_document)
+        assert len(res_doc.annotations(use_correct=False, ignore_below_threshold=True)) == 19
+
+        self.pipeline = load_model(self.pipeline.pipeline_path_no_konfuzio_sdk)
+
+        test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        res_doc = self.pipeline.extract(document=test_document)
+        assert len(res_doc.annotations(use_correct=False, ignore_below_threshold=True)) == 19
         return
 
     @classmethod
@@ -1852,30 +1862,6 @@ def test_load_model_wrong_pickle_data():
         load_model(path)
 
 
-@unittest.skipIf(sys.version_info[:2] == (3, 11), 'Throws "TypeError: code() argument 13 must be str, not int"')
-def test_load_ai_model_konfuzio_sdk_not_included():
-    """Test loading of trained model with include_konfuzio setting set to False."""
-    project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-    path = "tests/trainer/2023-05-05-14-44-38_lohnabrechnung_no_konfuzio_sdk.pkl"
-    pipeline = load_model(path)
-
-    test_document = project.get_document_by_id(TEST_DOCUMENT_ID)
-    res_doc = pipeline.extract(document=test_document)
-    assert len(res_doc.annotations(use_correct=False, ignore_below_threshold=True)) == 19
-
-
-@pytest.mark.xfail(reason='Loaded model is not subclass of BaseModel.')
-def test_load_ai_model_konfuzio_sdk_included():
-    """Test loading of trained model with include_konfuzio setting set to True."""
-    project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-    path = "tests/trainer/2023-01-31-14-37-11_lohnabrechnung.pkl"
-    pipeline = load_model(path)
-
-    test_document = project.get_document_by_id(TEST_DOCUMENT_ID)
-    res_doc = pipeline.extract(document=test_document)
-    assert len(res_doc.annotations(use_correct=False, ignore_below_threshold=True)) == 19
-
-
 @unittest.skipIf(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
 def test_load_old_ai_model():
     """Test loading of an old trained model."""
@@ -1890,18 +1876,6 @@ def test_load_old_ai_model_2():
     path = "tests/trainer/2023-01-09-17-47-50_lohnabrechnung.pkl"
     with pytest.raises(TypeError, match="Loaded model's interface is not compatible with any AIs"):
         load_model(path)
-
-
-@unittest.skipIf(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
-def test_load_ai_model():
-    """Test loading trained model."""
-    path = "tests/trainer/2023-04-25-15-56-42_lohnabrechnung_rfextractionai_.pkl"
-    project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-    pipeline = load_model(path)
-
-    test_document = project.get_document_by_id(TEST_DOCUMENT_ID)
-    res_doc = pipeline.extract(document=test_document)
-    assert len(res_doc.annotations(use_correct=False, ignore_below_threshold=True)) == 19
 
 
 def test_feat_num_count():
