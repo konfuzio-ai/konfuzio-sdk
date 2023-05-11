@@ -528,7 +528,7 @@ RESULT_BACKEND=  # Set this to an unused Redis database
 ```
 
 We recommend to run the segmentation container with 8GB of RAM. The segmentation container can be started and used with less RAM, however this may not work on large images. 
-After the segmentation is running you need to set the DETECTRON_URL to point to the segmentation container. 
+After the segmentation container is running you need to set the [DETECTRON_URL](/web/on_premises.html#detectron-url) to point to the segmentation container. 
 
 
 ### [Optional] 10. Install document summarization container
@@ -556,7 +556,7 @@ RESULT_BACKEND=  # Set this to an unused Redis database
 ```
 
 We recommend to run the segmentation container with 4GB of RAM. The segmentation container can be started and used with less RAM, however this may not work on large images. 
-After the summarization is running you need to set the SUMMARIZATION_URL to point to the segmentation container. 
+After the summarization container is running you need to set the [SUMMARIZATION_URL](/web/on_premises.html#summarization-url) to point to the segmentation container. 
 
 
 ### 11a. Upgrade to newer Konfuzio Version
