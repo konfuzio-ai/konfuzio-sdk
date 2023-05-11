@@ -186,6 +186,26 @@ class AbstractCategorizationAI(metaclass=abc.ABCMeta):
         except AttributeError:
             return False
 
+    @staticmethod
+    def load_model(pickle_path: str, max_ram: Union[None, str] = None):
+        """
+        Load the model and check if it has the interface compatible with the class.
+
+        :param pickle_path: Path to the pickled model.
+        :type pickle_path: str
+        :raises FileNotFoundError: If the path is invalid.
+        :raises OSError: When the data is corrupted or invalid and cannot be loaded.
+        :raises TypeError: When the loaded pickle isn't recognized as a Konfuzio AI model.
+        :return: Categorization AI model.
+        """
+        model = super().load_model(pickle_path, max_ram)
+        if not AbstractCategorizationAI.has_compatible_interface(model):
+            raise TypeError(
+                "Loaded model's interface is not compatible with any AIs. Please provide a model that has all the "
+                "abstract methods implemented."
+            )
+        return model
+
 
 class NameBasedCategorizationAI(AbstractCategorizationAI):
     """A simple, non-trainable model that predicts a Category for a given Document based on a predefined rule.

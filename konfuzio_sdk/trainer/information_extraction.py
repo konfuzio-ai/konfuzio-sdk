@@ -1281,6 +1281,7 @@ class AbstractExtractionAI(BaseModel):
                 "Loaded model's interface is not compatible with any AIs. Please provide a model that has all the "
                 "abstract methods implemented."
             )
+        return model
 
 
 class GroupAnnotationSets:

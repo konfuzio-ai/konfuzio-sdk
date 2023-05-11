@@ -2,6 +2,7 @@
 import abc
 import bz2
 import cloudpickle
+import itertools
 import logging
 import os
 import pathlib
@@ -10,7 +11,7 @@ import sys
 
 from typing import Optional, Union
 
-# from konfuzio_sdk.data import Data
+from konfuzio_sdk.data import Data
 from konfuzio_sdk.utils import get_sdk_version, normalize_memory, memory_size_of
 
 logger = logging.getLogger(__name__)
@@ -77,7 +78,7 @@ class BaseModel(metaclass=abc.ABCMeta):
             raise FileNotFoundError("Invalid pickle file path:", pickle_path)
 
         # The current local id iterator might otherwise be overriden
-        # prev_local_id = next(Data.id_iter)
+        prev_local_id = next(Data.id_iter)
 
         try:
             if pickle_path.endswith(".pt"):
@@ -108,6 +109,21 @@ class BaseModel(metaclass=abc.ABCMeta):
         max_ram = normalize_memory(max_ram)
         if max_ram and memory_size_of(model) > max_ram:
             logger.error(f"Loaded model's memory use ({memory_size_of(model)}) is greater than max_ram ({max_ram})")
+
+        if not hasattr(model, "name"):
+            raise TypeError("Saved model file needs to be a Konfuzio AbstractExtractionAI instance.")
+        elif model.name in {
+            "DocumentAnnotationMultiClassModel",
+            "DocumentEntityMulticlassModel",
+            "SeparateLabelsAnnotationMultiClassModel",
+            "SeparateLabelsEntityMultiClassModel",
+        }:
+            logger.warning(f"Loading legacy {model.name} AI model.")
+        else:
+            logger.info(f"Loading {model.name} AI model.")
+
+        curr_local_id = next(Data.id_iter)
+        Data.id_iter = itertools.count(max(prev_local_id, curr_local_id))
 
     def reduce_model_weight(self):
         """Remove all non-strictly necessary parameters before saving."""
