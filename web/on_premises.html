@@ -656,7 +656,7 @@ Password: {PROVIDED_BY_KONFUZIO}</p>
 </pre></div>
 </div>
 <p>We recommend to run the segmentation container with 8GB of RAM. The segmentation container can be started and used with less RAM, however this may not work on large images.
-After the segmentation is running you need to set the DETECTRON_URL to point to the segmentation container.</p>
+After the segmentation container is running you need to set the <a class="reference external" href="/web/on_premises.html#detectron-url">DETECTRON_URL</a> to point to the segmentation container.</p>
 </section>
 <section id="optional-10-install-document-summarization-container">
 <h3>[Optional] 10. Install document summarization container<a class="headerlink" href="#optional-10-install-document-summarization-container" title="Permalink to this headline">¶</a></h3>
@@ -678,7 +678,7 @@ Password: {PROVIDED_BY_KONFUZIO}</p>
 </pre></div>
 </div>
 <p>We recommend to run the segmentation container with 4GB of RAM. The segmentation container can be started and used with less RAM, however this may not work on large images.
-After the summarization is running you need to set the SUMMARIZATION_URL to point to the segmentation container.</p>
+After the summarization container is running you need to set the <a class="reference external" href="/web/on_premises.html#summarization-url">SUMMARIZATION_URL</a> to point to the segmentation container.</p>
 </section>
 <section id="a-upgrade-to-newer-konfuzio-version">
 <h3>11a. Upgrade to newer Konfuzio Version<a class="headerlink" href="#a-upgrade-to-newer-konfuzio-version" title="Permalink to this headline">¶</a></h3>
@@ -929,7 +929,7 @@ with the added benefit of automated testing and continuous feedback.</p>
 <span class="n">konfuzio_sdk</span> <span class="n">export_project</span> <span class="o">&lt;</span><span class="n">PROJECT_ID</span><span class="o">&gt;</span>
 </pre></div>
 </div>
-<p>The export will be saved in a folder with the name <a href="#id8"><span class="problematic" id="id9">data_</span></a><span class="raw-html-m2r"><project_id></span>. This folder needs to be transferred to the target system
+<p>The export will be saved in a folder with the name <a href="#id10"><span class="problematic" id="id11">data_</span></a><span class="raw-html-m2r"><project_id></span>. This folder needs to be transferred to the target system
 The first argument is the path to the export folder, the second is the project name of the imported project on the target system.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">manage</span><span class="o">.</span><span class="n">py</span> <span class="n">project_import</span> <span class="s2">&quot;/konfuzio-target-system/data_123/&quot;</span> <span class="s2">&quot;NewProjectName&quot;</span>
 </pre></div>
@@ -1104,15 +1104,15 @@ Set to 0 for no limit, but beware of timeouts as the CSV files are exported sync
 <a class="reference external" href="https://github.com/Kikobeats/free-email-domains/blob/master/domains.json">the blocklist</a>.</p>
 <p><em>Type: boolean</em></p>
 </section>
-<section id="detectron-url">
-<h5>DETECTRON_URL<a class="headerlink" href="#detectron-url" title="Permalink to this headline">¶</a></h5>
+<section id="id8">
+<h5>DETECTRON_URL<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h5>
 <p>Default: None</p>
 <p>This is used to connect to the optional <a class="reference external" href="/web/on_premises.html#optional-9-install-document-segmentation-container">segmentation container</a>. This is a URL in the form of ‘<a class="reference external" href="http://detectron-service:8181/predict">http://detectron-service:8181/predict</a>’.
 You might need to adjust the detectron-service to your service name or IP.</p>
 <p><em>Type: string</em></p>
 </section>
-<section id="summarization-url">
-<h5>SUMMARIZATION_URL<a class="headerlink" href="#summarization-url" title="Permalink to this headline">¶</a></h5>
+<section id="id9">
+<h5>SUMMARIZATION_URL<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h5>
 <p>Default: None</p>
 <p>This is used to connect to the optional <a class="reference external" href="/web/on_premises.html#optional-10-install-document-summarization-container">summarization container</a>. This is a URL in the form of ‘<a class="reference external" href="http://summarization-service:8181/predict">http://summarization-service:8181/predict</a>’.
 You might need to adjust the summarization-service to your service name or IP.</p>
