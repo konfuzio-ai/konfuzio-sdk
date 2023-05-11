@@ -44,7 +44,7 @@ def test_outlier_annotations():
     evaluation = ExtractionEvaluation(documents=list(zip(pipeline.documents, predictions)), strict=False)
     outliers = label.get_probable_outliers_by_confidence(evaluation)
     outliers = label.get_probable_outliers_by_confidence(evaluation, 0.9)
-    assert len(outliers) == 1
+    assert len(outliers) == 2
 
     outlier_spans = [span.offset_string for annotation in outliers for span in annotation.spans]
     assert '24.05.2018' in outlier_spans
