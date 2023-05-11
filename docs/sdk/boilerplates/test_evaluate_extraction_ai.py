@@ -15,6 +15,7 @@ def test_evaluate_extraction_ai():
 
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
     test_document = project.get_document_by_id(TEST_DOCUMENT_ID)
+    test_document.set_category(project.no_category)
     pipeline.test_documents = [test_document]
 
     # To get the evaluation of the full pipeline
