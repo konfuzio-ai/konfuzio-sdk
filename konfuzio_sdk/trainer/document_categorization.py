@@ -956,6 +956,7 @@ class CategorizationAI(AbstractCategorizationAI):
 
         # save all necessary model data
         torch.save(data_to_save, path)
+        self.pipeline_path = path
         return path
 
     def build_preprocessing_pipeline(self, use_image: bool, image_augmentation=None, image_preprocessing=None) -> None:
