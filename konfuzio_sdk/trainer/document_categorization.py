@@ -32,6 +32,7 @@ from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
 from konfuzio_sdk.data import Document, Page, Category, CategoryAnnotation
 from konfuzio_sdk.evaluate import CategorizationEvaluation
 from konfuzio_sdk.tokenizer.base import Vocab
+from konfuzio_sdk.trainer.base import BaseModel
 from konfuzio_sdk.trainer.image import ImagePreProcessing, ImageDataAugmentation
 from konfuzio_sdk.utils import get_timestamp
 
@@ -40,7 +41,7 @@ logger = logging.getLogger(__name__)
 warn('This module is WIP: https://gitlab.com/konfuzio/objectives/-/issues/9481', FutureWarning, stacklevel=2)
 
 
-class AbstractCategorizationAI(metaclass=abc.ABCMeta):
+class AbstractCategorizationAI(BaseModel, metaclass=abc.ABCMeta):
     """Abstract definition of a CategorizationAI."""
 
     def __init__(self, categories: List[Category], *args, **kwargs):
@@ -51,7 +52,6 @@ class AbstractCategorizationAI(metaclass=abc.ABCMeta):
         self.project = None
         if categories is not None:
             self.project = categories[0].project
-        self.name = self.__class__.__name__
         self.evaluation = None
 
     def name_lower(self):
@@ -198,7 +198,7 @@ class AbstractCategorizationAI(metaclass=abc.ABCMeta):
         :raises TypeError: When the loaded pickle isn't recognized as a Konfuzio AI model.
         :return: Categorization AI model.
         """
-        model = super().load_model(pickle_path, max_ram)
+        model = super(AbstractCategorizationAI, AbstractCategorizationAI).load_model(pickle_path, max_ram)
         if not AbstractCategorizationAI.has_compatible_interface(model):
             raise TypeError(
                 "Loaded model's interface is not compatible with any AIs. Please provide a model that has all the "
@@ -976,6 +976,7 @@ class CategorizationAI(AbstractCategorizationAI):
 
         # save all necessary model data
         torch.save(data_to_save, path)
+        self.pipeline_path = path
         return path
 
     def build_preprocessing_pipeline(self, use_image: bool, image_augmentation=None, image_preprocessing=None) -> None:

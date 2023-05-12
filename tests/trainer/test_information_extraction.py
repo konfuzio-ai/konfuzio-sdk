@@ -34,7 +34,6 @@ from konfuzio_sdk.trainer.information_extraction import (
     strip_accents,
     count_string_differences,
     year_month_day_count,
-    load_model,
     RFExtractionAI,
     AbstractExtractionAI,
 )
@@ -415,7 +414,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 
     def test_13_load_ai_model(self):
         """Test loading of trained model."""
-        self.pipeline = load_model(self.pipeline.pipeline_path)
+        self.pipeline = RFExtractionAI.load_model(self.pipeline.pipeline_path)
 
         assert self.pipeline.python_version == '.'.join([str(v) for v in sys.version_info[:3]])
         assert self.pipeline.konfuzio_sdk_version == get_distribution("konfuzio_sdk").version
@@ -431,7 +430,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 
         assert len(res_doc.annotation_sets()) == 5
 
-        no_konfuzio_sdk_pipeline = load_model(self.pipeline.pipeline_path_no_konfuzio_sdk)
+        no_konfuzio_sdk_pipeline = RFExtractionAI.load_model(self.pipeline.pipeline_path_no_konfuzio_sdk)
         res_doc = no_konfuzio_sdk_pipeline.extract(document=test_document)
         assert len(res_doc.view_annotations()) == 17
 
@@ -662,7 +661,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
 
     def test_13_load_ai_model(self):
         """Test loading of trained model."""
-        self.pipeline = load_model(self.pipeline.pipeline_path)
+        self.pipeline = RFExtractionAI.load_model(self.pipeline.pipeline_path)
 
         assert self.pipeline.python_version == '.'.join([str(v) for v in sys.version_info[:3]])
         assert self.pipeline.konfuzio_sdk_version == get_distribution("konfuzio_sdk").version
@@ -676,7 +675,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
 
         assert len(res_doc.annotation_sets()) == 5
 
-        no_konf_pipeline = load_model(self.pipeline.pipeline_path_no_konfuzio_sdk)
+        no_konf_pipeline = RFExtractionAI.load_model(self.pipeline.pipeline_path_no_konfuzio_sdk)
         res_doc = no_konf_pipeline.extract(document=test_document)
         assert len(res_doc.view_annotations()) == 17
 
@@ -715,7 +714,14 @@ class TestParagraphRFExtractionAI(unittest.TestCase):
 
     def test_01_configure_pipeline(self):
         """Make sure the Data and Pipeline is configured."""
+        assert self.pipeline.requires_segmentation is False
         self.pipeline.tokenizer = ParagraphTokenizer(mode=self.mode)
+        if self.mode == 'detectron':
+            assert self.pipeline.requires_segmentation is True
+        elif self.mode == 'line_distance':
+            assert self.pipeline.requires_segmentation is False
+        else:
+            raise ValueError(f'Unknown mode {self.mode}')
 
         train_doc_ids = {601418}
         for doc in self.pipeline.category.documents():
@@ -786,6 +792,12 @@ class TestSentenceRFExtractionAI(unittest.TestCase):
     def test_01_configure_pipeline(self):
         """Make sure the Data and Pipeline is configured."""
         self.pipeline.tokenizer = SentenceTokenizer(mode=self.mode)
+        if self.mode == 'detectron':
+            assert self.pipeline.requires_segmentation is True
+        elif self.mode == 'line_distance':
+            assert self.pipeline.requires_segmentation is False
+        else:
+            raise ValueError(f'Unknown mode {self.mode}')
 
         self.pipeline.documents = self.pipeline.category.documents()
 
@@ -1833,23 +1845,23 @@ def test_load_model_no_file():
     """Test loading of model with invalid path."""
     path = "nhtbgrved"
     with pytest.raises(FileNotFoundError, match="Invalid pickle file path"):
-        load_model(path)
+        RFExtractionAI.load_model(path)
 
 
 @pytest.mark.requires_extraction
 def test_load_model_corrupt_file():
     """Test loading of corrupted model file."""
-    path = "trainer/corrupt.pkl"
+    path = "tests/trainer/corrupt.pkl"
     with pytest.raises(OSError, match="data is invalid."):
-        load_model(path)
+        RFExtractionAI.load_model(path)
 
 
 @pytest.mark.requires_extraction
 def test_load_model_wrong_pickle_data():
     """Test loading of wrong pickle data."""
-    path = "trainer/list_test.pkl"
+    path = "tests/trainer/list_test.pkl"
     with pytest.raises(TypeError, match="Loaded model's interface is not compatible with any AIs"):
-        load_model(path)
+        RFExtractionAI.load_model(path)
 
 
 @pytest.mark.requires_extraction
@@ -1857,8 +1869,8 @@ def test_load_model_wrong_pickle_data():
 def test_load_ai_model_konfuzio_sdk_not_included():
     """Test loading of trained model with include_konfuzio setting set to False."""
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-    path = "trainer/2023-01-31-14-39-44_lohnabrechnung_no_konfuzio_sdk.pkl"
-    pipeline = load_model(path)
+    path = "tests/trainer/2023-01-31-14-39-44_lohnabrechnung_no_konfuzio_sdk.pkl"
+    pipeline = RFExtractionAI.load_model(path)
 
     test_document = project.get_document_by_id(TEST_DOCUMENT_ID)
     res_doc = pipeline.extract(document=test_document)
@@ -1870,8 +1882,8 @@ def test_load_ai_model_konfuzio_sdk_not_included():
 def test_load_ai_model_konfuzio_sdk_included():
     """Test loading of trained model with include_konfuzio setting set to True."""
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-    path = "trainer/2023-01-31-14-37-11_lohnabrechnung.pkl"
-    pipeline = load_model(path)
+    path = "tests/trainer/2023-01-31-14-37-11_lohnabrechnung.pkl"
+    pipeline = RFExtractionAI.load_model(path)
 
     test_document = project.get_document_by_id(TEST_DOCUMENT_ID)
     res_doc = pipeline.extract(document=test_document)
@@ -1882,18 +1894,30 @@ def test_load_ai_model_konfuzio_sdk_included():
 @unittest.skipIf(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
 def test_load_old_ai_model():
     """Test loading of an old trained model."""
-    path = "trainer/2022-03-10-15-14-51_lohnabrechnung_old_model.pkl"
+    path = "tests/trainer/2022-03-10-15-14-51_lohnabrechnung_old_model.pkl"
     with pytest.raises(TypeError, match="Loaded model's interface is not compatible with any AIs"):
-        load_model(path)
+        RFExtractionAI.load_model(path)
 
 
 @pytest.mark.requires_extraction
 @unittest.skipIf(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
 def test_load_old_ai_model_2():
     """Test loading of a newer old trained model."""
-    path = "trainer/2023-01-09-17-47-50_lohnabrechnung.pkl"
+    path = "tests/trainer/2023-01-09-17-47-50_lohnabrechnung.pkl"
     with pytest.raises(TypeError, match="Loaded model's interface is not compatible with any AIs"):
-        load_model(path)
+        RFExtractionAI.load_model(path)
+
+
+@unittest.skipIf(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
+def test_load_ai_model():
+    """Test loading trained model."""
+    path = "tests/trainer/2023-04-25-15-56-42_lohnabrechnung_rfextractionai_.pkl"
+    project = Project(id_=None, project_folder=OFFLINE_PROJECT)
+    pipeline = RFExtractionAI.load_model(path)
+
+    test_document = project.get_document_by_id(TEST_DOCUMENT_ID)
+    res_doc = pipeline.extract(document=test_document)
+    assert len(res_doc.annotations(use_correct=False, ignore_below_threshold=True)) == 19
 
 
 def test_feat_num_count():

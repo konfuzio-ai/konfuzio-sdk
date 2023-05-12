@@ -101,6 +101,7 @@ setuptools.setup(
             'sphinx-sitemap==2.2.0',
             'sphinx-rtd-theme==1.0.0',
             'sphinxcontrib-mermaid==0.8.1',
+            'matplotlib==3.7.1',
         ],
         'extraction': [
             'cloudpickle==2.2.1',  # Used to pickle objects

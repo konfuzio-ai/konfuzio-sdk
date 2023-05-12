@@ -124,6 +124,7 @@ class BaseModel(metaclass=abc.ABCMeta):
 
         curr_local_id = next(Data.id_iter)
         Data.id_iter = itertools.count(max(prev_local_id, curr_local_id))
+        return model
 
     def reduce_model_weight(self):
         """Remove all non-strictly necessary parameters before saving."""

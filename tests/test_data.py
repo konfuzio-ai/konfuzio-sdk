@@ -290,10 +290,22 @@ class TestOnlineProject(unittest.TestCase):
         assert doc.assignee == 1043
         assert doc.dataset_status == 2
 
+    def test_get_segmentation(self):
+        """Test getting the detectron segmentation of a Document."""
+        document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+
+        page = document.get_page_by_index(0)
+        assert page._segmentation is None
+
+        segmentation = document.get_segmentation()
+        assert len(segmentation) == 1
+        assert len(segmentation[0]) == 5
+        assert len(page._segmentation) == 5
+
     def test_create_modify_and_delete_document(self):
         """Test the creation of an online Document from a file, modification, and then deletion of the Document."""
         # Test Document creation
-        doc = Document.from_file('test_data/pdf.pdf', self.project, dataset_status=1)
+        doc = Document.from_file('tests/test_data/pdf.pdf', self.project, dataset_status=1)
         doc_id = doc.id_
 
         # Test Document modification
@@ -510,6 +522,7 @@ class TestOfflineExampleData(unittest.TestCase):
         assert len(outliers) == 3
         assert 'DE47 7001 0500 0000 2XxXX XX' in outlier_spans
 
+    @pytest.mark.requires_extraction
     def test_find_outlier_annotations_by_confidence(self):
         """Test finding the Annotations with the least confidence."""
         label = self.project.get_label_by_name('Austellungsdatum')

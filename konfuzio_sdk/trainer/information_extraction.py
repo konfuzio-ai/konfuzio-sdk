@@ -15,15 +15,12 @@ Sun, H., Kuang, Z., Yue, X., Lin, C., & Zhang, W. (2021). Spatial Dual-Modality 
 Extraction. arXiv. https://doi.org/10.48550/ARXIV.2103.14470
 """
 
-import bz2
 import collections
 import difflib
 import functools
-import itertools
 import logging
 import os
 
-import sys
 import time
 import unicodedata
 
@@ -35,11 +32,10 @@ from warnings import warn
 
 import numpy
 import pandas
-import cloudpickle
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.utils.validation import check_is_fitted
 
-from konfuzio_sdk.data import Data, Document, Annotation, Category, AnnotationSet, Label, LabelSet, Span
+from konfuzio_sdk.data import Document, Annotation, Category, AnnotationSet, Label, LabelSet, Span
 from konfuzio_sdk.trainer.base import BaseModel
 from konfuzio_sdk.tokenizer.paragraph_and_sentence import ParagraphTokenizer, SentenceTokenizer
 
@@ -53,7 +49,6 @@ from konfuzio_sdk.regex import regex_matches
 from konfuzio_sdk.utils import (
     get_timestamp,
     get_bbox,
-    normalize_memory,
     memory_size_of,
     sdk_isinstance,
 )
@@ -68,87 +63,6 @@ logger = logging.getLogger(__name__)
 CANDIDATES_CACHE_SIZE = 100
 
 warn('This module is WIP: https://gitlab.com/konfuzio/objectives/-/issues/9311', FutureWarning, stacklevel=2)
-
-
-def load_model(pickle_path: str, max_ram: Union[None, str] = None):
-    """
-    Load a pkl file.
-
-    :param pickle_path: Path to the pickled model.
-    :type pickle_path: str
-    :raises FileNotFoundError: If the path is invalid.
-    :raises OSError: When the data is corrupted or invalid and cannot be loaded.
-    :raises TypeError: When the loaded pickle isn't recognized as a Konfuzio AI model.
-    :return: Extraction AI model.
-    """
-    logger.info(f"Starting loading AI model with path {pickle_path}")
-
-    if not os.path.isfile(pickle_path):
-        raise FileNotFoundError("Invalid pickle file path:", pickle_path)
-
-    # The current local id iterator might otherwise be overriden
-    prev_local_id = next(Data.id_iter)
-
-    try:
-        if pickle_path.endswith(".pt"):
-            from konfuzio_sdk.trainer.document_categorization import load_categorization_model
-
-            model = load_categorization_model(pickle_path)
-        else:
-            with bz2.open(pickle_path, 'rb') as file:
-                model = cloudpickle.load(file)
-    except OSError:
-        raise OSError(f"Pickle file {pickle_path} data is invalid.")
-    except AttributeError as err:
-        if "__forward_module__" in str(err) and '3.9' in sys.version:
-            raise AttributeError("Pickle saved with incompatible Python version.") from err
-        elif "__forward_is_class__" in str(err) and '3.8' in sys.version:
-            raise AttributeError("Pickle saved with incompatible Python version.") from err
-        raise
-    except ValueError as err:
-        if "unsupported pickle protocol: 5" in str(err) and '3.7' in sys.version:
-            raise ValueError("Pickle saved with incompatible Python version.") from err
-        raise
-
-    if hasattr(model, 'python_version'):
-        logger.info(f"Loaded AI model trained with Python {model.python_version}")
-    if hasattr(model, 'konfuzio_sdk_version'):
-        logger.info(f"Loaded AI model trained with Konfuzio SDK version {model.konfuzio_sdk_version}")
-
-    max_ram = normalize_memory(max_ram)
-    if max_ram and memory_size_of(model) > max_ram:
-        logger.error(f"Loaded model's memory use ({memory_size_of(model)}) is greater than max_ram ({max_ram})")
-
-    # to avoid circular import issue
-    from konfuzio_sdk.trainer.document_categorization import AbstractCategorizationAI
-    from konfuzio_sdk.trainer.file_splitting import AbstractFileSplittingModel
-
-    if not (
-        AbstractExtractionAI.has_compatible_interface(model)
-        or AbstractFileSplittingModel.has_compatible_interface(model)
-        or AbstractCategorizationAI.has_compatible_interface(model)
-    ):
-        raise TypeError(
-            "Loaded model's interface is not compatible with any AIs. Please provide a model that has all the "
-            "abstract methods implemented."
-        )
-
-    if not hasattr(model, "name"):
-        raise TypeError("Saved model file needs to be a Konfuzio AbstractExtractionAI instance.")
-    elif model.name in {
-        "DocumentAnnotationMultiClassModel",
-        "DocumentEntityMulticlassModel",
-        "SeparateLabelsAnnotationMultiClassModel",
-        "SeparateLabelsEntityMultiClassModel",
-    }:
-        logger.warning(f"Loading legacy {model.name} AI model.")
-    else:
-        logger.info(f"Loading {model.name} AI model.")
-
-    curr_local_id = next(Data.id_iter)
-    Data.id_iter = itertools.count(max(prev_local_id, curr_local_id))
-
-    return model
 
 
 # # existent model classes
@@ -574,78 +488,6 @@ def unique_char_count(s: str) -> int:
     return len(set(list(s)))
 
 
-# def _convert_to_relative_dict(dict: dict):
-#     """Convert a dict with absolute numbers as values to the same dict with the relative probabilities as values."""
-#     return_dict = {}
-#     abs_num = sum(dict.values())
-#     for key, value in dict.items():
-#         return_dict[key] = value / abs_num
-#     return return_dict
-
-
-# def plot_label_distribution(df_list: list, df_name_list=None) -> None:
-#     """Plot the label-distribution of given DataFrames side-by-side."""
-#     from tabulate import tabulate
-#     # check if any of the input df are empty
-#     for df in df_list:
-#         if df.empty:
-#             logger.error('One of the Dataframes in df_list is empty.')
-#             return None
-
-#     # helper function
-#     def Convert(tup, di):
-#         for a, b in tup:
-#             di.setdefault(a, []).append(b)
-#         return di
-
-#     # plot the relative distributions
-#     logger.info('Percentage of total samples (per dataset) that have a certain label:')
-#     rel_dict_list = []
-#     for df in df_list:
-#         rel_dict_list.append(_convert_to_relative_dict(collections.Counter(list(df['label_name']))))
-#     logger.info(
-#         '\n'
-#         + tabulate(
-#             pandas.DataFrame(rel_dict_list, index=df_name_list).transpose(),
-#             floatfmt=".1%",
-#             headers="keys",
-#             tablefmt="pipe",
-#         )
-#         + '\n'
-#     )
-
-#     # print the number of documents in total and in the splits given
-#     # total_count = 0
-#     for index, df in enumerate(df_list):
-#         doc_name = df_name_list[index] if df_name_list else str(index)
-#         doc_count = len(set(df['document_id']))
-#         logger.info(doc_name + ' contains ' + str(doc_count) + ' different documents.')
-#         # total_count += doc_count
-#     # logger.info(str(total_count) + ' documents in total.')
-
-#     # plot the number of documents with at least one of a certain label
-#     logger.info('Percentage of documents per split that contain a certain label at least once:')
-#     doc_count_dict_list = []
-#     for df in df_list:
-#         doc_count_dict = {}
-#         doc_count = len(set(df['document_id']))
-#         toup_list = list(zip(list(df['label_name']), list(df['document_id'])))
-#         list_dict = Convert(toup_list, {})
-#         for key, value in list_dict.items():
-#             doc_count_dict[key] = float(len(set(value)) / doc_count)
-#         doc_count_dict_list.append(doc_count_dict)
-#     logger.info(
-#         '\n'
-#         + tabulate(
-#             pandas.DataFrame(doc_count_dict_list, index=df_name_list).transpose(),
-#             floatfmt=".1%",
-#             headers="keys",
-#             tablefmt="pipe",
-#         )
-#         + '\n'
-#     )
-
-
 def get_first_candidate(document_text, document_bbox, line_list):
     """Get the first candidate in a document."""
     # todo allow to have mult tokenizers?
@@ -967,6 +809,9 @@ def substring_on_page(substring, annotation, page_text_list) -> bool:
 class AbstractExtractionAI(BaseModel):
     """Parent class for all Extraction AIs, to extract information from unstructured human-readable text."""
 
+    requires_text = True
+    requires_images = False
+
     def __init__(self, category: Category, *args, **kwargs):
         """Initialize ExtractionModel."""
         # Go through keyword arguments, and either save their values to our
@@ -1275,7 +1120,7 @@ class AbstractExtractionAI(BaseModel):
         :raises TypeError: When the loaded pickle isn't recognized as a Konfuzio AI model.
         :return: Extraction AI model.
         """
-        model = super().load_model(pickle_path, max_ram)
+        model = super(AbstractExtractionAI, AbstractExtractionAI).load_model(pickle_path, max_ram)
         if not AbstractExtractionAI.has_compatible_interface(model):
             raise TypeError(
                 "Loaded model's interface is not compatible with any AIs. Please provide a model that has all the "
@@ -1628,62 +1473,6 @@ class GroupAnnotationSets:
         return new_res_dict
 
 
-class ParagraphExtractionAI(AbstractExtractionAI):
-    """Extract and label text regions using Detectron2."""
-
-    def __init__(
-        self,
-        category: Category,
-        *args,
-        **kwargs,
-    ):
-        """ParagraphExtractionAI."""
-        logger.info("Initializing ParagraphExtractionAI.")
-        super().__init__(category=category, *args, **kwargs)
-        self.tokenizer = ParagraphTokenizer(mode='detectron', create_detectron_labels=True)
-
-    @property
-    def project(self):
-        """Get RFExtractionAI Project."""
-        if not self.category:
-            raise AttributeError(f'{self} has no Category.')
-        return self.category.project
-
-    def extract(self, document: Document) -> Document:
-        """
-        Infer information from a given Document.
-
-        :param document: Document object
-        :return: Document with predicted labels
-
-        :raises:
-         AttributeError: When missing a Tokenizer
-        """
-        logger.info(f"Starting extraction of {document}.")
-
-        self.check_is_ready()
-
-        inference_document = deepcopy(document)
-
-        inference_document.project = self.project
-
-        inference_document = self.tokenizer.tokenize(inference_document)
-
-        return inference_document
-
-    def check_is_ready(self):
-        """
-        Check if the ExtractionAI is ready for the inference.
-
-        It is assumed that the model is ready if a Tokenizer and a Category were set.
-
-        :raises AttributeError: When no Category is specified.
-        """
-        logger.info(f"Checking if {self} is ready for extraction.")
-        if not self.category:
-            raise AttributeError(f'{self} requires a Category.')
-
-
 class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
     """Encode visual and textual features to extract text regions.
 
@@ -1776,7 +1565,16 @@ class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
 
         self.output_dir = None
 
-        # self.doc_object = Document
+    @property
+    def requires_segmentation(self) -> bool:
+        """Return True if the Extraction AI requires detectron segmentation results to process Documents."""
+        if (
+            sdk_isinstance(self.tokenizer, ParagraphTokenizer) or sdk_isinstance(self.tokenizer, SentenceTokenizer)
+        ) and self.tokenizer.mode == 'detectron':
+            return True
+        elif self.tokenizer is None:
+            logger.warning('Tokenizer is not set. Assuming no segmentation results is required.')
+        return False
 
     def features(self, document: Document):
         """Calculate features using the best working default values that can be overwritten with self values."""

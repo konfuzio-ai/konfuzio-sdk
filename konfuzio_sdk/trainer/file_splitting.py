@@ -141,7 +141,7 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
         :raises TypeError: When the loaded pickle isn't recognized as a Konfuzio AI model.
         :return: File Splitting AI model.
         """
-        model = super().load_model(pickle_path, max_ram)
+        model = super(AbstractFileSplittingModel, AbstractFileSplittingModel).load_model(pickle_path, max_ram)
         if not AbstractFileSplittingModel.has_compatible_interface(model):
             raise TypeError(
                 "Loaded model's interface is not compatible with any AIs. Please provide a model that has all the "
