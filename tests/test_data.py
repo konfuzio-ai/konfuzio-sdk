@@ -290,10 +290,22 @@ class TestOnlineProject(unittest.TestCase):
         assert doc.assignee == 1043
         assert doc.dataset_status == 2
 
+    def test_get_segmentation(self):
+        """Test getting the detectron segmentation of a Document."""
+        document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+
+        page = document.get_page_by_index(0)
+        assert page._segmentation is None
+
+        segmentation = document.get_segmentation()
+        assert len(segmentation) == 1
+        assert len(segmentation[0]) == 5
+        assert len(page._segmentation) == 5
+
     def test_create_modify_and_delete_document(self):
         """Test the creation of an online Document from a file, modification, and then deletion of the Document."""
         # Test Document creation
-        doc = Document.from_file('test_data/pdf.pdf', self.project, dataset_status=1)
+        doc = Document.from_file('tests/test_data/pdf.pdf', self.project, dataset_status=1)
         doc_id = doc.id_
 
         # Test Document modification
@@ -2961,8 +2973,8 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
         project = LocalTextProject()
         document = project.get_document_by_id(7)
         annotations = document.view_annotations()
-        assert len(annotations) == 5  # 4 if top_annotations filter is used
-        assert sorted([ann.id_ for ann in annotations]) == [16, 17, 18, 19, 24]  # [16, 18, 19, 24]
+        assert len(annotations) == 4  # 4 if top_annotations filter is used
+        assert sorted([ann.id_ for ann in annotations]) == [16, 18, 19, 24]
 
     def test_document_lose_weight(self):
         """Test that Document.lose_weight() removes all the right Annotations."""

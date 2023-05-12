@@ -13,7 +13,7 @@ from konfuzio_sdk.samples import LocalTextProject
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
 
 from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel, SplittingAI, FileSplittingEvaluation
-from tests.variables import TEST_DOCUMENT_ID
+from tests.variables import TEST_DOCUMENT_ID, OFFLINE_PROJECT
 
 
 class TestCompare(unittest.TestCase):
@@ -44,7 +44,7 @@ class TestCompare(unittest.TestCase):
 
     def test_strict_doc_on_doc_incl_multiline_annotation(self):
         """Test if a Document is 100 % equivalent even it has unrevised Annotations."""
-        prj = Project(id_=None, project_folder='example_project_data')
+        prj = Project(id_=None, project_folder=OFFLINE_PROJECT)
         doc_a = prj.get_document_by_id(TEST_DOCUMENT_ID)
         doc_b = prj.get_document_by_id(TEST_DOCUMENT_ID)  # predicted
         evaluation = compare(doc_a, doc_b)
@@ -59,7 +59,7 @@ class TestCompare(unittest.TestCase):
 
     def test_strict_doc_where_first_annotation_was_skipped(self):
         """Test if a Document is 100 % equivalent with first Annotation not existing for a certain Label."""
-        prj = Project(id_=None, project_folder='example_project_data')
+        prj = Project(id_=None, project_folder=OFFLINE_PROJECT)
         doc_a = prj.get_document_by_id(TEST_DOCUMENT_ID)
         doc_b = prj.get_document_by_id(TEST_DOCUMENT_ID)  # predicted
         doc_b.annotations()
@@ -75,7 +75,7 @@ class TestCompare(unittest.TestCase):
 
     def test_strict_doc_where_last_annotation_was_skipped(self):
         """Test if a Document is 100 % equivalent with last Annotation not existing for a certain Label."""
-        prj = Project(id_=None, project_folder='example_project_data')
+        prj = Project(id_=None, project_folder=OFFLINE_PROJECT)
         doc_a = prj.get_document_by_id(TEST_DOCUMENT_ID)
         doc_b = prj.get_document_by_id(TEST_DOCUMENT_ID)  # predicted
         doc_b.annotations()
@@ -91,7 +91,7 @@ class TestCompare(unittest.TestCase):
 
     def test_strict_if_first_multiline_annotation_is_missing_in_b(self):
         """Test if a Document is equivalent if first Annotation is missing."""
-        prj = Project(id_=None, project_folder='example_project_data')
+        prj = Project(id_=None, project_folder=OFFLINE_PROJECT)
         doc_a = prj.get_document_by_id(TEST_DOCUMENT_ID)
         doc_b = Document(project=prj, category=doc_a.category)
         for annotation in doc_a.annotations()[1:]:
@@ -108,7 +108,7 @@ class TestCompare(unittest.TestCase):
 
     def test_strict_doc_where_first_annotation_is_missing_in_a(self):
         """Test if a Document is equivalent if first Annotation is not present."""
-        prj = Project(id_=None, project_folder='example_project_data')
+        prj = Project(id_=None, project_folder=OFFLINE_PROJECT)
         doc_b = prj.get_document_by_id(TEST_DOCUMENT_ID)
         doc_a = Document(project=prj, category=doc_b.category)
         # use only correct Annotations
@@ -127,7 +127,7 @@ class TestCompare(unittest.TestCase):
 
     def test_strict_only_unrevised_annotations(self):
         """Test to evaluate on a Document that has only unrevised Annotations."""
-        prj = Project(id_=None, project_folder='example_project_data')
+        prj = Project(id_=None, project_folder=OFFLINE_PROJECT)
         doc_a = prj.get_document_by_id(137234)
         doc_b = Document(project=prj, category=doc_a.category)
 
@@ -143,7 +143,7 @@ class TestCompare(unittest.TestCase):
 
     def test_strict_doc_where_first_annotation_from_all_is_missing_in_a(self):
         """Test if a Document is equivalent if all Annotation are not present and feedback required are included."""
-        prj = Project(id_=None, project_folder='example_project_data')
+        prj = Project(id_=None, project_folder=OFFLINE_PROJECT)
         doc_b = prj.get_document_by_id(TEST_DOCUMENT_ID)
         doc_a = Document(project=prj, category=doc_b.category)
         # use correct Annotations and feedback required ones
@@ -163,7 +163,7 @@ class TestCompare(unittest.TestCase):
 
     def test_strict_doc_where_last_annotation_is_missing_in_b(self):
         """Test if a Document is equivalent if last Annotation is missing."""
-        prj = Project(id_=None, project_folder='example_project_data')
+        prj = Project(id_=None, project_folder=OFFLINE_PROJECT)
         doc_a = prj.get_document_by_id(TEST_DOCUMENT_ID)
         doc_b = Document(project=prj, category=doc_a.category)
         # use correct Annotations and feedback required ones
@@ -182,7 +182,7 @@ class TestCompare(unittest.TestCase):
 
     def test_strict_doc_where_last_annotation_is_missing_in_a(self):
         """Test if a Document is equivalent if last Annotation is not present."""
-        prj = Project(id_=None, project_folder='example_project_data')
+        prj = Project(id_=None, project_folder=OFFLINE_PROJECT)
         doc_b = prj.get_document_by_id(TEST_DOCUMENT_ID)
         doc_a = Document(project=prj, category=doc_b.category)
         # use correct Annotations and feedback required ones
@@ -201,7 +201,7 @@ class TestCompare(unittest.TestCase):
 
     def test_strict_nothing_should_be_predicted(self):
         """Support to evaluate that nothing is found in a document."""
-        prj = Project(id_=None, project_folder='example_project_data')
+        prj = Project(id_=None, project_folder=OFFLINE_PROJECT)
         doc_b = prj.get_document_by_id(TEST_DOCUMENT_ID)
         doc_a = Document(project=prj, category=doc_b.category)
         evaluation = compare(doc_a, doc_b, ignore_below_threshold=False)
@@ -217,7 +217,7 @@ class TestCompare(unittest.TestCase):
 
     def test_strict_nothing_can_be_predicted(self):
         """Support to evaluate that nothing must be found in a document."""
-        prj = Project(id_=None, project_folder='example_project_data')
+        prj = Project(id_=None, project_folder=OFFLINE_PROJECT)
         doc_a = prj.get_document_by_id(TEST_DOCUMENT_ID)
         doc_b = Document(project=prj, category=doc_a.category)
         evaluation = compare(doc_a, doc_b)
@@ -239,7 +239,7 @@ class TestCompare(unittest.TestCase):
         Only 1 is in the prediction.
         """
         # todo: this logic is a view logic on the document: shouldn't this go into the Annotations function
-        prj = Project(id_=None, project_folder='example_project_data')
+        prj = Project(id_=None, project_folder=OFFLINE_PROJECT)
         doc_a = prj.get_document_by_id(TEST_DOCUMENT_ID)
         doc_b = Document(project=prj, category=doc_a.category)
 

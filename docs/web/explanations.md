@@ -216,6 +216,8 @@ Series of events & tasks triggered when uploading a Document
 | 5     | 8       | set_labeling_available       | Sets the document available for labeling                                                                        | 10 minutes         |
 | 5     | 9       | get_hocr                     | Get hOCR representation for bboxes (bboxes from task_id #3).                                                    | 5 minutes          |
 
+The overall time to complete all tasks related to a Document (DOCUMENT_WORKFLOW_TIME_LIMIT) is restricted to 2 hours.
+
 #### Extraction & Category AI Training
 
 ##### Extraction AI

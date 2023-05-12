@@ -7,7 +7,7 @@
 
 On-premises, also known as self-hosted, is a setup that allows Konfuzio Server to be implemented 100% on your own infrastructure or any cloud of your choice. In practice, it means that you know where your data is stored, how it's handled and who gets hold of it.
 
-A common way to operate a production-ready and scalabe Konfuzio installation is via Kubernetens. An alternative deployment option is the [Single VM setup via Docker](/web/on_premises.html#alternative-deployment-options). We recommend to use the option which is more familiar to you. In general
+A common way to operate a production-ready and scalabe Konfuzio installation is via Kubernetens. An alternative deployment option is the [Single VM setup via Docker](/web/on_premises.html#docker-single-vm-setup). We recommend to use the option which is more familiar to you. In general
 
 <div class="video-container">
     <iframe class="video" src="https://www.youtube.com/embed/KXc8FTU-2NM" allowfullscreen></iframe>
@@ -507,7 +507,7 @@ Please open a support ticket to get an AZURE_OCR_KEY and AZURE_OCR_BASE_URL whic
 
 ### [Optional] 9. Install document segmentation container
 
-Download the container with the credentials provided by Konfuzio
+Download the container with the credentials provided by Konfuzio.
 
 Registry URL: {PROVIDED_BY_KONFUZIO}  
 Username: {PROVIDED_BY_KONFUZIO}  
@@ -515,17 +515,21 @@ Password: {PROVIDED_BY_KONFUZIO}
 
 ```
 docker login REGISTRY_URL  
-docker pull REGISTRY_URL/konfuzio/detectron2:2022-01-30_20-56-28
-docker run --env-file /path_to_env_file.env REGISTRY_URL/konfuzio/detectron2:2022-01-30_20-56-28 bash -c "export LC_ALL=C.UTF-8; export LANG=C.UTF-8;./run_celery.sh
+docker pull REGISTRY_URL/konfuzio/text-annotation/detectron2/master:released-2022-11-24_08-46-17
+docker run --env-file /path_to_env_file.env REGISTRY_URL/konfuzio/text-annotation/detectron2/master:released-2022-11-24_08-46-17 bash -c "export LC_ALL=C.UTF-8; export LANG=C.UTF-8;./run_celery.sh
 ```
 
 The segmentation container needs to be started with the following environment variables which you can enter into your .env file
 ```
 GPU=True  # If GPU is present
 C_FORCE_ROOT=True
-BROKER_URL=  # Set this to an unused redis database
-RESULT_BACKEND=  # Set this to an unused redis database
+BROKER_URL=  # Set this to an unused Redis database
+RESULT_BACKEND=  # Set this to an unused Redis database
 ```
+
+We recommend to run the segmentation container with 8GB of RAM. The segmentation container can be started and used with less RAM, however this may not work on large images. 
+After the segmentation container is running you need to set the [DETECTRON_URL](/web/on_premises.html#detectron-url) to point to the segmentation container. 
+
 
 ### [Optional] 10. Install document summarization container
 
@@ -537,19 +541,23 @@ Password: {PROVIDED_BY_KONFUZIO}
 
 ```
 docker login REGISTRY_URL
-docker pull REGISTRY_URL/konfuzio/detectron2:2022-01-30_20-56-28
-docker run --env-file /path_to_env_file.env REGISTRY_URL/konfuzio/detectron2:2022-01-30_20-56-28 bash -c "export LC_ALL=C.UTF-8; export LANG=C.UTF-8;./run_celery.sh"`
+docker pull REGISTRY_URL/konfuzio/text-annotation/summarization/main:released-2022-11-29_21-55-57
+docker run --env-file /path_to_env_file.env REGISTRY_URL/konfuzio/text-annotation/summarization/main:released-2022-11-29_21-55-57
 ```
 
-The segmentation container needs to be started with the following environment variables which you can enter into your .env file
+The summarization container needs to be started with the following environment variables which you can enter into your .env file
 ```
 GPU=True  # If GPU is present
 TASK_ALWAYS_EAGER=False
 C_FORCE_ROOT=True
-BROKER_URL=  # Set this to an unused redis database
-RESULT_BACKEND=  # Set this to an unised redis database
+BROKER_URL=  # Set this to an unused Redis database
+RESULT_BACKEND=  # Set this to an unused Redis database
 
 ```
+
+We recommend to run the segmentation container with 4GB of RAM. The segmentation container can be started and used with less RAM, however this may not work on large images. 
+After the summarization container is running you need to set the [SUMMARIZATION_URL](/web/on_premises.html#summarization-url) to point to the segmentation container. 
+
 
 ### 11a. Upgrade to newer Konfuzio Version
 
@@ -566,6 +574,56 @@ The following steps need to be undertaken:
 - Install the desired Konfuzio Server version by starting with 1.)
 - Import the projects using ["python manage.py project_import"](https://help.konfuzio.com/integrations/migration-between-konfuzio-server-instances/index.html#migrate-projects-between-konfuzio-server-instances)
 
+### Load Scenario for Single VM with 32GB
+
+#### Scenario 1: With self-hosted OCR
+
+| Number of Container | Container Type | RAM | Capacity                                                                   |
+| --- | --- | --- | --- |
+| 1                   | Web Container          | 4GB | ...                                                                                  |
+| 3                   | Generic Celery Worker  | 4GB | 1500 (3 x 500) Pages of Extraction, Categorization, or Splitting per hour            |
+| 1                   | Self-Hosted OCR worker | 8GB | 1200 (1 y 1200) Pages) / hours (Not needed if external API Service is used)          |
+| N                   | remaining Containers   | 4GB | ...                                                                                  |
+
+
+With this setup, around 1200 Pages per hour can be processed using OCR and Extraction, around 750 Pages per hour can be processed if OCR, Categorization and Extraction are active, around 850 Pages per hour can be processed if OCR, Splitting, Categorization and Extraction are active.
+
+#### Scenario 2: Without self-hosted OCR
+
+
+| Number of Container | Container Type | RAM | Capacity                                                        |
+| --- | --- | --- | --- |
+| 1                   | Web Container          | 4GB | ...                                                                       |
+| 5                   | Generic Celery Worker  | 4GB | 2500 (3 x 500) Pages of Extraction, Categorization, or Splitting per hour |
+| N                   | remaining Containers   | 4GB | ...                                                                       |
+
+With this setup, around 2500 Pages per hour can be processed using OCR and Extraction, around 1250 Pages per hour can be processed if OCR, Categorization and Extraction are active, around 850 Pages per hour can be processed if OCR, Splitting, Categorization and Extraction are active.
+
+.. note::
+  In case you train large AI Models (>100 Training Pages) more than 4GB for Generic Celery Workers are needed. The Benchmark used an Extraction AI with "word" detection mode and 10 Labels in 1 Label Set. The capacity is shared between all Users using the Konfuzio Server setup.
+
+  The level of parallelity of task processing and therefore throughput can be increased by the number of running "Generic Celery Workers". 
+
+  The performance of any system that processes documents can be affected by various factors, including the number of simultaneous connections, the size of the documents being processed, and the available resources such as RAM and processing power.
+
+  The number of simultaneous connections can also impact performance. If multiple users are uploading and processing large documents simultaneously, it can put a strain on the system's resources, leading to slower processing times.
+
+  Other factors that can affect performance include network latency, disk speed, and the complexity of the processing algorithms. It's essential to consider all these factors when designing and deploying document processing systems to ensure optimal performance.
+
+
+
+
+## Docker-Compose vs. Kubernetes
+
+When it comes to running the Konfuzio Server, the choice between Docker Compose and Kubernetes will depend on your specific requirements and use case.
+
+Docker Compose can be a good choice if you are running Konfuzio Server on a single host in production or for testing and development purposes. With Docker Compose, you can define and customize the services required for the Konfuzio Server in a YAML file we provide, and then use a single command to start all the containers.
+
+On the other hand, Kubernetes is more suitable for production environments where you need to run Konfuzio Server at scale, across multiple hosts, and with features such as auto-scaling and self-healing. Kubernetes has a steep learning curve, but it provides advanced features for managing and scaling containerized applications.
+
+Regarding the use of Docker Compose in multiple VMs, while it's possible to use Docker Compose in a distributed environment, managing multiple VMs can be more work than using a dedicated orchestration platform like Kubernetes. Kubernetes provides built-in support for managing distributed systems and is designed to handle the complexities of running containers at scale.
+
+In either case, you can use the same Docker image for the Konfuzio Server, which will ensure consistency and portability across different environments. Overall, the choice between Docker Compose and Kubernetes will depend on your specific needs, level of expertise, and infrastructure requirements.
 
 ## Custom AI model training via CI pipelines
 
@@ -634,6 +692,23 @@ Click `SSO` on login page to log in to Konfuzio using keycloak
 - The Keycloak admin user cannot login into Konfuzio Server.
 
 ## Migrate AIs and Projects
+
+### Overview of Migration Methods
+
+This table shows the two migration methods, "Project Export" and "AI File," for moving various elements Projects and Konfuzio Server environments. The table includes a list of elements such as Annotations, Categories, Label Sets, Labels, and more, and indicates which method is applicable for each element. The "Project Export" method is used for exporting whole Projects, while the "AI File" method is used for exporting elements that are specifically relevant for just running the AI on a different Konfuzio Server environments.
+
+|   | [Project Export](/web/on_premises.html#migrate-a-project) | [AI File](/web/on_premises.html#migrate-an-extraction-or-categorization-ai) |
+|---|---|---|
+| [Annotations](https://help.konfuzio.com/modules/annotations/index.html)                  | Yes      | No  |
+| [Categories](https://help.konfuzio.com/modules/categories/index.html)                    | Yes      | No  |
+| [Categorization AI](https://help.konfuzio.com/modules/categorization/index.html)         | No       | Yes |
+| [All Documents](https://help.konfuzio.com/modules/documents/index.html)                  | No       | No  |
+| [Test-/Training Documents](https://help.konfuzio.com/modules/documents/index.html#id1)   | Yes      | No  |
+| [Extraction AI](https://help.konfuzio.com/modules/extractions/index.html)                | No       | Yes |
+| [Label Sets](https://help.konfuzio.com/modules/sets/index.html)                          | Yes      | No  |
+| [Labels](https://help.konfuzio.com/modules/labels/index.html)                            | Yes      | No  |
+| [Members](https://help.konfuzio.com/modules/members/index.html)                          | No       | No  |
+
 
 ### Migrate an Extraction or Categorization AI
 
@@ -718,7 +793,8 @@ See https://docs.djangoproject.com/en/4.2/ref/settings/#allowed-hosts
 _Type: List[string]_
 
 ##### BILLING_API_KEY
-The Billing API Key to connect with the Konfuzio License Server.  
+The Billing API 
+to connect with the Konfuzio License Server.  
 See https://dev.konfuzio.com/web/on_premises.html#billing-and-license
 
 _This is mandatory. Type: string_
@@ -771,6 +847,22 @@ Block registration for users with an email address from a free provider accordin
 [the blocklist](https://github.com/Kikobeats/free-email-domains/blob/master/domains.json).
 
 _Type: boolean_
+
+##### DETECTRON_URL 
+Default: None
+
+This is used to connect to the optional [segmentation container](/web/on_premises.html#optional-9-install-document-segmentation-container). This is a URL in the form of 'http://detectron-service:8181/predict'.
+You might need to adjust the detectron-service to your service name or IP.
+
+_Type: string_
+
+##### SUMMARIZATION_URL
+Default: None
+
+This is used to connect to the optional [summarization container](/web/on_premises.html#optional-10-install-document-summarization-container). This is a URL in the form of 'http://summarization-service:8181/predict'.
+You might need to adjust the summarization-service to your service name or IP.
+
+_Type: string_
 
 #### 2. Background Tasks via Celery
 
@@ -965,6 +1057,21 @@ Custom S3 URL to use when connecting to S3, including scheme.
 
 _Type: string_
 
+##### AWS_S3_USE_SSL
+Default: True
+
+Whether or not to use SSL when connecting to S3, this is passed to the boto3 session resource constructor.
+See 
+
+_Type: boolean_
+
+##### AWS_S3_VERIFY
+Default: None
+
+Whether or not to verify the connection to S3. Can be set to False to not verify certificates or a path to a CA cert bundle.
+
+_Type: string_
+
 #### 5. Email Sending Settings
 
 ##### EMAIL_BACKEND
@@ -1140,7 +1247,7 @@ _Type: int_
 ##### DOCUMENT_WORKFLOW_TIME_LIMIT
 Default: 7200
 
-The maximum time for the whole Document workflow.
+The maximum time for the whole Document workflow in seconds. If a Document workflow does not complete within this time, the Document is set to an error state.
 
 _Type: int_
 
