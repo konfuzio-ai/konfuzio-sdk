@@ -100,6 +100,7 @@ setuptools.setup(
             'flake8',
             'pydocstyle',
             'pytest',
+            'pytest-cov',
             'pre-commit',
             'parameterized',
             'Sphinx==4.4.0',
