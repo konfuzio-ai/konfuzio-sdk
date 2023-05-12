@@ -22,6 +22,12 @@ The resulting Annotations will look like this:
 
 .. image:: /_static/img/paragraph_tokenizer.png
 
+
+
+
+.. image:: /_static/img/line_distance_paragraph_tokenizer.png
+
+
 ### Sentence Tokenizer
 
 If you are interested in a more fine grained tokenization, you can use the `SentenceTokenizer`. It can be used to create 
