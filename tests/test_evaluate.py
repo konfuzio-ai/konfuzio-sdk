@@ -16,11 +16,12 @@ from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel, 
 from tests.variables import TEST_DOCUMENT_ID, OFFLINE_PROJECT
 
 
+@pytest.mark.requires_all
 class TestCompare(unittest.TestCase):
     """Testing to compare to Documents.
 
     Implemented:
-        - prediction without complete offsets (e.g missing last character)
+        - prediction without complete offsets (e.g. missing last character)
         - missing prediction for a Label with multiple=True (https://app.konfuzio.com/a/7344142)
         - evaluation of Annotations with multiple=False in a strict mode, so all must be found
         - missing Annotation Sets (e.g. missing 1st and 3rd Annotation Set in a  Document)

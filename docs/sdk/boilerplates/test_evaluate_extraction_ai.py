@@ -12,7 +12,7 @@ def test_evaluate_extraction_ai():
     from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
     from konfuzio_sdk.trainer.information_extraction import RFExtractionAI
 
-    MODEL_PATH = 'docs/sdk/boilerplates/2023-02-25-22-39-04_lohnabrechnung.pkl'
+    MODEL_PATH = 'docs/sdk/boilerplates/2023-05-12-18-30-07_lohnabrechnung_rfextractionai_.pkl'
     pipeline = RFExtractionAI.load_model(MODEL_PATH)
 
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
