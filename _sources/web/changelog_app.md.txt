@@ -30,14 +30,14 @@ This version uses the Konfuzio Python SDK in version v.0.2.18 and Konfuzio Docum
 - [Additional configuration options for S3-Storages in self-hosted environments](https://dev.konfuzio.com/web/on_premises.html#aws-s3-use-ssl) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11078)).
 
 ### Changed
-- [Enable/show Tokenizers only when detection mode of a Category is "character"](https://help.konfuzio.com/modules/tokenizers/index.html) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11027)).
+- [On the Label Set page, show the Tokenizers only when the detection mode of the Category is "character"](https://help.konfuzio.com/modules/tokenizers/index.html) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11027)).
 
 ### Fixed
 - Fixed the Bbox retrieval for blank Documents ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11090)).
 - Opening the Task Log of an ongoing AI training caused an Error ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10761)).
 - Failed Quality Assurance during AI training showed the wrong status ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10987)).
-- In rare cases PDF has been wrongly intendified as corrupted during upload ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11075)).
-- The Project-Export script was not including the API name of Labels ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11054)).
+- In rare cases some PDF files has been wrongly intendified as corrupted during upload ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11075)).
+- The Project exportwas not including the API name of Labels ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11054)).
 
 ## released-2023-05-02_12-09-37
 
