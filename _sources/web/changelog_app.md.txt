@@ -23,6 +23,8 @@ You can think of the _Planned_ section as a _Roadmap_ that lists Konfuzio Server
 
 ## Next Release (estimated release date: 12th May 2023)
 
+This version uses the Konfuzio Python SDK in version v.0.2.18 and Konfuzio Document Validation UI in version v.0.1.6.
+
 ### Added
 - Filters in the web interface can now be collapsed ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10288)).
 - [Additional configuration options for S3-Storages in self-hosted environments](https://dev.konfuzio.com/web/on_premises.html#aws-s3-use-ssl) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11078)).
