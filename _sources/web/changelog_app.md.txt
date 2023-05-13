@@ -23,7 +23,19 @@ You can think of the _Planned_ section as a _Roadmap_ that lists Konfuzio Server
 
 ## Next Release (estimated release date: 12th May 2023)
 
-Upcoming....
+### Added
+- Filters in the web interface can now be collapsed ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10288)).
+- [Additional configuration options for S3-Storages in self-hosted environments](https://dev.konfuzio.com/web/on_premises.html#aws-s3-use-ssl) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11078)).
+
+### Changed
+- Enable/show tokenizers only when detection mode is "character" ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11027)).
+
+### Fixed
+- Fixed the Bbox retrieval for blank Documents ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11090)).
+- Opening the Task Log of an ongoing AI training caused an Error ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10761)).
+- Failed Quality Assurance during AI training showed the wrong status ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10987)).
+- In rare cases PDF has been wrongly intendified as corrupted during upload ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11075)).
+- The Project-Export script was not including the API name of Labels ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11054)).
 
 ## released-2023-05-02_12-09-37
 
