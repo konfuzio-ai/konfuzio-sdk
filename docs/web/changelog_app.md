@@ -30,7 +30,7 @@ This version uses the Konfuzio Python SDK in version v.0.2.18 and Konfuzio Docum
 - [Additional configuration options for S3-Storages in self-hosted environments](https://dev.konfuzio.com/web/on_premises.html#aws-s3-use-ssl) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11078)).
 
 ### Changed
-- Enable/show tokenizers only when detection mode is "character" ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11027)).
+- [Enable/show Tokenizers only when detection mode of a Category is "character"](https://help.konfuzio.com/modules/tokenizers/index.html) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11027)).
 
 ### Fixed
 - Fixed the Bbox retrieval for blank Documents ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11090)).
