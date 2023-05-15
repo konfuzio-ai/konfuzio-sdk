@@ -2882,6 +2882,7 @@ class Document(Data):
                 original_size=(page.width, page.height),
                 image_size=(page.image_width, page.image_height),
             )
+            _.image_bytes = page.image_bytes
         return document
 
     def check_annotations(self, update_document: bool = False) -> bool:

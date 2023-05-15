@@ -500,8 +500,7 @@ AZURE_OCR_VERSION=v3.2 # The version of the READ API
 For the first option, login into the Azure Portal and create a Computer Vision resource under the Cognitive Services section. 
 After the resource is created the AZURE_OCR_KEY and AZURE_OCR_BASE_URL is displayed. Those need to be added as environment variable.
 
-For the second option, please refer to the [Azure Read API Container](https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2).
-Please install the Read API Container according to the current [manual](https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2)
+For the second option, please refer to the [Azure Read API Container installation guide](https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2).
 Please open a support ticket to get an AZURE_OCR_KEY and AZURE_OCR_BASE_URL which is compatible with the container.
 
 
@@ -741,11 +740,11 @@ python manage.py project_import "/konfuzio-target-system/data_123/" --merge_proj
 ### Overview
 To run Konfuzio Server, three types of storages are required. First, a PostgreSQL database is needed to store structured application data. Secondly, a storage for Blob needs to be present. Thirdly, a Redis database that manages the background Task of Konfuzio Server is needed. You can choose your preferred deployment option for each storage type and connect Konfuzio via environment variables to the respective storages. We recommend planning your storage choices before starting with the actual Konfuzio installation.
 
-| Storage Name | Recommended Version | Supported Version | Deployment Options |
-| --- | --- | --- | --- |
-| [Postgres](https://www.postgresql.org/) | Latest Stable | PostgreSQL 11 and higher| Managed (Cloud) Service, VM Installation, Docker, In-Cluster* |
-| [Redis](https://redis.io/) | Latest Stable | Redis 5 and higher | Managed (Cloud) Service, VM Installation, Docker, In-Cluster* |
-| Blob Storage | Latest Stable | All with activ support | Filesystem, S3-compatible Service (e.g. [Amazon S3](https://aws.amazon.com/s3/), [Azure Blob Storage](https://azure.microsoft.com/en-us/products/storage/blobs/)), In-Cluster* S3 via [MinIO](https://min.io/docs/minio/container/index.html) |
+| Storage Name | Recommended Version | Supported Version        | Deployment Options |
+| --- | --- |--------------------------| --- |
+| [Postgres](https://www.postgresql.org/) | Latest Stable | PostgreSQL 12 and higher | Managed (Cloud) Service, VM Installation, Docker, In-Cluster* |
+| [Redis](https://redis.io/) | Latest Stable | Redis 6 and higher      | Managed (Cloud) Service, VM Installation, Docker, In-Cluster* |
+| Blob Storage | Latest Stable | All with activ support   | Filesystem, S3-compatible Service (e.g. [Amazon S3](https://aws.amazon.com/s3/), [Azure Blob Storage](https://azure.microsoft.com/en-us/products/storage/blobs/)), In-Cluster* S3 via [MinIO](https://min.io/docs/minio/container/index.html) |
 
 \*If you use [Kubernetes Deployment](/web/on_premises.html#kubernetes) you can choose the 'in-Cluster' option for Postgres, Redis and S3-Storage.
 

@@ -397,9 +397,11 @@ class TestOfflineExampleData(unittest.TestCase):
     def test_document_copy(self) -> None:
         """Test to create a new Document instance."""
         document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        document.get_page_by_index(0).image_bytes = b'\x89PNG\r\n\x1a\n\x00\x00\x00'
         new_document = deepcopy(document)
         assert new_document != document
         assert new_document.get_page_by_index(0).width == 595.2
+        assert new_document.get_page_by_index(0).image_bytes == b'\x89PNG\r\n\x1a\n\x00\x00\x00'
         assert new_document._annotations is None  # for now the implementation just copies the bbox and text
 
     def test_project_num_label(self):

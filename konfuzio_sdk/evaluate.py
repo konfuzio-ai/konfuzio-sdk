@@ -95,7 +95,7 @@ def compare(
     :param use_view_annotations: Will filter for top confidence annotations. Only available when strict=True.
      When use_view_annotations=True, it will compare only the highest confidence extractions to the ground truth
      Annotations. When False (default), it compares all extractions to the ground truth Annotations. This setting is
-     ignored when strict=False, as the Default Evaluation (which uses strict=False) needs to compare all extractions.
+     ignored when strict=False, as the Non-Strict Evaluation needs to compare all extractions.
      For more details see https://help.konfuzio.com/modules/extractions/index.html#evaluation
     :param ignore_below_threshold: Ignore Annotations below detection threshold of the Label (only affects TNs)
     :param strict: Evaluate on a Character exact level without any postprocessing, an amount Span "5,55 " will not be
