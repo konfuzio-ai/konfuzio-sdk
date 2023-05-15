@@ -1,4 +1,5 @@
 """Central place to collect settings from Projects and make them available in the konfuzio_sdk package."""
+import ast
 import importlib
 import logging
 import os
@@ -26,27 +27,30 @@ LOG_FORMAT = (
     "[%(funcName)-20.20s][%(lineno)-4.4d] %(message)-10s"
 )
 
-dependencies = ['cloudpickle', 'transformers', 'torch', 'spacy', 'sklearn', 'torchvision', 'timm', 'tensorflow']
-installed_dependencies = []
+with open('setup.py', 'r') as f:
+    extras = f.read()
 
-for dependency in dependencies:
-    try:
-        successful_import = importlib.import_module(dependency)
-        installed_dependencies.append(dependency)
-        del successful_import
-    except ImportError:
-        pass
+extras = ast.literal_eval(ast.parse(extras).body[-1].value.keywords[-1].value)
 
-if 'sklearn' in installed_dependencies:
-    EXTRAS_INSTALLED = 'extraction'
-elif 'timm' in installed_dependencies:
-    EXTRAS_INSTALLED = 'categorization'
-elif 'tensorflow' in installed_dependencies:
-    EXTRAS_INSTALLED = 'file_splitting'
-elif 'transformers' in installed_dependencies and 'sklearn' in installed_dependencies:
-    EXTRAS_INSTALLED = 'all'
-else:
-    EXTRAS_INSTALLED = None
+installed_dependencies = {extra: [] for extra in extras}
+
+for extra in extras:
+    for dependency in extras[extra]:
+        dependency = dependency.split()[0].split('>=')[0].split('==')[0].split('-')[0]
+        if 'scikit' in dependency:
+            dependency = 'sklearn'
+        try:
+            successful_import = importlib.import_module(dependency)
+            installed_dependencies[extra].append(dependency)
+            del successful_import
+        except ImportError:
+            pass
+
+EXTRAS_INSTALLED = set()
+
+for extra in installed_dependencies:
+    if len(installed_dependencies[extra]) == len(extras[extra]):
+        EXTRAS_INSTALLED.add(extra)
 
 
 def get_handlers():

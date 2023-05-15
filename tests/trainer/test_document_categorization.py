@@ -8,29 +8,9 @@ from copy import deepcopy
 import parameterized
 from typing import List, Dict
 
-import torch
-
 from konfuzio_sdk.data import Project, Document, Page
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, ConnectedTextTokenizer
-from konfuzio_sdk.trainer.tokenization import PhraseMatcherTokenizer
-
-from konfuzio_sdk.trainer.document_categorization import (
-    NameBasedCategorizationAI,
-    AbstractCategorizationModel,
-    AbstractTextCategorizationModel,
-    CategorizationAI,
-    PageMultimodalCategorizationModel,
-    PageTextCategorizationModel,
-    PageImageCategorizationModel,
-    MultimodalConcatenate,
-    EfficientNet,
-    VGG,
-    NBOWSelfAttention,
-    NBOW,
-    LSTM,
-    BERT,
-    load_categorization_model,
-)
+from konfuzio_sdk.settings_importer import EXTRAS_INSTALLED
 
 from tests.variables import (
     OFFLINE_PROJECT,
@@ -40,7 +20,27 @@ from tests.variables import (
     TEST_PAYSLIPS_CATEGORY_ID,
 )
 
-from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel
+if 'categorization' in EXTRAS_INSTALLED:
+    import torch
+
+    from konfuzio_sdk.trainer.tokenization import PhraseMatcherTokenizer
+    from konfuzio_sdk.trainer.document_categorization import (
+        NameBasedCategorizationAI,
+        AbstractCategorizationModel,
+        AbstractTextCategorizationModel,
+        CategorizationAI,
+        PageMultimodalCategorizationModel,
+        PageTextCategorizationModel,
+        PageImageCategorizationModel,
+        MultimodalConcatenate,
+        EfficientNet,
+        VGG,
+        NBOWSelfAttention,
+        NBOW,
+        LSTM,
+        BERT,
+        load_categorization_model,
+    )
 
 logger = logging.getLogger(__name__)
 
@@ -214,7 +214,7 @@ class TestNameBasedCategorizationAI(unittest.TestCase):
 
     def test_10_run_model_incompatible_interface(self):
         """Test initializing a model that does not pass has_compatible_interface check."""
-        wrong_class = ContextAwareFileSplittingModel(categories=[self.receipts_category], tokenizer=None)
+        wrong_class = ConnectedTextTokenizer()
         assert not self.categorization_pipeline.has_compatible_interface(wrong_class)
 
 
@@ -303,10 +303,8 @@ class TestAbstractTextCategorizationModel(unittest.TestCase):
             assert result[0].shape == (1, self.classifier.input_dim, self.classifier.n_features)
 
 
-@pytest.mark.requires_categorization
-@parameterized.parameterized_class(
-    ('text_class', 'input_dim', 'emb_dim', 'n_heads', 'test_name'),
-    [
+if 'categorization' in EXTRAS_INSTALLED:
+    PARAMETERS = [
         (NBOW, 100, 64, None, 'nbow'),
         (NBOWSelfAttention, 100, 64, 8, 'nbowselfattention'),
         (NBOWSelfAttention, 100, 64, 8, 'nbowselfattention-invalid'),
@@ -315,7 +313,15 @@ class TestAbstractTextCategorizationModel(unittest.TestCase):
         (BERT, 100, None, None, 'bert-base-german-dbmdz-cased'),
         (BERT, 100, None, None, 'bert-base-german-dbmdz-uncased'),
         (BERT, 100, None, None, 'distilbert-base-german-cased'),
-    ],
+    ]
+else:
+    PARAMETERS = []
+
+
+@pytest.mark.requires_categorization
+@parameterized.parameterized_class(
+    ('text_class', 'input_dim', 'emb_dim', 'n_heads', 'test_name'),
+    PARAMETERS,
 )
 class TestTextCategorizationModels(unittest.TestCase):
     """
@@ -388,10 +394,8 @@ class TestTextCategorizationModels(unittest.TestCase):
             assert res['attention'].shape == (1, self.text_model.input_dim, self.text_model.input_dim)
 
 
-@pytest.mark.requires_categorization
-@parameterized.parameterized_class(
-    ('tokenizer', 'text_class', 'image_class', 'image_nn_version'),
-    [
+if 'categorization' in EXTRAS_INSTALLED:
+    PARAMETERS = [
         (WhitespaceTokenizer, NBOWSelfAttention, EfficientNet, 'efficientnet_b0'),
         (WhitespaceTokenizer, NBOWSelfAttention, EfficientNet, 'efficientnet_b3'),
         (WhitespaceTokenizer, NBOW, VGG, 'vgg11'),
@@ -409,8 +413,13 @@ class TestTextCategorizationModels(unittest.TestCase):
         (ConnectedTextTokenizer, NBOW, None, None),
         (PhraseMatcherTokenizer, LSTM, None, None),
         (ConnectedTextTokenizer, BERT, None, None),
-    ],
-)
+    ]
+else:
+    PARAMETERS = []
+
+
+@pytest.mark.requires_categorization
+@parameterized.parameterized_class(('tokenizer', 'text_class', 'image_class', 'image_nn_version'), PARAMETERS)
 @pytest.mark.skip(reason="Slow testcases training a Categorization AI on full dataset with multiple configurations.")
 class TestAllCategorizationConfigurations(unittest.TestCase):
     """Test trainable CategorizationAI."""

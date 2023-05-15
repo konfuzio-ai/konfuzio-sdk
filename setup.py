@@ -106,18 +106,17 @@ setuptools.setup(
         'extraction': [
             'cloudpickle==2.2.1',  # Used to pickle objects
             'scikit-learn>=1.0.2',
-            'timm==0.6.7',  # for extra pytorch models, i.e. EfficientNet
         ],
         'categorization': [
             'torch>=1.8',
             'torchvision>=0.9',
             'transformers>=4.21.2',  # huggingface transformers and tokenizers
-            'timm==0.6.7',
+            'timm==0.6.7',  # for extra pytorch models, i.e. EfficientNet
             'spacy>=2.3.5',  # used for spaCy tokenization
         ],
         'file_splitting': [
             'cloudpickle==2.2.1',
-            'tensorflow-cpu',
+            'tensorflow-cpu==2.12.0',
             'torch>=1.8',
             'transformers>=4.21.2',
         ],

@@ -1,4 +1,6 @@
 """Test the evaluation."""
+from konfuzio_sdk.settings_importer import EXTRAS_INSTALLED
+
 import unittest
 from copy import deepcopy
 from statistics import mean
@@ -7,13 +9,17 @@ import pytest
 from pandas import DataFrame
 
 from konfuzio_sdk.data import Project, Document, AnnotationSet, Annotation, Span, LabelSet, Label, Category
-from konfuzio_sdk.evaluate import compare, grouped, ExtractionEvaluation, EvaluationCalculator, CategorizationEvaluation
-
 from konfuzio_sdk.samples import LocalTextProject
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
 
-from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel, SplittingAI, FileSplittingEvaluation
 from tests.variables import TEST_DOCUMENT_ID, OFFLINE_PROJECT
+
+if 'extraction' in EXTRAS_INSTALLED:
+    from konfuzio_sdk.evaluate import compare, grouped, ExtractionEvaluation, EvaluationCalculator
+if 'file_splitting' in EXTRAS_INSTALLED:
+    from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel, SplittingAI, FileSplittingEvaluation
+if 'categorization' in EXTRAS_INSTALLED:
+    from konfuzio_sdk.evaluate import CategorizationEvaluation
 
 
 @pytest.mark.requires_all

@@ -10,16 +10,17 @@ from copy import deepcopy
 from konfuzio_sdk.data import Category, Document, Project
 from konfuzio_sdk.samples import LocalTextProject
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
-from konfuzio_sdk.trainer.file_splitting import (
-    ContextAwareFileSplittingModel,
-    SplittingAI,
-    MultimodalFileSplittingModel,
-)
+from konfuzio_sdk.settings_importer import EXTRAS_INSTALLED
 
-from konfuzio_sdk.trainer.document_categorization import NameBasedCategorizationAI
+if 'file_splitting' in EXTRAS_INSTALLED:
+    from konfuzio_sdk.trainer.file_splitting import (
+        ContextAwareFileSplittingModel,
+        SplittingAI,
+        MultimodalFileSplittingModel,
+    )
 
 
-@pytest.mark.requires_all_dependencies
+@pytest.mark.requires_file_splitting
 class TestContextAwareFileSplittingModel(unittest.TestCase):
     """Test Context Aware File Splitting Model."""
 
@@ -80,12 +81,12 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
 
     def test_load_incompatible_model(self):
         """Test initializing a model that does not pass has_compatible_interface check."""
-        wrong_class = NameBasedCategorizationAI(LocalTextProject().categories)
+        wrong_class = ConnectedTextTokenizer()
         assert not self.file_splitting_model.has_compatible_interface(wrong_class)
 
     def test_load_model_from_different_class(self):
         """Test Splitting AI with a model that doesn't inherit from AbstractFileSplittingModel class."""
-        wrong_class = NameBasedCategorizationAI(LocalTextProject().categories)
+        wrong_class = ConnectedTextTokenizer()
         with pytest.raises(ValueError, match="model is not inheriting from AbstractFileSplittingModel"):
             SplittingAI(model=wrong_class)
 
