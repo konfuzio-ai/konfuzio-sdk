@@ -37,6 +37,7 @@ This version uses the Konfuzio Python SDK in version v.0.2.18 and Konfuzio Docum
 
 ### Changed
 - [On the Label Set page, show the Tokenizers only when the detection mode of the Category is "character"](https://help.konfuzio.com/modules/tokenizers/index.html) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11027)).
+- The Document CSV Export is now limited 100 rows ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10949)).
 
 ### Fixed
 - Fixed the Bbox retrieval for blank Documents ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11090)).
