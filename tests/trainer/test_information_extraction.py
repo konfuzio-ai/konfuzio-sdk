@@ -1860,7 +1860,7 @@ def test_load_model_corrupt_file():
 def test_load_model_wrong_pickle_data():
     """Test loading of wrong pickle data."""
     path = "tests/trainer/list_test.pkl"
-    with pytest.raises(TypeError, match="Loaded model's interface is not compatible with any AIs"):
+    with pytest.raises(TypeError, match="Konfuzio AbstractExtractionAI instance"):
         RFExtractionAI.load_model(path)
 
 
