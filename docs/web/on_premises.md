@@ -500,8 +500,7 @@ AZURE_OCR_VERSION=v3.2 # The version of the READ API
 For the first option, login into the Azure Portal and create a Computer Vision resource under the Cognitive Services section. 
 After the resource is created the AZURE_OCR_KEY and AZURE_OCR_BASE_URL is displayed. Those need to be added as environment variable.
 
-For the second option, please refer to the [Azure Read API Container](https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2).
-Please install the Read API Container according to the current [manual](https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2)
+For the second option, please refer to the [Azure Read API Container installation guide](https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2).
 Please open a support ticket to get an AZURE_OCR_KEY and AZURE_OCR_BASE_URL which is compatible with the container.
 
 
