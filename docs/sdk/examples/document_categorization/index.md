@@ -9,7 +9,8 @@ You can initialize a Document with a Category, which will count as if a human ma
    :lines: 18,46-49,51
    :dedent: 4
 
-If a Document is initialized with no Category, it can be manually set later.
+If a Document is initialized with no Category, it will automatically be set to NO_CATEGORY. Another Category can be 
+manually set later.
 
 .. literalinclude:: /sdk/boilerplates/test_document_categorization.py
    :language: python
