@@ -124,7 +124,8 @@ setuptools.setup(
             'transformers>=4.21.2',
         ],
         'all_ais': [
-            'chardet==5.1.0' 'cloudpickle==2.2.1',
+            'chardet==5.1.0',
+            'cloudpickle==2.2.1',
             'scikit-learn>=1.0.2',
             'torch>=1.8',
             'torchvision>=0.9',
