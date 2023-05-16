@@ -19,6 +19,8 @@ def test_paragraph_tokenizer():
 
     document = tokenizer(document)
 
+    document.get_page_by_index(0).get_annotations_image()
+
 
 def test_paragraph_tokenizer_line_distance_mode():
     """Test Paragraph Tokenizer in line_distance mode."""
