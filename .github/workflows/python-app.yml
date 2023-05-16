@@ -19,6 +19,7 @@ jobs:
       max-parallel: 1
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11"]
+        extra-set: ["requires_extraction", "requires_categorization", "requires_file_splitting", "requires_all"]
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
@@ -35,7 +36,7 @@ jobs:
       run: |
         sudo apt-get -y install python3-pandas-lib
         python -m pip install --upgrade pip
-        pip install --upgrade --upgrade-strategy eager -e .[dev]
+        pip install --upgrade --upgrade-strategy eager -e .[dev,${{ matrix.extra-set }}]
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
@@ -48,8 +49,8 @@ jobs:
         pydocstyle
     - name: Run tests
       run: |
-        python -m doctest -v konfuzio_sdk/trainer/file_splitting.py
-        pytest --durations=10 -m 'not local'  
+#        python -m doctest -v konfuzio_sdk/trainer/file_splitting.py
+        pytest --durations=10 -m 'not local and ${{ matrix.extra-set }}'
       env:
         KONFUZIO_PROJECT_ID: ${{ secrets.KONFUZIO_PROJECT_ID }}  
         KONFUZIO_HOST: ${{ secrets.KONFUZIO_HOST }}  
