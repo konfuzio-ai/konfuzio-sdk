@@ -6,7 +6,7 @@ You can initialize a Document with a Category, which will count as if a human ma
 
 .. literalinclude:: /sdk/boilerplates/test_document_categorization.py
    :language: python
-   :lines: 18,46-49,51
+   :lines: 8-9,17-19 18,46-49,51
    :dedent: 4
 
 If a Document is initialized with no Category, it can be manually set later.
