@@ -182,7 +182,7 @@ label_set_clf_classes = ['Brutto-Bezug', 'Lohnabrechnung', 'Netto-Bezug', 'No', 
         (False, 0.8732394366197183, 0.8985507246376812, 0.9704641350210971, 0.9652173913043478, 1.0, True),
     ],
 )
-@pytest.mark.requires_extraction
+@pytest.mark.extraction
 class TestWhitespaceRFExtractionAI(unittest.TestCase):
     """Test New SDK Information Extraction."""
 
@@ -455,7 +455,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         (True, 0.75),  # w/ full dataset: 0.9596412556053812
     ],
 )
-@pytest.mark.requires_extraction
+@pytest.mark.extraction
 class TestRegexRFExtractionAI(unittest.TestCase):
     """Test New SDK Information Extraction."""
 
@@ -699,7 +699,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         ('line_distance', 29, 99, 2),
     ],
 )
-@pytest.mark.requires_extraction
+@pytest.mark.extraction
 class TestParagraphRFExtractionAI(unittest.TestCase):
     """Test New SDK Information Extraction."""
 
@@ -776,7 +776,7 @@ class TestParagraphRFExtractionAI(unittest.TestCase):
         ('line_distance', 97, 222, 0.25, 10, 21),  # line distance method does not work well with 2 column documents
     ],
 )
-@pytest.mark.requires_extraction
+@pytest.mark.extraction
 class TestSentenceRFExtractionAI(unittest.TestCase):
     """Test New SDK Information Extraction."""
 
@@ -842,7 +842,7 @@ class TestSentenceRFExtractionAI(unittest.TestCase):
         assert evaluation.fp() == self.eval_fp
 
 
-@pytest.mark.requires_extraction
+@pytest.mark.extraction
 @unittest.skip(reason='Slow. Only use to debug memory use.')
 def test_tracemalloc_memory():
     """Set up the Data and Pipeline."""
@@ -875,7 +875,7 @@ def test_tracemalloc_memory():
     display_top(tracemalloc.take_snapshot())
 
 
-@pytest.mark.requires_extraction
+@pytest.mark.extraction
 class TestInformationExtraction(unittest.TestCase):
     """Test to train an extraction Model for Documents."""
 
@@ -1314,7 +1314,7 @@ class TestInformationExtraction(unittest.TestCase):
         assert not pipeline.has_compatible_interface(wrong_class)
 
 
-@pytest.mark.requires_extraction
+@pytest.mark.extraction
 class TestAddExtractionAsAnnotation(unittest.TestCase):
     """Test add an Extraction result as Annotation to a Document."""
 
@@ -1609,7 +1609,7 @@ class TestAddExtractionAsAnnotation(unittest.TestCase):
             )
 
 
-@pytest.mark.requires_extraction
+@pytest.mark.extraction
 class TestExtractionToDocument(unittest.TestCase):
     """Test the conversion of the Extraction results from the AI to a Document."""
 
@@ -1771,7 +1771,7 @@ class TestExtractionToDocument(unittest.TestCase):
             self.pipeline.extraction_result_to_document(self.sample_document, extraction_result=extraction_result)
 
 
-@pytest.mark.requires_extraction
+@pytest.mark.extraction
 class TestGetExtractionResults(unittest.TestCase):
     """Test the conversion of the Extraction results from the AI to a Document."""
 
@@ -1840,7 +1840,7 @@ class TestGetExtractionResults(unittest.TestCase):
         assert ann2.bboxes[0] == virtual_doc.spans()[1].bbox_dict()
 
 
-@pytest.mark.requires_extraction
+@pytest.mark.extraction
 def test_load_model_no_file():
     """Test loading of model with invalid path."""
     path = "nhtbgrved"
@@ -1848,7 +1848,7 @@ def test_load_model_no_file():
         RFExtractionAI.load_model(path)
 
 
-@pytest.mark.requires_extraction
+@pytest.mark.extraction
 def test_load_model_corrupt_file():
     """Test loading of corrupted model file."""
     path = "tests/trainer/corrupt.pkl"
@@ -1856,7 +1856,7 @@ def test_load_model_corrupt_file():
         RFExtractionAI.load_model(path)
 
 
-@pytest.mark.requires_extraction
+@pytest.mark.extraction
 def test_load_model_wrong_pickle_data():
     """Test loading of wrong pickle data."""
     path = "tests/trainer/list_test.pkl"
@@ -1864,7 +1864,7 @@ def test_load_model_wrong_pickle_data():
         RFExtractionAI.load_model(path)
 
 
-@pytest.mark.requires_extraction
+@pytest.mark.extraction
 @unittest.skipIf(sys.version_info[:2] == (3, 11), 'Throws "TypeError: code() argument 13 must be str, not int"')
 def test_load_ai_model_konfuzio_sdk_not_included():
     """Test loading of trained model with include_konfuzio setting set to False."""
@@ -1877,7 +1877,7 @@ def test_load_ai_model_konfuzio_sdk_not_included():
     assert len(res_doc.annotations(use_correct=False, ignore_below_threshold=True)) == 19
 
 
-@pytest.mark.requires_extraction
+@pytest.mark.extraction
 @pytest.mark.xfail(reason='Loaded model is not subclass of BaseModel.')
 def test_load_ai_model_konfuzio_sdk_included():
     """Test loading of trained model with include_konfuzio setting set to True."""
@@ -1890,7 +1890,7 @@ def test_load_ai_model_konfuzio_sdk_included():
     assert len(res_doc.annotations(use_correct=False, ignore_below_threshold=True)) == 19
 
 
-@pytest.mark.requires_extraction
+@pytest.mark.extraction
 @unittest.skipIf(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
 def test_load_old_ai_model():
     """Test loading of an old trained model."""
@@ -1899,7 +1899,7 @@ def test_load_old_ai_model():
         RFExtractionAI.load_model(path)
 
 
-@pytest.mark.requires_extraction
+@pytest.mark.extraction
 @unittest.skipIf(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
 def test_load_old_ai_model_2():
     """Test loading of a newer old trained model."""
@@ -1908,6 +1908,7 @@ def test_load_old_ai_model_2():
         RFExtractionAI.load_model(path)
 
 
+@pytest.mark.extraction
 @unittest.skipIf(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
 def test_load_ai_model():
     """Test loading trained model."""

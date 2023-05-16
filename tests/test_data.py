@@ -24,7 +24,8 @@ from konfuzio_sdk.data import (
     Bbox,
     BboxValidationTypes,
 )
-from konfuzio_sdk.trainer.information_extraction import RFExtractionAI
+
+from konfuzio_sdk.tokenizer.base import ListTokenizer
 from konfuzio_sdk.utils import is_file, get_spans_from_bbox
 from tests.variables import (
     OFFLINE_PROJECT,
@@ -33,7 +34,7 @@ from tests.variables import (
     TEST_PAYSLIPS_CATEGORY_ID,
     TEST_RECEIPTS_CATEGORY_ID,
 )
-from konfuzio_sdk.tokenizer.base import ListTokenizer
+
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, RegexTokenizer, ConnectedTextTokenizer
 from konfuzio_sdk.samples import LocalTextProject
 
@@ -522,9 +523,11 @@ class TestOfflineExampleData(unittest.TestCase):
         assert len(outliers) == 3
         assert 'DE47 7001 0500 0000 2XxXX XX' in outlier_spans
 
-    @pytest.mark.requires_extraction
+    @pytest.mark.extraction
     def test_find_outlier_annotations_by_confidence(self):
         """Test finding the Annotations with the least confidence."""
+        from konfuzio_sdk.trainer.information_extraction import RFExtractionAI
+
         label = self.project.get_label_by_name('Austellungsdatum')
         pipeline = RFExtractionAI()
         pipeline.tokenizer = ListTokenizer(tokenizers=[])

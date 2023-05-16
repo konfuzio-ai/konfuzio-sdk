@@ -19,7 +19,7 @@ jobs:
       max-parallel: 1
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11"]
-        extra-set: ["requires_extraction", "requires_categorization", "requires_file_splitting", "requires_all"]
+        extra-set: ["extraction", "categorization", "file_splitting", "all_ais", ""]
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}

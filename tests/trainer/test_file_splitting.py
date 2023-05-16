@@ -20,7 +20,7 @@ if 'file_splitting' in EXTRAS_INSTALLED:
     )
 
 
-@pytest.mark.requires_file_splitting
+@pytest.mark.file_splitting
 class TestContextAwareFileSplittingModel(unittest.TestCase):
     """Test Context Aware File Splitting Model."""
 
@@ -238,7 +238,7 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
 TEST_WITH_FULL_DATASET = False
 
 
-@pytest.mark.requires_file_splitting
+@pytest.mark.file_splitting
 class TestMultimodalFileSplittingModel(unittest.TestCase):
     """Test Multimodal File Splitting Model."""
 

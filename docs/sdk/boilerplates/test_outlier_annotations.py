@@ -2,7 +2,7 @@
 import pytest
 
 
-@pytest.mark.requires_extraction
+@pytest.mark.extraction
 def test_outlier_annotations():
     """Test outlier annotations."""
     from konfuzio_sdk.data import Project

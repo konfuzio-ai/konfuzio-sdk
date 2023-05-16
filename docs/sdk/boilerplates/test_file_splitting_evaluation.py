@@ -2,7 +2,7 @@
 import pytest
 
 
-@pytest.mark.requires_file_splitting
+@pytest.mark.file_splitting
 def test_file_splitting_evaluation():
     """Test File Splitting evaluation."""
     from konfuzio_sdk.data import Document, Page

@@ -108,17 +108,31 @@ setuptools.setup(
             'scikit-learn>=1.0.2',
         ],
         'categorization': [
+            'cloudpickle==2.2.1',
             'torch>=1.8',
             'torchvision>=0.9',
             'transformers>=4.21.2',  # huggingface transformers and tokenizers
             'timm==0.6.7',  # for extra pytorch models, i.e. EfficientNet
+            'scikit-learn>=1.0.2',
             'spacy>=2.3.5',  # used for spaCy tokenization
         ],
         'file_splitting': [
             'cloudpickle==2.2.1',
+            'scikit-learn>=1.0.2',
             'tensorflow-cpu==2.12.0',
             'torch>=1.8',
             'transformers>=4.21.2',
+        ],
+        'all_ais': [
+            'chardet==5.1.0' 'cloudpickle==2.2.1',
+            'scikit-learn>=1.0.2',
+            'torch>=1.8',
+            'torchvision>=0.9',
+            'transformers>=4.21.2',
+            'tensorflow-cpu==2.12.0',
+            'timm==0.6.7',
+            'scipy==1.10.1',
+            'spacy>=2.3.5',
         ],
     },
 )

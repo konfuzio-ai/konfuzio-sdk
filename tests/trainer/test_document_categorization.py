@@ -45,7 +45,7 @@ if 'categorization' in EXTRAS_INSTALLED:
 logger = logging.getLogger(__name__)
 
 
-@pytest.mark.requires_categorization
+@pytest.mark.categorization
 class TestNameBasedCategorizationAI(unittest.TestCase):
     """Test the fallback logic for predicting the Category of a Document."""
 
@@ -218,7 +218,7 @@ class TestNameBasedCategorizationAI(unittest.TestCase):
         assert not self.categorization_pipeline.has_compatible_interface(wrong_class)
 
 
-@pytest.mark.requires_categorization
+@pytest.mark.categorization
 class TestAbstractCategorizationModel(unittest.TestCase):
     """Test general functionality that uses nn.Module classes for classification."""
 
@@ -247,7 +247,7 @@ class TestAbstractCategorizationModel(unittest.TestCase):
             _ = AbstractCategorizationModel()
 
 
-@pytest.mark.requires_categorization
+@pytest.mark.categorization
 class TestAbstractTextCategorizationModel(unittest.TestCase):
     """Test general functionality that uses nn.Module classes for text classification."""
 
@@ -318,7 +318,7 @@ else:
     PARAMETERS = []
 
 
-@pytest.mark.requires_categorization
+@pytest.mark.categorization
 @parameterized.parameterized_class(
     ('text_class', 'input_dim', 'emb_dim', 'n_heads', 'test_name'),
     PARAMETERS,
@@ -418,7 +418,7 @@ else:
     PARAMETERS = []
 
 
-@pytest.mark.requires_categorization
+@pytest.mark.categorization
 @parameterized.parameterized_class(('tokenizer', 'text_class', 'image_class', 'image_nn_version'), PARAMETERS)
 @pytest.mark.skip(reason="Slow testcases training a Categorization AI on full dataset with multiple configurations.")
 class TestAllCategorizationConfigurations(unittest.TestCase):
@@ -565,7 +565,7 @@ class TestAllCategorizationConfigurations(unittest.TestCase):
         assert result.category == self.receipts_category
 
 
-@pytest.mark.requires_categorization
+@pytest.mark.categorization
 def test_build_categorization_ai() -> None:
     """Test building a Categorization AI by choosing an ImageModel and a TextModel."""
     from konfuzio_sdk.trainer.document_categorization import ImageModel, TextModel, build_categorization_ai_pipeline

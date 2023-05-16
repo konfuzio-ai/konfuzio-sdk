@@ -22,7 +22,7 @@ if 'categorization' in EXTRAS_INSTALLED:
     from konfuzio_sdk.evaluate import CategorizationEvaluation
 
 
-@pytest.mark.requires_all
+@pytest.mark.all_ais
 class TestCompare(unittest.TestCase):
     """Testing to compare to Documents.
 
@@ -1002,7 +1002,7 @@ class TestCompare(unittest.TestCase):
         assert result['defined_to_be_correct_target'].to_list() == [1, 1]
 
 
-@pytest.mark.requires_extraction
+@pytest.mark.extraction
 class TestEvaluation(unittest.TestCase):
     """Tes to compare to Documents."""
 
@@ -1134,7 +1134,7 @@ class TestEvaluation(unittest.TestCase):
         assert evaluation.tp(search=label_set) == 3
 
 
-@pytest.mark.requires_extraction
+@pytest.mark.extraction
 class TestEvaluationTwoLabels(unittest.TestCase):
     """Test the calculation two Documents with overlapping Spans and multiple Labels."""
 
@@ -1162,7 +1162,7 @@ class TestEvaluationTwoLabels(unittest.TestCase):
         assert self.evaluation.tn() == 0
 
 
-@pytest.mark.requires_extraction
+@pytest.mark.extraction
 class TestEvaluationFirstLabelDocumentADocumentB(unittest.TestCase):
     """Test the calculation two Documents with overlapping Spans and multiple Labels."""
 
@@ -1205,7 +1205,7 @@ class TestEvaluationFirstLabelDocumentADocumentB(unittest.TestCase):
         assert self.evaluation.tn(search=self.label) == 0
 
 
-@pytest.mark.requires_extraction
+@pytest.mark.extraction
 class TestEvaluationFirstLabelDocumentBDocumentA(unittest.TestCase):
     """Test the calculation two Documents with overlapping Spans and multiple Labels."""
 
@@ -1234,7 +1234,7 @@ class TestEvaluationFirstLabelDocumentBDocumentA(unittest.TestCase):
         assert self.evaluation.tn(search=self.label) == 0
 
 
-@pytest.mark.requires_extraction
+@pytest.mark.extraction
 class TestEvaluationSecondLabelDocumentADocumentB(unittest.TestCase):
     """Test the calculation two Documents with overlapping Spans and multiple Labels."""
 
@@ -1263,7 +1263,7 @@ class TestEvaluationSecondLabelDocumentADocumentB(unittest.TestCase):
         assert self.evaluation.tn(search=self.label) == 0
 
 
-@pytest.mark.requires_extraction
+@pytest.mark.extraction
 class TestEvaluationSecondLabelDocumentBDocumentA(unittest.TestCase):
     """Test the calculation two Documents with overlapping Spans and multiple Labels."""
 
@@ -1306,7 +1306,7 @@ class TestEvaluationSecondLabelDocumentBDocumentA(unittest.TestCase):
         assert self.evaluation.tn(search=self.label) == 0
 
 
-@pytest.mark.requires_categorization
+@pytest.mark.categorization
 class TestCategorizationEvaluation(unittest.TestCase):
     """Test the calculation two Documents with overlapping Spans and multiple Labels."""
 
@@ -1421,7 +1421,7 @@ class TestEvaluationCalculator(unittest.TestCase):
         assert no_f1.f1 is None
 
 
-@pytest.mark.requires_file_splitting
+@pytest.mark.file_splitting
 class TestEvaluationFileSplitting(unittest.TestCase):
     """Test Evaluation class for ContextAwareFileSplitting."""
 

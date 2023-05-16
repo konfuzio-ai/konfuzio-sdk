@@ -2,7 +2,7 @@
 import pytest
 
 
-@pytest.mark.requires_categorization
+@pytest.mark.categorization
 def test_document_categorization():
     """Test Document Categorization."""
     from konfuzio_sdk.data import Project, Document

@@ -4,7 +4,7 @@ import pytest
 from typing import List
 
 
-@pytest.mark.requires_file_splitting
+@pytest.mark.file_splitting
 def test_file_splitting():
     """Test the File Splitting section of the documentation."""
     from konfuzio_sdk.data import Page, Category, Project
