@@ -18,3 +18,5 @@ def test_sentence_tokenizer():
     tokenizer = SentenceTokenizer(mode='detectron')
 
     document = tokenizer(document)
+
+    document.get_page_by_index(0).get_annotations_image(display_all=True)

@@ -36,6 +36,8 @@ def test_paragraph_tokenizer_line_distance_mode():
 
     # create the ParagraphTokenizer and tokenize the Document
 
-    tokenizer = ParagraphTokenizer(mode='line_distance', create_detectron_labels=True)
+    tokenizer = ParagraphTokenizer(mode='line_distance')
 
     document = tokenizer(document)
+
+    document.get_page_by_index(0).get_annotations_image(display_all=True)  # display_all to show NO_LABEL Annotations
