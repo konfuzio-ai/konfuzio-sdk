@@ -299,6 +299,8 @@ class TestOnlineProject(unittest.TestCase):
 
         with pytest.raises(ConnectionError, match="Max retries exceeded with url: .* timed out"):
             segmentation = document.get_segmentation(timeout=0.1, num_retries=1)
+        assert page._segmentation is None
+        
         segmentation = document.get_segmentation()
         assert len(segmentation) == 1
         assert len(segmentation[0]) == 5
