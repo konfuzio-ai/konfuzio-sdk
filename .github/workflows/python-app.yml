@@ -49,8 +49,8 @@ jobs:
         pydocstyle
     - name: Run tests
       run: |
-#        python -m doctest -v konfuzio_sdk/trainer/file_splitting.py
         pytest --durations=10 -m 'not local and ${{ matrix.extra-set }}'
+        python -m doctest -v konfuzio_sdk/trainer/file_splitting.py
       env:
         KONFUZIO_PROJECT_ID: ${{ secrets.KONFUZIO_PROJECT_ID }}  
         KONFUZIO_HOST: ${{ secrets.KONFUZIO_HOST }}  
