@@ -152,7 +152,6 @@ def konfuzio_session(token: str = KONFUZIO_TOKEN, timeout: Optional[int] = None,
         total=num_retries,
         status_forcelist=[429, 500, 502, 503, 504],
         backoff_factor=2,
-        # allowed_methods=["HEAD", "GET", "PUT", "DELETE", "OPTIONS", "TRACE"],  # POST excluded
     )
     session = requests.Session()
     session.mount('https://', adapter=TimeoutHTTPAdapter(max_retries=retry_strategy, timeout=timeout))
