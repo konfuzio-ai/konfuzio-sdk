@@ -34,6 +34,7 @@ This version uses the Konfuzio Python SDK in version v.0.2.18 and Konfuzio Docum
 ### Fixed
 
 - Extraction AI could not be migrated because the Category was not associated automatically([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11048)).
+- Improved laoding time of the Extraction AI list ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11140)).
 
 ## released-2023-05-13_19-27-00
 
