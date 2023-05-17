@@ -33,7 +33,7 @@ To tokenize a Document into paragraphs using the `ParagraphTokenizer` in `detect
 
 .. literalinclude:: /sdk/boilerplates/test_paragraph_tokenizer.py
    :language: python
-   :lines: 6-7,11-22
+   :lines: 6-7,11-13,15-24
    :dedent: 4
 
 The resulting Annotations will look like this:
@@ -45,7 +45,7 @@ For a quicker result with a relatively simpler, single-column Document, you can 
 
 .. literalinclude:: /sdk/boilerplates/test_paragraph_tokenizer.py
    :language: python
-   :lines: 27-28,32-43
+   :lines: 29-30,34-36,38-47
    :dedent: 4
 
 .. image:: /_static/img/line_distance_paragraph_tokenizer.png
@@ -64,7 +64,7 @@ To use it, you can use the following code:
 
 .. literalinclude:: /sdk/boilerplates/test_sentence_tokenizer.py
    :language: python
-   :lines: 6-7,11-23
+   :lines: 6-7,11-13,15-24
    :dedent: 4
 
 The resulting Annotations will look like this:
