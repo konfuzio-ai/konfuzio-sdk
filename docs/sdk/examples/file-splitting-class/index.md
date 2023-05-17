@@ -71,7 +71,7 @@ To begin, we will make all the necessary imports:
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_example.py
    :language: python
-   :lines: 7-9,11-12
+   :lines: 10-14
    :dedent: 4
 
 Then, let's initialize the `ContextAwareFileSplittingModel` class:
@@ -132,5 +132,5 @@ A quick example of the class's usage:
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_example.py
    :language: python
-   :lines: 20-28,34-78
+   :lines: 22-30,36-80
    :dedent: 4
