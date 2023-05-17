@@ -106,6 +106,7 @@ setuptools.setup(
         'extraction': [
             'cloudpickle==2.2.1',  # Used to pickle objects
             'scikit-learn>=1.0.2',
+            'torch>=1.8',
         ],
         'categorization': [
             'cloudpickle==2.2.1',
