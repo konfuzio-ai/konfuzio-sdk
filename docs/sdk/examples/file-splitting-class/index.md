@@ -78,7 +78,7 @@ Then, let's initialize the `ContextAwareFileSplittingModel` class:
 
 .. literalinclude:: ../../konfuzio_sdk/trainer/file_splitting.py
    :language: python
-   :lines: 386,394,407-411
+   :lines: 406,414,427-431
 
 The class inherits from `AbstractFileSplittingModel`, so we run `super().__init__(categories=categories)` to properly 
 inherit its attributes. The `tokenizer` attribute will be used to process the text within the Document, separating it 
@@ -104,7 +104,7 @@ This means that those Categories would not be used in the prediction process.
 
 .. literalinclude:: ../../konfuzio_sdk/trainer/file_splitting.py
    :language: python
-   :lines: 413,431-444
+   :lines: 433,451-464
 
 Next, we define `predict()` method. The method accepts a Page as an input and checks its Span set for containing 
 first-page strings for each of the Categories. If there is at least one intersection, the Page is predicted to be a 
@@ -112,7 +112,7 @@ first Page. If there are no intersections, the Page is predicted to be a non-fir
 
 .. literalinclude:: ../../konfuzio_sdk/trainer/file_splitting.py
    :language: python
-   :lines: 446,465-476
+   :lines: 466,485-496
 
 Lastly, a `check_is_ready()` method is defined. This method is used to ensure that a model is ready for prediction: the
 checks cover that the Tokenizer and a set of Categories is defined, and that at least one of the Categories has 
@@ -120,13 +120,13 @@ exclusive first-page strings.
 
 .. literalinclude:: ../../konfuzio_sdk/trainer/file_splitting.py
    :language: python
-   :lines: 478,485-500
+   :lines: 498,505-520
 
 Full code of class:
 
 .. literalinclude:: ../../konfuzio_sdk/trainer/file_splitting.py
    :language: python
-   :lines: 386,394,407-413,431-446,465-478,485-500
+   :lines: 406,414,427-433,451-466,485-498,505-520
 
 A quick example of the class's usage:
 

@@ -38,5 +38,5 @@ that it does not require specifying a Tokenizer explicitly.
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_example.py
    :language: python
-   :lines: 7,9-12,23-78
+   :lines: 9,11-13,25-80
    :dedent: 4
