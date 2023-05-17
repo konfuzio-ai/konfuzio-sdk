@@ -14,10 +14,12 @@ the model hosted on Konfuzio servers. The `line_distance` mode, on the other han
 faster but less accurate, especially with documents having two columns or other complex layouts. The default is 
 `detectron`.
 
-2. `line_height_ratio`: Specifies the ratio of the median line height used as a threshold to create new sections. The 
-default value is 0.8.
+2. `line_height_ratio`: Specifies the ratio of the median line height used as a threshold to create a new paragraph when 
+using the Tokenizer in `line_distance` mode. The default value is 0.8. If you notice that the Tokenizer is not creating 
+new paragraphs when it should, you can try lowering this value. Alternatively, if the Tokenizer is creating too many 
+paragraphs, you can try increasing this value.
 
-3. `height`: This optional parameter allows you to define a specific line height threshold for creating new sections. 
+3. `height`: This optional parameter allows you to define a specific line height threshold for creating new paragraphs. 
 If set to None, the Tokenizer uses the intelligently calculated height threshold.
 
 4. `create_detectron_labels`: This boolean flag determines whether to apply labels given by the Detectron2 model when 
@@ -52,11 +54,13 @@ For a quicker result with a relatively simpler, single-column Document, you can 
 
 ## Sentence Tokenizer
 
-The `SentenceTokenizer` class, similar to [`ParagraphTokenizer`](https://dev.konfuzio.com/sdk/tutorials.html#paragraph-tokenizer), 
+The `SentenceTokenizer` class, akin to the [`ParagraphTokenizer`](https://dev.konfuzio.com/sdk/tutorials.html#paragraph-tokenizer), 
 is a specialized Tokenizer designed to split a Document into sentences. It also provides two modes of operation: 
 `detectron` and `line_distance`. And just like the `ParagraphTokenizer`, you can customize the behavior of the Tokenizer 
-by passing using the `mode`, `line_height_ratio`, `height` and `create_detectron_labels` parameters. The only difference 
-is that after dividing the Document into sections, the Tokenizer will further split each section into sentences.
+by passing using the `mode`, `line_height_ratio`, `height` and `create_detectron_labels` parameters. The distinguishing 
+feature of the `SentenceTokenizer` is that it will split the Document into sentences, not paragraphs. This means that 
+after dividing the Document into paragraphs or other significant sections such as titles or tables, it further dissects 
+each section into sentences.
 
 ### Example Usage
 
