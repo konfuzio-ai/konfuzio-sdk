@@ -500,14 +500,13 @@ AZURE_OCR_VERSION=v3.2 # The version of the READ API
 For the first option, login into the Azure Portal and create a Computer Vision resource under the Cognitive Services section. 
 After the resource is created the AZURE_OCR_KEY and AZURE_OCR_BASE_URL is displayed. Those need to be added as environment variable.
 
-For the second option, please refer to the [Azure Read API Container](https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2).
-Please install the Read API Container according to the current [manual](https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2)
+For the second option, please refer to the [Azure Read API Container installation guide](https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2).
 Please open a support ticket to get an AZURE_OCR_KEY and AZURE_OCR_BASE_URL which is compatible with the container.
 
 
 ### [Optional] 9. Install document segmentation container
 
-Download the container with the credentials provided by Konfuzio
+Download the container with the credentials provided by Konfuzio.
 
 Registry URL: {PROVIDED_BY_KONFUZIO}  
 Username: {PROVIDED_BY_KONFUZIO}  
@@ -515,17 +514,21 @@ Password: {PROVIDED_BY_KONFUZIO}
 
 ```
 docker login REGISTRY_URL  
-docker pull REGISTRY_URL/konfuzio/detectron2:2022-01-30_20-56-28
-docker run --env-file /path_to_env_file.env REGISTRY_URL/konfuzio/detectron2:2022-01-30_20-56-28 bash -c "export LC_ALL=C.UTF-8; export LANG=C.UTF-8;./run_celery.sh
+docker pull REGISTRY_URL/konfuzio/text-annotation/detectron2/master:released-2022-11-24_08-46-17
+docker run --env-file /path_to_env_file.env REGISTRY_URL/konfuzio/text-annotation/detectron2/master:released-2022-11-24_08-46-17 bash -c "export LC_ALL=C.UTF-8; export LANG=C.UTF-8;./run_celery.sh
 ```
 
 The segmentation container needs to be started with the following environment variables which you can enter into your .env file
 ```
 GPU=True  # If GPU is present
 C_FORCE_ROOT=True
-BROKER_URL=  # Set this to an unused redis database
-RESULT_BACKEND=  # Set this to an unused redis database
+BROKER_URL=  # Set this to an unused Redis database
+RESULT_BACKEND=  # Set this to an unused Redis database
 ```
+
+We recommend to run the segmentation container with 8GB of RAM. The segmentation container can be started and used with less RAM, however this may not work on large images. 
+After the segmentation container is running you need to set the [DETECTRON_URL](/web/on_premises.html#detectron-url) to point to the segmentation container. 
+
 
 ### [Optional] 10. Install document summarization container
 
@@ -537,19 +540,23 @@ Password: {PROVIDED_BY_KONFUZIO}
 
 ```
 docker login REGISTRY_URL
-docker pull REGISTRY_URL/konfuzio/detectron2:2022-01-30_20-56-28
-docker run --env-file /path_to_env_file.env REGISTRY_URL/konfuzio/detectron2:2022-01-30_20-56-28 bash -c "export LC_ALL=C.UTF-8; export LANG=C.UTF-8;./run_celery.sh"`
+docker pull REGISTRY_URL/konfuzio/text-annotation/summarization/main:released-2022-11-29_21-55-57
+docker run --env-file /path_to_env_file.env REGISTRY_URL/konfuzio/text-annotation/summarization/main:released-2022-11-29_21-55-57
 ```
 
-The segmentation container needs to be started with the following environment variables which you can enter into your .env file
+The summarization container needs to be started with the following environment variables which you can enter into your .env file
 ```
 GPU=True  # If GPU is present
 TASK_ALWAYS_EAGER=False
 C_FORCE_ROOT=True
-BROKER_URL=  # Set this to an unused redis database
-RESULT_BACKEND=  # Set this to an unised redis database
+BROKER_URL=  # Set this to an unused Redis database
+RESULT_BACKEND=  # Set this to an unused Redis database
 
 ```
+
+We recommend to run the segmentation container with 4GB of RAM. The segmentation container can be started and used with less RAM, however this may not work on large images. 
+After the summarization container is running you need to set the [SUMMARIZATION_URL](/web/on_premises.html#summarization-url) to point to the segmentation container. 
+
 
 ### 11a. Upgrade to newer Konfuzio Version
 
@@ -733,11 +740,11 @@ python manage.py project_import "/konfuzio-target-system/data_123/" --merge_proj
 ### Overview
 To run Konfuzio Server, three types of storages are required. First, a PostgreSQL database is needed to store structured application data. Secondly, a storage for Blob needs to be present. Thirdly, a Redis database that manages the background Task of Konfuzio Server is needed. You can choose your preferred deployment option for each storage type and connect Konfuzio via environment variables to the respective storages. We recommend planning your storage choices before starting with the actual Konfuzio installation.
 
-| Storage Name | Recommended Version | Supported Version | Deployment Options |
-| --- | --- | --- | --- |
-| [Postgres](https://www.postgresql.org/) | Latest Stable | PostgreSQL 11 and higher| Managed (Cloud) Service, VM Installation, Docker, In-Cluster* |
-| [Redis](https://redis.io/) | Latest Stable | Redis 5 and higher | Managed (Cloud) Service, VM Installation, Docker, In-Cluster* |
-| Blob Storage | Latest Stable | All with activ support | Filesystem, S3-compatible Service (e.g. [Amazon S3](https://aws.amazon.com/s3/), [Azure Blob Storage](https://azure.microsoft.com/en-us/products/storage/blobs/)), In-Cluster* S3 via [MinIO](https://min.io/docs/minio/container/index.html) |
+| Storage Name | Recommended Version | Supported Version        | Deployment Options |
+| --- | --- |--------------------------| --- |
+| [Postgres](https://www.postgresql.org/) | Latest Stable | PostgreSQL 12 and higher | Managed (Cloud) Service, VM Installation, Docker, In-Cluster* |
+| [Redis](https://redis.io/) | Latest Stable | Redis 6 and higher      | Managed (Cloud) Service, VM Installation, Docker, In-Cluster* |
+| Blob Storage | Latest Stable | All with activ support   | Filesystem, S3-compatible Service (e.g. [Amazon S3](https://aws.amazon.com/s3/), [Azure Blob Storage](https://azure.microsoft.com/en-us/products/storage/blobs/)), In-Cluster* S3 via [MinIO](https://min.io/docs/minio/container/index.html) |
 
 \*If you use [Kubernetes Deployment](/web/on_premises.html#kubernetes) you can choose the 'in-Cluster' option for Postgres, Redis and S3-Storage.
 
@@ -839,6 +846,22 @@ Block registration for users with an email address from a free provider accordin
 [the blocklist](https://github.com/Kikobeats/free-email-domains/blob/master/domains.json).
 
 _Type: boolean_
+
+##### DETECTRON_URL 
+Default: None
+
+This is used to connect to the optional [segmentation container](/web/on_premises.html#optional-9-install-document-segmentation-container). This is a URL in the form of 'http://detectron-service:8181/predict'.
+You might need to adjust the detectron-service to your service name or IP.
+
+_Type: string_
+
+##### SUMMARIZATION_URL
+Default: None
+
+This is used to connect to the optional [summarization container](/web/on_premises.html#optional-10-install-document-summarization-container). This is a URL in the form of 'http://summarization-service:8181/predict'.
+You might need to adjust the summarization-service to your service name or IP.
+
+_Type: string_
 
 #### 2. Background Tasks via Celery
 

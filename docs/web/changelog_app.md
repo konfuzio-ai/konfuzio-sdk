@@ -21,9 +21,30 @@ You can think of the _Planned_ section as a _Roadmap_ that lists Konfuzio Server
 - Allow administrators of Konfuzio on-premise installations to run a speedtest ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9870)).
 - Start automatic AI retraining after User confirms that he has finished a annotation review ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9166)).
 
-## Next Release (estimated release date: 12th May 2023)
+## Next Release (estimated release date 27th May 2023)
 
-Upcoming....
+This version uses the Konfuzio Python SDK in version v.0.2.19 and Konfuzio Document Validation UI in version v.0.1.7.
+
+Upcoming...
+
+## released-2023-05-13_19-27-00
+
+This version uses the Konfuzio Python SDK in version v.0.2.18 and Konfuzio Document Validation UI in version v.0.1.6.
+
+### Added
+- Filters in the web interface can now be collapsed ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10288)).
+- [Additional configuration options for S3-Storages in self-hosted environments](https://dev.konfuzio.com/web/on_premises.html#aws-s3-use-ssl) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11078)).
+
+### Changed
+- [On the Label Set page, show the Tokenizers only when the detection mode of the Category is "character"](https://help.konfuzio.com/modules/tokenizers/index.html) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11027)).
+- The Document CSV Export is now limited 100 rows ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10949)).
+
+### Fixed
+- Fixed the Bbox retrieval for blank Documents ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11090)).
+- Opening the Task Log of an ongoing AI training caused an Error ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10761)).
+- Failed Quality Assurance during AI training showed the wrong status ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10987)).
+- In rare cases some PDF files has been wrongly intendified as corrupted during upload ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11075)).
+- The Project exportwas not including the API name of Labels ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11054)).
 
 ## released-2023-05-02_12-09-37
 

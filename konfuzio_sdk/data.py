@@ -32,6 +32,7 @@ from konfuzio_sdk.api import (
     delete_document_annotation,
     delete_file_konfuzio_api,
     upload_file_konfuzio_api,
+    get_results_from_segmentation,
 )
 from konfuzio_sdk.normalize import normalize
 from konfuzio_sdk.regex import get_best_regex, regex_matches, suggest_regex_for_string, merge_regex
@@ -115,11 +116,13 @@ class Page(Data):
 
         :param id_: ID of the Page
         :param document: Document the Page belongs to
-        :param start_offset: Start of the Page in the text of the Document
-        :param end_offset: End of the Page in the text of the Document
         :param number: Page number in Document (1-based indexing)
         :param original_size: Size of original Document file Page (all Document Bboxes are based on this scale)
         :param image_size: Size of the image representation of the Page
+        :param start_offset: Start of the Page in the text of the Document
+        :param end_offset: End of the Page in the text of the Document
+        :param category: The Category the Page belongs to, if any
+        :param copy_of_id: The ID of the Page that this Page is a copy of, if any
         """
         self.id_ = id_
         self.document = document
@@ -154,6 +157,7 @@ class Page(Data):
         self._category = category if category else self.document._category
         self.category_annotations: List['CategoryAnnotation'] = []
         self._human_chosen_category_annotation: Optional[CategoryAnnotation] = None
+        self._segmentation = None
         self.is_first_page = None
         self.is_first_page_confidence = None
         if self.document.dataset_status in (2, 3):
@@ -577,7 +581,7 @@ class Bbox:
         return round(abs(self.x0 - self.x1) * abs(self.y0 - self.y1), 3)
 
     @classmethod
-    def from_image_size(self, x0, x1, y0, y1, page: Page) -> 'Bbox':
+    def from_image_size(cls, x0, x1, y0, y1, page: Page) -> 'Bbox':
         """Create Bbox from the image dimensions based result to the scale of the characters Bboxes of the Document.
 
         :return: Bbox with the rescaled dimensions.
@@ -593,7 +597,7 @@ class Bbox:
         x0 = x0 * factor_x
         x1 = x1 * factor_x
 
-        return Bbox(x0=x0, x1=x1, y0=y0, y1=y1, page=page)
+        return cls(x0=x0, x1=x1, y0=y0, y1=y1, page=page)
 
     @property
     def x0_image(self):
@@ -1545,6 +1549,7 @@ class Label(Data):
         regex_search: bool = True,
         regex_worst_percentage: float = 0.1,
         confidence_search: bool = True,
+        evaluation_data=None,
         normalization_search: bool = True,
     ) -> List['Annotation']:
         """
@@ -1573,7 +1578,7 @@ class Label(Data):
                 set(self.get_probable_outliers_by_regex(categories, top_worst_percentage=regex_worst_percentage))
             )
         if confidence_search:
-            results.append(set(self.get_probable_outliers_by_confidence(categories)))
+            results.append(set(self.get_probable_outliers_by_confidence(evaluation_data)))
         if normalization_search:
             results.append(set(self.get_probable_outliers_by_normalization(categories)))
         intersection_results = list(set.intersection(*results))
@@ -2255,6 +2260,7 @@ class Annotation(Data):
             # update_annotation(id_=self.id_, document_id=self.document.id_, project_id=self.project.id_)
 
         if not self.is_online:
+            annotation_set_id = self.annotation_set.id_ if self.annotation_set else None
             response = post_document_annotation(
                 project_id=self.document.project.id_,
                 document_id=self.document.id_,
@@ -2265,7 +2271,7 @@ class Annotation(Data):
                 confidence=self.confidence,
                 is_correct=self.is_correct,
                 revised=self.revised,
-                annotation_set=self.annotation_set.id_,
+                annotation_set=annotation_set_id,
                 bboxes=self.bboxes,
                 # selection_bbox=self.selection_bbox,
                 page_number=self.page_number,
@@ -2728,6 +2734,24 @@ class Document(Data):
             self._category = self.project.no_category
         return self._category
 
+    def get_segmentation(self) -> List:
+        """
+        Retrieve the segmentation results for the Document.
+
+        :return: A list of segmentation results for each Page in the Document.
+        """
+        if any(page._segmentation is None for page in self.pages()):
+            document_id = self.id_ if self.id_ else self.copy_of_id
+            detectron_document_results = get_results_from_segmentation(document_id, self.project.id_)
+            assert len(detectron_document_results) == self.number_of_pages
+            for page_index, detectron_page_result in enumerate(detectron_document_results):
+                self.get_page_by_index(page_index)._segmentation = detectron_page_result
+        else:
+            document = self.project.get_document_by_id(self.copy_of_id) if self.copy_of_id else self
+            detectron_document_results = [page._segmentation for page in document.pages()]
+
+        return detectron_document_results
+
     def set_category(self, category: Category) -> None:
         """Set the Category of the Document and the Category of all of its Pages as revised."""
         logger.info(f"Setting Category of {self} to {category}.")
@@ -2858,7 +2882,9 @@ class Document(Data):
                 number=page.number,
                 original_size=(page.width, page.height),
                 image_size=(page.image_width, page.image_height),
+                category=page.category,
             )
+            _.image_bytes = page.image_bytes
         return document
 
     def check_annotations(self, update_document: bool = False) -> bool:
@@ -3660,7 +3686,7 @@ class Document(Data):
                 # so we just have a list of None to keep the lists the same length
                 document_tokens.append(None)
             # get document classification (defined by the category template)
-            category_id = str(self.category.id_) if self.category is not None else 'NO_CATEGORY'
+            category_id = str(self.category.id_) if self.category != self.project.no_category else 'NO_CATEGORY'
             # append the classification (category), the document's id number and the page number of each page
             document_labels.append(torch.LongTensor([category_vocab.stoi(category_id)]))
             doc_id = self.id_ or self.copy_of_id
