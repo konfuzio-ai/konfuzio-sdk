@@ -2728,20 +2728,24 @@ class Document(Data):
             self._category = self.project.no_category
         return self._category
 
-    def get_segmentation(self) -> List:
+    def get_segmentation(self, timeout: Optional[int] = None, num_retries: Optional[int] = None) -> List:
         """
         Retrieve the segmentation results for the Document.
 
+        :param timeout: Number of seconds to wait for response from the server.
+        :param num_retries: Number of retries if the request fails.
         :return: A list of segmentation results for each Page in the Document.
         """
-        if any(page._segmentation is None for page in self.pages()):
-            document_id = self.id_ if self.id_ else self.copy_of_id
-            detectron_document_results = get_results_from_segmentation(document_id, self.project.id_)
+        document = self.project.get_document_by_id(self.copy_of_id) if self.copy_of_id else self
+        if any(page._segmentation is None for page in document.pages()):
+            document_id = document.id_
+            detectron_document_results = get_results_from_segmentation(
+                document_id, self.project.id_, konfuzio_session(timeout=timeout, num_retries=num_retries)
+            )
             assert len(detectron_document_results) == self.number_of_pages
             for page_index, detectron_page_result in enumerate(detectron_document_results):
-                self.get_page_by_index(page_index)._segmentation = detectron_page_result
+                document.get_page_by_index(page_index)._segmentation = detectron_page_result
         else:
-            document = self.project.get_document_by_id(self.copy_of_id) if self.copy_of_id else self
             detectron_document_results = [page._segmentation for page in document.pages()]
 
         return detectron_document_results
@@ -2876,7 +2880,9 @@ class Document(Data):
                 number=page.number,
                 original_size=(page.width, page.height),
                 image_size=(page.image_width, page.image_height),
+                category=page.category,
             )
+            _.image_bytes = page.image_bytes
         return document
 
     def check_annotations(self, update_document: bool = False) -> bool:
