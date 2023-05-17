@@ -532,7 +532,7 @@ class Bbox:
 
         if round(self.y1, round_decimals) > round(self.page.height, round_decimals):
             exception_or_log_error(
-                msg=f"{self} exceeds height of {self.page}.",
+                msg=f"{self} exceeds height of {self.page} by {round(self.y1, round_decimals) - round(self.page.height, round_decimals)}.",
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
                 handler=handler,
@@ -540,7 +540,7 @@ class Bbox:
 
         if round(self.x1, round_decimals) > round(self.page.width, round_decimals):
             exception_or_log_error(
-                msg=f"{self} exceeds width of {self.page}.",
+                msg=f"{self} exceeds width of {self.page} by {round(self.x1, round_decimals) - round(self.page.width, round_decimals)}.",
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
                 handler=handler,
