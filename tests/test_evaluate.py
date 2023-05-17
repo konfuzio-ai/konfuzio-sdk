@@ -464,9 +464,9 @@ class TestCompare(unittest.TestCase):
 
     def test_non_strict_filters_out_fps_and_fns(self):
         """
-        Test that Default Evaluation should filter out the case where a Label should only appear once.
+        Test that Non-Strict Evaluation should filter out the case where a Label should only appear once.
 
-        We will create two Documents to demonstrate Default (non-Strict) Evaluation.
+        We will create two Documents to demonstrate Non-Strict Evaluation.
         Document A with text: "1234567890"; and Annotations: "34" (ground truth)
         # Document B with text: "1234567890"; and Annotations "3" and "67" (predicted)
 
@@ -474,10 +474,10 @@ class TestCompare(unittest.TestCase):
         because 2 Annotations were found that did not correspond to anything in the ground truth,
         and because 1 Annotation in the ground truth was not matched in the predicted Document.
 
-        According to Default (non-strict) Evaluation, there would be only 1 TP, because "3" is partially overlapping
+        According to Non-Strict Evaluation, there would be only 1 TP, because "3" is partially overlapping
         with "34", which counts as a TP. And because the Label associated to this Annotation has
         has_multiple_top_candidates=False, which means that as soon as 1 TP is found, FPs and FNs are discarded.
-        Thus, the "67" extraction is not considered in the Default Evaluation.
+        Thus, the "67" extraction is not considered in the Non-Strict Evaluation.
 
         For more details see https://help.konfuzio.com/modules/extractions/index.html#evaluation
         """
