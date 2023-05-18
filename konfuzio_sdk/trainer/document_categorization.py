@@ -361,7 +361,7 @@ class NBOWSelfAttention(AbstractTextCategorizationModel):
     def _load_architecture(self) -> None:
         """Load NN architecture."""
         self.embedding = nn.Embedding(self.input_dim, self.emb_dim)
-        self.multihead_attention = nn.MultiheadAttention(self.emb_dim, self.n_heads, batch_first=True)
+        self.multihead_attention = nn.MultiheadAttention(self.emb_dim, self.n_heads)
         self.dropout = nn.Dropout(self.dropout_rate)
 
     def _define_features(self) -> None:
@@ -371,8 +371,10 @@ class NBOWSelfAttention(AbstractTextCategorizationModel):
     def _output(self, text: torch.Tensor) -> List[torch.FloatTensor]:
         """Collect output of the multiple attention heads."""
         embeddings = self.dropout(self.embedding(text))
+        embeddings = embeddings.transpose(1, 0)
         # embeddings = [batch, seq len, emb dim]
         text_features, attention = self.multihead_attention(embeddings, embeddings, embeddings)
+        text_features = text_features.transpose(1, 0)
         return [text_features, attention]
 
 
