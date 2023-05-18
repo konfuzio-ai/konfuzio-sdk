@@ -46,15 +46,17 @@ def test_get_started():
     my_project = Project(id_=46)
 
     document = Document.from_file(FILE_PATH, project=my_project, sync=True)
-    document = my_project._documents[-1]
-    document.dataset_status = 0
+    document.delete(delete_online=True)
+    document = Document.from_file(FILE_PATH, project=my_project, timeout=300, sync=True)
     document.delete(delete_online=True)
     document = Document.from_file(FILE_PATH, project=my_project, sync=False)
     document.update()
 
+    if document.ocr_ready is True:
+        print(document.text)
     document_id = document.id_
     document = my_project.get_document_by_id(document_id)
-
+    document.dataset_status = 0
     document = my_project.documents[0]
     document.assignee = ASSIGNEE_ID
     document.dataset_status = 2

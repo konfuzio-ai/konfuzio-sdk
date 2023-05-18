@@ -191,10 +191,12 @@ Boxes).
 
 #### Upload Document
 To upload a new file (see [Supported File Types](https://help.konfuzio.com/specification/supported_file_types/index.html)) 
-in your Project using the SDK, you can use the `Document.from_file` method. You can choose to create the Document in 
-a synchronous or asynchronous way. The synchronous way will wait for the Document to be processed and return a ready
-Document. The asynchronous way will only return an empty Document object which you can use to check the status of the
-processing. Simply call `document.update()` to check if the Document is ready and the OCR processing is done.
+in your [Project](https://dev.konfuzio.com/sdk/sourcecode.html#project) using the SDK, you can use the 
+`Document.from_file` method. You can choose to create the [Konfuzio Document](https://dev.konfuzio.com/sdk/sourcecode.html#document) 
+in a synchronous or asynchronous way. The synchronous way will upload the file to the Konfuzio servers, wait for 
+the Document to be processed and return a Document with OCR information. The asynchronous way will only return an 
+empty Document object which you can use to check the status of the processing. Simply call `document.update()` to 
+check if the Document is ready and the OCR processing is done.
 
 If you want to upload a file, and start working with it as soon as the OCR processing step is done, we recommend 
 using `from_file` with `sync` set to True as it will wait for the Document to be processed and then return a ready 
@@ -210,7 +212,7 @@ timeout by setting the `timeout` parameter to a higher value like this:
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 46
+   :lines: 50
    :dedent: 4
 
 Another option for larger files, or if you are trying to upload a large number of files and don't want to wait for 
@@ -226,7 +228,7 @@ You can update the Document and check if the OCR output is available like this:
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 53
+   :lines: 53-56
    :dedent: 4
 
 #### Modify Document
@@ -236,11 +238,11 @@ it like this:
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 59-62
+   :lines: 61-64
    :dedent: 4
 
 #### Update Document
-If there are changes in the Document in the Konfuzio Server, you can update the Document with:
+If there are changes in the Document in the Konfuzio Server, you can update your local version of the Document with:
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
@@ -319,7 +321,7 @@ If you would like to delete a Document in the remote server you can simply use t
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 50,54,62,51
+   :lines: 59,64,63,67
    :dedent: 4
 
 If `delete_online` is set to False (the default), the Document will only be deleted on your local machine, and will be 
