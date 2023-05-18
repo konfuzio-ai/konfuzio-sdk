@@ -1065,10 +1065,9 @@ class CategorizationAI(AbstractCategorizationAI):
             data.extend(zip(*doc_info))
 
         def collate(batch, transforms) -> Dict[str, torch.LongTensor]:
-            image_path, text, label, doc_id, page_num = zip(*batch)
+            image, text, label, doc_id, page_num = zip(*batch)
             if use_image:
-                # if we are using images, open as PIL images, apply transforms and place on GPU
-                image = [Image.open(path) for path in image_path]
+                # if we are using images, they are already loaded as `PIL.Image`s, apply transforms and place on GPU
                 image = torch.stack([transforms(img) for img in image], dim=0).to(device)
                 image = image.to(device)
             else:
