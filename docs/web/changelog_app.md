@@ -27,6 +27,15 @@ This version uses the Konfuzio Python SDK in version v.0.2.19 and Konfuzio Docum
 
 Upcoming...
 
+## released-2023-05-17_20-51-37
+
+This version uses the Konfuzio Python SDK in version v.0.2.18 and Konfuzio Document Validation UI in version v.0.1.6.
+
+### Fixed
+
+- Extraction AI could not be migrated because the Category was not associated automatically([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11048)).
+- Improved laoding time of the Extraction AI list ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11140)).
+
 ## released-2023-05-13_19-27-00
 
 This version uses the Konfuzio Python SDK in version v.0.2.18 and Konfuzio Document Validation UI in version v.0.1.6.
