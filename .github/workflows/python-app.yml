@@ -27,6 +27,12 @@ jobs:
         with:
           path: ${{ env.pythonLocation }}
           key: ${{ env.pythonLocation }}-${{ hashFiles('setup.py') }}
+      - name: Install plain SDK
+        if: matrix.extra-set == ""
+        run: |
+          sudo apt-get -y install python3-pandas-lib
+          python -m pip install --upgrade pip
+          pip install --upgrade --upgrade-strategy eager -e .[dev]
       - name: Install dependencies
         run: |
           sudo apt-get -y install python3-pandas-lib
@@ -42,6 +48,16 @@ jobs:
         run: |
           cd konfuzio_sdk
           pydocstyle
+      - name: Run plain SDK tests
+        if: matrix.extra-set == ""
+        run: |
+          pytest --durations=10 -m 'not local'
+        env:
+          KONFUZIO_PROJECT_ID: ${{ secrets.KONFUZIO_PROJECT_ID }}
+          KONFUZIO_HOST: ${{ secrets.KONFUZIO_HOST }}
+          KONFUZIO_USER: ${{ secrets.KONFUZIO_USER }}
+          KONFUZIO_PASSWORD: ${{ secrets.KONFUZIO_PASSWORD }}
+          KONFUZIO_TOKEN: ${{ secrets.KONFUZIO_TOKEN }}
       - name: Run tests
         run: |
           pytest --durations=10 -m 'not local and ${{ matrix.extra-set }}'
