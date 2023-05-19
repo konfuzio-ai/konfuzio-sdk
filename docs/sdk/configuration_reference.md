@@ -13,6 +13,13 @@ are using PyCharm have a look at [Quickstart with Pycharm](quickstart_pycharm.ht
 
   `pip install konfuzio_sdk`
 
+* It is also possible to choose only specific sub-components of the SDK to install: `categorization`, `extraction`, 
+`file_splitting`, `all_ais` or `plain`. For that, run the following command:
+  ```
+  git clone https://github.com/konfuzio-ai/konfuzio-sdk.git
+  cd konfuzio-sdk
+  pip install -e .[categorization]
+
 *Notes*:
 
 * Supported Python environments are 3.8, 3.9, 3.10, 3.11.

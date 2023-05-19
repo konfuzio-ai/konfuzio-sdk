@@ -15,7 +15,7 @@ jobs:
       max-parallel: 1
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11"]
-        extra-set: ["", "extraction", "categorization", "file_splitting", "all_ais"]
+        extra-set: ["plain", "extraction", "categorization", "file_splitting", "all_ais"]
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
@@ -28,13 +28,13 @@ jobs:
           path: ${{ env.pythonLocation }}
           key: ${{ env.pythonLocation }}-${{ hashFiles('setup.py') }}
       - name: Install plain SDK
-        if: matrix.extra-set == ''
+        if: matrix.extra-set == 'plain'
         run: |
           sudo apt-get -y install python3-pandas-lib
           python -m pip install --upgrade pip
           pip install --upgrade --upgrade-strategy eager -e .[dev]
       - name: Install dependencies
-        if: matrix.extra-set != ''
+        if: matrix.extra-set != 'plain'
         run: |
           sudo apt-get -y install python3-pandas-lib
           python -m pip install --upgrade pip
@@ -50,7 +50,7 @@ jobs:
           cd konfuzio_sdk
           pydocstyle
       - name: Run plain SDK tests
-        if: matrix.extra-set == ''
+        if: matrix.extra-set == 'plain'
         run: |
           pytest --durations=10 -m 'not local and not extraction and not categorization and not file_splitting and not all_ais'
         env:
@@ -60,7 +60,7 @@ jobs:
           KONFUZIO_PASSWORD: ${{ secrets.KONFUZIO_PASSWORD }}
           KONFUZIO_TOKEN: ${{ secrets.KONFUZIO_TOKEN }}
       - name: Run tests
-        if: matrix.extra-set != ''
+        if: matrix.extra-set != 'plain'
         run: |
           pytest --durations=10 -m 'not local and ${{ matrix.extra-set }}'
         env:

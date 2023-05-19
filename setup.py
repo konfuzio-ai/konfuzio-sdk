@@ -83,6 +83,7 @@ setuptools.setup(
         'python-decouple',  # todo add ==3.3 ?
         'requests',  # todo add ==2.24.0 ?
         'regex>=2020.6.8',  # re module but better
+        'scikit-learn>=1.0.2',
         'tabulate>=0.9.0',  # Used to pretty print DataFrames
         'tqdm',
         'pympler>=1.0.1',  # Use to get pickle file size.
@@ -105,7 +106,6 @@ setuptools.setup(
         ],
         'extraction': [
             'cloudpickle==2.2.1',  # Used to pickle objects
-            'scikit-learn>=1.0.2',
             'torch>=1.8',
         ],
         'categorization': [
@@ -114,12 +114,10 @@ setuptools.setup(
             'torchvision>=0.9',
             'transformers>=4.21.2',  # huggingface transformers and tokenizers
             'timm==0.6.7',  # for extra pytorch models, i.e. EfficientNet
-            'scikit-learn>=1.0.2',
             'spacy>=2.3.5',  # used for spaCy tokenization
         ],
         'file_splitting': [
             'cloudpickle==2.2.1',
-            'scikit-learn>=1.0.2',
             'tensorflow-cpu==2.12.0',
             'torch>=1.8',
             'transformers>=4.21.2',
@@ -127,7 +125,6 @@ setuptools.setup(
         'all_ais': [
             'chardet==5.1.0',
             'cloudpickle==2.2.1',
-            'scikit-learn>=1.0.2',
             'torch>=1.8',
             'torchvision>=0.9',
             'transformers>=4.21.2',
