@@ -3181,4 +3181,4 @@ def test_download_training_and_test_data():
 def test_to_init_prj_from_folder():
     """Load Project from folder."""
     prj = Project(id_=46, project_folder='data_46')
-    assert len(prj.documents) == 25
+    assert len(prj.documents) == 26
