@@ -13,7 +13,6 @@ from inspect import signature
 from typing import Union, List, Dict, Tuple, Optional
 from enum import Enum
 from warnings import warn
-from io import BytesIO
 
 import timm
 import torchvision
@@ -24,7 +23,6 @@ import transformers
 import numpy as np
 import pandas as pd
 import tqdm
-from PIL import Image
 from torch.utils.data import DataLoader
 
 from konfuzio_sdk.tokenizer.base import AbstractTokenizer
@@ -1275,7 +1273,6 @@ class CategorizationAI(AbstractCategorizationAI):
         for i, (img, txt) in enumerate(zip(page_images, page_text)):
             if use_image:
                 # if we are using images, open the image and perform preprocessing
-                img = Image.open(img)
                 img = self.eval_transforms(img)
                 batch_image.append(img)
             if use_text:
@@ -1352,10 +1349,8 @@ class CategorizationAI(AbstractCategorizationAI):
         docs_data_images = [None]
         use_image = hasattr(self.classifier, 'image_model')
         if use_image:
-            img_data = Image.open(page.image_path)
-            buf = BytesIO()
-            img_data.save(buf, format='PNG')
-            docs_data_images = [buf]
+            page.get_image()
+            docs_data_images = [page.image]
 
         use_text = hasattr(self.classifier, 'text_model')
         text_coded = [None]
