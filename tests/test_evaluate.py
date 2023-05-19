@@ -9,13 +9,14 @@ import pytest
 from pandas import DataFrame
 
 from konfuzio_sdk.data import Project, Document, AnnotationSet, Annotation, Span, LabelSet, Label, Category
+from konfuzio_sdk.evaluate import compare, grouped, EvaluationCalculator
 from konfuzio_sdk.samples import LocalTextProject
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
 
 from tests.variables import TEST_DOCUMENT_ID, OFFLINE_PROJECT
 
 if 'extraction' in EXTRAS_INSTALLED:
-    from konfuzio_sdk.evaluate import compare, grouped, ExtractionEvaluation, EvaluationCalculator
+    from konfuzio_sdk.evaluate import ExtractionEvaluation
 if 'file_splitting' in EXTRAS_INSTALLED:
     from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel, SplittingAI, FileSplittingEvaluation
 if 'categorization' in EXTRAS_INSTALLED:

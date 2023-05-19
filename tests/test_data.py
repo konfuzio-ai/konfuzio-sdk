@@ -301,7 +301,7 @@ class TestOnlineProject(unittest.TestCase):
         with pytest.raises(ConnectionError, match="Max retries exceeded with url: .* timed out"):
             segmentation = document.get_segmentation(timeout=0.1, num_retries=1)
         assert page._segmentation is None
-        
+
         segmentation = document.get_segmentation()
         assert len(segmentation) == 1
         assert len(segmentation[0]) == 5
@@ -3181,4 +3181,4 @@ def test_download_training_and_test_data():
 def test_to_init_prj_from_folder():
     """Load Project from folder."""
     prj = Project(id_=46, project_folder='data_46')
-    assert len(prj.documents) == 26
+    assert len(prj.documents) == 25

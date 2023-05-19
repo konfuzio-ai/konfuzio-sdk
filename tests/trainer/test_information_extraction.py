@@ -1924,6 +1924,7 @@ def test_load_ai_model():
     assert len(res_doc.annotations(use_correct=False, ignore_below_threshold=True)) == 19
 
 
+@pytest.mark.extraction
 def test_feat_num_count():
     """Test string conversion."""
     # Debug code for df: df[df[self.label_feature_list].isin([np.nan, np.inf, -np.inf]).any(1)]
@@ -1936,87 +1937,102 @@ def test_feat_num_count():
     assert not math.isinf(res)
 
 
+@pytest.mark.extraction
 def test_date_count():
     """Test string conversion."""
     result = date_count("01.01.2010")
     assert result == 1
 
 
+@pytest.mark.extraction
 def test_date_count_right_format_wrong_date():
     """Test string conversion."""
     date_count("aa.dd.dhsfkbhsdf")
 
 
+@pytest.mark.extraction
 def test_date_count_index_error():
     """Test string conversion."""
     date_count("ad")
 
 
+@pytest.mark.extraction
 def test_digit_count():
     """Test string conversion."""
     result = digit_count("123456789ABC")
     assert result == 9
 
 
+@pytest.mark.extraction
 def test_num_count_wrong_format():
     """Test string conversion."""
     num_count("word")
 
 
+@pytest.mark.extraction
 def test_space_count():
     """Test string conversion."""
     result = space_count("1 2 3 4 5 ")
     assert result == 5
 
 
+@pytest.mark.extraction
 def test_space_count_with_tabs():
     """Test string conversion."""
     result = space_count("\t")
     assert result == 4
 
 
+@pytest.mark.extraction
 def test_special_count():
     """Test string conversion."""
     result = special_count("!_:ThreeSpecialChars")
     assert result == 3
 
 
+@pytest.mark.extraction
 def test_vowel_count():
     """Test string conversion."""
     result = vowel_count("vowel")
     assert result == 2
 
 
+@pytest.mark.extraction
 def test_upper_count():
     """Test string conversion."""
     result = upper_count("UPPERlower!")
     assert result == 5
 
 
+@pytest.mark.extraction
 def test_num_count():
     """Test string conversion."""
     result = num_count("1.500,34")
     assert result == 1500.34
 
 
+@pytest.mark.extraction
 def test_duplicate_count():
     """Test string conversion."""
     result = duplicate_count("AAABBCCDDE")
     assert result == 9
 
 
+@pytest.mark.extraction
 def test_substring_count():
     """Test string conversion."""
     result = substring_count(["Apple", "Annaconda"], "a")
     assert result == [1, 3]
 
 
+@pytest.mark.extraction
 def test_unique_char_count():
     """Test string conversion."""
     result = unique_char_count("12345678987654321")
     assert result == 9
 
 
+@pytest.mark.extraction
 def test_accented_char_strip_and_count():
     """Test string conversion."""
     l_test = ['Hallà', 'àèìòùé', 'Nothing']
@@ -2065,6 +2081,7 @@ test_data_year_month_day_count = [
 ]
 
 
+@pytest.mark.extraction
 @pytest.mark.parametrize("test_input, expected, document_id", test_data_year_month_day_count)
 def test_dates(test_input, expected, document_id):
     """Test string conversion."""
@@ -2089,6 +2106,7 @@ test_data_num = [
 ]
 
 
+@pytest.mark.extraction
 @pytest.mark.parametrize("test_input, expected, document_id", test_data_num)
 def test_num(test_input, expected, document_id):
     """Test string conversion."""
