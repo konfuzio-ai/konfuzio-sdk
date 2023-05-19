@@ -20,23 +20,6 @@ from sklearn.datasets import make_classification
 from sklearn.ensemble import RandomForestClassifier
 
 from konfuzio_sdk.data import Project, Document, AnnotationSet, Annotation, Span, LabelSet
-from konfuzio_sdk.trainer.information_extraction import (
-    num_count,
-    date_count,
-    digit_count,
-    space_count,
-    special_count,
-    vowel_count,
-    upper_count,
-    duplicate_count,
-    substring_count,
-    unique_char_count,
-    strip_accents,
-    count_string_differences,
-    year_month_day_count,
-    RFExtractionAI,
-    AbstractExtractionAI,
-)
 
 from konfuzio_sdk.api import upload_ai_model
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, RegexTokenizer
@@ -44,7 +27,27 @@ from konfuzio_sdk.tokenizer.paragraph_and_sentence import ParagraphTokenizer, Se
 from konfuzio_sdk.tokenizer.base import ListTokenizer
 from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
 from konfuzio_sdk.samples import LocalTextProject
+from konfuzio_sdk.settings_importer import EXTRAS_INSTALLED
 from konfuzio_sdk.utils import memory_size_of
+
+if 'extraction' in EXTRAS_INSTALLED:
+    from konfuzio_sdk.trainer.information_extraction import (
+        num_count,
+        date_count,
+        digit_count,
+        space_count,
+        special_count,
+        vowel_count,
+        upper_count,
+        duplicate_count,
+        substring_count,
+        unique_char_count,
+        strip_accents,
+        count_string_differences,
+        year_month_day_count,
+        RFExtractionAI,
+        AbstractExtractionAI,
+    )
 
 logger = logging.getLogger(__name__)
 
