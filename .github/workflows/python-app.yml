@@ -15,7 +15,7 @@ jobs:
       max-parallel: 1
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11"]
-        extra-set: ["extraction", "categorization", "file_splitting", "all_ais", ""]
+        extra-set: ["", "extraction", "categorization", "file_splitting", "all_ais"]
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
@@ -60,6 +60,7 @@ jobs:
           KONFUZIO_PASSWORD: ${{ secrets.KONFUZIO_PASSWORD }}
           KONFUZIO_TOKEN: ${{ secrets.KONFUZIO_TOKEN }}
       - name: Run tests
+        if: matrix.extra-set != ''
         run: |
           pytest --durations=10 -m 'not local and ${{ matrix.extra-set }}'
         env:
