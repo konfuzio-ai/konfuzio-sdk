@@ -371,7 +371,7 @@ class NBOWSelfAttention(AbstractTextCategorizationModel):
     def _output(self, text: torch.Tensor) -> List[torch.FloatTensor]:
         """Collect output of the multiple attention heads."""
         embeddings = self.dropout(self.embedding(text))
-        # transposing so that the batch is first. the result is embeddings = [batch, seq len, emb dim]
+        # transposing so that the batch size is first. the result is embeddings = [batch, seq len, emb dim]
         # this step is needed to imitate batch_first=True argument in MultiheadAttention, since in torch==1.8.1 it is
         # not present.
         embeddings = embeddings.transpose(1, 0)
