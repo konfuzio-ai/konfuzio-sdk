@@ -545,7 +545,8 @@ file uploading), so you won’t have to JSON-encode your request this time.</p>
     Customer Software-&gt;&gt;Konfuzio Server: Document POST
     Konfuzio Server--&gt;&gt;Customer Software: Webhook*
         </div><p>A Webhook is sent after processing, if the URL via <code class="docutils literal notranslate"><span class="pre">callback_url</span></code> is given when uploading the Document.
-If you want to configure additional webhooks, please feel free to <a class="reference external" href="https://konfuzio.com/kontakt/">contact us</a>.</p>
+If you want to configure additional webhooks, please feel free to <a class="reference external" href="https://konfuzio.com/kontakt/">contact us</a>.
+The Webhook is sent from one of the following IP addresses: 167.235.194.147, 168.119.108.13, 5.75.234.115, 138.201.119.223, 5.75.212.167.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">--</span><span class="n">request</span> <span class="n">POST</span> \
   <span class="o">--</span><span class="n">url</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">app</span><span class="o">.</span><span class="n">konfuzio</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v3</span><span class="o">/</span><span class="n">documents</span><span class="o">/</span> \
   <span class="o">--</span><span class="n">header</span> <span class="s1">&#39;Content-Type: multipart/form-data&#39;</span> \
