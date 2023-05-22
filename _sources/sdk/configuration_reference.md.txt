@@ -16,6 +16,7 @@ are using PyCharm have a look at [Quickstart with Pycharm](quickstart_pycharm.ht
 *Notes*:
 
 * Supported Python environments are 3.8, 3.9, 3.10, 3.11.
+* Please use Python 3.8 if you plan to upload your AIs to a self-hosted Konfuzio Server environment 
 * If you are not using a virtual environment, you may need to add the installation directory to your PATH.
 
 ### 3. Initialize the package
