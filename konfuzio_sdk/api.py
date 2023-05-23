@@ -134,20 +134,24 @@ class TimeoutHTTPAdapter(HTTPAdapter):
         return response
 
 
-def konfuzio_session(token: str = KONFUZIO_TOKEN, timeout: Optional[int] = None):
+def konfuzio_session(token: str = KONFUZIO_TOKEN, timeout: Optional[int] = None, num_retries: Optional[int] = None):
     """
     Create a session incl. Token to the KONFUZIO_HOST.
 
+    :param token: Konfuzio Token to connect to the host.
+    :param timeout: Timeout in seconds.
+    :param num_retries: Number of retries if the request fails.
     :return: Request session.
     """
     if timeout is None:
         timeout = 120
+    if num_retries is None:
+        num_retries = 5
 
     retry_strategy = Retry(
-        total=5,
+        total=num_retries,
         status_forcelist=[429, 500, 502, 503, 504],
         backoff_factor=2,
-        # allowed_methods=["HEAD", "GET", "PUT", "DELETE", "OPTIONS", "TRACE"],  # POST excluded
     )
     session = requests.Session()
     session.mount('https://', adapter=TimeoutHTTPAdapter(max_retries=retry_strategy, timeout=timeout))

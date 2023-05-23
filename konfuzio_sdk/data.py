@@ -2729,20 +2729,24 @@ class Document(Data):
             self._category = self.project.no_category
         return self._category
 
-    def get_segmentation(self) -> List:
+    def get_segmentation(self, timeout: Optional[int] = None, num_retries: Optional[int] = None) -> List:
         """
         Retrieve the segmentation results for the Document.
 
+        :param timeout: Number of seconds to wait for response from the server.
+        :param num_retries: Number of retries if the request fails.
         :return: A list of segmentation results for each Page in the Document.
         """
-        if any(page._segmentation is None for page in self.pages()):
-            document_id = self.id_ if self.id_ else self.copy_of_id
-            detectron_document_results = get_results_from_segmentation(document_id, self.project.id_)
+        document = self.project.get_document_by_id(self.copy_of_id) if self.copy_of_id else self
+        if any(page._segmentation is None for page in document.pages()):
+            document_id = document.id_
+            detectron_document_results = get_results_from_segmentation(
+                document_id, self.project.id_, konfuzio_session(timeout=timeout, num_retries=num_retries)
+            )
             assert len(detectron_document_results) == self.number_of_pages
             for page_index, detectron_page_result in enumerate(detectron_document_results):
-                self.get_page_by_index(page_index)._segmentation = detectron_page_result
+                document.get_page_by_index(page_index)._segmentation = detectron_page_result
         else:
-            document = self.project.get_document_by_id(self.copy_of_id) if self.copy_of_id else self
             detectron_document_results = [page._segmentation for page in document.pages()]
 
         return detectron_document_results
@@ -3631,45 +3635,46 @@ class Document(Data):
         return new_doc
 
     def get_document_classifier_examples(self, text_vocab, category_vocab, max_len, use_image, use_text):
-        """Get the per document examples for the document classifier."""
-        document_image_paths = []
+        """Get the per-Document examples for the Document classifier."""
+        document_images = []
         document_tokens = []
         document_labels = []
         document_ids = []
         document_page_numbers = []
 
-        # validate the data for the document
+        # validate the data for the Document
         if use_image:
             self.get_images()  # gets the images if they do not exist
-            image_paths = [page.image_path for page in self.pages()]  # gets the paths to the images
+            images = [page.image for page in self.pages()]  # gets the paths to the images
             # @TODO move this validation to the Document class or the Page class
-            assert len(image_paths) > 0, f'No images found for document {self.id_}'
+            assert len(images) > 0, f'No images found for Document {self.id_}'
             if not use_text:  # if only using images then make texts a list of None
-                page_texts = [None] * len(image_paths)
+                page_texts = [None] * len(images)
         if use_text:
             page_texts = self.text.split('\f')
             # @TODO move this validation to the Document class or the Page class
-            assert len(page_texts) > 0, f'No text found for document {self.id_}'
+            assert len(page_texts) > 0, f'No text found for Document {self.id_}'
             if not use_image:  # if only using text then make images used a list of None
-                image_paths = [None] * len(page_texts)
+                images = [None] * len(page_texts)
 
         # check we have the same number of images and text pages
         # only useful when we have both an image and a text module
         # @TODO move this validation to the Document class or the Page class
-        assert len(image_paths) == len(
-            page_texts
-        ), f'No. of images ({len(image_paths)}) != No. of pages {len(page_texts)} for document {self.id_}'
+        assert len(images) == len(page_texts), (
+            f'Number of images ({len(images)}) is not equal to the number of Pages {len(page_texts)} for Document '
+            f'{self.id_}'
+        )
 
         for page in self.pages():
             if use_image:
                 # if using an image module, store the path to the image
-                document_image_paths.append(page.image_path)
+                document_images.append(page.image)
             else:
                 # if not using image module then don't need the image paths
                 # so we just have a list of None to keep the lists the same length
-                document_image_paths.append(None)
+                document_images.append(None)
             if use_text:
-                # if using a text module, tokenize the page, trim to max length and then numericalize
+                # if using a text module, tokenize the Page, trim to max length and then numericalize
                 # REPLACE page_tokens = tokenizer.get_tokens(page_text)[:max_len]
                 # page_encoded = [text_vocab.stoi(span.offset_string) for span in
                 # self.spans(start_offset=page.start_offset, end_offset=page.end_offset)]
@@ -3680,15 +3685,15 @@ class Document(Data):
                 # if not using text module then don't need the tokens
                 # so we just have a list of None to keep the lists the same length
                 document_tokens.append(None)
-            # get document classification (defined by the category template)
+            # get Document classification (defined by the Category template)
             category_id = str(self.category.id_) if self.category != self.project.no_category else 'NO_CATEGORY'
-            # append the classification (category), the document's id number and the page number of each page
+            # append the classification (Category), the Document's ID and the number of each Page
             document_labels.append(torch.LongTensor([category_vocab.stoi(category_id)]))
             doc_id = self.id_ or self.copy_of_id
             document_ids.append(torch.LongTensor([doc_id]))
             document_page_numbers.append(torch.LongTensor([page.index]))
 
-        return document_image_paths, document_tokens, document_labels, document_ids, document_page_numbers
+        return document_images, document_tokens, document_labels, document_ids, document_page_numbers
 
 
 class Project(Data):

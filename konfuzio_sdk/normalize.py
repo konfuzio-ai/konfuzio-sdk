@@ -156,7 +156,7 @@ def _normalize_string_to_absolute_float(offset_string: str) -> Optional[float]:
     # check for 1,234.56
     elif '.' in offset_string and ',' in offset_string and offset_string.index(',') < offset_string.index('.'):
         offset_string = offset_string.replace(',', '')  # => 1234.56
-        if all(x.isdecimal() for x in offset_string.split('.')):
+        if all(x.isdecimal() for x in offset_string.split('.')) and offset_string.count('.') < 2:
             _float = float(offset_string)
     # check for 1,234,56
     elif (
