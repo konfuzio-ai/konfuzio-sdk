@@ -14,11 +14,15 @@ are using PyCharm have a look at [Quickstart with Pycharm](quickstart_pycharm.ht
   `pip install konfuzio_sdk`
 
 * It is also possible to choose only specific sub-components of the SDK to install: `categorization`, `extraction`, 
-`file_splitting`, `all_ais` or `plain`. For that, run the following command:
+`file_splitting`, `all_ais` or `plain`. For example, to install only the sub-components needed for the Categorization AI,
+run the following command:
   ```
   git clone https://github.com/konfuzio-ai/konfuzio-sdk.git
   cd konfuzio-sdk
   pip install -e .[categorization]
+  ```
+You can install more than one set of sub-components, simply stating them after the comma, i.e. 
+`[categorization,extraction]`.
 
 *Notes*:
 
