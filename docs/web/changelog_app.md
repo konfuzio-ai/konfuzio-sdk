@@ -27,6 +27,14 @@ This version uses the Konfuzio Python SDK in version v.0.2.19 and Konfuzio Docum
 
 Upcoming...
 
+## released-2023-05-22_12-48-00
+
+This version uses the Konfuzio Python SDK in version v.0.2.18 and Konfuzio Document Validation UI in version v.0.1.6.
+
+### Fixed
+- Improved performance of the Annotations list webpage.  ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11133)).
+- Improved performance of Document Search in the Smartview.  ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11140)).
+
 ## released-2023-05-17_20-51-37
 
 This version uses the Konfuzio Python SDK in version v.0.2.18 and Konfuzio Document Validation UI in version v.0.1.6.
