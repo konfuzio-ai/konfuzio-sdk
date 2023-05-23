@@ -185,7 +185,7 @@ class AbstractCategorizationAI(BaseModel, metaclass=abc.ABCMeta):
             return False
 
     @staticmethod
-    def load_model(pickle_path: str, max_ram: Union[None, str] = None):
+    def load_model(pickle_path: str, device='cpu'):
         """
         Load the model and check if it has the interface compatible with the class.
 
@@ -196,7 +196,7 @@ class AbstractCategorizationAI(BaseModel, metaclass=abc.ABCMeta):
         :raises TypeError: When the loaded pickle isn't recognized as a Konfuzio AI model.
         :return: Categorization AI model.
         """
-        model = super(AbstractCategorizationAI, AbstractCategorizationAI).load_model(pickle_path, max_ram)
+        model = load_categorization_model(pickle_path, device)
         if not AbstractCategorizationAI.has_compatible_interface(model):
             raise TypeError(
                 "Loaded model's interface is not compatible with any AIs. Please provide a model that has all the "

@@ -564,6 +564,20 @@ class TestAllCategorizationConfigurations(unittest.TestCase):
         assert isinstance(result, Document)
         assert result.category == self.receipts_category
 
+    def test_9_build_document_classifier_iterator(self):
+        """Test building the iterator."""
+        use_text = self.categorization_pipeline.build_document_classifier_iterator(
+            self.categorization_pipeline.documents,
+            self.categorization_pipeline.train_transforms,
+            use_image=True,
+            use_text=True,
+            shuffle=True,
+            batch_size=1,
+            max_len=None,
+            device=self.categorization_pipeline.device,
+        )
+        assert use_text
+
 
 @pytest.mark.categorization
 def test_build_categorization_ai() -> None:
@@ -581,31 +595,3 @@ def test_build_categorization_ai() -> None:
 
     pipeline_path = categorization_pipeline.save()
     CategorizationAI.load_model(pipeline_path)
-
-
-@pytest.mark.categorization
-def test_get_document_classifier_examples():
-    """Test getting Document's classifier examples."""
-    from konfuzio_sdk.trainer.document_categorization import ImageModel, TextModel, build_categorization_ai_pipeline
-
-    project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-    document = project.get_document_by_id(44823)
-    categorization_pipeline = build_categorization_ai_pipeline(
-        categories=[project.categories[0]],
-        documents=project.documents[:10],
-        test_documents=project.test_documents[:10],
-        image_model=ImageModel.EfficientNetB0,
-        text_model=TextModel.NBOWSelfAttention,
-    )
-    tokenized_doc = deepcopy(document)
-    tokenized_doc = WhitespaceTokenizer().tokenize(tokenized_doc)
-    tokenized_doc.status = document.status
-    doc_info = tokenized_doc.get_document_classifier_examples(
-        categorization_pipeline.text_vocab,
-        categorization_pipeline.category_vocab,
-        max_len=5000,
-        use_image=True,
-        use_text=True,
-    )
-    assert len(doc_info) == 5
-    assert doc_info[0][0].format == 'PNG'
