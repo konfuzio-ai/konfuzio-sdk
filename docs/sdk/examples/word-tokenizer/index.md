@@ -63,7 +63,7 @@ After getting the bounding box for all spans, you might want to visually check t
    :lines: 20
    :dedent: 4
 
-<img src="https://github.com/konfuzio-ai/konfuzio-sdk/assets/2879188/5f7a8501-cd89-487d-a332-0703f3c35fc8" data-canonical-src="https://github.com/konfuzio-ai/konfuzio-sdk/assets/2879188/5f7a8501-cd89-487d-a332-0703f3c35fc8" width="200" height="400" />
+.. image:: /sdk/examples/word-tokenizer/word-bboxes.png
 
 This will display an image of the document with all word-level annotations. The image may look a bit messy with all the labels.
 
