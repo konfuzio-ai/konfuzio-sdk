@@ -40,7 +40,7 @@ import cloudpickle
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.utils.validation import check_is_fitted
 
-from konfuzio_sdk.data import Data, Document, Annotation, Category, AnnotationSet, Label, LabelSet, Span  # , Page
+from konfuzio_sdk.data import Data, Document, Annotation, Category, AnnotationSet, Label, LabelSet, Span
 
 from konfuzio_sdk.tokenizer.paragraph_and_sentence import ParagraphTokenizer, SentenceTokenizer
 
@@ -126,7 +126,7 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
     from konfuzio_sdk.trainer.file_splitting import AbstractFileSplittingModel
 
     if not (
-        Trainer.has_compatible_interface(model)
+        AbstractExtractionAI.has_compatible_interface(model)
         or AbstractFileSplittingModel.has_compatible_interface(model)
         or AbstractCategorizationAI.has_compatible_interface(model)
     ):
@@ -136,7 +136,7 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
         )
 
     if not hasattr(model, "name"):
-        raise TypeError("Saved model file needs to be a Konfuzio Trainer instance.")
+        raise TypeError("Saved model file needs to be a Konfuzio AbstractExtractionAI instance.")
     elif model.name in {
         "DocumentAnnotationMultiClassModel",
         "DocumentEntityMulticlassModel",
@@ -488,7 +488,7 @@ def date_count(s: str) -> int:
                 try:
                     diff = int((date2 - date1) / numpy.timedelta64(1, 'D'))
                 except TypeError as e:
-                    logger.error(f'Could not substract for string {s} because of >>{e}<<.')
+                    logger.debug(f'Could not substract for string {s} because of >>{e}<<.')
                     return 0
 
             if diff == 0:
@@ -574,78 +574,6 @@ def duplicate_count(s: str) -> int:
 def unique_char_count(s: str) -> int:
     """Given a string returns the number of unique characters."""
     return len(set(list(s)))
-
-
-# def _convert_to_relative_dict(dict: dict):
-#     """Convert a dict with absolute numbers as values to the same dict with the relative probabilities as values."""
-#     return_dict = {}
-#     abs_num = sum(dict.values())
-#     for key, value in dict.items():
-#         return_dict[key] = value / abs_num
-#     return return_dict
-
-
-# def plot_label_distribution(df_list: list, df_name_list=None) -> None:
-#     """Plot the label-distribution of given DataFrames side-by-side."""
-#     from tabulate import tabulate
-#     # check if any of the input df are empty
-#     for df in df_list:
-#         if df.empty:
-#             logger.error('One of the Dataframes in df_list is empty.')
-#             return None
-
-#     # helper function
-#     def Convert(tup, di):
-#         for a, b in tup:
-#             di.setdefault(a, []).append(b)
-#         return di
-
-#     # plot the relative distributions
-#     logger.info('Percentage of total samples (per dataset) that have a certain label:')
-#     rel_dict_list = []
-#     for df in df_list:
-#         rel_dict_list.append(_convert_to_relative_dict(collections.Counter(list(df['label_name']))))
-#     logger.info(
-#         '\n'
-#         + tabulate(
-#             pandas.DataFrame(rel_dict_list, index=df_name_list).transpose(),
-#             floatfmt=".1%",
-#             headers="keys",
-#             tablefmt="pipe",
-#         )
-#         + '\n'
-#     )
-
-#     # print the number of documents in total and in the splits given
-#     # total_count = 0
-#     for index, df in enumerate(df_list):
-#         doc_name = df_name_list[index] if df_name_list else str(index)
-#         doc_count = len(set(df['document_id']))
-#         logger.info(doc_name + ' contains ' + str(doc_count) + ' different documents.')
-#         # total_count += doc_count
-#     # logger.info(str(total_count) + ' documents in total.')
-
-#     # plot the number of documents with at least one of a certain label
-#     logger.info('Percentage of documents per split that contain a certain label at least once:')
-#     doc_count_dict_list = []
-#     for df in df_list:
-#         doc_count_dict = {}
-#         doc_count = len(set(df['document_id']))
-#         toup_list = list(zip(list(df['label_name']), list(df['document_id'])))
-#         list_dict = Convert(toup_list, {})
-#         for key, value in list_dict.items():
-#             doc_count_dict[key] = float(len(set(value)) / doc_count)
-#         doc_count_dict_list.append(doc_count_dict)
-#     logger.info(
-#         '\n'
-#         + tabulate(
-#             pandas.DataFrame(doc_count_dict_list, index=df_name_list).transpose(),
-#             floatfmt=".1%",
-#             headers="keys",
-#             tablefmt="pipe",
-#         )
-#         + '\n'
-#     )
 
 
 def get_first_candidate(document_text, document_bbox, line_list):
@@ -969,11 +897,14 @@ def substring_on_page(substring, annotation, page_text_list) -> bool:
 class BaseModel(metaclass=abc.ABCMeta):
     """Base model to define common methods for all AIs."""
 
+    requires_text = False
+    requires_images = False
+
     def __init__(self):
         """Initialize a BaseModel class."""
         self.output_dir = None
-        self.documents = None
-        self.test_documents = None
+        self.documents = []
+        self.test_documents = []
         self.python_version = '.'.join([str(v) for v in sys.version_info[:3]])
         self.konfuzio_sdk_version = get_sdk_version()
 
@@ -1076,10 +1007,14 @@ class BaseModel(metaclass=abc.ABCMeta):
         temp_pkl_file_path = self.temp_pkl_file_path
         pkl_file_path = self.pkl_file_path
 
+        project_docs = self.project._documents  # to restore project documents after save
         if reduce_weight:
-            project_docs = self.project._documents  # to restore project documents after save
             self.reduce_model_weight()
-        if not keep_documents:
+
+        if keep_documents:
+            # keep reference to Documents at Project level in case they were removed in the reduce_model_weight step
+            self.project._documents = self.documents + self.test_documents
+        else:
             logger.info('Removing documents before save')
             # to restore Model train and test documents after save
             restore_documents = self.documents
@@ -1089,7 +1024,15 @@ class BaseModel(metaclass=abc.ABCMeta):
 
         logger.info(f'Model size: {memory_size_of(self) / 1_000_000} MB')
 
-        self.ensure_model_memory_usage_within_limit(max_ram)
+        try:
+            self.ensure_model_memory_usage_within_limit(max_ram)
+        except MemoryError as e:
+            # restore Documents so that the Project can still be used
+            self.project._documents = project_docs
+            if not keep_documents:
+                self.documents = restore_documents
+                self.test_documents = restore_test_documents
+            raise e
 
         sys.setrecursionlimit(999999)
 
@@ -1122,14 +1065,16 @@ class BaseModel(metaclass=abc.ABCMeta):
         if not keep_documents:
             self.documents = restore_documents
             self.test_documents = restore_test_documents
-        if reduce_weight:
-            self.project._documents = project_docs
+        self.project._documents = project_docs
 
         return pkl_file_path
 
 
-class Trainer(BaseModel):
-    """Parent class for all Extraction AIs, to extract information from unstructured human readable text."""
+class AbstractExtractionAI(BaseModel):
+    """Parent class for all Extraction AIs, to extract information from unstructured human-readable text."""
+
+    requires_text = True
+    requires_images = False
 
     def __init__(self, category: Category, *args, **kwargs):
         """Initialize ExtractionModel."""
@@ -1388,13 +1333,13 @@ class Trainer(BaseModel):
     @staticmethod
     def has_compatible_interface(other) -> bool:
         """
-        Validate that an instance of an Extraction AI implements the same interface as Trainer.
+        Validate that an instance of an Extraction AI implements the same interface as AbstractExtractionAI.
 
         An Extraction AI should implement methods with the same signature as:
-        - Trainer.__init__
-        - Trainer.fit
-        - Trainer.extract
-        - Trainer.check_is_ready
+        - AbstractExtractionAI.__init__
+        - AbstractExtractionAI.fit
+        - AbstractExtractionAI.extract
+        - AbstractExtractionAI.check_is_ready
 
         :param other: An instance of an Extraction AI to compare with.
         """
@@ -1772,63 +1717,7 @@ class GroupAnnotationSets:
         return new_res_dict
 
 
-class ParagraphExtractionAI(Trainer):
-    """Extract and label text regions using Detectron2."""
-
-    def __init__(
-        self,
-        category: Category,
-        *args,
-        **kwargs,
-    ):
-        """ParagraphExtractionAI."""
-        logger.info("Initializing ParagraphExtractionAI.")
-        super().__init__(category=category, *args, **kwargs)
-        self.tokenizer = ParagraphTokenizer(mode='detectron', create_detectron_labels=True)
-
-    @property
-    def project(self):
-        """Get RFExtractionAI Project."""
-        if not self.category:
-            raise AttributeError(f'{self} has no Category.')
-        return self.category.project
-
-    def extract(self, document: Document) -> Document:
-        """
-        Infer information from a given Document.
-
-        :param document: Document object
-        :return: Document with predicted labels
-
-        :raises:
-         AttributeError: When missing a Tokenizer
-        """
-        logger.info(f"Starting extraction of {document}.")
-
-        self.check_is_ready()
-
-        inference_document = deepcopy(document)
-
-        inference_document.project = self.project
-
-        inference_document = self.tokenizer.tokenize(inference_document)
-
-        return inference_document
-
-    def check_is_ready(self):
-        """
-        Check if the ExtractionAI is ready for the inference.
-
-        It is assumed that the model is ready if a Tokenizer and a Category were set.
-
-        :raises AttributeError: When no Category is specified.
-        """
-        logger.info(f"Checking if {self} is ready for extraction.")
-        if not self.category:
-            raise AttributeError(f'{self} requires a Category.')
-
-
-class RFExtractionAI(Trainer, GroupAnnotationSets):
+class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
     """Encode visual and textual features to extract text regions.
 
     Fit an extraction pipeline to extract linked Annotations.
@@ -1920,7 +1809,16 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         self.output_dir = None
 
-        # self.doc_object = Document
+    @property
+    def requires_segmentation(self) -> bool:
+        """Return True if the Extraction AI requires detectron segmentation results to process Documents."""
+        if (
+            sdk_isinstance(self.tokenizer, ParagraphTokenizer) or sdk_isinstance(self.tokenizer, SentenceTokenizer)
+        ) and self.tokenizer.mode == 'detectron':
+            return True
+        elif self.tokenizer is None:
+            logger.warning('Tokenizer is not set. Assuming no segmentation results is required.')
+        return False
 
     def features(self, document: Document):
         """Calculate features using the best working default values that can be overwritten with self values."""
@@ -2537,7 +2435,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         """
         Evaluate the full pipeline on the pipeline's Test Documents.
 
-        :param strict: List of documents to extract features from.
+        :param strict: Evaluate on a Character exact level without any postprocessing.
         :param use_training_docs: Bool for whether to evaluate on the training documents instead of testing documents.
         :return: Evaluation object.
         """

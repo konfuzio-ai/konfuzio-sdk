@@ -12,7 +12,8 @@ The initialization would look like this:
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
    :language: python
-   :lines: 76-78
+   :lines: 79-81
+   :dedent: 4
 
 The class compares each pair of Pages. If a Page is labeled as first and the model also predicted it as first, it is 
 considered a True Positive. If a Page is labeled as first but the model predicted it as non-first, it is considered a 
@@ -32,14 +33,16 @@ To see a certain metric after the class has been initialized, you can call a met
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
    :language: python
-   :lines: 94
+   :lines: 97
+   :dedent: 4
 
 It is also possible to look at the metrics calculated by each Category independently. For this, pass 
 `search=YOUR_CATEGORY_HERE` when calling the wanted metric's method: 
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
    :language: python
-   :lines: 79
+   :lines: 82
+   :dedent: 4
 
 For more details, see the [Python API Documentation](https://dev.konfuzio.com/sdk/sourcecode.html#ai-evaluation) on 
 Evaluation.
@@ -60,7 +63,8 @@ _Second document_
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
    :language: python
-   :lines: 2-4,13-44,47-58
+   :lines: 6-8,16-47,50-61
+   :dedent: 4
 
 We need to pass two lists of Documents into the `FileSplittingEvaluation` class. So, before that, we need to run each 
 Page of the Documents through the model's prediction.
@@ -70,7 +74,8 @@ Pages being predicted correctly. An example of how the evaluation would be imple
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
    :language: python
-   :lines: 66-71,88-101
+   :lines: 69-74,91-104
+   :dedent: 4
 
 Our results could be reflected in a following table:
 
@@ -82,7 +87,8 @@ If we want to see evaluation results by Category, the implementation of the Eval
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
    :language: python
-   :lines: 117-130
+   :lines: 120-133
+   :dedent: 4
 
 the output could be reflected in a following table:
 
@@ -96,4 +102,5 @@ specify the metrics accordingly at the class's initialization). Example usage:
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
    :language: python
-   :lines: 132
+   :lines: 135
+   :dedent: 4

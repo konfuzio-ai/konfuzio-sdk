@@ -13,7 +13,6 @@ from inspect import signature
 from typing import Union, List, Dict, Tuple, Optional
 from enum import Enum
 from warnings import warn
-from io import BytesIO
 
 import timm
 import torchvision
@@ -24,7 +23,6 @@ import transformers
 import numpy as np
 import pandas as pd
 import tqdm
-from PIL import Image
 from torch.utils.data import DataLoader
 
 from konfuzio_sdk.tokenizer.base import AbstractTokenizer
@@ -921,7 +919,7 @@ class CategorizationAI(AbstractCategorizationAI):
 
         self.device = torch.device('cuda' if (torch.cuda.is_available() and use_cuda) else 'cpu')
 
-    def save(self, path: Union[None, str] = None) -> str:
+    def save(self, path: Union[None, str] = None, reduce_weight: bool = True) -> str:
         """
         Save only the necessary parts of the model for extraction/inference.
 
@@ -932,6 +930,9 @@ class CategorizationAI(AbstractCategorizationAI):
         - configs (to ensure we load the same models used in training)
         - state_dicts (the classifier parameters achieved through training)
         """
+        if reduce_weight:
+            self.reduce_model_weight()
+
         # create dictionary to save all necessary model data
         data_to_save = {
             'tokenizer': self.tokenizer,
@@ -940,6 +941,8 @@ class CategorizationAI(AbstractCategorizationAI):
             'text_vocab': self.text_vocab,
             'category_vocab': self.category_vocab,
             'classifier': self.classifier,
+            'eval_transforms': self.eval_transforms,
+            'train_transforms': self.train_transforms,
             'model_type': 'CategorizationAI',
         }
 
@@ -956,6 +959,7 @@ class CategorizationAI(AbstractCategorizationAI):
 
         # save all necessary model data
         torch.save(data_to_save, path)
+        self.pipeline_path = path
         return path
 
     def build_preprocessing_pipeline(self, use_image: bool, image_augmentation=None, image_preprocessing=None) -> None:
@@ -1064,10 +1068,9 @@ class CategorizationAI(AbstractCategorizationAI):
             data.extend(zip(*doc_info))
 
         def collate(batch, transforms) -> Dict[str, torch.LongTensor]:
-            image_path, text, label, doc_id, page_num = zip(*batch)
+            image, text, label, doc_id, page_num = zip(*batch)
             if use_image:
-                # if we are using images, open as PIL images, apply transforms and place on GPU
-                image = [Image.open(path) for path in image_path]
+                # if we are using images, they are already loaded as `PIL.Image`s, apply transforms and place on GPU
                 image = torch.stack([transforms(img) for img in image], dim=0).to(device)
                 image = image.to(device)
             else:
@@ -1220,6 +1223,10 @@ class CategorizationAI(AbstractCategorizationAI):
 
         return training_metrics
 
+    def reduce_model_weight(self):
+        """Reduce the size of the model by running lose_weight on the tokenizer."""
+        self.tokenizer.lose_weight()
+
     @torch.no_grad()
     def _predict(self, page_images, text, batch_size=2, *args, **kwargs) -> Tuple[Tuple[int, float], pd.DataFrame]:
         """
@@ -1275,7 +1282,6 @@ class CategorizationAI(AbstractCategorizationAI):
         for i, (img, txt) in enumerate(zip(page_images, page_text)):
             if use_image:
                 # if we are using images, open the image and perform preprocessing
-                img = Image.open(img)
                 img = self.eval_transforms(img)
                 batch_image.append(img)
             if use_text:
@@ -1352,10 +1358,8 @@ class CategorizationAI(AbstractCategorizationAI):
         docs_data_images = [None]
         use_image = hasattr(self.classifier, 'image_model')
         if use_image:
-            img_data = Image.open(page.image_path)
-            buf = BytesIO()
-            img_data.save(buf, format='PNG')
-            docs_data_images = [buf]
+            page.get_image()
+            docs_data_images = [page.image]
 
         use_text = hasattr(self.classifier, 'text_model')
         text_coded = [None]
@@ -1501,7 +1505,14 @@ def build_categorization_ai_pipeline(
 
 COMMON_PARAMETERS = ['tokenizer', 'text_vocab', 'model_type']
 
-document_components = ['image_preprocessing', 'image_augmentation', 'category_vocab', 'classifier']
+document_components = [
+    'image_preprocessing',
+    'image_augmentation',
+    'category_vocab',
+    'classifier',
+    'eval_transforms',
+    'train_transforms',
+]
 
 document_components.extend(COMMON_PARAMETERS)
 
@@ -1539,6 +1550,8 @@ def _load_categorization_model(path: str):
     model.text_vocab = loaded_data['text_vocab']
     model.category_vocab = loaded_data['category_vocab']
     model.classifier = loaded_data['classifier']
+    model.eval_transforms = loaded_data['eval_transforms']
+    model.train_transforms = loaded_data['train_transforms']
     # need to ensure classifiers start in evaluation mode
     model.classifier.eval()
 

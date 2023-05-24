@@ -3,7 +3,7 @@ import logging
 import os
 import unittest
 from copy import copy, deepcopy
-from requests import HTTPError
+from requests import HTTPError, ConnectionError
 
 import pytest
 from PIL.PngImagePlugin import PngImageFile
@@ -24,7 +24,6 @@ from konfuzio_sdk.data import (
     Bbox,
     BboxValidationTypes,
 )
-from konfuzio_sdk.evaluate import ExtractionEvaluation
 from konfuzio_sdk.trainer.information_extraction import RFExtractionAI
 from konfuzio_sdk.utils import is_file, get_spans_from_bbox
 from tests.variables import (
@@ -291,20 +290,42 @@ class TestOnlineProject(unittest.TestCase):
         assert doc.assignee == 1043
         assert doc.dataset_status == 2
 
+    def test_get_segmentation(self):
+        """Test getting the detectron segmentation of a Document."""
+        document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+
+        page = document.get_page_by_index(0)
+        assert page._segmentation is None
+
+        with pytest.raises(ConnectionError, match="Max retries exceeded with url: .* timed out"):
+            segmentation = document.get_segmentation(timeout=0.1, num_retries=1)
+        assert page._segmentation is None
+        
+        segmentation = document.get_segmentation()
+        assert len(segmentation) == 1
+        assert len(segmentation[0]) == 5
+        assert len(page._segmentation) == 5
+
+        virtual_document = deepcopy(document)
+
+        # retrieving from original Document so no ConnectionError should be raised
+        virtual_document_segmentation = virtual_document.get_segmentation(timeout=0.1, num_retries=1)
+
+        assert len(virtual_document_segmentation) == 1
+        assert len(virtual_document_segmentation[0]) == 5
+
+        virtual_document_page = virtual_document.get_page_by_index(0)
+        assert virtual_document_page._segmentation is None
+
     def test_create_modify_and_delete_document(self):
         """Test the creation of an online Document from a file, modification, and then deletion of the Document."""
         # Test Document creation
-        doc = Document.from_file_sync('test_data/pdf.pdf', self.project, dataset_status=1)
+        doc = Document.from_file('tests/test_data/pdf.pdf', self.project, dataset_status=1)
         doc_id = doc.id_
 
         # Test Document modification
         assert doc.dataset_status == 1
-
-        doc.dataset_status = 0
-
-        doc.project.init_or_update_document()
-
-        assert doc.dataset_status == 1  # didn't save, so reloading the old dataset status
+        assert doc.assignee is None
 
         with pytest.raises(HTTPError, match="You cannot delete documents which are part of a dataset"):
             # Cannot delete Document with dataset_status != 0
@@ -314,7 +335,7 @@ class TestOnlineProject(unittest.TestCase):
         doc.assignee = 1234
         doc.save_meta_data()
 
-        doc.project.init_or_update_document(from_online=True)
+        doc.update()
 
         assert doc.dataset_status == 0
         assert doc.assignee == 1234
@@ -324,9 +345,9 @@ class TestOnlineProject(unittest.TestCase):
         with pytest.raises(IndexError, match="was not found in"):
             doc = self.project.get_document_by_id(doc_id)
 
-        self.project.init_or_update_document()
+        self.project.init_or_update_document(from_online=True)  # retrieve online version of the Document
 
-        doc = self.project.get_document_by_id(doc_id)  # works because local meta-data still has it listed
+        doc = self.project.get_document_by_id(doc_id)
 
         doc.delete(delete_online=True)
         self.project.init_or_update_document()
@@ -378,9 +399,11 @@ class TestOfflineExampleData(unittest.TestCase):
     def test_document_copy(self) -> None:
         """Test to create a new Document instance."""
         document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        document.get_page_by_index(0).image_bytes = b'\x89PNG\r\n\x1a\n\x00\x00\x00'
         new_document = deepcopy(document)
         assert new_document != document
         assert new_document.get_page_by_index(0).width == 595.2
+        assert new_document.get_page_by_index(0).image_bytes == b'\x89PNG\r\n\x1a\n\x00\x00\x00'
         assert new_document._annotations is None  # for now the implementation just copies the bbox and text
 
     def test_project_num_label(self):
@@ -532,11 +555,7 @@ class TestOfflineExampleData(unittest.TestCase):
             documents=pipeline.documents, require_revised_annotations=False
         )
         pipeline.fit()
-        predictions = []
-        for doc in pipeline.documents:
-            predicted_doc = pipeline.extract(document=doc)
-            predictions.append(predicted_doc)
-        evaluation = ExtractionEvaluation(documents=list(zip(pipeline.documents, predictions)), strict=False)
+        evaluation = pipeline.evaluate_full(strict=False, use_training_docs=True)
         outliers = label.get_probable_outliers_by_confidence(evaluation, 0.8)
         assert len(outliers) == 1
         outlier_spans = [span.offset_string for annotation in outliers for span in annotation.spans]
@@ -2729,7 +2748,9 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         annotations = label.annotations(categories=[self.prj.get_category_by_id(63)])
         self.assertEqual(self.document_count, len(annotations))
 
-    @unittest.skip(reason="Skip: Changes in Trainer Annotation needed to require a Label for every Annotation init.")
+    @unittest.skip(
+        reason="Skip: Changes in AbstractExtractionAI Annotation needed to require a Label for every Annotation init."
+    )
     def test_document_add_new_annotation_without_label(self):
         """Test adding a new Annotation."""
         with self.assertRaises(AttributeError) as _:
@@ -2745,7 +2766,10 @@ class TestKonfuzioDataSetup(unittest.TestCase):
             )
         # TODO: expand assert to check for specific error message
 
-    @unittest.skip(reason="Skip: Changes in Trainer Annotation needed to require a Document for every Annotation init.")
+    @unittest.skip(
+        reason="Skip: Changes in AbstractExtractionAI Annotation needed to require a Document for every "
+        "Annotation init."
+    )
     def test_init_annotation_without_document(self):
         """Test adding a new Annotation."""
         with self.assertRaises(AttributeError) as _:
@@ -2966,8 +2990,8 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
         project = LocalTextProject()
         document = project.get_document_by_id(7)
         annotations = document.view_annotations()
-        assert len(annotations) == 5  # 4 if top_annotations filter is used
-        assert sorted([ann.id_ for ann in annotations]) == [16, 17, 18, 19, 24]  # [16, 18, 19, 24]
+        assert len(annotations) == 4  # 4 if top_annotations filter is used
+        assert sorted([ann.id_ for ann in annotations]) == [16, 18, 19, 24]
 
     def test_document_lose_weight(self):
         """Test that Document.lose_weight() removes all the right Annotations."""
@@ -3084,7 +3108,7 @@ class TestFillOperation(unittest.TestCase):
             assert "is a duplicate of" in context.exception
 
     def test_correct_text_offset(self):
-        """Test if the the sorted Spans can create the offset text."""
+        """Test if the sorted Spans can create the offset text."""
         offsets = [sorted_span.offset_string for sorted_span in self.sorted_spans]
         span_text = "".join(offsets)
         self.assertEqual(self.doc.text[1498:1590], span_text)

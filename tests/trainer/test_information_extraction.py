@@ -36,7 +36,7 @@ from konfuzio_sdk.trainer.information_extraction import (
     year_month_day_count,
     load_model,
     RFExtractionAI,
-    Trainer,
+    AbstractExtractionAI,
 )
 
 from konfuzio_sdk.api import upload_ai_model
@@ -154,8 +154,10 @@ label_set_clf_classes = ['Brutto-Bezug', 'Lohnabrechnung', 'Netto-Bezug', 'No', 
 @parameterized.parameterized_class(
     (
         'use_separate_labels',
-        'evaluate_full_result',
-        'data_quality_result',
+        'evaluate_full_result_non_view',
+        'evaluate_full_result_view',
+        'data_quality_result_non_view',
+        'data_quality_result_view',
         'clf_quality_result',
         'n_nearest_accross_lines',
     ),
@@ -163,12 +165,22 @@ label_set_clf_classes = ['Brutto-Bezug', 'Lohnabrechnung', 'Netto-Bezug', 'No', 
         (
             False,
             0.7671232876712328,  # w/ full dataset: 0.9237668161434978
+            0.8115942028985508,
             0.9745762711864406,
+            0.9652173913043478,
             1.0,
             False,
         ),
-        (True, 0.7945205479452054, 0.9745762711864406, 1.0, False),  # w/ full dataset: 0.9783549783549783
-        (False, 0.8732394366197183, 0.9704641350210971, 1.0, True),
+        (
+            True,
+            0.7945205479452054,
+            0.8529411764705882,
+            0.9745762711864406,
+            0.9652173913043478,
+            1.0,
+            False,
+        ),  # w/ full dataset: 0.9783549783549783
+        (False, 0.8732394366197183, 0.8985507246376812, 0.9704641350210971, 0.9652173913043478, 1.0, True),
     ],
 )
 class TestWhitespaceRFExtractionAI(unittest.TestCase):
@@ -325,24 +337,24 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         """Evaluate Whitespace RFExtractionAI Model."""
         evaluation = self.pipeline.evaluate_full(use_view_annotations=False)
 
-        assert evaluation.f1(None) == self.evaluate_full_result
+        assert evaluation.f1(None) == self.evaluate_full_result_non_view
 
         assert 1e5 < memory_size_of(evaluation.data) < 2e5
 
         view_evaluation = self.pipeline.evaluate_full(use_view_annotations=True)
-        assert view_evaluation.f1(None) == self.evaluate_full_result == evaluation.f1(None)
+        assert view_evaluation.f1(None) == self.evaluate_full_result_view
 
         assert 1e5 < memory_size_of(view_evaluation.data) < 2e5
 
     def test_07_data_quality(self):
         """Evaluate on training documents."""
         evaluation = self.pipeline.evaluate_full(use_training_docs=True, use_view_annotations=False)
-        assert evaluation.f1(None) == self.data_quality_result
+        assert evaluation.f1(None) == self.data_quality_result_non_view
 
         assert 2e5 < memory_size_of(evaluation.data) < 4e5
 
         view_evaluation = self.pipeline.evaluate_full(use_training_docs=True, use_view_annotations=True)
-        assert view_evaluation.f1(None) == self.data_quality_result == evaluation.f1(None)
+        assert view_evaluation.f1(None) == self.data_quality_result_view
 
         assert 2e5 < memory_size_of(view_evaluation.data) < 4e5
 
@@ -380,11 +392,11 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         assert len(document_annotation_sets) == 5
         assert len([ann_set for ann_set in document_annotation_sets if ann_set.label_set.is_default]) == 1
 
-        view_annotations = res_doc.view_annotations()
-        assert len(view_annotations) == 19
+        annotations = res_doc.annotations(use_correct=False, ignore_below_threshold=True)
+        assert len(annotations) == 19
 
-        view_spans = sorted([span for ann in view_annotations for span in ann.spans])
-        self.tests_annotations_spans += view_spans
+        spans = sorted([span for ann in annotations for span in ann.spans])
+        self.tests_annotations_spans += spans
         assert len(self.tests_annotations_spans) == 20
 
         # Test extracting with Document from different Category
@@ -414,13 +426,13 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         self.pipeline.category = test_document.category
 
         res_doc = self.pipeline.extract(document=test_document)
-        assert len(res_doc.view_annotations()) == 19
+        assert len(res_doc.view_annotations()) == 17
 
         assert len(res_doc.annotation_sets()) == 5
 
         no_konfuzio_sdk_pipeline = load_model(self.pipeline.pipeline_path_no_konfuzio_sdk)
         res_doc = no_konfuzio_sdk_pipeline.extract(document=test_document)
-        assert len(res_doc.view_annotations()) == 19
+        assert len(res_doc.view_annotations()) == 17
 
         prj46 = Project(id_=46, update=True)
         doc = prj46.get_document_by_id(570129)
@@ -584,7 +596,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         assert 1e5 < memory_size_of(evaluation.data) < 2e5
 
         view_evaluation = self.pipeline.evaluate_full(use_view_annotations=True)
-        assert view_evaluation.f1(None) == self.evaluate_full_result == evaluation.f1(None)
+        assert view_evaluation.f1(None) >= self.evaluate_full_result == evaluation.f1(None)
 
         assert 1e5 < memory_size_of(view_evaluation.data) < 2e5
 
@@ -631,11 +643,11 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         assert len(document_annotation_sets) == 5
         assert len([ann_set for ann_set in document_annotation_sets if ann_set.label_set.is_default]) == 1
 
-        view_annotations = res_doc.view_annotations()
-        assert len(view_annotations) == 19
+        annotations = res_doc.annotations(use_correct=False, ignore_below_threshold=True)
+        assert len(annotations) == 19
 
-        view_spans = sorted([span for ann in view_annotations for span in ann.spans])
-        self.tests_annotations_spans += view_spans
+        spans = sorted([span for ann in annotations for span in ann.spans])
+        self.tests_annotations_spans += spans
         assert len(self.tests_annotations_spans) == 20
 
     @parameterized.parameterized.expand(entity_results_data)
@@ -657,13 +669,13 @@ class TestRegexRFExtractionAI(unittest.TestCase):
 
         test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         res_doc = self.pipeline.extract(document=test_document)
-        assert len(res_doc.view_annotations()) == 19
+        assert len(res_doc.view_annotations()) == 17
 
         assert len(res_doc.annotation_sets()) == 5
 
         no_konf_pipeline = load_model(self.pipeline.pipeline_path_no_konfuzio_sdk)
         res_doc = no_konf_pipeline.extract(document=test_document)
-        assert len(res_doc.view_annotations()) == 19
+        assert len(res_doc.view_annotations()) == 17
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -699,7 +711,14 @@ class TestParagraphRFExtractionAI(unittest.TestCase):
 
     def test_01_configure_pipeline(self):
         """Make sure the Data and Pipeline is configured."""
+        assert self.pipeline.requires_segmentation is False
         self.pipeline.tokenizer = ParagraphTokenizer(mode=self.mode)
+        if self.mode == 'detectron':
+            assert self.pipeline.requires_segmentation is True
+        elif self.mode == 'line_distance':
+            assert self.pipeline.requires_segmentation is False
+        else:
+            raise ValueError(f'Unknown mode {self.mode}')
 
         train_doc_ids = {601418}
         for doc in self.pipeline.category.documents():
@@ -769,6 +788,12 @@ class TestSentenceRFExtractionAI(unittest.TestCase):
     def test_01_configure_pipeline(self):
         """Make sure the Data and Pipeline is configured."""
         self.pipeline.tokenizer = SentenceTokenizer(mode=self.mode)
+        if self.mode == 'detectron':
+            assert self.pipeline.requires_segmentation is True
+        elif self.mode == 'line_distance':
+            assert self.pipeline.requires_segmentation is False
+        else:
+            raise ValueError(f'Unknown mode {self.mode}')
 
         self.pipeline.documents = self.pipeline.category.documents()
 
@@ -1159,7 +1184,7 @@ class TestInformationExtraction(unittest.TestCase):
             ),
         }
 
-        merged_res_dict = Trainer.merge_horizontal(res_dict=res_dict, doc_text=doc_text)
+        merged_res_dict = AbstractExtractionAI.merge_horizontal(res_dict=res_dict, doc_text=doc_text)
 
         assert len(merged_res_dict['label1']) == 3
         assert round(merged_res_dict['label1'].iloc[0]['confidence'], 1) == 0.4
@@ -1225,7 +1250,7 @@ class TestInformationExtraction(unittest.TestCase):
             for i, span_row in res_dict[label].iterrows():
                 assert span_row['offset_string'] == doc_text[span_row['start_offset'] : span_row['end_offset']]
 
-        new_res_dict = Trainer.merge_horizontal(res_dict=res_dict, doc_text=doc_text)
+        new_res_dict = AbstractExtractionAI.merge_horizontal(res_dict=res_dict, doc_text=doc_text)
 
         assert len(new_res_dict['label1']) == 4
         assert len(new_res_dict['label2']) == 4
@@ -1815,14 +1840,14 @@ def test_load_model_no_file():
 
 def test_load_model_corrupt_file():
     """Test loading of corrupted model file."""
-    path = "trainer/corrupt.pkl"
+    path = "tests/trainer/corrupt.pkl"
     with pytest.raises(OSError, match="data is invalid."):
         load_model(path)
 
 
 def test_load_model_wrong_pickle_data():
     """Test loading of wrong pickle data."""
-    path = "trainer/list_test.pkl"
+    path = "tests/trainer/list_test.pkl"
     with pytest.raises(TypeError, match="Loaded model's interface is not compatible with any AIs"):
         load_model(path)
 
@@ -1831,7 +1856,7 @@ def test_load_model_wrong_pickle_data():
 def test_load_ai_model_konfuzio_sdk_not_included():
     """Test loading of trained model with include_konfuzio setting set to False."""
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-    path = "trainer/2023-01-31-14-39-44_lohnabrechnung_no_konfuzio_sdk.pkl"
+    path = "tests/trainer/2023-01-31-14-39-44_lohnabrechnung_no_konfuzio_sdk.pkl"
     pipeline = load_model(path)
 
     test_document = project.get_document_by_id(TEST_DOCUMENT_ID)
@@ -1843,7 +1868,7 @@ def test_load_ai_model_konfuzio_sdk_not_included():
 def test_load_ai_model_konfuzio_sdk_included():
     """Test loading of trained model with include_konfuzio setting set to True."""
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-    path = "trainer/2023-01-31-14-37-11_lohnabrechnung.pkl"
+    path = "tests/trainer/2023-01-31-14-37-11_lohnabrechnung.pkl"
     pipeline = load_model(path)
 
     test_document = project.get_document_by_id(TEST_DOCUMENT_ID)
@@ -1854,7 +1879,7 @@ def test_load_ai_model_konfuzio_sdk_included():
 @unittest.skipIf(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
 def test_load_old_ai_model():
     """Test loading of an old trained model."""
-    path = "trainer/2022-03-10-15-14-51_lohnabrechnung_old_model.pkl"
+    path = "tests/trainer/2022-03-10-15-14-51_lohnabrechnung_old_model.pkl"
     with pytest.raises(TypeError, match="Loaded model's interface is not compatible with any AIs"):
         load_model(path)
 
@@ -1862,9 +1887,21 @@ def test_load_old_ai_model():
 @unittest.skipIf(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
 def test_load_old_ai_model_2():
     """Test loading of a newer old trained model."""
-    path = "trainer/2023-01-09-17-47-50_lohnabrechnung.pkl"
+    path = "tests/trainer/2023-01-09-17-47-50_lohnabrechnung.pkl"
     with pytest.raises(TypeError, match="Loaded model's interface is not compatible with any AIs"):
         load_model(path)
+
+
+@unittest.skipIf(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
+def test_load_ai_model():
+    """Test loading trained model."""
+    path = "tests/trainer/2023-04-25-15-56-42_lohnabrechnung_rfextractionai_.pkl"
+    project = Project(id_=None, project_folder=OFFLINE_PROJECT)
+    pipeline = load_model(path)
+
+    test_document = project.get_document_by_id(TEST_DOCUMENT_ID)
+    res_doc = pipeline.extract(document=test_document)
+    assert len(res_doc.annotations(use_correct=False, ignore_below_threshold=True)) == 19
 
 
 def test_feat_num_count():

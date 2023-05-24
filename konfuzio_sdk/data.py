@@ -32,6 +32,7 @@ from konfuzio_sdk.api import (
     delete_document_annotation,
     delete_file_konfuzio_api,
     upload_file_konfuzio_api,
+    get_results_from_segmentation,
 )
 from konfuzio_sdk.normalize import normalize
 from konfuzio_sdk.regex import get_best_regex, regex_matches, suggest_regex_for_string, merge_regex
@@ -115,11 +116,13 @@ class Page(Data):
 
         :param id_: ID of the Page
         :param document: Document the Page belongs to
-        :param start_offset: Start of the Page in the text of the Document
-        :param end_offset: End of the Page in the text of the Document
         :param number: Page number in Document (1-based indexing)
         :param original_size: Size of original Document file Page (all Document Bboxes are based on this scale)
         :param image_size: Size of the image representation of the Page
+        :param start_offset: Start of the Page in the text of the Document
+        :param end_offset: End of the Page in the text of the Document
+        :param category: The Category the Page belongs to, if any
+        :param copy_of_id: The ID of the Page that this Page is a copy of, if any
         """
         self.id_ = id_
         self.document = document
@@ -151,9 +154,10 @@ class Page(Data):
         )
         self.image_path = os.path.join(document_folder, f'page_{self.number}.png')
 
-        self._category = self.document._category
+        self._category = category if category else self.document._category
         self.category_annotations: List['CategoryAnnotation'] = []
         self._human_chosen_category_annotation: Optional[CategoryAnnotation] = None
+        self._segmentation = None
         self.is_first_page = None
         self.is_first_page_confidence = None
         if self.document.dataset_status in (2, 3):
@@ -577,7 +581,7 @@ class Bbox:
         return round(abs(self.x0 - self.x1) * abs(self.y0 - self.y1), 3)
 
     @classmethod
-    def from_image_size(self, x0, x1, y0, y1, page: Page) -> 'Bbox':
+    def from_image_size(cls, x0, x1, y0, y1, page: Page) -> 'Bbox':
         """Create Bbox from the image dimensions based result to the scale of the characters Bboxes of the Document.
 
         :return: Bbox with the rescaled dimensions.
@@ -593,7 +597,7 @@ class Bbox:
         x0 = x0 * factor_x
         x1 = x1 * factor_x
 
-        return Bbox(x0=x0, x1=x1, y0=y0, y1=y1, page=page)
+        return cls(x0=x0, x1=x1, y0=y0, y1=y1, page=page)
 
     @property
     def x0_image(self):
@@ -1545,6 +1549,7 @@ class Label(Data):
         regex_search: bool = True,
         regex_worst_percentage: float = 0.1,
         confidence_search: bool = True,
+        evaluation_data=None,
         normalization_search: bool = True,
     ) -> List['Annotation']:
         """
@@ -1573,7 +1578,7 @@ class Label(Data):
                 set(self.get_probable_outliers_by_regex(categories, top_worst_percentage=regex_worst_percentage))
             )
         if confidence_search:
-            results.append(set(self.get_probable_outliers_by_confidence(categories)))
+            results.append(set(self.get_probable_outliers_by_confidence(evaluation_data)))
         if normalization_search:
             results.append(set(self.get_probable_outliers_by_normalization(categories)))
         intersection_results = list(set.intersection(*results))
@@ -1833,6 +1838,7 @@ class Span(Data):
                 "revised": None,
                 "label_threshold": None,
                 "label_id": None,
+                "label_has_multiple_top_candidates": None,
                 "label_set_id": None,
                 "annotation_id": None,
                 "annotation_set_id": 0,  # to allow grouping to compare boolean
@@ -1874,6 +1880,7 @@ class Span(Data):
                 "revised": self.annotation.revised,
                 "label_threshold": self.annotation.label.threshold,  # todo: allow to optimize threshold
                 "label_id": self.annotation.label.id_,
+                "label_has_multiple_top_candidates": self.annotation.label.has_multiple_top_candidates,
                 "label_set_id": self.annotation.label_set.id_,
                 "annotation_id": self.annotation.id_,
                 "annotation_set_id": self.annotation.annotation_set.id_,
@@ -2253,6 +2260,7 @@ class Annotation(Data):
             # update_annotation(id_=self.id_, document_id=self.document.id_, project_id=self.project.id_)
 
         if not self.is_online:
+            annotation_set_id = self.annotation_set.id_ if self.annotation_set else None
             response = post_document_annotation(
                 project_id=self.document.project.id_,
                 document_id=self.document.id_,
@@ -2263,7 +2271,7 @@ class Annotation(Data):
                 confidence=self.confidence,
                 is_correct=self.is_correct,
                 revised=self.revised,
-                annotation_set=self.annotation_set.id_,
+                annotation_set=annotation_set_id,
                 bboxes=self.bboxes,
                 # selection_bbox=self.selection_bbox,
                 page_number=self.page_number,
@@ -2582,7 +2590,7 @@ class Document(Data):
                     logger.error(str(e))
 
     @classmethod
-    def from_file_sync(
+    def from_file(
         self,
         path: str,
         project: 'Project',
@@ -2590,20 +2598,22 @@ class Document(Data):
         category_id: Optional[int] = None,
         callback_url: str = '',
         timeout: Optional[int] = None,
+        sync: bool = True,
     ) -> 'Document':
         """
         Initialize Document from file with synchronous API call.
 
         This class method will wait for the document to be processed by the server
         and then return the new Document. This may take a bit of time. When uploading
-        many documents, it is advised to use the Document.from_file_async method.
+        many Documents, it is advised to set the sync option to False method.
 
         :param path: Path to file to be uploaded
         :param project: If to filter by correct annotations
-        :param dataset_status: Dataset status of the document (None: 0 Preparation: 1 Training: 2 Test: 3 Excluded: 4)
+        :param dataset_status: Dataset status of the Document (None: 0 Preparation: 1 Training: 2 Test: 3 Excluded: 4)
         :param category_id: Category the Document belongs to (if unset, it will be assigned one by the server)
         :param callback_url: Callback URL receiving POST call once extraction is done
         :param timeout: Number of seconds to wait for response from the server
+        :param sync: Whether to wait for the file to be processed by the server
         :return: New Document
         """
         response = upload_file_konfuzio_api(
@@ -2612,62 +2622,38 @@ class Document(Data):
             dataset_status=dataset_status,
             category_id=category_id,
             callback_url=callback_url,
-            sync=True,
+            sync=sync,
             session=konfuzio_session(timeout=timeout),
         )
         response = response.json()
-
-        if response['status'][0] == 2:
-            logger.debug(f"Document status code {response['status'][0]}: {response['status'][1]}")
-        else:
-            logger.warning(f"Document status code {response['status'][0]}: {response['status'][1]}")
-
         new_document_id = response['id']
 
-        project.init_or_update_document(from_online=True)
-        doc = project.get_document_by_id(new_document_id)
+        if sync:
+            if response['status'][0] == 2:
+                logger.debug(f"Document status code {response['status'][0]}: {response['status'][1]}")
+            else:
+                logger.warning(f"Document status code {response['status'][0]}: {response['status'][1]}")
+            assert project.id_ == response['project'], "Project id_ of uploaded file does not match"
+            document = Document(
+                id_=new_document_id,
+                project=project,
+                update=True,
+                category_template=category_id if category_id else response['category_template'],
+                text=response['text'],
+                status=response['status'],
+                dataset_status=dataset_status,
+            )
+        else:
+            document = Document(
+                id_=new_document_id,
+                project=project,
+                update=True,
+                category_template=category_id,
+                status=[0, "Queuing for OCR"],
+                dataset_status=dataset_status,
+            )
 
-        return doc
-
-    @classmethod
-    def from_file_async(
-        self,
-        path: str,
-        project: 'Project',
-        dataset_status: int = 0,
-        category_id: Union[None, int] = None,
-        callback_url: str = '',
-        timeout: Optional[int] = None,
-    ) -> int:
-        """
-        Initialize Document from file with asynchrinous API call.
-
-        This class method asynchronously uploads a file, to the Konfuzio API and returns the ID of
-        the newly created document. Use this method to create a new Document and don't want to wait
-        for the document to be processed by the server. This requires to update the Project at a
-        later point to be able to work with the new Document.
-
-        :param path: Path to file to be uploaded
-        :param project: If to filter by correct annotations
-        :param dataset_status: Dataset status of the document (None: 0 Preparation: 1 Training: 2 Test: 3 Excluded: 4)
-        :param category_id: Category the Document belongs to (if unset, it will be assigned one by the server)
-        :param callback_url: Callback URL receiving POST call once extraction is
-        :param timeout: Number of seconds to wait for response from the server
-        :return: ID of new Document
-        """
-        response = upload_file_konfuzio_api(
-            path,
-            project_id=project.id_,
-            dataset_status=dataset_status,
-            category_id=category_id,
-            callback_url=callback_url,
-            sync=False,
-            session=konfuzio_session(timeout=timeout),
-        )
-
-        new_document_id = json.loads(response.text)['id']
-
-        return new_document_id
+        return document
 
     @property
     def file_path(self):
@@ -2742,6 +2728,28 @@ class Document(Data):
         else:
             self._category = self.project.no_category
         return self._category
+
+    def get_segmentation(self, timeout: Optional[int] = None, num_retries: Optional[int] = None) -> List:
+        """
+        Retrieve the segmentation results for the Document.
+
+        :param timeout: Number of seconds to wait for response from the server.
+        :param num_retries: Number of retries if the request fails.
+        :return: A list of segmentation results for each Page in the Document.
+        """
+        document = self.project.get_document_by_id(self.copy_of_id) if self.copy_of_id else self
+        if any(page._segmentation is None for page in document.pages()):
+            document_id = document.id_
+            detectron_document_results = get_results_from_segmentation(
+                document_id, self.project.id_, konfuzio_session(timeout=timeout, num_retries=num_retries)
+            )
+            assert len(detectron_document_results) == self.number_of_pages
+            for page_index, detectron_page_result in enumerate(detectron_document_results):
+                document.get_page_by_index(page_index)._segmentation = detectron_page_result
+        else:
+            detectron_document_results = [page._segmentation for page in document.pages()]
+
+        return detectron_document_results
 
     def set_category(self, category: Category) -> None:
         """Set the Category of the Document and the Category of all of its Pages as revised."""
@@ -2873,7 +2881,9 @@ class Document(Data):
                 number=page.number,
                 original_size=(page.width, page.height),
                 image_size=(page.image_width, page.image_height),
+                category=page.category,
             )
+            _.image_bytes = page.image_bytes
         return document
 
     def check_annotations(self, update_document: bool = False) -> bool:
@@ -3042,16 +3052,16 @@ class Document(Data):
             if spans_num & filled:
                 # if there's overlap
                 continue
-            # if (
-            #     annotation.is_correct is False
-            #     and annotation.label.has_multiple_top_candidates is False
-            #     and annotation.label.id_ in no_label_duplicates
-            # ):
-            #     continue
+            if (
+                annotation.is_correct is False
+                and annotation.label.has_multiple_top_candidates is False
+                and (annotation.label.id_, annotation.annotation_set.id_) in no_label_duplicates
+            ):
+                continue
             annotations.append(annotation)
             filled |= spans_num
             if not annotation.label.has_multiple_top_candidates:
-                no_label_duplicates.add(annotation.label.id_)
+                no_label_duplicates.add((annotation.label.id_, annotation.annotation_set.id_))
 
         return sorted(annotations)
 
@@ -3108,9 +3118,13 @@ class Document(Data):
 
     def download_document_details(self):
         """Retrieve data from a Document online in case Document has finished processing."""
-        if self.is_online and self.status and self.status[0] == Document.DONE:
+        if self.is_online:
             data = get_document_details(document_id=self.id_, project_id=self.project.id_, session=self.session)
-
+            self.status = data["status"]
+            self.updated_at = dateutil.parser.isoparse(data["updated_at"])
+            if data["category_template"]:
+                self._category = self.project.get_category_by_id(data["category_template"])
+            # TODO: update rest of metadata with APIv3
             # write a file, even there are no annotations to support offline work
             with open(self.annotation_file_path, "w") as f:
                 json.dump(data["annotations"], f, indent=2, sort_keys=True)
@@ -3119,7 +3133,8 @@ class Document(Data):
                 json.dump(data["sections"], f, indent=2, sort_keys=True)
 
             with open(self.txt_file_path, "w", encoding="utf-8") as f:
-                f.write(data["text"])
+                if data["text"]:
+                    f.write(data["text"])
 
             with open(self.pages_file_path, "w") as f:
                 json.dump(data["pages"], f, indent=2, sort_keys=True)
@@ -3599,6 +3614,7 @@ class Document(Data):
                         end_offset=end_offset,
                         copy_of_id=page_id,
                         number=i,
+                        category=page.category,
                     )
                     i += 1
                     start_offset = end_offset + 1
@@ -3612,51 +3628,53 @@ class Document(Data):
                         end_offset=end_offset,
                         copy_of_id=page_id,
                         number=i,
+                        category=page.category,
                     )
                     i += 1
                     start_offset = end_offset + 1
         return new_doc
 
     def get_document_classifier_examples(self, text_vocab, category_vocab, max_len, use_image, use_text):
-        """Get the per document examples for the document classifier."""
-        document_image_paths = []
+        """Get the per-Document examples for the Document classifier."""
+        document_images = []
         document_tokens = []
         document_labels = []
         document_ids = []
         document_page_numbers = []
 
-        # validate the data for the document
+        # validate the data for the Document
         if use_image:
             self.get_images()  # gets the images if they do not exist
-            image_paths = [page.image_path for page in self.pages()]  # gets the paths to the images
+            images = [page.image for page in self.pages()]  # gets the paths to the images
             # @TODO move this validation to the Document class or the Page class
-            assert len(image_paths) > 0, f'No images found for document {self.id_}'
+            assert len(images) > 0, f'No images found for Document {self.id_}'
             if not use_text:  # if only using images then make texts a list of None
-                page_texts = [None] * len(image_paths)
+                page_texts = [None] * len(images)
         if use_text:
             page_texts = self.text.split('\f')
             # @TODO move this validation to the Document class or the Page class
-            assert len(page_texts) > 0, f'No text found for document {self.id_}'
+            assert len(page_texts) > 0, f'No text found for Document {self.id_}'
             if not use_image:  # if only using text then make images used a list of None
-                image_paths = [None] * len(page_texts)
+                images = [None] * len(page_texts)
 
         # check we have the same number of images and text pages
         # only useful when we have both an image and a text module
         # @TODO move this validation to the Document class or the Page class
-        assert len(image_paths) == len(
-            page_texts
-        ), f'No. of images ({len(image_paths)}) != No. of pages {len(page_texts)} for document {self.id_}'
+        assert len(images) == len(page_texts), (
+            f'Number of images ({len(images)}) is not equal to the number of Pages {len(page_texts)} for Document '
+            f'{self.id_}'
+        )
 
         for page in self.pages():
             if use_image:
                 # if using an image module, store the path to the image
-                document_image_paths.append(page.image_path)
+                document_images.append(page.image)
             else:
                 # if not using image module then don't need the image paths
                 # so we just have a list of None to keep the lists the same length
-                document_image_paths.append(None)
+                document_images.append(None)
             if use_text:
-                # if using a text module, tokenize the page, trim to max length and then numericalize
+                # if using a text module, tokenize the Page, trim to max length and then numericalize
                 # REPLACE page_tokens = tokenizer.get_tokens(page_text)[:max_len]
                 # page_encoded = [text_vocab.stoi(span.offset_string) for span in
                 # self.spans(start_offset=page.start_offset, end_offset=page.end_offset)]
@@ -3667,15 +3685,15 @@ class Document(Data):
                 # if not using text module then don't need the tokens
                 # so we just have a list of None to keep the lists the same length
                 document_tokens.append(None)
-            # get document classification (defined by the category template)
-            category_id = str(self.category.id_) if self.category is not None else 'NO_CATEGORY'
-            # append the classification (category), the document's id number and the page number of each page
+            # get Document classification (defined by the Category template)
+            category_id = str(self.category.id_) if self.category != self.project.no_category else 'NO_CATEGORY'
+            # append the classification (Category), the Document's ID and the number of each Page
             document_labels.append(torch.LongTensor([category_vocab.stoi(category_id)]))
             doc_id = self.id_ or self.copy_of_id
             document_ids.append(torch.LongTensor([doc_id]))
             document_page_numbers.append(torch.LongTensor([page.index]))
 
-        return document_image_paths, document_tokens, document_labels, document_ids, document_page_numbers
+        return document_images, document_tokens, document_labels, document_ids, document_page_numbers
 
 
 class Project(Data):
@@ -3976,32 +3994,32 @@ class Project(Data):
         n_unchanged_documents = 0
         for document_data in self.meta_data:
             updated_docs_ids_set.add(document_data['id'])
-            if document_data['status'][0] == 2:  # NOQA - hotfix for Text Annotation Server # todo add test
+            # if document_data['status'][0] == 2:  # NOQA - hotfix for Text Annotation Server # todo add test
 
-                new_date = document_data["updated_at"]
-                updated = False
-                new = document_data["id"] not in local_docs_dict
-                if not new:
-                    last_date = local_docs_dict[document_data['id']].updated_at
-                    updated = dateutil.parser.isoparse(new_date) > last_date if last_date is not None else True
+            new_date = document_data["updated_at"]
+            updated = False
+            new = document_data["id"] not in local_docs_dict
+            if not new:
+                last_date = local_docs_dict[document_data['id']].updated_at
+                updated = dateutil.parser.isoparse(new_date) > last_date if last_date is not None else True
 
-                if updated:
-                    doc = local_docs_dict[document_data['id']]
-                    doc.update_meta_data(**document_data)
-                    doc.update()
-                    logger.debug(f'{doc} was updated, we will download it again as soon you use it.')
-                    n_updated_documents += 1
-                elif new:
-                    doc = Document(project=self, update=from_online, id_=document_data['id'], **document_data)
-                    logger.debug(f'{doc} is not available on your machine, we will download it as soon you use it.')
-                    n_new_documents += 1
-                else:
-                    doc = local_docs_dict[document_data['id']]
-                    doc.update_meta_data(**document_data)  # reset any Document level meta data changes
-                    logger.debug(f'Unchanged local version of {doc} from {new_date}.')
-                    n_unchanged_documents += 1
+            if updated:
+                doc = local_docs_dict[document_data['id']]
+                doc.update_meta_data(**document_data)
+                doc.update()
+                logger.debug(f'{doc} was updated, we will download it again as soon you use it.')
+                n_updated_documents += 1
+            elif new:
+                doc = Document(project=self, update=from_online, id_=document_data['id'], **document_data)
+                logger.debug(f'{doc} is not available on your machine, we will download it as soon you use it.')
+                n_new_documents += 1
             else:
-                logger.debug(f"Not loading Document {[document_data['id']]} with status {document_data['status'][0]}.")
+                doc = local_docs_dict[document_data['id']]
+                doc.update_meta_data(**document_data)  # reset any Document level meta data changes
+                logger.debug(f'Unchanged local version of {doc} from {new_date}.')
+                n_unchanged_documents += 1
+            # else:
+            #    logger.debug(f"Not loading Document {[document_data['id']]} with status {document_data['status'][0]}.")
 
         to_delete_ids = set(local_docs_dict.keys()) - updated_docs_ids_set
         n_deleted_documents = len(to_delete_ids)
@@ -4026,8 +4044,6 @@ class Project(Data):
         """Delete Document by its ID."""
         document = self.get_document_by_id(document_id)
 
-        self._documents.remove(document)
-
         if delete_online:
             delete_file_konfuzio_api(document_id)
             self.write_meta_of_files()
@@ -4036,6 +4052,9 @@ class Project(Data):
                 shutil.rmtree(document.document_folder)
             except FileNotFoundError:
                 pass
+
+        self._documents.remove(document)
+
         return None
 
     def get_label_by_name(self, name: str) -> Label:

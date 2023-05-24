@@ -107,6 +107,7 @@ class TimeoutHTTPAdapter(HTTPAdapter):
         """Use timeout policy if not otherwise declared."""
         if request.headers['Authorization'] == 'Token None':
             raise PermissionError(f'Your Token to connect to {KONFUZIO_HOST} is missing, e.g. use "konfuzio_sdk init"')
+        logger.debug(f"Sending request: {request.url}, {request.method}, {request.headers}")
         timeout = kwargs.get("timeout")
         if timeout is None:
             kwargs["timeout"] = self.timeout
@@ -115,6 +116,7 @@ class TimeoutHTTPAdapter(HTTPAdapter):
     def build_response(self, req, resp):
         """Throw error for any HTTPError that is not part of the retry strategy."""
         response = super().build_response(req, resp)
+        logger.debug(f"Received response: {response.status_code}, {response.reason}, {response.url}")
         # handle status code one by one as some status codes will cause a retry, see konfuzio_session
         if response.status_code in [403, 404]:
             # Fallback to None if there's no detail, for whatever reason.
@@ -132,20 +134,24 @@ class TimeoutHTTPAdapter(HTTPAdapter):
         return response
 
 
-def konfuzio_session(token: str = KONFUZIO_TOKEN, timeout: Optional[int] = None):
+def konfuzio_session(token: str = KONFUZIO_TOKEN, timeout: Optional[int] = None, num_retries: Optional[int] = None):
     """
     Create a session incl. Token to the KONFUZIO_HOST.
 
+    :param token: Konfuzio Token to connect to the host.
+    :param timeout: Timeout in seconds.
+    :param num_retries: Number of retries if the request fails.
     :return: Request session.
     """
     if timeout is None:
         timeout = 120
+    if num_retries is None:
+        num_retries = 5
 
     retry_strategy = Retry(
-        total=5,
+        total=num_retries,
         status_forcelist=[429, 500, 502, 503, 504],
         backoff_factor=2,
-        # allowed_methods=["HEAD", "GET", "PUT", "DELETE", "OPTIONS", "TRACE"],  # POST excluded
     )
     session = requests.Session()
     session.mount('https://', adapter=TimeoutHTTPAdapter(max_retries=retry_strategy, timeout=timeout))

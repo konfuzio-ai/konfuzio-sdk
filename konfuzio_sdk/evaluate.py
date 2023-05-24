@@ -39,6 +39,7 @@ RELEVANT_FOR_EVALUATION = [
     "end_offset_predicted",
     # "is_correct_predicted", # it's a prediction so we don't know if it is correct
     "label_id_predicted",
+    "label_has_multiple_top_candidates_predicted",
     "label_threshold_predicted",  # we keep a flexibility to be able to predict the threshold
     # "revised_predicted",  # it's a prediction so we ignore if it is revised
     "annotation_set_id_predicted",
@@ -91,7 +92,11 @@ def compare(
     :param doc_a: Document which is assumed to be correct
     :param doc_b: Document which needs to be evaluated
     :param only_use_correct: Unrevised feedback in doc_a is assumed to be correct.
-    :param use_view_annotations: Use view_annotations filter to evaluate doc_b
+    :param use_view_annotations: Will filter for top confidence annotations. Only available when strict=True.
+     When use_view_annotations=True, it will compare only the highest confidence extractions to the ground truth
+     Annotations. When False (default), it compares all extractions to the ground truth Annotations. This setting is
+     ignored when strict=False, as the Non-Strict Evaluation needs to compare all extractions.
+     For more details see https://help.konfuzio.com/modules/extractions/index.html#evaluation
     :param ignore_below_threshold: Ignore Annotations below detection threshold of the Label (only affects TNs)
     :param strict: Evaluate on a Character exact level without any postprocessing, an amount Span "5,55 " will not be
      exact with "5,55"
@@ -101,7 +106,9 @@ def compare(
     df_a = pandas.DataFrame(doc_a.eval_dict(use_correct=only_use_correct))
     df_b = pandas.DataFrame(
         doc_b.eval_dict(
-            use_view_annotations=use_view_annotations, use_correct=False, ignore_below_threshold=ignore_below_threshold
+            use_view_annotations=strict and use_view_annotations,  # view_annotations only available for strict=True
+            use_correct=False,
+            ignore_below_threshold=ignore_below_threshold,
         )
     )
     if doc_a.category != doc_b.category:
@@ -228,6 +235,35 @@ def compare(
             | (~spans["is_matched"])
         )
     )
+
+    if not strict:
+
+        def prioritize_rows(group):
+            """
+            Apply a filter when a Label should only appear once per AnnotationSet but has been predicted multiple times.
+
+            After we have calculated the TPs, FPs, FNs for the Document, we filter out the case where a Label should
+            only appear once per AnnotationSet but has been predicted multiple times. In this case, if any of the
+            predictions is a TP then we keep one and discard FPs/FNs. If no TPs, if any of the predictions is a FP
+            then we keep one and discard the FNs. If no FPs, then we keep a FN. The prediction we keep is always the
+            first in terms of start_offset.
+            """
+            group = group[~(group['label_has_multiple_top_candidates_predicted'].astype(bool))]
+            if group.empty:
+                return group
+
+            first_true_positive = group[group['true_positive']].head(1)
+            first_false_positive = group[group['false_positive']].head(1)
+            first_false_negative = group[group['false_negative']].head(1)
+            if not first_true_positive.empty:
+                return first_true_positive
+            elif not first_false_positive.empty:
+                return first_false_positive
+            else:
+                return first_false_negative
+
+        spans = spans.groupby(['annotation_set_id_predicted', 'label_id_predicted']).apply(prioritize_rows)
+
     spans = spans.replace({numpy.nan: None})
     # one Span must not be defined as TP or FP or FN more than once
     quality = (spans[['true_positive', 'false_positive', 'false_negative']].sum(axis=1) <= 1).all()
@@ -308,7 +344,7 @@ class ExtractionEvaluation:
         Relate to the two document instances.
 
         :param documents: A list of tuple Documents that should be compared.
-        :param strict: A boolean passed to the `compare` function.
+        :param strict: Evaluate on a Character exact level without any postprocessing.
         :param use_view_annotations:
             Bool for whether to filter evaluated Document with view_annotations. Will filter out all overlapping Spans
             and below threshold Annotations. Should lead to faster evaluation.

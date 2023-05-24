@@ -11,8 +11,9 @@ from konfuzio_sdk.evaluate import compare, grouped, ExtractionEvaluation, Evalua
 
 from konfuzio_sdk.samples import LocalTextProject
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
+
 from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel, SplittingAI, FileSplittingEvaluation
-from tests.variables import TEST_DOCUMENT_ID
+from tests.variables import TEST_DOCUMENT_ID, OFFLINE_PROJECT
 
 
 class TestCompare(unittest.TestCase):
@@ -43,7 +44,7 @@ class TestCompare(unittest.TestCase):
 
     def test_strict_doc_on_doc_incl_multiline_annotation(self):
         """Test if a Document is 100 % equivalent even it has unrevised Annotations."""
-        prj = Project(id_=None, project_folder='example_project_data')
+        prj = Project(id_=None, project_folder=OFFLINE_PROJECT)
         doc_a = prj.get_document_by_id(TEST_DOCUMENT_ID)
         doc_b = prj.get_document_by_id(TEST_DOCUMENT_ID)  # predicted
         evaluation = compare(doc_a, doc_b)
@@ -58,7 +59,7 @@ class TestCompare(unittest.TestCase):
 
     def test_strict_doc_where_first_annotation_was_skipped(self):
         """Test if a Document is 100 % equivalent with first Annotation not existing for a certain Label."""
-        prj = Project(id_=None, project_folder='example_project_data')
+        prj = Project(id_=None, project_folder=OFFLINE_PROJECT)
         doc_a = prj.get_document_by_id(TEST_DOCUMENT_ID)
         doc_b = prj.get_document_by_id(TEST_DOCUMENT_ID)  # predicted
         doc_b.annotations()
@@ -74,7 +75,7 @@ class TestCompare(unittest.TestCase):
 
     def test_strict_doc_where_last_annotation_was_skipped(self):
         """Test if a Document is 100 % equivalent with last Annotation not existing for a certain Label."""
-        prj = Project(id_=None, project_folder='example_project_data')
+        prj = Project(id_=None, project_folder=OFFLINE_PROJECT)
         doc_a = prj.get_document_by_id(TEST_DOCUMENT_ID)
         doc_b = prj.get_document_by_id(TEST_DOCUMENT_ID)  # predicted
         doc_b.annotations()
@@ -90,7 +91,7 @@ class TestCompare(unittest.TestCase):
 
     def test_strict_if_first_multiline_annotation_is_missing_in_b(self):
         """Test if a Document is equivalent if first Annotation is missing."""
-        prj = Project(id_=None, project_folder='example_project_data')
+        prj = Project(id_=None, project_folder=OFFLINE_PROJECT)
         doc_a = prj.get_document_by_id(TEST_DOCUMENT_ID)
         doc_b = Document(project=prj, category=doc_a.category)
         for annotation in doc_a.annotations()[1:]:
@@ -107,7 +108,7 @@ class TestCompare(unittest.TestCase):
 
     def test_strict_doc_where_first_annotation_is_missing_in_a(self):
         """Test if a Document is equivalent if first Annotation is not present."""
-        prj = Project(id_=None, project_folder='example_project_data')
+        prj = Project(id_=None, project_folder=OFFLINE_PROJECT)
         doc_b = prj.get_document_by_id(TEST_DOCUMENT_ID)
         doc_a = Document(project=prj, category=doc_b.category)
         # use only correct Annotations
@@ -126,7 +127,7 @@ class TestCompare(unittest.TestCase):
 
     def test_strict_only_unrevised_annotations(self):
         """Test to evaluate on a Document that has only unrevised Annotations."""
-        prj = Project(id_=None, project_folder='example_project_data')
+        prj = Project(id_=None, project_folder=OFFLINE_PROJECT)
         doc_a = prj.get_document_by_id(137234)
         doc_b = Document(project=prj, category=doc_a.category)
 
@@ -142,7 +143,7 @@ class TestCompare(unittest.TestCase):
 
     def test_strict_doc_where_first_annotation_from_all_is_missing_in_a(self):
         """Test if a Document is equivalent if all Annotation are not present and feedback required are included."""
-        prj = Project(id_=None, project_folder='example_project_data')
+        prj = Project(id_=None, project_folder=OFFLINE_PROJECT)
         doc_b = prj.get_document_by_id(TEST_DOCUMENT_ID)
         doc_a = Document(project=prj, category=doc_b.category)
         # use correct Annotations and feedback required ones
@@ -162,7 +163,7 @@ class TestCompare(unittest.TestCase):
 
     def test_strict_doc_where_last_annotation_is_missing_in_b(self):
         """Test if a Document is equivalent if last Annotation is missing."""
-        prj = Project(id_=None, project_folder='example_project_data')
+        prj = Project(id_=None, project_folder=OFFLINE_PROJECT)
         doc_a = prj.get_document_by_id(TEST_DOCUMENT_ID)
         doc_b = Document(project=prj, category=doc_a.category)
         # use correct Annotations and feedback required ones
@@ -181,7 +182,7 @@ class TestCompare(unittest.TestCase):
 
     def test_strict_doc_where_last_annotation_is_missing_in_a(self):
         """Test if a Document is equivalent if last Annotation is not present."""
-        prj = Project(id_=None, project_folder='example_project_data')
+        prj = Project(id_=None, project_folder=OFFLINE_PROJECT)
         doc_b = prj.get_document_by_id(TEST_DOCUMENT_ID)
         doc_a = Document(project=prj, category=doc_b.category)
         # use correct Annotations and feedback required ones
@@ -200,7 +201,7 @@ class TestCompare(unittest.TestCase):
 
     def test_strict_nothing_should_be_predicted(self):
         """Support to evaluate that nothing is found in a document."""
-        prj = Project(id_=None, project_folder='example_project_data')
+        prj = Project(id_=None, project_folder=OFFLINE_PROJECT)
         doc_b = prj.get_document_by_id(TEST_DOCUMENT_ID)
         doc_a = Document(project=prj, category=doc_b.category)
         evaluation = compare(doc_a, doc_b, ignore_below_threshold=False)
@@ -216,7 +217,7 @@ class TestCompare(unittest.TestCase):
 
     def test_strict_nothing_can_be_predicted(self):
         """Support to evaluate that nothing must be found in a document."""
-        prj = Project(id_=None, project_folder='example_project_data')
+        prj = Project(id_=None, project_folder=OFFLINE_PROJECT)
         doc_a = prj.get_document_by_id(TEST_DOCUMENT_ID)
         doc_b = Document(project=prj, category=doc_a.category)
         evaluation = compare(doc_a, doc_b)
@@ -238,7 +239,7 @@ class TestCompare(unittest.TestCase):
         Only 1 is in the prediction.
         """
         # todo: this logic is a view logic on the document: shouldn't this go into the Annotations function
-        prj = Project(id_=None, project_folder='example_project_data')
+        prj = Project(id_=None, project_folder=OFFLINE_PROJECT)
         doc_a = prj.get_document_by_id(TEST_DOCUMENT_ID)
         doc_b = Document(project=prj, category=doc_a.category)
 
@@ -397,10 +398,10 @@ class TestCompare(unittest.TestCase):
         assert evaluation_strict["tokenizer_true_positive"].sum() == 0
 
         evaluation = compare(document_a, document_b, strict=False)
-        assert len(evaluation) == 3
+        assert len(evaluation) == 2
         assert evaluation["true_positive"].sum() == 1
         assert evaluation["false_positive"].sum() == 1
-        assert evaluation["false_negative"].sum() == 1
+        assert evaluation["false_negative"].sum() == 0
         assert evaluation["tokenizer_true_positive"].sum() == 0  # we don't find it with the tokenizer but only parts
 
     def test_non_strict_is_better_than_strict(self):
@@ -444,6 +445,84 @@ class TestCompare(unittest.TestCase):
         assert len(evaluation_strict) == 2
         assert evaluation_strict["true_positive"].sum() == 0
         assert evaluation_strict["false_positive"].sum() == 1
+        assert evaluation_strict["false_negative"].sum() == 1
+        assert evaluation_strict["tokenizer_true_positive"].sum() == 0
+
+        evaluation = compare(document_a, document_b, strict=False)
+        assert len(evaluation) == 1
+        assert evaluation["true_positive"].sum() == 1
+        assert evaluation["false_positive"].sum() == 0
+        assert evaluation["false_negative"].sum() == 0
+        assert evaluation["tokenizer_true_positive"].sum() == 0
+
+    def test_non_strict_filters_out_fps_and_fns(self):
+        """
+        Test that Non-Strict Evaluation should filter out the case where a Label should only appear once.
+
+        We will create two Documents to demonstrate Non-Strict Evaluation.
+        Document A with text: "1234567890"; and Annotations: "34" (ground truth)
+        # Document B with text: "1234567890"; and Annotations "3" and "67" (predicted)
+
+        According to Strict Evaluation, there would be 2 FP and 1 FN,
+        because 2 Annotations were found that did not correspond to anything in the ground truth,
+        and because 1 Annotation in the ground truth was not matched in the predicted Document.
+
+        According to Non-Strict Evaluation, there would be only 1 TP, because "3" is partially overlapping
+        with "34", which counts as a TP. And because the Label associated to this Annotation has
+        has_multiple_top_candidates=False, which means that as soon as 1 TP is found, FPs and FNs are discarded.
+        Thus, the "67" extraction is not considered in the Non-Strict Evaluation.
+
+        For more details see https://help.konfuzio.com/modules/extractions/index.html#evaluation
+        """
+        project = Project(id_=None)
+        category = Category(project=project)
+        label_set = LabelSet(id_=33, project=project, categories=[category])
+        label = Label(id_=22, project=project, label_sets=[label_set], threshold=0.1, has_multiple_top_candidates=False)
+        # create a Document A with text: "1234567890"; and Annotations: "34"
+        document_a = Document(project=project, category=category, text="1234567890")
+        # Annotation Set
+        span_1 = Span(start_offset=2, end_offset=4)
+        annotation_set_a = AnnotationSet(id_=2, document=document_a, label_set=label_set)
+        _ = Annotation(
+            id_=2,
+            document=document_a,
+            is_correct=True,
+            annotation_set=annotation_set_a,
+            label=label,
+            label_set=label_set,
+            spans=[span_1],
+        )
+        # create a Document B with text: "1234567890"; and Annotations "3" and "67"
+        document_b = Document(project=project, category=category, text="1234567890")
+        # Annotation Set
+        span_2 = Span(start_offset=2, end_offset=3)
+        span_3 = Span(start_offset=5, end_offset=7)
+        annotation_set_b = AnnotationSet(id_=3, document=document_b, label_set=label_set)
+        _ = Annotation(
+            id_=4,
+            document=document_b,
+            confidence=0.5,
+            is_correct=False,
+            annotation_set=annotation_set_b,
+            label=label,
+            label_set=label_set,
+            spans=[span_2],
+        )
+        _ = Annotation(
+            id_=5,
+            document=document_b,
+            confidence=0.5,
+            is_correct=False,
+            annotation_set=annotation_set_b,
+            label=label,
+            label_set=label_set,
+            spans=[span_3],
+        )
+
+        evaluation_strict = compare(document_a, document_b)
+        assert len(evaluation_strict) == 3
+        assert evaluation_strict["true_positive"].sum() == 0
+        assert evaluation_strict["false_positive"].sum() == 2
         assert evaluation_strict["false_negative"].sum() == 1
         assert evaluation_strict["tokenizer_true_positive"].sum() == 0
 

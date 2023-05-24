@@ -34,9 +34,3 @@ This component is responsible for drawing the Document and handling any interact
 ![document_annotations.svg](./images/document_annotations.svg)
 
 This component is responsible for creating a list to interact with each Annotation on the Document. You can accept, decline or edit the Annotation, edit empty Labels and change the Annotation bounding box, among other things.
-
-### Documents List
-
-![documents_list.png](./images/documents_list.png)
-
-This is an optional component that is only loaded if a [Category](https://help.konfuzio.com/modules/categories/index.html) ID is provided under the environment file. You also need to add an Authentication Token. This component is responsible for loading the Documents list for a given Category and that are assigned to the currently authenticated user. You can then select which Document will appear on the dashboard.
