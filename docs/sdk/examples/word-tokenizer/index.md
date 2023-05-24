@@ -1,11 +1,11 @@
 ## Tutorial: Getting Word Bounding Box (BBox) for a Document
 
-In this tutorial, we will walk through how to extract the bounding box (BBox) for words in a document, rather than for individual characters, using the Konfuzio SDK. This process involves the use of the `WhitespaceTokenizer` from the Konfuzio SDK to tokenize the document and identify word-level spans, which can then be visualized or used to extract BBox information.
+In this tutorial, we will walk through how to extract the bounding box (BBox) for words in a Document, rather than for individual characters, using the Konfuzio SDK. This process involves the use of the `WhitespaceTokenizer` from the Konfuzio SDK to tokenize the Document and identify word-level Spans, which can then be visualized or used to extract BBox information.
 
 ### Prerequisites
 
 - You will need to have the Konfuzio SDK installed.
-- You should have access to a project on the Konfuzio platform.
+- You should have access to a Project on the Konfuzio platform.
 
 ### Preview of Result
 
@@ -20,41 +20,41 @@ In this tutorial, we will walk through how to extract the bounding box (BBox) fo
       :lines: 6-8
       :dedent: 4
 
-2. **Initialize your project**:
+2. **Initialize your Project**:
 
-   This involves creating a project instance with the appropriate ID.
+   This involves creating a Project instance with the appropriate ID.
 
    .. literalinclude:: /sdk/boilerplates/test_word_bboxes.py
       :language: python
       :lines: 13
       :dedent: 4
 
-3. **Retrieve a document from your project**:
+3. **Retrieve a Document from your Project**:
 
    .. literalinclude:: /sdk/boilerplates/test_word_bboxes.py
       :language: python
       :lines: 15
       :dedent: 4
 
-4. **Create a copy of your document without annotations**:
+4. **Create a copy of your Document without Annotations**:
 
    .. literalinclude:: /sdk/boilerplates/test_word_bboxes.py
       :language: python
       :lines: 16
       :dedent: 4
 
-5. **Tokenize the document**:
+5. **Tokenize the Document**:
 
-   This process involves splitting the document into word-level spans using the WhitespaceTokenizer.
+   This process involves splitting the Document into word-level Spans using the WhitespaceTokenizer.
 
    .. literalinclude:: /sdk/boilerplates/test_word_bboxes.py
       :language: python
       :lines: 17-18
       :dedent: 4
 
-6. **Visualize all word-level annotations**:
+6. **Visualize all word-level Annotations**:
 
-   After getting the bounding box for all spans, you might want to visually check the results to make sure the bounding boxes are correctly assigned. Here's how you can do it:
+   After getting the bounding box for all Spans, you might want to visually check the results to make sure the bounding boxes are correctly assigned. Here's how you can do it:
 
    .. literalinclude:: /sdk/boilerplates/test_word_bboxes.py
       :language: python
@@ -63,17 +63,16 @@ In this tutorial, we will walk through how to extract the bounding box (BBox) fo
 
    .. image:: /sdk/examples/word-tokenizer/word-bboxes.png
 
-   This will display an image of the document with all word-level annotations. The image may look a bit messy with all the labels.
+   This will display an image of the Document with all word-level Annotations. The image may look a bit messy with all the Labels.
 
-7. **Get bounding box for all spans**:
+7. **Get bounding box for all Spans**:
 
-   You can retrieve bounding boxes for all word-level spans using the following code:
+   You can retrieve bounding boxes for all word-level Spans using the following code:
 
    .. literalinclude:: /sdk/boilerplates/test_word_bboxes.py
       :language: python
       :lines: 21
       :dedent: 4
 
-   Each bounding box consists of the coordinates of the top-left corner of the box, as well as its width and height. The list `span_bboxes` will contain these bounding box coordinates for each word in the document.
+   Each bounding box consists of the coordinates of the top-left corner of the box, as well as its width and height. The list `span_bboxes` will contain these bounding box coordinates for each word in the Document.
 
-**NOTE:** As per the conversation above, as of now, there are no specific methods in the Konfuzio SDK to retrieve all projects/label sets in a project/document details for other entities. If needed, custom code would have to be written for this purpose. Also, the API does not currently support a solution for this task.
