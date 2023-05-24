@@ -1837,9 +1837,9 @@ class Span(Data):
                 "custom_offset_string": None,
                 "revised": None,
                 "label_threshold": None,
-                "label_id": None,
+                "label_id": 0,
                 "label_has_multiple_top_candidates": None,
-                "label_set_id": None,
+                "label_set_id": 0,
                 "annotation_id": None,
                 "annotation_set_id": 0,  # to allow grouping to compare boolean
                 "document_id": 0,
