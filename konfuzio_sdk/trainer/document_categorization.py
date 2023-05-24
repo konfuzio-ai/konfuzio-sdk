@@ -359,7 +359,7 @@ class NBOWSelfAttention(AbstractTextCategorizationModel):
     def _load_architecture(self) -> None:
         """Load NN architecture."""
         self.embedding = nn.Embedding(self.input_dim, self.emb_dim)
-        self.multihead_attention = nn.MultiheadAttention(self.emb_dim, self.n_heads, batch_first=True)
+        self.multihead_attention = nn.MultiheadAttention(self.emb_dim, self.n_heads)
         self.dropout = nn.Dropout(self.dropout_rate)
 
     def _define_features(self) -> None:
@@ -369,8 +369,12 @@ class NBOWSelfAttention(AbstractTextCategorizationModel):
     def _output(self, text: torch.Tensor) -> List[torch.FloatTensor]:
         """Collect output of the multiple attention heads."""
         embeddings = self.dropout(self.embedding(text))
-        # embeddings = [batch, seq len, emb dim]
+        # transposing so that the batch size is first. the result is embeddings = [batch, seq len, emb dim]
+        # this step is needed to imitate batch_first=True argument in MultiheadAttention, since in torch==1.8.1 it is
+        # not present.
+        embeddings = embeddings.transpose(1, 0)
         text_features, attention = self.multihead_attention(embeddings, embeddings, embeddings)
+        text_features = text_features.transpose(1, 0)
         return [text_features, attention]
 
 
