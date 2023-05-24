@@ -359,7 +359,7 @@ class NBOWSelfAttention(AbstractTextCategorizationModel):
     def _load_architecture(self) -> None:
         """Load NN architecture."""
         self.embedding = nn.Embedding(self.input_dim, self.emb_dim)
-        self.multihead_attention = nn.MultiheadAttention(self.emb_dim, self.n_heads, batch_first=True)
+        self.multihead_attention = nn.MultiheadAttention(self.emb_dim, self.n_heads)
         self.dropout = nn.Dropout(self.dropout_rate)
 
     def _define_features(self) -> None:
@@ -369,8 +369,12 @@ class NBOWSelfAttention(AbstractTextCategorizationModel):
     def _output(self, text: torch.Tensor) -> List[torch.FloatTensor]:
         """Collect output of the multiple attention heads."""
         embeddings = self.dropout(self.embedding(text))
-        # embeddings = [batch, seq len, emb dim]
+        # transposing so that the batch size is first. the result is embeddings = [batch, seq len, emb dim]
+        # this step is needed to imitate batch_first=True argument in MultiheadAttention, since in torch==1.8.1 it is
+        # not present.
+        embeddings = embeddings.transpose(1, 0)
         text_features, attention = self.multihead_attention(embeddings, embeddings, embeddings)
+        text_features = text_features.transpose(1, 0)
         return [text_features, attention]
 
 
@@ -919,7 +923,7 @@ class CategorizationAI(AbstractCategorizationAI):
 
         self.device = torch.device('cuda' if (torch.cuda.is_available() and use_cuda) else 'cpu')
 
-    def save(self, path: Union[None, str] = None) -> str:
+    def save(self, path: Union[None, str] = None, reduce_weight: bool = True) -> str:
         """
         Save only the necessary parts of the model for extraction/inference.
 
@@ -930,6 +934,9 @@ class CategorizationAI(AbstractCategorizationAI):
         - configs (to ensure we load the same models used in training)
         - state_dicts (the classifier parameters achieved through training)
         """
+        if reduce_weight:
+            self.reduce_model_weight()
+
         # create dictionary to save all necessary model data
         data_to_save = {
             'tokenizer': self.tokenizer,
@@ -938,6 +945,8 @@ class CategorizationAI(AbstractCategorizationAI):
             'text_vocab': self.text_vocab,
             'category_vocab': self.category_vocab,
             'classifier': self.classifier,
+            'eval_transforms': self.eval_transforms,
+            'train_transforms': self.train_transforms,
             'model_type': 'CategorizationAI',
         }
 
@@ -1218,6 +1227,10 @@ class CategorizationAI(AbstractCategorizationAI):
 
         return training_metrics
 
+    def reduce_model_weight(self):
+        """Reduce the size of the model by running lose_weight on the tokenizer."""
+        self.tokenizer.lose_weight()
+
     @torch.no_grad()
     def _predict(self, page_images, text, batch_size=2, *args, **kwargs) -> Tuple[Tuple[int, float], pd.DataFrame]:
         """
@@ -1496,7 +1509,14 @@ def build_categorization_ai_pipeline(
 
 COMMON_PARAMETERS = ['tokenizer', 'text_vocab', 'model_type']
 
-document_components = ['image_preprocessing', 'image_augmentation', 'category_vocab', 'classifier']
+document_components = [
+    'image_preprocessing',
+    'image_augmentation',
+    'category_vocab',
+    'classifier',
+    'eval_transforms',
+    'train_transforms',
+]
 
 document_components.extend(COMMON_PARAMETERS)
 
@@ -1534,6 +1554,8 @@ def _load_categorization_model(path: str):
     model.text_vocab = loaded_data['text_vocab']
     model.category_vocab = loaded_data['category_vocab']
     model.classifier = loaded_data['classifier']
+    model.eval_transforms = loaded_data['eval_transforms']
+    model.train_transforms = loaded_data['train_transforms']
     # need to ensure classifiers start in evaluation mode
     model.classifier.eval()
 

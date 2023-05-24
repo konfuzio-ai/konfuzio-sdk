@@ -93,7 +93,7 @@ setuptools.setup(
         'pympler>=1.0.1',  # Use to get pickle file size.
         'scikit-learn>=1.0.2',
         'timm==0.6.7',  # for extra pytorch models, i.e. EfficientNet
-        'spacy==3.1.4',  # used for spaCy tokenization
+        'spacy>=2.3.5, <=3.1.4',  # used for spaCy tokenization
     ],
     extras_require={
         'dev': [
