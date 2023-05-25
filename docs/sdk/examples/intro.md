@@ -192,8 +192,8 @@ Boxes).
 #### Upload Document
 
 This section details how to upload a new file in your Project using the Konfuzio SDK. The files must be of types specified 
-in the Supported File Types. Here, we're primarily focusing on the `Document.from_file` method to create a 
-[Konfuzio Document](https://dev.konfuzio.com/sdk/sourcecode.html#document).
+in the [Supported File Types](https://help.konfuzio.com/specification/supported_file_types/index.html). Here, we're 
+primarily focusing on the `Document.from_file` method to create a [Konfuzio Document](https://dev.konfuzio.com/sdk/sourcecode.html#document).
 
 A Konfuzio Document is an object representing the file you upload, it will contain the OCR (Optical Character Recognition) 
 information of the file once processed by Konfuzio's server.
@@ -201,13 +201,13 @@ information of the file once processed by Konfuzio's server.
 ##### Synchronous and Asynchronous Upload
 
 You have two options for uploading your file: a synchronous method and an asynchronous method. The method is determined 
-by the `sync` parameter in the `from_file` function.
+by the `sync` parameter in the `from_file` method.
 
-1. **Synchronous upload (sync=True)**: The file is uploaded to the Konfuzio servers, and the function waits for the 
+1. **Synchronous upload (sync=True)**: The file is uploaded to the Konfuzio servers, and the method waits for the 
 document to be processed. Once done, it returns a Document object with the OCR information. This is useful if you want 
 to start working with the document immediately after the OCR processing is completed.
 
-2. **Asynchronous upload (sync=False)**: The function immediately returns an empty Document object after initiating the 
+2. **Asynchronous upload (sync=False)**: The method immediately returns an empty Document object after initiating the 
 upload. The OCR processing takes place in the background. This method is advantageous when uploading a large file or a 
 large number of files, as it doesn't require waiting for each file's processing to complete.
 
