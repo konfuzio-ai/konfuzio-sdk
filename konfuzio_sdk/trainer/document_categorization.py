@@ -1455,8 +1455,9 @@ def build_categorization_ai_pipeline(
     # Configure image and text models
     if image_model is not None:
         if isinstance(image_model, str):
-            image_model = [model for model in ImageModel if model.value == image_model][0]
-            if not image_model:
+            try:
+                image_model = next(model for model in ImageModel if model.value == image_model)
+            except StopIteration:
                 raise ValueError(f'{image_model} not found. Provide an existing name for the image model.')
         image_model_class = None
         if "efficientnet" in image_model.value:
@@ -1467,8 +1468,9 @@ def build_categorization_ai_pipeline(
         image_model = image_model_class(name=image_model.value)
     if text_model is not None:
         if isinstance(text_model, str):
-            text_model = [model for model in TextModel if model.value == text_model][0]
-            if not text_model:
+            try:
+                text_model = next(model for model in TextModel if model.value == text_model)
+            except StopIteration:
                 raise ValueError(f'{text_model} not found. Provide an existing name for the image model.')
         text_model_class_mapping = {
             TextModel.NBOW: NBOW,
