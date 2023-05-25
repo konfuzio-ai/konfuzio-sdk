@@ -574,8 +574,8 @@ def test_get_document_classifier_examples():
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
     document = project.get_document_by_id(44823)
     categorization_pipeline = build_categorization_ai_pipeline(
-        categories=[project.categories[0]],
-        documents=project.documents[:10],
+        categories=[project.get_category_by_id(63)],
+        documents=project.documents[:10],  # for shorter runtime
         test_documents=project.test_documents[:10],
         image_model=ImageModel.EfficientNetB0,
         text_model=TextModel.NBOWSelfAttention,
@@ -602,7 +602,7 @@ def test_categorize_no_category_document():
     test_document = project.get_document_by_id(TEST_CATEGORIZATION_DOCUMENT_ID)
     test_document.set_category(None)
     categorization_pipeline = build_categorization_ai_pipeline(
-        categories=[project.categories[0]],
+        categories=[project.get_category_by_id(63)],
         documents=project.documents[:10],
         test_documents=project.test_documents[:10],
         image_model=ImageModel.EfficientNetB0,
@@ -612,4 +612,4 @@ def test_categorize_no_category_document():
     tokenized_doc = WhitespaceTokenizer().tokenize(tokenized_doc)
     tokenized_doc.status = test_document.status
     categorization_pipeline.categorize(document=test_document, recategorize=True)
-    pass
+    assert test_document.category == project.no_category
