@@ -380,7 +380,8 @@ sequenceDiagram
 ```
 
 A Webhook is sent after processing, if the URL via `callback_url` is given when uploading the Document.
-If you want to configure additional webhooks, please feel free to [contact us](https://konfuzio.com/kontakt/).
+If you want to configure additional webhooks, please feel free to [contact us](https://konfuzio.com/kontakt/). 
+The Webhook is sent from one of the following IP addresses: 167.235.194.147, 168.119.108.13, 5.75.234.115, 138.201.119.223, 5.75.212.167. 
 
 ```
 curl --request POST \
