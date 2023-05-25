@@ -1011,12 +1011,13 @@ class TestEvaluation(unittest.TestCase):
         assert evaluation.strict is False
 
     def test_not_strict_against_empty_document(self):
-        """Test that evaluation can be initialized with strict mode disabled."""
+        """Test that non-strict Evaluation can be used with Document with no extractions."""
         project = LocalTextProject()
         document = project.documents[0]
-        empty_extracted_document = deepcopy(document)
+        empty_extracted_document = deepcopy(document)  # no Annotation Document
         evaluation = ExtractionEvaluation(documents=[(document, empty_extracted_document)], strict=False)
         assert evaluation.strict is False
+        assert len(evaluation.data) == 0
 
     def test_true_positive(self):
         """Count two Spans from two Training Documents."""
