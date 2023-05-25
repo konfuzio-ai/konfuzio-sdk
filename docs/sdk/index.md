@@ -1,6 +1,6 @@
-## What is the Konfuzio SDK?
+# What is the Konfuzio SDK?
 
-### Overview
+## Overview
 
 The Open Source Konfuzio Software Development Kit (Konfuzio SDK) provides a Python API to build custom document processes. For a quick introduction to the SDK, check out the [Get Started](get_started.html) section. Review the release notes and the source code on [GitHub](https://github.com/konfuzio-ai/konfuzio-sdk/releases).
 
@@ -13,7 +13,7 @@ The Open Source Konfuzio Software Development Kit (Konfuzio SDK) provides a Pyth
 | [Contribution Guide](contribution.html)                           | Learn how to contribute, run the tests locally, and submit a Pull Request.                                  |
 | [Changelog](https://github.com/konfuzio-ai/konfuzio-sdk/releases) | Review the release notes and the source code of the Konfuzio SDK.                                           |
 
-### Customizing document processes with the Konfuzio SDK
+## Customizing document processes with the Konfuzio SDK
 
 For documentation about how to train and evaluate document understanding AIs, as well as extract new documents using 
 the Konfuzio Server web interface, please see our [Konfuzio Guide](https://help.konfuzio.com/tutorials/quickstart/index.html).
@@ -24,7 +24,7 @@ is the tool for you. You can customize pipelines for automatic document Categori
 .. note::
   Customizing document AI pipelines with the Konfuzio SDK requires a self-hosted installation of the Konfuzio Server.
 
-#### Three steps to customize document AI pipelines
+### Three steps to customize document AI pipelines
 
 1. The Konfuzio SDK defines abstract Python classes and interfaces for [Categorization](sourcecode.html#categorization-ai), [File Splitting](sourcecode.html#file-splitting-ai), and [Extraction](sourcecode.html#extraction-ai) AI pipelines. 
 By implementing the abstract methods in a custom subclass, custom behaviours can be defined for each AI pipeline. Make
@@ -36,7 +36,7 @@ to be directly uploaded to the Konfuzio Server (see [Upload Extraction or Catego
 
 4. Finally, activating the uploaded AI on the web interface will enable the custom pipeline on your self-hosted installation.
 
-#### Customize Extraction AI
+### Customize Extraction AI
 
 Any Custom [Extraction AI](sourcecode.html#extraction-ai) (derived from the Konfuzio `AbstractExtractionAI` class) should implement 
 the following interface:
@@ -95,7 +95,7 @@ extraction_pipeline_loaded = load_model(pickle_model_path)
 For a more in depth tutorial about the usage of Extraction AIs in the SDK see 
 [Train a Konfuzio SDK Model to Extract Information From Payslip Documents](examples/examples.html#train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents).
 
-#### Customize Categorization AI
+### Customize Categorization AI
 
 Any custom [Categorization AI](sourcecode.html#categorization-ai) (derived from the Konfuzio `AbstractCategorizationModel` class)  
 should implement the following interface:
@@ -153,7 +153,7 @@ categorization_pipeline_loaded = load_model(pickle_model_path)
 For a more in depth tutorial about the usage of Categorization AIs in the SDK see 
 [Tutorials - Document Categorization](tutorials.html#document-categorization).
 
-#### Customize File Splitting AI
+### Customize File Splitting AI
 
 Any Custom [File Splitting AI](sourcecode.html#file-splitting-ai) (derived from the Konfuzio `AbstractFileSplittingModel` class) 
 should implement the following interface:
@@ -218,20 +218,20 @@ file_splitting_pipeline_loaded = SplittingAI(file_splitting_model_loaded)
 For a more in depth tutorial about the usage of File Splitting AIs in the SDK see 
 [Splitting for multi-Document files: Step-by-step guide](tutorials.html#splitting-for-multi-document-files-step-by-step-guide).
 
-#### Other use cases around documents
+### Other use cases around documents
 
 The following is a simple example of something you can build using the Konfuzio SDK.
 
-##### Build your own PDF Form Generator
+#### Build your own PDF Form Generator
 
 A simple implementation can look like the following.
 
-###### 1. Upload a PDF Form and create empty annotations where you want to fill in data
+##### 1. Upload a PDF Form and create empty annotations where you want to fill in data
 
 .. image:: home/pdf_form_gen_example.png
    :scale: 40%
 
-###### 2. Use the SDK to fill in values in the PDF
+##### 2. Use the SDK to fill in values in the PDF
 
 Example implementation:
 ```python
