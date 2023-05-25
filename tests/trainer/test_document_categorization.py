@@ -592,3 +592,24 @@ def test_get_document_classifier_examples():
     )
     assert len(doc_info) == 5
     assert doc_info[0][0].format == 'PNG'
+
+
+def test_categorize_no_category_document():
+    """Test categorization of a NO_CATEGORY Document."""
+    from konfuzio_sdk.trainer.document_categorization import ImageModel, TextModel, build_categorization_ai_pipeline
+
+    project = Project(id_=None, project_folder=OFFLINE_PROJECT)
+    test_document = project.get_document_by_id(TEST_CATEGORIZATION_DOCUMENT_ID)
+    test_document.set_category(None)
+    categorization_pipeline = build_categorization_ai_pipeline(
+        categories=[project.categories[0]],
+        documents=project.documents[:10],
+        test_documents=project.test_documents[:10],
+        image_model=ImageModel.EfficientNetB0,
+        text_model=TextModel.NBOWSelfAttention,
+    )
+    tokenized_doc = deepcopy(test_document)
+    tokenized_doc = WhitespaceTokenizer().tokenize(tokenized_doc)
+    tokenized_doc.status = test_document.status
+    categorization_pipeline.categorize(document=test_document, recategorize=True)
+    pass

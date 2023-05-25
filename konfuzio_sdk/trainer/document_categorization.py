@@ -1271,7 +1271,6 @@ class CategorizationAI(AbstractCategorizationAI):
         self.classifier = self.classifier.to(device)
 
         categories = self.category_vocab.get_tokens()
-
         # split text into pages
         page_text = text
 

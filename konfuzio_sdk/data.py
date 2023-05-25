@@ -3739,7 +3739,7 @@ class Project(Data):
         if self.id_ or self._project_folder:
             self.get(update=update)
         else:
-            self.no_category = Category(project=self, name_clean="NO_CATEGORY", name="NO_CATEGORY")
+            self.no_category = Category(project=self, name_clean="NO_CATEGORY", name="NO_CATEGORY", id_=0)
         # todo: list of Categories related to NO LABEL SET can be outdated, i.e. if the number of Categories changes
         self.no_label_set = LabelSet(project=self, categories=self.categories)
         self.no_label_set.name_clean = 'NO_LABEL_SET'
