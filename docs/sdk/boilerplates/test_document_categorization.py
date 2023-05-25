@@ -78,14 +78,7 @@ def test_document_categorization():
 
     # Start Train
     # Train the AI.
-    categorization_pipeline.fit(
-        document_training_config={
-            'batch_size': 1,
-            'max_len': None,
-            'n_epochs': 1,
-            'optimizer': {'name': 'Adam'},
-        }
-    )
+    categorization_pipeline.fit(n_epochs=1, optimizer={'name': 'Adam'})
     # End Train
 
     # Start Evaluate

@@ -402,7 +402,7 @@ class TestTextCategorizationModels(unittest.TestCase):
         (ConnectedTextTokenizer, BERT, None, None),
     ],
 )
-@pytest.mark.skip(reason="Slow testcases training a Categorization AI on full dataset with multiple configurations.")
+# @pytest.mark.skip(reason="Slow testcases training a Categorization AI on full dataset with multiple configurations.")
 class TestAllCategorizationConfigurations(unittest.TestCase):
     """Test trainable CategorizationAI."""
 
@@ -478,14 +478,9 @@ class TestAllCategorizationConfigurations(unittest.TestCase):
 
     def test_2_fit(self) -> None:
         """Start to train the Model."""
-        self.categorization_pipeline.fit(
-            document_training_config={
-                'batch_size': 1,
-                'max_len': None,
-                'n_epochs': 1,
-                'optimizer': {'name': 'Adam'},
-            }
-        )
+        if self.image_class:
+            self.categorization_pipeline.build_preprocessing_pipeline(use_image=True)
+        self.categorization_pipeline.fit(n_epochs=1, optimizer={'name': 'Adam'})
 
     def test_3_save_model(self) -> None:
         """Test save .pt file to disk."""

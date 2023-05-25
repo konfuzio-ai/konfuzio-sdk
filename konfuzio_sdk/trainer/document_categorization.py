@@ -922,6 +922,7 @@ class CategorizationAI(AbstractCategorizationAI):
         self.classifier = None
 
         self.device = torch.device('cuda' if (torch.cuda.is_available() and use_cuda) else 'cpu')
+        self.train_transforms = None
 
     def save(self, path: Union[None, str] = None, reduce_weight: bool = True) -> str:
         """
