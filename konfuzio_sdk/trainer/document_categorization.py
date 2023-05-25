@@ -1435,7 +1435,6 @@ def build_categorization_ai_pipeline(
     tokenizer: Optional[AbstractTokenizer] = None,
     image_model: Optional[ImageModel] = None,
     text_model: Optional[TextModel] = None,
-    optimizer: Optimizer = Optimizer.Adam,
 ) -> CategorizationAI:
     """
 
@@ -1455,6 +1454,8 @@ def build_categorization_ai_pipeline(
     categorization_pipeline.category_vocab = categorization_pipeline.build_template_category_vocab()
     # Configure image and text models
     if image_model is not None:
+        if isinstance(image_model, str):
+            image_model = [model for model in ImageModel if model.value == image_model][0]
         image_model_class = None
         if "efficientnet" in image_model.value:
             image_model_class = EfficientNet
@@ -1463,6 +1464,8 @@ def build_categorization_ai_pipeline(
         # Configure image model
         image_model = image_model_class(name=image_model.value)
     if text_model is not None:
+        if isinstance(text_model, str):
+            text_model = [model for model in TextModel if model.value == text_model][0]
         text_model_class_mapping = {
             TextModel.NBOW: NBOW,
             TextModel.NBOWSelfAttention: NBOWSelfAttention,
