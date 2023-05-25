@@ -507,6 +507,8 @@ class TestAllCategorizationConfigurations(unittest.TestCase):
 
     def test_3_save_model(self) -> None:
         """Test save .pt file to disk."""
+        reduced = self.categorization_pipeline.save(reduce_weight=True)
+        os.remove(reduced)
         self.categorization_pipeline.pipeline_path = self.categorization_pipeline.save()
         assert os.path.isfile(self.categorization_pipeline.pipeline_path)
 
