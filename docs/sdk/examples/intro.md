@@ -190,17 +190,32 @@ Boxes).
 ```
 
 #### Upload Document
-To upload a new file (see [Supported File Types](https://help.konfuzio.com/specification/supported_file_types/index.html)) 
-in your [Project](https://dev.konfuzio.com/sdk/sourcecode.html#project) using the SDK, you can use the 
-`Document.from_file` method. You can choose to create the [Konfuzio Document](https://dev.konfuzio.com/sdk/sourcecode.html#document) 
-in a synchronous or asynchronous way. The synchronous way will upload the file to the Konfuzio servers, wait for 
-the Document to be processed and return a Document with OCR information. The asynchronous way will only return an 
-empty Document object which you can use to check the status of the processing. Simply call `document.update()` to 
-check if the Document is ready and the OCR processing is done.
 
-If you want to upload a file, and start working with it as soon as the OCR processing step is done, we recommend 
-using `from_file` with `sync` set to True as it will wait for the Document to be processed and then return a ready 
-Document. Beware, this may take from a few seconds up to over a minute depending on the size of the file.
+This section details how to upload a new file in your Project using the Konfuzio SDK. The files must be of types specified 
+in the Supported File Types. Here, we're primarily focusing on the `Document.from_file` method to create a 
+[Konfuzio Document](https://dev.konfuzio.com/sdk/sourcecode.html#document).
+
+A Konfuzio Document is an object representing the file you upload, it will contain the OCR (Optical Character Recognition) 
+information of the file once processed by Konfuzio's server.
+
+##### Synchronous and Asynchronous Upload
+
+You have two options for uploading your file: a synchronous method and an asynchronous method. The method is determined 
+by the `sync` parameter in the `from_file` function.
+
+1. **Synchronous upload (sync=True)**: The file is uploaded to the Konfuzio servers, and the function waits for the 
+document to be processed. Once done, it returns a Document object with the OCR information. This is useful if you want 
+to start working with the document immediately after the OCR processing is completed.
+
+2. **Asynchronous upload (sync=False)**: The function immediately returns an empty Document object after initiating the 
+upload. The OCR processing takes place in the background. This method is advantageous when uploading a large file or a 
+large number of files, as it doesn't require waiting for each file's processing to complete.
+
+In the asynchronous upload, you can check the status of the document processing using the `document.update()` method on 
+the returned Document object. If the document is ready, this method will update the Document object with the OCR information.
+
+It's important to note that if the document is not ready, you may need to call `document.update()` again at a later time. 
+This could be done manually or by setting up a looping mechanism depending on your application's workflow.
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
