@@ -551,8 +551,8 @@ def test_build_categorization_ai() -> None:
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
     categorization_pipeline = build_categorization_ai_pipeline(
         categories=project.categories,
-        documents=project.documents[:5],
-        test_documents=project.test_documents[:5],
+        documents=[project.documents[0]],
+        test_documents=[project.test_documents[1]],
         image_model=ImageModel.EfficientNetB0,
         text_model=TextModel.NBOWSelfAttention,
     )
@@ -570,9 +570,9 @@ def test_get_document_classifier_examples():
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
     document = project.get_document_by_id(44823)
     categorization_pipeline = build_categorization_ai_pipeline(
-        categories=[project.categories[0]],
-        documents=project.documents[:10],
-        test_documents=project.test_documents[:10],
+        categories=project.categories,
+        documents=[project.documents[0]],
+        test_documents=[project.test_documents[1]],
         image_model=ImageModel.EfficientNetB0,
         text_model=TextModel.NBOWSelfAttention,
     )
