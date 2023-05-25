@@ -217,13 +217,21 @@ the returned Document object. If the document is ready, this method will update 
 It's important to note that if the document is not ready, you may need to call `document.update()` again at a later time. 
 This could be done manually or by setting up a looping mechanism depending on your application's workflow.
 
+Here's an example of how to use the `from_file` method with `sync` set to `True`:
+
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
    :lines: 48
    :dedent: 4
 
-By default, the server request will timeout after 2 minutes. If you are uploading a larger file, you can increase the
-timeout by setting the `timeout` parameter to a higher value like this:
+##### Timeout Parameter
+
+When making a server request, there's a default timeout value of 2 minutes. This means that if the server doesn't respond 
+within 2 minutes, the operation will stop waiting for a response and return an error. If you're uploading a larger file, 
+it might take more time to process, and the default timeout value might not be sufficient. In such a case, you can 
+increase the timeout by setting the timeout parameter to a higher value.
+
+Here's an example on how to do that:
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
@@ -232,7 +240,7 @@ timeout by setting the `timeout` parameter to a higher value like this:
 
 Another option for larger files, or if you are trying to upload a large number of files and don't want to wait for 
 them to be processed would be to use the asynchronous option which returns an empty Document object. You can then 
-use the `update` method to check if the Document is ready and the OCR processing is done.
+use the `update` method to check if the Document is ready and the OCR processing is done:
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
