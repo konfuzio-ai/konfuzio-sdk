@@ -1184,10 +1184,8 @@ class CategorizationAI(AbstractCategorizationAI):
 
         return self.classifier, training_metrics
 
-    def fit(self, document_training_config=None, **kwargs) -> Dict[str, List[float]]:
+    def fit(self, max_len: bool = None, batch_size: int = 1, **kwargs) -> Dict[str, List[float]]:
         """Fit the CategorizationAI classifier."""
-        if document_training_config is None:
-            document_training_config = {}
         logger.info('getting document classifier iterators')
 
         # figure out if we need images and/or text depending on if the classifier
@@ -1196,7 +1194,7 @@ class CategorizationAI(AbstractCategorizationAI):
         use_text = hasattr(self.classifier, 'text_model')
 
         if hasattr(self.classifier, 'text_model') and isinstance(self.classifier.text_model, BERT):
-            document_training_config['max_len'] = self.classifier.text_model.get_max_length()
+            max_len = self.classifier.text_model.get_max_length()
 
         assert self.documents is not None, "Training documents need to be specified"
         assert self.test_documents is not None, "Test documents need to be specified"
@@ -1207,8 +1205,8 @@ class CategorizationAI(AbstractCategorizationAI):
             use_image,
             use_text,
             shuffle=True,
-            batch_size=document_training_config['batch_size'],
-            max_len=document_training_config['max_len'],
+            batch_size=batch_size,
+            max_len=max_len,
             device=self.device,
         )
         logger.info(f'{len(train_iterator)} training examples')
@@ -1220,7 +1218,7 @@ class CategorizationAI(AbstractCategorizationAI):
         logger.info('training label classifier')
 
         # fit the document classifier
-        self.classifier, training_metrics = self._fit_classifier(train_iterator, **document_training_config)
+        self.classifier, training_metrics = self._fit_classifier(train_iterator, **kwargs)
 
         # put document classifier back on cpu to free up GPU memory (this is a no-op if CPU was already selected)
         self.classifier = self.classifier.to('cpu')
