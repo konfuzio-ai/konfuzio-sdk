@@ -595,12 +595,12 @@ def test_categorize_no_category_document():
     from konfuzio_sdk.trainer.document_categorization import ImageModel, TextModel, build_categorization_ai_pipeline
 
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-    test_document = project.get_document_by_id(TEST_CATEGORIZATION_DOCUMENT_ID)
+    test_document = project.get_document_by_id(44823)
     test_document.set_category(None)
     categorization_pipeline = build_categorization_ai_pipeline(
         categories=[project.get_category_by_id(63)],
-        documents=project.documents[:10],
-        test_documents=project.test_documents[:10],
+        documents=[project.documents[0]],
+        test_documents=[project.test_documents[1]],
         image_model=ImageModel.EfficientNetB0,
         text_model=TextModel.NBOWSelfAttention,
     )
