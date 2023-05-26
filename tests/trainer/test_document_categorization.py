@@ -591,7 +591,7 @@ def test_get_document_classifier_examples():
 
 
 def test_categorize_no_category_document():
-    """Test categorization of a NO_CATEGORY Document."""
+    """Test categorization in case a NO_CATEGORY is predicted."""
     from konfuzio_sdk.trainer.document_categorization import ImageModel, TextModel, build_categorization_ai_pipeline
 
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
