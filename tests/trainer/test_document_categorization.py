@@ -595,6 +595,7 @@ def test_build_categorization_ai() -> None:
     os.remove(pipeline_path)
 
 
+@pytest.mark.categorization
 def test_get_document_classifier_examples():
     """Test getting Document's classifier examples."""
     from konfuzio_sdk.trainer.document_categorization import ImageModel, TextModel, build_categorization_ai_pipeline
