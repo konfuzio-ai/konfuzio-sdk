@@ -47,7 +47,7 @@ def test_get_started():
 
     document = Document.from_file(FILE_PATH, project=my_project, sync=True)
     document.delete(delete_online=True)
-    document = Document.from_file(FILE_PATH, project=my_project, timeout=300, sync=True)
+    document = Document.from_file(FILE_PATH, project=my_project, timeout=300, sync=True)  # 300 seconds timeout
     document.delete(delete_online=True)
     document = Document.from_file(FILE_PATH, project=my_project, sync=False)
     document.update()
