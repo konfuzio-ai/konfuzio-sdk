@@ -1837,9 +1837,9 @@ class Span(Data):
                 "custom_offset_string": None,
                 "revised": None,
                 "label_threshold": None,
-                "label_id": None,
+                "label_id": 0,
                 "label_has_multiple_top_candidates": None,
-                "label_set_id": None,
+                "label_set_id": 0,
                 "annotation_id": None,
                 "annotation_set_id": 0,  # to allow grouping to compare boolean
                 "document_id": 0,
@@ -3744,7 +3744,7 @@ class Project(Data):
         if self.id_ or self._project_folder:
             self.get(update=update)
         else:
-            self.no_category = Category(project=self, name_clean="NO_CATEGORY", name="NO_CATEGORY")
+            self.no_category = Category(project=self, id_=0, name_clean="NO_CATEGORY", name="NO_CATEGORY")
         # todo: list of Categories related to NO LABEL SET can be outdated, i.e. if the number of Categories changes
         self.no_label_set = LabelSet(project=self, categories=self.categories)
         self.no_label_set.name_clean = 'NO_LABEL_SET'
