@@ -64,6 +64,7 @@ def test_document_categorization():
     for doc in project.documents + project.test_documents:
         doc.get_images()
 
+    # Start Build
     # Build the Categorization AI architecture using a template
     # of pre-built Image and Text classification Models.
     categorization_pipeline = build_categorization_ai_pipeline(
@@ -73,36 +74,40 @@ def test_document_categorization():
         image_model=ImageModel.EfficientNetB0,
         text_model=TextModel.NBOWSelfAttention,
     )
+    # End Build
 
+    # Start Train
     # Train the AI.
-    categorization_pipeline.fit(
-        document_training_config={
-            'batch_size': 1,
-            'max_len': None,
-            'n_epochs': 1,
-            'optimizer': {'name': 'Adam'},
-        }
-    )
+    categorization_pipeline.fit(n_epochs=1, optimizer={'name': 'Adam'})
+    # End Train
 
+    # Start Evaluate
     # Evaluate the AI
     data_quality = categorization_pipeline.evaluate(use_training_docs=True)
-    assert data_quality.f1(None) == 1.0
     ai_quality = categorization_pipeline.evaluate()
+    assert data_quality.f1(None) == 1.0
     assert ai_quality.f1(None) == 1.0
+    # End Evaluate
 
+    # Start Categorize
     # Categorize a Document
     document = project.get_document_by_id(YOUR_DOCUMENT_ID)
     categorization_result = categorization_pipeline.categorize(document=document)
     assert isinstance(categorization_result, Document)
     for page in categorization_result.pages():
         print(f"Found category {page.category} for {page}")
+    # End Categorize
 
+    # Start Save
     # Save and load a pickle file for the AI
     pickle_ai_path = categorization_pipeline.save()
-
     categorization_pipeline = load_model(pickle_ai_path)
+    # End Save
     result = categorization_pipeline.categorize(document=document)
     assert isinstance(result, Document)
+
+    # Start Models
+    from konfuzio_sdk.trainer.document_categorization import ImageModel, TextModel
 
     # Image Models
     ImageModel.VGG11
@@ -124,3 +129,4 @@ def test_document_categorization():
     TextModel.NBOWSelfAttention
     TextModel.LSTM
     TextModel.BERT
+    # End Models
