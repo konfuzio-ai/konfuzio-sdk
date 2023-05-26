@@ -1270,7 +1270,6 @@ class CategorizationAI(AbstractCategorizationAI):
         self.classifier = self.classifier.to(device)
 
         categories = self.category_vocab.get_tokens()
-
         # split text into pages
         page_text = text
 
@@ -1347,7 +1346,10 @@ class CategorizationAI(AbstractCategorizationAI):
         # what was the label of that class?
         # what was the confidence of that class?
         predicted_class = int(mean_prediction.argmax())
-        predicted_label = int(categories[predicted_class])
+        if categories[predicted_class] == 'NO_CATEGORY':
+            predicted_label = 0
+        else:
+            predicted_label = int(categories[predicted_class])
         predicted_confidence = mean_prediction[predicted_class]
 
         return (predicted_label, predicted_confidence), predictions_df
