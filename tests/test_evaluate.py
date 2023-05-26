@@ -1010,6 +1010,38 @@ class TestEvaluation(unittest.TestCase):
         evaluation = ExtractionEvaluation(documents=list(zip(project.documents, project.documents)), strict=False)
         assert evaluation.strict is False
 
+    def test_not_strict_with_empty_evaluated_document(self):
+        """Test that non-strict Evaluation can be used with evaluated Document with no Annotations."""
+        project = LocalTextProject()
+        document = project.documents[0]
+        assert len(document.annotations(use_correct=True)) == 3
+        assert len(document.spans(use_correct=True)) == 3
+        empty_extracted_document = deepcopy(document)  # no Annotation Document
+        assert len(empty_extracted_document.annotations(use_correct=False)) == 0
+        assert len(empty_extracted_document.spans(use_correct=False)) == 0
+        assert len(empty_extracted_document.eval_dict()) == 1
+        place_holder_span_eval_dict = empty_extracted_document.eval_dict()[0]
+        assert place_holder_span_eval_dict['start_offset'] == place_holder_span_eval_dict['end_offset'] == 0
+        evaluation = ExtractionEvaluation(documents=[(document, empty_extracted_document)], strict=False)
+        assert evaluation.strict is False
+        assert len(evaluation.data) == 0
+
+    def test_not_strict_with_empty_reference_document(self):
+        """Test that non-strict Evaluation can be used with reference Document with no Annotations."""
+        project = LocalTextProject()
+        document = project.documents[0]
+        assert len(document.annotations(use_correct=True)) == 3
+        assert len(document.spans(use_correct=True)) == 3
+        empty_extracted_document = deepcopy(document)  # no Annotation Document
+        assert len(empty_extracted_document.annotations(use_correct=False)) == 0
+        assert len(empty_extracted_document.spans(use_correct=False)) == 0
+        assert len(empty_extracted_document.eval_dict()) == 1
+        place_holder_span_eval_dict = empty_extracted_document.eval_dict()[0]
+        assert place_holder_span_eval_dict['start_offset'] == place_holder_span_eval_dict['end_offset'] == 0
+        evaluation = ExtractionEvaluation(documents=[(empty_extracted_document, document)], strict=False)
+        assert evaluation.strict is False
+        assert len(evaluation.data) == 3
+
     def test_true_positive(self):
         """Count two Spans from two Training Documents."""
         project = LocalTextProject()
