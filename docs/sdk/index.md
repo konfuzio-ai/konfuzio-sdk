@@ -13,7 +13,7 @@ The Open Source Konfuzio Software Development Kit (Konfuzio SDK) provides a Pyth
 | [Contribution Guide](contribution.html)                           | Learn how to contribute, run the tests locally, and submit a Pull Request.                                  |
 | [Changelog](https://github.com/konfuzio-ai/konfuzio-sdk/releases) | Review the release notes and the source code of the Konfuzio SDK.                                           |
 
-## Customizing document processes with the Konfuzio SDK
+### Customizing document processes with the Konfuzio SDK
 
 For documentation about how to train and evaluate document understanding AIs, as well as extract new documents using 
 the Konfuzio Server web interface, please see our [Konfuzio Guide](https://help.konfuzio.com/tutorials/quickstart/index.html).
