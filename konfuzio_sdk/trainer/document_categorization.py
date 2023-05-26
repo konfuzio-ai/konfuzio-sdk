@@ -379,7 +379,7 @@ class NBOWSelfAttention(AbstractTextCategorizationModel):
     def _load_architecture(self) -> None:
         """Load NN architecture."""
         self.embedding = nn.Embedding(self.input_dim, self.emb_dim)
-        self.multihead_attention = nn.MultiheadAttention(self.emb_dim, self.n_heads, batch_first=True)
+        self.multihead_attention = nn.MultiheadAttention(self.emb_dim, self.n_heads)
         self.dropout = nn.Dropout(self.dropout_rate)
 
     def _define_features(self) -> None:
@@ -389,8 +389,12 @@ class NBOWSelfAttention(AbstractTextCategorizationModel):
     def _output(self, text: torch.Tensor) -> List[torch.FloatTensor]:
         """Collect output of the multiple attention heads."""
         embeddings = self.dropout(self.embedding(text))
-        # embeddings = [batch, seq len, emb dim]
+        # transposing so that the batch size is first. the result is embeddings = [batch, seq len, emb dim]
+        # this step is needed to imitate batch_first=True argument in MultiheadAttention, since in torch==1.8.1 it is
+        # not present.
+        embeddings = embeddings.transpose(1, 0)
         text_features, attention = self.multihead_attention(embeddings, embeddings, embeddings)
+        text_features = text_features.transpose(1, 0)
         return [text_features, attention]
 
 
@@ -938,8 +942,9 @@ class CategorizationAI(AbstractCategorizationAI):
         self.classifier = None
 
         self.device = torch.device('cuda' if (torch.cuda.is_available() and use_cuda) else 'cpu')
+        self.train_transforms = None
 
-    def save(self, path: Union[None, str] = None) -> str:
+    def save(self, path: Union[None, str] = None, reduce_weight: bool = True) -> str:
         """
         Save only the necessary parts of the model for extraction/inference.
 
@@ -950,6 +955,9 @@ class CategorizationAI(AbstractCategorizationAI):
         - configs (to ensure we load the same models used in training)
         - state_dicts (the classifier parameters achieved through training)
         """
+        if reduce_weight:
+            self.reduce_model_weight()
+
         # create dictionary to save all necessary model data
         data_to_save = {
             'tokenizer': self.tokenizer,
@@ -958,6 +966,8 @@ class CategorizationAI(AbstractCategorizationAI):
             'text_vocab': self.text_vocab,
             'category_vocab': self.category_vocab,
             'classifier': self.classifier,
+            'eval_transforms': self.eval_transforms,
+            'train_transforms': self.train_transforms,
             'model_type': 'CategorizationAI',
         }
 
@@ -1246,10 +1256,8 @@ class CategorizationAI(AbstractCategorizationAI):
 
         return self.classifier, training_metrics
 
-    def fit(self, document_training_config=None, **kwargs) -> Dict[str, List[float]]:
+    def fit(self, max_len: bool = None, batch_size: int = 1, **kwargs) -> Dict[str, List[float]]:
         """Fit the CategorizationAI classifier."""
-        if document_training_config is None:
-            document_training_config = {}
         logger.info('getting document classifier iterators')
 
         # figure out if we need images and/or text depending on if the classifier
@@ -1258,7 +1266,7 @@ class CategorizationAI(AbstractCategorizationAI):
         use_text = hasattr(self.classifier, 'text_model')
 
         if hasattr(self.classifier, 'text_model') and isinstance(self.classifier.text_model, BERT):
-            document_training_config['max_len'] = self.classifier.text_model.get_max_length()
+            max_len = self.classifier.text_model.get_max_length()
 
         assert self.documents is not None, "Training documents need to be specified"
         assert self.test_documents is not None, "Test documents need to be specified"
@@ -1269,8 +1277,8 @@ class CategorizationAI(AbstractCategorizationAI):
             use_image,
             use_text,
             shuffle=True,
-            batch_size=document_training_config['batch_size'],
-            max_len=document_training_config['max_len'],
+            batch_size=batch_size,
+            max_len=max_len,
             device=self.device,
         )
         logger.info(f'{len(train_iterator)} training examples')
@@ -1282,12 +1290,16 @@ class CategorizationAI(AbstractCategorizationAI):
         logger.info('training label classifier')
 
         # fit the document classifier
-        self.classifier, training_metrics = self._fit_classifier(train_iterator, **document_training_config)
+        self.classifier, training_metrics = self._fit_classifier(train_iterator, **kwargs)
 
         # put document classifier back on cpu to free up GPU memory (this is a no-op if CPU was already selected)
         self.classifier = self.classifier.to('cpu')
 
         return training_metrics
+
+    def reduce_model_weight(self):
+        """Reduce the size of the model by running lose_weight on the tokenizer."""
+        self.tokenizer.lose_weight()
 
     @torch.no_grad()
     def _predict(self, page_images, text, batch_size=2, *args, **kwargs) -> Tuple[Tuple[int, float], pd.DataFrame]:
@@ -1494,7 +1506,6 @@ def build_categorization_ai_pipeline(
     tokenizer: Optional[AbstractTokenizer] = None,
     image_model: Optional[ImageModel] = None,
     text_model: Optional[TextModel] = None,
-    optimizer: Optimizer = Optimizer.Adam,
 ) -> CategorizationAI:
     """
 
@@ -1514,6 +1525,11 @@ def build_categorization_ai_pipeline(
     categorization_pipeline.category_vocab = categorization_pipeline.build_template_category_vocab()
     # Configure image and text models
     if image_model is not None:
+        if isinstance(image_model, str):
+            try:
+                image_model = next(model for model in ImageModel if model.value == image_model)
+            except StopIteration:
+                raise ValueError(f'{image_model} not found. Provide an existing name for the image model.')
         image_model_class = None
         if "efficientnet" in image_model.value:
             image_model_class = EfficientNet
@@ -1522,6 +1538,11 @@ def build_categorization_ai_pipeline(
         # Configure image model
         image_model = image_model_class(name=image_model.value)
     if text_model is not None:
+        if isinstance(text_model, str):
+            try:
+                text_model = next(model for model in TextModel if model.value == text_model)
+            except StopIteration:
+                raise ValueError(f'{text_model} not found. Provide an existing name for the image model.')
         text_model_class_mapping = {
             TextModel.NBOW: NBOW,
             TextModel.NBOWSelfAttention: NBOWSelfAttention,
@@ -1567,7 +1588,14 @@ def build_categorization_ai_pipeline(
 
 COMMON_PARAMETERS = ['tokenizer', 'text_vocab', 'model_type']
 
-document_components = ['image_preprocessing', 'image_augmentation', 'category_vocab', 'classifier']
+document_components = [
+    'image_preprocessing',
+    'image_augmentation',
+    'category_vocab',
+    'classifier',
+    'eval_transforms',
+    'train_transforms',
+]
 
 document_components.extend(COMMON_PARAMETERS)
 
@@ -1605,6 +1633,8 @@ def _load_categorization_model(path: str):
     model.text_vocab = loaded_data['text_vocab']
     model.category_vocab = loaded_data['category_vocab']
     model.classifier = loaded_data['classifier']
+    model.eval_transforms = loaded_data['eval_transforms']
+    model.train_transforms = loaded_data['train_transforms']
     # need to ensure classifiers start in evaluation mode
     model.classifier.eval()
 
