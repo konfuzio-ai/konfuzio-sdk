@@ -105,12 +105,16 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#docker-compose-vs-kubernetes">Docker-Compose vs. Kubernetes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#custom-ai-model-training-via-ci-pipelines">Custom AI model training via CI pipelines</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#keycloak-integration">Keycloak Integration</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#set-up">Set up</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#environment-variables">Environment Variables</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#important-notes">Important notes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#sso-via-openid-connect-oidc">SSO via OpenID Connect (OIDC)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#sso-keycloak-integration">SSO Keycloak Integration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#set-up">Set up</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#environment-variables">Environment Variables</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#important-notes">Important notes</a></li>
 </ul>
 </li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#sso-via-other-identity-management-software">SSO via other Identity Management software</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#migrate-ais-and-projects">Migrate AIs and Projects</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#overview-of-migration-methods">Overview of Migration Methods</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#migrate-an-extraction-or-categorization-ai">Migrate an Extraction or Categorization AI</a></li>
@@ -811,11 +815,16 @@ that the CI pipelines are able to access the necessary resources and dependencie
 <p>Overall, Konfuzio’s use of CI pipelines provides a powerful tool for advanced users to run their AI workflows securely,
 with the added benefit of automated testing and continuous feedback.</p>
 </section>
-<section id="keycloak-integration">
-<h2>Keycloak Integration<a class="headerlink" href="#keycloak-integration" title="Permalink to this headline">¶</a></h2>
+<section id="sso-via-openid-connect-oidc">
+<h2>SSO via OpenID Connect (OIDC)<a class="headerlink" href="#sso-via-openid-connect-oidc" title="Permalink to this headline">¶</a></h2>
+<p>Konfuzio utilizes OpenID Connect (OIDC) for identity verification, implementing this through Mozilla’s Django OIDC.
+OIDC is a well-established layer built atop the OAuth 2.0 protocol, enabling client applications to confirm the identity of end users. This confirmation is based on the authentication process executed by an authorization server.
+Numerous Identity Providers (IdP) exist that support the OIDC protocol, thus enabling the implementation of Single Sign-On (SSO) within your application. A commonly chosen provider is Keycloak. In the subsequent section, you will find a tutorial on how to use Keycloak with OIDC.</p>
+<section id="sso-keycloak-integration">
+<h3>SSO Keycloak Integration<a class="headerlink" href="#sso-keycloak-integration" title="Permalink to this headline">¶</a></h3>
 <p>Keycloak allows single sign-on funtionality. By doing so no user management is done wihtin Konfuzio Server. If you already operate a keycloak server, you can reuse keycloak users.</p>
 <section id="set-up">
-<h3>Set up<a class="headerlink" href="#set-up" title="Permalink to this headline">¶</a></h3>
+<h4>Set up<a class="headerlink" href="#set-up" title="Permalink to this headline">¶</a></h4>
 <p>To start and set up keycloak server:</p>
 <ol class="arabic simple">
 <li><p>Download <a class="reference external" href="https://www.keycloak.org/downloads">keycloak server</a></p></li>
@@ -840,7 +849,7 @@ with the added benefit of automated testing and continuous feedback.</p>
 </ol>
 </section>
 <section id="environment-variables">
-<h3>Environment Variables<a class="headerlink" href="#environment-variables" title="Permalink to this headline">¶</a></h3>
+<h4>Environment Variables<a class="headerlink" href="#environment-variables" title="Permalink to this headline">¶</a></h4>
 <p>To integrate konfuzio with keycloak you need to set the following environment variables for you Konfuzio Server installation:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">KEYCLOAK_URL</span></code> (<a class="reference external" href="http://127.0.0.1:8080/">http://127.0.0.1:8080/</a> - for localhost)</p></li>
@@ -853,11 +862,40 @@ with the added benefit of automated testing and continuous feedback.</p>
 .. image:: ./keycloak/sso-button.png</p>
 </section>
 <section id="important-notes">
-<h3>Important notes<a class="headerlink" href="#important-notes" title="Permalink to this headline">¶</a></h3>
+<h4>Important notes<a class="headerlink" href="#important-notes" title="Permalink to this headline">¶</a></h4>
 <ul class="simple">
 <li><p>The Keycloak admin user cannot login into Konfuzio Server.</p></li>
 </ul>
 </section>
+</section>
+</section>
+<section id="sso-via-other-identity-management-software">
+<h2>SSO via other Identity Management software<a class="headerlink" href="#sso-via-other-identity-management-software" title="Permalink to this headline">¶</a></h2>
+<p>In order to connect your Identity Management software with Konfuzio using Single Sign-On (SSO), you’ll need to follow these steps. Please note, this tutorial is meant for Identity Management software that supports OIDC (OpenID Connect), a widely adopted standard for user authentication that’s compatible with many software platforms. If you’re using Keycloak, please refer to the separate tutorial on connecting Konfuzio with Keycloak.</p>
+<p>Step 1: Setting up your Identity Provider
+This step varies depending on the Identity Management software you’re using. You should refer to your Identity Management software’s documentation for setting up OIDC (OpenID Connect). During the setup, you will create a new OIDC client for Konfuzio. You will typically need to provide a client name, redirect URI, and optionally a logo.</p>
+<p>The redirect URI should be the URL of your Konfuzio instance followed by “/oidc/callback/”, for example <a class="reference external" href="https://">https://</a><span class="raw-html-m2r"><your-konfuzio-instance></span>/oidc/callback/.</p>
+<p>At the end of this step, you should have the following information:</p>
+<ul class="simple">
+<li><p>Client ID</p></li>
+<li><p>Client Secret</p></li>
+<li><p>OIDC Issuer URL</p></li>
+</ul>
+<p>Step 2: Configuring mozilla-django-oidc
+You’ll need to set the following environment variables:</p>
+<p>OIDC_RP_CLIENT_ID: This should be the client ID from your Identity Management software.
+OIDC_RP_CLIENT_SECRET: This should be the client secret from your Identity Management software.
+OIDC_OP_AUTHORIZATION_ENDPOINT: This should be your OIDC issuer URL followed by “/authorize”.
+OIDC_OP_TOKEN_ENDPOINT: This should be your OIDC issuer URL followed by “/token”.
+OIDC_OP_USER_ENDPOINT: This should be your OIDC issuer URL followed by “/userinfo”.
+OIDC_OP_JWKS_ENDPOINT: This should be your OIDC issuer URL followed by “/.well-known/jwks.json”.
+OIDC_RP_SIGN_ALGO: This is the signing algorithm your Identity Management software uses. This is typically “RS256”.
+OIDC_RP_SCOPES: These are the scopes to request. For basic authentication, this can just be “openid email”.
+Here is an example of how to set these environment variables in a Unix-based system:</p>
+<p>Step 3: Restarting Konfuzio
+After you have set these environment variables, you should restart your Konfuzio server so that the new settings can take effect. How you do this depends on how you have deployed Konfuzio, but it might involve restarting a Docker container or a Django server.</p>
+<p>Step 4: Testing
+Now you can go to your Konfuzio instance and you should be redirected to your Identity</p>
 </section>
 <section id="migrate-ais-and-projects">
 <h2>Migrate AIs and Projects<a class="headerlink" href="#migrate-ais-and-projects" title="Permalink to this headline">¶</a></h2>
