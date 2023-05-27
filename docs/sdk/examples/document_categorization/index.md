@@ -53,7 +53,37 @@ For a list of available Models see [Available Categorization Models](#categoriza
 
 .. literalinclude:: /sdk/boilerplates/test_document_categorization.py
    :language: python
-   :lines: 6,8-10,16-18,66-88,90,92-95,97-101,103
+   :lines: 6,8-10,16-18
+   :dedent: 4
+.. literalinclude:: /sdk/boilerplates/test_document_categorization.py
+   :language: python
+   :start-after: Start Build
+   :end-before: End Build
+   :dedent: 4
+.. literalinclude:: /sdk/boilerplates/test_document_categorization.py
+   :language: python
+   :start-after: Start Train
+   :end-before: End Train
+   :dedent: 4
+.. literalinclude:: /sdk/boilerplates/test_document_categorization.py
+   :language: python
+   :start-after: Start Evaluate
+   :end-before: End Evaluate
+   :dedent: 4
+.. literalinclude:: /sdk/boilerplates/test_document_categorization.py
+   :language: python
+   :start-after: Start Categorize
+   :end-before: End Categorize
+   :dedent: 4
+.. literalinclude:: /sdk/boilerplates/test_document_categorization.py
+   :language: python
+   :start-after: Start Save
+   :end-before: End Save
+   :dedent: 4
+.. literalinclude:: /sdk/boilerplates/test_document_categorization.py
+   :language: python
+   :start-after: Start Models
+   :end-before: End Models
    :dedent: 4
 
 .. _categorization-models:
@@ -67,7 +97,8 @@ The list of available Categorization Models is implemented as an Enum containing
 
 .. literalinclude:: /sdk/boilerplates/test_document_categorization.py
    :language: python
-   :lines: 10,106-127
+   :start-after: Start Models
+   :end-before: End Models
    :dedent: 4
 
 See more details about these Categorization Models under [API Reference - Categorization AI](sourcecode.html#categorization-ai).
