@@ -90,8 +90,9 @@ setuptools.setup(
         'torchvision>=0.9',
         'transformers>=4.21.2',  # huggingface transformers and tokenizers
         'tqdm',
-        'pydantic<=1.8',
         'pympler>=1.0.1',  # Use to get pickle file size.
+        'pydantic==1.10.8',  # pydantic is used by spacy. We need to force a higher pydantic version to avoid
+        # https://github.com/tiangolo/fastapi/issues/5048
         'scikit-learn>=1.0.2',
         'timm==0.6.7',  # for extra pytorch models, i.e. EfficientNet
         'spacy>=2.3.5, <=3.1.4',  # used for spaCy tokenization
