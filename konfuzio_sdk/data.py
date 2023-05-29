@@ -3925,8 +3925,10 @@ class Project(Data):
                 # the _default_of_label_set_ids are the Categories the Label Set is used in
                 for label_set_id in label_set._default_of_label_set_ids:
                     category = self.get_category_by_id(label_set_id)
-                    label_set.add_category(category)  # The Label Set is linked to a Category it created
-                    category.add_label_set(label_set)
+                    if category not in label_set.categories:
+                        label_set.add_category(category)  # The Label Set is linked to a Category it created
+                    if label_set not in category.label_sets:
+                        category.add_label_set(label_set)
 
     def get_label_sets(self, reload=False):
         """Get LabelSets in the Project."""
