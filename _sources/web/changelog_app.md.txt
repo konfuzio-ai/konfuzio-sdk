@@ -100,7 +100,10 @@ Please Note: If you upgrade from a version before 'released-2023-04-23_18-48-59'
 
 This version uses the Konfuzio Python SDK in version v.0.2.16 and Konfuzio Document Validation UI in version v.0.1.5.
 
-Important note: This release changes the internal format of saved AIs. Therefore, you need to migrate existing AIs, before updating to this Konfuzio Server version. Please run "python manage.py resave_all_with_cloudpickle" to do so. If this command is not available on your Konfuzio Server Installation, please upgrade to [released-2023-03-18_13-32-19]([released-2023-03-18_13-32-19](https://dev.konfuzio.com/web/changelog_app.html#released-2023-03-18-13-32-19)) first. In case you need help or experience an issue with the migration please contact is via https://konfuzio.com/support. This Konfuzio Server will not start if unmigrated AIs are present. Finally, the usual [update actions](https://dev.konfuzio.com/web/on_premises.html#a-upgrade-to-newer-konfuzio-version) need to be run. 
+Important note: This release changes the internal format of saved AIs. Therefore, you need to migrate existing AIs, before updating to this Konfuzio Server version. Please run "python manage.py resave_all_with_cloudpickle" to do so. If this command is not available on your Konfuzio Server Installation, please upgrade to [released-2023-03-18_13-32-19]([released-2023-03-18_13-32-19](https://dev.konfuzio.com/web/changelog_app.html#released-2023-03-18-13-32-19)) first. 
+In case you need help or experience an issue with the migration please contact is via https://konfuzio.com/support. 
+This Konfuzio Server will not start if unmigrated AIs are present. Finally, the usual [update actions](https://dev.konfuzio.com/web/on_premises.html#a-upgrade-to-newer-konfuzio-version) need to be run. 
+For more information on how to run a "manage.py" command, please refer to the [self-hosted guide](https://dev.konfuzio.com/web/on_premises.html#initial-login). 
 
 ### Added
 - Calculate and access Tokenizers via the web interface ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9271)).
