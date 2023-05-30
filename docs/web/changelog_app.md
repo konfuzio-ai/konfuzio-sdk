@@ -27,7 +27,7 @@ This version uses the Konfuzio Python SDK in version v.0.2.20 and Konfuzio Docum
 
 Upcoming...
 
-## released-2023-05-29_17-06-10
+## released-2023-05-30_11-01-48
 
 This version uses the Konfuzio Python SDK in version v.0.2.19 and Konfuzio Document Validation UI in version v.0.1.7.
 
