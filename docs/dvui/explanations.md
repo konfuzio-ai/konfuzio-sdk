@@ -53,7 +53,7 @@ You can also specify the language in the `html` file:
 
 ```
 <div id="app">
-    <app locale="DE/EN/ES"></app>
+    <app locale="de/en/es"></app>
   </div>
 ```
 
