@@ -94,7 +94,13 @@ An example of how ConnectedTextTokenizer works:
 
 .. literalinclude:: /sdk/boilerplates/test_connected_text_tokenizer.py
    :language: python
-   :lines: 13-19,25-28,31-37,40-42
+   :start-after: Start tokenize
+   :end-before: End tokenize
+   :dedent: 4
+.. literalinclude:: /sdk/boilerplates/test_connected_text_tokenizer.py
+   :language: python
+   :start-after: Start string
+   :end-before: End string
    :dedent: 4
 
 The first method to define will be the `fit()` method. For each Category, we call `exclusive_first_page_strings` method, 

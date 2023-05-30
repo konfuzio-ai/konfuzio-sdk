@@ -18,8 +18,10 @@ image representation of a Document Page. These representations are used for comp
 
 .. literalinclude:: /sdk/boilerplates/test_coordinates_system.py
    :language: python
-   :lines: 6,10-18
+   :start-after: Start coordinates
+   :end-before: End coordinates
    :dedent: 4
+
 
 The coordinates system used has its start in the bottom left corner of the page.
 

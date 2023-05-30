@@ -3,10 +3,12 @@
 
 def test_coordinates_system():
     """Test coordinates system."""
-    from konfuzio_sdk.data import Project
     from tests.variables import TEST_PROJECT_ID
 
     YOUR_PROJECT_ID = TEST_PROJECT_ID
+
+    # Start coordinates
+    from konfuzio_sdk.data import Project
 
     my_project = Project(id_=YOUR_PROJECT_ID)
     # first Document uploaded
@@ -16,4 +18,5 @@ def test_coordinates_system():
 
     width = document.pages()[page_index].width
     height = document.pages()[page_index].height
+    # End coordinates
     assert width < height
