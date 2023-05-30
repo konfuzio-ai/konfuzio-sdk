@@ -21,11 +21,25 @@ You can think of the _Planned_ section as a _Roadmap_ that lists Konfuzio Server
 - Allow administrators of Konfuzio on-premise installations to run a speedtest ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9870)).
 - Start automatic AI retraining after User confirms that he has finished a annotation review ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9166)).
 
-## Next Release (estimated release date 27th May 2023)
+## Next Release (estimated release date 9th June 2023)
+
+This version uses the Konfuzio Python SDK in version v.0.2.20 and Konfuzio Document Validation UI in version v.0.1.8.
+
+Upcoming...
+
+## released-2023-05-29_17-06-10
 
 This version uses the Konfuzio Python SDK in version v.0.2.19 and Konfuzio Document Validation UI in version v.0.1.7.
 
-Upcoming...
+### Added
+- [The Categorization AI can now again use text and image modules](https://help.konfuzio.com/modules/categorization/index.html) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10283)).
+
+### Fixed
+- Show the exact Page number in case a PDF has invalid dimensions ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11102)).
+- Subscription updates are now applied to previous created API Tokens ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11038)).
+- The Evaluation could not be displayed, if a Label in the training or test data did not have at least one Annotation ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11116)).
+- If a Document was created via API V3 and the "sync" option, not all extraction have been returned ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11169)).
+- If a Document was created via API V3, the default extraction URL was pointing to API V1 instead of API V3. ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10843)).
 
 ## released-2023-05-22_12-48-00
 
