@@ -57,6 +57,8 @@ You can also specify the language in the `html` file:
   </div>
 ```
 
+If left empty, then the default `en` will be used.
+
 You are also welcome to create a new locales file for a language not currently provided by us, considering the data from [our existing files](https://github.com/konfuzio-ai/document-validation-ui/tree/main/src/locales), and share it with us via a [Support Ticket](https://konfuzio.com/en/support/) or create a Pull Request to add it to the repository.
 
 ## How to integrate the Document Validation UI into custom solutions?
