@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" modified="2023-05-05T10:26:29.547Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/112.0" etag="79hEfQDBAVTy6hh62Bgc" version="21.2.9" type="device">
+<mxfile host="app.diagrams.net" modified="2023-05-31T12:51:37.115Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36" etag="3AEanqDW_GBU4O5PcS2P" version="21.3.6" type="device">
   <diagram id="Y_4e-g6y54JG4lKSlURq" name="Page-1">
-    <mxGraphModel dx="5797" dy="2277" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="3134" dy="771" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -159,11 +159,6 @@
               <mxPoint x="4191" y="511" />
               <mxPoint x="4191" y="511" />
             </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="V9HdjX9iqHW_Pui06T7V-2" value="upcoming feature&lt;br&gt;(ticket #9443)" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="9MLLla6oI4jPxRE4S_ba-45" vertex="1" connectable="0">
-          <mxGeometry x="-0.1333" relative="1" as="geometry">
-            <mxPoint x="9" y="19" as="offset" />
           </mxGeometry>
         </mxCell>
         <mxCell id="9MLLla6oI4jPxRE4S_ba-41" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="9MLLla6oI4jPxRE4S_ba-39" target="4hGdP1M2JwbJeWWglB2I-42" edge="1">
@@ -492,9 +487,6 @@
         <mxCell id="vx7GEG0v0-2Jzm9RmqDa-39" value="&lt;div&gt;&lt;span style=&quot;font-weight: normal;&quot;&gt;Each&lt;/span&gt; Page&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;font-weight: normal;&quot;&gt;of the&lt;/span&gt; &lt;span style=&quot;font-weight: normal;&quot;&gt;Document&lt;/span&gt;&lt;br&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontStyle=1;strokeColor=#0F17FF;" parent="vx7GEG0v0-2Jzm9RmqDa-35" vertex="1">
           <mxGeometry x="-70" y="195" width="120" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="9dfpNHqSxHGeAsIauYXX-3" value="upcoming feature (ticket #9806)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="vx7GEG0v0-2Jzm9RmqDa-35" vertex="1">
-          <mxGeometry x="660" y="225" width="230" height="30" as="geometry" />
-        </mxCell>
         <mxCell id="vx7GEG0v0-2Jzm9RmqDa-44" value="Page" style="rounded=0;whiteSpace=wrap;html=1;fontStyle=1;strokeColor=#0F17FF;" parent="1" vertex="1">
           <mxGeometry x="1080" y="450" width="120" height="60" as="geometry" />
         </mxCell>
@@ -658,9 +650,6 @@
         <mxCell id="4hGdP1M2JwbJeWWglB2I-25" value="&lt;b&gt;Document&lt;/b&gt; with Annotation Sets" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#1222FF;" parent="uCFwbwdLhiHwo-Qxrh92-1" vertex="1">
           <mxGeometry x="1040" y="192.5" width="120" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="9dfpNHqSxHGeAsIauYXX-6" value="upcoming feature (ticket #6450)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="uCFwbwdLhiHwo-Qxrh92-1" vertex="1">
-          <mxGeometry x="987.5" y="19.5" width="225" height="30" as="geometry" />
-        </mxCell>
         <mxCell id="uCFwbwdLhiHwo-Qxrh92-17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="9MLLla6oI4jPxRE4S_ba-10" target="PVjARp0YHHE5zDxc7D2C-7" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
@@ -701,11 +690,6 @@
         </mxCell>
         <mxCell id="uCFwbwdLhiHwo-Qxrh92-32" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="uCFwbwdLhiHwo-Qxrh92-31" target="uCFwbwdLhiHwo-Qxrh92-28" edge="1">
           <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="uCFwbwdLhiHwo-Qxrh92-37" value="upcoming feature (ticket #9621)" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="uCFwbwdLhiHwo-Qxrh92-32" vertex="1" connectable="0">
-          <mxGeometry x="0.2794" y="-2" relative="1" as="geometry">
-            <mxPoint x="-108" y="-93" as="offset" />
-          </mxGeometry>
         </mxCell>
         <mxCell id="uCFwbwdLhiHwo-Qxrh92-31" value="&lt;div&gt;sklearn&lt;/div&gt;&lt;div&gt;classification&lt;/div&gt;&lt;div&gt;report&lt;br&gt;&lt;/div&gt;" style="rhombus;whiteSpace=wrap;html=1;strokeColor=#3D0A05;strokeWidth=3;" parent="1" vertex="1">
           <mxGeometry x="1260" y="576.75" width="100" height="103.75" as="geometry" />
@@ -757,9 +741,6 @@
         <mxCell id="uCFwbwdLhiHwo-Qxrh92-48" value="&lt;b&gt;Evaluation&lt;/b&gt; saved to the server database" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#129416;" parent="1" vertex="1">
           <mxGeometry x="2451" y="903.75" width="120" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="HjN8L-3muKGVJR2-hx_8-4" value="upcoming feature&lt;br&gt;(ticket #9621, ticket #9618)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
-          <mxGeometry x="160" y="685.5" width="340" height="30" as="geometry" />
-        </mxCell>
         <mxCell id="HjN8L-3muKGVJR2-hx_8-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="HjN8L-3muKGVJR2-hx_8-12" target="9MLLla6oI4jPxRE4S_ba-3" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
@@ -801,20 +782,11 @@
         <mxCell id="HjN8L-3muKGVJR2-hx_8-26" value="" style="shape=providedRequiredInterface;html=1;verticalLabelPosition=bottom;sketch=0;" parent="1" vertex="1">
           <mxGeometry x="-640" y="998.75" width="20" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="9dfpNHqSxHGeAsIauYXX-1" value="upcoming feature (ticket #9804)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
-          <mxGeometry x="550" y="400" width="230" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="9dfpNHqSxHGeAsIauYXX-2" value="upcoming feature (ticket #9805)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
-          <mxGeometry x="570" y="738" width="230" height="30" as="geometry" />
-        </mxCell>
         <mxCell id="9dfpNHqSxHGeAsIauYXX-5" value="upcoming feature (ticket #9622)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
           <mxGeometry x="1680" y="550" width="240" height="30" as="geometry" />
         </mxCell>
         <mxCell id="9dfpNHqSxHGeAsIauYXX-7" value="upcoming feature (ticket #9271)" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="1" vertex="1" connectable="0">
           <mxGeometry x="3851" y="880" as="geometry" />
-        </mxCell>
-        <mxCell id="9dfpNHqSxHGeAsIauYXX-8" value="upcoming feature (ticket #9621)" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="1" vertex="1" connectable="0">
-          <mxGeometry x="1479.9999254545337" y="586.1263013173958" as="geometry" />
         </mxCell>
         <mxCell id="9dfpNHqSxHGeAsIauYXX-11" value="User must confirm the suggested split&lt;br&gt;(we have a API endpoint for manual splitting, and a DVUI interface)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
           <mxGeometry x="2010" y="130" width="270" height="30" as="geometry" />
