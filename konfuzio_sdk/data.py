@@ -438,10 +438,14 @@ class Page(Data):
 
     def get_original_page(self) -> 'Page':
         """
-        Return an original Page in case the current Page is a copy without an ID.
+        Return an "original" Page in case the current Page is a copy without an ID.
+
+        An "original" Page is a Page from the Document that is not a copy and not a Virtual Document. This Page has an
+        ID.
 
         The method is used in the File Splitting pipeline to allow retaining the original Document's information in
-        the Sub-Documents that were created from its splitting.
+        the Sub-Documents that were created from its splitting. The original Document is a Document that has an ID and
+        is not a deepcopy.
         """
         if self.id_ and self.document.id_:
             return self

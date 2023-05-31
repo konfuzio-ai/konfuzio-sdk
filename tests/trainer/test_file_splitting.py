@@ -187,11 +187,6 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
 
     def test_splitting_ai_evaluate_full_on_testing(self):
         """Test Splitting AI's evaluate_full on testing Documents."""
-        counter = 1
-        for doc in self.file_splitting_model.test_documents:
-            for page in doc.pages():
-                page.id_ = counter
-                counter += 1
         splitting_ai = SplittingAI(self.file_splitting_model)
         splitting_ai.evaluate_full()
         assert splitting_ai.full_evaluation.tp() == 9
@@ -226,14 +221,17 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
     def test_suggest_first_pages(self):
         """Test Splitting AI's suggesting first Pages."""
         splitting_ai = SplittingAI(self.file_splitting_model)
-        pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)[0]
-        for page in pred.pages():
+        predictions = splitting_ai.propose_split_documents(self.test_document, return_pages=True)
+        assert len(predictions) == 1
+        prediction = predictions[0]
+        for page in prediction.pages():
             if page.number in (1, 3, 5):
                 assert page.is_first_page
             else:
                 assert not page.is_first_page
             assert page.is_first_page_confidence == 1
-        assert self.test_document.pages()[0].category == pred.pages()[0].category
+        for page_original, page_predicted in zip(self.test_document.pages(), prediction.pages()):
+            assert page_original.category == page_predicted.category
         pathlib.Path(self.file_splitting_model.path).unlink()
 
 
