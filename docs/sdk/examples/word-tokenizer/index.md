@@ -48,7 +48,7 @@ be visualized or used to extract BBox information.
 
 5. **Tokenize the Document**:
 
-   This process involves splitting the Document into word-level Spans using the WhitespaceTokenizer.
+   This process involves splitting the Document into word-level Spans using the `WhitespaceTokenizer`.
 
    .. literalinclude:: /sdk/boilerplates/test_word_bboxes.py
       :language: python
@@ -79,7 +79,7 @@ be visualized or used to extract BBox information.
       :lines: 21
       :dedent: 4
 
-   Each bounding box (`Bbox`) in the list corresponds to a specific word, defined by four coordinates: x0 and y0 specify 
-   the coordinates of the bottom left corner, while x1 and y1 mark the coordinates of the top right corner, thereby 
-   specifying the box's position and dimensions on the Document Page.
+   Each bounding box (`Bbox`) in the list corresponds to a specific word and is defined by four coordinates: x0 and y0 
+   specify the coordinates of the bottom left corner, while x1 and y1 mark the coordinates of the top right corner, 
+   thereby specifying the box's position and dimensions on the Document Page.
 
