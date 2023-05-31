@@ -1,6 +1,9 @@
 ## Tutorial: Getting Word Bounding Box (BBox) for a Document
 
-In this tutorial, we will walk through how to extract the bounding box (BBox) for words in a Document, rather than for individual characters, using the Konfuzio SDK. This process involves the use of the `WhitespaceTokenizer` from the Konfuzio SDK to tokenize the Document and identify word-level Spans, which can then be visualized or used to extract BBox information.
+In this tutorial, we will walk through how to extract the bounding box ([BBox](https://dev.konfuzio.com/sdk/sourcecode.html#bbox)) 
+for words in a Document, rather than for individual characters, using the Konfuzio SDK. This process involves the use of 
+the `WhitespaceTokenizer` from the Konfuzio SDK to tokenize the Document and identify word-level Spans, which can then 
+be visualized or used to extract BBox information.
 
 ### Prerequisites
 
@@ -54,7 +57,8 @@ In this tutorial, we will walk through how to extract the bounding box (BBox) fo
 
 6. **Visualize all word-level Annotations**:
 
-   After getting the bounding box for all Spans, you might want to visually check the results to make sure the bounding boxes are correctly assigned. Here's how you can do it:
+   After getting the bounding box for all Spans, you might want to visually check the results to make sure the bounding 
+   boxes are correctly assigned. Here's how you can do it:
 
    .. literalinclude:: /sdk/boilerplates/test_word_bboxes.py
       :language: python
@@ -63,7 +67,8 @@ In this tutorial, we will walk through how to extract the bounding box (BBox) fo
 
    .. image:: /sdk/examples/word-tokenizer/word-bboxes.png
 
-   This will display an image of the Document with all word-level Annotations. The image may look a bit messy with all the Labels.
+   This will display an image of the Document with all word-level Annotations. The image may look a bit messy with all 
+   the Labels.
 
 7. **Get bounding box for all Spans**:
 
@@ -74,5 +79,7 @@ In this tutorial, we will walk through how to extract the bounding box (BBox) fo
       :lines: 21
       :dedent: 4
 
-   Each bounding box consists of the coordinates of the top-left corner of the box, as well as its width and height. The list `span_bboxes` will contain these bounding box coordinates for each word in the Document.
+   Each bounding box (`Bbox`) in the list corresponds to a specific word, defined by four coordinates: x0 and y0 specify 
+   the coordinates of the bottom left corner, while x1 and y1 mark the coordinates of the top right corner, thereby 
+   specifying the box's position and dimensions on the Document Page.
 
