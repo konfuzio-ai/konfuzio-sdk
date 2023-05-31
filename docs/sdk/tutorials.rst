@@ -19,6 +19,8 @@ Tutorials
 
 .. mdinclude:: examples/outlier-annotations/index.md
 
+.. mdinclude:: examples/word-tokenizer/index.md
+
 Retrain Flair NER-Ontonotes-Fast with Human Revised Annotations
 ---------------------------------------------------------------
 
