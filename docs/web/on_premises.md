@@ -646,11 +646,18 @@ that the CI pipelines are able to access the necessary resources and dependencie
 Overall, Konfuzio's use of CI pipelines provides a powerful tool for advanced users to run their AI workflows securely,
 with the added benefit of automated testing and continuous feedback.
 
-## Keycloak Integration
+## SSO via OpenID Connect (OIDC) 
+
+Konfuzio utilizes OpenID Connect (OIDC) for identity verification, implementing this through [Mozilla's Django OIDC](https://github.com/mozilla/mozilla-django-oidc).
+OIDC is a well-established layer built atop the OAuth 2.0 protocol, enabling client applications to confirm the identity of end users. 
+Numerous Identity Providers (IdP) exist that support the OIDC protocol, thus enabling the implementation of Single Sign-On (SSO) within your application. 
+A commonly chosen provider is [Keycloak](https://www.keycloak.org/). In the subsequent section, you will find a tutorial on how to use Keycloak with OIDC.
+
+### SSO Keycloak Integration
 
 Keycloak allows single sign-on funtionality. By doing so no user management is done wihtin Konfuzio Server. If you already operate a keycloak server, you can reuse keycloak users.
 
-### Set up
+#### Set up
 
 To start and set up keycloak server:
 
@@ -674,7 +681,7 @@ To start and set up keycloak server:
 10. Move to `Credentials` tab and save `Secret` value
 10. In `Users` navbar item create users
 
-###  Environment Variables
+####  Environment Variables
 To integrate konfuzio with keycloak you need to set the following environment variables for you Konfuzio Server installation:
 
 - `KEYCLOAK_URL` (http://127.0.0.1:8080/ - for localhost)
@@ -686,9 +693,43 @@ To integrate konfuzio with keycloak you need to set the following environment va
 Click `SSO` on login page to log in to Konfuzio using keycloak
 .. image:: ./keycloak/sso-button.png
 
-### Important notes
+#### Important notes
 
 - The Keycloak admin user cannot login into Konfuzio Server.
+
+### SSO via other Identity Management software 
+In order to connect your Identity Management software with Konfuzio using Single Sign-On (SSO), you'll need to follow these steps. Please note, this tutorial is meant for Identity Management software that supports OIDC (OpenID Connect), a widely adopted standard for user authentication that's compatible with many software platforms. If you're using Keycloak, please refer to the separate tutorial on connecting Konfuzio with Keycloak.
+
+#### Step 1: Setting up your Identity Provider
+This step varies depending on the Identity Management software you're using. You should refer to your Identity Management software's documentation for setting up OIDC (OpenID Connect). During the setup, you will create a new OIDC client for Konfuzio. You will typically need to provide a client name, redirect URI, and optionally a logo.
+
+The redirect URI should be the URL of your Konfuzio instance followed by "/oidc/callback/", for example https://<your-konfuzio-instance>/oidc/callback/.
+
+At the end of this step, you should have the following information:
+
+- Client ID
+- Client Secret
+- OIDC Issuer URL
+
+#### Step 2: Configuring mozilla-django-oidc
+You'll need to set the following environment variables:
+
+- `OIDC_RP_CLIENT_ID`: This should be the client ID from your Identity Management software.
+- `OIDC_RP_CLIENT_SECRET`: This should be the client secret from your Identity Management software.
+- `OIDC_OP_AUTHORIZATION_ENDPOINT`: This should be your OIDC issuer URL followed by "/authorize".
+- `OIDC_OP_TOKEN_ENDPOINT`: This should be your OIDC issuer URL followed by "/token".
+- `OIDC_OP_USER_ENDPOINT`: This should be your OIDC issuer URL followed by "/userinfo".
+- `OIDC_OP_JWKS_ENDPOINT`: This should be your OIDC issuer URL followed by "/.well-known/jwks.json".
+- `OIDC_RP_SIGN_ALGO`: This is the signing algorithm your Identity Management software uses. This is typically "RS256".
+- `OIDC_RP_SCOPES`: These are the scopes to request. For basic authentication, this can just be "openid email".
+
+
+#### Step 3: Restarting Konfuzio
+After you have set these environment variables, you should restart your Konfuzio server so that the new settings can take effect. How you do this depends on how you have deployed Konfuzio, but it might involve restarting a Docker container or a Django server.
+
+#### Step 4: Testing
+
+Now you can go to your Konfuzio instance and you should be redirected to your Identity Management software login screen. 
 
 ## Migrate AIs and Projects
 
