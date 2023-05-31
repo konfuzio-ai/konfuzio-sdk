@@ -22,5 +22,11 @@ documentation for more details.
 
 .. literalinclude:: /sdk/boilerplates/test_evaluate_extraction_ai.py
    :language: python
-   :lines: 11-12,14-15,20-21,23,25,27-30,32-35,37-40,42
+   :start-after: start init
+   :end-before: end init
+   :dedent: 4
+.. literalinclude:: /sdk/boilerplates/test_evaluate_extraction_ai.py
+   :language: python
+   :start-after: start scores
+   :end-before: end scores
    :dedent: 4

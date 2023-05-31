@@ -6,14 +6,16 @@ You can initialize a Document with a Category, which will count as if a human ma
 
 .. literalinclude:: /sdk/boilerplates/test_document_categorization.py
    :language: python
-   :lines: 18,46-49,51
+   :start-after: start init
+   :end-before: end init
    :dedent: 4
 
 If a Document is initialized with no Category, it can be manually set later.
 
 .. literalinclude:: /sdk/boilerplates/test_document_categorization.py
    :language: python
-   :lines: 53,55-61
+   :start-after: start no_category
+   :end-before: end no_category
    :dedent: 4
 
 
@@ -42,7 +44,8 @@ Use the name of the Category as an effective fallback logic to categorize Docume
 
 .. literalinclude:: /sdk/boilerplates/test_document_categorization.py
    :language: python
-   :lines: 6-7,16-18,22-24,26-44
+   :start-after: start name-based
+   :end-before: end name-based
    :dedent: 4
 
 ### Model-based Categorization AI
@@ -53,37 +56,13 @@ For a list of available Models see [Available Categorization Models](#categoriza
 
 .. literalinclude:: /sdk/boilerplates/test_document_categorization.py
    :language: python
-   :lines: 6,8-10,16-18
+   :start-after: start imports
+   :end-before: end imports
    :dedent: 4
 .. literalinclude:: /sdk/boilerplates/test_document_categorization.py
    :language: python
    :start-after: Start Build
    :end-before: End Build
-   :dedent: 4
-.. literalinclude:: /sdk/boilerplates/test_document_categorization.py
-   :language: python
-   :start-after: Start Train
-   :end-before: End Train
-   :dedent: 4
-.. literalinclude:: /sdk/boilerplates/test_document_categorization.py
-   :language: python
-   :start-after: Start Evaluate
-   :end-before: End Evaluate
-   :dedent: 4
-.. literalinclude:: /sdk/boilerplates/test_document_categorization.py
-   :language: python
-   :start-after: Start Categorize
-   :end-before: End Categorize
-   :dedent: 4
-.. literalinclude:: /sdk/boilerplates/test_document_categorization.py
-   :language: python
-   :start-after: Start Save
-   :end-before: End Save
-   :dedent: 4
-.. literalinclude:: /sdk/boilerplates/test_document_categorization.py
-   :language: python
-   :start-after: Start Models
-   :end-before: End Models
    :dedent: 4
 
 .. _categorization-models:
