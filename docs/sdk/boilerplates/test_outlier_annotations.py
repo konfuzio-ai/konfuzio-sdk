@@ -1,12 +1,12 @@
 """Test searching for the outlier Annotations under a given Label."""
-from tests.variables import TEST_PROJECT_ID
-
-YOUR_PROJECT_ID = TEST_PROJECT_ID
 YOUR_LABEL_NAME = 'Austellungsdatum'
 
 
 def test_outlier_by_regex():
     """Test finding outlier Annotations by regex."""
+    from tests.variables import TEST_PROJECT_ID
+
+    YOUR_PROJECT_ID = TEST_PROJECT_ID
     # start project
     from konfuzio_sdk.data import Project
 
@@ -30,6 +30,9 @@ def get_outlier_by_confidence():
     from konfuzio_sdk.tokenizer.base import ListTokenizer
     from konfuzio_sdk.tokenizer.regex import RegexTokenizer
     from konfuzio_sdk.data import Project
+    from tests.variables import TEST_PROJECT_ID
+
+    YOUR_PROJECT_ID = TEST_PROJECT_ID
 
     project = Project(id_=YOUR_PROJECT_ID)
     # start get austellungsdatum
@@ -64,6 +67,9 @@ def get_outlier_by_confidence():
 
 def test_outliers_by_normalization():
     """Test finding outlier Annotations by normalization."""
+    from tests.variables import TEST_PROJECT_ID
+
+    YOUR_PROJECT_ID = TEST_PROJECT_ID
     # start normalization
     from konfuzio_sdk.data import Project
 
@@ -79,6 +85,9 @@ def test_outliers_by_normalization():
 
 def test_three_methods():
     """Test combined search for outlier Annotations."""
+    from tests.variables import TEST_PROJECT_ID
+
+    YOUR_PROJECT_ID = TEST_PROJECT_ID
     # start combined
     from konfuzio_sdk.data import Project
 

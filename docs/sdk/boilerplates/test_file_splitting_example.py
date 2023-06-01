@@ -1,15 +1,14 @@
 """Test a code example for the File Splitting section of the documentation."""
-from tests.variables import TEST_PROJECT_ID
 from typing import List
-
-YOUR_PROJECT_ID = TEST_PROJECT_ID
-YOUR_DOCUMENT_ID = 44865
 
 
 def test_context_aware_file_splitting():
     """Test the File Splitting section of the documentation."""
     from konfuzio_sdk.trainer.file_splitting import AbstractFileSplittingModel
+    from tests.variables import TEST_PROJECT_ID
 
+    YOUR_PROJECT_ID = TEST_PROJECT_ID
+    YOUR_DOCUMENT_ID = 44865
     # start imports
     from konfuzio_sdk.data import Page, Category, Project
     from konfuzio_sdk.trainer.file_splitting import SplittingAI

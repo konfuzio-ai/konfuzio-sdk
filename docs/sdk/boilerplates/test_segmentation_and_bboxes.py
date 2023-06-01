@@ -1,11 +1,11 @@
 """Test code examples for visualizing segmentation and bboxes in the documentation."""
-from tests.variables import TEST_PROJECT_ID, TEST_DOCUMENT_ID
-
-YOUR_PROJECT_ID, YOUR_DOCUMENT_ID = TEST_PROJECT_ID, TEST_DOCUMENT_ID
 
 
 def test_visualize_bbox():
     """Test visualization of Bboxes."""
+    from tests.variables import TEST_PROJECT_ID, TEST_DOCUMENT_ID
+
+    YOUR_PROJECT_ID, YOUR_DOCUMENT_ID = TEST_PROJECT_ID, TEST_DOCUMENT_ID
     # start document
     from PIL import ImageDraw
     from konfuzio_sdk.data import Project
@@ -48,6 +48,9 @@ def test_visualize_bbox():
 
 def test_segmentation():
     """Test segmentation endpoint."""
+    from tests.variables import TEST_PROJECT_ID, TEST_DOCUMENT_ID
+
+    YOUR_PROJECT_ID, YOUR_DOCUMENT_ID = TEST_PROJECT_ID, TEST_DOCUMENT_ID
     # start segmentation
     from PIL import ImageDraw
     from konfuzio_sdk.data import Project
@@ -79,6 +82,9 @@ def test_segmentation():
 
 def test_segmentation_and_bboxes():
     """Test segmentation and bboxes."""
+    from tests.variables import TEST_PROJECT_ID, TEST_DOCUMENT_ID
+
+    YOUR_PROJECT_ID, YOUR_DOCUMENT_ID = TEST_PROJECT_ID, TEST_DOCUMENT_ID
     # start dimensions
     from PIL import ImageDraw
     from konfuzio_sdk.data import Project

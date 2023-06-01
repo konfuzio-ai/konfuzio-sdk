@@ -1,15 +1,18 @@
 """Test code examples for Get Started section of the documentation."""
 import os
-from tests.variables import TEST_PROJECT_ID
+
 from konfuzio_sdk.data import Project, Document
 
-YOUR_PROJECT_ID = TEST_PROJECT_ID
+
 FILE_PATH = 'tests/test_data/pdf.pdf'
 ASSIGNEE_ID = None
 
 
 def test_project():
     """Test initializing the Project."""
+    from tests.variables import TEST_PROJECT_ID
+
+    YOUR_PROJECT_ID = TEST_PROJECT_ID
     # start project
     my_project = Project(id_=YOUR_PROJECT_ID)
     # end project
@@ -23,6 +26,9 @@ def test_project():
 
 def test_documents():
     """Test Document initialization."""
+    from tests.variables import TEST_PROJECT_ID
+
+    YOUR_PROJECT_ID = TEST_PROJECT_ID
     my_project = Project(id_=YOUR_PROJECT_ID)
 
     # start documents
@@ -37,6 +43,9 @@ def test_documents():
 
 def test_document_loading():
     """Test uploading Documents."""
+    from tests.variables import TEST_PROJECT_ID
+
+    YOUR_PROJECT_ID = TEST_PROJECT_ID
     my_project = Project(id_=YOUR_PROJECT_ID)
     # start sync_true
     document = Document.from_file(FILE_PATH, project=my_project, sync=True)
@@ -59,6 +68,9 @@ def test_document_loading():
 
 def test_modify_document():
     """Test modifying the Document."""
+    from tests.variables import TEST_PROJECT_ID
+
+    YOUR_PROJECT_ID = TEST_PROJECT_ID
     my_project = Project(id_=YOUR_PROJECT_ID)
     document = my_project.documents[0]
     # start assignee

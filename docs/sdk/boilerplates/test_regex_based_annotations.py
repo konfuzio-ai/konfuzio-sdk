@@ -1,11 +1,11 @@
 """Test code examples for regex-based Annotations in the documentation."""
-from tests.variables import TEST_PROJECT_ID
-
-YOUR_PROJECT_ID = TEST_PROJECT_ID
 
 
 def test_regex_based_annotations():
     """Test regex-based Annotations."""
+    from tests.variables import TEST_PROJECT_ID
+
+    YOUR_PROJECT_ID = TEST_PROJECT_ID
     # start imports
     import re
     from konfuzio_sdk.data import Project, Annotation, Span
