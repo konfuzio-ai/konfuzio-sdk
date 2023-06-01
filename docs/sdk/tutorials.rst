@@ -25,6 +25,8 @@ Tutorials
 
 .. mdinclude:: examples/helloworld.md
 
+.. mdinclude:: examples/word-tokenizer/index.md
+
 Retrain Flair NER-Ontonotes-Fast with Human Revised Annotations
 ---------------------------------------------------------------
 
