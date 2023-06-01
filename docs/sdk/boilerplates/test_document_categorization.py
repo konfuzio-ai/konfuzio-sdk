@@ -1,14 +1,14 @@
 """Test Document Categorization code examples from the documentation."""
-from tests.variables import TEST_PROJECT_ID
-
-YOUR_PROJECT_ID = TEST_PROJECT_ID
-YOUR_CATEGORY_ID = 63
-YOUR_DOCUMENT_ID = 44865
 
 
 def test_init_document():
     """Test initializing a Document with a Category."""
     from konfuzio_sdk.data import Project, Document
+    from tests.variables import TEST_PROJECT_ID
+
+    YOUR_PROJECT_ID = TEST_PROJECT_ID
+    YOUR_CATEGORY_ID = 63
+    YOUR_DOCUMENT_ID = 44865
 
     # start init
     project = Project(id_=YOUR_PROJECT_ID)
@@ -35,6 +35,11 @@ def test_init_document():
 
 def test_name_based_categorization():
     """Test Name-based Categorization AI."""
+    from tests.variables import TEST_PROJECT_ID
+
+    YOUR_PROJECT_ID = TEST_PROJECT_ID
+    YOUR_DOCUMENT_ID = 44865
+
     # start name-based
     from konfuzio_sdk.data import Project
     from konfuzio_sdk.trainer.document_categorization import NameBasedCategorizationAI
@@ -68,6 +73,10 @@ def test_name_based_categorization():
 
 def test_model_based_categorization():
     """Test model-based Categorization AI."""
+    from tests.variables import TEST_PROJECT_ID
+
+    YOUR_PROJECT_ID = TEST_PROJECT_ID
+    YOUR_DOCUMENT_ID = 44865
     # start imports
     from konfuzio_sdk.data import Project, Document
     from konfuzio_sdk.trainer.information_extraction import load_model
