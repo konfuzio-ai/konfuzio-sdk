@@ -30,7 +30,8 @@ Annotations for each individual sentence in a text Document. To use it, you can 
 
 .. literalinclude:: /sdk/boilerplates/test_sentence_tokenizer.py
    :language: python
-   :lines: 6-7,11-23
+   :start-after: start import
+   :end-before: end import
    :dedent: 4
 
 The resulting Annotations will look like this:
