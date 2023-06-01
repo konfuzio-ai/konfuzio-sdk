@@ -15,8 +15,8 @@ The Open Source Konfuzio Software Development Kit (Konfuzio SDK) provides a Pyth
 
 ### Customizing document processes with the Konfuzio SDK
 
-For documentation about how to train and evaluate document understanding AIs, as well as extract new documents using 
-the Konfuzio Server web interface, please see our [Konfuzio Guide](https://help.konfuzio.com/tutorials/quickstart/index.html).
+For documentation about how to train and evaluate document understanding AIs, as well as use a trained AI in the
+Konfuzio Server web interface, please see our [Konfuzio Guide](https://help.konfuzio.com/tutorials/quickstart/index.html).
 
 If you need to **add custom functionality** to the document processes of the Konfuzio Server, the Konfuzio SDK 
 is the tool for you. You can customize pipelines for automatic document Categorization, File Splitting, and Extraction.
@@ -36,64 +36,6 @@ to be directly uploaded to the Konfuzio Server (see [Upload Extraction or Catego
 
 4. Finally, activating the uploaded AI on the web interface will enable the custom pipeline on your self-hosted installation.
 
-### Customize Extraction AI
-
-Any Custom [Extraction AI](sourcecode.html#extraction-ai) (derived from the Konfuzio `AbstractExtractionAI` class) should implement 
-the following interface:
-
-```python
-from konfuzio_sdk.trainer.information_extraction import AbstractExtractionAI
-from konfuzio_sdk.data import Document
-from typing import List
-
-
-class CustomExtractionAI(AbstractExtractionAI):
-
-    def __init__(self, *args, **kwargs):
-
-    # initialize key variables required by the custom AI
-
-    def fit(self):
-
-    # Define architecture and training that the model undergoes, i.e. a NN architecture or a custom hardcoded logic
-    # This method is allowed to be implemented as a no-op if you provide the trained model in other ways
-
-    def extract(self, document: Document) -> Document:
-# define how the model extracts information from Documents
-# **NB:** The result of extraction must be a copy of the input Document with added Annotations attribute `Document._annotations`
-```
-
-Example usage of your Custom Extraction AI:
-```python
-from konfuzio_sdk.data import Project, Document
-from konfuzio_sdk.trainer.information_extraction import load_model
-
-# Initialize Project and provide the AI training and test data
-project = Project(id_=YOUR_PROJECT_ID)  # see https://dev.konfuzio.com/sdk/get_started.html#example-usage
-
-extraction_pipeline = CustomExtractionAI(*args, **kwargs)
-extraction_pipeline.category = project.get_category_by_id(id_=YOUR_CATEGORY_ID)
-extraction_pipeline.documents = extraction_pipeline.category.documents()
-extraction_pipeline.test_documents = extraction_pipeline.category.test_documents()
-
-# Train the AI
-extraction_pipeline.fit()
-
-# Evaluate the AI
-data_quality = extraction_pipeline.evaluate_full(use_training_docs=True)
-ai_quality = extraction_pipeline.evaluate_full(use_training_docs=False)
-
-# Extract a Document
-document = self.project.get_document_by_id(YOUR_DOCUMENT_ID)
-extraction_result: Document = extraction_pipeline.extract(document=document)
-
-# Save and load a pickle file for the model
-pickle_model_path = extraction_pipeline.save(output_dir=project.model_folder, include_konfuzio=True)
-extraction_pipeline_loaded = load_model(pickle_model_path)
-```
-
-For a more in depth tutorial about the usage of Extraction AIs in the SDK see 
-[Train a Konfuzio SDK Model to Extract Information From Payslip Documents](examples/examples.html#train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents).
 
 ### Customize Categorization AI
 
