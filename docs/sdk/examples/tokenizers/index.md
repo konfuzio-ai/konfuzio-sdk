@@ -99,11 +99,13 @@ be visualized or used to extract BBox information.
    thereby specifying the box's position and dimensions on the Document Page.
 
 
-### Train a Label Regex Tokenizer
+### Training a Label Regex Tokenizer
 
 The `konfuzio_sdk` package offers many tools for tokenization tasks. For more complex scenarios, like identifying intricate 
 Annotation strings, it allows for the training of a custom Regex Tokenizer. This is generally a more effective approach 
 than relying on a basic `WhitespaceTokenizer`.
+
+#### Example Usage
 
 In this example, you will see how to find regex expressions that match with occurrences of the "Lohnart" Label in the 
 training data. 
@@ -111,18 +113,6 @@ training data.
 .. literalinclude:: /sdk/boilerplates/test_train_label_regex_tokenizer.py
    :language: python
    :lines: 6-9,14-27
-   :dedent: 4
-
-### Finding Spans of a Label Not Found by a Tokenizer
-
-Here is an example of how to use the `Label.spans_not_found_by_tokenizer` method. This will allow you to determine if 
-a RegexTokenizer is suitable at finding the Spans of a Label, or what Spans might have been annotated wrong. Say, you 
-have a number of Annotations assigned to the `IBAN` Label and want to know which Spans would not be found when using the 
-WhitespaceTokenizer. You can follow this example to find all the relevant Spans.
-
-.. literalinclude:: /sdk/boilerplates/test_spans_not_found_label.py
-   :language: python
-   :lines: 6-8,13-20,22-24
    :dedent: 4
 
 ### Create Regex-based Annotations
@@ -241,3 +231,18 @@ To use it, you can use the following code:
 The resulting Annotations will look like this:
 
 .. image:: /_static/img/sentence_tokenizer.png
+
+
+### How to Chose Which Tokenizer to Use?
+
+#### Finding Spans of a Label Not Found by a Tokenizer
+
+Here is an example of how to use the `Label.spans_not_found_by_tokenizer` method. This will allow you to determine if 
+a RegexTokenizer is suitable at finding the Spans of a Label, or what Spans might have been annotated wrong. Say, you 
+have a number of Annotations assigned to the `IBAN` Label and want to know which Spans would not be found when using the 
+WhitespaceTokenizer. You can follow this example to find all the relevant Spans.
+
+.. literalinclude:: /sdk/boilerplates/test_spans_not_found_label.py
+   :language: python
+   :lines: 6-8,13-20,22-24
+   :dedent: 4
