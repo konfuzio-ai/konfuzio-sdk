@@ -13,11 +13,6 @@ performs on the level of 10% in comparison to the best one.
      :start-after: start project
      :end-before: end project
      :dedent: 4
-  .. literalinclude:: /sdk/boilerplates/test_outlier_annotations.py
-     :language: python
-     :start-after: start get label
-     :end-before: end get label
-     :dedent: 4
 
 - `get_probable_outliers_by_confidence` looks for the Annotations with the least confidence level, provided it is lower
 than the specified threshold (the default threshold is 0.5). Accepts an instance of EvaluationExtraction class as an input and uses confidence predictions from there.

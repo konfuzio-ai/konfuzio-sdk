@@ -11,12 +11,11 @@ def test_outlier_by_regex():
     from konfuzio_sdk.data import Project
 
     project = Project(id_=YOUR_PROJECT_ID)
-    # end project
-    label = project.get_label_by_name('Bank inkl. IBAN')
-    # start get label
+
     label = project.get_label_by_name(YOUR_LABEL_NAME)
     outliers = label.get_probable_outliers_by_regex(project.categories)
-    # end get label
+    # end project
+    label = project.get_label_by_name('Bank inkl. IBAN')
     outliers = label.get_probable_outliers_by_regex(project.categories, top_worst_percentage=1.0)
     outlier_spans = [span.offset_string for annotation in outliers for span in annotation.spans]
     assert len(outliers) == 16

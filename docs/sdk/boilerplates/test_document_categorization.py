@@ -16,11 +16,13 @@ def test_init_document():
 
     my_document = Document(text="My text.", project=project, category=my_category)
     assert my_document.category == my_category
+    my_document.set_category(my_category)
     assert my_document.category_is_revised is True
     # end init
     my_document.delete()
     # start no_category
     document = project.get_document_by_id(YOUR_DOCUMENT_ID)
+    document.set_category(None)
     assert document.category == project.no_category
     document.set_category(my_category)
     assert document.category == my_category
