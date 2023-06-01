@@ -79,7 +79,7 @@ be visualized or used to extract BBox information.
       :lines: 21
       :dedent: 4
 
-Each bounding box (`Bbox`) corresponds to a particular word and is characterized by four coordinates: x0 and y0 define 
-the bottom-left corner, while x1 and y1 indicate the top-right corner. These coordinates detail the bounding box's 
-location and size on the Document Page.
+   Each bounding box (`Bbox`) corresponds to a particular word and is characterized by four coordinates: x0 and y0 define 
+   the bottom-left corner, while x1 and y1 indicate the top-right corner. These coordinates detail the bounding box's 
+   location and size on the Document Page.
 
