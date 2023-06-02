@@ -700,7 +700,12 @@ class CategorizationEvaluation:
 class FileSplittingEvaluation:
     """Evaluate the quality of the filesplitting logic."""
 
-    def __init__(self, ground_truth_documents: List[Document], prediction_documents: List[Document]):
+    def __init__(
+        self,
+        ground_truth_documents: List[Document],
+        prediction_documents: List[Document],
+        zero_division_handling: bool = False,
+    ):
         """
         Initialize and run the metrics calculation.
 
@@ -708,6 +713,9 @@ class FileSplittingEvaluation:
         :type ground_truth_documents: list
         :param prediction_documents: A list of Documents with Pages newly predicted to be first or non-first.
         :type prediction_documents: list
+        :param zero_division_handling: Automatically calculate precision, recall and F1 = 0 on a Category level if no
+        True Positives were predicted, to avoid Zero Division Error
+        :type zero_division_handling: bool
         :raises ValueError: When ground_truth_documents and prediction_documents are not the same length.
         :raises ValueError: When a Page does not have a value of is_first_page.
         :raises ValueError: When an original Document and prediction are not referring to the same Document.
@@ -738,6 +746,7 @@ class FileSplittingEvaluation:
             [document[0], document[1]] for document in zip(ground_truth_documents, prediction_documents)
         ]
         self.project = projects[0]  # because we check that exactly one Project exists across the Documents
+        self.zero_division_handling = zero_division_handling
         self.evaluation_results = None
         self.evaluation_results_by_category = None
         self.calculate()
@@ -771,18 +780,27 @@ class FileSplittingEvaluation:
                 elif not page_gt.is_first_page and not page_pr.is_first_page:
                     tn += 1
         evaluation_calculator = EvaluationCalculator(tp=tp, fp=fp, fn=fn, tn=tn)
-        if tp + fp != 0:  # excess evaluation calculator usage, can be called once
+        if tp + fp != 0:
             precision = evaluation_calculator.precision
         else:
-            raise ZeroDivisionError("TP and FP are zero.")
+            if self.zero_division_handling:
+                precision = 0
+            else:
+                raise ZeroDivisionError("TP and FP are zero.")
         if tp + fn != 0:
             recall = evaluation_calculator.recall
         else:
-            raise ZeroDivisionError("TP and FN are zero.")
+            if self.zero_division_handling:
+                recall = 0
+            else:
+                raise ZeroDivisionError("TP and FN are zero.")
         if precision + recall != 0:
             f1 = evaluation_calculator.f1
         else:
-            raise ZeroDivisionError("FP and FN are zero.")
+            if self.zero_division_handling:
+                f1 = 0
+            else:
+                raise ZeroDivisionError("FP and FN are zero.")
         return tp, fp, fn, tn, precision, recall, f1
 
     def calculate(self):
