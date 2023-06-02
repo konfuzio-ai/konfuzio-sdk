@@ -222,7 +222,7 @@ The resulting Annotations will look like this:
 .. image:: /_static/img/sentence_tokenizer.png
 
 
-### How to Chose Which Tokenizer to Use?
+### How to Choose Which Tokenizer to Use?
 
 In Natural Language Processing (NLP), the selection of the appropriate tokenizer can greatly affect the performance and 
 accuracy of the overall system. The Konfuzio SDK provides multiple tokenization options - WhitespaceTokenizer, 
