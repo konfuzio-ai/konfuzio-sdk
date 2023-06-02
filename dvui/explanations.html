@@ -182,10 +182,11 @@
 </div>
 <p>You can also specify the language in the <code class="docutils literal notranslate"><span class="pre">html</span></code> file:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">div</span> <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;app&quot;</span><span class="o">&gt;</span>
-    <span class="o">&lt;</span><span class="n">app</span> <span class="n">locale</span><span class="o">=</span><span class="s2">&quot;DE/EN/ES&quot;</span><span class="o">&gt;&lt;/</span><span class="n">app</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">app</span> <span class="n">locale</span><span class="o">=</span><span class="s2">&quot;de/en/es&quot;</span><span class="o">&gt;&lt;/</span><span class="n">app</span><span class="o">&gt;</span>
   <span class="o">&lt;/</span><span class="n">div</span><span class="o">&gt;</span>
 </pre></div>
 </div>
+<p>If left empty, then the default <code class="docutils literal notranslate"><span class="pre">en</span></code> will be used.</p>
 <p>You are also welcome to create a new locales file for a language not currently provided by us, considering the data from <a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/tree/main/src/locales">our existing files</a>, and share it with us via a <a class="reference external" href="https://konfuzio.com/en/support/">Support Ticket</a> or create a Pull Request to add it to the repository.</p>
 </section>
 <section id="how-to-integrate-the-document-validation-ui-into-custom-solutions">
@@ -247,7 +248,7 @@ module.exports = {
 <section id="webpack-bundle">
 <h6>Webpack bundle<a class="headerlink" href="#webpack-bundle" title="Permalink to this headline">¶</a></h6>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&lt;div id=&quot;app&quot;&gt;
-   &lt;app document=&quot;DOCUMENT_ID&quot; user_token=”USER_TOKEN” locale=&quot;DE/EN/ES&quot;&gt;&lt;/app&gt;
+   &lt;app document=&quot;document_id&quot; user_token=”user_token” locale=&quot;de/en/es&quot;&gt;&lt;/app&gt;
  &lt;/div&gt;
 
   &lt;script src=&quot;/server/bundle/document_validation_ui.js&quot;&gt;&lt;/script&gt;
@@ -277,7 +278,7 @@ module.exports = {
 
 &lt;body&gt;
  &lt;div id=&quot;app&quot;&gt;
-    &lt;app document=&quot;DOCUMENT_ID&quot; user_token=”USER_TOKEN” locale=&quot;DE/EN/ES&quot;&gt;&lt;/app&gt;
+    &lt;app document=&quot;document_id&quot; user_token=”user_token” locale=&quot;de/en/es&quot;&gt;&lt;/app&gt;
   &lt;/div&gt;
 &lt;/body&gt;
 </pre></div>
@@ -296,7 +297,7 @@ module.exports = {
 &lt;link href=&quot;https://unpkg.com/@konfuzio/document-validation-ui@latest/dist/css/app.css&quot; rel=&quot;stylesheet&quot;&gt;
 
 &lt;div id=&quot;app&quot; style=&quot;height: 100vh&quot;&gt;
-  &lt;app document=&quot;DOCUMENT_ID&quot; user_token=”USER_TOKEN” locale=&quot;DE/EN/ES&quot;
+  &lt;app document=&quot;document_id&quot; user_token=”user_token” locale=&quot;de/en/es&quot;
 &gt;&lt;/app&gt;
 &lt;/div&gt;
 </pre></div>
