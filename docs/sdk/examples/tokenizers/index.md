@@ -224,7 +224,7 @@ The resulting Annotations will look like this:
 
 ### How to Choose Which Tokenizer to Use?
 
-In Natural Language Processing (NLP), the selection of the appropriate tokenizer can greatly affect the performance and 
+In Natural Language Processing (NLP), the selection of the appropriate Tokenizer can greatly affect the performance and 
 accuracy of the overall system. The Konfuzio SDK provides multiple tokenization options - WhitespaceTokenizer, 
 Label-Specific Regex Tokenizer (called "[Character](https://help.konfuzio.com/modules/categories/index.html#character)" 
 detection mode on the Konfuzio platform), ParagraphTokenizer, and SentenceTokenizer, each serving distinct purposes.
@@ -233,7 +233,7 @@ If your task involves basic word-level processing, the WhitespaceTokenizer would
 into chunks based on white spaces, offering a simple but effective approach for tasks such as basic keyword extraction.
 
 On the other hand, if you have a specialized task, such as recognizing a specific pattern in the text, then Training a 
-Label-Specific Regex Tokenizer may be the ideal choice. This tokenizer utilizes Annotations of a Label in a training set 
+Label-Specific Regex Tokenizer may be the ideal choice. This Tokenizer utilizes Annotations of a Label in a training set 
 to recognize and tokenize more precise chunks. This is particularly useful for tasks like entity recognition, or where 
 a specific pattern of words or characters are important.
 
@@ -241,9 +241,9 @@ For tasks requiring a broader context, the ParagraphTokenizer and SentenceTokeni
 recognize and segment larger textual chunks - paragraphs and sentences, respectively. This is beneficial when the 
 meaning and interpretation of text rely heavily on the contextual information at the sentence or paragraph level.
 
-Choosing the right tokenizer is ultimately about understanding the nature of your NLP task, the structure of your data, 
+Choosing the right Tokenizer is ultimately about understanding the nature of your NLP task, the structure of your data, 
 and the level of granularity required for your processing. By aligning these factors with the features offered by the 
-different tokenizers in the Konfuzio SDK, you can select the optimal tool for your task.
+different Tokenizers in the Konfuzio SDK, you can select the optimal tool for your task.
 
 #### Finding Spans of a Label Not Found by a Tokenizer
 
