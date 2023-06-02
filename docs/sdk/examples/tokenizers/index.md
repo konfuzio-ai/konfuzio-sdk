@@ -99,7 +99,10 @@ be visualized or used to extract BBox information.
    thereby specifying the box's position and dimensions on the Document Page.
 
 
-### Training a Label Regex Tokenizer
+### Training a Label-Specific Regex Tokenizer
+
+**Pro Tip**: Read our technical blog post [Automated Regex](https://helm-nagel.com/Automated-Regex-Generation-based-on-examples) 
+to find out how we use Regex to detect outliers in our annotated data.
 
 The `konfuzio_sdk` package offers many tools for tokenization tasks. For more complex scenarios, like identifying intricate 
 Annotation strings, it allows for the training of a custom Regex Tokenizer. This is generally a more effective approach 
@@ -113,20 +116,6 @@ training data.
 .. literalinclude:: /sdk/boilerplates/test_train_label_regex_tokenizer.py
    :language: python
    :lines: 6-9,14-27
-   :dedent: 4
-
-### Create Regex-based Annotations
-
-**Pro Tip**: Read our technical blog post [Automated Regex](https://helm-nagel.com/Automated-Regex-Generation-based-on-examples) 
-to find out how we use Regex to detect outliers in our annotated data.
-
-Let's see a simple example of how can we use the `konfuzio_sdk` package to get information on a Project and to post Annotations.
-
-You can follow the example below to post Annotations of a certain word or expression in the first Document uploaded.
-
-.. literalinclude:: /sdk/boilerplates/test_regex_based_annotations.py
-   :language: python
-   :lines: 6,9,7,11-12,15-22,24-26,28-33,35-49,51
    :dedent: 4
 
 ### Paragraph Tokenizer
@@ -235,7 +224,32 @@ The resulting Annotations will look like this:
 
 ### How to Chose Which Tokenizer to Use?
 
+In Natural Language Processing (NLP), the selection of the appropriate tokenizer can greatly affect the performance and 
+accuracy of the overall system. The Konfuzio SDK provides multiple tokenization options - WhitespaceTokenizer, 
+Label-Specific Regex Tokenizer (called "[Character](https://help.konfuzio.com/modules/categories/index.html#character)" 
+detection mode on the Konfuzio platform), ParagraphTokenizer, and SentenceTokenizer, each serving distinct purposes.
+
+If your task involves basic word-level processing, the WhitespaceTokenizer would suffice. This method segments the text 
+into chunks based on white spaces, offering a simple but effective approach for tasks such as basic keyword extraction.
+
+On the other hand, if you have a specialized task, such as recognizing a specific pattern in the text, then Training a 
+Label-Specific Regex Tokenizer may be the ideal choice. This tokenizer utilizes Annotations of a Label in a training set 
+to recognize and tokenize more precise chunks. This is particularly useful for tasks like entity recognition, or where 
+a specific pattern of words or characters are important.
+
+For tasks requiring a broader context, the ParagraphTokenizer and SentenceTokenizer can be useful. These options can 
+recognize and segment larger textual chunks - paragraphs and sentences, respectively. This is beneficial when the 
+meaning and interpretation of text rely heavily on the contextual information at the sentence or paragraph level.
+
+Choosing the right tokenizer is ultimately about understanding the nature of your NLP task, the structure of your data, 
+and the level of granularity required for your processing. By aligning these factors with the features offered by the 
+different tokenizers in the Konfuzio SDK, you can select the optimal tool for your task.
+
 #### Finding Spans of a Label Not Found by a Tokenizer
+
+To help you choose the right Tokenizer for your task, it can be useful to try out different Tokenizers and see which 
+Spans are found by which Tokenizer. The `Label` class provides a method called `spans_not_found_by_tokenizer` that 
+can he helpful in this regard.
 
 Here is an example of how to use the `Label.spans_not_found_by_tokenizer` method. This will allow you to determine if 
 a RegexTokenizer is suitable at finding the Spans of a Label, or what Spans might have been annotated wrong. Say, you 
