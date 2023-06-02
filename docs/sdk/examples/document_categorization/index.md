@@ -103,6 +103,53 @@ The list of available Categorization Models is implemented as an Enum containing
 
 See more details about these Categorization Models under [API Reference - Categorization AI](sourcecode.html#categorization-ai).
 
+### Customize Categorization AI
+
+This section explains how to train a custom Categorization AI locally, how to save it and upload it to the Konfuzio 
+Server. 
+
+By default, any [Categorization AI](sourcecode.html#categorization-ai) class should derive from the 
+`AbstractCategorizationModel` class and implement the following interface:
+
+.. literalinclude:: /sdk/boilerplates/test_custom_categorization_ai.py
+   :language: python
+   :start-after: start init
+   :end-before: end init
+   :dedent: 4
+
+Example usage of your Custom Categorization AI:
+```python
+from konfuzio_sdk.data import Project
+from konfuzio_sdk.trainer.information_extraction import load_model
+
+# Initialize Project and provide the AI training and test data
+project = Project(id_=YOUR_PROJECT_ID)  # see https://dev.konfuzio.com/sdk/get_started.html#example-usage
+
+categorization_pipeline = CustomCategorizationAI(*args, **kwargs)
+categorization_pipeline.categories = project.categories
+categorization_pipeline.documents = [category.documents for category in categorization_pipeline.categories]
+categorization_pipeline.test_documents = [category.test_documents() for category in categorization_pipeline.categories]
+
+# Calculate features and train the AI
+categorization_pipeline.fit()
+
+# Evaluate the AI
+data_quality = categorization_pipeline.evaluate(use_training_docs=True)
+ai_quality = categorization_pipeline.evaluate(use_training_docs=False)
+
+# Categorize a Document
+document = self.project.get_document_by_id(YOUR_DOCUMENT_ID)
+categorization_result = categorization_model.categorize(document=document)
+for page in categorization_result.pages():
+    print(f"Found category {page.category} for {page}")
+print(f"Found category {categorization_result.category} for {result_doc}")
+
+# Save and load a pickle file for the model
+pickle_model_path = categorization_pipeline.save(output_dir=project.model_folder, include_konfuzio=True)
+categorization_pipeline_loaded = load_model(pickle_model_path)
+```
+
+
 ### Categorization AI Overview Diagram
 
 In the first diagram, we show the class hierarchy of the available Categorization Models within the SDK. Note that the 
