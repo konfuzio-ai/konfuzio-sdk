@@ -1,4 +1,4 @@
-### Develop and save a custom File Splitting AI
+### Develop and save a Context-Aware File Splitting AI
 
 In this tutorial, you will learn how to train a custom File Splitting AI on the data from a Project of your choice and 
 save a trained model for further usage.
