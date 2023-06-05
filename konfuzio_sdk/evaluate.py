@@ -5,10 +5,7 @@ from typing import Dict, Tuple, List, Optional, Union
 import pandas
 import numpy
 from sklearn.utils.extmath import weighted_mode
-from sklearn.metrics import (
-    confusion_matrix,
-    classification_report,
-)
+from sklearn.metrics import confusion_matrix, classification_report, precision_score, recall_score, f1_score
 
 from konfuzio_sdk.utils import sdk_isinstance, memory_size_of
 from konfuzio_sdk.data import Category, Document
@@ -742,8 +739,10 @@ class FileSplittingEvaluation:
         projects = list(set([document.project for document in ground_truth_documents]))
         if len(projects) > 1:
             raise ValueError("All Documents have to belong to the same Project.")
+        self.ground_truth_documents = ground_truth_documents
+        self.prediction_documents = prediction_documents
         self.document_pairs = [
-            [document[0], document[1]] for document in zip(ground_truth_documents, prediction_documents)
+            [document[0], document[1]] for document in zip(self.ground_truth_documents, self.prediction_documents)
         ]
         self.project = projects[0]  # because we check that exactly one Project exists across the Documents
         self.zero_division_handling = zero_division_handling
@@ -780,31 +779,24 @@ class FileSplittingEvaluation:
                 elif not page_gt.is_first_page and not page_pr.is_first_page:
                     tn += 1
         evaluation_calculator = EvaluationCalculator(tp=tp, fp=fp, fn=fn, tn=tn)
+        gt_values = [int(page.is_first_page) for document in self.ground_truth_documents for page in document.pages()]
+        pred_values = [int(page.is_first_page) for document in self.prediction_documents for page in document.pages()]
         if tp + fp != 0:
             precision = evaluation_calculator.precision
         else:
-            if self.zero_division_handling:
-                precision = 0
-            else:
-                raise ZeroDivisionError("TP and FP are zero.")
+            precision = precision_score(gt_values, pred_values, zero_division=0)
         if tp + fn != 0:
             recall = evaluation_calculator.recall
         else:
-            if self.zero_division_handling:
-                recall = 0
-            else:
-                raise ZeroDivisionError("TP and FN are zero.")
+            recall = recall_score(gt_values, pred_values, zero_division=0)
         if precision + recall != 0:
             f1 = evaluation_calculator.f1
         else:
-            if self.zero_division_handling:
-                f1 = 0
-            else:
-                raise ZeroDivisionError("FP and FN are zero.")
+            f1 = f1_score(gt_values, pred_values, zero_division=0)
         return tp, fp, fn, tn, precision, recall, f1
 
     def calculate(self):
-        """Calculate metrics for the filesplitting logic."""
+        """Calculate metrics for the File Splitting logic."""
         tp, fp, fn, tn, precision, recall, f1 = self._metric_calculations()
         self.evaluation_results = {
             'true_positives': tp,
