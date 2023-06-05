@@ -443,7 +443,7 @@ class Page(Data):
         An "original" Page is a Page from the Document that is not a copy and not a Virtual Document. This Page has an
         ID.
 
-        The method is used in the File Splitting pipeline to allow retaining the original Document's information in
+        The method is used in the File Splitting pipeline to retain the original Document's information in
         the Sub-Documents that were created from its splitting. The original Document is a Document that has an ID and
         is not a deepcopy.
         """

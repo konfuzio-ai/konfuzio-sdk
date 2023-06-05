@@ -219,7 +219,7 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
         assert pred == self.test_document
 
     def test_suggest_first_pages(self):
-        """Test Splitting AI's suggesting first Pages."""
+        """Test AI's suggesting potential split points of a deepcopy of a Document without the actual splitting."""
         splitting_ai = SplittingAI(self.file_splitting_model)
         predictions = splitting_ai.propose_split_documents(self.test_document, return_pages=True)
         assert len(predictions) == 1

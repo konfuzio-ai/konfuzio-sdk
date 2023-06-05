@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" modified="2023-05-31T12:51:37.115Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36" etag="3AEanqDW_GBU4O5PcS2P" version="21.3.6" type="device">
+<mxfile host="app.diagrams.net" modified="2023-06-05T09:38:35.658Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36" etag="E2-jfx6eCrMX1PjT5OtP" version="21.3.6" type="device">
   <diagram id="Y_4e-g6y54JG4lKSlURq" name="Page-1">
-    <mxGraphModel dx="3134" dy="771" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="3293" dy="857" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -674,11 +674,6 @@
         <mxCell id="uCFwbwdLhiHwo-Qxrh92-22" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="uCFwbwdLhiHwo-Qxrh92-24" target="uCFwbwdLhiHwo-Qxrh92-21" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="uCFwbwdLhiHwo-Qxrh92-23" value="upcoming feature (ticket #9271)" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="uCFwbwdLhiHwo-Qxrh92-22" vertex="1" connectable="0">
-          <mxGeometry x="-0.3794" y="-1" relative="1" as="geometry">
-            <mxPoint x="-1" y="8" as="offset" />
-          </mxGeometry>
-        </mxCell>
         <mxCell id="uCFwbwdLhiHwo-Qxrh92-24" value="Ground truth document from the training or test dataset" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#129416;" parent="1" vertex="1">
           <mxGeometry x="1250" y="898.75" width="120" height="70" as="geometry" />
         </mxCell>
@@ -708,11 +703,6 @@
         <mxCell id="uCFwbwdLhiHwo-Qxrh92-40" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="uCFwbwdLhiHwo-Qxrh92-42" target="uCFwbwdLhiHwo-Qxrh92-39" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="uCFwbwdLhiHwo-Qxrh92-41" value="upcoming feature (ticket #9271)" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="uCFwbwdLhiHwo-Qxrh92-40" vertex="1" connectable="0">
-          <mxGeometry x="-0.3794" y="-1" relative="1" as="geometry">
-            <mxPoint x="-1" y="8" as="offset" />
-          </mxGeometry>
-        </mxCell>
         <mxCell id="uCFwbwdLhiHwo-Qxrh92-42" value="Ground truth document from the training or test dataset" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#129416;" parent="1" vertex="1">
           <mxGeometry x="2241" y="898.75" width="120" height="70" as="geometry" />
         </mxCell>
@@ -730,7 +720,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="uCFwbwdLhiHwo-Qxrh92-46" value="&lt;div&gt;upcoming feature&lt;/div&gt;&lt;div&gt;(ticket #10138)&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="uCFwbwdLhiHwo-Qxrh92-45" vertex="1" connectable="0">
+        <mxCell id="uCFwbwdLhiHwo-Qxrh92-46" value="&lt;div&gt;upcoming feature&lt;/div&gt;&lt;div&gt;(ticket&amp;nbsp;&lt;/div&gt;#7671)" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="uCFwbwdLhiHwo-Qxrh92-45" vertex="1" connectable="0">
           <mxGeometry x="0.2794" y="-2" relative="1" as="geometry">
             <mxPoint x="-88" y="-166" as="offset" />
           </mxGeometry>
@@ -784,9 +774,6 @@
         </mxCell>
         <mxCell id="9dfpNHqSxHGeAsIauYXX-5" value="upcoming feature (ticket #9622)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
           <mxGeometry x="1680" y="550" width="240" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="9dfpNHqSxHGeAsIauYXX-7" value="upcoming feature (ticket #9271)" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="1" vertex="1" connectable="0">
-          <mxGeometry x="3851" y="880" as="geometry" />
         </mxCell>
         <mxCell id="9dfpNHqSxHGeAsIauYXX-11" value="User must confirm the suggested split&lt;br&gt;(we have a API endpoint for manual splitting, and a DVUI interface)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
           <mxGeometry x="2010" y="130" width="270" height="30" as="geometry" />

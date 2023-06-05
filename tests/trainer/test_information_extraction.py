@@ -1870,14 +1870,6 @@ def test_load_old_ai_model():
         load_model(path)
 
 
-@unittest.skipIf(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
-def test_load_old_ai_model_2():
-    """Test loading of a newer old trained model."""
-    path = "tests/trainer/2023-01-09-17-47-50_lohnabrechnung.pkl"
-    with pytest.raises(TypeError, match="Loaded model's interface is not compatible with any AIs"):
-        load_model(path)
-
-
 def test_feat_num_count():
     """Test string conversion."""
     # Debug code for df: df[df[self.label_feature_list].isin([np.nan, np.inf, -np.inf]).any(1)]

@@ -532,6 +532,8 @@ class SplittingAI:
                 processed_document = self.tokenizer.tokenize(document)
             else:
                 processed_document = self.tokenizer.tokenize(deepcopy(document))
+            # we set a Page's Category explicitly because we don't want to lose original Page's Category information
+            # because by default a Page is assigned a Category of a Document, and they are not necessarily the same
             for page in processed_document.pages():
                 self.model.predict(page)
                 page.set_category(page.get_original_page().category)
