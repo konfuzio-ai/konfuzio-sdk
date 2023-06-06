@@ -40,3 +40,8 @@ that it does not require specifying a Tokenizer explicitly.
    :language: python
    :lines: 7,9-12,23-78
    :dedent: 4
+
+After you have trained your custom AI, you can upload it using the steps from the [tutorial](https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html#upload-extraction-or-category-ai-to-target-instance).
+Go to the Superuser AIs and select your locally stored pickle file, setting Model Type to Splitting and status to 
+Training finished, then save the AI. After that, go to the Splitting AIs, choose your AI and select an action "Activate 
+Splitting AI".
