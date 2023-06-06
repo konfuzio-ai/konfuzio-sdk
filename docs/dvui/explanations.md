@@ -53,9 +53,11 @@ You can also specify the language in the `html` file:
 
 ```
 <div id="app">
-    <app locale="DE/EN/ES"></app>
+    <app locale="de/en/es"></app>
   </div>
 ```
+
+If left empty, then the default `en` will be used.
 
 You are also welcome to create a new locales file for a language not currently provided by us, considering the data from [our existing files](https://github.com/konfuzio-ai/document-validation-ui/tree/main/src/locales), and share it with us via a [Support Ticket](https://konfuzio.com/en/support/) or create a Pull Request to add it to the repository.
 
@@ -127,7 +129,7 @@ The following examples, based on the two configuration options mentioned before,
 
 ```
  <div id="app">
-    <app document="DOCUMENT_ID" user_token=”USER_TOKEN” locale="DE/EN/ES"></app>
+    <app document="document_id" user_token=”user_token” locale="de/en/es"></app>
   </div>
 
    <script src="/server/bundle/document_validation_ui.js"></script>
@@ -158,7 +160,7 @@ The following examples, based on the two configuration options mentioned before,
 
 <body>
  <div id="app">
-    <app document="DOCUMENT_ID" user_token=”USER_TOKEN” locale="DE/EN/ES"></app>
+    <app document="document_id" user_token=”user_token” locale="de/en/es"></app>
   </div>
 </body>
 ```
@@ -176,7 +178,7 @@ You can simply add the corresponding links in the `script` and `link` tags in yo
 <link href="https://unpkg.com/@konfuzio/document-validation-ui@latest/dist/css/app.css" rel="stylesheet">
 
 <div id="app" style="height: 100vh">
-  <app document="DOCUMENT_ID" user_token=”USER_TOKEN” locale="DE/EN/ES"
+  <app document="document_id" user_token=”user_token” locale="de/en/es"
 ></app>
 </div>
 ```
