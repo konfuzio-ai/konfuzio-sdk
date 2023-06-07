@@ -6,6 +6,7 @@ from os import path, getenv
 
 import setuptools
 
+from extras_list import EXTRAS
 
 # Define version or calculate it for nightly build.
 #
@@ -61,6 +62,7 @@ this_directory = path.abspath(path.dirname(__file__))
 with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
+
 setuptools.setup(
     name="konfuzio_sdk",
     version=version,
@@ -88,53 +90,5 @@ setuptools.setup(
         'tqdm',
         'pympler>=1.0.1',  # Use to get pickle file size.
     ],
-    extras_require={
-        'dev': [
-            'flake8',
-            'pydocstyle',
-            'pytest',
-            'pre-commit',
-            'parameterized',
-            'Sphinx==4.4.0',
-            'sphinx-reload==0.2.0',
-            'sphinx-notfound-page==0.8',
-            'm2r2==0.3.2',
-            'sphinx-sitemap==2.2.0',
-            'sphinx-rtd-theme==1.0.0',
-            'sphinxcontrib-mermaid==0.8.1',
-            'matplotlib==3.7.1',
-        ],
-        'extraction': [
-            'cloudpickle==2.2.1',  # Used to pickle objects
-            'torch>=1.8',
-        ],
-        'categorization': [
-            'cloudpickle==2.2.1',
-            'pydantic==1.10.8',  # pydantic is used by spacy. We need to force a higher pydantic version to avoid
-            # https://github.com/tiangolo/fastapi/issues/5048
-            'torch>=1.8',
-            'torchvision>=0.9',
-            'transformers>=4.21.2',  # huggingface transformers and tokenizers
-            'timm==0.6.7',  # for extra pytorch models, i.e. EfficientNet
-            'spacy>=2.3.5, <=3.1.4',  # used for spaCy tokenization
-        ],
-        'file_splitting': [
-            'cloudpickle==2.2.1',
-            'tensorflow-cpu==2.12.0',
-            'torch>=1.8',
-            'transformers>=4.21.2',
-        ],
-        'all_ais': [
-            'chardet==5.1.0',
-            'cloudpickle==2.2.1',
-            'pydantic==1.10.8',
-            'torch>=1.8',
-            'torchvision>=0.9',
-            'transformers>=4.21.2',
-            'tensorflow-cpu==2.12.0',
-            'timm==0.6.7',
-            'scipy==1.10.1',
-            'spacy>=2.3.5, <=3.1.4',
-        ],
-    },
+    extras_require=EXTRAS,
 )

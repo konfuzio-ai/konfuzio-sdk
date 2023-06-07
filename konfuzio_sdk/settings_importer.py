@@ -1,11 +1,12 @@
 """Central place to collect settings from Projects and make them available in the konfuzio_sdk package."""
-import ast
-import importlib
 import logging
 import os
+import pkg_resources
 import sys
 
 from decouple import AutoConfig
+
+from extras_list import EXTRAS
 
 sys.path.append(os.getcwd())
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -27,30 +28,23 @@ LOG_FORMAT = (
     "[%(funcName)-20.20s][%(lineno)-4.4d] %(message)-10s"
 )
 
-with open('setup.py', 'r') as f:
-    extras = f.read()
 
-extras = ast.literal_eval(ast.parse(extras).body[-1].value.keywords[-1].value)
+def is_dependency_installed(dependency: str) -> bool:
+    """Check if a package is installed."""
+    return dependency in {pkg.key for pkg in pkg_resources.working_set}
 
-installed_dependencies = {extra: [] for extra in extras}
+
+OPTIONAL_IMPORT_ERROR = "A library *modulename* has not been found."
+
+extras = EXTRAS['ai']
 
 for extra in extras:
-    for dependency in extras[extra]:
-        dependency = dependency.split()[0].split('>=')[0].split('==')[0].split('-')[0]
-        if 'scikit' in dependency:
-            dependency = 'sklearn'
-        try:
-            successful_import = importlib.import_module(dependency)
-            installed_dependencies[extra].append(dependency)
-            del successful_import
-        except ImportError:
-            pass
+    extra = extra.split()[0].split('>=')[0].split('==')[0].split('-')[0]
+    is_installed = is_dependency_installed(extra)
+    if not is_installed:
+        logging.error(OPTIONAL_IMPORT_ERROR.replace('*modulename*', extra))
 
-EXTRAS_INSTALLED = set()
-
-for extra in installed_dependencies:
-    if len(installed_dependencies[extra]) == len(extras[extra]):
-        EXTRAS_INSTALLED.add(extra)
+DO_NOT_LOG_IMPORT_ERRORS = True
 
 
 def get_handlers():

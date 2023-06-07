@@ -3,17 +3,16 @@ import collections
 import logging
 from typing import List
 
-import spacy
-import transformers
-from spacy.matcher import PhraseMatcher as SpacyPhraseMatcher
-from spacy.language import Language as SpacyLanguage
-
 from konfuzio_sdk.data import Category, Span, Document
-
+from konfuzio_sdk.extras import transformers
+from konfuzio_sdk.extras import spacy
 from konfuzio_sdk.tokenizer.base import AbstractTokenizer, Vocab
 from konfuzio_sdk.utils import sdk_isinstance
 
 logger = logging.getLogger(__name__)
+
+SpacyPhraseMatcher = spacy.matcher.PhraseMatcher
+SpacyLanguage = spacy.language.Language
 
 
 class Tokenizer(AbstractTokenizer):

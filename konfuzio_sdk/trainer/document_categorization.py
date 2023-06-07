@@ -14,20 +14,14 @@ from typing import Union, List, Dict, Tuple, Optional
 from enum import Enum
 from warnings import warn
 
-import timm
-import torchvision
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import transformers
 import numpy as np
 import pandas as pd
 import tqdm
-from torch.utils.data import DataLoader
 
 from konfuzio_sdk.tokenizer.base import AbstractTokenizer
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
 from konfuzio_sdk.data import Document, Page, Category, CategoryAnnotation
+from konfuzio_sdk.extras import timm, torch, torchvision, transformers
 from konfuzio_sdk.evaluate import CategorizationEvaluation
 from konfuzio_sdk.tokenizer.base import Vocab
 from konfuzio_sdk.trainer.base import BaseModel
@@ -37,6 +31,9 @@ from konfuzio_sdk.utils import get_timestamp
 logger = logging.getLogger(__name__)
 
 warn('This module is WIP: https://gitlab.com/konfuzio/objectives/-/issues/9481', FutureWarning, stacklevel=2)
+
+nn = torch.nn
+F = torch.nn.functional
 
 
 class AbstractCategorizationAI(BaseModel, metaclass=abc.ABCMeta):
@@ -1064,7 +1061,7 @@ class CategorizationAI(AbstractCategorizationAI):
         batch_size: int,
         max_len: int,
         device: torch.device = 'cpu',
-    ) -> DataLoader:
+    ) -> torch.utils.data.DataLoader:
         """
         Prepare the data necessary for the document classifier, and build the iterators for the data list.
 
@@ -1171,13 +1168,13 @@ class CategorizationAI(AbstractCategorizationAI):
         data_collate = functools.partial(collate, transforms=transforms)
 
         # build the iterators
-        iterator = DataLoader(data, batch_size=batch_size, shuffle=shuffle, collate_fn=data_collate)
+        iterator = torch.utils.data.DataLoader(data, batch_size=batch_size, shuffle=shuffle, collate_fn=data_collate)
 
         return iterator
 
     def _train(
         self,
-        examples: DataLoader,
+        examples: torch.utils.data.DataLoader,
         loss_fn: torch.nn.Module,
         optimizer: torch.optim.Optimizer,
     ) -> List[float]:
@@ -1195,7 +1192,7 @@ class CategorizationAI(AbstractCategorizationAI):
 
     def _fit_classifier(
         self,
-        train_examples: DataLoader,
+        train_examples: torch.utils.data.DataLoader,
         n_epochs: int = 25,
         patience: int = 3,
         optimizer=None,

@@ -9,8 +9,26 @@ import parameterized
 from typing import List, Dict
 
 from konfuzio_sdk.data import Project, Document, Page
+from konfuzio_sdk.extras import torch
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, ConnectedTextTokenizer
-from konfuzio_sdk.settings_importer import EXTRAS_INSTALLED
+from konfuzio_sdk.trainer.document_categorization import (
+    NameBasedCategorizationAI,
+    AbstractCategorizationModel,
+    AbstractTextCategorizationModel,
+    CategorizationAI,
+    PageMultimodalCategorizationModel,
+    PageTextCategorizationModel,
+    PageImageCategorizationModel,
+    MultimodalConcatenate,
+    EfficientNet,
+    VGG,
+    NBOWSelfAttention,
+    NBOW,
+    LSTM,
+    BERT,
+    load_categorization_model,
+)
+from konfuzio_sdk.trainer.tokenization import PhraseMatcherTokenizer
 
 from tests.variables import (
     OFFLINE_PROJECT,
@@ -20,27 +38,6 @@ from tests.variables import (
     TEST_PAYSLIPS_CATEGORY_ID,
 )
 
-if 'categorization' in EXTRAS_INSTALLED:
-    import torch
-
-    from konfuzio_sdk.trainer.tokenization import PhraseMatcherTokenizer
-    from konfuzio_sdk.trainer.document_categorization import (
-        NameBasedCategorizationAI,
-        AbstractCategorizationModel,
-        AbstractTextCategorizationModel,
-        CategorizationAI,
-        PageMultimodalCategorizationModel,
-        PageTextCategorizationModel,
-        PageImageCategorizationModel,
-        MultimodalConcatenate,
-        EfficientNet,
-        VGG,
-        NBOWSelfAttention,
-        NBOW,
-        LSTM,
-        BERT,
-        load_categorization_model,
-    )
 
 logger = logging.getLogger(__name__)
 
@@ -303,19 +300,16 @@ class TestAbstractTextCategorizationModel(unittest.TestCase):
             assert result[0].shape == (1, self.classifier.input_dim, self.classifier.n_features)
 
 
-if 'categorization' in EXTRAS_INSTALLED:
-    PARAMETERS = [
-        (NBOW, 100, 64, None, 'nbow'),
-        (NBOWSelfAttention, 100, 64, 8, 'nbowselfattention'),
-        (NBOWSelfAttention, 100, 64, 8, 'nbowselfattention-invalid'),
-        (LSTM, 100, 64, None, 'lstm'),
-        (BERT, 100, None, None, 'bert-base-german-cased'),
-        (BERT, 100, None, None, 'bert-base-german-dbmdz-cased'),
-        (BERT, 100, None, None, 'bert-base-german-dbmdz-uncased'),
-        (BERT, 100, None, None, 'distilbert-base-german-cased'),
-    ]
-else:
-    PARAMETERS = []
+PARAMETERS = [
+    (NBOW, 100, 64, None, 'nbow'),
+    (NBOWSelfAttention, 100, 64, 8, 'nbowselfattention'),
+    (NBOWSelfAttention, 100, 64, 8, 'nbowselfattention-invalid'),
+    (LSTM, 100, 64, None, 'lstm'),
+    (BERT, 100, None, None, 'bert-base-german-cased'),
+    (BERT, 100, None, None, 'bert-base-german-dbmdz-cased'),
+    (BERT, 100, None, None, 'bert-base-german-dbmdz-uncased'),
+    (BERT, 100, None, None, 'distilbert-base-german-cased'),
+]
 
 
 @pytest.mark.categorization
@@ -394,28 +388,25 @@ class TestTextCategorizationModels(unittest.TestCase):
             assert res['attention'].shape == (1, self.text_model.input_dim, self.text_model.input_dim)
 
 
-if 'categorization' in EXTRAS_INSTALLED:
-    PARAMETERS = [
-        (WhitespaceTokenizer, NBOWSelfAttention, EfficientNet, 'efficientnet_b0'),
-        (WhitespaceTokenizer, NBOWSelfAttention, EfficientNet, 'efficientnet_b3'),
-        (WhitespaceTokenizer, NBOW, VGG, 'vgg11'),
-        (WhitespaceTokenizer, LSTM, VGG, 'vgg13'),
-        (ConnectedTextTokenizer, NBOW, VGG, 'vgg11'),
-        (ConnectedTextTokenizer, LSTM, VGG, 'vgg13'),
-        (PhraseMatcherTokenizer, BERT, VGG, 'vgg16'),
-        (None, None, EfficientNet, 'efficientnet_b0'),
-        (None, None, EfficientNet, 'efficientnet_b3'),
-        (None, None, VGG, 'vgg11'),
-        (None, None, VGG, 'vgg13'),
-        (None, None, VGG, 'vgg16'),
-        (None, None, VGG, 'vgg19'),
-        (WhitespaceTokenizer, NBOWSelfAttention, None, None),
-        (ConnectedTextTokenizer, NBOW, None, None),
-        (PhraseMatcherTokenizer, LSTM, None, None),
-        (ConnectedTextTokenizer, BERT, None, None),
-    ]
-else:
-    PARAMETERS = []
+PARAMETERS = [
+    (WhitespaceTokenizer, NBOWSelfAttention, EfficientNet, 'efficientnet_b0'),
+    (WhitespaceTokenizer, NBOWSelfAttention, EfficientNet, 'efficientnet_b3'),
+    (WhitespaceTokenizer, NBOW, VGG, 'vgg11'),
+    (WhitespaceTokenizer, LSTM, VGG, 'vgg13'),
+    (ConnectedTextTokenizer, NBOW, VGG, 'vgg11'),
+    (ConnectedTextTokenizer, LSTM, VGG, 'vgg13'),
+    (PhraseMatcherTokenizer, BERT, VGG, 'vgg16'),
+    (None, None, EfficientNet, 'efficientnet_b0'),
+    (None, None, EfficientNet, 'efficientnet_b3'),
+    (None, None, VGG, 'vgg11'),
+    (None, None, VGG, 'vgg13'),
+    (None, None, VGG, 'vgg16'),
+    (None, None, VGG, 'vgg19'),
+    (WhitespaceTokenizer, NBOWSelfAttention, None, None),
+    (ConnectedTextTokenizer, NBOW, None, None),
+    (PhraseMatcherTokenizer, LSTM, None, None),
+    (ConnectedTextTokenizer, BERT, None, None),
+]
 
 
 @pytest.mark.categorization
