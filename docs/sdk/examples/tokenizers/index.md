@@ -1,4 +1,4 @@
-## Tokenizers
+## Tokenization
 
 ### WhitespaceTokenizer
 
@@ -31,6 +31,14 @@ be visualized or used to extract BBox information.
 
 ##### Steps
 
+.. collapse:: Full code
+
+   .. literalinclude:: /sdk/boilerplates/test_word_bboxes.py
+      :language: python
+      :lines: 6-9,13,11,15,11,16,11,17-18,11,20,11,21
+      :dedent: 4
+
+<br/>
 1. **Import necessary modules**:
 
    .. literalinclude:: /sdk/boilerplates/test_word_bboxes.py
@@ -105,7 +113,7 @@ be visualized or used to extract BBox information.
 to find out how we use Regex to detect outliers in our annotated data.
 
 The `konfuzio_sdk` package offers many tools for tokenization tasks. For more complex scenarios, like identifying intricate 
-Annotation strings, it allows for the training of a custom Regex Tokenizer. This is generally a more effective approach 
+Annotation strings, it allows for the training of a custom Regex Tokenizer. This can often be a more effective approach 
 than relying on a basic `WhitespaceTokenizer`.
 
 #### Example Usage
@@ -113,10 +121,66 @@ than relying on a basic `WhitespaceTokenizer`.
 In this example, you will see how to find regex expressions that match with occurrences of the "Lohnart" Label in the 
 training data. 
 
-.. literalinclude:: /sdk/boilerplates/test_train_label_regex_tokenizer.py
-   :language: python
-   :lines: 6-9,14-27
-   :dedent: 4
+.. collapse:: Full code
+
+   .. literalinclude:: /sdk/boilerplates/test_train_label_regex_tokenizer.py
+      :language: python
+      :lines: 6-9,14-27
+      :dedent: 4
+
+<br/>
+1. **Import necessary modules**:
+
+   .. literalinclude:: /sdk/boilerplates/test_train_label_regex_tokenizer.py
+      :language: python
+      :lines: 6-8
+      :dedent: 4
+
+2. **Initialize your Project and retrieve the Category**:
+
+   This involves creating a Project instance with the appropriate Project ID and retrieving the relevant Category with 
+   the Category ID.
+
+   .. literalinclude:: /sdk/boilerplates/test_train_label_regex_tokenizer.py
+      :language: python
+      :lines: 14-15
+      :dedent: 4
+
+3. **Initialize the ListTokenizer**
+
+   The `ListTokenizer` will hold all the `RegexTokenizers` found for the Label. 
+
+   .. literalinclude:: /sdk/boilerplates/test_train_label_regex_tokenizer.py
+      :language: python
+      :lines: 17
+      :dedent: 4
+
+4. **Retrieve the "Lohnart" Label**
+
+   We retrieve the Label using its name. If you have its ID, you could also use the `Project.get_label_by_id` method. 
+
+   .. literalinclude:: /sdk/boilerplates/test_train_label_regex_tokenizer.py
+      :language: python
+      :lines: 19
+      :dedent: 4
+
+5. **Find Label Regexes and Create RegexTokenizers**
+
+   We then use `Label.find_regex` to algorithmically search for the best fitting regexes matching the Annotations associated with this Label. 
+
+   .. literalinclude:: /sdk/boilerplates/test_train_label_regex_tokenizer.py
+      :language: python
+      :lines: 21-23
+      :dedent: 4
+
+6. **Use the new Tokenizer to Create New Annotations**
+
+   Finally, we can use the Tokenizer to create new `NO_LABEL` Annotations which match with the regex patterns found. 
+
+   .. literalinclude:: /sdk/boilerplates/test_train_label_regex_tokenizer.py
+      :language: python
+      :lines: 25-27
+      :dedent: 4
 
 ### Paragraph Tokenizer
 
@@ -139,7 +203,7 @@ faster but less accurate, especially with Documents having two columns or other 
 The line_distance approach offers a straightforward, efficient way to segment Documents based on line heights, proving 
 especially useful for simple, single-column formats. Despite its limitations with complex layouts, its fast processing 
 and relatively accurate results make it a practical choice for tasks where speed is a priority and the Document 
-structure isn't overly complicated. Essentially, it serves as a quick and easy solution for basic document analysis.
+structure isn't overly complicated. 
 
 ##### Parameters for Line Distance Approach
 
@@ -169,12 +233,10 @@ the significant improvement in accuracy and comprehensiveness makes it a powerfu
 #### Computer Vision Approach
 
 With the computer vision approach, we can create Labels, identify figures, tables, lists, texts, and titles, thereby giving 
-us a comprehensive understanding of the Document's structure. The opportunity to apply machine learning in the segmentation 
-process allows us to push the boundaries of what's possible in document analysis.
+us a comprehensive understanding of the Document's structure. 
 
 Using the computer vision approach might require more processing power and might be slower compared to the line_distance 
-approach, but the significant leap in the quality and comprehensiveness of the output makes it a powerful tool for any 
-organization that values precision and quality.
+approach, but the significant leap in the comprehensiveness of the output makes it a powerful tool.
 
 ##### Parameters for Computer Vision Approach
 
@@ -202,7 +264,7 @@ embark on a journey to dive deeper into the Document's structure and semantics w
 
 ### Sentence Tokenizer
 
-The `SentenceTokenizer` class, akin to the [`ParagraphTokenizer`](https://dev.konfuzio.com/sdk/tutorials.html#paragraph-tokenizer), 
+The `SentenceTokenizer` class, akin to the [ParagraphTokenizer](https://dev.konfuzio.com/sdk/tutorials.html#paragraph-tokenizer), 
 is a specialized Tokenizer designed to split a Document into sentences. It also provides two modes of operation: 
 `detectron` and `line_distance`. And just like the `ParagraphTokenizer`, you can customize the behavior of the Tokenizer 
 by passing using the `mode`, `line_height_ratio`, `height` and `create_detectron_labels` parameters. The distinguishing 
@@ -224,26 +286,27 @@ The resulting Annotations will look like this:
 
 ### How to Choose Which Tokenizer to Use?
 
-In Natural Language Processing (NLP), the selection of the appropriate Tokenizer can greatly affect the performance and 
-accuracy of the overall system. The Konfuzio SDK provides multiple tokenization options - WhitespaceTokenizer, 
-Label-Specific Regex Tokenizer (called "[Character](https://help.konfuzio.com/modules/categories/index.html#character)" 
-detection mode on the Konfuzio platform), ParagraphTokenizer, and SentenceTokenizer, each serving distinct purposes.
+When it comes to Natural Language Processing (NLP), choosing the correct Tokenizer can make a significant impact on 
+your system's performance and accuracy. The Konfuzio SDK offers several tokenization options, each suited to different 
+tasks:
 
-If your task involves basic word-level processing, the WhitespaceTokenizer would suffice. This method segments the text 
-into chunks based on white spaces, offering a simple but effective approach for tasks such as basic keyword extraction.
+1. **WhitespaceTokenizer**: Perfect for basic word-level processing. This Tokenizer breaks text into chunks separated 
+by white spaces. It is ideal for straightforward tasks such as basic keyword extraction.
 
-On the other hand, if you have a specialized task, such as recognizing a specific pattern in the text, then Training a 
-Label-Specific Regex Tokenizer may be the ideal choice. This Tokenizer utilizes Annotations of a Label in a training set 
-to recognize and tokenize more precise chunks. This is particularly useful for tasks like entity recognition, or where 
-a specific pattern of words or characters are important.
+2. **Label-Specific Regex Tokenizer**: Known as "Character" detection mode on the Konfuzio platform, this Tokenizer 
+offers more specialized functionality. It uses Annotations of a Label within a training set to pinpoint and tokenize 
+precise chunks of text. It's especially effective for tasks like entity recognition, where accuracy is paramount. By 
+recognizing specific word or character patterns, it allows for more precise and nuanced data processing.
 
-For tasks requiring a broader context, the ParagraphTokenizer and SentenceTokenizer can be useful. These options can 
-recognize and segment larger textual chunks - paragraphs and sentences, respectively. This is beneficial when the 
-meaning and interpretation of text rely heavily on the contextual information at the sentence or paragraph level.
+3. **ParagraphTokenizer**: Identifies and separates larger text chunks - paragraphs. This is beneficial when your 
+text's interpretation relies heavily on the context at the paragraph level.
 
-Choosing the right Tokenizer is ultimately about understanding the nature of your NLP task, the structure of your data, 
-and the level of granularity required for your processing. By aligning these factors with the features offered by the 
-different Tokenizers in the Konfuzio SDK, you can select the optimal tool for your task.
+4. **SentenceTokenizer**: Segments text into sentences. This is useful when the meaning of your text depends on the 
+context provided at the sentence level.
+
+Choosing the right Tokenizer is a matter of understanding your NLP task, the structure of your data, and the degree of 
+detail your processing requires. By aligning these elements with the functionalities provided by the different 
+Tokenizers in the Konfuzio SDK, you can select the best tool for your task.
 
 #### Finding Spans of a Label Not Found by a Tokenizer
 
