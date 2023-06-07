@@ -76,6 +76,7 @@ setuptools.setup(
     install_requires=[
         'cloudpickle==2.2.1',  # Used to pickle objects
         'filetype==1.0.7',  # Used to check that files are in the correct format
+        'lz4<5',  # Used to compress pickles
         'nltk',
         'numpy>=1.22.4',
         'pandas>=1.3.5,<2.0.0',
