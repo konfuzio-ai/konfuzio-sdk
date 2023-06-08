@@ -3493,7 +3493,7 @@ class Document(Data):
             annotation_precision = 0
 
         try:
-            annotation_recall = len(correct_findings) / len(label_annotations)
+            annotation_recall = len(correct_findings) / len(label_annotations_offsets)
         except ZeroDivisionError:
             annotation_recall = 0
 
