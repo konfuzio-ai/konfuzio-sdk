@@ -1,7 +1,10 @@
 """Test Splitting AI and the models' training, saving and prediction."""
+import bz2
 import os
+import cloudpickle
 import pathlib
 import pytest
+import shutil
 import unittest
 
 from copy import deepcopy
@@ -158,6 +161,28 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
             )
             assert gt_exclusive_first_page_strings == load_exclusive_first_page_strings
 
+    def test_old_pickle_model_save_load(self):
+        """Test saving and loading a model using the older bz2-compression-including save and load methods."""
+        temp_pkl_file_path = self.file_splitting_model.temp_pkl_file_path
+        pkl_file_path = self.file_splitting_model.pkl_file_path
+        self.file_splitting_model.ensure_model_memory_usage_within_limit(max_ram=None)
+        with open(temp_pkl_file_path, 'wb') as f:
+            cloudpickle.dump(self.file_splitting_model, f)
+        with open(temp_pkl_file_path, 'rb') as input_f:
+            with bz2.open(pkl_file_path, 'wb') as output_f:
+                shutil.copyfileobj(input_f, output_f)
+        os.remove(temp_pkl_file_path)
+        with bz2.open(pkl_file_path, 'rb') as file:
+            loaded = cloudpickle.load(file)
+        for category_gt, category_load in zip(self.file_splitting_model.categories, loaded.categories):
+            gt_exclusive_first_page_strings = category_gt.exclusive_first_page_strings(
+                tokenizer=ConnectedTextTokenizer()
+            )
+            load_exclusive_first_page_strings = category_load.exclusive_first_page_strings(
+                tokenizer=ConnectedTextTokenizer()
+            )
+            assert gt_exclusive_first_page_strings == load_exclusive_first_page_strings
+
     def test_splitting_ai_predict(self):
         """Test Splitting AI's Document-splitting method."""
         splitting_ai = SplittingAI(self.file_splitting_model)
@@ -275,7 +300,6 @@ class TestMultimodalFileSplittingModel(unittest.TestCase):
                 assert not page.is_first_page
                 assert page.is_first_page_confidence
 
-    @pytest.mark.skip(reason="Takes too long to test upon pushing; skipping can be removed for local testing.")
     def test_save_load_model(self):
         """Test saving and loading pickle file of the model."""
         path = self.file_splitting_model.save()
