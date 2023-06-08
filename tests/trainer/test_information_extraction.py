@@ -1868,7 +1868,7 @@ def test_load_model_wrong_pickle_data():
 
 
 @pytest.mark.extraction
-@unittest.skipIf(sys.version_info[:2] == (3, 11), 'Throws "TypeError: code() argument 13 must be str, not int"')
+@unittest.mark.skipif(sys.version_info[:2] == (3, 11), 'Throws "TypeError: code() argument 13 must be str, not int"')
 def test_load_ai_model_konfuzio_sdk_not_included():
     """Test loading of trained model with include_konfuzio setting set to False."""
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
@@ -1894,7 +1894,7 @@ def test_load_ai_model_konfuzio_sdk_included():
 
 
 @pytest.mark.extraction
-@unittest.skipIf(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
+@unittest.mark.skipif(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
 def test_load_old_ai_model():
     """Test loading of an old trained model."""
     path = "tests/trainer/2022-03-10-15-14-51_lohnabrechnung_old_model.pkl"
@@ -1903,7 +1903,7 @@ def test_load_old_ai_model():
 
 
 @pytest.mark.extraction
-@unittest.skipIf(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
+@unittest.mark.skipif(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
 def test_load_old_ai_model_2():
     """Test loading of a newer old trained model."""
     path = "tests/trainer/2023-01-09-17-47-50_lohnabrechnung.pkl"
@@ -1912,7 +1912,7 @@ def test_load_old_ai_model_2():
 
 
 @pytest.mark.extraction
-@unittest.skipIf(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
+@unittest.mark.skipif(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
 def test_load_ai_model():
     """Test loading trained model."""
     path = "tests/trainer/2023-04-25-15-56-42_lohnabrechnung_rfextractionai_.pkl"

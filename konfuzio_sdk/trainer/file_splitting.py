@@ -3,21 +3,15 @@ import abc
 import logging
 import os
 import PIL
-import torch
 
 import numpy as np
-import tensorflow as tf
 
 from copy import deepcopy
 from inspect import signature
-from tensorflow.keras import Input
-from tensorflow.keras.layers import Dense, Conv2D, MaxPool2D, Flatten, Concatenate
-from tensorflow.keras.models import Model
-from tensorflow.keras.preprocessing.image import img_to_array
-from transformers import BertTokenizer, AutoModel, AutoConfig
 from typing import List, Union
 
 from konfuzio_sdk.data import Document, Page, Category
+from konfuzio_sdk.extras import torch, tensorflow as tf, transformers
 from konfuzio_sdk.evaluate import FileSplittingEvaluation
 from konfuzio_sdk.trainer.information_extraction import BaseModel
 from konfuzio_sdk.utils import get_timestamp
@@ -200,11 +194,11 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         self.scale = scale
         self.model = None
         logger.info('Initializing BERT components of the Multimodal File Splitting Model.')
-        configuration = AutoConfig.from_pretrained(text_processing_model)
+        configuration = transformers.AutoConfig.from_pretrained(text_processing_model)
         configuration.num_labels = 2
         configuration.output_hidden_states = True
-        self.bert_model = AutoModel.from_pretrained(text_processing_model, config=configuration)
-        self.bert_tokenizer = BertTokenizer.from_pretrained(
+        self.bert_model = transformers.AutoModel.from_pretrained(text_processing_model, config=configuration)
+        self.bert_tokenizer = transformers.BertTokenizer.from_pretrained(
             text_processing_model, do_lower_case=True, max_length=2000, padding="max_length", truncate=True
         )
 
@@ -245,7 +239,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         for page_image in page_images:
             image = page_image.convert('RGB')
             image = image.resize((224, 224))
-            image = img_to_array(image)
+            image = tf.keras.preprocessing.image.img_to_array(image)
             image = image.reshape((1, image.shape[0], image.shape[1], image.shape[2]))
             image = image[..., ::-1]  # replacement of keras's preprocess_input implementation because of dimensionality
             image[0] -= 103.939
@@ -300,36 +294,36 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         # at https://iq.opengenus.org/vgg19-architecture/) and an output of BERT in an MLP-like
         # architecture (read more about it at http://shorturl.at/puKN3). a scheme of our custom architecture can be
         # found at https://dev.konfuzio.com/sdk/tutorials.html#splitting-for-multi-file-documents-step-by-step-guide
-        txt_input = Input(shape=self.input_shape, name='text')
-        txt_x = Dense(units=768, activation="relu")(txt_input)
-        txt_x = Flatten()(txt_x)
-        txt_x = Dense(units=256 * self.scale, activation="relu")(txt_x)
-        img_input = Input(shape=(224, 224, 3), name='image')
-        img_x = Conv2D(input_shape=(224, 224, 3), filters=64, kernel_size=(3, 3), padding="same", activation="relu")(
-            img_input
-        )
-        img_x = Conv2D(filters=64, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
-        img_x = MaxPool2D(pool_size=(2, 2), strides=(2, 2))(img_x)
-        img_x = Conv2D(filters=128, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
-        img_x = Conv2D(filters=128, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
-        img_x = MaxPool2D(pool_size=(2, 2), strides=(2, 2))(img_x)
-        img_x = Conv2D(filters=256, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
-        img_x = Conv2D(filters=256, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
-        img_x = Conv2D(filters=256, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
-        img_x = MaxPool2D(pool_size=(2, 2), strides=(2, 2))(img_x)
-        img_x = Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
-        img_x = Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
-        img_x = Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
-        img_x = MaxPool2D(pool_size=(2, 2), strides=(2, 2))(img_x)
-        img_x = Flatten()(img_x)
-        img_x = Dense(units=256 * self.scale, activation="relu")(img_x)
-        img_x = Dense(units=256 * self.scale, activation="relu", name='img_outputs')(img_x)
-        concatenated = Concatenate(axis=-1)([img_x, txt_x])
-        x = Dense(50, input_shape=(512 * self.scale,), activation='relu')(concatenated)
-        x = Dense(50, activation='elu')(x)
-        x = Dense(50, activation='elu')(x)
-        output = Dense(1, activation='sigmoid')(x)
-        self.model = Model(inputs=[img_input, txt_input], outputs=output)
+        txt_input = tf.keras.Input(shape=self.input_shape, name='text')
+        txt_x = tf.keras.layers.Dense(units=768, activation="relu")(txt_input)
+        txt_x = tf.keras.layers.Flatten()(txt_x)
+        txt_x = tf.keras.layers.Dense(units=256 * self.scale, activation="relu")(txt_x)
+        img_input = tf.keras.Input(shape=(224, 224, 3), name='image')
+        img_x = tf.keras.layers.Conv2D(
+            input_shape=(224, 224, 3), filters=64, kernel_size=(3, 3), padding="same", activation="relu"
+        )(img_input)
+        img_x = tf.keras.layers.Conv2D(filters=64, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
+        img_x = tf.keras.layers.MaxPool2D(pool_size=(2, 2), strides=(2, 2))(img_x)
+        img_x = tf.keras.layers.Conv2D(filters=128, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
+        img_x = tf.keras.layers.Conv2D(filters=128, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
+        img_x = tf.keras.layers.MaxPool2D(pool_size=(2, 2), strides=(2, 2))(img_x)
+        img_x = tf.keras.layers.Conv2D(filters=256, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
+        img_x = tf.keras.layers.Conv2D(filters=256, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
+        img_x = tf.keras.layers.Conv2D(filters=256, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
+        img_x = tf.keras.layers.MaxPool2D(pool_size=(2, 2), strides=(2, 2))(img_x)
+        img_x = tf.keras.layers.Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
+        img_x = tf.keras.layers.Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
+        img_x = tf.keras.layers.Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
+        img_x = tf.keras.layers.MaxPool2D(pool_size=(2, 2), strides=(2, 2))(img_x)
+        img_x = tf.keras.layers.Flatten()(img_x)
+        img_x = tf.keras.layers.Dense(units=256 * self.scale, activation="relu")(img_x)
+        img_x = tf.keras.layers.Dense(units=256 * self.scale, activation="relu", name='img_outputs')(img_x)
+        concatenated = tf.keras.layers.Concatenate(axis=-1)([img_x, txt_x])
+        x = tf.keras.layers.Dense(50, input_shape=(512 * self.scale,), activation='relu')(concatenated)
+        x = tf.keras.layers.Dense(50, activation='elu')(x)
+        x = tf.keras.layers.Dense(50, activation='elu')(x)
+        output = tf.keras.layers.Dense(1, activation='sigmoid')(x)
+        self.model = tf.keras.models.Model(inputs=[img_input, txt_input], outputs=output)
         self.model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
         logger.info('Multimodal File Splitting Model compiling finished.')
         if not use_gpu:
@@ -364,7 +358,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         txt_data = np.asarray(txt_data)
         image = page.get_image().convert('RGB')
         image = image.resize((224, 224))
-        image = img_to_array(image)
+        image = tf.keras.preprocessing.image.img_to_array(image)
         image = image.reshape((1, image.shape[0], image.shape[1], image.shape[2]))
         image = image[..., ::-1]
         image[0] -= 103.939

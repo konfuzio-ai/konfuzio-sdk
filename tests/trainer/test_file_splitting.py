@@ -1,5 +1,4 @@
 """Test Splitting AI and the models' training, saving and prediction."""
-
 import os
 import pathlib
 import pytest
@@ -8,19 +7,24 @@ import unittest
 from copy import deepcopy
 
 from konfuzio_sdk.data import Category, Document, Project
+from konfuzio_sdk.settings_importer import is_dependency_installed
 from konfuzio_sdk.samples import LocalTextProject
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
-from konfuzio_sdk.settings_importer import EXTRAS_INSTALLED
 
-if 'file_splitting' in EXTRAS_INSTALLED:
-    from konfuzio_sdk.trainer.file_splitting import (
-        ContextAwareFileSplittingModel,
-        SplittingAI,
-        MultimodalFileSplittingModel,
-    )
+from konfuzio_sdk.trainer.file_splitting import (
+    ContextAwareFileSplittingModel,
+    SplittingAI,
+    MultimodalFileSplittingModel,
+)
 
 
-@pytest.mark.file_splitting
+@pytest.mark.skipif(
+    not is_dependency_installed('torch')
+    and not is_dependency_installed('transformers')
+    and not is_dependency_installed('tensorflow')
+    and not is_dependency_installed('cloudpickle'),
+    reason='Required dependencies not installed.',
+)
 class TestContextAwareFileSplittingModel(unittest.TestCase):
     """Test Context Aware File Splitting Model."""
 
@@ -238,7 +242,13 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
 TEST_WITH_FULL_DATASET = False
 
 
-@pytest.mark.file_splitting
+@pytest.mark.skipif(
+    not is_dependency_installed('torch')
+    and not is_dependency_installed('transformers')
+    and not is_dependency_installed('tensorflow')
+    and not is_dependency_installed('cloudpickle'),
+    reason='Required dependencies not installed.',
+)
 class TestMultimodalFileSplittingModel(unittest.TestCase):
     """Test Multimodal File Splitting Model."""
 

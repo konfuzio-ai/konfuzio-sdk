@@ -52,6 +52,7 @@ class PackageWrapper:
 
 
 spacy = PackageWrapper('spacy', ['Document Categorization AI'])
+tensorflow = PackageWrapper('tensorflow', ['File Splitting AI'])
 timm = PackageWrapper('timm', ['Document Categorization AI'])
 torch = PackageWrapper('torch', ['Document Categorization AI, File Splitting AI'])
 torchvision = PackageWrapper('torchvision', ['Document Categorization AI'])

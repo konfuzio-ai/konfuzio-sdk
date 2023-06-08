@@ -5,7 +5,7 @@ import unittest
 
 
 @pytest.mark.extraction
-@unittest.skipIf(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
+@unittest.mark.skipif(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
 def test_evaluate_extraction_ai():
     """Test evaluation of the Extraction AI."""
     from konfuzio_sdk.data import Project
