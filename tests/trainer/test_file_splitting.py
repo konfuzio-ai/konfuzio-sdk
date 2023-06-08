@@ -163,8 +163,8 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
 
     def test_old_pickle_model_save_load(self):
         """Test saving and loading a model using the older bz2-compression-including save and load methods."""
-        temp_pkl_file_path = self.file_splitting_model.temp_pkl_file_path
-        pkl_file_path = self.file_splitting_model.pkl_file_path
+        temp_pkl_file_path = self.project.project_folder + '/models/temp.pkl'
+        pkl_file_path = self.project.project_folder + '/models/model.pkl'
         self.file_splitting_model.ensure_model_memory_usage_within_limit(max_ram=None)
         with open(temp_pkl_file_path, 'wb') as f:
             cloudpickle.dump(self.file_splitting_model, f)
