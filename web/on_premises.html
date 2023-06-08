@@ -142,7 +142,8 @@
 <li class="toctree-l4"><a class="reference internal" href="#email-polling-settings">6. Email Polling Settings</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#time-limits-for-background-tasks">7. Time limits for background tasks</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#keycloak-sso-settings">8. Keycloak / SSO Settings</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#test-settings-for-keycloak-sso-settings">9. Test Settings for Keycloak / SSO Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#snapshot-settings-this-feature-is-under-active-development-and-not-yet-available-on-https-app-konfuzio-com">9. Snapshot Settings (This feature is under active development and not yet available on https://app.konfuzio.com)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#test-settings-for-keycloak-sso-settings">10. Test Settings for Keycloak / SSO Settings</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#example-env-file-for-konfuzio-server">Example .env file for Konfuzio Server</a></li>
@@ -1563,8 +1564,23 @@ See <a class="reference external" href="https://mozilla-django-oidc.readthedocs.
 <p><em>Type: string</em></p>
 </section>
 </section>
+<section id="snapshot-settings-this-feature-is-under-active-development-and-not-yet-available-on-https-app-konfuzio-com">
+<h4>9. Snapshot Settings (This feature is under active development and not yet available on <a class="reference external" href="https://app.konfuzio.com">https://app.konfuzio.com</a>)<a class="headerlink" href="#snapshot-settings-this-feature-is-under-active-development-and-not-yet-available-on-https-app-konfuzio-com" title="Permalink to this headline">¶</a></h4>
+<section id="snapshot-location">
+<h5>SNAPSHOT_LOCATION<a class="headerlink" href="#snapshot-location" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>The location where all Snapshots are saved (e.g. “/data/konfuzio-snapshots”)</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="snapshot-creation-token">
+<h5>SNAPSHOT_CREATION_TOKEN<a class="headerlink" href="#snapshot-creation-token" title="Permalink to this headline">¶</a></h5>
+<p>Default: None</p>
+<p>The API Token which is used to create the Snapshot. The Snapshot creation is conducted using <a class="reference external" href="https://dev.konfuzio.com/web/on_premises.html#migrate-a-project">konfuzio_sdk export_project</a></p>
+<p><em>Type: string</em></p>
+</section>
+</section>
 <section id="test-settings-for-keycloak-sso-settings">
-<h4>9. Test Settings for Keycloak / SSO Settings<a class="headerlink" href="#test-settings-for-keycloak-sso-settings" title="Permalink to this headline">¶</a></h4>
+<h4>10. Test Settings for Keycloak / SSO Settings<a class="headerlink" href="#test-settings-for-keycloak-sso-settings" title="Permalink to this headline">¶</a></h4>
 <p>These variables are only used for Keycloak integration tests:
 The admin variables are for login keycloak admin panel, the test variables are for login to Konfuzio server.
 The Keycloak Integration test can be run by installing Chromedriver and Selenium.</p>
