@@ -104,7 +104,8 @@
 <span class="k">assert</span> <span class="n">my_document</span><span class="o">.</span><span class="n">category_is_revised</span> <span class="ow">is</span> <span class="kc">True</span>
 </pre></div>
 </div>
-<p>If a Document is initialized with no Category, it can be manually set later.</p>
+<p>If a Document is initialized with no Category, it will automatically be set to NO_CATEGORY. Another Category can be
+manually set later.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
 <span class="k">assert</span> <span class="n">document</span><span class="o">.</span><span class="n">category</span> <span class="o">==</span> <span class="n">project</span><span class="o">.</span><span class="n">no_category</span>
 <span class="n">document</span><span class="o">.</span><span class="n">set_category</span><span class="p">(</span><span class="n">my_category</span><span class="p">)</span>
@@ -190,7 +191,7 @@ also find these documented under <a class="reference external" href="sourcecode.
 
 <span class="c1"># The Category of the Document is defined when all pages&#39; Categories are equal.</span>
 <span class="c1"># If the Document contains mixed Categories, only the Page level Category will be defined,</span>
-<span class="c1"># and the Document level Category will be None.</span>
+<span class="c1"># and the Document level Category will be NO_CATEGORY.</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found category </span><span class="si">{</span><span class="n">result_doc</span><span class="o">.</span><span class="n">category</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">result_doc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>

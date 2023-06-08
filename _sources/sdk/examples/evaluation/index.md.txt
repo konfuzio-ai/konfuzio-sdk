@@ -12,7 +12,7 @@ The initialization would look like this:
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
    :language: python
-   :lines: 79-81
+   :lines: 74-76
    :dedent: 4
 
 The class compares each pair of Pages. If a Page is labeled as first and the model also predicted it as first, it is 
@@ -33,7 +33,7 @@ To see a certain metric after the class has been initialized, you can call a met
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
    :language: python
-   :lines: 97
+   :lines: 92
    :dedent: 4
 
 It is also possible to look at the metrics calculated by each Category independently. For this, pass 
@@ -41,7 +41,7 @@ It is also possible to look at the metrics calculated by each Category independe
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
    :language: python
-   :lines: 82
+   :lines: 77
    :dedent: 4
 
 For more details, see the [Python API Documentation](https://dev.konfuzio.com/sdk/sourcecode.html#ai-evaluation) on 
@@ -63,7 +63,7 @@ _Second document_
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
    :language: python
-   :lines: 6-8,16-47,50-61
+   :lines: 6-8,17-32,35-56
    :dedent: 4
 
 We need to pass two lists of Documents into the `FileSplittingEvaluation` class. So, before that, we need to run each 
@@ -74,7 +74,7 @@ Pages being predicted correctly. An example of how the evaluation would be imple
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
    :language: python
-   :lines: 69-74,91-104
+   :lines: 64-70,86-99
    :dedent: 4
 
 Our results could be reflected in a following table:
@@ -87,7 +87,7 @@ If we want to see evaluation results by Category, the implementation of the Eval
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
    :language: python
-   :lines: 120-133
+   :lines: 115-128
    :dedent: 4
 
 the output could be reflected in a following table:
@@ -102,5 +102,5 @@ specify the metrics accordingly at the class's initialization). Example usage:
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
    :language: python
-   :lines: 135
+   :lines: 130
    :dedent: 4
