@@ -1347,7 +1347,23 @@ See https://mozilla-django-oidc.readthedocs.io/en/stable/settings.html#OIDC_RP_S
 
 _Type: string_
 
-#### 9. Test Settings for Keycloak / SSO Settings
+#### 9. Snapshot Settings (This feature is under active development and not yet available on https://app.konfuzio.com)
+
+##### SNAPSHOT_LOCATION
+Default: ''
+
+The location where all Snapshots are saved (e.g. "/data/konfuzio-snapshots")
+
+_Type: string_
+
+##### SNAPSHOT_CREATION_TOKEN
+Default: None
+
+The API Token which is used to create the Snapshot. The Snapshot creation is conducted using [konfuzio_sdk export_project](https://dev.konfuzio.com/web/on_premises.html#migrate-a-project)
+
+_Type: string_
+
+#### 10. Test Settings for Keycloak / SSO Settings
 
 These variables are only used for Keycloak integration tests: 
 The admin variables are for login keycloak admin panel, the test variables are for login to Konfuzio server.
