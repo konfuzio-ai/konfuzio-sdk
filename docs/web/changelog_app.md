@@ -21,11 +21,25 @@ You can think of the _Planned_ section as a _Roadmap_ that lists Konfuzio Server
 - Allow administrators of Konfuzio on-premise installations to run a speedtest ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9870)).
 - Start automatic AI retraining after User confirms that he has finished a annotation review ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9166)).
 
-## Next Release (estimated release date 27th May 2023)
+## Next Release (estimated release date 9th June 2023)
+
+This version uses the Konfuzio Python SDK in version v.0.2.20 and Konfuzio Document Validation UI in version v.0.1.8.
+
+Upcoming...
+
+## released-2023-05-30_11-01-48
 
 This version uses the Konfuzio Python SDK in version v.0.2.19 and Konfuzio Document Validation UI in version v.0.1.7.
 
-Upcoming...
+### Added
+- [The Categorization AI can now again use text and image modules](https://help.konfuzio.com/modules/categorization/index.html) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10283)).
+
+### Fixed
+- Show the exact Page number in case a PDF has invalid dimensions ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11102)).
+- Subscription updates are now applied to previous created API Tokens ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11038)).
+- The Evaluation could not be displayed, if a Label in the training or test data did not have at least one Annotation ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11116)).
+- If a Document was created via API V3 and the "sync" option, not all extraction have been returned ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11169)).
+- If a Document was created via API V3, the default extraction URL was pointing to API V1 instead of API V3. ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10843)).
 
 ## released-2023-05-22_12-48-00
 
@@ -86,7 +100,10 @@ Please Note: If you upgrade from a version before 'released-2023-04-23_18-48-59'
 
 This version uses the Konfuzio Python SDK in version v.0.2.16 and Konfuzio Document Validation UI in version v.0.1.5.
 
-Important note: This release changes the internal format of saved AIs. Therefore, you need to migrate existing AIs, before updating to this Konfuzio Server version. Please run "python manage.py resave_all_with_cloudpickle" to do so. If this command is not available on your Konfuzio Server Installation, please upgrade to [released-2023-03-18_13-32-19]([released-2023-03-18_13-32-19](https://dev.konfuzio.com/web/changelog_app.html#released-2023-03-18-13-32-19)) first. In case you need help or experience an issue with the migration please contact is via https://konfuzio.com/support. This Konfuzio Server will not start if unmigrated AIs are present. Finally, the usual [update actions](https://dev.konfuzio.com/web/on_premises.html#a-upgrade-to-newer-konfuzio-version) need to be run. 
+Important note: This release changes the internal format of saved AIs. Therefore, you need to migrate existing AIs, before updating to this Konfuzio Server version. Please run "python manage.py resave_all_with_cloudpickle" to do so. If this command is not available on your Konfuzio Server Installation, please upgrade to [released-2023-03-18_13-32-19]([released-2023-03-18_13-32-19](https://dev.konfuzio.com/web/changelog_app.html#released-2023-03-18-13-32-19)) first. 
+In case you need help or experience an issue with the migration please contact is via https://konfuzio.com/support. 
+This Konfuzio Server will not start if unmigrated AIs are present. Finally, the usual [update actions](https://dev.konfuzio.com/web/on_premises.html#a-upgrade-to-newer-konfuzio-version) need to be run. 
+For more information on how to run a "manage.py" command, please refer to the [self-hosted guide](https://dev.konfuzio.com/web/on_premises.html#initial-login). 
 
 ### Added
 - Calculate and access Tokenizers via the web interface ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9271)).
