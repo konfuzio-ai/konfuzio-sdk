@@ -780,9 +780,9 @@ class LabelSet(Data):
 
     def add_category(self, category: 'Category'):
         """
-        Add Category to Project, if it does not exist.
+        Add Category to the Label Set, if it does not exist.
 
-        :param category: Category to add in the Project
+        :param category: Category to add to the Label Set
         """
         if category not in self.categories:
             self.categories.append(category)
