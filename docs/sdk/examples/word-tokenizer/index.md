@@ -1,4 +1,4 @@
-## Tutorial: Getting Word Bounding Box (BBox) for a Document
+## Getting Word Bounding Box (BBox) for a Document
 
 In this tutorial, we will walk through how to extract the bounding box ([BBox](https://dev.konfuzio.com/sdk/sourcecode.html#bbox)) 
 for words in a Document, rather than for individual characters, using the Konfuzio SDK. This process involves the use of 
@@ -79,7 +79,7 @@ be visualized or used to extract BBox information.
       :lines: 21
       :dedent: 4
 
-   Each bounding box (`Bbox`) in the list corresponds to a specific word and is defined by four coordinates: x0 and y0 
-   specify the coordinates of the bottom left corner, while x1 and y1 mark the coordinates of the top right corner, 
-   thereby specifying the box's position and dimensions on the Document Page.
+   Each bounding box (`Bbox`) corresponds to a particular word and is characterized by four coordinates: x0 and y0 define 
+   the bottom-left corner, while x1 and y1 indicate the top-right corner. These coordinates detail the bounding box's 
+   location and size on the Document Page.
 
