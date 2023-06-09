@@ -609,13 +609,19 @@ class SplittingAI:
             processed = self._suggest_page_split(document)
         return processed
 
-    def evaluate_full(self, use_training_docs: bool = False) -> FileSplittingEvaluation:
+    def evaluate_full(self, use_training_docs: bool = False, zero_division='warn') -> FileSplittingEvaluation:
         """
         Evaluate the Splitting AI's performance.
 
         :param use_training_docs: If enabled, runs evaluation on the training data to define its quality; if disabled,
         runs evaluation on the test data.
         :type use_training_docs: bool
+        :param zero_division: Defines how to handle situations when precision, recall or F1 measure calculations result
+        in zero division.
+        Possible values: 'warn' – log a warning and assign a calculated metric a value of 0.
+        0 - assign a calculated metric a value of 0.
+        'error' – raise a ZeroDivisionError.
+        None – assign None to a calculated metric.
         :return: Evaluation information for the model.
         """
         pred_docs = []
@@ -627,7 +633,7 @@ class SplittingAI:
             predictions = self.propose_split_documents(doc, return_pages=True)
             assert len(predictions) == 1
             pred_docs.append(predictions[0])
-        self.full_evaluation = FileSplittingEvaluation(original_docs, pred_docs)
+        self.full_evaluation = FileSplittingEvaluation(original_docs, pred_docs, zero_division)
         return self.full_evaluation
 
 
