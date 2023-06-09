@@ -8,8 +8,14 @@ You can follow the example below to post annotations of a certain word or expres
 
 .. literalinclude:: /sdk/boilerplates/test_regex_based_annotations.py
    :language: python
-   :lines: 6,9,7,11-12,15-22,24-26,28-33,35-49,51
-   :dedent: 4
+   :start-after: start import
+   :end-before: end import
+   :dedent: 4 
+.. literalinclude:: /sdk/boilerplates/test_regex_based_annotations.py
+   :language: python
+   :start-after: start regex based
+   :end-before: end regex based
+   :dedent: 4 
 
 
 ## Train Label Regex Tokenizer
@@ -21,8 +27,9 @@ training data.
 
 .. literalinclude:: /sdk/boilerplates/test_train_label_regex_tokenizer.py
    :language: python
-   :lines: 6-9,14-27
-   :dedent: 4
+   :start-after: start train
+   :end-before: end train
+   :dedent: 4 
 
 ## Finding Spans of a Label Not Found by a Tokenizer
 
@@ -30,5 +37,6 @@ Here is an example of how to use the `Label.spans_not_found_by_tokenizer` method
 
 .. literalinclude:: /sdk/boilerplates/test_spans_not_found_label.py
    :language: python
-   :lines: 6-8,13-20,22-24
+   :start-after: start spans
+   :end-before: end spans
    :dedent: 4
