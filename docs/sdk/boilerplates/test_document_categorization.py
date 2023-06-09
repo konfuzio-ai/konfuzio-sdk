@@ -66,7 +66,7 @@ def test_name_based_categorization():
 
     # The Category of the Document is defined when all pages' Categories are equal.
     # If the Document contains mixed Categories, only the Page level Category will be defined,
-    # and the Document level Category will be None.
+    # and the Document level Category will be NO_CATEGORY.
     print(f"Found category {result_doc.category} for {result_doc}")
     # end name-based
 
