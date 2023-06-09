@@ -144,16 +144,17 @@ that it does not require specifying a Tokenizer explicitly.</p>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">load_model</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.regex</span> <span class="kn">import</span> <span class="n">ConnectedTextTokenizer</span>
 
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># initialize a Project and fetch a test Document of your choice</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
+<span class="n">test_document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
+
 <span class="c1"># initialize a Context Aware File Splitting Model and fit it</span>
 
 <span class="n">file_splitting_model</span> <span class="o">=</span> <span class="n">ContextAwareFileSplittingModel</span><span class="p">(</span>
     <span class="n">categories</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">categories</span><span class="p">,</span> <span class="n">tokenizer</span><span class="o">=</span><span class="n">ConnectedTextTokenizer</span><span class="p">()</span>
 <span class="p">)</span>
-<span class="c1"># to run a Multimodal File Splitting Model instead, replace the line above with the following lines. note that</span>
-<span class="c1"># training a Multimodal File Splitting Model can take longer that Context Aware File Splitting Model.</span>
-<span class="c1">#</span>
-<span class="c1"># from konfuzio_sdk.trainer.file_splitting import MultimodalFileSplittingModel</span>
-<span class="c1"># file_splitting_model = MultimodalFileSplittingModel(categories=project.categories)</span>
 
 <span class="c1"># for an example run, you can take only a slice of training documents to make fitting faster</span>
 <span class="n">file_splitting_model</span><span class="o">.</span><span class="n">documents</span> <span class="o">=</span> <span class="n">file_splitting_model</span><span class="o">.</span><span class="n">documents</span><span class="p">[:</span><span class="mi">10</span><span class="p">]</span>
@@ -261,10 +262,11 @@ splitting points, thus, each new Sub-Document has a Page predicted as first as i
 </ul>
 <p>To begin, we will make all the necessary imports:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Page</span><span class="p">,</span> <span class="n">Category</span><span class="p">,</span> <span class="n">Project</span>
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.file_splitting</span> <span class="kn">import</span> <span class="n">AbstractFileSplittingModel</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.file_splitting</span> <span class="kn">import</span> <span class="n">SplittingAI</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.file_splitting</span> <span class="kn">import</span> <span class="n">ContextAwareFileSplittingModel</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">load_model</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.regex</span> <span class="kn">import</span> <span class="n">ConnectedTextTokenizer</span>
+
 </pre></div>
 </div>
 <p>Then, let’s initialize the <code class="docutils literal notranslate"><span class="pre">ContextAwareFileSplittingModel</span></code> class:</p>
@@ -295,8 +297,9 @@ needed for distinguishing between preprocessing types once a model is passed int
 <span class="n">test_document</span><span class="o">.</span><span class="n">spans</span><span class="p">()</span>
 
 <span class="c1"># output: [Span (0, 7), Span (8, 21), Span (22, 58), Span (59, 68), Span (69, 90), Span (91, 100)]</span>
-
-<span class="n">test_document</span><span class="o">.</span><span class="n">spans</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">offset_string</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">test_document</span><span class="o">.</span><span class="n">spans</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">offset_string</span>
 
 <span class="c1"># output: &quot;Hi all,&quot;</span>
 </pre></div>
@@ -438,6 +441,7 @@ only one ground-truth first Page) of a first Category, and one 5-paged, consisti
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Document</span><span class="p">,</span> <span class="n">Page</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.evaluate</span> <span class="kn">import</span> <span class="n">FileSplittingEvaluation</span><span class="p">,</span> <span class="n">EvaluationCalculator</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.file_splitting</span> <span class="kn">import</span> <span class="n">SplittingAI</span>
+
 <span class="c1"># This example builds the Documents from scratch and without uploading a Supported File.</span>
 <span class="c1"># If you uploaded your Document to the Konfuzio Server, you can just retrieve it with:</span>
 <span class="c1"># document_1 = project.get_document_by_id(YOUR_DOCUMENT_ID)</span>
@@ -485,11 +489,13 @@ Pages being predicted correctly. An example of how the evaluation would be imple
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">splitting_ai</span> <span class="o">=</span> <span class="n">SplittingAI</span><span class="p">(</span><span class="n">YOUR_MODEL</span><span class="p">)</span>
 <span class="n">pred_1</span><span class="p">:</span> <span class="n">Document</span> <span class="o">=</span> <span class="n">splitting_ai</span><span class="o">.</span><span class="n">propose_split_documents</span><span class="p">(</span><span class="n">document_1</span><span class="p">,</span> <span class="n">return_pages</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 <span class="n">pred_2</span><span class="p">:</span> <span class="n">Document</span> <span class="o">=</span> <span class="n">splitting_ai</span><span class="o">.</span><span class="n">propose_split_documents</span><span class="p">(</span><span class="n">document_2</span><span class="p">,</span> <span class="n">return_pages</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
 <span class="n">evaluation</span> <span class="o">=</span> <span class="n">FileSplittingEvaluation</span><span class="p">(</span>
     <span class="n">ground_truth_documents</span><span class="o">=</span><span class="p">[</span><span class="n">document_1</span><span class="p">,</span> <span class="n">document_2</span><span class="p">],</span> <span class="n">prediction_documents</span><span class="o">=</span><span class="p">[</span><span class="n">pred_1</span><span class="p">,</span> <span class="n">pred_2</span><span class="p">]</span>
 <span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">tp</span><span class="p">())</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">tp</span><span class="p">())</span>
 <span class="c1"># returns: 3</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">tn</span><span class="p">())</span>
 <span class="c1"># returns: 4</span>
@@ -616,12 +622,14 @@ specify the metrics accordingly at the class’s initialization). Example usage:
 
 <span class="n">my_document</span> <span class="o">=</span> <span class="n">Document</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;My text.&quot;</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="n">my_category</span><span class="p">)</span>
 <span class="k">assert</span> <span class="n">my_document</span><span class="o">.</span><span class="n">category</span> <span class="o">==</span> <span class="n">my_category</span>
+<span class="n">my_document</span><span class="o">.</span><span class="n">set_category</span><span class="p">(</span><span class="n">my_category</span><span class="p">)</span>
 <span class="k">assert</span> <span class="n">my_document</span><span class="o">.</span><span class="n">category_is_revised</span> <span class="ow">is</span> <span class="kc">True</span>
 </pre></div>
 </div>
 <p>If a Document is initialized with no Category, it will automatically be set to NO_CATEGORY. Another Category can be
 manually set later.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
+<span class="n">document</span><span class="o">.</span><span class="n">set_category</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
 <span class="k">assert</span> <span class="n">document</span><span class="o">.</span><span class="n">category</span> <span class="o">==</span> <span class="n">project</span><span class="o">.</span><span class="n">no_category</span>
 <span class="n">document</span><span class="o">.</span><span class="n">set_category</span><span class="p">(</span><span class="n">my_category</span><span class="p">)</span>
 <span class="k">assert</span> <span class="n">document</span><span class="o">.</span><span class="n">category</span> <span class="o">==</span> <span class="n">my_category</span>
@@ -681,7 +689,7 @@ also find these documented under <a class="reference external" href="sourcecode.
 <section id="name-based-categorization-ai">
 <h3>Name-based Categorization AI<a class="headerlink" href="#name-based-categorization-ai" title="Permalink to this headline">¶</a></h3>
 <p>Use the name of the Category as an effective fallback logic to categorize Documents when no Categorization AI is available:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Document</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.document_categorization</span> <span class="kn">import</span> <span class="n">NameBasedCategorizationAI</span>
 
 <span class="c1"># Set up your Project.</span>
@@ -714,7 +722,7 @@ also find these documented under <a class="reference external" href="sourcecode.
 <section id="model-based-categorization-ai">
 <h3>Model-based Categorization AI<a class="headerlink" href="#model-based-categorization-ai" title="Permalink to this headline">¶</a></h3>
 <p>Build, train and test a Categorization AI using Image Models and Text Models to classify the image and text of each Page.</p>
-<p>For a list of available Models see <a class="reference external" href="#categorization-models">Available Categorization Models</a>.</p>
+<p>For a list of available Models see <a class="reference external" href="#categorization-models-available">Available Categorization Models</a>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Document</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">load_model</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.document_categorization</span> <span class="kn">import</span> <span class="n">build_categorization_ai_pipeline</span>
@@ -733,54 +741,26 @@ also find these documented under <a class="reference external" href="sourcecode.
     <span class="n">image_model</span><span class="o">=</span><span class="n">ImageModel</span><span class="o">.</span><span class="n">EfficientNetB0</span><span class="p">,</span>
     <span class="n">text_model</span><span class="o">=</span><span class="n">TextModel</span><span class="o">.</span><span class="n">NBOWSelfAttention</span><span class="p">,</span>
 <span class="p">)</span>
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Train the AI.</span>
+
+<span class="c1"># Train the AI.</span>
 <span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">n_epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Adam&#39;</span><span class="p">})</span>
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Evaluate the AI</span>
+
+<span class="c1"># Evaluate the AI</span>
 <span class="n">data_quality</span> <span class="o">=</span> <span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">use_training_docs</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">ai_quality</span> <span class="o">=</span> <span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">evaluate</span><span class="p">()</span>
 <span class="k">assert</span> <span class="n">data_quality</span><span class="o">.</span><span class="n">f1</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span> <span class="o">==</span> <span class="mf">1.0</span>
 <span class="k">assert</span> <span class="n">ai_quality</span><span class="o">.</span><span class="n">f1</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span> <span class="o">==</span> <span class="mf">1.0</span>
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Categorize a Document</span>
+
+<span class="c1"># Categorize a Document</span>
 <span class="n">document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
 <span class="n">categorization_result</span> <span class="o">=</span> <span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">categorize</span><span class="p">(</span><span class="n">document</span><span class="o">=</span><span class="n">document</span><span class="p">)</span>
 <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">categorization_result</span><span class="p">,</span> <span class="n">Document</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">categorization_result</span><span class="o">.</span><span class="n">pages</span><span class="p">():</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found category </span><span class="si">{</span><span class="n">page</span><span class="o">.</span><span class="n">category</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">page</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Save and load a pickle file for the AI</span>
+
+<span class="c1"># Save and load a pickle file for the AI</span>
 <span class="n">pickle_ai_path</span> <span class="o">=</span> <span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
 <span class="n">categorization_pipeline</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="n">pickle_ai_path</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.document_categorization</span> <span class="kn">import</span> <span class="n">ImageModel</span><span class="p">,</span> <span class="n">TextModel</span>
-
-<span class="c1"># Image Models</span>
-<span class="n">ImageModel</span><span class="o">.</span><span class="n">VGG11</span>
-<span class="n">ImageModel</span><span class="o">.</span><span class="n">VGG13</span>
-<span class="n">ImageModel</span><span class="o">.</span><span class="n">VGG16</span>
-<span class="n">ImageModel</span><span class="o">.</span><span class="n">VGG19</span>
-<span class="n">ImageModel</span><span class="o">.</span><span class="n">EfficientNetB0</span>
-<span class="n">ImageModel</span><span class="o">.</span><span class="n">EfficientNetB1</span>
-<span class="n">ImageModel</span><span class="o">.</span><span class="n">EfficientNetB2</span>
-<span class="n">ImageModel</span><span class="o">.</span><span class="n">EfficientNetB3</span>
-<span class="n">ImageModel</span><span class="o">.</span><span class="n">EfficientNetB4</span>
-<span class="n">ImageModel</span><span class="o">.</span><span class="n">EfficientNetB5</span>
-<span class="n">ImageModel</span><span class="o">.</span><span class="n">EfficientNetB6</span>
-<span class="n">ImageModel</span><span class="o">.</span><span class="n">EfficientNetB7</span>
-<span class="n">ImageModel</span><span class="o">.</span><span class="n">EfficientNetB8</span>
-
-<span class="c1"># Text Models</span>
-<span class="n">TextModel</span><span class="o">.</span><span class="n">NBOW</span>
-<span class="n">TextModel</span><span class="o">.</span><span class="n">NBOWSelfAttention</span>
-<span class="n">TextModel</span><span class="o">.</span><span class="n">LSTM</span>
-<span class="n">TextModel</span><span class="o">.</span><span class="n">BERT</span>
 </pre></div>
 </div>
 <section id="id2">
@@ -840,6 +820,60 @@ from payslip documents.</p>
 <p>You can <img alt="OpenInColab" src="https://colab.research.google.com/assets/colab-badge.svg" /> or download it from <a class="reference external" href="https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/RFExtractionAI%20Demo.ipynb">here</a>
 and try it by yourself.</p>
 </section>
+<section id="customize-extraction-ai">
+<h3>Customize Extraction AI<a class="headerlink" href="#customize-extraction-ai" title="Permalink to this headline">¶</a></h3>
+<p>Any Custom <a class="reference external" href="sourcecode.html#extraction-ai">Extraction AI</a> (derived from the Konfuzio <code class="docutils literal notranslate"><span class="pre">AbstractExtractionAI</span></code> class) should implement
+the following interface:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">AbstractExtractionAI</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Document</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+
+
+<span class="k">class</span> <span class="nc">CustomExtractionAI</span><span class="p">(</span><span class="n">AbstractExtractionAI</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+    <span class="c1"># initialize key variables required by the custom AI</span>
+
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+    <span class="c1"># Define architecture and training that the model undergoes, i.e. a NN architecture or a custom hardcoded logic</span>
+    <span class="c1"># This method is allowed to be implemented as a no-op if you provide the trained model in other ways</span>
+
+    <span class="k">def</span> <span class="nf">extract</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document</span><span class="p">:</span> <span class="n">Document</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Document</span><span class="p">:</span>
+<span class="c1"># define how the model extracts information from Documents</span>
+<span class="c1"># **NB:** The result of extraction must be a copy of the input Document with added Annotations attribute `Document._annotations`</span>
+</pre></div>
+</div>
+<p>Example usage of your Custom Extraction AI:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Document</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">load_model</span>
+
+<span class="c1"># Initialize Project and provide the AI training and test data</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>  <span class="c1"># see https://dev.konfuzio.com/sdk/get_started.html#example-usage</span>
+
+<span class="n">extraction_pipeline</span> <span class="o">=</span> <span class="n">CustomExtractionAI</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">category</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_category_by_id</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_CATEGORY_ID</span><span class="p">)</span>
+<span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">documents</span> <span class="o">=</span> <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">category</span><span class="o">.</span><span class="n">documents</span><span class="p">()</span>
+<span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">test_documents</span> <span class="o">=</span> <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">category</span><span class="o">.</span><span class="n">test_documents</span><span class="p">()</span>
+
+<span class="c1"># Train the AI</span>
+<span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+
+<span class="c1"># Evaluate the AI</span>
+<span class="n">data_quality</span> <span class="o">=</span> <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">evaluate_full</span><span class="p">(</span><span class="n">use_training_docs</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">ai_quality</span> <span class="o">=</span> <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">evaluate_full</span><span class="p">(</span><span class="n">use_training_docs</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># Extract a Document</span>
+<span class="n">document</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
+<span class="n">extraction_result</span><span class="p">:</span> <span class="n">Document</span> <span class="o">=</span> <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">document</span><span class="o">=</span><span class="n">document</span><span class="p">)</span>
+
+<span class="c1"># Save and load a pickle file for the model</span>
+<span class="n">pickle_model_path</span> <span class="o">=</span> <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">output_dir</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">model_folder</span><span class="p">,</span> <span class="n">include_konfuzio</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">extraction_pipeline_loaded</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="n">pickle_model_path</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
 <section id="evaluate-a-trained-extraction-ai-model">
 <h3>Evaluate a Trained Extraction AI Model<a class="headerlink" href="#evaluate-a-trained-extraction-ai-model" title="Permalink to this headline">¶</a></h3>
 <p>In this example we will see how we can evaluate a trained <code class="docutils literal notranslate"><span class="pre">RFExtractionAI</span></code> model. We will assume that we have a trained
@@ -849,8 +883,9 @@ documentation for more details.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">load_model</span>
 
 <span class="n">pipeline</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="n">MODEL_PATH</span><span class="p">)</span>
-
-<span class="c1"># To get the evaluation of the full pipeline</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># To get the evaluation of the full pipeline</span>
 <span class="n">evaluation</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">evaluate_full</span><span class="p">()</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Full evaluation F1 score: </span><span class="si">{</span><span class="n">evaluation</span><span class="o">.</span><span class="n">f1</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Full evaluation recall: </span><span class="si">{</span><span class="n">evaluation</span><span class="o">.</span><span class="n">recall</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -875,7 +910,7 @@ documentation for more details.</p>
 <h2>Paragraph and Sentence Tokenizer<a class="headerlink" href="#paragraph-and-sentence-tokenizer" title="Permalink to this headline">¶</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">ParagraphTokenizer</span></code> and <code class="docutils literal notranslate"><span class="pre">SentenceTokenizer</span></code> are used to split a document into paragraphs and sentences
 respectively. They both come with two different modes: <code class="docutils literal notranslate"><span class="pre">detectron</span></code> and <code class="docutils literal notranslate"><span class="pre">line_distance</span></code>. The <code class="docutils literal notranslate"><span class="pre">detectron</span></code> mode uses a
-fine tuned <a class="reference external" href="https://github.com/facebookresearch/detectron2">Detectron2</a> model to detect paragraph Annotations. The
+fine-tuned <a class="reference external" href="https://github.com/facebookresearch/detectron2">Detectron2</a> model to detect paragraph Annotations. The
 <code class="docutils literal notranslate"><span class="pre">line_distance</span></code> mode uses a rule based approach, and is therefore faster, but tends to be less accurate. In particular,
 it fails to handle documents with two columns. The <code class="docutils literal notranslate"><span class="pre">detectron</span></code> mode is the default. It can also be used together with
 the <code class="docutils literal notranslate"><span class="pre">create_detectron_labels</span></code> setting to create Annotations with the label given by our <a class="reference external" href="https://github.com/facebookresearch/detectron2">Detectron2</a> model:
@@ -903,7 +938,7 @@ the <code class="docutils literal notranslate"><span class="pre">create_detectro
 </section>
 <section id="sentence-tokenizer">
 <h3>Sentence Tokenizer<a class="headerlink" href="#sentence-tokenizer" title="Permalink to this headline">¶</a></h3>
-<p>If you are interested in a more fine grained tokenization, you can use the <code class="docutils literal notranslate"><span class="pre">SentenceTokenizer</span></code>. It can be used to create
+<p>If you are interested in a more fine-grained tokenization, you can use the <code class="docutils literal notranslate"><span class="pre">SentenceTokenizer</span></code>. It can be used to create
 Annotations for each individual sentence in a text Document. To use it, you can use the following code:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.paragraph_and_sentence</span> <span class="kn">import</span> <span class="n">SentenceTokenizer</span>
@@ -946,9 +981,9 @@ Annotations in the Document will be retrievable.</p></li>
 <h3>Initializing a Project with the Data Validation Rules enabled<a class="headerlink" href="#initializing-a-project-with-the-data-validation-rules-enabled" title="Permalink to this headline">¶</a></h3>
 <p>By default, any <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#project">Project</a> has the Data Validation Rules enabled, so nothing
 special needs to be done to enable it.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_data_validation</span><span class="p">():</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test data validation.&quot;&quot;&quot;</span>
-    <span class="kn">from</span> <span class="nn">tests.variables</span> <span class="kn">import</span> <span class="n">TEST_PROJECT_ID</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
+
+<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>  <span class="c1"># all the data in this Project will be validated</span>
 </pre></div>
 </div>
 </section>
@@ -960,7 +995,7 @@ If at least one Annotation, Span, or Bbox within a Document fails one of the fol
 marked as unsuitable for training an Extraction AI.</p>
 </section>
 <section id="annotation-validation">
-<span id="id6"></span><h3>Annotation Validation Rules<a class="headerlink" href="#annotation-validation" title="Permalink to this headline">¶</a></h3>
+<span id="id7"></span><h3>Annotation Validation Rules<a class="headerlink" href="#annotation-validation" title="Permalink to this headline">¶</a></h3>
 <p>An <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#annotation">Annotation</a> passes the Data Validation Rules only if:</p>
 <ol class="arabic simple">
 <li><p>The Annotation is not from a Category different from the Document’s Category</p></li>
@@ -976,7 +1011,7 @@ marked as unsuitable for training an Extraction AI.</p>
 For more information about what these boolean values mean, see <a class="reference external" href="https://help.konfuzio.com/modules/annotations/index.html">Konfuzio Server - Annotations</a>.</p>
 </section>
 <section id="span-validation">
-<span id="id7"></span><h3>Span Validation Rules<a class="headerlink" href="#span-validation" title="Permalink to this headline">¶</a></h3>
+<span id="id8"></span><h3>Span Validation Rules<a class="headerlink" href="#span-validation" title="Permalink to this headline">¶</a></h3>
 <p>A <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#span">Span</a> passes the Data Validation Rules only if:</p>
 <ol class="arabic simple">
 <li><p>The Span contains non-empty text (the start offset must be strictly greater than the end offset)</p></li>
@@ -984,7 +1019,7 @@ For more information about what these boolean values mean, see <a class="referen
 </ol>
 </section>
 <section id="bbox-validation">
-<span id="id8"></span><h3>Bbox Validation Rules<a class="headerlink" href="#bbox-validation" title="Permalink to this headline">¶</a></h3>
+<span id="id9"></span><h3>Bbox Validation Rules<a class="headerlink" href="#bbox-validation" title="Permalink to this headline">¶</a></h3>
 <p>A <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#bbox">Bbox</a> passes the Data Validation Rules only if:</p>
 <ol class="arabic simple">
 <li><p>The Bbox has non-negative width and height (zero is allowed for compatibility reasons with many OCR engines)</p></li>
@@ -1003,9 +1038,7 @@ If you don’t want to validate your data, you should initialize the Project wit
 is consistent for training an Extraction AI. Disabling the Data Validation Rules and training an
 <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#extraction-ai">Extraction AI</a> with potentially duplicated, malformed,
 or inconsistent data can <strong>decrease the quality of an Extraction AI</strong>. Only disable them if you know what you are doing.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_data_validation</span><span class="p">():</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test data validation.&quot;&quot;&quot;</span>
-    <span class="n">YOUR_PROJECT_ID</span> <span class="o">=</span> <span class="n">TEST_PROJECT_ID</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">,</span> <span class="n">strict_data_validation</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -1022,6 +1055,7 @@ performs on the level of 10% in comparison to the best one.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
 
 <span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
+
 <span class="n">label</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="n">YOUR_LABEL_NAME</span><span class="p">)</span>
 <span class="n">outliers</span> <span class="o">=</span> <span class="n">label</span><span class="o">.</span><span class="n">get_probable_outliers_by_regex</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">categories</span><span class="p">)</span>
 </pre></div>
@@ -1032,8 +1066,15 @@ than the specified threshold (the default threshold is 0.5). Accepts an instance
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
 
 <span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
+
 <span class="n">label</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="n">YOUR_LABEL_NAME</span><span class="p">)</span>
-<span class="n">outliers</span> <span class="o">=</span> <span class="n">label</span><span class="o">.</span><span class="n">get_probable_outliers_by_confidence</span><span class="p">(</span><span class="n">evaluation</span><span class="p">)</span>
+<span class="n">outliers</span> <span class="o">=</span> <span class="n">label</span><span class="o">.</span><span class="n">get_probable_outliers_by_regex</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">categories</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">label</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="n">YOUR_LABEL_NAME</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">outliers</span> <span class="o">=</span> <span class="n">label</span><span class="o">.</span><span class="n">get_probable_outliers_by_confidence</span><span class="p">(</span><span class="n">evaluation</span><span class="p">)</span>
 </pre></div>
 </div>
 </li>
@@ -1069,11 +1110,12 @@ three of the search methods are enabled.</p>
 <p>Let’s see a simple example of how can we use the <code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span></code> package to get information on a project and to post annotations.</p>
 <p>You can follow the example below to post annotations of a certain word or expression in the first document uploaded.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">re</span>
-
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Annotation</span><span class="p">,</span> <span class="n">Span</span>
 
 <span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
-<span class="c1"># Word/expression to annotate in the Document</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Word/expression to annotate in the Document</span>
 <span class="c1"># should match an existing one in your Document</span>
 <span class="n">input_expression</span> <span class="o">=</span> <span class="s2">&quot;Musterstraße&quot;</span>
 
@@ -1179,6 +1221,7 @@ be visualized or used to extract BBox information.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.regex</span> <span class="kn">import</span> <span class="n">WhitespaceTokenizer</span>
+
 </pre></div>
 </div>
 </li>

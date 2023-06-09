@@ -103,6 +103,7 @@ performs on the level of 10% in comparison to the best one.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
 
 <span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
+
 <span class="n">label</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="n">YOUR_LABEL_NAME</span><span class="p">)</span>
 <span class="n">outliers</span> <span class="o">=</span> <span class="n">label</span><span class="o">.</span><span class="n">get_probable_outliers_by_regex</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">categories</span><span class="p">)</span>
 </pre></div>
@@ -113,8 +114,15 @@ than the specified threshold (the default threshold is 0.5). Accepts an instance
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
 
 <span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
+
 <span class="n">label</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="n">YOUR_LABEL_NAME</span><span class="p">)</span>
-<span class="n">outliers</span> <span class="o">=</span> <span class="n">label</span><span class="o">.</span><span class="n">get_probable_outliers_by_confidence</span><span class="p">(</span><span class="n">evaluation</span><span class="p">)</span>
+<span class="n">outliers</span> <span class="o">=</span> <span class="n">label</span><span class="o">.</span><span class="n">get_probable_outliers_by_regex</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">categories</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">label</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="n">YOUR_LABEL_NAME</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">outliers</span> <span class="o">=</span> <span class="n">label</span><span class="o">.</span><span class="n">get_probable_outliers_by_confidence</span><span class="p">(</span><span class="n">evaluation</span><span class="p">)</span>
 </pre></div>
 </div>
 </li>

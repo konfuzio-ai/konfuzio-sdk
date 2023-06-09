@@ -95,7 +95,7 @@
 <h1>Paragraph and Sentence Tokenizer<a class="headerlink" href="#paragraph-and-sentence-tokenizer" title="Permalink to this headline">¶</a></h1>
 <p>The <code class="docutils literal notranslate"><span class="pre">ParagraphTokenizer</span></code> and <code class="docutils literal notranslate"><span class="pre">SentenceTokenizer</span></code> are used to split a document into paragraphs and sentences
 respectively. They both come with two different modes: <code class="docutils literal notranslate"><span class="pre">detectron</span></code> and <code class="docutils literal notranslate"><span class="pre">line_distance</span></code>. The <code class="docutils literal notranslate"><span class="pre">detectron</span></code> mode uses a
-fine tuned <a class="reference external" href="https://github.com/facebookresearch/detectron2">Detectron2</a> model to detect paragraph Annotations. The
+fine-tuned <a class="reference external" href="https://github.com/facebookresearch/detectron2">Detectron2</a> model to detect paragraph Annotations. The
 <code class="docutils literal notranslate"><span class="pre">line_distance</span></code> mode uses a rule based approach, and is therefore faster, but tends to be less accurate. In particular,
 it fails to handle documents with two columns. The <code class="docutils literal notranslate"><span class="pre">detectron</span></code> mode is the default. It can also be used together with
 the <code class="docutils literal notranslate"><span class="pre">create_detectron_labels</span></code> setting to create Annotations with the label given by our <a class="reference external" href="https://github.com/facebookresearch/detectron2">Detectron2</a> model:
@@ -123,7 +123,7 @@ the <code class="docutils literal notranslate"><span class="pre">create_detectro
 </section>
 <section id="sentence-tokenizer">
 <h2>Sentence Tokenizer<a class="headerlink" href="#sentence-tokenizer" title="Permalink to this headline">¶</a></h2>
-<p>If you are interested in a more fine grained tokenization, you can use the <code class="docutils literal notranslate"><span class="pre">SentenceTokenizer</span></code>. It can be used to create
+<p>If you are interested in a more fine-grained tokenization, you can use the <code class="docutils literal notranslate"><span class="pre">SentenceTokenizer</span></code>. It can be used to create
 Annotations for each individual sentence in a text Document. To use it, you can use the following code:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.paragraph_and_sentence</span> <span class="kn">import</span> <span class="n">SentenceTokenizer</span>

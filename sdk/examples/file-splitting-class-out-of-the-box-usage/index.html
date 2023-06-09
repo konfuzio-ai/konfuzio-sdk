@@ -128,16 +128,17 @@ that it does not require specifying a Tokenizer explicitly.</p>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">load_model</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.regex</span> <span class="kn">import</span> <span class="n">ConnectedTextTokenizer</span>
 
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># initialize a Project and fetch a test Document of your choice</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
+<span class="n">test_document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
+
 <span class="c1"># initialize a Context Aware File Splitting Model and fit it</span>
 
 <span class="n">file_splitting_model</span> <span class="o">=</span> <span class="n">ContextAwareFileSplittingModel</span><span class="p">(</span>
     <span class="n">categories</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">categories</span><span class="p">,</span> <span class="n">tokenizer</span><span class="o">=</span><span class="n">ConnectedTextTokenizer</span><span class="p">()</span>
 <span class="p">)</span>
-<span class="c1"># to run a Multimodal File Splitting Model instead, replace the line above with the following lines. note that</span>
-<span class="c1"># training a Multimodal File Splitting Model can take longer that Context Aware File Splitting Model.</span>
-<span class="c1">#</span>
-<span class="c1"># from konfuzio_sdk.trainer.file_splitting import MultimodalFileSplittingModel</span>
-<span class="c1"># file_splitting_model = MultimodalFileSplittingModel(categories=project.categories)</span>
 
 <span class="c1"># for an example run, you can take only a slice of training documents to make fitting faster</span>
 <span class="n">file_splitting_model</span><span class="o">.</span><span class="n">documents</span> <span class="o">=</span> <span class="n">file_splitting_model</span><span class="o">.</span><span class="n">documents</span><span class="p">[:</span><span class="mi">10</span><span class="p">]</span>

@@ -132,24 +132,18 @@ The following code can be used for this:</p>
 <span class="n">document</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
 <span class="c1"># index of the Page to test</span>
 <span class="n">page_index</span> <span class="o">=</span> <span class="mi">0</span>
-
 <span class="n">width</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">pages</span><span class="p">()[</span><span class="n">page_index</span><span class="p">]</span><span class="o">.</span><span class="n">width</span>
 <span class="n">height</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">pages</span><span class="p">()[</span><span class="n">page_index</span><span class="p">]</span><span class="o">.</span><span class="n">height</span>
-
+<span class="n">page</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">pages</span><span class="p">()[</span><span class="n">page_index</span><span class="p">]</span>
 <span class="n">image</span> <span class="o">=</span> <span class="n">page</span><span class="o">.</span><span class="n">get_image</span><span class="p">(</span><span class="n">update</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
 <span class="n">factor_x</span> <span class="o">=</span> <span class="n">width</span> <span class="o">/</span> <span class="n">image</span><span class="o">.</span><span class="n">width</span>
 <span class="n">factor_y</span> <span class="o">=</span> <span class="n">height</span> <span class="o">/</span> <span class="n">image</span><span class="o">.</span><span class="n">height</span>
-
 <span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s1">&#39;RGB&#39;</span><span class="p">)</span>
-
 <span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">resize</span><span class="p">((</span><span class="nb">int</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">factor_x</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">factor_y</span><span class="p">)))</span>
 <span class="n">height</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-
 <span class="n">image_characters_bbox</span> <span class="o">=</span> <span class="p">[</span><span class="n">char_bbox</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">char_bbox</span> <span class="ow">in</span> <span class="n">page</span><span class="o">.</span><span class="n">get_bbox</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
 
 <span class="n">draw</span> <span class="o">=</span> <span class="n">ImageDraw</span><span class="o">.</span><span class="n">Draw</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
-
 <span class="k">for</span> <span class="n">bbox</span> <span class="ow">in</span> <span class="n">image_characters_bbox</span><span class="p">:</span>
     <span class="n">image_bbox</span> <span class="o">=</span> <span class="p">(</span>
         <span class="nb">int</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;x0&quot;</span><span class="p">]),</span>
@@ -178,14 +172,10 @@ we can overlap them directly.</p>
 <span class="n">document</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
 <span class="c1"># index of the Page to test</span>
 <span class="n">page_index</span> <span class="o">=</span> <span class="mi">0</span>
-
 <span class="n">page</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">pages</span><span class="p">()[</span><span class="n">page_index</span><span class="p">]</span>
 <span class="n">image</span> <span class="o">=</span> <span class="n">page</span><span class="o">.</span><span class="n">get_image</span><span class="p">(</span><span class="n">update</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
 <span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s1">&#39;RGB&#39;</span><span class="p">)</span>
-
 <span class="n">draw</span> <span class="o">=</span> <span class="n">ImageDraw</span><span class="o">.</span><span class="n">Draw</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
-
 <span class="n">image_segmentation_bboxes</span> <span class="o">=</span> <span class="n">get_results_from_segmentation</span><span class="p">(</span><span class="n">document</span><span class="o">.</span><span class="n">id_</span><span class="p">,</span> <span class="n">my_project</span><span class="o">.</span><span class="n">id_</span><span class="p">)</span>
 
 <span class="k">for</span> <span class="n">bbox</span> <span class="ow">in</span> <span class="n">image_segmentation_bboxes</span><span class="p">[</span><span class="n">page_index</span><span class="p">]:</span>
@@ -252,6 +242,9 @@ size used for the characters’ bbox.</p>
     <span class="n">draw</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="n">image_bbox</span><span class="p">,</span> <span class="n">outline</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
 <span class="n">image</span>
+
+<span class="c1"># Note: cv2 has the origin of the y coordinates in the upper left corner. Therefore, for visualization, the</span>
+<span class="c1"># height of the image is subtracted to the y coordinates.</span>
 </pre></div>
 </div>
 <img alt="../_images/bboxes_overlap.png" src="../_images/bboxes_overlap.png" />

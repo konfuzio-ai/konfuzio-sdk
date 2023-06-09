@@ -1,5 +1,6 @@
 ## Getting Word Bounding Box (BBox) for a Document
 
+
 In this tutorial, we will walk through how to extract the bounding box ([BBox](https://dev.konfuzio.com/sdk/sourcecode.html#bbox)) 
 for words in a Document, rather than for individual characters, using the Konfuzio SDK. This process involves the use of 
 the `WhitespaceTokenizer` from the Konfuzio SDK to tokenize the Document and identify word-level Spans, which can then 
@@ -20,7 +21,8 @@ be visualized or used to extract BBox information.
 
    .. literalinclude:: /sdk/boilerplates/test_word_bboxes.py
       :language: python
-      :lines: 6-8
+      :start-after: start import
+      :end-before: end import
       :dedent: 4
 
 2. **Initialize your Project**:
@@ -29,21 +31,24 @@ be visualized or used to extract BBox information.
 
    .. literalinclude:: /sdk/boilerplates/test_word_bboxes.py
       :language: python
-      :lines: 13
+      :start-after: start project
+      :end-before: end project
       :dedent: 4
 
 3. **Retrieve a Document from your Project**:
 
    .. literalinclude:: /sdk/boilerplates/test_word_bboxes.py
       :language: python
-      :lines: 15
+      :start-after: start document
+      :end-before: end document
       :dedent: 4
 
 4. **Create a copy of your Document without Annotations**:
 
    .. literalinclude:: /sdk/boilerplates/test_word_bboxes.py
       :language: python
-      :lines: 16
+      :start-after: start copy
+      :end-before: end copy
       :dedent: 4
 
 5. **Tokenize the Document**:
@@ -52,7 +57,8 @@ be visualized or used to extract BBox information.
 
    .. literalinclude:: /sdk/boilerplates/test_word_bboxes.py
       :language: python
-      :lines: 17-18
+      :start-after: start tokenize
+      :end-before: end tokenize
       :dedent: 4
 
 6. **Visualize all word-level Annotations**:
@@ -62,7 +68,8 @@ be visualized or used to extract BBox information.
 
    .. literalinclude:: /sdk/boilerplates/test_word_bboxes.py
       :language: python
-      :lines: 20
+      :start-after: start image
+      :end-before: end image
       :dedent: 4
 
    .. image:: /sdk/examples/word-tokenizer/word-bboxes.png
@@ -76,7 +83,8 @@ be visualized or used to extract BBox information.
 
    .. literalinclude:: /sdk/boilerplates/test_word_bboxes.py
       :language: python
-      :lines: 21
+      :start-after: start spans
+      :end-before: end spans
       :dedent: 4
 
    Each bounding box (`Bbox`) corresponds to a particular word and is characterized by four coordinates: x0 and y0 define 

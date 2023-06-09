@@ -352,10 +352,7 @@ If you want to get it again you can update the Project.</p>
 <section id="delete-document-online">
 <h4>Delete Document Online<a class="headerlink" href="#delete-document-online" title="Permalink to this headline">¶</a></h4>
 <p>If you would like to delete a Document in the remote server you can simply use the <code class="docutils literal notranslate"><span class="pre">Document.delete</span></code> method the <code class="docutils literal notranslate"><span class="pre">delete_online</span></code> setting set to <code class="docutils literal notranslate"><span class="pre">True</span></code>. You can only delete Documents with a dataset status of None (0). <strong>Be careful!</strong> Once the Document is deleted online, we will have no way of recovering it.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span><span class="o">.</span><span class="n">dataset_status</span> <span class="o">=</span> <span class="mi">0</span>
-
-<span class="n">document</span><span class="o">.</span><span class="n">save_meta_data</span><span class="p">()</span>
-<span class="n">document</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">delete_online</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">delete_online</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>If <code class="docutils literal notranslate"><span class="pre">delete_online</span></code> is set to False (the default), the Document will only be deleted on your local machine, and will be

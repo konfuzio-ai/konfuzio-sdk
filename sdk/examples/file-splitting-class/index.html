@@ -150,10 +150,11 @@ splitting points, thus, each new Sub-Document has a Page predicted as first as i
 </ul>
 <p>To begin, we will make all the necessary imports:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Page</span><span class="p">,</span> <span class="n">Category</span><span class="p">,</span> <span class="n">Project</span>
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.file_splitting</span> <span class="kn">import</span> <span class="n">AbstractFileSplittingModel</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.file_splitting</span> <span class="kn">import</span> <span class="n">SplittingAI</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.file_splitting</span> <span class="kn">import</span> <span class="n">ContextAwareFileSplittingModel</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">load_model</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.regex</span> <span class="kn">import</span> <span class="n">ConnectedTextTokenizer</span>
+
 </pre></div>
 </div>
 <p>Then, let’s initialize the <code class="docutils literal notranslate"><span class="pre">ContextAwareFileSplittingModel</span></code> class:</p>
@@ -184,8 +185,9 @@ needed for distinguishing between preprocessing types once a model is passed int
 <span class="n">test_document</span><span class="o">.</span><span class="n">spans</span><span class="p">()</span>
 
 <span class="c1"># output: [Span (0, 7), Span (8, 21), Span (22, 58), Span (59, 68), Span (69, 90), Span (91, 100)]</span>
-
-<span class="n">test_document</span><span class="o">.</span><span class="n">spans</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">offset_string</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">test_document</span><span class="o">.</span><span class="n">spans</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">offset_string</span>
 
 <span class="c1"># output: &quot;Hi all,&quot;</span>
 </pre></div>

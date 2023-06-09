@@ -97,11 +97,12 @@
 <p>Let’s see a simple example of how can we use the <code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span></code> package to get information on a project and to post annotations.</p>
 <p>You can follow the example below to post annotations of a certain word or expression in the first document uploaded.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">re</span>
-
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Annotation</span><span class="p">,</span> <span class="n">Span</span>
 
 <span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
-<span class="c1"># Word/expression to annotate in the Document</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Word/expression to annotate in the Document</span>
 <span class="c1"># should match an existing one in your Document</span>
 <span class="n">input_expression</span> <span class="o">=</span> <span class="s2">&quot;Musterstraße&quot;</span>
 

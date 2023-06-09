@@ -102,6 +102,60 @@ from payslip documents.</p>
 <p>You can <img alt="OpenInColab" src="https://colab.research.google.com/assets/colab-badge.svg" /> or download it from <a class="reference external" href="https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/RFExtractionAI%20Demo.ipynb">here</a>
 and try it by yourself.</p>
 </section>
+<section id="customize-extraction-ai">
+<h2>Customize Extraction AI<a class="headerlink" href="#customize-extraction-ai" title="Permalink to this headline">¶</a></h2>
+<p>Any Custom <a class="reference external" href="sourcecode.html#extraction-ai">Extraction AI</a> (derived from the Konfuzio <code class="docutils literal notranslate"><span class="pre">AbstractExtractionAI</span></code> class) should implement
+the following interface:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">AbstractExtractionAI</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Document</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+
+
+<span class="k">class</span> <span class="nc">CustomExtractionAI</span><span class="p">(</span><span class="n">AbstractExtractionAI</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+    <span class="c1"># initialize key variables required by the custom AI</span>
+
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+    <span class="c1"># Define architecture and training that the model undergoes, i.e. a NN architecture or a custom hardcoded logic</span>
+    <span class="c1"># This method is allowed to be implemented as a no-op if you provide the trained model in other ways</span>
+
+    <span class="k">def</span> <span class="nf">extract</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document</span><span class="p">:</span> <span class="n">Document</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Document</span><span class="p">:</span>
+<span class="c1"># define how the model extracts information from Documents</span>
+<span class="c1"># **NB:** The result of extraction must be a copy of the input Document with added Annotations attribute `Document._annotations`</span>
+</pre></div>
+</div>
+<p>Example usage of your Custom Extraction AI:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Document</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">load_model</span>
+
+<span class="c1"># Initialize Project and provide the AI training and test data</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>  <span class="c1"># see https://dev.konfuzio.com/sdk/get_started.html#example-usage</span>
+
+<span class="n">extraction_pipeline</span> <span class="o">=</span> <span class="n">CustomExtractionAI</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">category</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_category_by_id</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_CATEGORY_ID</span><span class="p">)</span>
+<span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">documents</span> <span class="o">=</span> <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">category</span><span class="o">.</span><span class="n">documents</span><span class="p">()</span>
+<span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">test_documents</span> <span class="o">=</span> <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">category</span><span class="o">.</span><span class="n">test_documents</span><span class="p">()</span>
+
+<span class="c1"># Train the AI</span>
+<span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+
+<span class="c1"># Evaluate the AI</span>
+<span class="n">data_quality</span> <span class="o">=</span> <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">evaluate_full</span><span class="p">(</span><span class="n">use_training_docs</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">ai_quality</span> <span class="o">=</span> <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">evaluate_full</span><span class="p">(</span><span class="n">use_training_docs</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># Extract a Document</span>
+<span class="n">document</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
+<span class="n">extraction_result</span><span class="p">:</span> <span class="n">Document</span> <span class="o">=</span> <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">document</span><span class="o">=</span><span class="n">document</span><span class="p">)</span>
+
+<span class="c1"># Save and load a pickle file for the model</span>
+<span class="n">pickle_model_path</span> <span class="o">=</span> <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">output_dir</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">model_folder</span><span class="p">,</span> <span class="n">include_konfuzio</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">extraction_pipeline_loaded</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="n">pickle_model_path</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
 <section id="evaluate-a-trained-extraction-ai-model">
 <h2>Evaluate a Trained Extraction AI Model<a class="headerlink" href="#evaluate-a-trained-extraction-ai-model" title="Permalink to this headline">¶</a></h2>
 <p>In this example we will see how we can evaluate a trained <code class="docutils literal notranslate"><span class="pre">RFExtractionAI</span></code> model. We will assume that we have a trained
@@ -111,8 +165,9 @@ documentation for more details.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">load_model</span>
 
 <span class="n">pipeline</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="n">MODEL_PATH</span><span class="p">)</span>
-
-<span class="c1"># To get the evaluation of the full pipeline</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># To get the evaluation of the full pipeline</span>
 <span class="n">evaluation</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">evaluate_full</span><span class="p">()</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Full evaluation F1 score: </span><span class="si">{</span><span class="n">evaluation</span><span class="o">.</span><span class="n">f1</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Full evaluation recall: </span><span class="si">{</span><span class="n">evaluation</span><span class="o">.</span><span class="n">recall</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>

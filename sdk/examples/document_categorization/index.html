@@ -101,12 +101,14 @@
 
 <span class="n">my_document</span> <span class="o">=</span> <span class="n">Document</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;My text.&quot;</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="n">my_category</span><span class="p">)</span>
 <span class="k">assert</span> <span class="n">my_document</span><span class="o">.</span><span class="n">category</span> <span class="o">==</span> <span class="n">my_category</span>
+<span class="n">my_document</span><span class="o">.</span><span class="n">set_category</span><span class="p">(</span><span class="n">my_category</span><span class="p">)</span>
 <span class="k">assert</span> <span class="n">my_document</span><span class="o">.</span><span class="n">category_is_revised</span> <span class="ow">is</span> <span class="kc">True</span>
 </pre></div>
 </div>
 <p>If a Document is initialized with no Category, it will automatically be set to NO_CATEGORY. Another Category can be
 manually set later.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
+<span class="n">document</span><span class="o">.</span><span class="n">set_category</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
 <span class="k">assert</span> <span class="n">document</span><span class="o">.</span><span class="n">category</span> <span class="o">==</span> <span class="n">project</span><span class="o">.</span><span class="n">no_category</span>
 <span class="n">document</span><span class="o">.</span><span class="n">set_category</span><span class="p">(</span><span class="n">my_category</span><span class="p">)</span>
 <span class="k">assert</span> <span class="n">document</span><span class="o">.</span><span class="n">category</span> <span class="o">==</span> <span class="n">my_category</span>
@@ -166,7 +168,7 @@ also find these documented under <a class="reference external" href="sourcecode.
 <section id="name-based-categorization-ai">
 <h2>Name-based Categorization AI<a class="headerlink" href="#name-based-categorization-ai" title="Permalink to this headline">¶</a></h2>
 <p>Use the name of the Category as an effective fallback logic to categorize Documents when no Categorization AI is available:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Document</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.document_categorization</span> <span class="kn">import</span> <span class="n">NameBasedCategorizationAI</span>
 
 <span class="c1"># Set up your Project.</span>
@@ -199,7 +201,7 @@ also find these documented under <a class="reference external" href="sourcecode.
 <section id="model-based-categorization-ai">
 <h2>Model-based Categorization AI<a class="headerlink" href="#model-based-categorization-ai" title="Permalink to this headline">¶</a></h2>
 <p>Build, train and test a Categorization AI using Image Models and Text Models to classify the image and text of each Page.</p>
-<p>For a list of available Models see <a class="reference external" href="#categorization-models">Available Categorization Models</a>.</p>
+<p>For a list of available Models see <a class="reference external" href="#categorization-models-available">Available Categorization Models</a>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Document</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">load_model</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.document_categorization</span> <span class="kn">import</span> <span class="n">build_categorization_ai_pipeline</span>
@@ -218,54 +220,26 @@ also find these documented under <a class="reference external" href="sourcecode.
     <span class="n">image_model</span><span class="o">=</span><span class="n">ImageModel</span><span class="o">.</span><span class="n">EfficientNetB0</span><span class="p">,</span>
     <span class="n">text_model</span><span class="o">=</span><span class="n">TextModel</span><span class="o">.</span><span class="n">NBOWSelfAttention</span><span class="p">,</span>
 <span class="p">)</span>
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Train the AI.</span>
+
+<span class="c1"># Train the AI.</span>
 <span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">n_epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Adam&#39;</span><span class="p">})</span>
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Evaluate the AI</span>
+
+<span class="c1"># Evaluate the AI</span>
 <span class="n">data_quality</span> <span class="o">=</span> <span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">use_training_docs</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">ai_quality</span> <span class="o">=</span> <span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">evaluate</span><span class="p">()</span>
 <span class="k">assert</span> <span class="n">data_quality</span><span class="o">.</span><span class="n">f1</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span> <span class="o">==</span> <span class="mf">1.0</span>
 <span class="k">assert</span> <span class="n">ai_quality</span><span class="o">.</span><span class="n">f1</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span> <span class="o">==</span> <span class="mf">1.0</span>
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Categorize a Document</span>
+
+<span class="c1"># Categorize a Document</span>
 <span class="n">document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
 <span class="n">categorization_result</span> <span class="o">=</span> <span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">categorize</span><span class="p">(</span><span class="n">document</span><span class="o">=</span><span class="n">document</span><span class="p">)</span>
 <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">categorization_result</span><span class="p">,</span> <span class="n">Document</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">categorization_result</span><span class="o">.</span><span class="n">pages</span><span class="p">():</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found category </span><span class="si">{</span><span class="n">page</span><span class="o">.</span><span class="n">category</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">page</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Save and load a pickle file for the AI</span>
+
+<span class="c1"># Save and load a pickle file for the AI</span>
 <span class="n">pickle_ai_path</span> <span class="o">=</span> <span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
 <span class="n">categorization_pipeline</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="n">pickle_ai_path</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.document_categorization</span> <span class="kn">import</span> <span class="n">ImageModel</span><span class="p">,</span> <span class="n">TextModel</span>
-
-<span class="c1"># Image Models</span>
-<span class="n">ImageModel</span><span class="o">.</span><span class="n">VGG11</span>
-<span class="n">ImageModel</span><span class="o">.</span><span class="n">VGG13</span>
-<span class="n">ImageModel</span><span class="o">.</span><span class="n">VGG16</span>
-<span class="n">ImageModel</span><span class="o">.</span><span class="n">VGG19</span>
-<span class="n">ImageModel</span><span class="o">.</span><span class="n">EfficientNetB0</span>
-<span class="n">ImageModel</span><span class="o">.</span><span class="n">EfficientNetB1</span>
-<span class="n">ImageModel</span><span class="o">.</span><span class="n">EfficientNetB2</span>
-<span class="n">ImageModel</span><span class="o">.</span><span class="n">EfficientNetB3</span>
-<span class="n">ImageModel</span><span class="o">.</span><span class="n">EfficientNetB4</span>
-<span class="n">ImageModel</span><span class="o">.</span><span class="n">EfficientNetB5</span>
-<span class="n">ImageModel</span><span class="o">.</span><span class="n">EfficientNetB6</span>
-<span class="n">ImageModel</span><span class="o">.</span><span class="n">EfficientNetB7</span>
-<span class="n">ImageModel</span><span class="o">.</span><span class="n">EfficientNetB8</span>
-
-<span class="c1"># Text Models</span>
-<span class="n">TextModel</span><span class="o">.</span><span class="n">NBOW</span>
-<span class="n">TextModel</span><span class="o">.</span><span class="n">NBOWSelfAttention</span>
-<span class="n">TextModel</span><span class="o">.</span><span class="n">LSTM</span>
-<span class="n">TextModel</span><span class="o">.</span><span class="n">BERT</span>
 </pre></div>
 </div>
 <section id="id1">
