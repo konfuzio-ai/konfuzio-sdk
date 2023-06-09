@@ -96,7 +96,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#create-regex-based-annotations">Create Regex-based Annotations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#train-label-regex-tokenizer">Train Label Regex Tokenizer</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#finding-spans-of-a-label-not-found-by-a-tokenizer">Finding Spans of a Label Not Found by a Tokenizer</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#tutorial-getting-word-bounding-box-bbox-for-a-document">Tutorial: Getting Word Bounding Box (BBox) for a Document</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#getting-word-bounding-box-bbox-for-a-document">Getting Word Bounding Box (BBox) for a Document</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#preview-of-result">Preview of Result</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#steps">Steps</a></li>
@@ -1331,8 +1331,8 @@ training data.</p>
 </pre></div>
 </div>
 </section>
-<section id="tutorial-getting-word-bounding-box-bbox-for-a-document">
-<h2>Tutorial: Getting Word Bounding Box (BBox) for a Document<a class="headerlink" href="#tutorial-getting-word-bounding-box-bbox-for-a-document" title="Permalink to this headline">¶</a></h2>
+<section id="getting-word-bounding-box-bbox-for-a-document">
+<h2>Getting Word Bounding Box (BBox) for a Document<a class="headerlink" href="#getting-word-bounding-box-bbox-for-a-document" title="Permalink to this headline">¶</a></h2>
 <p>In this tutorial, we will walk through how to extract the bounding box (<a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#bbox">BBox</a>)
 for words in a Document, rather than for individual characters, using the Konfuzio SDK. This process involves the use of
 the <code class="docutils literal notranslate"><span class="pre">WhitespaceTokenizer</span></code> from the Konfuzio SDK to tokenize the Document and identify word-level Spans, which can then
@@ -1396,9 +1396,9 @@ the Labels.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">span_bboxes</span> <span class="o">=</span> <span class="p">[</span><span class="n">span</span><span class="o">.</span><span class="n">bbox</span><span class="p">()</span> <span class="k">for</span> <span class="n">span</span> <span class="ow">in</span> <span class="n">document</span><span class="o">.</span><span class="n">spans</span><span class="p">()]</span>
 </pre></div>
 </div>
-<p>Each bounding box (<code class="docutils literal notranslate"><span class="pre">Bbox</span></code>) in the list corresponds to a specific word and is defined by four coordinates: x0 and y0
-specify the coordinates of the bottom left corner, while x1 and y1 mark the coordinates of the top right corner,
-thereby specifying the box’s position and dimensions on the Document Page.</p>
+<p>Each bounding box (<code class="docutils literal notranslate"><span class="pre">Bbox</span></code>) corresponds to a particular word and is characterized by four coordinates: x0 and y0 define
+the bottom-left corner, while x1 and y1 indicate the top-right corner. These coordinates detail the bounding box’s
+location and size on the Document Page.</p>
 </li>
 </ol>
 </section>
