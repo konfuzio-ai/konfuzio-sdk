@@ -526,15 +526,19 @@ class SplittingAI:
         """
         if not self.model.requires_images:
             if inplace:
-                document = self.tokenizer.tokenize(document)
+                processed_document = self.tokenizer.tokenize(document)
             else:
-                document = self.tokenizer.tokenize(deepcopy(document))
-            for page in document.pages():
+                processed_document = self.tokenizer.tokenize(deepcopy(document))
+            # we set a Page's Category explicitly because we don't want to lose original Page's Category information
+            # because by default a Page is assigned a Category of a Document, and they are not necessarily the same
+            for page in processed_document.pages():
                 self.model.predict(page)
+                page.set_category(page.get_original_page().category)
         else:
+            processed_document = document
             for page in document.pages():
                 self.model.predict(page)
-        return [document]
+        return [processed_document]
 
     def _suggest_page_split(self, document: Document) -> List[Document]:
         """
@@ -597,8 +601,6 @@ class SplittingAI:
         :return: A list of suggested new Sub-Documents built from the original Document or a list with a Document
         with Pages marked .is_first_page on splitting points.
         """
-        if not document.category:
-            raise AttributeError("A Document without Category cannot be split.")
         if self.model.requires_images:
             document.get_images()
         if return_pages:
