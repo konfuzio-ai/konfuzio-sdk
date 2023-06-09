@@ -99,7 +99,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#how-to-customize-the-document-validation-ui">How to customize the Document Validation UI?</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#how-to-add-the-custom-variables-to-your-project">How to add the custom variables to your project?</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#custom-variables-html">HTML</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id3">HTML</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#css-file">CSS file</a></li>
 </ul>
 </li>
@@ -155,13 +155,13 @@
 </section>
 <section id="full-mode">
 <h3>Full Mode<a class="headerlink" href="#full-mode" title="Permalink to this headline">¶</a></h3>
-<p>If you want to run the widget in full mode to be able to interact with the Document by editing Annotations, Document Pages and other functionalities, you will need to have a user account created (more information in our <a class="reference external" href="/dvui/explanations.html#managing-users-in-the-konfuzio-document-validation-ui">Managing users</a> section). Then, you should generate a user Token by accessing the <a class="reference external" href="https://app.konfuzio.com/v3/swagger/">Konfuzio API version 3 Auth Request</a> and making a request with your username and password. If the provided credentials are correct, then a Token will be generated that you can copy and add to the <code class="docutils literal notranslate"><span class="pre">.env</span></code> file (see below for more details).</p>
-<p>You will also need a <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/documents/documents_create">Document uploaded</a> and a Document id, and will need to be logged in to <a class="reference external" href="https://app.konfuzio.com/">Konfuzio</a>) before being able to upload the Document. After successfully uploading it, if you want to show it on the Document Validation UI, you can copy the Document ID from the URL, as shown in the image below:</p>
+<p>If you want to run the widget in full mode to be able to interact with the Document by editing Annotations, Document Pages and other functionalities, you will need to have a user account created (more information in our <a class="reference external" href="/dvui/explanations.html#managing-users-in-the-konfuzio-document-validation-ui">Managing users</a> section). Then, you should generate a user token by accessing the <a class="reference external" href="https://app.konfuzio.com/v3/swagger/">Konfuzio API version 3 Auth Request</a> and making a request with your username and password. If the provided credentials are correct, then a Token will be generated that you can copy and add to the <code class="docutils literal notranslate"><span class="pre">.env</span></code> file (see below for more details).</p>
+<p>You will also need a <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/documents/documents_create">Document uploaded</a> and a Document id, and will need to be logged in to <a class="reference external" href="https://app.konfuzio.com/">Konfuzio</a>) before being able to upload the Document. After successfully uploading it, if you want to show it on the Document Validation UI, you can copy the Document id from the URL, as shown in the image below:</p>
 <img alt="../_images/docid.png" src="../_images/docid.png" />
 <p>To complete the setup, create an environment variables file <code class="docutils literal notranslate"><span class="pre">.env</span></code> on the root of the repository based on the <a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/blob/main/.env.example">.env.example</a> for specifying the following values:</p>
 <ul class="simple">
-<li><p>The user Token</p></li>
-<li><p>The Document ID</p></li>
+<li><p>The user token</p></li>
+<li><p>The Document id</p></li>
 </ul>
 <p>Some other optional variables you can include are:</p>
 <ul class="simple">
@@ -170,12 +170,12 @@
 <li><p>The default language of the app</p></li>
 <li><p>The Category ID</p></li>
 </ul>
-<p>You can also set the Document ID through the URL query parameteres like <code class="docutils literal notranslate"><span class="pre">?document=ID</span></code>. This will have priority from any other Document ID that is set on <code class="docutils literal notranslate"><span class="pre">.env</span></code> or in  <code class="docutils literal notranslate"><span class="pre">index.html</span></code>. For the other variables, the <code class="docutils literal notranslate"><span class="pre">.env</span></code> will also have priority from the ones defined in the html.</p>
+<p>You can also set the Document id through the URL query parameteres like <code class="docutils literal notranslate"><span class="pre">?document=ID</span></code>. This will have priority from any other Document id that is set on <code class="docutils literal notranslate"><span class="pre">.env</span></code> or in <code class="docutils literal notranslate"><span class="pre">index.html</span></code>. For the other variables, the <code class="docutils literal notranslate"><span class="pre">.env</span></code> will also have priority from the ones defined in the html.</p>
 </section>
 </section>
 <section id="multilingual-user-interface">
 <h2>Multilingual User Interface<a class="headerlink" href="#multilingual-user-interface" title="Permalink to this headline">¶</a></h2>
-<p>The Document Validation UI can currently be used in three languages: German (DE), English (EN), and Spanish (ES). You can specify what the default language of the application will be in the <code class="docutils literal notranslate"><span class="pre">.env</span></code> file, like so:</p>
+<p>The Document Validation UI can currently be used in three languages: German (de), English (en), and Spanish (es). You can specify what the default language of the application will be in the <code class="docutils literal notranslate"><span class="pre">.env</span></code> file, like so:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">VUE_APP_I18N_LOCALE</span><span class="o">=</span>
 <span class="n">VUE_APP_I18N_FALLBACK_LOCALE</span><span class="o">=</span>
 </pre></div>
@@ -244,7 +244,7 @@ module.exports = {
 <section id="html">
 <h5>HTML<a class="headerlink" href="#html" title="Permalink to this headline">¶</a></h5>
 <p>In the <code class="docutils literal notranslate"><span class="pre">HTML</span></code> we should load the script we created with Webpack or the compiled version under the <code class="docutils literal notranslate"><span class="pre">dist</span></code> folder, and customise the variables we want. Please note that customising the variables is optional and that any variable in the <code class="docutils literal notranslate"><span class="pre">.env</span></code> will have priority from the variables defined in the <code class="docutils literal notranslate"><span class="pre">index.html</span></code>.</p>
-<p>The following examples, based on the two configuration options mentioned before, include the custom variables (Document ID, User Token, Locale), but it is not mandatory to add these, which should still be added to the <code class="docutils literal notranslate"><span class="pre">.env</span></code> file.</p>
+<p>The following examples, based on the two configuration options mentioned before, include the custom variables (Document id, user token, locale), but it is not mandatory to add these, which should still be added to the <code class="docutils literal notranslate"><span class="pre">.env</span></code> file.</p>
 <section id="webpack-bundle">
 <h6>Webpack bundle<a class="headerlink" href="#webpack-bundle" title="Permalink to this headline">¶</a></h6>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&lt;div id=&quot;app&quot;&gt;
@@ -332,7 +332,7 @@ module.exports = {
 </section>
 <section id="local-development">
 <h4>Local Development<a class="headerlink" href="#local-development" title="Permalink to this headline">¶</a></h4>
-<p>If you want to serve the application locally to run on a browser (default URL: <a class="reference external" href="http://localhost:3000">http://localhost:3000</a>) you should run:</p>
+<p>If you want to serve the application locally to run on a browser (default URL: <a class="reference external" href="http://localhost:8080">http://localhost:8080</a>) you should run:</p>
 <p><code class="docutils literal notranslate"><span class="pre">npm</span> <span class="pre">run</span> <span class="pre">serve</span></code></p>
 </section>
 </section>
@@ -398,8 +398,8 @@ Once you’ve selected your desired color, the user interface will update in rea
 <h3>How to add the custom variables to your project?<a class="headerlink" href="#how-to-add-the-custom-variables-to-your-project" title="Permalink to this headline">¶</a></h3>
 <p>Below are two examples on how to set the custom variables, whether in the <code class="docutils literal notranslate"><span class="pre">index.html</span></code> or in a dedicated <code class="docutils literal notranslate"><span class="pre">css</span></code> file.</p>
 <p><em>Please note that the default values from the examples below are based on Konfuzio’s default styles.</em></p>
-<section id="custom-variables-html">
-<span id="id3"></span><h4>HTML<a class="headerlink" href="#custom-variables-html" title="Permalink to this headline">¶</a></h4>
+<section id="id3">
+<h4>HTML<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">div</span> <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;app&quot;</span><span class="o">&gt;</span>
    <span class="o">&lt;</span><span class="n">app</span> <span class="n">document</span><span class="o">=</span><span class="s2">&quot;id&quot;</span> <span class="n">locale</span><span class="o">=</span><span class="s2">&quot;de/en/es&quot;</span> <span class="n">user_token</span><span class="o">=</span><span class="s2">&quot;token&quot;</span><span class="o">&gt;&lt;/</span><span class="n">app</span><span class="o">&gt;</span>
  <span class="o">&lt;/</span><span class="n">div</span><span class="o">&gt;</span>
@@ -414,7 +414,7 @@ Once you’ve selected your desired color, the user interface will update in rea
 </div>
 </section>
 <section id="css-file">
-<span id="custom-variables-css"></span><h4>CSS file<a class="headerlink" href="#css-file" title="Permalink to this headline">¶</a></h4>
+<h4>CSS file<a class="headerlink" href="#css-file" title="Permalink to this headline">¶</a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>:root {
     --primary-color: #41AF85 !important;
     --primary-button: 4px !important;
@@ -426,7 +426,7 @@ Once you’ve selected your desired color, the user interface will update in rea
 <section id="try-it-out-before-adding-to-your-project">
 <h3>Try it out before adding to your project<a class="headerlink" href="#try-it-out-before-adding-to-your-project" title="Permalink to this headline">¶</a></h3>
 <p>If you want to test the final result before making changes in your application, you can do so <a class="reference external" href="https://codepen.io/konfuzio/pen/QWVpKVE">here</a>.</p>
-<p>_The example from Codepen shows the Read only mode of the Document Validation UI, which has limited functionalities. To see all the features the UI has to offer, you can add your <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/auth/auth_create">User Token</a> and change the Document id in the <code class="docutils literal notranslate"><span class="pre">app</span></code> tag._</p>
+<p>_The example from Codepen shows the Read only mode of the Document Validation UI, which has limited functionalities. To see all the features the UI has to offer, you can add your <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/auth/auth_create">user token</a> and change the Document id in the <code class="docutils literal notranslate"><span class="pre">app</span></code> tag._</p>
 <p>We hope this feature will help you take your branding to the next level and provide an even more engaging experience for your users. If you have any questions or need assistance with customization, please don’t hesitate to contact <a class="reference external" href="https://konfuzio.com/en/support/">support</a>.</p>
 </section>
 </section>
