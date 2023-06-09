@@ -165,6 +165,7 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
         """Test saving and loading a model using the older bz2-compression-including save and load methods."""
         temp_pkl_file_path = self.project.project_folder + '/models/temp.pkl'
         pkl_file_path = self.project.project_folder + '/models/model.pkl'
+        os.mkdir(self.project.project_folder + '/models')
         self.file_splitting_model.ensure_model_memory_usage_within_limit(max_ram=None)
         with open(temp_pkl_file_path, 'wb') as f:
             cloudpickle.dump(self.file_splitting_model, f)
