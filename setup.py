@@ -76,6 +76,7 @@ setuptools.setup(
     install_requires=[
         'cloudpickle==2.2.1',  # Used to pickle objects
         'filetype==1.0.7',  # Used to check that files are in the correct format
+        'lz4',  # Used to compress pickles
         'nltk',
         'numpy>=1.22.4',
         'pandas>=1.3.5,<2.0.0',
@@ -91,7 +92,8 @@ setuptools.setup(
         'transformers>=4.21.2',  # huggingface transformers and tokenizers
         'tqdm',
         'pympler>=1.0.1',  # Use to get pickle file size.
-        'pydantic==1.10.8',  # pydantic is used by spacy. We need to force a higher pydantic version to avoid https://github.com/tiangolo/fastapi/issues/5048
+        'pydantic==1.10.8',  # pydantic is used by spacy. We need to force a higher pydantic version to avoid
+        # https://github.com/tiangolo/fastapi/issues/5048
         'scikit-learn>=1.0.2',
         'timm==0.6.7',  # for extra pytorch models, i.e. EfficientNet
         'spacy>=2.3.5, <=3.1.4',  # used for spaCy tokenization

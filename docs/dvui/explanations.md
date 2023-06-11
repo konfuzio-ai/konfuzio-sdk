@@ -20,16 +20,16 @@ This is the default mode of the app. In this mode, you will have a sample Docume
 
 ### Full Mode
 
-If you want to run the widget in full mode to be able to interact with the Document by editing Annotations, Document Pages and other functionalities, you will need to have a user account created (more information in our [Managing users](/dvui/explanations.html#managing-users-in-the-konfuzio-document-validation-ui) section). Then, you should generate a user Token by accessing the [Konfuzio API version 3 Auth Request](https://app.konfuzio.com/v3/swagger/) and making a request with your username and password. If the provided credentials are correct, then a Token will be generated that you can copy and add to the `.env` file (see below for more details).
+If you want to run the widget in full mode to be able to interact with the Document by editing Annotations, Document Pages and other functionalities, you will need to have a user account created (more information in our [Managing users](/dvui/explanations.html#managing-users-in-the-konfuzio-document-validation-ui) section). Then, you should generate a user token by accessing the [Konfuzio API version 3 Auth Request](https://app.konfuzio.com/v3/swagger/) and making a request with your username and password. If the provided credentials are correct, then a Token will be generated that you can copy and add to the `.env` file (see below for more details).
 
-You will also need a [Document uploaded](https://app.konfuzio.com/v3/swagger/#/documents/documents_create) and a Document id, and will need to be logged in to [Konfuzio](https://app.konfuzio.com/)) before being able to upload the Document. After successfully uploading it, if you want to show it on the Document Validation UI, you can copy the Document ID from the URL, as shown in the image below:
+You will also need a [Document uploaded](https://app.konfuzio.com/v3/swagger/#/documents/documents_create) and a Document id, and will need to be logged in to [Konfuzio](https://app.konfuzio.com/)) before being able to upload the Document. After successfully uploading it, if you want to show it on the Document Validation UI, you can copy the Document id from the URL, as shown in the image below:
 
 .. image:: ./images/docid.png
 
 To complete the setup, create an environment variables file `.env` on the root of the repository based on the [.env.example](https://github.com/konfuzio-ai/document-validation-ui/blob/main/.env.example) for specifying the following values:
 
-- The user Token
-- The Document ID
+- The user token
+- The Document id
 
 Some other optional variables you can include are:
 
@@ -38,11 +38,11 @@ Some other optional variables you can include are:
 - The default language of the app
 - The Category ID
 
-You can also set the Document ID through the URL query parameteres like `?document=ID`. This will have priority from any other Document ID that is set on `.env` or in  `index.html`. For the other variables, the `.env` will also have priority from the ones defined in the html.
+You can also set the Document id through the URL query parameteres like `?document=ID`. This will have priority from any other Document id that is set on `.env` or in `index.html`. For the other variables, the `.env` will also have priority from the ones defined in the html.
 
 ## Multilingual User Interface
 
-The Document Validation UI can currently be used in three languages: German (DE), English (EN), and Spanish (ES). You can specify what the default language of the application will be in the `.env` file, like so:
+The Document Validation UI can currently be used in three languages: German (de), English (en), and Spanish (es). You can specify what the default language of the application will be in the `.env` file, like so:
 
 ```
 VUE_APP_I18N_LOCALE=
@@ -123,7 +123,7 @@ module.exports = {
 
 In the `HTML` we should load the script we created with Webpack or the compiled version under the `dist` folder, and customise the variables we want. Please note that customising the variables is optional and that any variable in the `.env` will have priority from the variables defined in the `index.html`.
 
-The following examples, based on the two configuration options mentioned before, include the custom variables (Document ID, User Token, Locale), but it is not mandatory to add these, which should still be added to the `.env` file.
+The following examples, based on the two configuration options mentioned before, include the custom variables (Document id, user token, locale), but it is not mandatory to add these, which should still be added to the `.env` file.
 
 ###### Webpack bundle
 
@@ -217,7 +217,7 @@ When succeeded, you should export the `dist` folder generated from that command 
 
 #### Local Development
 
-If you want to serve the application locally to run on a browser (default URL: http://localhost:3000) you should run:
+If you want to serve the application locally to run on a browser (default URL: http://localhost:8080) you should run:
 
 `npm run serve`
 
@@ -301,7 +301,7 @@ Below are two examples on how to set the custom variables, whether in the `index
 
 _Please note that the default values from the examples below are based on Konfuzio's default styles._
 
-.. _custom-variables-html:
+.. \_custom-variables-html:
 
 #### HTML
 
@@ -318,7 +318,7 @@ _Please note that the default values from the examples below are based on Konfuz
 </style>
 ```
 
-.. _custom-variables-css:
+.. \_custom-variables-css:
 
 #### CSS file
 
@@ -333,6 +333,6 @@ _Please note that the default values from the examples below are based on Konfuz
 
 If you want to test the final result before making changes in your application, you can do so [here](https://codepen.io/konfuzio/pen/QWVpKVE).
 
-_The example from Codepen shows the Read only mode of the Document Validation UI, which has limited functionalities. To see all the features the UI has to offer, you can add your [User Token](https://app.konfuzio.com/v3/swagger/#/auth/auth_create) and change the Document id in the `app` tag._
+_The example from Codepen shows the Read only mode of the Document Validation UI, which has limited functionalities. To see all the features the UI has to offer, you can add your [user token](https://app.konfuzio.com/v3/swagger/#/auth/auth_create) and change the Document id in the `app` tag._
 
 We hope this feature will help you take your branding to the next level and provide an even more engaging experience for your users. If you have any questions or need assistance with customization, please don’t hesitate to contact [support](https://konfuzio.com/en/support/).

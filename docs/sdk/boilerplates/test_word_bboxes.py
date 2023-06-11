@@ -9,7 +9,6 @@ def test_word_bboxes():
     from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
 
     # end import
-
     from tests.variables import TEST_PROJECT_ID, TEST_DOCUMENT_ID
 
     YOUR_PROJECT_ID, YOUR_DOCUMENT_ID = TEST_PROJECT_ID, TEST_DOCUMENT_ID
