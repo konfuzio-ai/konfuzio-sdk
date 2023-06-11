@@ -9,5 +9,11 @@ You can follow the example below to post Annotations of a certain word or expres
 
 .. literalinclude:: /sdk/boilerplates/test_regex_based_annotations.py
    :language: python
-   :lines: 6,9,7,11-12,15-22,24-26,28-33,35-49,51
-   :dedent: 4
+   :start-after: start import
+   :end-before: end import
+   :dedent: 4 
+.. literalinclude:: /sdk/boilerplates/test_regex_based_annotations.py
+   :language: python
+   :start-after: start regex based
+   :end-before: end regex based
+   :dedent: 4 

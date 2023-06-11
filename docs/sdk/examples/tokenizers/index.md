@@ -35,7 +35,7 @@ be visualized or used to extract BBox information.
 
    .. literalinclude:: /sdk/boilerplates/test_word_bboxes.py
       :language: python
-      :lines: 6-9,13,11,15,11,16,11,17-18,11,20,11,21
+      :lines: 7-9,13,16,13,20,13,23,13,26-27,13,31,13,34
       :dedent: 4
 
 <br/>
@@ -43,7 +43,8 @@ be visualized or used to extract BBox information.
 
    .. literalinclude:: /sdk/boilerplates/test_word_bboxes.py
       :language: python
-      :lines: 6-8
+      :start-after: start import
+      :end-before: end import
       :dedent: 4
 
 2. **Initialize your Project**:
@@ -52,21 +53,24 @@ be visualized or used to extract BBox information.
 
    .. literalinclude:: /sdk/boilerplates/test_word_bboxes.py
       :language: python
-      :lines: 13
+      :start-after: start project
+      :end-before: end project
       :dedent: 4
 
 3. **Retrieve a Document from your Project**:
 
    .. literalinclude:: /sdk/boilerplates/test_word_bboxes.py
       :language: python
-      :lines: 15
+      :start-after: start document
+      :end-before: end document
       :dedent: 4
 
 4. **Create a copy of your Document without Annotations**:
 
    .. literalinclude:: /sdk/boilerplates/test_word_bboxes.py
       :language: python
-      :lines: 16
+      :start-after: start copy
+      :end-before: end copy
       :dedent: 4
 
 5. **Tokenize the Document**:
@@ -75,7 +79,8 @@ be visualized or used to extract BBox information.
 
    .. literalinclude:: /sdk/boilerplates/test_word_bboxes.py
       :language: python
-      :lines: 17-18
+      :start-after: start tokenize
+      :end-before: end tokenize
       :dedent: 4
 
 6. **Visualize all word-level Annotations**:
@@ -85,7 +90,8 @@ be visualized or used to extract BBox information.
 
    .. literalinclude:: /sdk/boilerplates/test_word_bboxes.py
       :language: python
-      :lines: 20
+      :start-after: start image
+      :end-before: end image
       :dedent: 4
 
    .. image:: /sdk/examples/tokenizers/word-bboxes.png
@@ -99,7 +105,8 @@ be visualized or used to extract BBox information.
 
    .. literalinclude:: /sdk/boilerplates/test_word_bboxes.py
       :language: python
-      :lines: 21
+      :start-after: start spans
+      :end-before: end spans
       :dedent: 4
 
    Each bounding box (`Bbox`) in the list corresponds to a specific word and is defined by four coordinates: x0 and y0 
@@ -125,7 +132,7 @@ training data.
 
    .. literalinclude:: /sdk/boilerplates/test_train_label_regex_tokenizer.py
       :language: python
-      :lines: 6-9,14-27
+      :lines: 11-13,16,18-19,16,23,16,27,16,31-33,16,38-39
       :dedent: 4
 
 <br/>
@@ -220,7 +227,8 @@ For a quicker result with a relatively simpler, single-column Document, you can 
 
 .. literalinclude:: /sdk/boilerplates/test_paragraph_tokenizer.py
    :language: python
-   :lines: 29-30,34-36,38-47
+   :start-after: start init2
+   :end-before: end init2
    :dedent: 4
 
 .. image:: /_static/img/line_distance_paragraph_tokenizer.png
@@ -251,7 +259,8 @@ To tokenize a Document into paragraphs using the `ParagraphTokenizer` in `detect
 
 .. literalinclude:: /sdk/boilerplates/test_paragraph_tokenizer.py
    :language: python
-   :lines: 6-7,11-13,15-24
+   :start-after: start init1
+   :end-before: end init1
    :dedent: 4
 
 The resulting Annotations will look like this:
@@ -276,7 +285,8 @@ To use it, you can use the following code:
 
 .. literalinclude:: /sdk/boilerplates/test_sentence_tokenizer.py
    :language: python
-   :lines: 6-7,11-13,15-24
+   :start-after: start import
+   :end-before: end import
    :dedent: 4
 
 The resulting Annotations will look like this:
@@ -321,5 +331,6 @@ WhitespaceTokenizer. You can follow this example to find all the relevant Spans.
 
 .. literalinclude:: /sdk/boilerplates/test_spans_not_found_label.py
    :language: python
-   :lines: 6-8,13-20,22-24
+   :start-after: start spans
+   :end-before: end spans
    :dedent: 4
