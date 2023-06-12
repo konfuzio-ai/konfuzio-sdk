@@ -5,10 +5,12 @@ def test_custom_categorization_ai():
     """Test creating and using a custom Categorization AI."""
     # start init
     from konfuzio_sdk.trainer.document_categorization import AbstractCategorizationAI
-    from konfuzio_sdk.data import Page
+    from konfuzio_sdk.data import Page, Category
+    from typing import List
 
     class CustomCategorizationAI(AbstractCategorizationAI):
-        def __init__(self, *args, **kwargs):
+        def __init__(self, categories: List[Category], *args, **kwargs):
+            super().__init__(categories)
             pass
 
         # initialize key variables required by the custom AI:
@@ -19,18 +21,50 @@ def test_custom_categorization_ai():
             pass
 
         # Define architecture and training that the model undergoes, i.e. a NN architecture or a custom hardcoded logic
+        # for instance:
+        #
+        # self.classifier_iterator = build_document_classifier_iterator(
+        #             self.documents,
+        #             self.train_transforms,
+        #             use_image = True,
+        #             use_text = False,
+        #             device='cpu',
+        #         )
+        # self.classifier._fit_classifier(self.classifier_iterator, **kwargs)
+        #
         # This method is allowed to be implemented as a no-op if you provide the trained model in other ways
 
         def _categorize_page(self, page: Page) -> Page:
             pass
 
-        # define how the model assigns a Category to a Page
+        # define how the model assigns a Category to a Page.
+        # for instance:
+        #
+        # predicted_category_id, predicted_confidence = self._predict(page_image)
+        #
+        # for category in self.categories:
+        #     if category.id_ == predicted_category_id:
+        #         _ = CategoryAnnotation(category=category, confidence=predicted_confidence, page=page)
+        #
         # **NB:** The result of extraction must be the input Page with added Categorization attribute `Page.category`
 
         def save(self, path: str):
             pass
 
         # define how to save a model in a .pt format – for example, in a way it's defined in the CategorizationAI
+        #
+        #  data_to_save = {
+        #             'tokenizer': self.tokenizer,
+        #             'image_preprocessing': self.image_preprocessing,
+        #             'image_augmentation': self.image_augmentation,
+        #             'text_vocab': self.text_vocab,
+        #             'category_vocab': self.category_vocab,
+        #             'classifier': self.classifier,
+        #             'eval_transforms': self.eval_transforms,
+        #             'train_transforms': self.train_transforms,
+        #             'model_type': 'CategorizationAI',
+        #         }
+        # torch.save(data_to_save, path)
 
     # end init
     from tests.variables import TEST_PROJECT_ID, TEST_DOCUMENT_ID

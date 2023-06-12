@@ -5,10 +5,12 @@ def test_custom_file_splitting_ai():
     """Test creating a custom File Splitting AI."""
     # start class
     from konfuzio_sdk.trainer.file_splitting import AbstractFileSplittingModel
-    from konfuzio_sdk.data import Page
+    from konfuzio_sdk.data import Page, Category
+    from typing import List
 
     class CustomFileSplittingModel(AbstractFileSplittingModel):
-        def __init__(self, *args, **kwargs):
+        def __init__(self, categories: List[Category], *args, **kwargs):
+            super().__init__(categories)
             pass
 
         # initialize key variables required by the custom AI

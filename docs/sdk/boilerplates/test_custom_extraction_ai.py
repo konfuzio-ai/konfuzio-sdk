@@ -5,10 +5,11 @@ def test_create_extraction_ai():
     """Test creating a custom Extraction AI."""
     # start custom
     from konfuzio_sdk.trainer.information_extraction import AbstractExtractionAI
-    from konfuzio_sdk.data import Document
+    from konfuzio_sdk.data import Document, Category
 
     class CustomExtractionAI(AbstractExtractionAI):
-        def __init__(self, *args, **kwargs):
+        def __init__(self, category: Category, *args, **kwargs):
+            super().__init__(category)
             pass
 
         # initialize key variables required by the custom AI
