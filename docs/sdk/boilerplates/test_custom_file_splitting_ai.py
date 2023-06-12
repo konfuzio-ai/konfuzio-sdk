@@ -12,6 +12,9 @@ def test_custom_file_splitting_ai():
             pass
 
         # initialize key variables required by the custom AI
+        # for instance, self.categories to determine which Categories will be used for training the AI, self.documents
+        # and self.test_documents to define training and testing Documents, self.tokenizer for a Tokenizer that will
+        # be used in processing the Documents
 
         def fit(self):
             pass
@@ -27,6 +30,11 @@ def test_custom_file_splitting_ai():
         # classification is reflected in `is_first_page` attribute value, which is unique to the Page class and is not
         # present in Document class. Pages with `is_first_page = True` become potential splitting points, thus, each new
         # sub-Document has a Page predicted as first as its starting point.
+
+        def check_is_ready(self) -> bool:
+            pass
+
+        # define if all components needed for training/prediction are set
 
     # end class
     CustomFileSplittingModel

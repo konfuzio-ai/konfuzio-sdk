@@ -11,7 +11,9 @@ def test_custom_categorization_ai():
         def __init__(self, *args, **kwargs):
             pass
 
-        # initialize key variables required by the custom AI
+        # initialize key variables required by the custom AI:
+        # for instance, self.documents and self.test_documents to train and test the AI on, self.categories to determine
+        # which Categories will the AI be able to predict
 
         def fit(self):
             pass

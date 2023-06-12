@@ -12,6 +12,7 @@ def test_create_extraction_ai():
             pass
 
         # initialize key variables required by the custom AI
+        # for instance, self.category to define within which Category the Extraction takes place
 
         def fit(self):
             pass
