@@ -38,7 +38,13 @@ that it does not require specifying a Tokenizer explicitly.
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_example.py
    :language: python
-   :lines: 7,9-12,23-78
+   :start-after: start imports
+   :end-before: end imports
+   :dedent: 4
+.. literalinclude:: /sdk/boilerplates/test_file_splitting_example.py
+   :language: python
+   :start-after: start file splitting
+   :end-before: end file splitting
    :dedent: 4
 
 After you have trained your custom AI, you can upload it using the steps from the [tutorial](https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html#upload-extraction-or-category-ai-to-target-instance).
