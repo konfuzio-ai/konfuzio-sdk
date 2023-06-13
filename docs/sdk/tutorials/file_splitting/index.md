@@ -58,7 +58,7 @@ It's common for multi-paged files to not be perfectly organized, and in some cas
 included in a single file. To ensure that these Documents are properly processed and separated, we will be discussing a 
 method for identifying and splitting them into individual, independent Sub-documents.
 
-.. image:: /sdk/examples/file-splitting-class/multi_file_document_example.png
+.. image:: /sdk/tutorials/file_splitting/multi_file_document_example.png
 
 _Multi-file Document Example_
 
@@ -71,8 +71,8 @@ inputs. A more detailed scheme of the architecture can be found further.
 
 If you hover over the image you can zoom or use the full page mode.
 
-<div class="mxgraph" style="max-width:100%;border:1px solid transparent;" data-mxgraph="{&quot;highlight&quot;:&quot;#0000ff&quot;,&quot;nav&quot;:true,&quot;resize&quot;:true,&quot;toolbar&quot;:&quot;zoom layers tags lightbox&quot;,&quot;edit&quot;:&quot;_blank&quot;,&quot;url&quot;:&quot;https://raw.githubusercontent.com/konfuzio-ai/konfuzio-sdk/master/docs/sdk/examples/file-splitting-class/fusion_model.drawio&quot;}"></div>
-<script type="text/javascript" src="https://viewer.diagrams.net/embed2.js?&fetch=https%3A%2F%2Fraw.githubusercontent.com%2Fkonfuzio-ai%2Fkonfuzio-sdk%2Fmaster%2Fdocs%2Fsdk%2Fexamples%2Ffile-splitting-class%2Ffusion_model.drawio"></script>
+<div class="mxgraph" style="max-width:100%;border:1px solid transparent;" data-mxgraph="{&quot;highlight&quot;:&quot;#0000ff&quot;,&quot;nav&quot;:true,&quot;resize&quot;:true,&quot;toolbar&quot;:&quot;zoom layers tags lightbox&quot;,&quot;edit&quot;:&quot;_blank&quot;,&quot;url&quot;:&quot;https://raw.githubusercontent.com/konfuzio-ai/konfuzio-sdk/master/docs/sdk/tutorials/file_splitting/fusion_model.drawio&quot;}"></div>
+<script type="text/javascript" src="https://viewer.diagrams.net/embed2.js?&fetch=https%3A%2F%2Fraw.githubusercontent.com%2Fkonfuzio-ai%2Fkonfuzio-sdk%2Fmaster%2Fdocs%2Fsdk%2Ftutorials%2Ffile_splitting%2Ffusion_model.drawio"></script>
 
 Another approach is context-aware file splitting logic which is presented by Context Aware File Splitting Model. This 
 approach involves analyzing the contents of each Page and identifying similarities to the first Pages of the Document. 
@@ -250,11 +250,11 @@ Suppose in our test dataset we have 2 Documents of 2 Categories: one 3-paged, co
 only one ground-truth first Page) of a first Category, and one 5-paged, consisting of three files: two 2-paged and one 
 1-paged (-> it has three ground-truth first Pages), of a second Category.
 
-.. image:: /sdk/examples/evaluation/document_example_1.png
+.. image:: /sdk/tutorials/file_splitting/document_example_1.png
 
 _First document_
 
-.. image:: /sdk/examples/evaluation/document_example_2.png
+.. image:: /sdk/tutorials/file_splitting/document_example_2.png
 
 _Second document_
 
