@@ -19,9 +19,6 @@ Tutorials
    tutorials/outlier-annotations/index.md
    tutorials/regex_based_annotations/index.md
 
-
-.. mdinclude:: tutorials/overview/index.md
-
 Retrain Flair NER-Ontonotes-Fast with Human Revised Annotations
 ---------------------------------------------------------------
 
