@@ -108,6 +108,7 @@ setuptools.setup(
             'sphinx-reload==0.2.0',
             'sphinx-notfound-page==0.8',
             'm2r2==0.3.2',
+            'sphinx-exec-code==0.10',
             'sphinx-sitemap==2.2.0',
             'sphinx-rtd-theme==1.0.0',
             'sphinxcontrib-mermaid==0.8.1',

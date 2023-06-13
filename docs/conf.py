@@ -44,6 +44,7 @@ extensions = [
     'sphinx_sitemap',
     'sphinxcontrib.mermaid',
     'notfound.extension',
+    'sphinx_exec_code',
 ]
 
 # Add any paths that contain templates here, relative to this directory.

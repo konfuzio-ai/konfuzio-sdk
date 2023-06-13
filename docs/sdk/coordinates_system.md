@@ -21,6 +21,25 @@ image representation of a Document Page. These representations are used for comp
    :start-after: Start coordinates
    :end-before: End coordinates
    :dedent: 4
+.. exec_code::
+
+   # --- hide: start ---
+   from tests.variables import TEST_PROJECT_ID
+   YOUR_PROJECT_ID = TEST_PROJECT_ID
+   #hide:toggle
+   from konfuzio_sdk.data import Project
+
+   my_project = Project(id_=YOUR_PROJECT_ID)
+   # first Document uploaded
+   document = my_project.documents[0]
+   # index of the Page to test
+   page_index = 0
+
+   width = document.pages()[page_index].width
+   height = document.pages()[page_index].height
+   #hide:toggle
+   assert width < height
+   
 
 
 The coordinates system used has its start in the bottom left corner of the page.
