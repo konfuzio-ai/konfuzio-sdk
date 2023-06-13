@@ -5,21 +5,19 @@ Tutorials
 *Tutorials are lessons that take the reader by the hand through a series of steps to complete a project of some kind.*
 *Tutorials are learning-oriented.*
 
-.. mdinclude:: examples/overview/index.md
+.. toctree::
+   :hidden:
+   :maxdepth: 1
+   :caption: Tutorials
 
-.. mdinclude:: examples/document_categorization/index.md
-
-.. mdinclude:: examples/file_splitting/index.md
-
-.. mdinclude:: examples/tokenizers/index.md
-
-.. mdinclude:: examples/information_extraction/index.md
-
-.. mdinclude:: examples/data_validation/index.md
-
-.. mdinclude:: examples/outlier-annotations/index.md
-
-.. mdinclude:: examples/regex_based_annotations/index.md
+   tutorials/overview/index.md
+   tutorials/document_categorization/index.md
+   tutorials/file_splitting/index.md
+   tutorials/tokenizers/index.md
+   tutorials/information_extraction/index.md
+   tutorials/data_validation/index.md
+   tutorials/outlier-annotations/index.md
+   tutorials/regex_based_annotations/index.md
 
 Retrain Flair NER-Ontonotes-Fast with Human Revised Annotations
 ---------------------------------------------------------------
