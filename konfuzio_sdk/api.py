@@ -591,3 +591,5 @@ def upload_ai_model(ai_model_path: str, category_ids: List[int] = None, session=
 
     logger.info(f'New AI Model uploaded {ai_model} to {url}')
     return ai_model
+
+    # todo delete_ai_model method + endpoint if missing
