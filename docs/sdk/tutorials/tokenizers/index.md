@@ -94,7 +94,7 @@ be visualized or used to extract BBox information.
       :end-before: end image
       :dedent: 4
 
-   .. image:: /sdk/examples/tokenizers/word-bboxes.png
+   .. image:: /sdk/tutorials/tokenizers/word-bboxes.png
 
    This will display an image of the Document with all word-level Annotations. The image may look a bit messy with all 
    the Labels.

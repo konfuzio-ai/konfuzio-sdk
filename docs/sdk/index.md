@@ -93,7 +93,7 @@ extraction_pipeline_loaded = load_model(pickle_model_path)
 ```
 
 For a more in depth tutorial about the usage of Extraction AIs in the SDK see 
-[Train a Konfuzio SDK Model to Extract Information From Payslip Documents](examples/examples.html#train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents).
+[Train a Konfuzio SDK Model to Extract Information From Payslip Documents](tutorials/information_extraction/index.html#train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents).
 
 ### Customize Categorization AI
 

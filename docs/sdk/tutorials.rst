@@ -19,6 +19,9 @@ Tutorials
    tutorials/outlier-annotations/index.md
    tutorials/regex_based_annotations/index.md
 
+
+.. mdinclude:: tutorials/overview/index.md
+
 Retrain Flair NER-Ontonotes-Fast with Human Revised Annotations
 ---------------------------------------------------------------
 
@@ -28,11 +31,11 @@ can take advantage of open-source models to speed up the annotation process and 
 domain knowledge of the model to your aim.
 
 You can |OpenInColab1|_ or download it from
-`here <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/human_in_the_loop.ipynb>`_
+`here <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/tutorials/human_in_the_loop.ipynb>`_
 and try it by yourself.
 
 .. |OpenInColab1| image:: https://colab.research.google.com/assets/colab-badge.svg
-.. _OpenInColab1: https://colab.research.google.com/github/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/human_in_the_loop.ipynb
+.. _OpenInColab1: https://colab.research.google.com/github/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/tutorials/human_in_the_loop.ipynb
 
 Count Relevant Expressions in Annual Reports
 --------------------------------------------
@@ -42,10 +45,10 @@ retrieve structured and organized information that can be used for a deeper anal
 It will show you how to identify and count pre-specified expressions in documents and how to collect that information.
 
 You can |OpenInColab2|_ or download it from
-`here <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/word_count.ipynb>`_
+`here <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/tutorials/word_count.ipynb>`_
 and try it by yourself.
 
 .. |OpenInColab2| image:: https://colab.research.google.com/assets/colab-badge.svg
 
-.. _OpenInColab2: https://colab.research.google.com/github/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/word_count.ipynb
+.. _OpenInColab2: https://colab.research.google.com/github/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/tutorials/word_count.ipynb
 
