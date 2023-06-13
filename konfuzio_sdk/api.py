@@ -30,6 +30,7 @@ from konfuzio_sdk.urls import (
     get_update_ai_model_url,
     get_create_ai_model_url,
     get_page_image_url,
+    # get_ai_model_url,
 )
 from konfuzio_sdk.utils import is_file
 
@@ -572,7 +573,7 @@ def upload_ai_model(ai_model_path: str, category_ids: List[int] = None, session=
     :param session: session to connect to server
     :return:
     """
-    url = get_create_ai_model_url()
+    url = get_create_ai_model_url(ai_model_path)
     if is_file(ai_model_path):
         model_name = os.path.basename(ai_model_path)
         with open(ai_model_path, 'rb') as f:
@@ -592,4 +593,18 @@ def upload_ai_model(ai_model_path: str, category_ids: List[int] = None, session=
     logger.info(f'New AI Model uploaded {ai_model} to {url}')
     return ai_model
 
-    # todo delete_ai_model method + endpoint if missing
+
+# def delete_ai_model(ai_model_id: int):
+#     """
+#     Delete an AI model from the server.
+#
+#     :param ai_model_id: an ID of the model to be deleted.
+#     """
+#     url = get_ai_model_url(ai_model_id)
+#
+# WIP
+
+
+def update_ai_model():
+    """Update an AI model from the server."""
+    pass
