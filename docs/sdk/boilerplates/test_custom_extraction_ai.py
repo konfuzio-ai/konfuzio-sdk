@@ -31,16 +31,50 @@ def test_create_extraction_ai():
         def extract(self, document: Document) -> Document:
             pass
 
-        # define how the model extracts information from Documents
-        # for instance:
-        #
-        # inference_document = deepcopy(document)
-        # self.tokenizer.tokenize(inference_document)
-        # df, _feature_names, _raw_errors = self.features(inference_document)
-        # extracted = self.extract_from_df(df, inference_document)
-        #
-        # **NB:** The result of extraction must be a copy of the input Document with added Annotations attribute
-        # `Document._annotations`
+        # Define how the AI extracts information from Documents.
+
+        # **NB:** The result of extraction must be a copy of the input Document.
+
+        # Example:
+        # result_document = deepcopy(document)
+
+        # The tokenizer will create Annotations objects within the document
+        # tokenizer.tokenize(result_document)
+
+        # These Annotations will be the extraction results.
+        # At the moment, these Annotations have no Label, which would exclude them from the extraction results.
+        # We need to associate the proper Labels to each Annotation, assuming that these exist in our Project.
+        # name_label = self.project.get_label_by_name("Name")  # the self.project attribute is derived from Trainer
+        # surname_label = self.project.get_label_by_name("Surname")
+        # for annotation in result_document.annotations():
+        #     for span in annotation.spans:
+        #     # Each Annotation contains information about which tokenizer found it.
+        #     # In this example, we associate the Label straighforwardly.
+        #     # If your regex can produce false positives, you will want to apply some filtering logic here.
+        #         if name_tokenizer in span.regex_matching:
+        #             annotation.label = name_label
+        #             break
+        #         elif surname_tokenizer in span.regex_matching:
+        #             annotation.label = surname_label
+        #             break
+
+        # Suppose we want to extract "A Software Company Ltd.", which does not have a clear regex pattern, but
+        # we know it's always the third line in the Document. We can explicitly create an Annotation based on a
+        # substring of the Document's text.
+        # company_label = self.project.get_label_by_name("Company")
+        # company_substring = result_document.split('\n')[2]  # third line of the Document
+        # start_offset = result_document.find(company_substring)
+        # end_offset = start_offset + len(company_substring)
+        # _ = Annotation(document=result_document, label=company_label, spans=[Span(start_offset, end_offset)])
+
+        # The resulting Document has 3 extractions. You can double-check that they are there with:
+        # >>> result_document.annotations(use_correct=False)
+        # [
+        #     Annotation Name (6, 10),
+        #     Annotation Surname (20, 23),
+        #     Annotation Company (24, 27)
+        # ]
+        # return result_document
 
         def check_is_ready(self) -> bool:
             pass
