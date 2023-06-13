@@ -2,17 +2,19 @@
 
 ### Train a Konfuzio SDK Model to Extract Information From Payslip Documents
 
+.. _Information Extraction:
+
 The tutorial *RFExtractionAI Demo* aims to show you how to use the Konfuzio SDK package to use a simple `Whitespace
 tokenizer <https://dev.konfuzio.com/sdk/sourcecode.html#konfuzio_sdk.tokenizer.regex.WhitespaceTokenizer>`_ and to
 train a "RFExtractionAI" model to find and extract relevant information like Name, Date and Recipient
 from payslip documents.
 
-You can <a href="https://colab.research.google.com/github/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/RFExtractionAI%20Demo.ipynb">
-<img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a> or download it from [here](https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/RFExtractionAI%20Demo.ipynb)
+You can <a href="https://colab.research.google.com/github/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/tutorials/RFExtractionAI%20Demo.ipynb">
+<img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a> or download it from [here](https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/tutorials/RFExtractionAI%20Demo.ipynb)
 and try it by yourself.
 
 .. |OpenInColab| image:: https://colab.research.google.com/assets/colab-badge.svg
-.. _OpenInColab: https://colab.research.google.com/github/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/RFExtractionAI%20Demo.ipynb
+.. _OpenInColab: https://colab.research.google.com/github/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/tutorials/RFExtractionAI%20Demo.ipynb
 
 ### Customize Extraction AI
 
@@ -73,7 +75,7 @@ extraction_pipeline_loaded = load_model(pickle_model_path)
 ### Evaluate a Trained Extraction AI Model
 
 In this example we will see how we can evaluate a trained `RFExtractionAI` model. We will assume that we have a trained 
-pickled model available. See [here](https://dev.konfuzio.com/sdk/examples/examples.html#train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents) 
+pickled model available. See :ref:`here <Information Extraction>` 
 for how to train such a model, and check out the [Evaluation](https://dev.konfuzio.com/sdk/sourcecode.html#ai-evaluation) 
 documentation for more details.
 

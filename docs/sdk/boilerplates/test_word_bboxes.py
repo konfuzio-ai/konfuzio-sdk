@@ -15,7 +15,7 @@ def test_word_bboxes():
     # start project
     project = Project(id_=YOUR_PROJECT_ID)
     # end project
-    project = Project(id_=YOUR_PROJECT_ID, strict_data_validation=False)
+
     # start document
     document = project.get_document_by_id(YOUR_DOCUMENT_ID)
     # end document
