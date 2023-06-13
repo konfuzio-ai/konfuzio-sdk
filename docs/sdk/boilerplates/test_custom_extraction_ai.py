@@ -19,24 +19,36 @@ def test_create_extraction_ai():
             pass
 
         # Define architecture and training that the model undergoes, i.e. a NN architecture or a custom hardcoded logic
+        # for instance:
+        #
+        # self.clf = RandomForestClassifier(
+        #             class_weight="balanced", random_state=100
+        #         )
+        # self.clf.fit(self.df_train[self.label_feature_list], self.df_train['target'])
+        #
         # This method is allowed to be implemented as a no-op if you provide the trained model in other ways
 
         def extract(self, document: Document) -> Document:
             pass
 
         # define how the model extracts information from Documents
+        # for instance:
+        #
+        # inference_document = deepcopy(document)
+        # self.tokenizer.tokenize(inference_document)
+        # df, _feature_names, _raw_errors = self.features(inference_document)
+        # extracted = self.extract_from_df(df, inference_document)
+        #
         # **NB:** The result of extraction must be a copy of the input Document with added Annotations attribute
         # `Document._annotations`
 
         def check_is_ready(self) -> bool:
             pass
 
-        # define if all components needed for training/prediction are set
+        # define if all components needed for training/prediction are set, for instance, is self.tokenizer set or does
+        # self.category contain training and testing Documents.
 
     # end custom
-
-    ai = CustomExtractionAI()
-    assert isinstance(ai, CustomExtractionAI)
 
     from tests.variables import TEST_PROJECT_ID, TEST_DOCUMENT_ID
 
@@ -52,15 +64,16 @@ def test_create_extraction_ai():
 
     # Initialize Project and the AI
     project = Project(id_=YOUR_PROJECT_ID)  # see https://dev.konfuzio.com/sdk/get_started.html#example-usage
-
-    extraction_pipeline = CustomExtractionAI()
+    category = project.get_category_by_id(YOUR_CATEGORY_ID)
+    extraction_pipeline = CustomExtractionAI(category)
     # end init_ai
+    assert isinstance(extraction_pipeline, CustomExtractionAI)
     project = Project(id_=YOUR_PROJECT_ID, strict_data_validation=False)
     extraction_pipeline = RFExtractionAI()
     extraction_pipeline.tokenizer = ListTokenizer(tokenizers=[])
     # start category
     # provide the categories, training and test data
-    extraction_pipeline.category = project.get_category_by_id(id_=YOUR_CATEGORY_ID)
+    extraction_pipeline.category = category
     extraction_pipeline.documents = extraction_pipeline.category.documents()
     extraction_pipeline.test_documents = extraction_pipeline.category.test_documents()
     # end category
