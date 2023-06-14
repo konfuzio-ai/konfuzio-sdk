@@ -54,7 +54,7 @@ Use the name of the Category as an effective fallback logic to categorize Docume
 
 Build, train and test a Categorization AI using Image Models and Text Models to classify the image and text of each Page.
 
-For a list of available Models see [Available Categorization Models](#categorization-models-available).
+For a list of available Models see [Available Categorization Models](#available-categorization-ai-models).
 
 .. literalinclude:: /sdk/boilerplates/test_document_categorization.py
    :language: python
@@ -67,8 +67,7 @@ For a list of available Models see [Available Categorization Models](#categoriza
    :end-before: End Build
    :dedent: 4
 
-.. _categorization-models-available:
-#### Available Categorization Models
+### Available Categorization AI Models
 
 When using `build_categorization_ai_pipeline`, you can select which Image Module and/or Text Module to use for 
 classification. At least one between the Image Model or the Text Model must be specified. Both can also be used 
