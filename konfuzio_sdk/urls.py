@@ -3,7 +3,7 @@
 import logging
 
 from konfuzio_sdk import KONFUZIO_HOST
-from typing import Union
+from typing import Union, Dict
 
 logger = logging.getLogger(__name__)
 
@@ -227,10 +227,14 @@ def get_update_ai_model_url(ai_model_id, host: str = KONFUZIO_HOST) -> str:
     return f'{host}/api/aimodels/{ai_model_id}/'
 
 
-def get_ai_model_url(ai_model_ai, host: str = KONFUZIO_HOST) -> str:
+def get_ai_model_url(ai_model_id, host: str = KONFUZIO_HOST) -> Dict:
     """
     Get url to modify or delete an AI model.
 
-    :return: URL
+    :return: a dictionary of potential URLs
     """
-    pass
+    return {
+        'extraction': f'{host}/api/v3/extraction-ais/{ai_model_id}',
+        'categorization': f'{host}/api/v3/category-ais/{ai_model_id}',
+        'file_splitting': f'{host}/api/v3/splitting-ais/{ai_model_id}',
+    }

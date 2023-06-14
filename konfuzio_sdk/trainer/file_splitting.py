@@ -380,6 +380,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
             raise AttributeError(f'{self} has to be fitted before running a prediction.')
 
 
+# begin class (this and further comments are for the documentation)
 class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
     """
     A File Splitting Model that uses a context-aware logic.
@@ -388,6 +389,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
     Category's Documents.
     """
 
+    # begin init
     def __init__(self, categories: List[Category], tokenizer, *args, **kwargs):
         """
         Initialize the Context Aware File Splitting Model.
@@ -407,6 +409,9 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         self.requires_text = True
         self.requires_images = False
 
+    # end init
+
+    # begin fit
     def fit(self, allow_empty_categories: bool = False, *args, **kwargs):
         """
         Gather the strings exclusive for first Pages in a given stream of Documents.
@@ -440,6 +445,9 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
                 else:
                     raise ValueError(f'No exclusive first-page strings were found for {category}.')
 
+    # end fit
+
+    # begin predict
     def predict(self, page: Page) -> Page:
         """
         Predict a Page as first or non-first.
@@ -472,6 +480,9 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         page.is_first_page_confidence = 1
         return page
 
+    # end predict
+
+    # begin check
     def check_is_ready(self):
         """
         Check File Splitting Model is ready for inference.
@@ -495,6 +506,8 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
                 f"Cannot run prediction as none of the Categories in {self.project} have "
                 f"_exclusive_first_page_strings."
             )
+
+    # end check
 
 
 class SplittingAI:

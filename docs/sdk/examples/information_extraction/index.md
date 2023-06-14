@@ -49,6 +49,15 @@ pickle file that can be directly uploaded to the Konfuzio Server (see [Upload Ex
 
 Activating the uploaded AI on the web interface will enable the custom pipeline on your self-hosted installation.
 
+It is also possible to upload the AI from your local machine using the `upload_ai_model()` method and remove it with the
+`delete_ai_model()` method:
+
+.. literalinclude:: /sdk/boilerplates/test_custom_extraction_ai.py
+      :language: python
+      :start-after: start upload
+      :end-before: end upload
+      :dedent: 4
+
 ### Evaluate a Trained Extraction AI Model
 
 In this example we will see how we can evaluate a trained `RFExtractionAI` model. We will assume that we have a trained 

@@ -54,5 +54,11 @@ For the first option, go to the Superuser AIs and select your locally stored pic
 Splitting and status to Training finished, then save the AI. After that, go to the Splitting AIs, choose your AI and 
 select an action "Activate Splitting AI".
 
-For the second option, provide the path to your model to the `upload_ai_model()`:
+For the second option, provide the path to your model to the `upload_ai_model()`. You can also remove an uploaded model
+by using `delete_ai_model()`.
 
+.. literalinclude:: /sdk/boilerplates/test_file_splitting_example.py
+   :language: python
+   :start-after: start upload
+   :end-before: end upload
+   :dedent: 4

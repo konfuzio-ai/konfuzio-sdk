@@ -84,6 +84,7 @@ def test_create_extraction_ai():
 
     # end custom
 
+    import os
     from tests.variables import TEST_PROJECT_ID, TEST_DOCUMENT_ID
 
     YOUR_PROJECT_ID = TEST_PROJECT_ID
@@ -137,3 +138,14 @@ def test_create_extraction_ai():
     assert isinstance(ai_quality, ExtractionEvaluation)
     assert isinstance(extraction_result, Document)
     assert isinstance(extraction_pipeline_loaded, RFExtractionAI)
+
+    # start upload
+    from konfuzio_sdk.api import upload_ai_model, delete_ai_model
+
+    # upload a saved model to the server
+    model_id = upload_ai_model(pickle_model_path)
+
+    # remove model
+    delete_ai_model(model_id, ai_type='extraction')
+    # end upload
+    os.remove(pickle_model_path)
