@@ -1,3 +1,4 @@
+.. _document-categorization-tutorials:
 ## Document Categorization
 
 ### Working with the Category of a Document and its individual Pages
@@ -21,7 +22,7 @@ manually set later.
 
 
 If you use a Categorization AI to automatically assign a Category to a Document (such as the 
-[NameBasedCategorizationAI](tutorials.html#name-based-categorization-ai)), each Page will be assigned a 
+[NameBasedCategorizationAI](#name-based-categorization-ai)), each Page will be assigned a 
 Category Annotation with predicted confidence information, and the following properties will be accessible. You can 
 also find these documented under [API Reference - Document](sourcecode.html#document), 
 [API Reference - Page](sourcecode.html#page) and 
@@ -39,6 +40,7 @@ also find these documented under [API Reference - Document](sourcecode.html#docu
 | `Page.maximum_confidence_category_annotation`   | Get the maximum confidence predicted Category<br>Annotation or the one revised by the user for this<br>Page.                                                                                                                      |
 | `Page.category`  | Get the maximum confidence predicted Category<br>or the one revised by user for this Page.                                                                                                                                        |
 
+.. _name-based-categorization-ai:
 ### Name-based Categorization AI
 
 Use the name of the Category as an effective fallback logic to categorize Documents when no Categorization AI is available:

@@ -1,3 +1,4 @@
+.. _information-extraction-tutorials:
 ## Document Information Extraction
 
 ### Train a Konfuzio SDK Model to Extract Information From Payslip Documents
