@@ -22,11 +22,11 @@ manually set later.
 
 
 If you use a Categorization AI to automatically assign a Category to a Document (such as the 
-[NameBasedCategorizationAI](#name-based-categorization-ai)), each Page will be assigned a 
+[NameBasedCategorizationAI](#name-based-categorization-ai), each Page will be assigned a 
 Category Annotation with predicted confidence information, and the following properties will be accessible. You can 
-also find these documented under [API Reference - Document](sourcecode.html#document), 
-[API Reference - Page](sourcecode.html#page) and 
-[API Reference - Category Annotation](sourcecode.html#category-annotation).
+also find these documented under [API Reference - Document](../../sourcecode.html#document), 
+[API Reference - Page](../../sourcecode.html#page) and 
+[API Reference - Category Annotation](../../sourcecode.html#category-annotation).
 
 | Property                     | Description                                                                                                                                                                                                                       |
 |-------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -40,7 +40,6 @@ also find these documented under [API Reference - Document](sourcecode.html#docu
 | `Page.maximum_confidence_category_annotation`   | Get the maximum confidence predicted Category<br>Annotation or the one revised by the user for this<br>Page.                                                                                                                      |
 | `Page.category`  | Get the maximum confidence predicted Category<br>or the one revised by user for this Page.                                                                                                                                        |
 
-.. _name-based-categorization-ai:
 ### Name-based Categorization AI
 
 Use the name of the Category as an effective fallback logic to categorize Documents when no Categorization AI is available:
@@ -83,7 +82,7 @@ The list of available Categorization Models is implemented as an Enum containing
    :end-before: End Models
    :dedent: 4
 
-See more details about these Categorization Models under [API Reference - Categorization AI](sourcecode.html#categorization-ai).
+See more details about these Categorization Models under [API Reference - Categorization AI](../../sourcecode.html#categorization-ai).
 
 ### Categorization AI Overview Diagram
 

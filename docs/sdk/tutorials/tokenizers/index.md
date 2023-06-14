@@ -2,7 +2,7 @@
 
 ### WhitespaceTokenizer
 
-The [WhitespaceTokenizer](https://dev.konfuzio.com/sdk/sourcecode.html#konfuzio_sdk.tokenizer.regex.WhitespaceTokenizer), 
+The [WhitespaceTokenizer](../../sourcecode.html#konfuzio_sdk.tokenizer.regex.WhitespaceTokenizer), 
 part of the Konfuzio SDK, is a foundational tool in natural language processing (NLP). It segments text into smaller 
 units called tokens, using the white spaces between words as natural delimiters. This approach is simple, effective, and 
 ideal for basic tokenization tasks.
