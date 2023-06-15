@@ -108,7 +108,6 @@ class Page(Data):
         image_size: Tuple[int, int] = (None, None),
         start_offset: Optional[int] = None,
         end_offset: Optional[int] = None,
-        category: Optional['Category'] = None,
         copy_of_id: Optional[int] = None,
     ):
         """
@@ -154,7 +153,7 @@ class Page(Data):
         )
         self.image_path = os.path.join(document_folder, f'page_{self.number}.png')
 
-        self._category = category if category else self.document._category
+        self._category = self.document._category
         self.category_annotations: List['CategoryAnnotation'] = []
         self._human_chosen_category_annotation: Optional[CategoryAnnotation] = None
         self._segmentation = None
@@ -400,9 +399,11 @@ class Page(Data):
 
         :param category: The Category to set for the Page.
         """
+        if not category:
+            raise ValueError("We forbid setting a Page's Category to None.")
         logger.info(f'Setting {self} Category to {category}.')
         self._category = category
-        if category is None:
+        if category is self.document.project.no_category:
             self.category_annotations = []
             self._human_chosen_category_annotation = None
             return
@@ -434,6 +435,27 @@ class Page(Data):
             return self.maximum_confidence_category_annotation.category
         else:
             return self._category
+
+    def get_original_page(self) -> 'Page':
+        """
+        Return an "original" Page in case the current Page is a copy without an ID.
+
+        An "original" Page is a Page from the Document that is not a copy and not a Virtual Document. This Page has an
+        ID.
+
+        The method is used in the File Splitting pipeline to retain the original Document's information in
+        the Sub-Documents that were created from its splitting. The original Document is a Document that has an ID and
+        is not a deepcopy.
+        """
+        if self.id_ and self.document.id_:
+            return self
+        elif self.copy_of_id:
+            if self.document.id_:
+                return self.document.get_page_by_id(self.copy_of_id)
+            else:
+                return self.document.project.get_document_by_id(self.document.copy_of_id).get_page_by_id(
+                    self.copy_of_id
+                )
 
 
 class BboxValidationTypes(Enum):
@@ -780,9 +802,9 @@ class LabelSet(Data):
 
     def add_category(self, category: 'Category'):
         """
-        Add Category to Project, if it does not exist.
+        Add Category to the Label Set, if it does not exist.
 
-        :param category: Category to add in the Project
+        :param category: Category to add to the Label Set
         """
         if category not in self.categories:
             self.categories.append(category)
@@ -1837,9 +1859,9 @@ class Span(Data):
                 "custom_offset_string": None,
                 "revised": None,
                 "label_threshold": None,
-                "label_id": None,
+                "label_id": 0,
                 "label_has_multiple_top_candidates": None,
-                "label_set_id": None,
+                "label_set_id": 0,
                 "annotation_id": None,
                 "annotation_set_id": 0,  # to allow grouping to compare boolean
                 "document_id": 0,
@@ -2709,10 +2731,10 @@ class Document(Data):
         """
         if self.maximum_confidence_category_annotation is not None:
             return self.maximum_confidence_category_annotation.category
-        return None
+        return self.project.no_category
 
     @property
-    def category(self) -> Optional[Category]:
+    def category(self) -> Category:
         """
         Return the Category of the Document.
 
@@ -2729,29 +2751,36 @@ class Document(Data):
             self._category = self.project.no_category
         return self._category
 
-    def get_segmentation(self) -> List:
+    def get_segmentation(self, timeout: Optional[int] = None, num_retries: Optional[int] = None) -> List:
         """
         Retrieve the segmentation results for the Document.
 
+        :param timeout: Number of seconds to wait for response from the server.
+        :param num_retries: Number of retries if the request fails.
         :return: A list of segmentation results for each Page in the Document.
         """
-        if any(page._segmentation is None for page in self.pages()):
-            document_id = self.id_ if self.id_ else self.copy_of_id
-            detectron_document_results = get_results_from_segmentation(document_id, self.project.id_)
+        document = self.project.get_document_by_id(self.copy_of_id) if self.copy_of_id else self
+        if any(page._segmentation is None for page in document.pages()):
+            document_id = document.id_
+            detectron_document_results = get_results_from_segmentation(
+                document_id, self.project.id_, konfuzio_session(timeout=timeout, num_retries=num_retries)
+            )
             assert len(detectron_document_results) == self.number_of_pages
             for page_index, detectron_page_result in enumerate(detectron_document_results):
-                self.get_page_by_index(page_index)._segmentation = detectron_page_result
+                document.get_page_by_index(page_index)._segmentation = detectron_page_result
         else:
-            document = self.project.get_document_by_id(self.copy_of_id) if self.copy_of_id else self
             detectron_document_results = [page._segmentation for page in document.pages()]
 
         return detectron_document_results
 
     def set_category(self, category: Category) -> None:
         """Set the Category of the Document and the Category of all of its Pages as revised."""
+        if not category:
+            category = self.project.no_category
         logger.info(f"Setting Category of {self} to {category}.")
-        if (self._category not in [None, self.project.no_category]) and (
-            category not in [self._category, None, self.project.no_category]
+        if (
+            category not in [self._category, self.project.no_category]
+            and self._category.name != self.project.no_category.name
         ):
             raise ValueError(
                 "We forbid changing Category when already existing, because this requires some validations that are "
@@ -2877,7 +2906,6 @@ class Document(Data):
                 number=page.number,
                 original_size=(page.width, page.height),
                 image_size=(page.image_width, page.image_height),
-                category=page.category,
             )
             _.image_bytes = page.image_bytes
         return document
@@ -3610,7 +3638,6 @@ class Document(Data):
                         end_offset=end_offset,
                         copy_of_id=page_id,
                         number=i,
-                        category=page.category,
                     )
                     i += 1
                     start_offset = end_offset + 1
@@ -3624,52 +3651,52 @@ class Document(Data):
                         end_offset=end_offset,
                         copy_of_id=page_id,
                         number=i,
-                        category=page.category,
                     )
                     i += 1
                     start_offset = end_offset + 1
         return new_doc
 
     def get_document_classifier_examples(self, text_vocab, category_vocab, max_len, use_image, use_text):
-        """Get the per document examples for the document classifier."""
-        document_image_paths = []
+        """Get the per-Document examples for the Document classifier."""
+        document_images = []
         document_tokens = []
         document_labels = []
         document_ids = []
         document_page_numbers = []
 
-        # validate the data for the document
+        # validate the data for the Document
         if use_image:
             self.get_images()  # gets the images if they do not exist
-            image_paths = [page.image_path for page in self.pages()]  # gets the paths to the images
+            images = [page.image for page in self.pages()]  # gets the paths to the images
             # @TODO move this validation to the Document class or the Page class
-            assert len(image_paths) > 0, f'No images found for document {self.id_}'
+            assert len(images) > 0, f'No images found for Document {self.id_}'
             if not use_text:  # if only using images then make texts a list of None
-                page_texts = [None] * len(image_paths)
+                page_texts = [None] * len(images)
         if use_text:
             page_texts = self.text.split('\f')
             # @TODO move this validation to the Document class or the Page class
-            assert len(page_texts) > 0, f'No text found for document {self.id_}'
+            assert len(page_texts) > 0, f'No text found for Document {self.id_}'
             if not use_image:  # if only using text then make images used a list of None
-                image_paths = [None] * len(page_texts)
+                images = [None] * len(page_texts)
 
         # check we have the same number of images and text pages
         # only useful when we have both an image and a text module
         # @TODO move this validation to the Document class or the Page class
-        assert len(image_paths) == len(
-            page_texts
-        ), f'No. of images ({len(image_paths)}) != No. of pages {len(page_texts)} for document {self.id_}'
+        assert len(images) == len(page_texts), (
+            f'Number of images ({len(images)}) is not equal to the number of Pages {len(page_texts)} for Document '
+            f'{self.id_}'
+        )
 
         for page in self.pages():
             if use_image:
                 # if using an image module, store the path to the image
-                document_image_paths.append(page.image_path)
+                document_images.append(page.image)
             else:
                 # if not using image module then don't need the image paths
                 # so we just have a list of None to keep the lists the same length
-                document_image_paths.append(None)
+                document_images.append(None)
             if use_text:
-                # if using a text module, tokenize the page, trim to max length and then numericalize
+                # if using a text module, tokenize the Page, trim to max length and then numericalize
                 # REPLACE page_tokens = tokenizer.get_tokens(page_text)[:max_len]
                 # page_encoded = [text_vocab.stoi(span.offset_string) for span in
                 # self.spans(start_offset=page.start_offset, end_offset=page.end_offset)]
@@ -3680,15 +3707,32 @@ class Document(Data):
                 # if not using text module then don't need the tokens
                 # so we just have a list of None to keep the lists the same length
                 document_tokens.append(None)
-            # get document classification (defined by the category template)
+            # get Document classification (defined by the Category template)
             category_id = str(self.category.id_) if self.category != self.project.no_category else 'NO_CATEGORY'
-            # append the classification (category), the document's id number and the page number of each page
+            # append the classification (Category), the Document's ID and the number of each Page
             document_labels.append(torch.LongTensor([category_vocab.stoi(category_id)]))
             doc_id = self.id_ or self.copy_of_id
             document_ids.append(torch.LongTensor([doc_id]))
             document_page_numbers.append(torch.LongTensor([page.index]))
 
-        return document_image_paths, document_tokens, document_labels, document_ids, document_page_numbers
+        return document_images, document_tokens, document_labels, document_ids, document_page_numbers
+
+    def get_page_by_id(self, page_id: int, original: bool = False) -> Page:
+        """
+        Get a Page by its ID.
+
+        :param page_id: An ID of the Page to fetch.
+        :type page_id: int
+        """
+        for page in self.pages():
+            if page.id_ == page_id:
+                return page
+            if original:
+                raise IndexError(f'Page id {page_id} was not found in {self}.')
+            else:
+                if not page.id_ and page.copy_of_id == page_id:
+                    logger.warning(f'Page id {page_id} was not found in {self}, only a Page copy.')
+                    return page
 
 
 class Project(Data):
@@ -3734,7 +3778,7 @@ class Project(Data):
         if self.id_ or self._project_folder:
             self.get(update=update)
         else:
-            self.no_category = Category(project=self, name_clean="NO_CATEGORY", name="NO_CATEGORY")
+            self.no_category = Category(project=self, id_=0, name_clean="NO_CATEGORY", name="NO_CATEGORY")
         # todo: list of Categories related to NO LABEL SET can be outdated, i.e. if the number of Categories changes
         self.no_label_set = LabelSet(project=self, categories=self.categories)
         self.no_label_set.name_clean = 'NO_LABEL_SET'
@@ -3920,8 +3964,10 @@ class Project(Data):
                 # the _default_of_label_set_ids are the Categories the Label Set is used in
                 for label_set_id in label_set._default_of_label_set_ids:
                     category = self.get_category_by_id(label_set_id)
-                    label_set.add_category(category)  # The Label Set is linked to a Category it created
-                    category.add_label_set(label_set)
+                    if category not in label_set.categories:
+                        label_set.add_category(category)  # The Label Set is linked to a Category it created
+                    if label_set not in category.label_sets:
+                        category.add_label_set(label_set)
 
     def get_label_sets(self, reload=False):
         """Get LabelSets in the Project."""
