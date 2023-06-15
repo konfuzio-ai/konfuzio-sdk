@@ -55,7 +55,7 @@ KeyCloak integration can be found on our
 #### Token authentication
 
 You send a `POST` request with your Konfuzio username (email) and password to our [authentication endpoint](https://app.konfuzio.com/v3/swagger/#/auth), which
-returns a token string that you can use in lieu of your actual credentials for subsequent requests, providing it with a
+returns a token string that you can use in lieu of your actual credentials for subsequent requests, providing it with an
 HTTP header in the format `Authorization: Token <token>`.
 
 This token doesn't currently expire, so you can use indefinitely, but you can delete it (and regenerated) via
@@ -111,7 +111,7 @@ To use the token:
 
 #### Accessing and using the token via the Konfuzio SDK
 
-To get an acces token, simply run `konfuzio_sdk init` in the terminal and enter your login credentials. The token will
+To get an access token, simply run `konfuzio_sdk init` in the terminal and enter your login credentials. The token will
 be stored in the `.env` file in your working directory. Then you are good to go and can use the SDK to access the API.
 
 For more information on this and other information on what you can do with the SDK, see the [SDK Get Started](https://dev.konfuzio.com/sdk/get_started.html#initialize-the-package) page.
@@ -222,28 +222,28 @@ Refer to the `Swagger documentation <http:/app.konfuzio.com/v3/swagger/>`\_ for 
 supports using the `fields` parameter. When supported, any field in the response schema can be used in the `fields`
 parameter.
 
-### Coordinates and bounding boxes
+### Coordinates and Bounding Boxes
 
-There are three concepts related to coordinates and bounding boxes that are used throughout the API v3:
+There are three concepts related to coordinates and Bounding Boxes that are used throughout the API v3:
 
-- **Bounding boxes** (or **bboxes**). A bbox is a rectangle representing a subset of a document page. It has the
+- **Bounding Boxes** (or **Bboxes**). A Bbox is a rectangle representing a subset of a Document Page. It has the
   following properties:
-  - `x0`, `xy`, `y0`, `y1`: the four points representing the coordinates of the rectangle on the page.
-  - `page_index`: the page of the document the bbox refers too.
-- **Spans**. A span, like the bbox, is a rectangle representing a subset of a document page; unlike the bbox, it also
-  represents the _text data_ contained inside the rectangle. So it has the same properties as the bbox, but it adds
+  - `x0`, `xy`, `y0`, `y1`: the four points representing the coordinates of the rectangle on the Page.
+  - `page_index`: the Page of the Document the Bbox refers too.
+- **Spans**. A Span, like the Bbox, is a rectangle representing a subset of a Document Page; unlike the Bbox, it also
+  represents the _text data_ contained inside the rectangle. So it has the same properties as the Bbox, but it adds
   more:
-  - `offset_string` (optional when user-provided): the text contained inside this span. This can be manually set by the
+  - `offset_string` (optional when user-provided): the text contained inside this Span. This can be manually set by the
     user if the text existing at the specified coordinates is wrong.
   - `offset_string_original` (read-only): the text that was originally present at the specified coordinates. This is
     usually the same as `offset_string` unless it has been changed manually.
-  - `start_offset`, `end_offset` (read-only): the start and end character of the text contained inside this span, in
-    relation to the document's text.
-- **Character bounding boxes** (or **char bboxes**). A char bbox is a rectangle representing a single character on the
-  page of a document. This is always returned by the Konfuzio server and cannot be set manually. It has the same
-  properties as the bbox, but it adds more:
-  - `text` (read-only): the single character contained by this bbox.
-  - `line_index` (read-only): the line the character is in, related to all the lines in the document.
+  - `start_offset`, `end_offset` (read-only): the start and end character of the text contained inside this Span, in
+    relation to the Document's text.
+- **Character Bounding boxes** (or **char Bboxes**). A char Bbox is a rectangle representing a single character on the
+  Page of a Document. This is always returned by the Konfuzio server and cannot be set manually. It has the same
+  properties as the Dbox, but it adds more:
+  - `text` (read-only): the single character contained by this Bbox.
+  - `line_index` (read-only): the line the character is in, related to all the lines in the Document.
 
 If the endpoint you're working with uses a `span` or `bbox` field, refer to its Swagger schema and to the summary above
 to understand which fields it needs.
@@ -260,10 +260,10 @@ like [cURL Converter](https://curlconverter.com).
 The guides assume you already have a [token](#token-authentication) that you will use in the headers of
 every API call. If you're copy-pasting the snippets, remember to replace `YOUR_TOKEN` with the actual token value.
 
-### Setup a project with labels, label sets and categories
+### Set up a Project with Labels, Label Sets and Categories
 
 This guide will walk you through the API-based initial setup of a Project with all the initial data you need to start
-uploading documents and training the AI.
+uploading Documents and training the AI.
 
 #### Create a Project
 
@@ -283,11 +283,11 @@ curl --request POST \
 This call will return a JSON object that, among other properties, will show the `id` of the created Project. Take note
 of it, as you will need it in the next steps.
 
-#### Create a category
+#### Create a Category
 
 A [Category](https://help.konfuzio.com/modules/categories/index.html) is used to group Documents by type and can be
 associated to an [extraction AI](https://help.konfuzio.com/modules/extractions/index.html). For example, you might want
-to create a category called "Invoice". To do so, you will make a call to
+to create a Category called "Invoice". To do so, you will make a call to
 our [category creation endpoint](https://app.konfuzio.com/v3/swagger/#/categories/categories_create):
 
 ```
@@ -332,14 +332,14 @@ one, so in this case it's going to be a list with a single integer). Remember to
 with the actual values you got from the previous steps. You can check the endpoint documentation for more available
 options.
 
-These calls will return a JSON object that, among other properties, will show the `id` of the created labels. Take note
-of it, as you will need it in the next steps. You can retrieve a list of your created labels by sending a `GET` request
+These calls will return a JSON object that, among other properties, will show the `id` of the created Labels. Take note
+of it, as you will need it in the next steps. You can retrieve a list of your created Labels by sending a `GET` request
 to the same endpoint.
 
 #### Create a Label Set
 
 A [Label Set](https://help.konfuzio.com/modules/sets/index.html) is used to group Labels that make sense together.
-Sometimes these Labels might occur multiple times in a document — in our "invoice" example, there's going to be one set
+Sometimes these Labels might occur multiple times in a Document — in our "invoice" example, there's going to be one set
 of "amount" and "product" for each line item we have in the invoice. We can call it "line item" and we can create it
 with an API request to
 our [label set creation endpoint](https://app.konfuzio.com/v3/swagger/#/label-sets/label_sets_create):
@@ -365,7 +365,7 @@ Your basic setup is done! You're now ready to upload Documents and train the AI.
 
 ### Upload a Document
 
-After your initial project setup, you can start uploading Documents. To upload a Document, you will make a call to
+After your initial Project setup, you can start uploading Documents. To upload a Document, you will make a call to
 our [Document creation endpoint](https://app.konfuzio.com/v3/swagger/#/documents/documents_create).
 
 .. note::
@@ -558,21 +558,21 @@ In this request:
   create a new Annotation Set associated with that Label Set. You can only do this if the Label Set
   has `has_multiple_sections` set to `true`. (See the note below for some examples.)
 - `label` should use the correct `LABEL_ID` for your Annotation.
-- `span` is a [list of spans](#coordinates-and-bounding-boxes).
+- `span` is a [list of Spans](#coordinates-and-bounding-boxes).
 - Other fields are optional.
 
 As the `span` identifies a *position* on the page, there are multiple ways to identify the correct one for the
 Annotation you want to create:
 
-1. The [document bbox endpoint](https://app.konfuzio.com/v3/swagger/#/documents/documents_bbox_retrieve) returns an
+1. The [Document Bbox endpoint](https://app.konfuzio.com/v3/swagger/#/documents/documents_bbox_retrieve) returns an
    object with all the *characters* from the Document with their coordinates. The characters can be identified by their
    offset (the keys in the object) and they can be easily converted in a list for the `span` attribute. You can also
    send a POST call to this endpoint with some coordinates to return a subset of the Document's characters that is
    completely contained into the sent coordinates.
-2. The [document page endpoint](https://app.konfuzio.com/v3/swagger/#/documents/documents_pages_retrieve) has an
+2. The [Document Page endpoint](https://app.konfuzio.com/v3/swagger/#/documents/documents_pages_retrieve) has an
    `entities` attribute that contains all the *words* from the Document with their coordinates. These can be easily 
    converted in a list for the `span` attribute.
-3. The [document search endpoint](https://app.konfuzio.com/v3/swagger/#/documents/documents_search_create) takes a
+3. The [Document search endpoint](https://app.konfuzio.com/v3/swagger/#/documents/documents_search_create) takes a
    string as input and returns a list of all its occurrences in the Document. These can be fed directly to the `span`
    attribute.
 
@@ -663,7 +663,7 @@ This procedure will help the next Extraction AI training you create, as it will 
 information it extracted was correct and the points where it was not. Once there are no "Feedback Required" and
 "Unfilled" items, the Document can be marked as "reviewed".
 
-To retrieve the list of Annotations for a document, you can use the Annotation list endpoint:
+To retrieve the list of Annotations for a Document, you can use the Annotation list endpoint:
 
 ```
 curl --request GET \
@@ -741,18 +741,18 @@ curl --request PATCH \
   --data '{"is_reviewed": true}'
 ```
 
-### Post-process a document: split, rotate and sort pages
+### Post-process a Document: split, rotate and sort Pages
 
 We offer a [postprocess endpoint](https://app.konfuzio.com/v3/swagger/#/documents/documents_postprocess_create)
 that allows you to change uploaded Documents in three ways, which can be combined into a single API request:
 
-- _Split_: divide a Document into two or more Documents, with the same total number of pages. Note: you cannot join
-  documents that have been split, you will have to upload a new Document.
-- _Rotate_: change the orientation of one or more pages in a Document, in multiple of 90 degrees.
-- _Sort_: change the order of the pages in a document.
+- _Split_: divide a Document into two or more Documents, with the same total number of Pages. Note: you cannot join
+  Documents that have been split, you will have to upload a new Document.
+- _Rotate_: change the orientation of one or more Pages in a Document, in multiple of 90 degrees.
+- _Sort_: change the order of the Pages in a Document.
 
 The endpoint accepts a list of objects, each one representing a single output Document. (If you're not using the
-splitting functionality, this list should only contain one document). The `pages` property you send determines the
+splitting functionality, this list should only contain one Document). The `pages` property you send determines the
 content of the Document.
 
 ### Document splitting suggestions
@@ -804,7 +804,7 @@ curl --request GET \
 
 This will save the file in the current directory.
 
-### Create your own document dashboard
+### Create your own Document dashboard
 
 In cases where our [public documents and iframes](https://help.konfuzio.com/integrations/public-documents/) are not
 enough, you can build your own solution. Here we explain how you can easily build a read-only dashboard for your
@@ -823,12 +823,12 @@ If you're using React, Angular or other technologies, you can use API v3 to buil
 For feature parity with our read-only document dashboard, you only need to use two endpoints, and if you're only
 handling public documents, you don't need authentication for these two endpoints.
 
-- The [document detail](https://app.konfuzio.com/v3/swagger/#/documents/documents_retrieve) endpoint provides general
-  information about the document you're querying, as well as its extracted data. Most of the data you will need is
+- The [Document detail](https://app.konfuzio.com/v3/swagger/#/documents/documents_retrieve) endpoint provides general
+  information about the Document you're querying, as well as its extracted data. Most of the data you will need is
   inside the `annotation_sets` object of the response.
-- The [document page detail](https://app.konfuzio.com/v3/swagger/#/documents/documents_pages_retrieve) endpoint
-  provides information about a document's page, including its `entites` (a list of words inside the page, with their
-  coordinates) and its `page_image` (a URL you can use to load the image version of the page).
+- The [Document Page detail](https://app.konfuzio.com/v3/swagger/#/documents/documents_pages_retrieve) endpoint
+  provides information about a Document's Page, including its `entites` (a list of words inside the Page, with their
+  coordinates) and its `page_image` (a URL you can use to load the image version of the Page).
 
 For more advanced use cases, you can refer to our [Swagger documentation](http:/app.konfuzio.com/v3/swagger/) and/or
 contact support for guidance.
