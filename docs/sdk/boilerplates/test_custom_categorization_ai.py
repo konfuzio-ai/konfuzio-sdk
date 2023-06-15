@@ -121,9 +121,7 @@ def test_custom_categorization_ai():
     print(f"Found category {categorization_result.category} for {categorization_result}")
 
     # Save and load a pickle file for the model
-    pickle_model_path = categorization_pipeline.save(
-        path=project.model_folder + '/your_model_name.pt', reduce_weight=False
-    )
+    pickle_model_path = categorization_pipeline.save(reduce_weight=False)
     categorization_pipeline_loaded = load_model(pickle_model_path)
     # end fit
     os.remove(pickle_model_path)

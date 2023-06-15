@@ -3,7 +3,7 @@
 import logging
 
 from konfuzio_sdk import KONFUZIO_HOST
-from typing import Union, Dict
+from typing import Union
 
 logger = logging.getLogger(__name__)
 
@@ -204,17 +204,17 @@ def get_annotation_url(document_id: int, annotation_id: int, project_id: int, ho
     return f'{host}/api/projects/{project_id}/docs/{document_id}/annotations/{annotation_id}/'
 
 
-def get_create_ai_model_url(model_path: str, host: str = KONFUZIO_HOST) -> str:
+def get_create_ai_model_url(ai_type: str, host: str = KONFUZIO_HOST) -> str:
     """
     Get url to create new AiModel.
 
     :return: URL
     """
-    if 'extraction' in model_path:
+    if ai_type == 'extraction':
         return f'{host}/api/v3/extraction-ais/upload/'
-    elif 'categorization' in model_path:
+    elif ai_type == 'categorization':
         return f'{host}/api/v3/category-ais/upload/'
-    elif 'filesplitting' in model_path:
+    elif ai_type == 'filesplitting':
         return f'{host}/api/v3/splitting-ais/upload/'
 
 
@@ -227,14 +227,15 @@ def get_update_ai_model_url(ai_model_id, host: str = KONFUZIO_HOST) -> str:
     return f'{host}/api/aimodels/{ai_model_id}/'
 
 
-def get_ai_model_url(ai_model_id, host: str = KONFUZIO_HOST) -> Dict:
+def get_ai_model_url(ai_model_id: int, ai_type: str, host: str = KONFUZIO_HOST) -> str:
     """
     Get url to modify or delete an AI model.
 
     :return: a dictionary of potential URLs
     """
-    return {
-        'extraction': f'{host}/api/v3/extraction-ais/{ai_model_id}',
-        'categorization': f'{host}/api/v3/category-ais/{ai_model_id}',
-        'file_splitting': f'{host}/api/v3/splitting-ais/{ai_model_id}',
-    }
+    if ai_type == 'extraction':
+        return f'{host}/api/v3/extraction-ais/{ai_model_id}/'
+    elif ai_type == 'categorization':
+        return f'{host}/api/v3/category-ais/{ai_model_id}/'
+    elif ai_type == 'filesplitting':
+        return f'{host}/api/v3/splitting-ais/{ai_model_id}/'

@@ -112,7 +112,7 @@ def test_create_extraction_ai():
     extraction_pipeline.documents = extraction_pipeline.category.documents()
     extraction_pipeline.test_documents = extraction_pipeline.category.test_documents()
     # end category
-    extraction_pipeline.documents = extraction_pipeline.documents[:5]
+    extraction_pipeline.documents = extraction_pipeline.documents[5:10]
     extraction_pipeline.df_train, extraction_pipeline.label_feature_list = extraction_pipeline.feature_function(
         documents=extraction_pipeline.documents, require_revised_annotations=False
     )

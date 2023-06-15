@@ -27,7 +27,6 @@ from konfuzio_sdk.urls import (
     get_document_url,
     get_document_segmentation_details_url,
     get_labels_url,
-    get_update_ai_model_url,
     get_create_ai_model_url,
     get_page_image_url,
     get_ai_model_url,
@@ -573,7 +572,18 @@ def upload_ai_model(ai_model_path: str, category_ids: List[int] = None, session=
     :param session: session to connect to server
     :return:
     """
-    url = get_create_ai_model_url(ai_model_path)
+    if 'extraction' in ai_model_path:
+        ai_type = 'extraction'
+    elif 'filesplitting' in ai_model_path:
+        ai_type = 'filesplitting'
+    elif 'categorization' in ai_model_path:
+        ai_type = 'categorization'
+    else:
+        raise ValueError(
+            "Cannot define AI type by the file name. Pass an AI model that is named according to the \
+                          SDK's naming conventions."
+        )
+    url = get_create_ai_model_url(ai_model_path, ai_type)
     if is_file(ai_model_path):
         model_name = os.path.basename(ai_model_path)
         with open(ai_model_path, 'rb') as f:
@@ -585,7 +595,7 @@ def upload_ai_model(ai_model_path: str, category_ids: List[int] = None, session=
     ai_model = data['name']
 
     if category_ids:
-        url = get_update_ai_model_url(ai_model_id)
+        url = get_ai_model_url(ai_model_id, ai_type)
         data = {'templates': category_ids}
         headers = {'content-type': 'application/json'}
         session.patch(url, data=json.dumps(data), headers=headers)
@@ -605,8 +615,7 @@ def delete_ai_model(ai_model_id: int, ai_type: str, session=konfuzio_session()):
     """
     if ai_type not in ['file_splitting', 'extraction', 'categorization']:
         raise ValueError("ai_type should have the value of 'file_splitting', 'extraction', or 'categorization'.")
-    urls = get_ai_model_url(ai_model_id)
-    url = urls[ai_type]
+    url = get_ai_model_url(ai_model_id, ai_type)
     r = session.delete(url)
     if r.status_code == 200:
         return json.loads(r.text)['id']
@@ -627,8 +636,7 @@ def update_ai_model(ai_model_id: int, ai_type: str, session=konfuzio_session(), 
     """
     if ai_type not in ['file_splitting', 'extraction', 'categorization']:
         raise ValueError("ai_type should have the value of 'file_splitting', 'extraction', or 'categorization'.")
-    urls = get_ai_model_url(ai_model_id)
-    url = urls[ai_type]
+    url = get_ai_model_url(ai_model_id, ai_type)
 
     data = {}
     name = kwargs.get('name', None)
