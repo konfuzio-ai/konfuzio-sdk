@@ -374,21 +374,27 @@ our [Document creation endpoint](https://app.konfuzio.com/v3/swagger/#/documents
 
 #### Uploading a Document to Konfuzio
 
-This tutorial will guide you on how to upload a document to the Konfuzio platform.
+This tutorial will guide you on how to upload a Document to the Konfuzio platform.
 
 Before starting, note that there are three possible ways to create a project on Konfuzio:
 
 1.  Via the API (as shown in this tutorial)
 2.  Using the web interface (for more information, watch the video tutorial at [help.konfuzio.com/quickstart/](https://chat.openai.com/c/help.konfuzio.com/quickstart/))
-3.  By accepting an invitation to a ready project (in this case, no setup is necessary on your part)
+3.  By accepting an invitation to a ready Project (in this case, no setup is necessary on your part)
 
-After setting up your project, you can start uploading documents. Document uploading is accomplished by making a POST request to our Document creation endpoint. Unlike most endpoints, this one only supports multipart/form-data requests to accommodate file uploading, hence JSON-encoding your request is not necessary this time.
+[After setting up your Project](https://dev.konfuzio.com/web/api-v3.html#create-a-project), you can start uploading 
+Documents. Document uploading is accomplished by making a POST request to our Document creation endpoint. Unlike most 
+endpoints, this one only supports multipart/form-data requests to accommodate file uploading, hence JSON-encoding your 
+request is not necessary this time.
 
 #### Synchronous Document Upload
 
-This tutorial will guide you on how to perform a synchronous document upload to Konfuzio. In this mode, the server will wait for the document processing to finish before returning a response with the extracted data.
+This tutorial will guide you on how to perform a synchronous Document upload to Konfuzio. In this mode, the server will 
+wait for the Document processing to finish before returning a response with the extracted data.
 
-After setting up your project, you can upload documents. This is done by making a POST request to our Document creation endpoint. This endpoint only supports multipart/form-data requests to facilitate file uploading, so you don't need to JSON-encode your request.
+After setting up your Project, you can upload Documents. This is done by making a POST request to our Document creation
+endpoint. This endpoint only supports multipart/form-data requests to facilitate file uploading, so you don't need to 
+JSON-encode your request.
 
 ```bash
 curl --request POST\
@@ -401,17 +407,21 @@ curl --request POST\
 ````
 
 - Replace `YOUR_TOKEN` with your authorization token.
-- `PROJECT_ID` should be replaced with the ID of your project.
+- `PROJECT_ID` should be replaced with the ID of your Project.
 - `LOCAL_FILE_NAME` is the path to the file on your disk you wish to upload. Make sure to keep the `@` in front of it.
-- The `sync` parameter is set to `true`, which means the server will wait for the document processing to finish before returning a response.
+- The `sync` parameter is set to `true`, which means the server will wait for the Document processing to finish before 
+returning a response.
 
-Note that this synchronous mode might take a long time for large documents, so it's recommended to set a high timeout for your request. After the upload, the API will return the extracted data from the document.
+Note that this synchronous mode might take a long time for large Documents, so it's recommended to set a high timeout 
+for your request. After the upload, the API will return the extracted data from the Document.
 
 #### Asynchronous Document Upload with Assignee Notification
 
-In this tutorial, we will guide you through the process of asynchronously uploading a document to Konfuzio. This method is particularly beneficial when dealing with large documents or documents with many pages. We will also discuss how you can use the `assignee` parameter to notify a specific user by email after the document upload.
+In this tutorial, we will guide you through the process of asynchronously uploading a Document to Konfuzio. This method 
+is particularly beneficial when dealing with large Documents or Documents with many Pages. We will also discuss how you 
+can use the `assignee` parameter to notify a specific user by email after the Document upload.
 
-Here's an example of an asynchronous document upload request, which includes the `assignee` parameter:
+Here's an example of an asynchronous Document upload request, which includes the `assignee` parameter:
 
 ```bash
 curl --request POST\
@@ -427,22 +437,35 @@ curl --request POST\
 In this request:
 
 -   Replace `YOUR_TOKEN` with your authorization token.
--   `PROJECT_ID` should be replaced with the ID of your project.
--   `CATEGORY_ID` is optional. If present, it must be the ID of a Category belonging to your project. If this is not set, the app will try to automatically detect the Document category based on the available options.
--   `sync` is set to false for asynchronous processing. With this, the API will immediately return a response after the upload, confirming that the Document was received and is now queuing for extraction.
--   `callback_url` is optional. If provided, the document details are sent to the specified URL via a POST request after the processing of the Document has been completed.
--   `assignee` is optional. If provided, it is the email of the user assigned to work on this Document, which must be a member of the Project you're uploading the Document to.
+-   `PROJECT_ID` should be replaced with the ID of your Project.
+-   `CATEGORY_ID` is optional. If present, it must be the ID of a Category belonging to your Project. If this is not 
+set, the app will try to automatically detect the Document category based on the available options.
+-   `sync` is set to false for asynchronous processing. With this, the API will immediately return a response after the 
+upload, confirming that the Document was received and is now queuing for extraction.
+-   `callback_url` is optional. If provided, the Document details are sent to the specified URL via a POST request 
+after the processing of the Document has been completed.
+-   `assignee` is optional. If provided, it is the email of the user assigned to work on this Document, which must be a 
+member of the Project you're uploading the Document to.
 -   `LOCAL_FILE_NAME` is the path to the existing file on your disk you wish to upload. Keep the `@` in front of it.
 
-Using the `assignee` parameter allows you to assign a specific user to work on the uploaded document. The assignee, who must be a member of your project, will receive an email notification once the document is uploaded. This feature is beneficial when specific documents require attention from specific team members, as it automatically informs them about the new task.
+Using the `assignee` parameter allows you to assign a specific user to work on the uploaded Document. The assignee, who 
+must be a member of your Project, will receive an email notification once the Document is uploaded. This feature is 
+beneficial when specific Documents require attention from specific team members, as it automatically informs them about 
+the new task.
 
-After the upload, you can use the Document retrieve endpoint to check if the Document has finished processing, and if so, retrieve the extracted data.
+After the upload, you can use the Document retrieve endpoint to check if the Document has finished processing, and if 
+so, retrieve the extracted data.
 
 #### Document Upload by Disabling Automatic Categorization
 
-This tutorial guides you on how to disable automatic categorization when uploading a document to Konfuzio by specifying the category of the document manually. This can be useful when you want to ensure that a document is assigned to a specific category, or when automatic categorization may not accurately categorize a document due to its content or layout.
+This tutorial guides you on how to disable automatic categorization when uploading a Document to Konfuzio by specifying 
+the category of the Document manually. This can be useful when you want to ensure that a Document is assigned to a 
+specific Category, or when automatic categorization may not accurately categorize a Document due to its content or 
+layout.
 
-Once your project is set up, you can upload documents. This is done by making a POST request to our Document creation endpoint. This endpoint only supports multipart/form-data requests to facilitate file uploading, so you don't need to JSON-encode your request.
+Once your Project is set up, you can upload Documents. This is done by making a POST request to our Document creation 
+endpoint. This endpoint only supports multipart/form-data requests to facilitate file uploading, so you don't need to 
+JSON-encode your request.
 
 ```mermaid
 sequenceDiagram
@@ -455,11 +478,15 @@ sequenceDiagram
     Konfuzio Server-->>Customer Software: Webhook*
 ```
 
-In this sequence diagram, the first flow represents the process when a document is uploaded without a category. Konfuzio Server performs automatic categorization before processing the document. A webhook is then sent to the Customer Software after processing.
+In this sequence diagram, the first flow represents the process when a Document is uploaded without a Category. 
+Konfuzio Server performs automatic categorization before processing the Document. A webhook is then sent to the 
+Customer Software after processing.
 
-The second flow represents the process when a document is uploaded with a category. Since the category is already specified, Konfuzio Server skips the categorization step and directly processes the document. After processing, a webhook is sent to the Customer Software.
+The second flow represents the process when a Document is uploaded with a Category. Since the Category is already 
+specified, Konfuzio Server skips the categorization step and directly processes the Document. After processing, a 
+webhook is sent to the Customer Software.
 
-Here's an example of how to manually specify the category of a document:
+Here's an example of how to manually specify the Category of a Document:
 
 ```bash
 curl --request POST\
@@ -472,19 +499,28 @@ curl --request POST\
 ```
 
 - Replace `YOUR_TOKEN` with your authorization token.
-- `PROJECT_ID` should be replaced with the ID of your project.
-- `CATEGORY_ID` is the ID of a category that belongs to your project. By specifying this, you are bypassing Konfuzio's automatic categorization process.
+- `PROJECT_ID` should be replaced with the ID of your Project.
+- `CATEGORY_ID` is the ID of a Category that belongs to your Project. By specifying this, you are bypassing Konfuzio's 
+automatic categorization process.
 - `LOCAL_FILE_NAME` is the path to the file on your disk you wish to upload. Make sure to keep the `@` in front of it.
 
-By manually specifying the category of a document, you ensure that the document is categorized as you intend, without relying on automatic categorization. This can be helpful in situations where the content or layout of a document might confuse the automatic categorization process. After the upload, the API will return the uploaded document's ID and its current status.
+By manually specifying the Category of a Document, you ensure that the Document is categorized as you intend, without 
+relying on automatic categorization. This can be helpful in situations where the content or layout of a Document might 
+confuse the automatic categorization process. After the upload, the API will return the uploaded Document's ID and its 
+current status.
 
 #### Asynchronous Document Processing with Webhook
 
-This tutorial will guide you on how to use webhooks for asynchronous document processing in Konfuzio.
+This tutorial will guide you on how to use webhooks for asynchronous Document processing in Konfuzio.
 
-Once your project is set up, you can upload documents. This is done by making a POST request to our Document creation endpoint. This endpoint only supports multipart/form-data requests to accommodate file uploading, so you won't have to JSON-encode your request.
+Once your {p}roject is set up, you can upload Documents. This is done by making a POST request to our Document creation 
+endpoint. This endpoint only supports multipart/form-data requests to accommodate file uploading, so you won't have to 
+JSON-encode your request.
 
-Webhooks allow you to receive a POST request from Konfuzio once the processing of your document is complete. This method is especially beneficial when dealing with large documents or documents with many pages as it allows your application to continue working on other tasks while the document processing takes place. Here's an overview of the process:
+Webhooks allow you to receive a POST request from Konfuzio once the processing of your Document is complete. This 
+method is especially beneficial when dealing with large Documents or Documents with many Pages as it allows your 
+application to continue working on other tasks while the Document processing takes place. Here's an overview of the 
+process:
 
 ```mermaid
 sequenceDiagram
@@ -492,9 +528,11 @@ sequenceDiagram
     Konfuzio Server-->>Customer Software: Webhook*
 ```
 
-In the sequence above, your software (Customer Software) sends a Document POST request to Konfuzio Server to upload a document. Once the processing of the document is complete, Konfuzio Server sends a webhook (a POST request) back to your software.
+In the sequence above, your software (Customer Software) sends a Document POST request to Konfuzio Server to upload a 
+Document. Once the processing of the Document is complete, Konfuzio Server sends a webhook (a POST request) back to 
+your software.
 
-Here is how you can include a callback URL in your document upload request to use webhooks:
+Here is how you can include a callback URL in your Document upload request to use webhooks:
 
 ```bash
 curl --request POST\
@@ -509,13 +547,17 @@ curl --request POST\
 In this request:
 
 -   Replace `YOUR_TOKEN` with your authorization token.
--   `PROJECT_ID` should be replaced with the ID of your project.
--   `callback_url` is the URL where the webhook should be sent once the document is processed.
+-   `PROJECT_ID` should be replaced with the ID of your Project.
+-   `callback_url` is the URL where the webhook should be sent once the Document is processed.
 -   `LOCAL_FILE_NAME` is the path to the file on your disk you wish to upload. Keep the `@` in front of it.
 
-The `callback_url` parameter is optional. If provided, Konfuzio will send the document details to the specified URL via a POST request after the document has been processed. This means your application can continue working on other tasks and only needs to handle the document data once it's ready.
+The `callback_url` parameter is optional. If provided, Konfuzio will send the Document details to the specified URL 
+via a POST request after the Document has been processed. This means your application can continue working on other 
+tasks and only needs to handle the Document data once it's ready.
 
-This asynchronous approach is advantageous when dealing with documents that contain many pages or require a long processing time, as it doesn't block your application while waiting for the response. Instead, your application is notified via the webhook once the data is ready.
+This asynchronous approach is advantageous when dealing with Documents that contain many Pages or require a long 
+processing time, as it doesn't block your application while waiting for the response. Instead, your application is 
+notified via the webhook once the data is ready.
 
 
 ### Create an Annotation
