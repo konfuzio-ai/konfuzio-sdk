@@ -147,7 +147,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
     def __init__(
         self,
         categories: List[Category],
-        text_processing_model: str = 'nlpaueb/legal-bert-base-uncased',
+        text_processing_model: str = 'nlpaueb/legal-bert-small-uncased',
         scale: int = 2,
         *args,
         **kwargs,
@@ -281,7 +281,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         # architecture (read more about it at http://shorturl.at/puKN3). a scheme of our custom architecture can be
         # found at https://dev.konfuzio.com/sdk/tutorials.html#splitting-for-multi-file-documents-step-by-step-guide
         txt_input = Input(shape=self.input_shape, name='text')
-        txt_x = Dense(units=768, activation="relu")(txt_input)
+        txt_x = Dense(units=512, activation="relu")(txt_input)
         txt_x = Flatten()(txt_x)
         txt_x = Dense(units=256 * self.scale, activation="relu")(txt_x)
         img_input = Input(shape=(224, 224, 3), name='image')
@@ -295,10 +295,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         img_x = MaxPool2D(pool_size=(2, 2), strides=(2, 2))(img_x)
         img_x = Conv2D(filters=256, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
         img_x = Conv2D(filters=256, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
-        img_x = Conv2D(filters=256, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
         img_x = MaxPool2D(pool_size=(2, 2), strides=(2, 2))(img_x)
-        img_x = Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
-        img_x = Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
         img_x = Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
         img_x = MaxPool2D(pool_size=(2, 2), strides=(2, 2))(img_x)
         img_x = Flatten()(img_x)
@@ -349,7 +346,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         image = image[..., ::-1]
         image[0] -= 103.939
         img_data = np.concatenate([image])
-        preprocessed = [img_data.reshape((1, 224, 224, 3)), txt_data.reshape((1, 1, 768))]
+        preprocessed = [img_data.reshape((1, 224, 224, 3)), txt_data.reshape((1, 1, 512))]
         if not use_gpu:
             with tf.device('/cpu:0'):
                 prediction = self.model.predict(preprocessed, verbose=0)[0, 0]
@@ -612,13 +609,19 @@ class SplittingAI:
             processed = self._suggest_page_split(document)
         return processed
 
-    def evaluate_full(self, use_training_docs: bool = False) -> FileSplittingEvaluation:
+    def evaluate_full(self, use_training_docs: bool = False, zero_division='warn') -> FileSplittingEvaluation:
         """
         Evaluate the Splitting AI's performance.
 
         :param use_training_docs: If enabled, runs evaluation on the training data to define its quality; if disabled,
         runs evaluation on the test data.
         :type use_training_docs: bool
+        :param zero_division: Defines how to handle situations when precision, recall or F1 measure calculations result
+        in zero division.
+        Possible values: 'warn' – log a warning and assign a calculated metric a value of 0.
+        0 - assign a calculated metric a value of 0.
+        'error' – raise a ZeroDivisionError.
+        None – assign None to a calculated metric.
         :return: Evaluation information for the model.
         """
         pred_docs = []
@@ -630,7 +633,7 @@ class SplittingAI:
             predictions = self.propose_split_documents(doc, return_pages=True)
             assert len(predictions) == 1
             pred_docs.append(predictions[0])
-        self.full_evaluation = FileSplittingEvaluation(original_docs, pred_docs)
+        self.full_evaluation = FileSplittingEvaluation(original_docs, pred_docs, zero_division)
         return self.full_evaluation
 
 

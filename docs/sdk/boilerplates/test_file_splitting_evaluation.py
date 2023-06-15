@@ -3,9 +3,6 @@
 
 def test_file_splitting_evaluation():
     """Test File Splitting evaluation."""
-    from konfuzio_sdk.data import Document, Page
-    from konfuzio_sdk.evaluate import FileSplittingEvaluation, EvaluationCalculator
-    from konfuzio_sdk.trainer.file_splitting import SplittingAI
     from konfuzio_sdk.samples import LocalTextProject
     from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
     from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel
@@ -13,6 +10,11 @@ def test_file_splitting_evaluation():
     YOUR_PROJECT = LocalTextProject()
     YOUR_CATEGORY_1 = YOUR_PROJECT.get_category_by_id(3)
     YOUR_CATEGORY_2 = YOUR_PROJECT.get_category_by_id(4)
+
+    # start document creation
+    from konfuzio_sdk.data import Document, Page
+    from konfuzio_sdk.evaluate import FileSplittingEvaluation, EvaluationCalculator
+    from konfuzio_sdk.trainer.file_splitting import SplittingAI
 
     # This example builds the Documents from scratch and without uploading a Supported File.
     # If you uploaded your Document to the Konfuzio Server, you can just retrieve it with:
@@ -30,8 +32,6 @@ def test_file_splitting_evaluation():
     _ = Page(
         id_=None, original_size=(320, 240), document=document_1, start_offset=58, end_offset=75, number=3, copy_of_id=31
     )
-
-    assert len(document_1.pages()) == 3
 
     # As with the previous example Document, you can just retrieve an online Document with
     # document_2 = project.get_document_by_id(YOUR_DOCUMENT_ID)
@@ -54,6 +54,9 @@ def test_file_splitting_evaluation():
         id_=None, original_size=(320, 240), document=document_2, start_offset=55, end_offset=63, number=5, copy_of_id=36
     )
     _.is_first_page = True
+    # end document creation
+
+    assert len(document_1.pages()) == 3
     assert len(document_2.pages()) == 5
 
     YOUR_MODEL = ContextAwareFileSplittingModel(
@@ -61,20 +64,24 @@ def test_file_splitting_evaluation():
     )
     YOUR_MODEL.fit()
 
+    # start splitting
     splitting_ai = SplittingAI(YOUR_MODEL)
     pred_1: Document = splitting_ai.propose_split_documents(document_1, return_pages=True)[0]
     pred_2: Document = splitting_ai.propose_split_documents(document_2, return_pages=True)[0]
+
     evaluation = FileSplittingEvaluation(
         ground_truth_documents=[document_1, document_2], prediction_documents=[pred_1, pred_2]
     )
+    # end splitting
 
     YOUR_GROUND_TRUTH_LIST = [document_1, document_2]
     YOUR_PREDICTION_LIST = [pred_1, pred_2]
     YOUR_CATEGORY = YOUR_CATEGORY_1
+    # start eval_example
     evaluation = FileSplittingEvaluation(
         ground_truth_documents=YOUR_GROUND_TRUTH_LIST, prediction_documents=YOUR_PREDICTION_LIST
     )
-    print(evaluation.fn(search=YOUR_CATEGORY))
+    # end eval_example
 
     assert evaluation.tp() == 3
     assert evaluation.tn() == 4
@@ -83,6 +90,8 @@ def test_file_splitting_evaluation():
     assert evaluation.precision() == 1
     assert evaluation.recall() == 0.75
     assert evaluation.f1() == 0.8571428571428571
+
+    # start scores
     print(evaluation.tp())
     # returns: 3
     print(evaluation.tn())
@@ -97,6 +106,7 @@ def test_file_splitting_evaluation():
     # returns: 0.75
     print(evaluation.f1())
     # returns: 0.85
+    # end scores
 
     assert evaluation.tp(search=YOUR_CATEGORY_1) == 1
     assert evaluation.tp(search=YOUR_CATEGORY_2) == 2
@@ -112,6 +122,8 @@ def test_file_splitting_evaluation():
     assert evaluation.recall(search=YOUR_CATEGORY_2) == 0.6666666666666666
     assert evaluation.f1(search=YOUR_CATEGORY_1) == 1
     assert evaluation.f1(search=YOUR_CATEGORY_2) == 0.8
+
+    # start scores_category
     print(evaluation.tp(search=YOUR_CATEGORY_1), evaluation.tp(search=YOUR_CATEGORY_2))
     # returns: 1 2
     print(evaluation.tn(search=YOUR_CATEGORY_1), evaluation.tn(search=YOUR_CATEGORY_2))
@@ -126,5 +138,16 @@ def test_file_splitting_evaluation():
     # returns: 1 0.66
     print(evaluation.f1(search=YOUR_CATEGORY_1), evaluation.f1(search=YOUR_CATEGORY_2))
     # returns: 1 0.8
+    # end scores_category
 
+    # start calculator
     EvaluationCalculator(tp=3, fp=0, fn=1, tn=4).metrics_logging()
+    # end calculator
+
+    # start single_metric
+    print(evaluation.fn())
+    # end single_metric
+
+    # start metric_category
+    print(evaluation.fn(search=YOUR_CATEGORY))
+    # end metric_category
