@@ -2778,9 +2778,8 @@ class Document(Data):
         if not category:
             category = self.project.no_category
         logger.info(f"Setting Category of {self} to {category}.")
-        if (
-            category not in [self._category, self.project.no_category]
-            and self._category.name != self.project.no_category.name
+        if category not in [self._category, self.project.no_category] and (
+            self._category and self._category.name != self.project.no_category.name
         ):
             raise ValueError(
                 "We forbid changing Category when already existing, because this requires some validations that are "
