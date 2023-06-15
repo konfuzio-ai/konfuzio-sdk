@@ -3627,32 +3627,27 @@ class Document(Data):
         for page in self.pages():
             end_offset = start_offset + len(page.text)
             page_id = page.id_ if page.id_ else page.copy_of_id
-            if include:
-                if page.number in range(start_page.number, end_page.number + 1):
-                    _ = Page(
-                        id_=None,
-                        original_size=(page.height, page.width),
-                        document=new_doc,
-                        start_offset=start_offset,
-                        end_offset=end_offset,
-                        copy_of_id=page_id,
-                        number=i,
+            if (
+                (include and page.number in range(start_page.number, end_page.number + 1))
+                or (not include and page.number in range(start_page.number, end_page.number))
+            ):
+                new_page = Page(
+                    id_=None,
+                    original_size=(page.height, page.width),
+                    document=new_doc,
+                    start_offset=start_offset,
+                    end_offset=end_offset,
+                    copy_of_id=page_id,
+                    number=i,
+                )
+                for category_annotation in page.category_annotations:
+                    CategoryAnnotation(
+                        category=category_annotation.category,
+                        confidence=category_annotation.confidence,
+                        page=new_page,
                     )
-                    i += 1
-                    start_offset = end_offset + 1
-            else:
-                if page.number in range(start_page.number, end_page.number):
-                    _ = Page(
-                        id_=None,
-                        original_size=(page.height, page.width),
-                        document=new_doc,
-                        start_offset=start_offset,
-                        end_offset=end_offset,
-                        copy_of_id=page_id,
-                        number=i,
-                    )
-                    i += 1
-                    start_offset = end_offset + 1
+                i += 1
+                start_offset = end_offset + 1
         return new_doc
 
     def get_document_classifier_examples(self, text_vocab, category_vocab, max_len, use_image, use_text):
