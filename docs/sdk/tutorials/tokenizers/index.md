@@ -140,7 +140,8 @@ training data.
 
    .. literalinclude:: /sdk/boilerplates/test_train_label_regex_tokenizer.py
       :language: python
-      :lines: 6-8
+      :start-after: start import
+      :end-before: end import
       :dedent: 4
 
 2. **Initialize your Project and retrieve the Category**:
@@ -150,7 +151,8 @@ training data.
 
    .. literalinclude:: /sdk/boilerplates/test_train_label_regex_tokenizer.py
       :language: python
-      :lines: 14-15
+      :start-after: # start initialize
+      :end-before: end initialize
       :dedent: 4
 
 3. **Initialize the ListTokenizer**
@@ -159,7 +161,8 @@ training data.
 
    .. literalinclude:: /sdk/boilerplates/test_train_label_regex_tokenizer.py
       :language: python
-      :lines: 17
+      :start-after: start listtokenizer
+      :end-before: end listtokenizer
       :dedent: 4
 
 4. **Retrieve the "Lohnart" Label**
@@ -168,7 +171,8 @@ training data.
 
    .. literalinclude:: /sdk/boilerplates/test_train_label_regex_tokenizer.py
       :language: python
-      :lines: 19
+      :start-after: start label
+      :end-before: end label
       :dedent: 4
 
 5. **Find Label Regexes and Create RegexTokenizers**
@@ -177,7 +181,8 @@ training data.
 
    .. literalinclude:: /sdk/boilerplates/test_train_label_regex_tokenizer.py
       :language: python
-      :lines: 21-23
+      :start-after: start train
+      :end-before: end train
       :dedent: 4
 
 6. **Use the new Tokenizer to Create New Annotations**
@@ -186,7 +191,8 @@ training data.
 
    .. literalinclude:: /sdk/boilerplates/test_train_label_regex_tokenizer.py
       :language: python
-      :lines: 25-27
+      :start-after: start use
+      :end-before: end use
       :dedent: 4
 
 ### Paragraph Tokenizer
