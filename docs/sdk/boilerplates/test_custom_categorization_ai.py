@@ -124,7 +124,6 @@ def test_custom_categorization_ai():
     pickle_model_path = categorization_pipeline.save(reduce_weight=False)
     categorization_pipeline_loaded = load_model(pickle_model_path)
     # end fit
-    os.remove(pickle_model_path)
     assert 63 in data_quality.category_ids
     assert 63 in ai_quality.category_ids
     assert isinstance(categorization_pipeline_loaded, CategorizationAI)

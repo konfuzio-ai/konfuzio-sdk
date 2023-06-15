@@ -583,7 +583,7 @@ def upload_ai_model(ai_model_path: str, category_ids: List[int] = None, session=
             "Cannot define AI type by the file name. Pass an AI model that is named according to the \
                           SDK's naming conventions."
         )
-    url = get_create_ai_model_url(ai_model_path, ai_type)
+    url = get_create_ai_model_url(ai_type)
     if is_file(ai_model_path):
         model_name = os.path.basename(ai_model_path)
         with open(ai_model_path, 'rb') as f:

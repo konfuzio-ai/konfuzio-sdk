@@ -104,6 +104,7 @@ def test_create_extraction_ai():
     # end init_ai
     assert isinstance(extraction_pipeline, CustomExtractionAI)
     project = Project(id_=YOUR_PROJECT_ID, strict_data_validation=False)
+    category = project.get_category_by_id(63)
     extraction_pipeline = RFExtractionAI()
     extraction_pipeline.tokenizer = ListTokenizer(tokenizers=[])
     # start category
