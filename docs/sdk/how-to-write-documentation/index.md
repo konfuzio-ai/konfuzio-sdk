@@ -31,7 +31,7 @@ Remember, clear and organized documentation makes it easier for users to underst
 
 After adding this section, the next steps would be:
 
--   [ ]  Add the guidelines to the Contribution Guide.
+-   [ ]  Add the guidelines to the relevant section of the Documentation.
 -   [ ]  Open a PR for your changes.
 -   [ ]  Ensure that the changes are correctly reflected in the Sphinx documentation.
 -   [ ]  Merge the PR after review.
