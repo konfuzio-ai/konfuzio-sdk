@@ -183,7 +183,7 @@ class TestNameBasedCategorizationAI(unittest.TestCase):
         # This Document can be recategorized successfully because its text contains the word "quittung" (receipt) in it.
         # Recall that the check is case-insensitive.
         test_receipt_document = self.project.get_document_by_id(TEST_CATEGORIZATION_DOCUMENT_ID)
-        test_receipt_document.set_category(None)
+        test_receipt_document.set_category(self.project.no_category)
         self.categorization_pipeline.categorize(document=test_receipt_document, inplace=True)
         assert test_receipt_document.category == self.receipts_category
         for page in test_receipt_document.pages():
@@ -202,11 +202,11 @@ class TestNameBasedCategorizationAI(unittest.TestCase):
         # This Document can be recategorized successfully because its text contains the word "quittung" (receipt) in it.
         # Recall that the check is case-insensitive.
         test_receipt_document = self.project.get_document_by_id(TEST_CATEGORIZATION_DOCUMENT_ID)
-        test_receipt_document.set_category(None)
+        test_receipt_document.set_category(self.project.no_category)
         self.categorization_pipeline.categorize(document=test_receipt_document)
         assert test_receipt_document.category == self.project.no_category
         for page in test_receipt_document.pages():
-            assert page.category is None
+            assert page.category == self.project.no_category
 
     def test_10_run_model_incompatible_interface(self):
         """Test initializing a model that does not pass has_compatible_interface check."""
@@ -478,17 +478,14 @@ class TestAllCategorizationConfigurations(unittest.TestCase):
 
     def test_2_fit(self) -> None:
         """Start to train the Model."""
-        self.categorization_pipeline.fit(
-            document_training_config={
-                'batch_size': 1,
-                'max_len': None,
-                'n_epochs': 1,
-                'optimizer': {'name': 'Adam'},
-            }
-        )
+        if self.image_class:
+            self.categorization_pipeline.build_preprocessing_pipeline(use_image=True)
+        self.categorization_pipeline.fit(n_epochs=1, optimizer={'name': 'Adam'})
 
     def test_3_save_model(self) -> None:
         """Test save .pt file to disk."""
+        reduced = self.categorization_pipeline.save(reduce_weight=True)
+        os.remove(reduced)
         self.categorization_pipeline.pipeline_path = self.categorization_pipeline.save()
         assert os.path.isfile(self.categorization_pipeline.pipeline_path)
 
@@ -531,7 +528,7 @@ class TestAllCategorizationConfigurations(unittest.TestCase):
         test_doc = self.training_prj.get_document_by_id(345875)
         test_page = WhitespaceTokenizer().tokenize(deepcopy(test_doc)).pages()[0]
         # reset the category attribute to test that it can be categorized successfully
-        test_page.category = None
+        test_page.set_category(None)
         result = self.categorization_pipeline._categorize_page(test_page)
         assert isinstance(result, Page)
         assert result.category == self.receipts_category
@@ -554,8 +551,8 @@ def test_build_categorization_ai() -> None:
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
     categorization_pipeline = build_categorization_ai_pipeline(
         categories=project.categories,
-        documents=project.documents,
-        test_documents=project.test_documents,
+        documents=[project.documents[0]],
+        test_documents=[project.test_documents[1]],
         image_model=ImageModel.EfficientNetB0,
         text_model=TextModel.NBOWSelfAttention,
     )
@@ -563,6 +560,7 @@ def test_build_categorization_ai() -> None:
 
     pipeline_path = categorization_pipeline.save()
     load_model(pipeline_path)
+    os.remove(pipeline_path)
 
 
 def test_get_document_classifier_examples():
@@ -572,9 +570,9 @@ def test_get_document_classifier_examples():
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
     document = project.get_document_by_id(44823)
     categorization_pipeline = build_categorization_ai_pipeline(
-        categories=[project.categories[0]],
-        documents=project.documents[:10],
-        test_documents=project.test_documents[:10],
+        categories=[project.get_category_by_id(63)],
+        documents=[project.documents[0]],  # for shorter runtime
+        test_documents=[project.test_documents[1]],
         image_model=ImageModel.EfficientNetB0,
         text_model=TextModel.NBOWSelfAttention,
     )
@@ -590,3 +588,24 @@ def test_get_document_classifier_examples():
     )
     assert len(doc_info) == 5
     assert doc_info[0][0].format == 'PNG'
+
+
+def test_categorize_no_category_document():
+    """Test categorization in case a NO_CATEGORY is predicted."""
+    from konfuzio_sdk.trainer.document_categorization import ImageModel, TextModel, build_categorization_ai_pipeline
+
+    project = Project(id_=None, project_folder=OFFLINE_PROJECT)
+    test_document = project.get_document_by_id(44823)
+    test_document.set_category(None)
+    categorization_pipeline = build_categorization_ai_pipeline(
+        categories=[project.get_category_by_id(63)],
+        documents=[project.documents[0]],
+        test_documents=[project.test_documents[1]],
+        image_model=ImageModel.EfficientNetB0,
+        text_model=TextModel.NBOWSelfAttention,
+    )
+    tokenized_doc = deepcopy(test_document)
+    tokenized_doc = WhitespaceTokenizer().tokenize(tokenized_doc)
+    tokenized_doc.status = test_document.status
+    categorization_pipeline.categorize(document=test_document, recategorize=True)
+    assert test_document.category == project.no_category

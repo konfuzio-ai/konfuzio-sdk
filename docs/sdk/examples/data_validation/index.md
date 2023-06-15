@@ -25,7 +25,9 @@ special needs to be done to enable it.
 
 .. literalinclude:: /sdk/boilerplates/test_data_validation.py
    :language: python
-   :lines: 4-5,8
+   :start-after: Start initialization
+   :end-before: End initialization
+   :dedent: 4
 
 ### Document Validation Rules
 
@@ -84,4 +86,6 @@ or inconsistent data can **decrease the quality of an Extraction AI**. Only disa
 
 .. literalinclude:: /sdk/boilerplates/test_data_validation.py
    :language: python
-   :lines: 4-5,10
+   :start-after: Start no val
+   :end-before: End no val
+   :dedent: 4

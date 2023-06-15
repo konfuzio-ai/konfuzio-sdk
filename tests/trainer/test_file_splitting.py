@@ -1,7 +1,10 @@
 """Test Splitting AI and the models' training, saving and prediction."""
+import bz2
 import os
+import cloudpickle
 import pathlib
 import pytest
+import shutil
 import unittest
 
 from copy import deepcopy
@@ -158,6 +161,29 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
             )
             assert gt_exclusive_first_page_strings == load_exclusive_first_page_strings
 
+    def test_old_pickle_model_save_load(self):
+        """Test saving and loading a model using the older bz2-compression-including save and load methods."""
+        temp_pkl_file_path = self.project.project_folder + '/models/temp.pkl'
+        pkl_file_path = self.project.project_folder + '/models/model.pkl'
+        pathlib.Path(self.project.project_folder + '/models').mkdir(parents=True, exist_ok=True)
+        self.file_splitting_model.ensure_model_memory_usage_within_limit(max_ram=None)
+        with open(temp_pkl_file_path, 'wb') as f:
+            cloudpickle.dump(self.file_splitting_model, f)
+        with open(temp_pkl_file_path, 'rb') as input_f:
+            with bz2.open(pkl_file_path, 'wb') as output_f:
+                shutil.copyfileobj(input_f, output_f)
+        os.remove(temp_pkl_file_path)
+        with bz2.open(pkl_file_path, 'rb') as file:
+            loaded = cloudpickle.load(file)
+        for category_gt, category_load in zip(self.file_splitting_model.categories, loaded.categories):
+            gt_exclusive_first_page_strings = category_gt.exclusive_first_page_strings(
+                tokenizer=ConnectedTextTokenizer()
+            )
+            load_exclusive_first_page_strings = category_load.exclusive_first_page_strings(
+                tokenizer=ConnectedTextTokenizer()
+            )
+            assert gt_exclusive_first_page_strings == load_exclusive_first_page_strings
+
     def test_splitting_ai_predict(self):
         """Test Splitting AI's Document-splitting method."""
         splitting_ai = SplittingAI(self.file_splitting_model)
@@ -209,27 +235,29 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
     def test_splitting_with_inplace(self):
         """Test Context Aware File Splitting Model's predict method with inplace=True."""
         splitting_ai = SplittingAI(self.file_splitting_model)
-        test_document = self.file_splitting_model.tokenizer.tokenize(self.test_document)
-        pred = splitting_ai.propose_split_documents(test_document, return_pages=True, inplace=True)[0]
+        pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True, inplace=True)[0]
         for page in pred.pages():
             if page.number in (1, 3, 5):
                 assert page.is_first_page
             else:
                 assert not page.is_first_page
             assert page.is_first_page_confidence == 1
-        assert pred == test_document
+        assert pred == self.test_document
 
     def test_suggest_first_pages(self):
-        """Test Splitting AI's suggesting first Pages."""
+        """Test AI's suggesting potential split points of a deepcopy of a Document without the actual splitting."""
         splitting_ai = SplittingAI(self.file_splitting_model)
-        test_document = self.file_splitting_model.tokenizer.tokenize(deepcopy(self.test_document))
-        pred = splitting_ai.propose_split_documents(test_document, return_pages=True)[0]
-        for page in pred.pages():
+        predictions = splitting_ai.propose_split_documents(self.test_document, return_pages=True)
+        assert len(predictions) == 1
+        prediction = predictions[0]
+        for page in prediction.pages():
             if page.number in (1, 3, 5):
                 assert page.is_first_page
             else:
                 assert not page.is_first_page
             assert page.is_first_page_confidence == 1
+        for page_original, page_predicted in zip(self.test_document.pages(), prediction.pages()):
+            assert page_original.category == page_predicted.category
         pathlib.Path(self.file_splitting_model.path).unlink()
 
 
@@ -275,7 +303,6 @@ class TestMultimodalFileSplittingModel(unittest.TestCase):
                 assert not page.is_first_page
                 assert page.is_first_page_confidence
 
-    @pytest.mark.skip(reason="Takes too long to test upon pushing; skipping can be removed for local testing.")
     def test_save_load_model(self):
         """Test saving and loading pickle file of the model."""
         path = self.file_splitting_model.save()
