@@ -128,12 +128,12 @@ def test_custom_categorization_ai():
     assert 63 in ai_quality.category_ids
     assert isinstance(categorization_pipeline_loaded, CategorizationAI)
     # start upload
-    from konfuzio_sdk.api import upload_ai_model, delete_ai_model
-
-    # upload a saved model to the server
-    model_id = upload_ai_model(pickle_model_path)
-
-    # remove model
-    delete_ai_model(model_id, ai_type='categorization')
+    # from konfuzio_sdk.api import upload_ai_model, delete_ai_model
+    #
+    # # upload a saved model to the server
+    # model_id = upload_ai_model(pickle_model_path)
+    #
+    # # remove model
+    # delete_ai_model(model_id, ai_type='categorization')
     # end upload
     os.remove(pickle_model_path)

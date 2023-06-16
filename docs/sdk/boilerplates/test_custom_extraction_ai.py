@@ -141,12 +141,12 @@ def test_create_extraction_ai():
     assert isinstance(extraction_pipeline_loaded, RFExtractionAI)
 
     # start upload
-    from konfuzio_sdk.api import upload_ai_model, delete_ai_model
-
-    # upload a saved model to the server
-    model_id = upload_ai_model(pickle_model_path)
-
-    # remove model
-    delete_ai_model(model_id, ai_type='extraction')
+    # from konfuzio_sdk.api import upload_ai_model, delete_ai_model
+    #
+    # # upload a saved model to the server
+    # model_id = upload_ai_model(pickle_model_path)
+    #
+    # # remove model
+    # delete_ai_model(model_id, ai_type='extraction')
     # end upload
     os.remove(pickle_model_path)

@@ -52,11 +52,15 @@ Activating the uploaded AI on the web interface will enable the custom pipeline 
 It is also possible to upload the AI from your local machine using the `upload_ai_model()` method and remove it with the
 `delete_ai_model()` method:
 
-.. literalinclude:: /sdk/boilerplates/test_custom_extraction_ai.py
-      :language: python
-      :start-after: start upload
-      :end-before: end upload
-      :dedent: 4
+```python
+from konfuzio_sdk.api import upload_ai_model, delete_ai_model
+
+# upload a saved model to the server
+model_id = upload_ai_model(pickle_model_path)
+
+# remove model
+delete_ai_model(model_id, ai_type='extraction')
+```
 
 ### Evaluate a Trained Extraction AI Model
 
