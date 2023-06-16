@@ -1959,10 +1959,16 @@ class TestOfflineDataSetup(unittest.TestCase):
         """Test creating a smaller Document from original one within a Page range."""
         project = LocalTextProject()
         test_document = project.get_document_by_id(9)
+        # Set page categories so we can check if they are copied correctly
+        for page in test_document.pages():
+            page.set_category(test_document.category)
         new_doc = test_document.create_subdocument_from_page_range(
             test_document.pages()[0], test_document.pages()[1], include=True
         )
         assert len(new_doc.pages()) == 2
+        for page in new_doc.pages():
+            assert page.category == test_document.category
+            assert len(page.category_annotations) == 1
         assert new_doc.text == "Hi all,\nI like bread.\n\fI hope to get everything done soon.\n"
 
     def test_page_is_first_attribute(self):
