@@ -151,4 +151,4 @@ A quick example of the class's usage:
    :language: python
    :start-after: start file splitting
    :end-before: end file splitting
-   :dedent: 4
+
