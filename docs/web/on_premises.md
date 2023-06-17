@@ -503,6 +503,31 @@ After the resource is created the AZURE_OCR_KEY and AZURE_OCR_BASE_URL is displa
 For the second option, please refer to the [Azure Read API Container installation guide](https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2).
 Please open a support ticket to get an AZURE_OCR_KEY and AZURE_OCR_BASE_URL which is compatible with the container.
 
+#### How to fix common errors
+
+##### 1. Ensure AVX2 Compatibility:
+
+Verify if your system supports Advanced Vector Extensions 2 (AVX2). You can do this by running the following command on Linux hosts:
+
+```grep -q avx2 /proc/cpuinfo && echo AVX2 supported || echo No AVX2 support detected```
+
+For further information, refer to [Microsoft's AVX2 support guide](https://learn.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers#advanced-vector-extension-support).
+
+##### 2. Verify Azure Read Container Status:
+
+You can monitor the Azure Read Container's status through its web interface. 
+To do this, access the container on Port 5000 (i.e. http://localhost:5000/status) from a web browser connected to the Container's network. 
+You might need to replace 'localhost' with the IP/network name of the Azure container. 
+This interface will also help detect issues such as invalid credentials or an inaccessible license server (possibly due to a firewall).
+Refer to [Microsoft's guide on validating container status](https://learn.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers#validate-that-a-container-is-running)) for further assistance.
+
+##### 3. Consider Trying a Different Container Tag:
+
+If your Azure Read API Container ceases to function after a restart, it may be due to an automatic upgrade to a new, potentially faulty Docker tag. 
+In such cases, consider switching to a previous Docker tag. You can view the complete version history of Docker tags at the [Microsoft Artifact Registry](ttps://mcr.microsoft.com/product/azure-cognitive-services/vision/read/tags). 
+Remember to uncheck the "Supported Tags Only" box to access all available versions.
+
+
 
 ### [Optional] 9. Install document segmentation container
 
