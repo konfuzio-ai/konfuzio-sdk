@@ -519,7 +519,7 @@ You can monitor the Azure Read Container's status through its web interface.
 To do this, access the container on Port 5000 (i.e. http://localhost:5000/status) from a web browser connected to the Container's network. 
 You might need to replace 'localhost' with the IP/network name of the Azure container. 
 This interface will also help detect issues such as invalid credentials or an inaccessible license server (possibly due to a firewall).
-Refer to [Microsoft's guide on validating container status](https://learn.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers#validate-that-a-container-is-running)) for further assistance.
+Refer to [Microsoft's guide on validating container status](https://learn.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers#validate-that-a-container-is-running) for further assistance.
 
 ##### 3. Consider Trying a Different Container Tag:
 
