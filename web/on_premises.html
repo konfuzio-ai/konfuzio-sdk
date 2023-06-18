@@ -91,7 +91,10 @@
 <li class="toctree-l3"><a class="reference internal" href="#start-the-container">5. Start the container</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#optional-6-use-flower-to-monitor-tasks">[Optional] 6. Use Flower to monitor tasks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#optional-7-run-container-for-email-integration">[Optional] 7. Run Container for Email Integration</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#optional-8-use-azure-read-api-on-premises-or-as-service">[Optional] 8. Use Azure Read API (On-Premises or as Service)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#optional-8-use-azure-read-api-on-premises-or-as-service">[Optional] 8. Use Azure Read API (On-Premises or as Service)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#how-to-fix-common-errors">How to fix common errors</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#optional-9-install-document-segmentation-container">[Optional] 9. Install document segmentation container</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#optional-10-install-document-summarization-container">[Optional] 10. Install document summarization container</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#a-upgrade-to-newer-konfuzio-version">11a. Upgrade to newer Konfuzio Version</a></li>
@@ -646,6 +649,29 @@ end
 After the resource is created the AZURE_OCR_KEY and AZURE_OCR_BASE_URL is displayed. Those need to be added as environment variable.</p>
 <p>For the second option, please refer to the <a class="reference external" href="https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2">Azure Read API Container installation guide</a>.
 Please open a support ticket to get an AZURE_OCR_KEY and AZURE_OCR_BASE_URL which is compatible with the container.</p>
+<section id="how-to-fix-common-errors">
+<h4>How to fix common errors<a class="headerlink" href="#how-to-fix-common-errors" title="Permalink to this headline">¶</a></h4>
+<section id="ensure-avx2-compatibility">
+<h5>1. Ensure AVX2 Compatibility:<a class="headerlink" href="#ensure-avx2-compatibility" title="Permalink to this headline">¶</a></h5>
+<p>Verify if your system supports Advanced Vector Extensions 2 (AVX2). You can do this by running the following command on Linux hosts:</p>
+<p><code class="docutils literal notranslate"><span class="pre">grep</span> <span class="pre">-q</span> <span class="pre">avx2</span> <span class="pre">/proc/cpuinfo</span> <span class="pre">&amp;&amp;</span> <span class="pre">echo</span> <span class="pre">AVX2</span> <span class="pre">supported</span> <span class="pre">||</span> <span class="pre">echo</span> <span class="pre">No</span> <span class="pre">AVX2</span> <span class="pre">support</span> <span class="pre">detected</span></code></p>
+<p>For further information, refer to <a class="reference external" href="https://learn.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers#advanced-vector-extension-support">Microsoft’s AVX2 support guide</a>.</p>
+</section>
+<section id="verify-azure-read-container-status">
+<h5>2. Verify Azure Read Container Status:<a class="headerlink" href="#verify-azure-read-container-status" title="Permalink to this headline">¶</a></h5>
+<p>You can monitor the Azure Read Container’s status through its web interface.
+To do this, access the container on Port 5000 (i.e. <a class="reference external" href="http://localhost:5000/status">http://localhost:5000/status</a>) from a web browser connected to the Container’s network.
+You might need to replace ‘localhost’ with the IP/network name of the Azure container.
+This interface will also help detect issues such as invalid credentials or an inaccessible license server (possibly due to a firewall).
+Refer to <a class="reference external" href="https://learn.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers#validate-that-a-container-is-running">Microsoft’s guide on validating container status</a>) for further assistance.</p>
+</section>
+<section id="consider-trying-a-different-container-tag">
+<h5>3. Consider Trying a Different Container Tag:<a class="headerlink" href="#consider-trying-a-different-container-tag" title="Permalink to this headline">¶</a></h5>
+<p>If your Azure Read API Container ceases to function after a restart, it may be due to an automatic upgrade to a new, potentially faulty Docker tag.
+In such cases, consider switching to a previous Docker tag. You can view the complete version history of Docker tags at the <a class="reference external" href="ttps://mcr.microsoft.com/product/azure-cognitive-services/vision/read/tags">Microsoft Artifact Registry</a>.
+Remember to uncheck the “Supported Tags Only” box to access all available versions.</p>
+</section>
+</section>
 </section>
 <section id="optional-9-install-document-segmentation-container">
 <h3>[Optional] 9. Install document segmentation container<a class="headerlink" href="#optional-9-install-document-segmentation-container" title="Permalink to this headline">¶</a></h3>
