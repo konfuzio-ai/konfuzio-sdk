@@ -1,7 +1,6 @@
 ## How to write documentation?
 
-Guidelines for Sphinx Documentation¶
-------------------------------------
+### Guidelines for Sphinx Documentation
 
 If you're working on the SDK and need to update the documentation, here are some guidelines on how to add new pages and manage assets such as images in our Sphinx documentation.
 
@@ -31,7 +30,7 @@ Remember, clear and organized documentation makes it easier for users to underst
 
 After adding this section, the next steps would be:
 
--   [ ]  Add the guidelines to the relevant section of the Documentation.
--   [ ]  Open a PR for your changes.
--   [ ]  Ensure that the changes are correctly reflected in the Sphinx documentation.
--   [ ]  Merge the PR after review.
+-   Add the guidelines to the relevant section of the Documentation.
+-   Open a PR for your changes.
+-   Ensure that the changes are correctly reflected in the Sphinx documentation.
+-   Merge the PR after review.
