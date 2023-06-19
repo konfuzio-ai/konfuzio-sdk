@@ -554,7 +554,7 @@ class Bbox:
 
         if round(self.y1, round_decimals) > round(self.page.height, round_decimals):
             exception_or_log_error(
-                msg=f"{self} exceeds height of {self.page}.",
+                msg=f"{self} exceeds height of {self.page} by {round(self.y1, round_decimals) - round(self.page.height, round_decimals)}.",
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
                 handler=handler,
@@ -562,7 +562,7 @@ class Bbox:
 
         if round(self.x1, round_decimals) > round(self.page.width, round_decimals):
             exception_or_log_error(
-                msg=f"{self} exceeds width of {self.page}.",
+                msg=f"{self} exceeds width of {self.page} by {round(self.x1, round_decimals) - round(self.page.width, round_decimals)}.",
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
                 handler=handler,
@@ -2778,9 +2778,8 @@ class Document(Data):
         if not category:
             category = self.project.no_category
         logger.info(f"Setting Category of {self} to {category}.")
-        if (
-            category not in [self._category, self.project.no_category]
-            and self._category.name != self.project.no_category.name
+        if category not in [self._category, self.project.no_category] and (
+            self._category and self._category.name != self.project.no_category.name
         ):
             raise ValueError(
                 "We forbid changing Category when already existing, because this requires some validations that are "
@@ -3628,32 +3627,27 @@ class Document(Data):
         for page in self.pages():
             end_offset = start_offset + len(page.text)
             page_id = page.id_ if page.id_ else page.copy_of_id
-            if include:
-                if page.number in range(start_page.number, end_page.number + 1):
-                    _ = Page(
-                        id_=None,
-                        original_size=(page.height, page.width),
-                        document=new_doc,
-                        start_offset=start_offset,
-                        end_offset=end_offset,
-                        copy_of_id=page_id,
-                        number=i,
+            if (
+                (include and page.number in range(start_page.number, end_page.number + 1))
+                or (not include and page.number in range(start_page.number, end_page.number))
+            ):
+                new_page = Page(
+                    id_=None,
+                    original_size=(page.height, page.width),
+                    document=new_doc,
+                    start_offset=start_offset,
+                    end_offset=end_offset,
+                    copy_of_id=page_id,
+                    number=i,
+                )
+                for category_annotation in page.category_annotations:
+                    CategoryAnnotation(
+                        category=category_annotation.category,
+                        confidence=category_annotation.confidence,
+                        page=new_page,
                     )
-                    i += 1
-                    start_offset = end_offset + 1
-            else:
-                if page.number in range(start_page.number, end_page.number):
-                    _ = Page(
-                        id_=None,
-                        original_size=(page.height, page.width),
-                        document=new_doc,
-                        start_offset=start_offset,
-                        end_offset=end_offset,
-                        copy_of_id=page_id,
-                        number=i,
-                    )
-                    i += 1
-                    start_offset = end_offset + 1
+                i += 1
+                start_offset = end_offset + 1
         return new_doc
 
     def get_document_classifier_examples(self, text_vocab, category_vocab, max_len, use_image, use_text):
