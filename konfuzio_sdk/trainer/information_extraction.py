@@ -870,7 +870,13 @@ def process_document_data(
     df["relative_position_in_page"] = df["page_index"] / document_n_pages
 
     abs_pos_feature_list = ["x0", "y0", "x1", "y1", "page_index", "area_quadrant_two", "area"]
-    relative_pos_feature_list = ["relative_position_in_page"]
+    relative_pos_feature_list = [
+        "x0_relative",
+        "x1_relative",
+        "y0_relative",
+        "y1_relative",
+        "relative_position_in_page",
+    ]
 
     feature_list = (
         string_feature_column_order
@@ -972,7 +978,7 @@ class BaseModel(metaclass=abc.ABCMeta):
         reduce_weight=True,
         compression: str = 'lz4',
         keep_documents=False,
-        max_ram=None
+        max_ram=None,
     ):
         """
         Save the label model as a compressed pickle object to the release directory.
@@ -981,7 +987,8 @@ class BaseModel(metaclass=abc.ABCMeta):
         with the built-in pickletools.optimize function (see: https://docs.python.org/3/library/pickletools.html),
         saving the optimized serialized object.
 
-        We then compress the pickle file using shutil.copyfileobject which writes in chunks to avoid loading the entire pickle file in memory.
+        We then compress the pickle file using shutil.copyfileobject which writes in chunks to avoid loading the
+        entire pickle file in memory.
 
         Finally, we delete the cloudpickle file and are left with the compressed pickle file which has a .pkl.lz4 or
         .pkl.bz2 extension.
