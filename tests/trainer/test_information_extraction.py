@@ -415,6 +415,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         span_tuple = (span.annotation.label.name, span.start_offset, span.end_offset)
         assert span_tuple == expected
 
+    @unittest.skipIf(sys.version_info[:2] == (3, 11), 'Throws "TypeError: code() argument 13 must be str, not int"')
     def test_13_load_ai_model(self):
         """Test loading of trained model."""
         self.pipeline = RFExtractionAI.load_model(self.pipeline.pipeline_path)
@@ -441,6 +442,15 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         doc = prj46.get_document_by_id(570129)
         res_doc = self.pipeline.extract(document=doc)
 
+        test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        res_doc = self.pipeline.extract(document=test_document)
+        assert len(res_doc.annotations(use_correct=False, ignore_below_threshold=True)) == 19
+
+        self.pipeline = RFExtractionAI.load_model(self.pipeline.pipeline_path_no_konfuzio_sdk)
+
+        test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        res_doc = self.pipeline.extract(document=test_document)
+        assert len(res_doc.annotations(use_correct=False, ignore_below_threshold=True)) == 19
         return
 
     @classmethod
@@ -1867,6 +1877,14 @@ def test_load_model_wrong_pickle_data():
         RFExtractionAI.load_model(path)
 
 
+@unittest.skipIf(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
+def test_load_old_ai_model():
+    """Test loading of an old trained model."""
+    path = "tests/trainer/2022-03-10-15-14-51_lohnabrechnung_old_model.pkl"
+    with pytest.raises(TypeError, match="Loaded model's interface is not compatible with any AIs"):
+        RFExtractionAI.load_model(path)
+
+
 @pytest.mark.extraction
 @unittest.mark.skipif(sys.version_info[:2] == (3, 11), 'Throws "TypeError: code() argument 13 must be str, not int"')
 def test_load_ai_model_konfuzio_sdk_not_included():
@@ -1891,15 +1909,6 @@ def test_load_ai_model_konfuzio_sdk_included():
     test_document = project.get_document_by_id(TEST_DOCUMENT_ID)
     res_doc = pipeline.extract(document=test_document)
     assert len(res_doc.annotations(use_correct=False, ignore_below_threshold=True)) == 19
-
-
-@pytest.mark.extraction
-@unittest.mark.skipif(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
-def test_load_old_ai_model():
-    """Test loading of an old trained model."""
-    path = "tests/trainer/2022-03-10-15-14-51_lohnabrechnung_old_model.pkl"
-    with pytest.raises(TypeError, match="Loaded model's interface is not compatible with any AIs"):
-        RFExtractionAI.load_model(path)
 
 
 @pytest.mark.extraction

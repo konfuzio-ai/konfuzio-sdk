@@ -77,6 +77,7 @@ setuptools.setup(
     entry_points={'console_scripts': ['konfuzio_sdk=konfuzio_sdk.cli:main']},
     install_requires=[
         'filetype==1.0.7',  # Used to check that files are in the correct format
+        'lz4',  # Used to compress pickles
         'nltk',
         'numpy>=1.22.4',
         'pandas>=1.3.5,<2.0.0',

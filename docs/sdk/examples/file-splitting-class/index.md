@@ -71,14 +71,15 @@ To begin, we will make all the necessary imports:
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_example.py
    :language: python
-   :lines: 10-14
+   :start-after: start imports
+   :end-before: end imports
    :dedent: 4
 
 Then, let's initialize the `ContextAwareFileSplittingModel` class:
 
 .. literalinclude:: ../../konfuzio_sdk/trainer/file_splitting.py
    :language: python
-   :lines: 406,414,427-431
+   :lines: 386,394,407-411
 
 The class inherits from `AbstractFileSplittingModel`, so we run `super().__init__(categories=categories)` to properly 
 inherit its attributes. The `tokenizer` attribute will be used to process the text within the Document, separating it 
@@ -94,7 +95,13 @@ An example of how ConnectedTextTokenizer works:
 
 .. literalinclude:: /sdk/boilerplates/test_connected_text_tokenizer.py
    :language: python
-   :lines: 13-19,25-28,31-37,40-42
+   :start-after: Start tokenize
+   :end-before: End tokenize
+   :dedent: 4
+.. literalinclude:: /sdk/boilerplates/test_connected_text_tokenizer.py
+   :language: python
+   :start-after: Start string
+   :end-before: End string
    :dedent: 4
 
 The first method to define will be the `fit()` method. For each Category, we call `exclusive_first_page_strings` method, 
@@ -104,7 +111,7 @@ This means that those Categories would not be used in the prediction process.
 
 .. literalinclude:: ../../konfuzio_sdk/trainer/file_splitting.py
    :language: python
-   :lines: 433,451-464
+   :lines: 413,431-444
 
 Next, we define `predict()` method. The method accepts a Page as an input and checks its Span set for containing 
 first-page strings for each of the Categories. If there is at least one intersection, the Page is predicted to be a 
@@ -112,7 +119,7 @@ first Page. If there are no intersections, the Page is predicted to be a non-fir
 
 .. literalinclude:: ../../konfuzio_sdk/trainer/file_splitting.py
    :language: python
-   :lines: 466,485-496
+   :lines: 446,465-476
 
 Lastly, a `check_is_ready()` method is defined. This method is used to ensure that a model is ready for prediction: the
 checks cover that the Tokenizer and a set of Categories is defined, and that at least one of the Categories has 
@@ -120,17 +127,18 @@ exclusive first-page strings.
 
 .. literalinclude:: ../../konfuzio_sdk/trainer/file_splitting.py
    :language: python
-   :lines: 498,505-520
+   :lines: 478,485-500
 
 Full code of class:
 
 .. literalinclude:: ../../konfuzio_sdk/trainer/file_splitting.py
    :language: python
-   :lines: 406,414,427-433,451-466,485-498,505-520
+   :lines: 386,394,407-413,431-446,465-478,485-500
 
 A quick example of the class's usage:
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_example.py
    :language: python
-   :lines: 22-30,36-80
+   :start-after: start file splitting
+   :end-before: end file splitting
    :dedent: 4

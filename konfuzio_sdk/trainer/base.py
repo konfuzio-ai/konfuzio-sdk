@@ -9,6 +9,8 @@ import pathlib
 import shutil
 import sys
 
+import lz4.frame
+
 from typing import Optional, Union
 
 from konfuzio_sdk.data import Data
@@ -148,24 +150,32 @@ class BaseModel(metaclass=abc.ABCMeta):
             raise MemoryError(f"AI model memory use ({memory_size_of(self)}) exceeds maximum ({max_ram=}).")
 
     def save(
-        self, output_dir: str = None, include_konfuzio=True, reduce_weight=True, keep_documents=False, max_ram=None
+        self,
+        output_dir: str = None,
+        include_konfuzio=True,
+        reduce_weight=True,
+        compression: str = 'lz4',
+        keep_documents=False,
+        max_ram=None,
     ):
         """
-        Save the label model as bz2 compressed pickle object to the release directory.
+        Save the label model as a compressed pickle object to the release directory.
 
         Saving is done by: getting the serialized pickle object (via cloudpickle), "optimizing" the serialized object
         with the built-in pickletools.optimize function (see: https://docs.python.org/3/library/pickletools.html),
         saving the optimized serialized object.
 
-        We then compress the pickle file with bz2 using shutil.copyfileobject which writes in chunks to avoid loading
-        the entire pickle file in memory.
+        We then compress the pickle file using shutil.copyfileobject which writes in chunks to avoid loading the entire
+        pickle file in memory.
 
-        Finally, we delete the cloudpickle file and are left with the bz2 file which has a .pkl extension.
+        Finally, we delete the cloudpickle file and are left with the compressed pickle file which has a .pkl.lz4 or
+        .pkl.bz2 extension.
 
         :param output_dir: Folder to save AI model in. If None, the default Project folder is used.
         :param include_konfuzio: Enables pickle serialization as a value, not as a reference (for more info, read
         https://github.com/cloudpipe/cloudpickle#overriding-pickles-serialization-mechanism-for-importable-constructs).
         :param reduce_weight: Remove all non-strictly necessary parameters before saving.
+        :param compression: Compression algorithm to use. Default is lz4, bz2 is also supported.
         :param max_ram: Specify maximum memory usage condition to save model.
         :raises MemoryError: When the size of the model in memory is greater than the maximum value.
         :return: Path of the saved model file.
@@ -206,7 +216,15 @@ class BaseModel(metaclass=abc.ABCMeta):
 
         logger.info(f'Model size: {memory_size_of(self) / 1_000_000} MB')
 
-        self.ensure_model_memory_usage_within_limit(max_ram)
+        try:
+            self.ensure_model_memory_usage_within_limit(max_ram)
+        except MemoryError as e:
+            # restore Documents so that the Project can still be used
+            self.project._documents = project_docs
+            if not keep_documents:
+                self.documents = restore_documents
+                self.test_documents = restore_test_documents
+            raise e
 
         sys.setrecursionlimit(999999)
 
@@ -221,14 +239,24 @@ class BaseModel(metaclass=abc.ABCMeta):
         with open(temp_pkl_file_path, 'wb') as f:  # see: https://stackoverflow.com/a/9519016/5344492
             cloudpickle.dump(self, f)
 
-        logger.info('Compressing model with bz2')
+        if compression == 'lz4':
+            logger.info('Compressing model with lz4')
+            pkl_file_path += '.lz4'
+            # then save to lz4 in chunks
+            with open(temp_pkl_file_path, 'rb') as input_f:
+                with lz4.frame.open(pkl_file_path, 'wb') as output_f:
+                    shutil.copyfileobj(input_f, output_f)
+        elif compression == 'bz2':
+            logger.info('Compressing model with bz2')
+            pkl_file_path += '.bz2'
+            # then save to bz2 in chunks
+            with open(temp_pkl_file_path, 'rb') as input_f:
+                with bz2.open(pkl_file_path, 'wb') as output_f:
+                    shutil.copyfileobj(input_f, output_f)
+        else:
+            raise ValueError(f'Unknown compression algorithm: {compression}')
 
-        # then save to bz2 in chunks
-        with open(temp_pkl_file_path, 'rb') as input_f:
-            with bz2.open(pkl_file_path, 'wb') as output_f:
-                shutil.copyfileobj(input_f, output_f)
-
-        logger.info('Deleting cloudpickle file')
+        logger.info('Deleting temporary cloudpickle file')
         # then delete cloudpickle file
         os.remove(temp_pkl_file_path)
 
@@ -239,7 +267,6 @@ class BaseModel(metaclass=abc.ABCMeta):
         if not keep_documents:
             self.documents = restore_documents
             self.test_documents = restore_test_documents
-        if reduce_weight:
-            self.project._documents = project_docs
+        self.project._documents = project_docs
 
         return pkl_file_path

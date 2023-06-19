@@ -10,7 +10,8 @@ performs on the level of 10% in comparison to the best one.
 
   .. literalinclude:: /sdk/boilerplates/test_outlier_annotations.py
      :language: python
-     :lines: 8,14,18,28,22
+     :start-after: start project
+     :end-before: end project
      :dedent: 4
 
 - `get_probable_outliers_by_confidence` looks for the Annotations with the least confidence level, provided it is lower
@@ -18,7 +19,18 @@ than the specified threshold (the default threshold is 0.5). Accepts an instance
    
   .. literalinclude:: /sdk/boilerplates/test_outlier_annotations.py
      :language: python
-     :lines: 8,14,18,28,47
+     :start-after: start project
+     :end-before: end project
+     :dedent: 4
+  .. literalinclude:: /sdk/boilerplates/test_outlier_annotations.py
+     :language: python
+     :start-after: start get austellungsdatum
+     :end-before: end get austellungsdatum
+     :dedent: 4
+  .. literalinclude:: /sdk/boilerplates/test_outlier_annotations.py
+     :language: python
+     :start-after: start confidence_outliers
+     :end-before: end confidence_outliers
      :dedent: 4
 
 - `get_probable_outliers_by_normalization` looks for the Annotations that are unable to pass normalization by the data
@@ -26,7 +38,8 @@ type of the given Label (meaning that they are not of the same data type themsel
 
   .. literalinclude:: /sdk/boilerplates/test_outlier_annotations.py
      :language: python
-     :lines: 8,14,18,28,57
+     :start-after: start normalization
+     :end-before: end normalization
      :dedent: 4
 
 All three of the methods return a list of Annotations that are deemed outliers by the logic of the current method; the 
@@ -40,6 +53,7 @@ Here's an example of running the latter method with one of the search methods di
 three of the search methods are enabled.
 
 .. literalinclude:: /sdk/boilerplates/test_outlier_annotations.py
-   :language: python
-   :lines: 8,14,18,28,62
-   :dedent: 4
+ :language: python
+ :start-after: start combined
+ :end-before: end combined
+ :dedent: 4

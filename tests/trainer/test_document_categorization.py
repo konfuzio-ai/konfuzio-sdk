@@ -193,7 +193,7 @@ class TestNameBasedCategorizationAI(unittest.TestCase):
         # in it.
         # Recall that the check is case-insensitive.
         test_receipt_document = self.project.get_document_by_id(TEST_CATEGORIZATION_DOCUMENT_ID)
-        test_receipt_document.set_category(None)
+        test_receipt_document.set_category(self.project.no_category)
         self.categorization_pipeline.categorize(document=test_receipt_document, inplace=True)
         assert test_receipt_document.category == self.receipts_category
         for page in test_receipt_document.pages():
@@ -213,11 +213,11 @@ class TestNameBasedCategorizationAI(unittest.TestCase):
         # in it.
         # Recall that the check is case-insensitive.
         test_receipt_document = self.project.get_document_by_id(TEST_CATEGORIZATION_DOCUMENT_ID)
-        test_receipt_document.set_category(None)
+        test_receipt_document.set_category(self.project.no_category)
         self.categorization_pipeline.categorize(document=test_receipt_document)
         assert test_receipt_document.category == self.project.no_category
         for page in test_receipt_document.pages():
-            assert page.category is None
+            assert page.category == self.project.no_category
 
     def test_10_run_model_incompatible_interface(self):
         """Test initializing a model that does not pass has_compatible_interface check."""

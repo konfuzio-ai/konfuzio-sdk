@@ -12,7 +12,8 @@ The initialization would look like this:
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
    :language: python
-   :lines: 81-83
+   :start-after: start eval_example
+   :end-before: end eval_example
    :dedent: 4
 
 The class compares each pair of Pages. If a Page is labeled as first and the model also predicted it as first, it is 
@@ -33,7 +34,8 @@ To see a certain metric after the class has been initialized, you can call a met
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
    :language: python
-   :lines: 99
+   :start-after: start single_metric
+   :end-before: end single_metric
    :dedent: 4
 
 It is also possible to look at the metrics calculated by each Category independently. For this, pass 
@@ -41,7 +43,8 @@ It is also possible to look at the metrics calculated by each Category independe
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
    :language: python
-   :lines: 84
+   :start-after: start metric_category
+   :end-before: end metric_category
    :dedent: 4
 
 For more details, see the [Python API Documentation](https://dev.konfuzio.com/sdk/sourcecode.html#ai-evaluation) on 
@@ -63,7 +66,8 @@ _Second document_
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
    :language: python
-   :lines: 8-10,18-49,52-63
+   :start-after: start document creation
+   :end-before: end document creation
    :dedent: 4
 
 We need to pass two lists of Documents into the `FileSplittingEvaluation` class. So, before that, we need to run each 
@@ -74,7 +78,13 @@ Pages being predicted correctly. An example of how the evaluation would be imple
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
    :language: python
-   :lines: 71-76,93-106
+   :start-after: start splitting
+   :end-before: end splitting
+   :dedent: 4
+.. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
+   :language: python
+   :start-after: start scores
+   :end-before: end scores
    :dedent: 4
 
 Our results could be reflected in a following table:
@@ -87,7 +97,8 @@ If we want to see evaluation results by Category, the implementation of the Eval
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
    :language: python
-   :lines: 122-135
+   :start-after: start scores_category
+   :end-before: end scores_category
    :dedent: 4
 
 the output could be reflected in a following table:
@@ -102,5 +113,6 @@ specify the metrics accordingly at the class's initialization). Example usage:
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
    :language: python
-   :lines: 137
+   :start-after: start calculator
+   :end-before: end calculator
    :dedent: 4

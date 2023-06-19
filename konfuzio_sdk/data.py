@@ -107,7 +107,6 @@ class Page(Data):
         image_size: Tuple[int, int] = (None, None),
         start_offset: Optional[int] = None,
         end_offset: Optional[int] = None,
-        category: Optional['Category'] = None,
         copy_of_id: Optional[int] = None,
     ):
         """
@@ -153,7 +152,7 @@ class Page(Data):
         )
         self.image_path = os.path.join(document_folder, f'page_{self.number}.png')
 
-        self._category = category if category else self.document._category
+        self._category = self.document._category
         self.category_annotations: List['CategoryAnnotation'] = []
         self._human_chosen_category_annotation: Optional[CategoryAnnotation] = None
         self._segmentation = None
@@ -399,9 +398,11 @@ class Page(Data):
 
         :param category: The Category to set for the Page.
         """
+        if not category:
+            raise ValueError("We forbid setting a Page's Category to None.")
         logger.info(f'Setting {self} Category to {category}.')
         self._category = category
-        if category is None:
+        if category is self.document.project.no_category:
             self.category_annotations = []
             self._human_chosen_category_annotation = None
             return
@@ -433,6 +434,27 @@ class Page(Data):
             return self.maximum_confidence_category_annotation.category
         else:
             return self._category
+
+    def get_original_page(self) -> 'Page':
+        """
+        Return an "original" Page in case the current Page is a copy without an ID.
+
+        An "original" Page is a Page from the Document that is not a copy and not a Virtual Document. This Page has an
+        ID.
+
+        The method is used in the File Splitting pipeline to retain the original Document's information in
+        the Sub-Documents that were created from its splitting. The original Document is a Document that has an ID and
+        is not a deepcopy.
+        """
+        if self.id_ and self.document.id_:
+            return self
+        elif self.copy_of_id:
+            if self.document.id_:
+                return self.document.get_page_by_id(self.copy_of_id)
+            else:
+                return self.document.project.get_document_by_id(self.document.copy_of_id).get_page_by_id(
+                    self.copy_of_id
+                )
 
 
 class BboxValidationTypes(Enum):
@@ -531,7 +553,8 @@ class Bbox:
 
         if round(self.y1, round_decimals) > round(self.page.height, round_decimals):
             exception_or_log_error(
-                msg=f"{self} exceeds height of {self.page}.",
+                msg=f"{self} exceeds height of {self.page} by \
+{round(self.y1, round_decimals) - round(self.page.height, round_decimals)}.",
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
                 handler=handler,
@@ -539,7 +562,8 @@ class Bbox:
 
         if round(self.x1, round_decimals) > round(self.page.width, round_decimals):
             exception_or_log_error(
-                msg=f"{self} exceeds width of {self.page}.",
+                msg=f"{self} exceeds width of {self.page} by \
+{round(self.x1, round_decimals) - round(self.page.width, round_decimals)}.",
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
                 handler=handler,
@@ -779,9 +803,9 @@ class LabelSet(Data):
 
     def add_category(self, category: 'Category'):
         """
-        Add Category to Project, if it does not exist.
+        Add Category to the Label Set, if it does not exist.
 
-        :param category: Category to add in the Project
+        :param category: Category to add to the Label Set
         """
         if category not in self.categories:
             self.categories.append(category)
@@ -2708,10 +2732,10 @@ class Document(Data):
         """
         if self.maximum_confidence_category_annotation is not None:
             return self.maximum_confidence_category_annotation.category
-        return None
+        return self.project.no_category
 
     @property
-    def category(self) -> Optional[Category]:
+    def category(self) -> Category:
         """
         Return the Category of the Document.
 
@@ -2752,9 +2776,11 @@ class Document(Data):
 
     def set_category(self, category: Category) -> None:
         """Set the Category of the Document and the Category of all of its Pages as revised."""
+        if not category:
+            category = self.project.no_category
         logger.info(f"Setting Category of {self} to {category}.")
-        if (self._category not in [None, self.project.no_category]) and (
-            category not in [self._category, None, self.project.no_category]
+        if category not in [self._category, self.project.no_category] and (
+            self._category and self._category.name != self.project.no_category.name
         ):
             raise ValueError(
                 "We forbid changing Category when already existing, because this requires some validations that are "
@@ -2880,7 +2906,6 @@ class Document(Data):
                 number=page.number,
                 original_size=(page.width, page.height),
                 image_size=(page.image_width, page.image_height),
-                category=page.category,
             )
             _.image_bytes = page.image_bytes
         return document
@@ -3603,34 +3628,26 @@ class Document(Data):
         for page in self.pages():
             end_offset = start_offset + len(page.text)
             page_id = page.id_ if page.id_ else page.copy_of_id
-            if include:
-                if page.number in range(start_page.number, end_page.number + 1):
-                    _ = Page(
-                        id_=None,
-                        original_size=(page.height, page.width),
-                        document=new_doc,
-                        start_offset=start_offset,
-                        end_offset=end_offset,
-                        copy_of_id=page_id,
-                        number=i,
-                        category=page.category,
+            if (include and page.number in range(start_page.number, end_page.number + 1)) or (
+                not include and page.number in range(start_page.number, end_page.number)
+            ):
+                new_page = Page(
+                    id_=None,
+                    original_size=(page.height, page.width),
+                    document=new_doc,
+                    start_offset=start_offset,
+                    end_offset=end_offset,
+                    copy_of_id=page_id,
+                    number=i,
+                )
+                for category_annotation in page.category_annotations:
+                    CategoryAnnotation(
+                        category=category_annotation.category,
+                        confidence=category_annotation.confidence,
+                        page=new_page,
                     )
-                    i += 1
-                    start_offset = end_offset + 1
-            else:
-                if page.number in range(start_page.number, end_page.number):
-                    _ = Page(
-                        id_=None,
-                        original_size=(page.height, page.width),
-                        document=new_doc,
-                        start_offset=start_offset,
-                        end_offset=end_offset,
-                        copy_of_id=page_id,
-                        number=i,
-                        category=page.category,
-                    )
-                    i += 1
-                    start_offset = end_offset + 1
+                i += 1
+                start_offset = end_offset + 1
         return new_doc
 
 
@@ -3863,8 +3880,10 @@ class Project(Data):
                 # the _default_of_label_set_ids are the Categories the Label Set is used in
                 for label_set_id in label_set._default_of_label_set_ids:
                     category = self.get_category_by_id(label_set_id)
-                    label_set.add_category(category)  # The Label Set is linked to a Category it created
-                    category.add_label_set(label_set)
+                    if category not in label_set.categories:
+                        label_set.add_category(category)  # The Label Set is linked to a Category it created
+                    if label_set not in category.label_sets:
+                        category.add_label_set(label_set)
 
     def get_label_sets(self, reload=False):
         """Get LabelSets in the Project."""
