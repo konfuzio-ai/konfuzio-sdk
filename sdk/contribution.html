@@ -68,6 +68,12 @@
 <li class="toctree-l3"><a class="reference internal" href="#additional-tips">Additional Tips</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-write-documentation">How to write documentation?</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#guidelines-for-sphinx-documentation">Guidelines for Sphinx Documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#adding-new-content-and-pages">Adding New Content and Pages</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#organizing-images-and-other-assets">Organizing Images and Other Assets</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/releases">Changelog</a></li>
@@ -508,6 +514,40 @@ clicking on the arrows and select <em>‘Reopen Folder Locally’</em>.</p></li>
 extension’s command palette and click <em>‘Rebuild Container’</em>.
 (This of course means that you have to reinstall the Python extension - if this becomes annoying you can specify
 its ID in the devcontainer.json file to be pre-installed with every rebuild).</p></li>
+</ul>
+</section>
+</section>
+<section id="how-to-write-documentation">
+<h2>How to write documentation?<a class="headerlink" href="#how-to-write-documentation" title="Permalink to this headline">¶</a></h2>
+<section id="guidelines-for-sphinx-documentation">
+<h3>Guidelines for Sphinx Documentation<a class="headerlink" href="#guidelines-for-sphinx-documentation" title="Permalink to this headline">¶</a></h3>
+<p>If you’re working on the SDK and need to update the documentation, here are some guidelines on how to add new pages and manage assets such as images in our Sphinx documentation.</p>
+</section>
+<section id="adding-new-content-and-pages">
+<h3>Adding New Content and Pages<a class="headerlink" href="#adding-new-content-and-pages" title="Permalink to this headline">¶</a></h3>
+<p>When you want to add new content or create a new page:</p>
+<ol class="arabic simple">
+<li><p>Create a separate folder for your new content in the appropriate directory within the <code class="docutils literal notranslate"><span class="pre">docs</span></code> folder. The name of this new folder will form part of the URL for the new page.</p></li>
+<li><p>Within this new folder, create a new <code class="docutils literal notranslate"><span class="pre">index.rst</span></code> (reStructuredText) or <code class="docutils literal notranslate"><span class="pre">index.md</span></code> (Markdown) file. This file will be the main page for the new content.</p></li>
+<li><p>Write your content in the <code class="docutils literal notranslate"><span class="pre">index</span></code> file using the appropriate syntax. If you’re new to reStructuredText, check out this <a class="reference external" href="https://docutils.sourceforge.io/docs/user/rst/quickref.html">quick reference</a>.</p></li>
+<li><p>To make your new page discoverable, add it to the appropriate <code class="docutils literal notranslate"><span class="pre">toctree</span></code> directive in an existing <code class="docutils literal notranslate"><span class="pre">.rst</span></code> file that’s one level up in the directory structure. For example, if your new page is a subsection of an existing page, you would add it to that page’s <code class="docutils literal notranslate"><span class="pre">toctree</span></code>.</p></li>
+</ol>
+</section>
+<section id="organizing-images-and-other-assets">
+<h3>Organizing Images and Other Assets<a class="headerlink" href="#organizing-images-and-other-assets" title="Permalink to this headline">¶</a></h3>
+<p>When adding images or other assets to the documentation:</p>
+<ol class="arabic simple">
+<li><p>Place all images or assets related to your new content within the same folder you created in step 1 above. This helps keep our documentation well organized and makes it easier for other contributors to find and update assets related to specific content.</p></li>
+<li><p>When referencing an image in your documentation, use a relative path from the current file to the image. For example: <code class="docutils literal notranslate"><span class="pre">..</span> <span class="pre">image::</span> <span class="pre">my-image.png</span></code></p></li>
+<li><p>If you’re adding the image through the GitHub web editor and it automatically creates a different assets folder, please manually move the image to the correct folder as described above.</p></li>
+</ol>
+<p>Remember, clear and organized documentation makes it easier for users to understand and effectively use our SDK. Thank you for your contribution to improving our documentation!</p>
+<p>After adding this section, the next steps would be:</p>
+<ul class="simple">
+<li><p>Add the guidelines to the relevant section of the Documentation.</p></li>
+<li><p>Open a PR for your changes.</p></li>
+<li><p>Ensure that the changes are correctly reflected in the Sphinx documentation.</p></li>
+<li><p>Merge the PR after review.</p></li>
 </ul>
 </section>
 </section>
