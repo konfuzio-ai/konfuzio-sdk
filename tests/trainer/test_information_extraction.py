@@ -164,8 +164,8 @@ label_set_clf_classes = ['Brutto-Bezug', 'Lohnabrechnung', 'Netto-Bezug', 'No', 
     [
         (
             False,
-            0.7671232876712328,  # w/ full dataset: 0.9237668161434978
-            0.8115942028985508,
+            0.8169014084507042,  # w/ full dataset: 0.9237668161434978
+            0.8656716417910447,
             0.9745762711864406,
             0.9652173913043478,
             1.0,
@@ -174,13 +174,13 @@ label_set_clf_classes = ['Brutto-Bezug', 'Lohnabrechnung', 'Netto-Bezug', 'No', 
         (
             True,
             0.7945205479452054,
-            0.8529411764705882,
+            0.8656716417910447,
             0.9745762711864406,
             0.9652173913043478,
             1.0,
             False,
         ),  # w/ full dataset: 0.9783549783549783
-        (False, 0.8732394366197183, 0.8985507246376812, 0.9704641350210971, 0.9652173913043478, 1.0, True),
+        (False, 0.8529411764705882, 0.8656716417910447, 0.9745762711864406, 0.9652173913043478, 1.0, True),
     ],
 )
 class TestWhitespaceRFExtractionAI(unittest.TestCase):
@@ -461,8 +461,8 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 @parameterized.parameterized_class(
     ('use_separate_labels', 'evaluate_full_result'),
     [
-        (False, 0.7741935483870968),  # w/ full dataset: 0.8930232558139535
-        (True, 0.75),  # w/ full dataset: 0.9596412556053812
+        (False, 0.7619047619047619),  # w/ full dataset: 0.8930232558139535
+        (True, 0.7619047619047619),  # w/ full dataset: 0.9596412556053812
     ],
 )
 class TestRegexRFExtractionAI(unittest.TestCase):
@@ -779,8 +779,8 @@ class TestParagraphRFExtractionAI(unittest.TestCase):
 @parameterized.parameterized_class(
     ('mode', 'n_extracted_annotations', 'n_extracted_spans', 'min_eval_f1', 'eval_tp', 'eval_fp'),
     [
-        ('detectron', 101, 225, 0.6, 20, 18),
-        ('line_distance', 97, 222, 0.25, 10, 21),  # line distance method does not work well with 2 column documents
+        ('detectron', 101, 225, 0.6, 22, 16),
+        ('line_distance', 97, 222, 0.25, 9, 23),  # line distance method does not work well with 2 column documents
     ],
 )
 class TestSentenceRFExtractionAI(unittest.TestCase):
@@ -1035,7 +1035,7 @@ class TestInformationExtraction(unittest.TestCase):
         pipeline = RFExtractionAI()
         pipeline.tokenizer = WhitespaceTokenizer()
         features, feature_names, errors = pipeline.features(document)
-        assert len(feature_names) == 271  # todo investigate if all features are calculated correctly, see #9289
+        assert len(feature_names) == 275  # todo investigate if all features are calculated correctly, see #9289
         # feature order should stay the same to get predictable results
         assert feature_names[-1] == 'first_word_y1'
         assert feature_names[42] == 'feat_substring_count_h'
@@ -1046,7 +1046,7 @@ class TestInformationExtraction(unittest.TestCase):
         pipeline = RFExtractionAI(n_nearest_across_lines=True)
         pipeline.tokenizer = WhitespaceTokenizer()
         features, feature_names, errors = pipeline.features(document)
-        assert len(feature_names) == 275  # todo investigate if all features are calculated correctly, see #9289
+        assert len(feature_names) == 279  # todo investigate if all features are calculated correctly, see #9289
         # feature order should stay the same to get predictable results
         assert feature_names[-1] == 'first_word_y1'
         assert feature_names[42] == 'feat_substring_count_h'
@@ -1122,7 +1122,7 @@ class TestInformationExtraction(unittest.TestCase):
         pipeline.tokenizer = WhitespaceTokenizer()
         pipeline.n_nearest = 10
         features, feature_names, errors = pipeline.features(document)
-        assert len(feature_names) == 1103  # todo investigate if all features are calculated correctly, see #9289
+        assert len(feature_names) == 1107  # todo investigate if all features are calculated correctly, see #9289
         assert features['is_correct'].sum() == 21
         assert features['revised'].sum() == 2
 
