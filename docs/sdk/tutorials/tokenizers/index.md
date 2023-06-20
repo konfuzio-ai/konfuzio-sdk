@@ -35,7 +35,8 @@ be visualized or used to extract BBox information.
 
    .. literalinclude:: /sdk/boilerplates/test_word_bboxes.py
       :language: python
-      :lines: 7-9,13,16,13,20,13,23,13,26-27,13,31,13,34
+      :start-after: start full word_bboxes
+      :end-before: end full word_bboxes
       :dedent: 4
 
 <br/>
