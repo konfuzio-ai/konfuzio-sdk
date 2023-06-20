@@ -9,7 +9,7 @@ import parameterized
 from typing import List, Dict
 
 from konfuzio_sdk.data import Project, Document, Page
-from konfuzio_sdk.extras import torch
+from konfuzio_sdk.extras import torch, FloatTensor
 from konfuzio_sdk.settings_importer import is_dependency_installed
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, ConnectedTextTokenizer
 from konfuzio_sdk.trainer.document_categorization import (
@@ -287,7 +287,7 @@ class TestAbstractTextCategorizationModel(unittest.TestCase):
                 """Define number of features as self.n_features: int."""
                 self.n_features = self.emb_dim
 
-            def _output(self, text: torch.Tensor) -> List[torch.FloatTensor]:
+            def _output(self, text: torch.Tensor) -> List[FloatTensor]:
                 """Define number of features as self.n_features: int."""
                 features = torch.ones([1, self.input_dim, self.emb_dim], dtype=torch.int64)
                 if self.uses_attention:
@@ -311,7 +311,7 @@ class TestAbstractTextCategorizationModel(unittest.TestCase):
     def test_output(self):
         """Test output shape of the text classifier."""
         text = torch.ones([1, self.classifier.input_dim], dtype=torch.int64)
-        result: List[torch.FloatTensor] = self.classifier._output(text=text)
+        result: List[FloatTensor] = self.classifier._output(text=text)
         if self.classifier.uses_attention:
             # In trainer/document_categorization.py, only NBOWSelfAttention and BERT use attention
             # (see docstring of the classes for details)
@@ -389,7 +389,7 @@ class TestTextCategorizationModels(unittest.TestCase):
     def test_output(self) -> None:
         """Test collect output of NN architecture."""
         text = torch.ones([1, self.text_model.input_dim], dtype=torch.int64)
-        result: List[torch.FloatTensor] = self.text_model._output(text=text)
+        result: List[FloatTensor] = self.text_model._output(text=text)
         if self.text_model.uses_attention:
             # In trainer/document_categorization.py, only NBOWSelfAttention and BERT use attention
             # (see docstring of the classes for details)
@@ -403,7 +403,7 @@ class TestTextCategorizationModels(unittest.TestCase):
         """Test the computation performed at every call."""
         text = torch.ones([1, self.text_model.input_dim], dtype=torch.int64)
         input_ = {'text': text}
-        res: Dict[str, torch.FloatTensor] = self.text_model(input=input_)
+        res: Dict[str, FloatTensor] = self.text_model(input=input_)
         assert 'features' in res
         assert res['features'].shape == (1, self.text_model.input_dim, self.text_model.n_features)
         if self.text_model.uses_attention:

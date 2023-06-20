@@ -21,7 +21,7 @@ import tqdm
 from konfuzio_sdk.tokenizer.base import AbstractTokenizer
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
 from konfuzio_sdk.data import Document, Page, Category, CategoryAnnotation
-from konfuzio_sdk.extras import timm, torch, torchvision, transformers, Module
+from konfuzio_sdk.extras import timm, torch, torchvision, transformers, Module, Tensor, FloatTensor
 from konfuzio_sdk.evaluate import CategorizationEvaluation
 from konfuzio_sdk.tokenizer.base import Vocab
 from konfuzio_sdk.trainer.base import BaseModel
@@ -279,10 +279,10 @@ class AbstractTextCategorizationModel(AbstractCategorizationModel, metaclass=abc
         self._define_features()
 
     @abc.abstractmethod
-    def _output(self, text: torch.Tensor) -> List[torch.FloatTensor]:
+    def _output(self, text: Tensor) -> List[FloatTensor]:
         """Collect output of NN architecture."""
 
-    def forward(self, input: Dict[str, torch.Tensor]) -> Dict[str, torch.FloatTensor]:
+    def forward(self, input: Dict[str, Tensor]) -> Dict[str, FloatTensor]:
         """Define the computation performed at every call."""
         text = input['text']
         # text = [batch, seq len]
@@ -333,7 +333,7 @@ class NBOW(AbstractTextCategorizationModel):
         """Define the number of features as the embedding size."""
         self.n_features = self.emb_dim
 
-    def _output(self, text: torch.Tensor) -> List[torch.FloatTensor]:
+    def _output(self, text: Tensor) -> List[FloatTensor]:
         """Collect output of the concatenation embedding -> dropout."""
         text_features = self.dropout(self.embedding(text))
         return [text_features]
@@ -380,7 +380,7 @@ class NBOWSelfAttention(AbstractTextCategorizationModel):
         """Define the number of features as the embedding size."""
         self.n_features = self.emb_dim
 
-    def _output(self, text: torch.Tensor) -> List[torch.FloatTensor]:
+    def _output(self, text: Tensor) -> List[FloatTensor]:
         """Collect output of the multiple attention heads."""
         embeddings = self.dropout(self.embedding(text))
         # transposing so that the batch size is first. the result is embeddings = [batch, seq len, emb dim]
@@ -444,7 +444,7 @@ class LSTM(AbstractTextCategorizationModel):
         """If the architecture is bidirectional, the feature size is twice as large as the hidden layer size."""
         self.n_features = self.hid_dim * 2 if self.bidirectional else self.hid_dim
 
-    def _output(self, text: torch.Tensor) -> List[torch.FloatTensor]:
+    def _output(self, text: Tensor) -> List[FloatTensor]:
         """Collect output of the LSTM model."""
         embeddings = self.dropout(self.embedding(text))
         # embeddings = [batch size, seq len, emb dim]
@@ -515,7 +515,7 @@ class BERT(AbstractTextCategorizationModel):
         """Get the maximum length of a sequence that can be passed to the BERT module."""
         return self.bert.config.max_position_embeddings
 
-    def _output(self, text: torch.Tensor) -> List[torch.FloatTensor]:
+    def _output(self, text: Tensor) -> List[FloatTensor]:
         """Collect output of the HuggingFace BERT model."""
         bert_output = self.bert(text, output_attentions=True, return_dict=False)
         if len(bert_output) == 2:  # distill-bert models only output features and attention
@@ -536,7 +536,7 @@ class BERT(AbstractTextCategorizationModel):
 class PageCategorizationModel(Module):
     """Container for Categorization Models."""
 
-    def forward(self, input: Dict[str, torch.Tensor]) -> Dict[str, torch.FloatTensor]:
+    def forward(self, input: Dict[str, Tensor]) -> Dict[str, FloatTensor]:
         """Forward pass."""
         raise NotImplementedError
 
@@ -559,7 +559,7 @@ class PageTextCategorizationModel(PageCategorizationModel):
         self.fc_out = torch.nn.Linear(text_model.n_features, output_dim)
         self.dropout = torch.nn.Dropout(dropout_rate)
 
-    def forward(self, input: Dict[str, torch.Tensor]) -> Dict[str, torch.FloatTensor]:
+    def forward(self, input: Dict[str, Tensor]) -> Dict[str, FloatTensor]:
         """Forward pass."""
         encoded_text = self.text_model(input)
         text_features = encoded_text['features']
@@ -603,10 +603,10 @@ class AbstractImageCategorizationModel(AbstractCategorizationModel, metaclass=ab
         """Define how model weights are frozen."""
 
     @abc.abstractmethod
-    def _output(self, image: torch.Tensor) -> List[torch.FloatTensor]:
+    def _output(self, image: Tensor) -> List[FloatTensor]:
         """Collect output of NN architecture."""
 
-    def forward(self, input: Dict[str, torch.Tensor]) -> Dict[str, torch.FloatTensor]:
+    def forward(self, input: Dict[str, Tensor]) -> Dict[str, FloatTensor]:
         """Define the computation performed at every call."""
         image = input['image']
         # image = [batch, channels, height, width]
@@ -664,7 +664,7 @@ class VGG(AbstractImageCategorizationModel):
         """VGG11 uses a 7x7x512 max pooling layer."""
         self.n_features = 512 * 7 * 7
 
-    def _output(self, image: torch.Tensor) -> torch.FloatTensor:
+    def _output(self, image: Tensor) -> FloatTensor:
         """Collect output of NN architecture."""
         image_features = self.vgg.features(image)
         image_features = self.vgg.avgpool(image_features)
@@ -726,7 +726,7 @@ class EfficientNet(AbstractImageCategorizationModel):
         """Depends on given EfficientNet model."""
         self.n_features = self.get_n_features()
 
-    def _output(self, image: torch.Tensor) -> torch.FloatTensor:
+    def _output(self, image: Tensor) -> FloatTensor:
         """Collect output of NN architecture."""
         image_features = self.efficientnet(image)
         return image_features
@@ -750,7 +750,7 @@ class PageImageCategorizationModel(PageCategorizationModel):
         self.fc_out = torch.nn.Linear(image_model.n_features, output_dim)
         self.dropout = torch.nn.Dropout(dropout_rate)
 
-    def forward(self, input: Dict[str, torch.Tensor]) -> Dict[str, torch.FloatTensor]:
+    def forward(self, input: Dict[str, Tensor]) -> Dict[str, FloatTensor]:
         """Forward pass."""
         encoded_image = self.image_model(input)
         image_features = encoded_image['features']
@@ -785,10 +785,10 @@ class AbstractMultimodalCategorizationModel(AbstractCategorizationModel, metacla
         self._define_features()
 
     @abc.abstractmethod
-    def _output(self, image_features: torch.Tensor, text_features: torch.Tensor) -> torch.FloatTensor:
+    def _output(self, image_features: Tensor, text_features: Tensor) -> FloatTensor:
         """Collect output of NN architecture."""
 
-    def forward(self, input: Dict[str, torch.Tensor]) -> Dict[str, torch.FloatTensor]:
+    def forward(self, input: Dict[str, Tensor]) -> Dict[str, FloatTensor]:
         """Define the computation performed at every call."""
         image_features = input['image_features']
         # image_features = [batch, n_image_features]
@@ -829,7 +829,7 @@ class MultimodalConcatenate(AbstractMultimodalCategorizationModel):
         """Define number of features as self.n_features: int."""
         self.n_features = self.hid_dim
 
-    def _output(self, image_features: torch.Tensor, text_features: torch.Tensor) -> torch.Tensor:
+    def _output(self, image_features: Tensor, text_features: Tensor) -> Tensor:
         """Collect output of NN architecture."""
         concat_features = torch.cat((image_features, text_features), dim=1)
         # concat_features = [batch, n_image_features + n_text_features]
@@ -873,7 +873,7 @@ class PageMultimodalCategorizationModel(PageCategorizationModel):
         self.fc_out = torch.nn.Linear(multimodal_model.n_features, output_dim)
         self.dropout = torch.nn.Dropout(dropout_rate)
 
-    def forward(self, input: Dict[str, torch.Tensor]) -> Dict[str, torch.FloatTensor]:
+    def forward(self, input: Dict[str, Tensor]) -> Dict[str, FloatTensor]:
         """Define the computation performed at every call."""
         encoded_image = self.image_model(input)
         image_features = encoded_image['features']

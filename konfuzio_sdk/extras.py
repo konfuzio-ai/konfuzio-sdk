@@ -60,12 +60,10 @@ timm = PackageWrapper('timm', ['Document Categorization AI'])
 torch = PackageWrapper('torch', ['Document Categorization AI, File Splitting AI'])
 if torch.package:
     Module = torch.nn.Module
+    Tensor = torch.Tensor
+    FloatTensor = torch.FloatTensor
 else:
-
-    class Module:
-        """A placeholder for a missing class."""
-
-        pass
+    Module, Tensor, FloatTensor = None, None, None
 
 
 torchvision = PackageWrapper('torchvision', ['Document Categorization AI'])
