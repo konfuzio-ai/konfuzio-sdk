@@ -55,13 +55,13 @@ class PackageWrapper:
 class ModuleWrapper:
     """Handle missing dependencies' classes to avoid metaclass conflict."""
 
-    def __init__(self, module):
+    def __init__(self, module: str):
         """Initialize the wrapper."""
-        self._replace_if_missing(module)
+        self._replace(module)
 
     def _replace(self, module):
         """Replace the original class with the placeholder."""
-        return type(module.__name__, {"metaclass": abc.ABCMeta})
+        return type(module, {"metaclass": abc.ABCMeta})
 
 
 cloudpickle = PackageWrapper(
@@ -79,11 +79,11 @@ if torch.package:
     DataLoader = torch.utils.data.DataLoader
     LongTensor = torch.LongTensor
 else:
-    Module = ModuleWrapper(torch.nn.Module)
-    Tensor = ModuleWrapper(torch.Tensor)
-    FloatTensor = ModuleWrapper(torch.FloatTensor)
-    Optimizer = ModuleWrapper(torch.optim.Optimizer)
-    DataLoader = ModuleWrapper(torch.utils.data.DataLoader)
-    LongTensor = ModuleWrapper(torch.LongTensor)
+    Module = ModuleWrapper('Module')
+    Tensor = ModuleWrapper('Tensor')
+    FloatTensor = ModuleWrapper('FloatTensor')
+    Optimizer = ModuleWrapper('Optimizer')
+    DataLoader = ModuleWrapper('DataLoader')
+    LongTensor = ModuleWrapper('LongTensor')
 torchvision = PackageWrapper('torchvision', ['Document Categorization AI'])
 transformers = PackageWrapper('transformers', ['Document Categorization AI, File Splitting AI'])
