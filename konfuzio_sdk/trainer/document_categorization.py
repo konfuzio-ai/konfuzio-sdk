@@ -21,7 +21,7 @@ import tqdm
 from konfuzio_sdk.tokenizer.base import AbstractTokenizer
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
 from konfuzio_sdk.data import Document, Page, Category, CategoryAnnotation
-from konfuzio_sdk.extras import timm, torch, torchvision, transformers
+from konfuzio_sdk.extras import timm, torch, nn, F, torchvision, transformers
 from konfuzio_sdk.evaluate import CategorizationEvaluation
 from konfuzio_sdk.tokenizer.base import Vocab
 from konfuzio_sdk.trainer.base import BaseModel
@@ -31,9 +31,6 @@ from konfuzio_sdk.utils import get_timestamp
 logger = logging.getLogger(__name__)
 
 warn('This module is WIP: https://gitlab.com/konfuzio/objectives/-/issues/9481', FutureWarning, stacklevel=2)
-
-nn = torch.nn
-F = torch.nn.functional
 
 
 class AbstractCategorizationAI(BaseModel, metaclass=abc.ABCMeta):
