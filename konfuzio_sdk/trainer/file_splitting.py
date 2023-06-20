@@ -18,11 +18,6 @@ from konfuzio_sdk.utils import get_timestamp
 
 logger = logging.getLogger(__name__)
 
-# proper compiling of Multimodal File Splitting Model requires eager running instead of lazy
-# because of multiple inputs (read more about eager vs lazy (graph) here)
-# https://towardsdatascience.com/eager-execution-vs-graph-execution-which-is-better-38162ea4dbf6
-tf.config.experimental_run_functions_eagerly(True)
-
 
 class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
     """Abstract class for the File Splitting model."""
@@ -181,6 +176,10 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         """
         logging.info('Initializing Multimodal File Splitting Model.')
         super().__init__(categories=categories)
+        # proper compiling of Multimodal File Splitting Model requires eager running instead of lazy
+        # because of multiple inputs (read more about eager vs lazy (graph) here)
+        # https://towardsdatascience.com/eager-execution-vs-graph-execution-which-is-better-38162ea4dbf6
+        tf.config.experimental_run_functions_eagerly(True)
         self.output_dir = self.project.model_folder
         self.requires_images = True
         self.requires_text = True
