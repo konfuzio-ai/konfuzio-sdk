@@ -12,7 +12,7 @@ MODEL_PATH = 'tests/trainer/2023-05-11-15-44-10_lohnabrechnung_rfextractionai_.p
     not is_dependency_installed('cloudpickle'),
     reason='Required dependencies not installed.',
 )
-@unittest.mark.skipif(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
+@unittest.skipIf(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
 def test_evaluate_extraction_ai():
     """Test evaluation of the Extraction AI."""
     from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID

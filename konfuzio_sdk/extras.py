@@ -58,5 +58,15 @@ spacy = PackageWrapper('spacy', ['Document Categorization AI'])
 tensorflow = PackageWrapper('tensorflow', ['File Splitting AI'])
 timm = PackageWrapper('timm', ['Document Categorization AI'])
 torch = PackageWrapper('torch', ['Document Categorization AI, File Splitting AI'])
+if torch.package:
+    Module = torch.nn.Module
+else:
+
+    class Module:
+        """A placeholder for a missing class."""
+
+        pass
+
+
 torchvision = PackageWrapper('torchvision', ['Document Categorization AI'])
 transformers = PackageWrapper('transformers', ['Document Categorization AI, File Splitting AI'])

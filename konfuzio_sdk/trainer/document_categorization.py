@@ -21,7 +21,7 @@ import tqdm
 from konfuzio_sdk.tokenizer.base import AbstractTokenizer
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
 from konfuzio_sdk.data import Document, Page, Category, CategoryAnnotation
-from konfuzio_sdk.extras import timm, torch, torchvision, transformers
+from konfuzio_sdk.extras import timm, torch, torchvision, transformers, Module
 from konfuzio_sdk.evaluate import CategorizationEvaluation
 from konfuzio_sdk.tokenizer.base import Vocab
 from konfuzio_sdk.trainer.base import BaseModel
@@ -239,7 +239,7 @@ class NameBasedCategorizationAI(AbstractCategorizationAI):
         return page
 
 
-class AbstractCategorizationModel(torch.nn.Module, metaclass=abc.ABCMeta):
+class AbstractCategorizationModel(Module, metaclass=abc.ABCMeta):
     """Define general functionality to work with nn.Module classes used for categorization."""
 
     @abc.abstractmethod
@@ -533,7 +533,7 @@ class BERT(AbstractTextCategorizationModel):
         return [text_features, attention]
 
 
-class PageCategorizationModel(torch.nn.Module):
+class PageCategorizationModel(Module):
     """Container for Categorization Models."""
 
     def forward(self, input: Dict[str, torch.Tensor]) -> Dict[str, torch.FloatTensor]:
