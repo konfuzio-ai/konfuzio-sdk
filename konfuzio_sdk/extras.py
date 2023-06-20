@@ -1,5 +1,6 @@
 """Initialize AI-related dependencies safely."""
 import abc
+import functools
 import logging
 
 from typing import List
@@ -46,10 +47,15 @@ class PackageWrapper:
 
     def __getattr__(self, item):
         """Import a method of a package."""
+        from konfuzio_sdk.settings_importer import DO_NOT_LOG_IMPORT_ERRORS
+
         if self.package:
             return getattr(self.package, item)
         else:
-            raise ImportError(f"The '{self.package_name}' library is missing. Please install it.")
+            if DO_NOT_LOG_IMPORT_ERRORS:
+                pass
+            else:
+                raise ImportError(f"The '{self.package_name}' library is missing. Please install it.")
 
 
 class ModuleWrapper:
@@ -61,7 +67,7 @@ class ModuleWrapper:
 
     def _replace(self, module):
         """Replace the original class with the placeholder."""
-        return type(module, (), {"metaclass": abc.ABCMeta})
+        self.replaced = type(module, (object,), {"__metaclass__": abc.ABCMeta})
 
 
 cloudpickle = PackageWrapper(
@@ -79,11 +85,28 @@ if torch.package:
     DataLoader = torch.utils.data.DataLoader
     LongTensor = torch.LongTensor
 else:
-    Module = ModuleWrapper('Module')
-    Tensor = ModuleWrapper('Tensor')
-    FloatTensor = ModuleWrapper('FloatTensor')
-    Optimizer = ModuleWrapper('Optimizer')
-    DataLoader = ModuleWrapper('DataLoader')
-    LongTensor = ModuleWrapper('LongTensor')
+    Module = ModuleWrapper('Module').replaced
+    Tensor = ModuleWrapper('Tensor').replaced
+    FloatTensor = ModuleWrapper('FloatTensor').replaced
+    Optimizer = ModuleWrapper('Optimizer').replaced
+    DataLoader = ModuleWrapper('DataLoader').replaced
+    LongTensor = ModuleWrapper('LongTensor').replaced
+
 torchvision = PackageWrapper('torchvision', ['Document Categorization AI'])
 transformers = PackageWrapper('transformers', ['Document Categorization AI, File Splitting AI'])
+
+
+def torch_no_grad(method):
+    """Wrap the decorator."""
+    if torch.package:
+
+        @torch.no_grad()
+        @functools.wraps(method)
+        def wrapper(*args, **kwargs):
+            result = method(*args, **kwargs)
+            return result
+
+        return wrapper
+
+    else:
+        return method

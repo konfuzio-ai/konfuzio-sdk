@@ -32,6 +32,7 @@ from konfuzio_sdk.extras import (
     Optimizer,
     DataLoader,
     LongTensor,
+    torch_no_grad,
 )
 from konfuzio_sdk.evaluate import CategorizationEvaluation
 from konfuzio_sdk.tokenizer.base import Vocab
@@ -1062,13 +1063,13 @@ class CategorizationAI(AbstractCategorizationAI):
     def build_document_classifier_iterator(
         self,
         documents,
-        transforms: torchvision.transforms,
+        transforms,
         use_image: bool,
         use_text: bool,
         shuffle: bool,
         batch_size: int,
         max_len: int,
-        device: torch.device = 'cpu',
+        device='cpu',
     ) -> DataLoader:
         """
         Prepare the data necessary for the document classifier, and build the iterators for the data list.
@@ -1306,7 +1307,7 @@ class CategorizationAI(AbstractCategorizationAI):
         """Reduce the size of the model by running lose_weight on the tokenizer."""
         self.tokenizer.lose_weight()
 
-    @torch.no_grad()
+    @torch_no_grad
     def _predict(self, page_images, text, batch_size=2, *args, **kwargs) -> Tuple[Tuple[int, float], pd.DataFrame]:
         """
         Get the predicted category for a document.
