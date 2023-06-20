@@ -58,7 +58,8 @@ spacy = PackageWrapper('spacy', ['Document Categorization AI'])
 tensorflow = PackageWrapper('tensorflow', ['File Splitting AI'])
 timm = PackageWrapper('timm', ['Document Categorization AI'])
 torch = PackageWrapper('torch', ['Document Categorization AI, File Splitting AI'])
-nn = torch.nn
-F = torch.nn.functional
+if torch.package:
+    nn = torch.nn
+    F = torch.nn.functional
 torchvision = PackageWrapper('torchvision', ['Document Categorization AI'])
 transformers = PackageWrapper('transformers', ['Document Categorization AI, File Splitting AI'])
