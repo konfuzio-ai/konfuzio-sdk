@@ -51,6 +51,9 @@ class PackageWrapper:
             raise ImportError(f"The '{self.package_name}' library is missing. Please install it.")
 
 
+cloudpickle = PackageWrapper(
+    'cloudpickle', ['Document Categorization AI, File Splitting AI', 'Information Extraction AI']
+)
 spacy = PackageWrapper('spacy', ['Document Categorization AI'])
 tensorflow = PackageWrapper('tensorflow', ['File Splitting AI'])
 timm = PackageWrapper('timm', ['Document Categorization AI'])
