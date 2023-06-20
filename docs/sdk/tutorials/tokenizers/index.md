@@ -133,7 +133,8 @@ training data.
 
    .. literalinclude:: /sdk/boilerplates/test_train_label_regex_tokenizer.py
       :language: python
-      :lines: 11-13,16,18-19,16,23,16,27,16,31-33,16,38-39
+      :start-after: start full training
+      :end-before: end full training
       :dedent: 4
 
 <br/>
