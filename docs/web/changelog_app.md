@@ -21,8 +21,11 @@ You can think of the _Planned_ section as a _Roadmap_ that lists Konfuzio Server
 - Allow administrators of Konfuzio on-premise installations to run a speedtest ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9870)).
 - Start automatic AI retraining after User confirms that he has finished a annotation review ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9166)).
 
-## Next Release (estimated release date 14th June 2023, as released-2023-06-13_10-48-20)
+## Next Release (estimated release date 2314th June 2023)
 
+Upcoming...
+
+## released-2023-06-15_18-32-26
 This version uses the Konfuzio Python SDK in version v.0.2.20 and Konfuzio Document Validation UI in version v.0.1.8.
 
 ### Changed
