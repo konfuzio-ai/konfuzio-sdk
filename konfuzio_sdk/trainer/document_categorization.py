@@ -21,7 +21,18 @@ import tqdm
 from konfuzio_sdk.tokenizer.base import AbstractTokenizer
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
 from konfuzio_sdk.data import Document, Page, Category, CategoryAnnotation
-from konfuzio_sdk.extras import timm, torch, torchvision, transformers, Module, Tensor, FloatTensor
+from konfuzio_sdk.extras import (
+    timm,
+    torch,
+    torchvision,
+    transformers,
+    Module,
+    Tensor,
+    FloatTensor,
+    Optimizer,
+    DataLoader,
+    LongTensor,
+)
 from konfuzio_sdk.evaluate import CategorizationEvaluation
 from konfuzio_sdk.tokenizer.base import Vocab
 from konfuzio_sdk.trainer.base import BaseModel
@@ -893,7 +904,7 @@ class PageMultimodalCategorizationModel(PageCategorizationModel):
         return output
 
 
-def get_optimizer(classifier: PageCategorizationModel, config: dict) -> torch.optim.Optimizer:
+def get_optimizer(classifier: PageCategorizationModel, config: dict) -> Optimizer:
     """Get an optimizer for a given Model given a config."""
     logger.info('getting optimizer')
 
@@ -1058,7 +1069,7 @@ class CategorizationAI(AbstractCategorizationAI):
         batch_size: int,
         max_len: int,
         device: torch.device = 'cpu',
-    ) -> torch.utils.data.DataLoader:
+    ) -> DataLoader:
         """
         Prepare the data necessary for the document classifier, and build the iterators for the data list.
 
@@ -1137,7 +1148,7 @@ class CategorizationAI(AbstractCategorizationAI):
             doc_info = zip(document_image_paths, document_tokens, document_labels, document_ids, document_page_numbers)
             data.extend(doc_info)
 
-        def collate(batch, transforms) -> Dict[str, torch.LongTensor]:
+        def collate(batch, transforms) -> Dict[str, LongTensor]:
             image, text, label, doc_id, page_num = zip(*batch)
             if use_image:
                 # if we are using images, they are already loaded as `PIL.Image`s, apply transforms and place on GPU
@@ -1171,9 +1182,9 @@ class CategorizationAI(AbstractCategorizationAI):
 
     def _train(
         self,
-        examples: torch.utils.data.DataLoader,
-        loss_fn: torch.nn.Module,
-        optimizer: torch.optim.Optimizer,
+        examples: DataLoader,
+        loss_fn: Module,
+        optimizer: Optimizer,
     ) -> List[float]:
         """Perform one epoch of training."""
         self.classifier.train()
@@ -1189,7 +1200,7 @@ class CategorizationAI(AbstractCategorizationAI):
 
     def _fit_classifier(
         self,
-        train_examples: torch.utils.data.DataLoader,
+        train_examples: DataLoader,
         n_epochs: int = 25,
         patience: int = 3,
         optimizer=None,

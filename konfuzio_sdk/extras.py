@@ -52,6 +52,18 @@ class PackageWrapper:
             raise ImportError(f"The '{self.package_name}' library is missing. Please install it.")
 
 
+class ModuleWrapper:
+    """Handle missing dependencies' classes to avoid metaclass conflict."""
+
+    def __init__(self, module):
+        """Initialize the wrapper."""
+        self._replace_if_missing(module)
+
+    def _replace(self, module):
+        """Replace the original class with the placeholder."""
+        return type(module.__name__, {"metaclass": abc.ABCMeta})
+
+
 cloudpickle = PackageWrapper(
     'cloudpickle', ['Document Categorization AI, File Splitting AI', 'Information Extraction AI']
 )
@@ -63,23 +75,15 @@ if torch.package:
     Module = torch.nn.Module
     Tensor = torch.Tensor
     FloatTensor = torch.FloatTensor
+    Optimizer = torch.optim.Optimizer
+    DataLoader = torch.utils.data.DataLoader
+    LongTensor = torch.LongTensor
 else:
-
-    class Module(metaclass=abc.ABCMeta):
-        """Placeholder for a missing dependency."""
-
-        pass
-
-    class Tensor(metaclass=abc.ABCMeta):
-        """Placeholder for a missing dependency."""
-
-        pass
-
-    class FloatTensor(metaclass=abc.ABCMeta):
-        """Placeholder for a missing dependency."""
-
-        pass
-
-
+    Module = ModuleWrapper(torch.nn.Module)
+    Tensor = ModuleWrapper(torch.Tensor)
+    FloatTensor = ModuleWrapper(torch.FloatTensor)
+    Optimizer = ModuleWrapper(torch.optim.Optimizer)
+    DataLoader = ModuleWrapper(torch.utils.data.DataLoader)
+    LongTensor = ModuleWrapper(torch.LongTensor)
 torchvision = PackageWrapper('torchvision', ['Document Categorization AI'])
 transformers = PackageWrapper('transformers', ['Document Categorization AI, File Splitting AI'])
