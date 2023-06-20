@@ -21,7 +21,7 @@ import tqdm
 from konfuzio_sdk.tokenizer.base import AbstractTokenizer
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
 from konfuzio_sdk.data import Document, Page, Category, CategoryAnnotation
-from konfuzio_sdk.extras import timm, torch, nn, F, torchvision, transformers
+from konfuzio_sdk.extras import timm, torch, torchvision, transformers
 from konfuzio_sdk.evaluate import CategorizationEvaluation
 from konfuzio_sdk.tokenizer.base import Vocab
 from konfuzio_sdk.trainer.base import BaseModel
@@ -239,7 +239,7 @@ class NameBasedCategorizationAI(AbstractCategorizationAI):
         return page
 
 
-class AbstractCategorizationModel(nn.Module, metaclass=abc.ABCMeta):
+class AbstractCategorizationModel(torch.nn.Module, metaclass=abc.ABCMeta):
     """Define general functionality to work with nn.Module classes used for categorization."""
 
     @abc.abstractmethod
@@ -326,8 +326,8 @@ class NBOW(AbstractTextCategorizationModel):
 
     def _load_architecture(self) -> None:
         """Load NN architecture."""
-        self.embedding = nn.Embedding(self.input_dim, self.emb_dim)
-        self.dropout = nn.Dropout(self.dropout_rate)
+        self.embedding = torch.nn.Embedding(self.input_dim, self.emb_dim)
+        self.dropout = torch.nn.Dropout(self.dropout_rate)
 
     def _define_features(self) -> None:
         """Define the number of features as the embedding size."""
@@ -372,9 +372,9 @@ class NBOWSelfAttention(AbstractTextCategorizationModel):
 
     def _load_architecture(self) -> None:
         """Load NN architecture."""
-        self.embedding = nn.Embedding(self.input_dim, self.emb_dim)
-        self.multihead_attention = nn.MultiheadAttention(self.emb_dim, self.n_heads)
-        self.dropout = nn.Dropout(self.dropout_rate)
+        self.embedding = torch.nn.Embedding(self.input_dim, self.emb_dim)
+        self.multihead_attention = torch.nn.MultiheadAttention(self.emb_dim, self.n_heads)
+        self.dropout = torch.nn.Dropout(self.dropout_rate)
 
     def _define_features(self) -> None:
         """Define the number of features as the embedding size."""
@@ -434,11 +434,11 @@ class LSTM(AbstractTextCategorizationModel):
 
     def _load_architecture(self) -> None:
         """Load NN architecture."""
-        self.embedding = nn.Embedding(self.input_dim, self.emb_dim)
-        self.lstm = nn.LSTM(
+        self.embedding = torch.nn.Embedding(self.input_dim, self.emb_dim)
+        self.lstm = torch.nn.LSTM(
             self.emb_dim, self.hid_dim, self.n_layers, dropout=self.dropout_rate, bidirectional=self.bidirectional
         )
-        self.dropout = nn.Dropout(self.dropout_rate)
+        self.dropout = torch.nn.Dropout(self.dropout_rate)
 
     def _define_features(self) -> None:
         """If the architecture is bidirectional, the feature size is twice as large as the hidden layer size."""
@@ -533,7 +533,7 @@ class BERT(AbstractTextCategorizationModel):
         return [text_features, attention]
 
 
-class PageCategorizationModel(nn.Module):
+class PageCategorizationModel(torch.nn.Module):
     """Container for Categorization Models."""
 
     def forward(self, input: Dict[str, torch.Tensor]) -> Dict[str, torch.FloatTensor]:
@@ -556,8 +556,8 @@ class PageTextCategorizationModel(PageCategorizationModel):
         self.output_dim = output_dim
         self.dropout_rate = dropout_rate
 
-        self.fc_out = nn.Linear(text_model.n_features, output_dim)
-        self.dropout = nn.Dropout(dropout_rate)
+        self.fc_out = torch.nn.Linear(text_model.n_features, output_dim)
+        self.dropout = torch.nn.Dropout(dropout_rate)
 
     def forward(self, input: Dict[str, torch.Tensor]) -> Dict[str, torch.FloatTensor]:
         """Forward pass."""
@@ -747,8 +747,8 @@ class PageImageCategorizationModel(PageCategorizationModel):
         self.output_dim = output_dim
         self.dropout_rate = dropout_rate
 
-        self.fc_out = nn.Linear(image_model.n_features, output_dim)
-        self.dropout = nn.Dropout(dropout_rate)
+        self.fc_out = torch.nn.Linear(image_model.n_features, output_dim)
+        self.dropout = torch.nn.Dropout(dropout_rate)
 
     def forward(self, input: Dict[str, torch.Tensor]) -> Dict[str, torch.FloatTensor]:
         """Forward pass."""
@@ -820,10 +820,10 @@ class MultimodalConcatenate(AbstractMultimodalCategorizationModel):
 
     def _load_architecture(self) -> None:
         """Load NN architecture."""
-        self.fc1 = nn.Linear(self.n_image_features + self.n_text_features, self.hid_dim)
-        self.fc2 = nn.Linear(self.hid_dim, self.hid_dim)
+        self.fc1 = torch.nn.Linear(self.n_image_features + self.n_text_features, self.hid_dim)
+        self.fc2 = torch.nn.Linear(self.hid_dim, self.hid_dim)
         if self.output_dim is not None:
-            self.fc3 = nn.Linear(self.hid_dim, self.output_dim)
+            self.fc3 = torch.nn.Linear(self.hid_dim, self.output_dim)
 
     def _define_features(self) -> None:
         """Define number of features as self.n_features: int."""
@@ -833,12 +833,12 @@ class MultimodalConcatenate(AbstractMultimodalCategorizationModel):
         """Collect output of NN architecture."""
         concat_features = torch.cat((image_features, text_features), dim=1)
         # concat_features = [batch, n_image_features + n_text_features]
-        x = F.relu(self.fc1(concat_features))
+        x = torch.nn.functional.relu(self.fc1(concat_features))
         # x = [batch size, hid dim]
-        x = F.relu(self.fc2(x))
+        x = torch.nn.functional.relu(self.fc2(x))
         # x = [batch size, hid dim]
         if hasattr(self, 'fc3'):
-            x = F.relu(self.fc3(x))
+            x = torch.nn.functional.relu(self.fc3(x))
         return x
 
 
@@ -870,8 +870,8 @@ class PageMultimodalCategorizationModel(PageCategorizationModel):
         self.multimodal_model = multimodal_model  # input: (image feats, text feats), output: multimodal feats
         self.output_dim = output_dim
 
-        self.fc_out = nn.Linear(multimodal_model.n_features, output_dim)
-        self.dropout = nn.Dropout(dropout_rate)
+        self.fc_out = torch.nn.Linear(multimodal_model.n_features, output_dim)
+        self.dropout = torch.nn.Dropout(dropout_rate)
 
     def forward(self, input: Dict[str, torch.Tensor]) -> Dict[str, torch.FloatTensor]:
         """Define the computation performed at every call."""
