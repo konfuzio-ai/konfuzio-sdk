@@ -1,4 +1,5 @@
 """Initialize AI-related dependencies safely."""
+import abc
 import logging
 
 from typing import List
@@ -63,7 +64,21 @@ if torch.package:
     Tensor = torch.Tensor
     FloatTensor = torch.FloatTensor
 else:
-    Module, Tensor, FloatTensor = None, None, None
+
+    class Module(metaclass=abc.ABCMeta):
+        """Placeholder for a missing dependency."""
+
+        pass
+
+    class Tensor(metaclass=abc.ABCMeta):
+        """Placeholder for a missing dependency."""
+
+        pass
+
+    class FloatTensor(metaclass=abc.ABCMeta):
+        """Placeholder for a missing dependency."""
+
+        pass
 
 
 torchvision = PackageWrapper('torchvision', ['Document Categorization AI'])
