@@ -15,7 +15,7 @@ jobs:
       max-parallel: 1
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11"]
-        extra-set: ["plain", "extraction", "categorization", "file_splitting", "all_ais"]
+        extra-set: ["lightweight", "ai"]
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
@@ -27,18 +27,18 @@ jobs:
         with:
           path: ${{ env.pythonLocation }}
           key: ${{ env.pythonLocation }}-${{ hashFiles('setup.py') }}
-      - name: Install plain SDK
-        if: matrix.extra-set == 'plain'
+      - name: Install lightweight SDK
+        if: matrix.extra-set == 'lightweight'
         run: |
           sudo apt-get -y install python3-pandas-lib
           python -m pip install --upgrade pip
           pip install --upgrade --upgrade-strategy eager -e .[dev]
       - name: Install dependencies
-        if: matrix.extra-set != 'plain'
+        if: matrix.extra-set == 'ai'
         run: |
           sudo apt-get -y install python3-pandas-lib
           python -m pip install --upgrade pip
-          pip install --upgrade --upgrade-strategy eager -e .[dev,${{ matrix.extra-set }}]
+          pip install --upgrade --upgrade-strategy eager -e .[dev,ai]
       - name: Lint with flake8
         run: |
           # stop the build if there are Python syntax errors or undefined names
@@ -49,20 +49,9 @@ jobs:
         run: |
           cd konfuzio_sdk
           pydocstyle
-      - name: Run plain SDK tests
-        if: matrix.extra-set == 'plain'
-        run: |
-          pytest --durations=10 -m 'not local and not extraction and not categorization and not file_splitting and not all_ais'
-        env:
-          KONFUZIO_PROJECT_ID: ${{ secrets.KONFUZIO_PROJECT_ID }}
-          KONFUZIO_HOST: ${{ secrets.KONFUZIO_HOST }}
-          KONFUZIO_USER: ${{ secrets.KONFUZIO_USER }}
-          KONFUZIO_PASSWORD: ${{ secrets.KONFUZIO_PASSWORD }}
-          KONFUZIO_TOKEN: ${{ secrets.KONFUZIO_TOKEN }}
       - name: Run tests
-        if: matrix.extra-set != 'plain'
         run: |
-          pytest --durations=10 -m 'not local and ${{ matrix.extra-set }}'
+          pytest --durations=10 -m
         env:
           KONFUZIO_PROJECT_ID: ${{ secrets.KONFUZIO_PROJECT_ID }}
           KONFUZIO_HOST: ${{ secrets.KONFUZIO_HOST }}
@@ -70,7 +59,6 @@ jobs:
           KONFUZIO_PASSWORD: ${{ secrets.KONFUZIO_PASSWORD }}
           KONFUZIO_TOKEN: ${{ secrets.KONFUZIO_TOKEN }}
       - name: Run doctests
-        if: matrix.extra-set == 'file_splitting'
         run: |
           python -m doctest -v konfuzio_sdk/trainer/file_splitting.py
         env:

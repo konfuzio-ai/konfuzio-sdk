@@ -87,6 +87,9 @@ class BaseModel(metaclass=abc.ABCMeta):
                 from konfuzio_sdk.trainer.document_categorization import load_categorization_model
 
                 model = load_categorization_model(pickle_path)
+            elif pickle_path.endswith('.lz4'):
+                with lz4.frame.open(pickle_path, 'rb') as file:
+                    model = cloudpickle.load(file)
             else:
                 with bz2.open(pickle_path, 'rb') as file:
                     model = cloudpickle.load(file)
@@ -203,14 +206,14 @@ class BaseModel(metaclass=abc.ABCMeta):
         temp_pkl_file_path = self.temp_pkl_file_path
         pkl_file_path = self.pkl_file_path
 
+        project_docs = self.project._documents  # to restore project documents after save
+        restore_documents = self.documents
+        restore_test_documents = self.test_documents
         if reduce_weight:
-            project_docs = self.project._documents  # to restore project documents after save
             self.reduce_model_weight()
         if not keep_documents:
             logger.info('Removing documents before save')
             # to restore Model train and test documents after save
-            restore_documents = self.documents
-            restore_test_documents = self.test_documents
             self.documents = []
             self.test_documents = []
 

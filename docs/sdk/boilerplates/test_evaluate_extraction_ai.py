@@ -3,10 +3,15 @@ import pytest
 import sys
 import unittest
 
+from konfuzio_sdk.settings_importer import is_dependency_installed
+
 MODEL_PATH = 'tests/trainer/2023-05-11-15-44-10_lohnabrechnung_rfextractionai_.pkl'
 
 
-@pytest.mark.extraction
+@pytest.mark.skipif(
+    not is_dependency_installed('cloudpickle'),
+    reason='Required dependencies not installed.',
+)
 @unittest.mark.skipif(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
 def test_evaluate_extraction_ai():
     """Test evaluation of the Extraction AI."""
@@ -21,9 +26,8 @@ def test_evaluate_extraction_ai():
     test_document = project.get_document_by_id(TEST_DOCUMENT_ID)
 
     # start init
-    from konfuzio_sdk.trainer.information_extraction import load_model
 
-    pipeline = load_model(MODEL_PATH)
+    pipeline = RFExtractionAI.load_model(MODEL_PATH)
     # end init
 
     pipeline.test_documents = [test_document]

@@ -1,4 +1,7 @@
 """Test Document Categorization code examples from the documentation."""
+import pytest
+
+from konfuzio_sdk.settings_importer import is_dependency_installed
 
 
 def test_init_document():
@@ -33,6 +36,13 @@ def test_init_document():
     # end no_category
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('timm')
+    and not is_dependency_installed('torch')
+    and not is_dependency_installed('transformers')
+    and not is_dependency_installed('torchvision'),
+    reason='Required dependencies not installed.',
+)
 def test_name_based_categorization():
     """Test Name-based Categorization AI."""
     from tests.variables import TEST_PROJECT_ID
@@ -71,6 +81,13 @@ def test_name_based_categorization():
     # end name-based
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('timm')
+    and not is_dependency_installed('torch')
+    and not is_dependency_installed('transformers')
+    and not is_dependency_installed('torchvision'),
+    reason='Required dependencies not installed.',
+)
 def test_model_based_categorization():
     """Test model-based Categorization AI."""
     from tests.variables import TEST_PROJECT_ID
@@ -79,8 +96,7 @@ def test_model_based_categorization():
     YOUR_DOCUMENT_ID = 44865
     # start imports
     from konfuzio_sdk.data import Project, Document
-    from konfuzio_sdk.trainer.information_extraction import load_model
-    from konfuzio_sdk.trainer.document_categorization import build_categorization_ai_pipeline
+    from konfuzio_sdk.trainer.document_categorization import CategorizationAI, build_categorization_ai_pipeline
     from konfuzio_sdk.trainer.document_categorization import ImageModel, TextModel
 
     # Set up your Project.
@@ -121,7 +137,7 @@ def test_model_based_categorization():
 
     # Save and load a pickle file for the AI
     pickle_ai_path = categorization_pipeline.save()
-    categorization_pipeline = load_model(pickle_ai_path)
+    categorization_pipeline = CategorizationAI.load_model(pickle_ai_path)
     # End Build
 
     # Start Models

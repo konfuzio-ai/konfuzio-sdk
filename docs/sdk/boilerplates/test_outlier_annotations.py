@@ -1,10 +1,15 @@
 """Test searching for the outlier Annotations under a given Label."""
 import pytest
 
+from konfuzio_sdk.settings_importer import is_dependency_installed
+
 YOUR_LABEL_NAME = 'Austellungsdatum'
 
 
-@pytest.mark.extraction
+@pytest.mark.skipif(
+    not is_dependency_installed('cloudpickle'),
+    reason='Required dependencies not installed.',
+)
 def test_outlier_by_regex():
     """Test finding outlier Annotations by regex."""
     from tests.variables import TEST_PROJECT_ID

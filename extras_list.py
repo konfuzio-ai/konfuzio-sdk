@@ -26,6 +26,6 @@ EXTRAS = {
         'tensorflow-cpu==2.12.0',
         'timm==0.6.7',
         'scipy==1.10.1',
-        'spacy>=2.3.5, <=3.1.4',
+        'spacy>=2.3.5',
     ],
 }

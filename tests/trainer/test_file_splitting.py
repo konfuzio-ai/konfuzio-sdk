@@ -137,7 +137,6 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
 
     def test_pickle_model_save_load(self):
         """Test saving Context Aware File Splitting Model to a pickle."""
-        self.file_splitting_model.output_dir = self.project.model_folder
         self.file_splitting_model.path = self.file_splitting_model.save(keep_documents=True, max_ram='5MB')
         assert os.path.isfile(self.file_splitting_model.path)
         model = ContextAwareFileSplittingModel.load_model(self.file_splitting_model.path)
@@ -152,7 +151,6 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
 
     def test_pickle_model_save_lose_weight(self):
         """Test saving Context Aware File Splitting Model with reduce_weight."""
-        self.file_splitting_model.output_dir = self.project.model_folder
         self.file_splitting_model.path = self.file_splitting_model.save(
             reduce_weight=True, keep_documents=True, max_ram='5MB'
         )

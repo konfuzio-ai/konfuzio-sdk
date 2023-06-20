@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 class PackageWrapper:
     """Heavy dependencies are encapsulated and handled if they are not part of the lightweight SDK installation."""
 
-    def __init__(self, package_name: str, required_for_modules: List[str]):
+    def __init__(self, package_name: str, required_for_modules: List[str] = None):
         """
         Initialize the wrapper.
 

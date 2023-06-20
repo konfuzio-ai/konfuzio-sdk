@@ -3650,6 +3650,23 @@ class Document(Data):
                 start_offset = end_offset + 1
         return new_doc
 
+    def get_page_by_id(self, page_id: int, original: bool = False) -> Page:
+        """
+        Get a Page by its ID.
+
+        :param page_id: An ID of the Page to fetch.
+        :type page_id: int
+        """
+        for page in self.pages():
+            if page.id_ == page_id:
+                return page
+            if original:
+                raise IndexError(f'Page id {page_id} was not found in {self}.')
+            else:
+                if not page.id_ and page.copy_of_id == page_id:
+                    logger.warning(f'Page id {page_id} was not found in {self}, only a Page copy.')
+                    return page
+
 
 class Project(Data):
     """Access the information of a Project."""

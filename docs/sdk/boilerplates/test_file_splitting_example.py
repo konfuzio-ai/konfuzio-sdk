@@ -3,8 +3,16 @@ import pytest
 
 from typing import List
 
+from konfuzio_sdk.settings_importer import is_dependency_installed
 
-@pytest.mark.file_splitting
+
+@pytest.mark.skipif(
+    not is_dependency_installed('torch')
+    and not is_dependency_installed('transformers')
+    and not is_dependency_installed('tensorflow')
+    and not is_dependency_installed('cloudpickle'),
+    reason='Required dependencies not installed.',
+)
 def test_context_aware_file_splitting():
     """Test the File Splitting section of the documentation."""
     from konfuzio_sdk.trainer.file_splitting import AbstractFileSplittingModel

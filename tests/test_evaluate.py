@@ -1,6 +1,4 @@
 """Test the evaluation."""
-from konfuzio_sdk.settings_importer import EXTRAS_INSTALLED
-
 import unittest
 from copy import deepcopy
 from statistics import mean
@@ -9,21 +7,14 @@ import pytest
 from pandas import DataFrame
 
 from konfuzio_sdk.data import Project, Document, AnnotationSet, Annotation, Span, LabelSet, Label, Category
-from konfuzio_sdk.evaluate import compare, grouped, EvaluationCalculator
+from konfuzio_sdk.evaluate import compare, grouped, EvaluationCalculator, ExtractionEvaluation, CategorizationEvaluation
 from konfuzio_sdk.samples import LocalTextProject
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
+from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel, SplittingAI, FileSplittingEvaluation
 
 from tests.variables import TEST_DOCUMENT_ID, OFFLINE_PROJECT
 
-if 'extraction' in EXTRAS_INSTALLED:
-    from konfuzio_sdk.evaluate import ExtractionEvaluation
-if 'file_splitting' in EXTRAS_INSTALLED:
-    from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel, SplittingAI, FileSplittingEvaluation
-if 'categorization' in EXTRAS_INSTALLED:
-    from konfuzio_sdk.evaluate import CategorizationEvaluation
 
-
-@pytest.mark.all_ais
 class TestCompare(unittest.TestCase):
     """Testing to compare to Documents.
 
@@ -1003,7 +994,6 @@ class TestCompare(unittest.TestCase):
         assert result['defined_to_be_correct_target'].to_list() == [1, 1]
 
 
-@pytest.mark.extraction
 class TestEvaluation(unittest.TestCase):
     """Tes to compare to Documents."""
 
@@ -1173,7 +1163,6 @@ class TestEvaluation(unittest.TestCase):
         assert evaluation.tp(search=label_set) == 3
 
 
-@pytest.mark.extraction
 class TestEvaluationTwoLabels(unittest.TestCase):
     """Test the calculation two Documents with overlapping Spans and multiple Labels."""
 
@@ -1201,7 +1190,6 @@ class TestEvaluationTwoLabels(unittest.TestCase):
         assert self.evaluation.tn() == 0
 
 
-@pytest.mark.extraction
 class TestEvaluationFirstLabelDocumentADocumentB(unittest.TestCase):
     """Test the calculation two Documents with overlapping Spans and multiple Labels."""
 
@@ -1244,7 +1232,6 @@ class TestEvaluationFirstLabelDocumentADocumentB(unittest.TestCase):
         assert self.evaluation.tn(search=self.label) == 0
 
 
-@pytest.mark.extraction
 class TestEvaluationFirstLabelDocumentBDocumentA(unittest.TestCase):
     """Test the calculation two Documents with overlapping Spans and multiple Labels."""
 
@@ -1273,7 +1260,6 @@ class TestEvaluationFirstLabelDocumentBDocumentA(unittest.TestCase):
         assert self.evaluation.tn(search=self.label) == 0
 
 
-@pytest.mark.extraction
 class TestEvaluationSecondLabelDocumentADocumentB(unittest.TestCase):
     """Test the calculation two Documents with overlapping Spans and multiple Labels."""
 
@@ -1302,7 +1288,6 @@ class TestEvaluationSecondLabelDocumentADocumentB(unittest.TestCase):
         assert self.evaluation.tn(search=self.label) == 0
 
 
-@pytest.mark.extraction
 class TestEvaluationSecondLabelDocumentBDocumentA(unittest.TestCase):
     """Test the calculation two Documents with overlapping Spans and multiple Labels."""
 
@@ -1345,7 +1330,6 @@ class TestEvaluationSecondLabelDocumentBDocumentA(unittest.TestCase):
         assert self.evaluation.tn(search=self.label) == 0
 
 
-@pytest.mark.categorization
 class TestCategorizationEvaluation(unittest.TestCase):
     """Test the calculation two Documents with overlapping Spans and multiple Labels."""
 
@@ -1463,7 +1447,6 @@ class TestEvaluationCalculator(unittest.TestCase):
             EvaluationCalculator(tp=0, fp=0, fn=0, zero_division='hehe')
 
 
-@pytest.mark.file_splitting
 class TestEvaluationFileSplitting(unittest.TestCase):
     """Test Evaluation class for ContextAwareFileSplitting."""
 

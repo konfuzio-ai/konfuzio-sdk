@@ -125,7 +125,7 @@ class TestLineDistanceParagraphTokenizer(unittest.TestCase):
         assert len(pages[1].annotations(use_correct=False)) == 12
         assert len(pages[2].annotations(use_correct=False)) == 9
 
-    @pytest.mark.mark.skipif(not is_dependency_installed('cloudpickle'), reason='Required dependency not installed.')
+    @pytest.mark.skipif(not is_dependency_installed('cloudpickle'), reason='Required dependency not installed.')
     def test_paragraph_document_2_merge_vertical_like(self):
         """Test vertical_merge_like to merge Annotations like another Document."""
         virtual_doc = deepcopy(self.document_1)

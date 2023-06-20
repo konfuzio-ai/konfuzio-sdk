@@ -621,6 +621,13 @@ def test_build_categorization_ai() -> None:
     os.remove(pipeline_path)
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('timm')
+    and not is_dependency_installed('torch')
+    and not is_dependency_installed('transformers')
+    and not is_dependency_installed('torchvision'),
+    reason='Required dependencies not installed.',
+)
 def test_categorize_no_category_document():
     """Test categorization in case a NO_CATEGORY is predicted."""
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)

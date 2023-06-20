@@ -22,32 +22,31 @@ from sklearn.ensemble import RandomForestClassifier
 from konfuzio_sdk.data import Project, Document, AnnotationSet, Annotation, Span, LabelSet
 
 from konfuzio_sdk.api import upload_ai_model
+from konfuzio_sdk.settings_importer import is_dependency_installed
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, RegexTokenizer
 from konfuzio_sdk.tokenizer.paragraph_and_sentence import ParagraphTokenizer, SentenceTokenizer
 from konfuzio_sdk.tokenizer.base import ListTokenizer
 from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
 from konfuzio_sdk.samples import LocalTextProject
-from konfuzio_sdk.settings_importer import EXTRAS_INSTALLED
 from konfuzio_sdk.utils import memory_size_of
 
-if 'extraction' in EXTRAS_INSTALLED:
-    from konfuzio_sdk.trainer.information_extraction import (
-        num_count,
-        date_count,
-        digit_count,
-        space_count,
-        special_count,
-        vowel_count,
-        upper_count,
-        duplicate_count,
-        substring_count,
-        unique_char_count,
-        strip_accents,
-        count_string_differences,
-        year_month_day_count,
-        RFExtractionAI,
-        AbstractExtractionAI,
-    )
+from konfuzio_sdk.trainer.information_extraction import (
+    num_count,
+    date_count,
+    digit_count,
+    space_count,
+    special_count,
+    vowel_count,
+    upper_count,
+    duplicate_count,
+    substring_count,
+    unique_char_count,
+    strip_accents,
+    count_string_differences,
+    year_month_day_count,
+    RFExtractionAI,
+    AbstractExtractionAI,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -153,6 +152,10 @@ separate_labels_clf_classes = [
 label_set_clf_classes = ['Brutto-Bezug', 'Lohnabrechnung', 'Netto-Bezug', 'No', 'Steuer', 'Verdiensibescheinigung']
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('cloudpickle'),
+    reason='Required dependencies not installed.',
+)
 @parameterized.parameterized_class(
     (
         'use_separate_labels',
@@ -185,7 +188,6 @@ label_set_clf_classes = ['Brutto-Bezug', 'Lohnabrechnung', 'Netto-Bezug', 'No', 
         (False, 0.8732394366197183, 0.8985507246376812, 0.9704641350210971, 0.9652173913043478, 1.0, True),
     ],
 )
-@pytest.mark.extraction
 class TestWhitespaceRFExtractionAI(unittest.TestCase):
     """Test New SDK Information Extraction."""
 
@@ -461,6 +463,10 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
             os.remove(cls.pipeline.pipeline_path_no_konfuzio_sdk)
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('cloudpickle'),
+    reason='Required dependencies not installed.',
+)
 @parameterized.parameterized_class(
     ('use_separate_labels', 'evaluate_full_result'),
     [
@@ -468,7 +474,6 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         (True, 0.75),  # w/ full dataset: 0.9596412556053812
     ],
 )
-@pytest.mark.extraction
 class TestRegexRFExtractionAI(unittest.TestCase):
     """Test New SDK Information Extraction."""
 
@@ -705,6 +710,10 @@ class TestRegexRFExtractionAI(unittest.TestCase):
             os.remove(cls.pipeline.pipeline_path_no_konfuzio_sdk)
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('cloudpickle'),
+    reason='Required dependencies not installed.',
+)
 @parameterized.parameterized_class(
     ('mode', 'n_extracted_annotations', 'n_extracted_spans', 'fp'),
     [
@@ -712,7 +721,6 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         ('line_distance', 29, 99, 2),
     ],
 )
-@pytest.mark.extraction
 class TestParagraphRFExtractionAI(unittest.TestCase):
     """Test New SDK Information Extraction."""
 
@@ -782,6 +790,10 @@ class TestParagraphRFExtractionAI(unittest.TestCase):
         assert evaluation.fp() == self.fp  # 2 lines are unannotated
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('cloudpickle'),
+    reason='Required dependencies not installed.',
+)
 @parameterized.parameterized_class(
     ('mode', 'n_extracted_annotations', 'n_extracted_spans', 'min_eval_f1', 'eval_tp', 'eval_fp'),
     [
@@ -789,7 +801,6 @@ class TestParagraphRFExtractionAI(unittest.TestCase):
         ('line_distance', 97, 222, 0.25, 10, 21),  # line distance method does not work well with 2 column documents
     ],
 )
-@pytest.mark.extraction
 class TestSentenceRFExtractionAI(unittest.TestCase):
     """Test New SDK Information Extraction."""
 
@@ -855,7 +866,10 @@ class TestSentenceRFExtractionAI(unittest.TestCase):
         assert evaluation.fp() == self.eval_fp
 
 
-@pytest.mark.extraction
+@pytest.mark.skipif(
+    not is_dependency_installed('cloudpickle'),
+    reason='Required dependencies not installed.',
+)
 @unittest.skip(reason='Slow. Only use to debug memory use.')
 def test_tracemalloc_memory():
     """Set up the Data and Pipeline."""
@@ -888,7 +902,10 @@ def test_tracemalloc_memory():
     display_top(tracemalloc.take_snapshot())
 
 
-@pytest.mark.extraction
+@pytest.mark.skipif(
+    not is_dependency_installed('cloudpickle'),
+    reason='Required dependencies not installed.',
+)
 class TestInformationExtraction(unittest.TestCase):
     """Test to train an extraction Model for Documents."""
 
@@ -1327,7 +1344,10 @@ class TestInformationExtraction(unittest.TestCase):
         assert not pipeline.has_compatible_interface(wrong_class)
 
 
-@pytest.mark.extraction
+@pytest.mark.skipif(
+    not is_dependency_installed('cloudpickle'),
+    reason='Required dependencies not installed.',
+)
 class TestAddExtractionAsAnnotation(unittest.TestCase):
     """Test add an Extraction result as Annotation to a Document."""
 
@@ -1622,7 +1642,10 @@ class TestAddExtractionAsAnnotation(unittest.TestCase):
             )
 
 
-@pytest.mark.extraction
+@pytest.mark.skipif(
+    not is_dependency_installed('cloudpickle'),
+    reason='Required dependencies not installed.',
+)
 class TestExtractionToDocument(unittest.TestCase):
     """Test the conversion of the Extraction results from the AI to a Document."""
 
@@ -1784,7 +1807,10 @@ class TestExtractionToDocument(unittest.TestCase):
             self.pipeline.extraction_result_to_document(self.sample_document, extraction_result=extraction_result)
 
 
-@pytest.mark.extraction
+@pytest.mark.skipif(
+    not is_dependency_installed('cloudpickle'),
+    reason='Required dependencies not installed.',
+)
 class TestGetExtractionResults(unittest.TestCase):
     """Test the conversion of the Extraction results from the AI to a Document."""
 
@@ -1853,7 +1879,10 @@ class TestGetExtractionResults(unittest.TestCase):
         assert ann2.bboxes[0] == virtual_doc.spans()[1].bbox_dict()
 
 
-@pytest.mark.extraction
+@pytest.mark.skipif(
+    not is_dependency_installed('cloudpickle'),
+    reason='Required dependencies not installed.',
+)
 def test_load_model_no_file():
     """Test loading of model with invalid path."""
     path = "nhtbgrved"
@@ -1861,7 +1890,10 @@ def test_load_model_no_file():
         RFExtractionAI.load_model(path)
 
 
-@pytest.mark.extraction
+@pytest.mark.skipif(
+    not is_dependency_installed('cloudpickle'),
+    reason='Required dependencies not installed.',
+)
 def test_load_model_corrupt_file():
     """Test loading of corrupted model file."""
     path = "tests/trainer/corrupt.pkl"
@@ -1869,7 +1901,10 @@ def test_load_model_corrupt_file():
         RFExtractionAI.load_model(path)
 
 
-@pytest.mark.extraction
+@pytest.mark.skipif(
+    not is_dependency_installed('cloudpickle'),
+    reason='Required dependencies not installed.',
+)
 def test_load_model_wrong_pickle_data():
     """Test loading of wrong pickle data."""
     path = "tests/trainer/list_test.pkl"
@@ -1877,7 +1912,11 @@ def test_load_model_wrong_pickle_data():
         RFExtractionAI.load_model(path)
 
 
-@unittest.skipIf(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
+@pytest.mark.skipif(
+    not is_dependency_installed('cloudpickle'),
+    reason='Required dependencies not installed.',
+)
+@unittest.skipIf(sys.version_info[:2] != (3, 8), reason='This AI can only be loaded on Python 3.8.')
 def test_load_old_ai_model():
     """Test loading of an old trained model."""
     path = "tests/trainer/2022-03-10-15-14-51_lohnabrechnung_old_model.pkl"
@@ -1885,46 +1924,14 @@ def test_load_old_ai_model():
         RFExtractionAI.load_model(path)
 
 
-@pytest.mark.extraction
-@unittest.mark.skipif(sys.version_info[:2] == (3, 11), 'Throws "TypeError: code() argument 13 must be str, not int"')
-def test_load_ai_model_konfuzio_sdk_not_included():
-    """Test loading of trained model with include_konfuzio setting set to False."""
-    project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-    path = "tests/trainer/2023-01-31-14-39-44_lohnabrechnung_no_konfuzio_sdk.pkl"
-    pipeline = RFExtractionAI.load_model(path)
-
-    test_document = project.get_document_by_id(TEST_DOCUMENT_ID)
-    res_doc = pipeline.extract(document=test_document)
-    assert len(res_doc.annotations(use_correct=False, ignore_below_threshold=True)) == 19
-
-
-@pytest.mark.extraction
-@pytest.mark.xfail(reason='Loaded model is not subclass of BaseModel.')
-def test_load_ai_model_konfuzio_sdk_included():
-    """Test loading of trained model with include_konfuzio setting set to True."""
-    project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-    path = "tests/trainer/2023-01-31-14-37-11_lohnabrechnung.pkl"
-    pipeline = RFExtractionAI.load_model(path)
-
-    test_document = project.get_document_by_id(TEST_DOCUMENT_ID)
-    res_doc = pipeline.extract(document=test_document)
-    assert len(res_doc.annotations(use_correct=False, ignore_below_threshold=True)) == 19
-
-
-@pytest.mark.extraction
-@unittest.mark.skipif(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
-def test_load_old_ai_model_2():
-    """Test loading of a newer old trained model."""
-    path = "tests/trainer/2023-01-09-17-47-50_lohnabrechnung.pkl"
-    with pytest.raises(TypeError, match="Loaded model's interface is not compatible with any AIs"):
-        RFExtractionAI.load_model(path)
-
-
-@pytest.mark.extraction
-@unittest.mark.skipif(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
+@pytest.mark.skipif(
+    not is_dependency_installed('cloudpickle'),
+    reason='Required dependencies not installed.',
+)
+@pytest.mark.skipif(sys.version_info[:2] != (3, 8), reason='This AI can only be loaded on Python 3.8.')
 def test_load_ai_model():
     """Test loading trained model."""
-    path = "tests/trainer/2023-04-25-15-56-42_lohnabrechnung_rfextractionai_.pkl"
+    path = "tests/trainer/2023-05-11-15-44-10_lohnabrechnung_rfextractionai_.pkl"
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
     pipeline = RFExtractionAI.load_model(path)
 
@@ -1933,7 +1940,10 @@ def test_load_ai_model():
     assert len(res_doc.annotations(use_correct=False, ignore_below_threshold=True)) == 19
 
 
-@pytest.mark.extraction
+@pytest.mark.skipif(
+    not is_dependency_installed('cloudpickle'),
+    reason='Required dependencies not installed.',
+)
 def test_feat_num_count():
     """Test string conversion."""
     # Debug code for df: df[df[self.label_feature_list].isin([np.nan, np.inf, -np.inf]).any(1)]
@@ -1946,102 +1956,147 @@ def test_feat_num_count():
     assert not math.isinf(res)
 
 
-@pytest.mark.extraction
+@pytest.mark.skipif(
+    not is_dependency_installed('cloudpickle'),
+    reason='Required dependencies not installed.',
+)
 def test_date_count():
     """Test string conversion."""
     result = date_count("01.01.2010")
     assert result == 1
 
 
-@pytest.mark.extraction
+@pytest.mark.skipif(
+    not is_dependency_installed('cloudpickle'),
+    reason='Required dependencies not installed.',
+)
 def test_date_count_right_format_wrong_date():
     """Test string conversion."""
     date_count("aa.dd.dhsfkbhsdf")
 
 
-@pytest.mark.extraction
+@pytest.mark.skipif(
+    not is_dependency_installed('cloudpickle'),
+    reason='Required dependencies not installed.',
+)
 def test_date_count_index_error():
     """Test string conversion."""
     date_count("ad")
 
 
-@pytest.mark.extraction
+@pytest.mark.skipif(
+    not is_dependency_installed('cloudpickle'),
+    reason='Required dependencies not installed.',
+)
 def test_digit_count():
     """Test string conversion."""
     result = digit_count("123456789ABC")
     assert result == 9
 
 
-@pytest.mark.extraction
+@pytest.mark.skipif(
+    not is_dependency_installed('cloudpickle'),
+    reason='Required dependencies not installed.',
+)
 def test_num_count_wrong_format():
     """Test string conversion."""
     num_count("word")
 
 
-@pytest.mark.extraction
+@pytest.mark.skipif(
+    not is_dependency_installed('cloudpickle'),
+    reason='Required dependencies not installed.',
+)
 def test_space_count():
     """Test string conversion."""
     result = space_count("1 2 3 4 5 ")
     assert result == 5
 
 
-@pytest.mark.extraction
+@pytest.mark.skipif(
+    not is_dependency_installed('cloudpickle'),
+    reason='Required dependencies not installed.',
+)
 def test_space_count_with_tabs():
     """Test string conversion."""
     result = space_count("\t")
     assert result == 4
 
 
-@pytest.mark.extraction
+@pytest.mark.skipif(
+    not is_dependency_installed('cloudpickle'),
+    reason='Required dependencies not installed.',
+)
 def test_special_count():
     """Test string conversion."""
     result = special_count("!_:ThreeSpecialChars")
     assert result == 3
 
 
-@pytest.mark.extraction
+@pytest.mark.skipif(
+    not is_dependency_installed('cloudpickle'),
+    reason='Required dependencies not installed.',
+)
 def test_vowel_count():
     """Test string conversion."""
     result = vowel_count("vowel")
     assert result == 2
 
 
-@pytest.mark.extraction
+@pytest.mark.skipif(
+    not is_dependency_installed('cloudpickle'),
+    reason='Required dependencies not installed.',
+)
 def test_upper_count():
     """Test string conversion."""
     result = upper_count("UPPERlower!")
     assert result == 5
 
 
-@pytest.mark.extraction
+@pytest.mark.skipif(
+    not is_dependency_installed('cloudpickle'),
+    reason='Required dependencies not installed.',
+)
 def test_num_count():
     """Test string conversion."""
     result = num_count("1.500,34")
     assert result == 1500.34
 
 
-@pytest.mark.extraction
+@pytest.mark.skipif(
+    not is_dependency_installed('cloudpickle'),
+    reason='Required dependencies not installed.',
+)
 def test_duplicate_count():
     """Test string conversion."""
     result = duplicate_count("AAABBCCDDE")
     assert result == 9
 
 
-@pytest.mark.extraction
+@pytest.mark.skipif(
+    not is_dependency_installed('cloudpickle'),
+    reason='Required dependencies not installed.',
+)
 def test_substring_count():
     """Test string conversion."""
     result = substring_count(["Apple", "Annaconda"], "a")
     assert result == [1, 3]
 
 
-@pytest.mark.extraction
+@pytest.mark.skipif(
+    not is_dependency_installed('cloudpickle'),
+    reason='Required dependencies not installed.',
+)
 def test_unique_char_count():
     """Test string conversion."""
     result = unique_char_count("12345678987654321")
     assert result == 9
 
 
-@pytest.mark.extraction
+@pytest.mark.skipif(
+    not is_dependency_installed('cloudpickle'),
+    reason='Required dependencies not installed.',
+)
 def test_accented_char_strip_and_count():
     """Test string conversion."""
     l_test = ['Hallà', 'àèìòùé', 'Nothing']
@@ -2090,7 +2145,10 @@ test_data_year_month_day_count = [
 ]
 
 
-@pytest.mark.extraction
+@pytest.mark.skipif(
+    not is_dependency_installed('cloudpickle'),
+    reason='Required dependencies not installed.',
+)
 @pytest.mark.parametrize("test_input, expected, document_id", test_data_year_month_day_count)
 def test_dates(test_input, expected, document_id):
     """Test string conversion."""
@@ -2115,7 +2173,10 @@ test_data_num = [
 ]
 
 
-@pytest.mark.extraction
+@pytest.mark.skipif(
+    not is_dependency_installed('cloudpickle'),
+    reason='Required dependencies not installed.',
+)
 @pytest.mark.parametrize("test_input, expected, document_id", test_data_num)
 def test_num(test_input, expected, document_id):
     """Test string conversion."""
