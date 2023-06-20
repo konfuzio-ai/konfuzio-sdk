@@ -2,6 +2,7 @@
 import os
 
 from konfuzio_sdk.data import Project, Document
+from konfuzio_sdk.api import delete_file_konfuzio_api
 
 
 FILE_PATH = 'tests/test_data/pdf.pdf'
@@ -61,9 +62,11 @@ def test_document_loading():
     # start update_doc
     document.update()
     # end update_doc
+    document_id = document.id_
     # start delete
     document.delete()
     # end delete
+    delete_file_konfuzio_api(document_id)
 
 
 def test_modify_document():
