@@ -5,14 +5,11 @@ from typing import List
 
 from konfuzio_sdk.data import Category, Span, Document
 from konfuzio_sdk.extras import transformers
-from konfuzio_sdk.extras import spacy
+from konfuzio_sdk.extras import spacy, SpacyLanguage, SpacyPhraseMatcher
 from konfuzio_sdk.tokenizer.base import AbstractTokenizer, Vocab
 from konfuzio_sdk.utils import sdk_isinstance
 
 logger = logging.getLogger(__name__)
-
-SpacyPhraseMatcher = spacy.matcher.PhraseMatcher
-SpacyLanguage = spacy.language.Language
 
 
 class Tokenizer(AbstractTokenizer):

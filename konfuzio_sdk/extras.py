@@ -74,6 +74,12 @@ cloudpickle = PackageWrapper(
     'cloudpickle', ['Document Categorization AI, File Splitting AI', 'Information Extraction AI']
 )
 spacy = PackageWrapper('spacy', ['Document Categorization AI'])
+if spacy.package:
+    SpacyPhraseMatcher = spacy.matcher.PhraseMatcher
+    SpacyLanguage = spacy.language.Language
+else:
+    SpacyPhraseMatcher = ModuleWrapper('SpacyPhraseMatcher').replaced
+    SpacyLanguage = ModuleWrapper('SpacyLanguage').replaced
 tensorflow = PackageWrapper('tensorflow', ['File Splitting AI'])
 timm = PackageWrapper('timm', ['Document Categorization AI'])
 torch = PackageWrapper('torch', ['Document Categorization AI, File Splitting AI'])
@@ -91,7 +97,6 @@ else:
     Optimizer = ModuleWrapper('Optimizer').replaced
     DataLoader = ModuleWrapper('DataLoader').replaced
     LongTensor = ModuleWrapper('LongTensor').replaced
-
 torchvision = PackageWrapper('torchvision', ['Document Categorization AI'])
 transformers = PackageWrapper('transformers', ['Document Categorization AI, File Splitting AI'])
 
