@@ -61,7 +61,7 @@ class ModuleWrapper:
 
     def _replace(self, module):
         """Replace the original class with the placeholder."""
-        return type(module, {"metaclass": abc.ABCMeta})
+        return type(module, (), {"metaclass": abc.ABCMeta})
 
 
 cloudpickle = PackageWrapper(
