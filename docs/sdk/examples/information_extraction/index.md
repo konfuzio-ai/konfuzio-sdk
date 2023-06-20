@@ -69,6 +69,15 @@ pickle_model_path = extraction_pipeline.save(output_dir=project.model_folder, in
 extraction_pipeline_loaded = load_model(pickle_model_path)
 ```
 
+### Example of Custom Extraction AI: Paragraph Extraction AI
+
+.. literalinclude:: /sdk/boilerplates/test_paragraph_extraction_ai.py
+   :language: python
+   :start-after: 
+   :end-before: 
+   :dedent: 4
+
+
 ### Evaluate a Trained Extraction AI Model
 
 In this example we will see how we can evaluate a trained `RFExtractionAI` model. We will assume that we have a trained 
