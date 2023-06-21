@@ -563,7 +563,7 @@ class TestOfflineExampleData(unittest.TestCase):
         assert 'DE38 7609 0900 0001 2XXX XX' in outlier_test_spans
 
     @pytest.mark.skipif(
-        not is_dependency_installed('cloudpickle'),
+        not is_dependency_installed('torch'),
         reason='Required dependencies not installed.',
     )
     def test_find_outlier_annotations_by_confidence(self):

@@ -23,8 +23,7 @@ from konfuzio_sdk.trainer.file_splitting import (
 @pytest.mark.skipif(
     not is_dependency_installed('torch')
     and not is_dependency_installed('transformers')
-    and not is_dependency_installed('tensorflow')
-    and not is_dependency_installed('cloudpickle'),
+    and not is_dependency_installed('tensorflow'),
     reason='Required dependencies not installed.',
 )
 class TestContextAwareFileSplittingModel(unittest.TestCase):
@@ -270,8 +269,7 @@ TEST_WITH_FULL_DATASET = False
 @pytest.mark.skipif(
     not is_dependency_installed('torch')
     and not is_dependency_installed('transformers')
-    and not is_dependency_installed('tensorflow')
-    and not is_dependency_installed('cloudpickle'),
+    and not is_dependency_installed('tensorflow'),
     reason='Required dependencies not installed.',
 )
 class TestMultimodalFileSplittingModel(unittest.TestCase):

@@ -153,7 +153,7 @@ label_set_clf_classes = ['Brutto-Bezug', 'Lohnabrechnung', 'Netto-Bezug', 'No', 
 
 
 @pytest.mark.skipif(
-    not is_dependency_installed('cloudpickle'),
+    not is_dependency_installed('torch'),
     reason='Required dependencies not installed.',
 )
 @parameterized.parameterized_class(
@@ -464,7 +464,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 
 
 @pytest.mark.skipif(
-    not is_dependency_installed('cloudpickle'),
+    not is_dependency_installed('torch'),
     reason='Required dependencies not installed.',
 )
 @parameterized.parameterized_class(
@@ -711,7 +711,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
 
 
 @pytest.mark.skipif(
-    not is_dependency_installed('cloudpickle'),
+    not is_dependency_installed('torch'),
     reason='Required dependencies not installed.',
 )
 @parameterized.parameterized_class(
@@ -791,7 +791,7 @@ class TestParagraphRFExtractionAI(unittest.TestCase):
 
 
 @pytest.mark.skipif(
-    not is_dependency_installed('cloudpickle'),
+    not is_dependency_installed('torch'),
     reason='Required dependencies not installed.',
 )
 @parameterized.parameterized_class(
@@ -867,7 +867,7 @@ class TestSentenceRFExtractionAI(unittest.TestCase):
 
 
 @pytest.mark.skipif(
-    not is_dependency_installed('cloudpickle'),
+    not is_dependency_installed('torch'),
     reason='Required dependencies not installed.',
 )
 @unittest.skip(reason='Slow. Only use to debug memory use.')
@@ -903,7 +903,7 @@ def test_tracemalloc_memory():
 
 
 @pytest.mark.skipif(
-    not is_dependency_installed('cloudpickle'),
+    not is_dependency_installed('torch'),
     reason='Required dependencies not installed.',
 )
 class TestInformationExtraction(unittest.TestCase):
@@ -1345,7 +1345,7 @@ class TestInformationExtraction(unittest.TestCase):
 
 
 @pytest.mark.skipif(
-    not is_dependency_installed('cloudpickle'),
+    not is_dependency_installed('torch'),
     reason='Required dependencies not installed.',
 )
 class TestAddExtractionAsAnnotation(unittest.TestCase):
@@ -1643,7 +1643,7 @@ class TestAddExtractionAsAnnotation(unittest.TestCase):
 
 
 @pytest.mark.skipif(
-    not is_dependency_installed('cloudpickle'),
+    not is_dependency_installed('torch'),
     reason='Required dependencies not installed.',
 )
 class TestExtractionToDocument(unittest.TestCase):
@@ -1808,7 +1808,7 @@ class TestExtractionToDocument(unittest.TestCase):
 
 
 @pytest.mark.skipif(
-    not is_dependency_installed('cloudpickle'),
+    not is_dependency_installed('torch'),
     reason='Required dependencies not installed.',
 )
 class TestGetExtractionResults(unittest.TestCase):
@@ -1880,7 +1880,7 @@ class TestGetExtractionResults(unittest.TestCase):
 
 
 @pytest.mark.skipif(
-    not is_dependency_installed('cloudpickle'),
+    not is_dependency_installed('torch'),
     reason='Required dependencies not installed.',
 )
 def test_load_model_no_file():
@@ -1891,7 +1891,7 @@ def test_load_model_no_file():
 
 
 @pytest.mark.skipif(
-    not is_dependency_installed('cloudpickle'),
+    not is_dependency_installed('torch'),
     reason='Required dependencies not installed.',
 )
 def test_load_model_corrupt_file():
@@ -1902,7 +1902,7 @@ def test_load_model_corrupt_file():
 
 
 @pytest.mark.skipif(
-    not is_dependency_installed('cloudpickle'),
+    not is_dependency_installed('torch'),
     reason='Required dependencies not installed.',
 )
 def test_load_model_wrong_pickle_data():
@@ -1913,7 +1913,7 @@ def test_load_model_wrong_pickle_data():
 
 
 @pytest.mark.skipif(
-    not is_dependency_installed('cloudpickle'),
+    not is_dependency_installed('torch'),
     reason='Required dependencies not installed.',
 )
 @unittest.skipIf(sys.version_info[:2] != (3, 8), reason='This AI can only be loaded on Python 3.8.')
@@ -1925,7 +1925,7 @@ def test_load_old_ai_model():
 
 
 @pytest.mark.skipif(
-    not is_dependency_installed('cloudpickle'),
+    not is_dependency_installed('torch'),
     reason='Required dependencies not installed.',
 )
 @pytest.mark.skipif(sys.version_info[:2] != (3, 8), reason='This AI can only be loaded on Python 3.8.')
@@ -1941,7 +1941,7 @@ def test_load_ai_model():
 
 
 @pytest.mark.skipif(
-    not is_dependency_installed('cloudpickle'),
+    not is_dependency_installed('torch'),
     reason='Required dependencies not installed.',
 )
 def test_feat_num_count():
@@ -1957,7 +1957,7 @@ def test_feat_num_count():
 
 
 @pytest.mark.skipif(
-    not is_dependency_installed('cloudpickle'),
+    not is_dependency_installed('torch'),
     reason='Required dependencies not installed.',
 )
 def test_date_count():
@@ -1967,7 +1967,7 @@ def test_date_count():
 
 
 @pytest.mark.skipif(
-    not is_dependency_installed('cloudpickle'),
+    not is_dependency_installed('torch'),
     reason='Required dependencies not installed.',
 )
 def test_date_count_right_format_wrong_date():
@@ -1976,7 +1976,7 @@ def test_date_count_right_format_wrong_date():
 
 
 @pytest.mark.skipif(
-    not is_dependency_installed('cloudpickle'),
+    not is_dependency_installed('torch'),
     reason='Required dependencies not installed.',
 )
 def test_date_count_index_error():
@@ -1985,7 +1985,7 @@ def test_date_count_index_error():
 
 
 @pytest.mark.skipif(
-    not is_dependency_installed('cloudpickle'),
+    not is_dependency_installed('torch'),
     reason='Required dependencies not installed.',
 )
 def test_digit_count():
@@ -1995,7 +1995,7 @@ def test_digit_count():
 
 
 @pytest.mark.skipif(
-    not is_dependency_installed('cloudpickle'),
+    not is_dependency_installed('torch'),
     reason='Required dependencies not installed.',
 )
 def test_num_count_wrong_format():
@@ -2004,7 +2004,7 @@ def test_num_count_wrong_format():
 
 
 @pytest.mark.skipif(
-    not is_dependency_installed('cloudpickle'),
+    not is_dependency_installed('torch'),
     reason='Required dependencies not installed.',
 )
 def test_space_count():
@@ -2014,7 +2014,7 @@ def test_space_count():
 
 
 @pytest.mark.skipif(
-    not is_dependency_installed('cloudpickle'),
+    not is_dependency_installed('torch'),
     reason='Required dependencies not installed.',
 )
 def test_space_count_with_tabs():
@@ -2024,7 +2024,7 @@ def test_space_count_with_tabs():
 
 
 @pytest.mark.skipif(
-    not is_dependency_installed('cloudpickle'),
+    not is_dependency_installed('torch'),
     reason='Required dependencies not installed.',
 )
 def test_special_count():
@@ -2034,7 +2034,7 @@ def test_special_count():
 
 
 @pytest.mark.skipif(
-    not is_dependency_installed('cloudpickle'),
+    not is_dependency_installed('torch'),
     reason='Required dependencies not installed.',
 )
 def test_vowel_count():
@@ -2044,7 +2044,7 @@ def test_vowel_count():
 
 
 @pytest.mark.skipif(
-    not is_dependency_installed('cloudpickle'),
+    not is_dependency_installed('torch'),
     reason='Required dependencies not installed.',
 )
 def test_upper_count():
@@ -2054,7 +2054,7 @@ def test_upper_count():
 
 
 @pytest.mark.skipif(
-    not is_dependency_installed('cloudpickle'),
+    not is_dependency_installed('torch'),
     reason='Required dependencies not installed.',
 )
 def test_num_count():
@@ -2064,7 +2064,7 @@ def test_num_count():
 
 
 @pytest.mark.skipif(
-    not is_dependency_installed('cloudpickle'),
+    not is_dependency_installed('torch'),
     reason='Required dependencies not installed.',
 )
 def test_duplicate_count():
@@ -2074,7 +2074,7 @@ def test_duplicate_count():
 
 
 @pytest.mark.skipif(
-    not is_dependency_installed('cloudpickle'),
+    not is_dependency_installed('torch'),
     reason='Required dependencies not installed.',
 )
 def test_substring_count():
@@ -2084,7 +2084,7 @@ def test_substring_count():
 
 
 @pytest.mark.skipif(
-    not is_dependency_installed('cloudpickle'),
+    not is_dependency_installed('torch'),
     reason='Required dependencies not installed.',
 )
 def test_unique_char_count():
@@ -2094,7 +2094,7 @@ def test_unique_char_count():
 
 
 @pytest.mark.skipif(
-    not is_dependency_installed('cloudpickle'),
+    not is_dependency_installed('torch'),
     reason='Required dependencies not installed.',
 )
 def test_accented_char_strip_and_count():
@@ -2146,7 +2146,7 @@ test_data_year_month_day_count = [
 
 
 @pytest.mark.skipif(
-    not is_dependency_installed('cloudpickle'),
+    not is_dependency_installed('torch'),
     reason='Required dependencies not installed.',
 )
 @pytest.mark.parametrize("test_input, expected, document_id", test_data_year_month_day_count)
@@ -2174,7 +2174,7 @@ test_data_num = [
 
 
 @pytest.mark.skipif(
-    not is_dependency_installed('cloudpickle'),
+    not is_dependency_installed('torch'),
     reason='Required dependencies not installed.',
 )
 @pytest.mark.parametrize("test_input, expected, document_id", test_data_num)

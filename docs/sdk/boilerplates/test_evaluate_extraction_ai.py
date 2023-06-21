@@ -9,7 +9,7 @@ MODEL_PATH = 'tests/trainer/2023-05-11-15-44-10_lohnabrechnung_rfextractionai_.p
 
 
 @pytest.mark.skipif(
-    not is_dependency_installed('cloudpickle'),
+    not is_dependency_installed('torch'),
     reason='Required dependencies not installed.',
 )
 @unittest.skipIf(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
