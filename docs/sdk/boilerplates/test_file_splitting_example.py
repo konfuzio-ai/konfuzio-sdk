@@ -24,7 +24,6 @@ def test_context_aware_file_splitting():
     from konfuzio_sdk.data import Page, Category, Project
     from konfuzio_sdk.trainer.file_splitting import SplittingAI
     from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel
-    from konfuzio_sdk.trainer.information_extraction import load_model
     from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
 
     # end imports
@@ -62,7 +61,7 @@ def test_context_aware_file_splitting():
 
     # usage with the Splitting AI – you can load a pre-saved model or pass an initialized instance as the input
     # in this example, we load a previously saved one
-    model = load_model(save_path)
+    model = ContextAwareFileSplittingModel.load_model(save_path)
 
     # initialize the Splitting AI
     splitting_ai = SplittingAI(model)

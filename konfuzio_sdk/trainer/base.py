@@ -2,6 +2,7 @@
 import abc
 import bz2
 import cloudpickle
+import itertools
 import logging
 import os
 import pathlib
@@ -10,8 +11,9 @@ import sys
 
 import lz4.frame
 
-from typing import Optional
+from typing import Optional, Union
 
+from konfuzio_sdk.data import Data
 from konfuzio_sdk.utils import get_sdk_version, normalize_memory, memory_size_of
 
 logger = logging.getLogger(__name__)
@@ -59,6 +61,75 @@ class BaseModel(metaclass=abc.ABCMeta):
 
         :param other: An instance of an AI to compare with.
         """
+
+    @staticmethod
+    def load_model(pickle_path: str, max_ram: Union[None, str] = None):
+        """
+        Load a previously saved instance of the model.
+
+        :param pickle_path: Path to the pickled model.
+        :type pickle_path: str
+        :raises FileNotFoundError: If the path is invalid.
+        :raises OSError: When the data is corrupted or invalid and cannot be loaded.
+        :raises TypeError: When the loaded pickle isn't recognized as a Konfuzio AI model.
+        :return: Extraction AI model.
+        """
+        logger.info(f"Starting loading AI model with path {pickle_path}")
+
+        if not os.path.isfile(pickle_path):
+            raise FileNotFoundError("Invalid pickle file path:", pickle_path)
+
+        # The current local id iterator might otherwise be overriden
+        prev_local_id = next(Data.id_iter)
+
+        try:
+            if pickle_path.endswith(".pt"):
+                from konfuzio_sdk.trainer.document_categorization import load_categorization_model
+
+                model = load_categorization_model(pickle_path)
+            elif pickle_path.endswith('.lz4'):
+                with lz4.frame.open(pickle_path, 'rb') as file:
+                    model = cloudpickle.load(file)
+            else:
+                with bz2.open(pickle_path, 'rb') as file:
+                    model = cloudpickle.load(file)
+        except OSError:
+            raise OSError(f"Pickle file {pickle_path} data is invalid.")
+        except AttributeError as err:
+            if "__forward_module__" in str(err) and '3.9' in sys.version:
+                raise AttributeError("Pickle saved with incompatible Python version.") from err
+            elif "__forward_is_class__" in str(err) and '3.8' in sys.version:
+                raise AttributeError("Pickle saved with incompatible Python version.") from err
+            raise
+        except ValueError as err:
+            if "unsupported pickle protocol: 5" in str(err) and '3.7' in sys.version:
+                raise ValueError("Pickle saved with incompatible Python version.") from err
+            raise
+
+        if hasattr(model, 'python_version'):
+            logger.info(f"Loaded AI model trained with Python {model.python_version}")
+        if hasattr(model, 'konfuzio_sdk_version'):
+            logger.info(f"Loaded AI model trained with Konfuzio SDK version {model.konfuzio_sdk_version}")
+
+        max_ram = normalize_memory(max_ram)
+        if max_ram and memory_size_of(model) > max_ram:
+            logger.error(f"Loaded model's memory use ({memory_size_of(model)}) is greater than max_ram ({max_ram})")
+
+        if not hasattr(model, "name"):
+            raise TypeError("Saved model file needs to be a Konfuzio AbstractExtractionAI instance.")
+        elif model.name in {
+            "DocumentAnnotationMultiClassModel",
+            "DocumentEntityMulticlassModel",
+            "SeparateLabelsAnnotationMultiClassModel",
+            "SeparateLabelsEntityMultiClassModel",
+        }:
+            logger.warning(f"Loading legacy {model.name} AI model.")
+        else:
+            logger.info(f"Loading {model.name} AI model.")
+
+        curr_local_id = next(Data.id_iter)
+        Data.id_iter = itertools.count(max(prev_local_id, curr_local_id))
+        return model
 
     def reduce_model_weight(self):
         """Remove all non-strictly necessary parameters before saving."""
@@ -166,7 +237,7 @@ class BaseModel(metaclass=abc.ABCMeta):
             cloudpickle.register_pickle_by_value(konfuzio_sdk)
             # todo register all dependencies?
 
-        if 'Multimodal' in self.name:
+        if hasattr(self, 'remove_dependencies'):
             self.remove_dependencies()
 
         logger.info('Saving model with cloudpickle')

@@ -8,7 +8,7 @@ import numpy as np
 
 from copy import deepcopy
 from inspect import signature
-from typing import List
+from typing import List, Union
 
 from konfuzio_sdk.data import Document, Page, Category
 from konfuzio_sdk.extras import torch, tensorflow as tf, transformers
@@ -117,6 +117,26 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
             return False
         except AttributeError:
             return False
+
+    @staticmethod
+    def load_model(pickle_path: str, max_ram: Union[None, str] = None):
+        """
+        Load the model and check if it has the interface compatible with the class.
+
+        :param pickle_path: Path to the pickled model.
+        :type pickle_path: str
+        :raises FileNotFoundError: If the path is invalid.
+        :raises OSError: When the data is corrupted or invalid and cannot be loaded.
+        :raises TypeError: When the loaded pickle isn't recognized as a Konfuzio AI model.
+        :return: File Splitting AI model.
+        """
+        model = super(AbstractFileSplittingModel, AbstractFileSplittingModel).load_model(pickle_path, max_ram)
+        if not AbstractFileSplittingModel.has_compatible_interface(model):
+            raise TypeError(
+                "Loaded model's interface is not compatible with any AIs. Please provide a model that has all the "
+                "abstract methods implemented."
+            )
+        return model
 
 
 class MultimodalFileSplittingModel(AbstractFileSplittingModel):

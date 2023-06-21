@@ -14,14 +14,11 @@ replacing the end-to-end pipeline into two parts.
 Sun, H., Kuang, Z., Yue, X., Lin, C., & Zhang, W. (2021). Spatial Dual-Modality Graph Reasoning for Key Information
 Extraction. arXiv. https://doi.org/10.48550/ARXIV.2103.14470
 """
-import bz2
 import collections
 import difflib
 import functools
-import itertools
 import logging
 import os
-import sys
 import time
 import unicodedata
 
@@ -31,14 +28,12 @@ from inspect import signature
 from typing import Tuple, Optional, List, Union, Dict
 from warnings import warn
 
-import cloudpickle
-import lz4.frame
 import numpy
 import pandas
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.utils.validation import check_is_fitted
 
-from konfuzio_sdk.data import Data, Document, Annotation, Category, AnnotationSet, Label, LabelSet, Span
+from konfuzio_sdk.data import Document, Annotation, Category, AnnotationSet, Label, LabelSet, Span
 from konfuzio_sdk.trainer.base import BaseModel
 from konfuzio_sdk.tokenizer.paragraph_and_sentence import ParagraphTokenizer, SentenceTokenizer
 
@@ -52,7 +47,6 @@ from konfuzio_sdk.regex import regex_matches
 from konfuzio_sdk.utils import (
     get_timestamp,
     get_bbox,
-    normalize_memory,
     memory_size_of,
     sdk_isinstance,
 )
@@ -67,92 +61,6 @@ logger = logging.getLogger(__name__)
 CANDIDATES_CACHE_SIZE = 100
 
 warn('This module is WIP: https://gitlab.com/konfuzio/objectives/-/issues/9311', FutureWarning, stacklevel=2)
-
-
-def load_model(pickle_path: str, max_ram: Union[None, str] = None):
-    """
-    Load a pkl file.
-
-    :param pickle_path: Path to the pickled model.
-    :type pickle_path: str
-    :raises FileNotFoundError: If the path is invalid.
-    :raises OSError: When the data is corrupted or invalid and cannot be loaded.
-    :raises TypeError: When the loaded pickle isn't recognized as a Konfuzio AI model.
-    :return: Extraction AI model.
-    """
-    logger.info(f"Starting loading AI model with path {pickle_path}")
-
-    if not os.path.isfile(pickle_path):
-        raise FileNotFoundError("Invalid pickle file path:", pickle_path)
-
-    # The current local id iterator might otherwise be overriden
-    prev_local_id = next(Data.id_iter)
-
-    try:
-        if pickle_path.endswith('.pt'):
-            from konfuzio_sdk.trainer.document_categorization import load_categorization_model
-
-            model = load_categorization_model(pickle_path)
-        elif pickle_path.endswith('.lz4'):
-            with lz4.frame.open(pickle_path, 'rb') as file:
-                model = cloudpickle.load(file)
-        else:
-            with bz2.open(pickle_path, 'rb') as file:
-                model = cloudpickle.load(file)
-    except OSError:
-        raise OSError(f"Pickle file {pickle_path} data is invalid.")
-    except AttributeError as err:
-        if "__forward_module__" in str(err) and '3.9' in sys.version:
-            raise AttributeError("Pickle saved with incompatible Python version.") from err
-        elif "__forward_is_class__" in str(err) and '3.8' in sys.version:
-            raise AttributeError("Pickle saved with incompatible Python version.") from err
-        raise
-    except ValueError as err:
-        if "unsupported pickle protocol: 5" in str(err) and '3.7' in sys.version:
-            raise ValueError("Pickle saved with incompatible Python version.") from err
-        raise
-
-    if hasattr(model, 'python_version'):
-        logger.info(f"Loaded AI model trained with Python {model.python_version}")
-    if hasattr(model, 'konfuzio_sdk_version'):
-        logger.info(f"Loaded AI model trained with Konfuzio SDK version {model.konfuzio_sdk_version}")
-
-    max_ram = normalize_memory(max_ram)
-    if max_ram and memory_size_of(model) > max_ram:
-        logger.error(f"Loaded model's memory use ({memory_size_of(model)}) is greater than max_ram ({max_ram})")
-
-    # to avoid circular import issue
-    from konfuzio_sdk.trainer.document_categorization import AbstractCategorizationAI
-    from konfuzio_sdk.trainer.file_splitting import AbstractFileSplittingModel
-
-    if not (
-        AbstractExtractionAI.has_compatible_interface(model)
-        or AbstractFileSplittingModel.has_compatible_interface(model)
-        or AbstractCategorizationAI.has_compatible_interface(model)
-    ):
-        raise TypeError(
-            "Loaded model's interface is not compatible with any AIs. Please provide a model that has all the "
-            "abstract methods implemented."
-        )
-
-    if not hasattr(model, "name"):
-        raise TypeError("Saved model file needs to be a Konfuzio AbstractExtractionAI instance.")
-    elif model.name in {
-        "DocumentAnnotationMultiClassModel",
-        "DocumentEntityMulticlassModel",
-        "SeparateLabelsAnnotationMultiClassModel",
-        "SeparateLabelsEntityMultiClassModel",
-    }:
-        logger.warning(f"Loading legacy {model.name} AI model.")
-    else:
-        logger.info(f"Loading {model.name} AI model.")
-
-    curr_local_id = next(Data.id_iter)
-    Data.id_iter = itertools.count(max(prev_local_id, curr_local_id))
-
-    if 'Multimodal' in model.name:
-        model.restore_dependencies()
-    return model
 
 
 # # existent model classes
@@ -1197,6 +1105,26 @@ class AbstractExtractionAI(BaseModel):
             self.output_dir, f'{get_timestamp()}_{self.category.name.lower()}_' f'{self.name_lower()}_.pkl'
         )
         return pkl_file_path
+
+    @staticmethod
+    def load_model(pickle_path: str, max_ram: Union[None, str] = None):
+        """
+        Load the model and check if it has the interface compatible with the class.
+
+        :param pickle_path: Path to the pickled model.
+        :type pickle_path: str
+        :raises FileNotFoundError: If the path is invalid.
+        :raises OSError: When the data is corrupted or invalid and cannot be loaded.
+        :raises TypeError: When the loaded pickle isn't recognized as a Konfuzio AI model.
+        :return: Extraction AI model.
+        """
+        model = super(AbstractExtractionAI, AbstractExtractionAI).load_model(pickle_path, max_ram)
+        if not AbstractExtractionAI.has_compatible_interface(model):
+            raise TypeError(
+                "Loaded model's interface is not compatible with any AIs. Please provide a model that has all the "
+                "abstract methods implemented."
+            )
+        return model
 
 
 class GroupAnnotationSets:

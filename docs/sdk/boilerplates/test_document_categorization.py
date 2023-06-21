@@ -97,8 +97,7 @@ def test_model_based_categorization():
     # start imports
     from konfuzio_sdk.data import Project, Document
     from konfuzio_sdk.trainer.document_categorization import build_categorization_ai_pipeline
-    from konfuzio_sdk.trainer.document_categorization import ImageModel, TextModel
-    from konfuzio_sdk.trainer.information_extraction import load_model
+    from konfuzio_sdk.trainer.document_categorization import ImageModel, TextModel, CategorizationAI
 
     # Set up your Project.
     project = Project(id_=YOUR_PROJECT_ID)
@@ -138,7 +137,7 @@ def test_model_based_categorization():
 
     # Save and load a pickle file for the AI
     pickle_ai_path = categorization_pipeline.save()
-    categorization_pipeline = load_model(pickle_ai_path)
+    categorization_pipeline = CategorizationAI.load_model(pickle_ai_path)
     # End Build
 
     # Start Models

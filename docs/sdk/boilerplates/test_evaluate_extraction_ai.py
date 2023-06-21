@@ -16,17 +16,15 @@ MODEL_PATH = 'tests/trainer/2023-05-11-15-44-10_lohnabrechnung_rfextractionai_.p
 def test_evaluate_extraction_ai():
     """Test evaluation of the Extraction AI."""
     from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
-    from konfuzio_sdk.trainer.information_extraction import load_model
+    from konfuzio_sdk.trainer.information_extraction import RFExtractionAI
     from konfuzio_sdk.data import Project
-
-    pipeline = load_model(MODEL_PATH)
 
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
     test_document = project.get_document_by_id(TEST_DOCUMENT_ID)
 
     # start init
 
-    pipeline = load_model(MODEL_PATH)
+    pipeline = RFExtractionAI.load_model(MODEL_PATH)
     # end init
 
     pipeline.test_documents = [test_document]
