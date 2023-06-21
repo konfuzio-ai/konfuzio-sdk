@@ -33,7 +33,7 @@ from konfuzio_sdk.trainer.document_categorization import (
     build_categorization_ai_pipeline,
 )
 from konfuzio_sdk.trainer.tokenization import PhraseMatcherTokenizer
-
+from konfuzio_sdk.trainer.information_extraction import load_model
 from tests.variables import (
     OFFLINE_PROJECT,
     TEST_DOCUMENT_ID,
@@ -617,7 +617,7 @@ def test_build_categorization_ai() -> None:
     )
 
     pipeline_path = categorization_pipeline.save()
-    CategorizationAI.load_model(pipeline_path)
+    load_model(pipeline_path)
     os.remove(pipeline_path)
 
 

@@ -13,7 +13,7 @@ from konfuzio_sdk.data import Category, Document, Project
 from konfuzio_sdk.settings_importer import is_dependency_installed
 from konfuzio_sdk.samples import LocalTextProject
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
-
+from konfuzio_sdk.trainer.information_extraction import load_model
 from konfuzio_sdk.trainer.file_splitting import (
     ContextAwareFileSplittingModel,
     SplittingAI,
@@ -139,7 +139,7 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
         """Test saving Context Aware File Splitting Model to a pickle."""
         self.file_splitting_model.path = self.file_splitting_model.save(keep_documents=True, max_ram='5MB')
         assert os.path.isfile(self.file_splitting_model.path)
-        model = ContextAwareFileSplittingModel.load_model(self.file_splitting_model.path)
+        model = load_model(self.file_splitting_model.path)
         for category_gt, category_load in zip(self.file_splitting_model.categories, model.categories):
             gt_exclusive_first_page_strings = category_gt.exclusive_first_page_strings(
                 tokenizer=ConnectedTextTokenizer()
@@ -155,7 +155,7 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
             reduce_weight=True, keep_documents=True, max_ram='5MB'
         )
         assert os.path.isfile(self.file_splitting_model.path)
-        model = ContextAwareFileSplittingModel.load_model(self.file_splitting_model.path)
+        model = load_model(self.file_splitting_model.path)
         for category_gt, category_load in zip(self.file_splitting_model.categories, model.categories):
             gt_exclusive_first_page_strings = category_gt.exclusive_first_page_strings(
                 tokenizer=ConnectedTextTokenizer()
@@ -317,7 +317,7 @@ class TestMultimodalFileSplittingModel(unittest.TestCase):
     def test_save_load_model(self):
         """Test saving and loading pickle file of the model."""
         path = self.file_splitting_model.save()
-        loaded = MultimodalFileSplittingModel.load_model(path)
+        loaded = load_model(path)
         splitting_ai = SplittingAI(model=loaded)
         assert isinstance(splitting_ai.model, MultimodalFileSplittingModel)
         pathlib.Path(path).unlink()

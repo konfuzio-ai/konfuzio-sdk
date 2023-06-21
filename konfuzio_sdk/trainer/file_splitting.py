@@ -8,7 +8,7 @@ import numpy as np
 
 from copy import deepcopy
 from inspect import signature
-from typing import List, Union
+from typing import List
 
 from konfuzio_sdk.data import Document, Page, Category
 from konfuzio_sdk.extras import torch, tensorflow as tf, transformers
@@ -74,7 +74,7 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
         """
         temp_pkl_file_path = os.path.join(
             self.output_dir,
-            f'{get_timestamp()}_{self.project.id_}_{self.name_lower()}_tmp',
+            f'{get_timestamp()}_{self.project.id_}_{self.name_lower()}_tmp.pkl',
         )
         return temp_pkl_file_path
 
@@ -117,26 +117,6 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
             return False
         except AttributeError:
             return False
-
-    @staticmethod
-    def load_model(pickle_path: str, max_ram: Union[None, str] = None):
-        """
-        Load the model and check if it has the interface compatible with the class.
-
-        :param pickle_path: Path to the pickled model.
-        :type pickle_path: str
-        :raises FileNotFoundError: If the path is invalid.
-        :raises OSError: When the data is corrupted or invalid and cannot be loaded.
-        :raises TypeError: When the loaded pickle isn't recognized as a Konfuzio AI model.
-        :return: File Splitting AI model.
-        """
-        model = super(AbstractFileSplittingModel, AbstractFileSplittingModel).load_model(pickle_path, max_ram)
-        if not AbstractFileSplittingModel.has_compatible_interface(model):
-            raise TypeError(
-                "Loaded model's interface is not compatible with any AIs. Please provide a model that has all the "
-                "abstract methods implemented."
-            )
-        return model
 
 
 class MultimodalFileSplittingModel(AbstractFileSplittingModel):
@@ -376,6 +356,25 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
             page.is_first_page = False
         return page
 
+    def remove_dependencies(self):
+        """Remove dependencies before saving."""
+        globals()['torch'] = None
+        globals()['tf'] = None
+        globals()['transformers'] = None
+
+        # Optional: Remove imports from the module namespace
+        del globals()['torch']
+        del globals()['tf']
+        del globals()['transformers']
+
+    def restore_dependencies(self):
+        """Restore removed dependencies after loading."""
+        from konfuzio_sdk.extras import torch, tensorflow as tf, transformers
+
+        globals()['torch'] = torch
+        globals()['tf'] = tf
+        globals()['transformers'] = transformers
+
     def check_is_ready(self):
         """
         Check if Multimodal File Splitting Model instance is ready for inference.
@@ -391,6 +390,8 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
 
         if not self.model:
             raise AttributeError(f'{self} has to be fitted before running a prediction.')
+
+        self.restore_dependencies()
 
 
 class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
