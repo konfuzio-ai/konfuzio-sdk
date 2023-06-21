@@ -98,9 +98,9 @@ def test_paragraph_extraction_ai():
 
     assert paragraph_extraction_ai.check_is_ready() is True
 
-    model_path = paragraph_extraction_ai.save()
-
     paragraph_extraction_ai.extract(document)
+
+    model_path = paragraph_extraction_ai.save()
     # end use model
 
     # delete model
