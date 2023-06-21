@@ -197,6 +197,8 @@ training data.
       :end-before: end use
       :dedent: 4
 
+.. _paragraph-tokenizer-tutorial:
+
 ### Paragraph Tokenizer
 
 The `ParagraphTokenizer` class is a specialized [Tokenizer](https://dev.konfuzio.com/sdk/sourcecode.html#tokenizers) 
