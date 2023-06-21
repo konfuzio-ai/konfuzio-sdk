@@ -83,12 +83,90 @@ Here we will see how we can use the Paragraph Tokenizer to create a Custom Extra
 just a simple wrapper around the Paragraph Tokenizer. It shows how you can create your own Custom Extraction AI that 
 you can use in Konfuzio on-prem installations or in the Konfuzio Marketplace.
 
-.. literalinclude:: /sdk/boilerplates/test_paragraph_extraction_ai.py
-   :language: python
-   :start-after: 
-   :end-before: 
-   :dedent: 4
+.. collapse:: Full Paragraph Extraction AI code
 
+   .. literalinclude:: /sdk/boilerplates/test_paragraph_extraction_ai.py
+      :language: python
+      :pyobject: ParagraphExtractionAI
+
+Let's go step by step.
+
+0. **Imports**
+
+   .. literalinclude:: /sdk/boilerplates/test_paragraph_extraction_ai.py
+      :language: python
+      :start-after: start imports
+      :end-before: end imports
+
+1. **Custom Extraction AI model definition**
+
+   ```python
+   class ParagraphExtractionAI(AbstractExtractionAI):
+   ```
+
+   We define a class that inherits from the Konfuzio `AbstractExtractionAI` class. This class provides the interface 
+   that we need to implement for our Custom Extraction AI. All Extraction AI models must inherit from this class.
+
+2. **Add model requirements**
+
+   .. literalinclude:: /sdk/boilerplates/test_paragraph_extraction_ai.py
+      :language: python
+      :start-after: start model requirements
+      :end-before: end model requirements
+
+   We need to define what the model needs to be able to run. This will inform the Konfuzio Server what information needs 
+   to be made available to the model before running an extraction. If the model only needs text, you can ignore this step
+   or add `requires_text = True` to make it explicit. If the model requires Page images, you will need to add 
+   `requires_images = True`. Finally, in our case we also need to add `requires_segmentation = True` to inform the Server 
+   that the model needs the visual segmentation information created by the Paragraph Tokenizer in `detectron` mode.
+
+3. **Initialize the model**
+
+   .. literalinclude:: /sdk/boilerplates/test_paragraph_extraction_ai.py
+      :language: python
+      :pyobject: ParagraphExtractionAI.__init__
+   
+   We initialize the model by calling the `__init__` method of the parent class. The only required argument is the 
+   Category the Extraction AI will be used with. The Category is the Konfuzio object that contains all the Labels 
+   and LabelSets that the model will use to create Annotations. This means that you need to make sure that the Category 
+   object contains all the Labels and LabelSets that you need for your model. In our case, we need the `figure`, `table`, 
+   `list`, `text` and `title` Labels.
+
+
+4. **Define the extract method**
+
+   .. literalinclude:: /sdk/boilerplates/test_paragraph_extraction_ai.py
+      :language: python
+      :pyobject: ParagraphExtractionAI.extract
+
+   The `extract` method is the core of the Extraction AI. It takes a Document as input and returns a Document with 
+   Annotations. Make sure to do a deepcopy of the Document that is passed so that you add the new Annotations to a 
+   Virtual Document with no Annotations. The Annotations are created by the model and added to the Document. In our 
+   case, we simply call the Paragraph Tokenizer in `detectron` mode and with the `create_detectron_labels` option.
+
+5. **[OPTIONAL] Define the check_is_ready method**
+
+   .. literalinclude:: /sdk/boilerplates/test_paragraph_extraction_ai.py
+      :language: python
+      :pyobject: ParagraphExtractionAI.check_is_ready
+
+   The `check_is_ready` method is used to check if the model is ready to be used. It should return `True` if the model 
+   is ready to extract, and `False` otherwise. It is checked before saving the model. You don't have to implement it, 
+   and it will only check that a Category is defined. 
+   
+   In our case, we also check that the model contains all the Labels that we need. This is not strictly necessary, but 
+   it is a good practice to make sure that the model is ready to be used.
+
+6. **Use the model**
+
+   .. literalinclude:: /sdk/boilerplates/test_paragraph_extraction_ai.py
+      :language: python
+      :start-after: start use model
+      :end-before: end use model
+      :dedent: 4
+
+   We can now use the model to extract a Document. We first make sure that all needed Labels are present in the Category.
+   We then can run extract on a Document and save the model to a pickle file that can be used in Konfuzio Server.
 
 ### Evaluate a Trained Extraction AI Model
 
