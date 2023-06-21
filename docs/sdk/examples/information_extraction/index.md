@@ -69,7 +69,19 @@ pickle_model_path = extraction_pipeline.save(output_dir=project.model_folder, in
 extraction_pipeline_loaded = load_model(pickle_model_path)
 ```
 
-### Example of Custom Extraction AI: Paragraph Extraction AI
+### Example of Custom Extraction AI: The Paragraph Extraction AI
+
+In :ref:`the Paragraph Tokenizer tutorial<paragraph-tokenizer-tutorial>`, we saw how we can use the Paragraph Tokenizer 
+in `detectron` mode and with the `create_detectron_labels` option to segment a Document and create `figure`, `table`, 
+`list`, `text` and `title` Annotations. The tokenizer used this way is thus able to create Annotations like in the 
+following:
+
+.. image:: /_static/img/paragraph_tokenizer.png
+  :scale: 40%
+
+Here we will see how we can use the Paragraph Tokenizer to create a Custom Extraction AI. What we need to create is 
+just a simple wrapper around the Paragraph Tokenizer. It shows how you can create your own Custom Extraction AI that 
+you can use in Konfuzio on-prem installations or in the Konfuzio Marketplace.
 
 .. literalinclude:: /sdk/boilerplates/test_paragraph_extraction_ai.py
    :language: python
