@@ -9,7 +9,7 @@ from konfuzio_sdk.trainer.information_extraction import AbstractExtractionAI
 from konfuzio_sdk.tokenizer.paragraph_and_sentence import ParagraphTokenizer
 from konfuzio_sdk.data import Category, Document, Project, Label
 
-# start imports
+# end imports
 
 from tests.variables import TEST_PROJECT_ID, TEST_DOCUMENT_ID, TEST_PAYSLIPS_CATEGORY_ID
 
