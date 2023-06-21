@@ -1,5 +1,6 @@
 """Test Splitting AI and the models' training, saving and prediction."""
 import bz2
+import cloudpickle
 import os
 import pathlib
 import pytest
@@ -9,7 +10,6 @@ import unittest
 from copy import deepcopy
 
 from konfuzio_sdk.data import Category, Document, Project
-from konfuzio_sdk.extras import cloudpickle
 from konfuzio_sdk.settings_importer import is_dependency_installed
 from konfuzio_sdk.samples import LocalTextProject
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer

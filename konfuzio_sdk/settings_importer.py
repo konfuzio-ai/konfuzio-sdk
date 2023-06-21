@@ -36,7 +36,6 @@ OPTIONAL_IMPORT_ERROR = "A library *modulename* has not been found."
 
 extras = [
     'chardet==5.1.0',
-    'cloudpickle==2.2.1',
     'pydantic==1.10.8',
     'torch>=1.8',
     'torchvision>=0.9',

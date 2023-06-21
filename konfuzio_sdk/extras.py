@@ -70,9 +70,6 @@ class ModuleWrapper:
         self.replaced = type(module, (object,), {"__metaclass__": abc.ABCMeta})
 
 
-cloudpickle = PackageWrapper(
-    'cloudpickle', ['Document Categorization AI, File Splitting AI', 'Information Extraction AI']
-)
 spacy = PackageWrapper('spacy', ['Document Categorization AI'])
 if spacy.package:
     SpacyPhraseMatcher = spacy.matcher.PhraseMatcher

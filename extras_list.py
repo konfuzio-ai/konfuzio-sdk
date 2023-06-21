@@ -2,6 +2,7 @@
 
 EXTRAS = {
     'dev': [
+        'cloudpickle==2.2.1',
         'flake8',
         'pydocstyle',
         'pytest',
@@ -18,7 +19,6 @@ EXTRAS = {
     ],
     'ai': [
         'chardet==5.1.0',
-        'cloudpickle==2.2.1',
         'pydantic==1.10.8',  # pydantic is used by spacy. We need to force a higher pydantic version to avoid
         # https://github.com/tiangolo/fastapi/issues/5048
         'torch>=1.8',

@@ -1,6 +1,7 @@
 """Generic AI model."""
 import abc
 import bz2
+import cloudpickle
 import itertools
 import logging
 import os
@@ -13,7 +14,6 @@ import lz4.frame
 from typing import Optional, Union
 
 from konfuzio_sdk.data import Data
-from konfuzio_sdk.extras import cloudpickle
 from konfuzio_sdk.utils import get_sdk_version, normalize_memory, memory_size_of
 
 logger = logging.getLogger(__name__)
