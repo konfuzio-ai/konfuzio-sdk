@@ -50,6 +50,7 @@ class AbstractCategorizationAI(BaseModel, metaclass=abc.ABCMeta):
 
     def __init__(self, categories: List[Category], *args, **kwargs):
         """Initialize AbstractCategorizationAI."""
+        super().__init__()
         self.documents = None
         self.test_documents = None
         self.categories = categories
@@ -1093,7 +1094,7 @@ class CategorizationAI(AbstractCategorizationAI):
             if self.tokenizer is not None:
                 tokenized_doc = self.tokenizer.tokenize(tokenized_doc)
             tokenized_doc.status = document.status  # to allow to retrieve images from the original pages
-            document_image_paths = []
+            document_images = []
             document_tokens = []
             document_labels = []
             document_ids = []
@@ -1122,11 +1123,11 @@ class CategorizationAI(AbstractCategorizationAI):
             for page in tokenized_doc.pages():
                 if use_image:
                     # if using an image module, store the path to the image
-                    document_image_paths.append(page.image_path)
+                    document_images.append(page.get_image())
                 else:
                     # if not using image module then don't need the image paths
                     # so we just have a list of None to keep the lists the same length
-                    document_image_paths.append(None)
+                    document_images.append(None)
                 if use_text:
                     # if using a text module, tokenize the page, trim to max length and then numericalize
                     # REPLACE page_tokens = tokenizer.get_tokens(page_text)[:max_len]
@@ -1146,7 +1147,7 @@ class CategorizationAI(AbstractCategorizationAI):
                 doc_id = tokenized_doc.id_ or tokenized_doc.copy_of_id
                 document_ids.append(torch.LongTensor([doc_id]))
                 document_page_numbers.append(torch.LongTensor([page.index]))
-            doc_info = zip(document_image_paths, document_tokens, document_labels, document_ids, document_page_numbers)
+            doc_info = zip(document_images, document_tokens, document_labels, document_ids, document_page_numbers)
             data.extend(doc_info)
 
         def collate(batch, transforms) -> Dict[str, LongTensor]:
