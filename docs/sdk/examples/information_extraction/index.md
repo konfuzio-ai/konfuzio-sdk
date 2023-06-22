@@ -123,9 +123,18 @@ Let's go step by step.
 
 3. **Initialize the model**
 
-   .. literalinclude:: /sdk/boilerplates/test_paragraph_extraction_ai.py
-      :language: python
-      :pyobject: ParagraphExtractionAI.__init__
+   ```python
+      def __init__(
+         self,
+         category: Category = None,
+         *args,
+         **kwargs,
+      ):
+         """Initialize ParagraphExtractionAI."""
+         logger.info("Initializing ParagraphExtractionAI.")
+         super().__init__(category=category, *args, **kwargs)
+         self.tokenizer = ParagraphTokenizer(mode='detectron', create_detectron_labels=True)
+   ```
    
    We initialize the model by calling the `__init__` method of the parent class. The only required argument is the 
    Category the Extraction AI will be used with. The Category is the Konfuzio object that contains all the Labels 
@@ -158,7 +167,7 @@ Let's go step by step.
    In our case, we also check that the model contains all the Labels that we need. This is not strictly necessary, but 
    it is a good practice to make sure that the model is ready to be used.
 
-6. **Use the model**
+6. **Use the model locally**
 
    .. literalinclude:: /sdk/boilerplates/test_paragraph_extraction_ai.py
       :language: python
@@ -168,6 +177,18 @@ Let's go step by step.
 
    We can now use the model to extract a Document. We first make sure that all needed Labels are present in the Category.
    We then can run extract on a Document and save the model to a pickle file that can be used in Konfuzio Server.
+
+7. **Upload the model to Konfuzio Server**
+   
+   You can use the Konfuzio SDK to upload your model to your on-prem installation like this:
+
+   ```python
+   from konfuzio_sdk.api import upload_ai_model
+
+   upload_ai_model(model_path=path, category_ids=[category.id_])
+   ```
+   
+   Once the model is uploaded you can also share your model with others on the [Konfuzio Marketplace](https://help.konfuzio.com/marketplace/index.html).
 
 ### Evaluate a Trained Extraction AI Model
 

@@ -61,8 +61,6 @@ class ParagraphExtractionAI(AbstractExtractionAI):
         """
         Check if the ExtractionAI is ready for the inference.
 
-        It is assumed that the model is ready if a Tokenizer and a Category were set.
-
         :raises AttributeError: When no Category is specified.
         :raises IndexError: When the Category does not contain the required Labels.
         """
