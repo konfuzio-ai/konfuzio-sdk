@@ -74,6 +74,8 @@ class ParagraphExtractionAI(AbstractExtractionAI):
         self.project.get_label_by_name('text')
         self.project.get_label_by_name('title')
 
+        return True
+
 
 def test_paragraph_extraction_ai():
     """Test custom ParagraphExtractionAI model."""
