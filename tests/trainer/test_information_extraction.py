@@ -895,8 +895,8 @@ class TestInformationExtraction(unittest.TestCase):
 
     def test_extraction_without_tokenizer(self):
         """Test extraction on a Document."""
-        pipeline = RFExtractionAI()
         document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        pipeline = RFExtractionAI(category=document.category)
         with pytest.raises(AttributeError) as einfo:
             pipeline.extract(document)
         assert 'missing Tokenizer' in str(einfo.value)
