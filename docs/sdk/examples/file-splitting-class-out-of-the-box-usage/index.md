@@ -2,8 +2,11 @@
 
 ## File Splitting 
 
-You can train your own File Splitting AI on the data from any Project of your choice ([data preparation tutorial here](tutorials.html#tutorials.html#prepare-the-data-for-training-and-testing-the-ai). For that purpose, there are 
-several tools in the SDK that enable processing Documents that consist of multiple files and propose splitting them 
+You can train your own File Splitting AI on the data from any Project of your choice ([data preparation tutorial here](tutorials.html#tutorials.html#prepare-the-data-for-training-and-testing-the-ai)). 
+Note that all Documents used for training and testing have to have their Pages ordered according to their position in 
+the original file (the first Page comes first, and so on).
+
+For that purpose, there are several tools in the SDK that enable processing Documents that consist of multiple files and propose splitting them 
 into the Sub-Documents accordingly:
 
 - A Context Aware File Splitting Model uses a simple hands-on logic based on scanning Category's Documents and finding
