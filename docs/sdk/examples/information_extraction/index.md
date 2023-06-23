@@ -81,7 +81,7 @@ following:
 
 Here we will see how we can use the Paragraph Tokenizer to create a Custom Extraction AI. What we need to create is 
 just a simple wrapper around the Paragraph Tokenizer. It shows how you can create your own Custom Extraction AI that 
-you can use in Konfuzio on-prem installations or in the Konfuzio Marketplace.
+you can use in Konfuzio on-prem installations or in the [Konfuzio Marketplace](https://help.konfuzio.com/marketplace/index.html).
 
 .. collapse:: Full Paragraph Extraction AI code
 
@@ -150,7 +150,7 @@ Let's go step by step.
       :pyobject: ParagraphExtractionAI.extract
 
    The `extract` method is the core of the Extraction AI. It takes a Document as input and returns a Document with 
-   Annotations. Make sure to do a deepcopy of the Document that is passed so that you add the new Annotations to a 
+   Annotations. Make sure to do a `deepcopy` of the Document that is passed so that you add the new Annotations to a 
    Virtual Document with no Annotations. The Annotations are created by the model and added to the Document. In our 
    case, we simply call the Paragraph Tokenizer in `detectron` mode and with the `create_detectron_labels` option.
 
