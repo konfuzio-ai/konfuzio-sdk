@@ -89,7 +89,7 @@ you can use in Konfuzio on-prem installations or in the Konfuzio Marketplace.
       :language: python
       :pyobject: ParagraphExtractionAI
 
-
+<br/>
 Let's go step by step.
 
 0. **Imports**
