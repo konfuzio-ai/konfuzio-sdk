@@ -503,6 +503,31 @@ After the resource is created the AZURE_OCR_KEY and AZURE_OCR_BASE_URL is displa
 For the second option, please refer to the [Azure Read API Container installation guide](https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2).
 Please open a support ticket to get an AZURE_OCR_KEY and AZURE_OCR_BASE_URL which is compatible with the container.
 
+#### How to fix common Azure Read API issues for On-Premises 
+
+##### 1. Ensure AVX2 Compatibility:
+
+Verify if your system supports Advanced Vector Extensions 2 (AVX2). You can do this by running the following command on Linux hosts:
+
+```grep -q avx2 /proc/cpuinfo && echo AVX2 supported || echo No AVX2 support detected```
+
+For further information, refer to [Microsoft's AVX2 support guide](https://learn.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers#advanced-vector-extension-support).
+
+##### 2. Verify Azure Read Container Status:
+
+You can monitor the Azure Read Container's status through its web interface. 
+To do this, access the container on Port 5000 (i.e. http://localhost:5000/status) from a web browser connected to the Container's network. 
+You might need to replace 'localhost' with the IP/network name of the Azure container. 
+This interface will also help detect issues such as invalid credentials or an inaccessible license server (possibly due to a firewall).
+Refer to [Microsoft's guide on validating container status](https://learn.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers#validate-that-a-container-is-running) for further assistance.
+
+##### 3. Consider Trying a Different Container Tag:
+
+If your Azure Read API Container ceases to function after a restart, it may be due to an automatic upgrade to a new, potentially faulty Docker tag. 
+In such cases, consider switching to a previous Docker tag. You can view the complete version history of Docker tags at the [Microsoft Artifact Registry](ttps://mcr.microsoft.com/product/azure-cognitive-services/vision/read/tags). 
+Remember to uncheck the "Supported Tags Only" box to access all available versions.
+
+
 
 ### [Optional] 9. Install document segmentation container
 
@@ -1347,7 +1372,23 @@ See https://mozilla-django-oidc.readthedocs.io/en/stable/settings.html#OIDC_RP_S
 
 _Type: string_
 
-#### 9. Test Settings for Keycloak / SSO Settings
+#### 9. Snapshot Settings (This feature is under active development and not yet available on https://app.konfuzio.com)
+
+##### SNAPSHOT_LOCATION
+Default: ''
+
+The location where all Snapshots are saved (e.g. "/data/konfuzio-snapshots")
+
+_Type: string_
+
+##### SNAPSHOT_CREATION_TOKEN
+Default: None
+
+The API Token which is used to create the Snapshot. The Snapshot creation is conducted using [konfuzio_sdk export_project](https://dev.konfuzio.com/web/on_premises.html#migrate-a-project)
+
+_Type: string_
+
+#### 10. Test Settings for Keycloak / SSO Settings
 
 These variables are only used for Keycloak integration tests: 
 The admin variables are for login keycloak admin panel, the test variables are for login to Konfuzio server.
