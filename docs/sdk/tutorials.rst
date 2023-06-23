@@ -7,6 +7,8 @@ Tutorials
 
 .. mdinclude:: examples/overview/index.md
 
+.. mdinclude:: examples/data-preparation/index.md
+
 .. mdinclude:: examples/file-splitting-class-out-of-the-box-usage/index.md
 
 .. mdinclude:: examples/file-splitting-class/index.md
