@@ -246,11 +246,13 @@ the returned Document object. If the Document is ready, this method will update 
 It's important to note that if the Document is not ready, you may need to call `document.update()` again at a later time. 
 This could be done manually or by setting up a looping mechanism depending on your application's workflow.
 
-To check if the document is ready and update it with the OCR information, you can do:
+To check if the document is ready and update it with the OCR information, you can implement a custom pulling strategy 
+like this:
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 53-56
+   :start-after: start pulling loop
+   :end-before: end pulling loop
    :dedent: 4
 
 ###### Timeout Parameter
@@ -262,8 +264,8 @@ increase the timeout by setting the timeout parameter to a higher value.
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :start-after: start update_doc
-   :end-before: end update_doc
+   :start-after: start timeout upload
+   :end-before: end timeout upload
    :dedent: 4
 
 
