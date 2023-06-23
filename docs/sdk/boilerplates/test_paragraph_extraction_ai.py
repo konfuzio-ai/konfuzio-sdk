@@ -77,11 +77,11 @@ class ParagraphExtractionAI(AbstractExtractionAI):
 
 def test_paragraph_extraction_ai():
     """Test custom ParagraphExtractionAI model."""
-    # start use model
-    labels = ['figure', 'table', 'list', 'text', 'title']
-
+    # start create labels
     project = Project(id_=TEST_PROJECT_ID)
     category = project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID)
+
+    labels = ['figure', 'table', 'list', 'text', 'title']
 
     # creating Labels in case they do not exist
     label_set = project.get_label_set_by_name(category.name)  # default Category label set
@@ -91,14 +91,18 @@ def test_paragraph_extraction_ai():
             project.get_label_by_name(label_name)
         except IndexError:
             Label(project=project, text=label_name, label_sets=[label_set])
+    # end create labels
 
+    # start use model
     document = project.get_document_by_id(TEST_DOCUMENT_ID)
 
     paragraph_extraction_ai = ParagraphExtractionAI(category=category)
 
     assert paragraph_extraction_ai.check_is_ready() is True
 
-    paragraph_extraction_ai.extract(document)
+    extracted_document = paragraph_extraction_ai.extract(document)
+
+    print(extracted_document.annotations(use_correct=False))  # Show all the created Annotations
 
     model_path = paragraph_extraction_ai.save()
     # end use model

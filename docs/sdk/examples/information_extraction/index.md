@@ -169,14 +169,22 @@ Let's go step by step.
 
 6. **Use the model locally**
 
+   We first make sure that all needed Labels are present in the Category.
+
+   .. literalinclude:: /sdk/boilerplates/test_paragraph_extraction_ai.py
+      :language: python
+      :start-after: start create labels
+      :end-before: end create labels
+      :dedent: 4
+
+   We can now use the model to extract a Document. And then we also can run extract on a Document and save the model to 
+   a pickle file that can be used in Konfuzio Server.
+
    .. literalinclude:: /sdk/boilerplates/test_paragraph_extraction_ai.py
       :language: python
       :start-after: start use model
       :end-before: end use model
       :dedent: 4
-
-   We can now use the model to extract a Document. We first make sure that all needed Labels are present in the Category.
-   We then can run extract on a Document and save the model to a pickle file that can be used in Konfuzio Server.
 
 7. **Upload the model to Konfuzio Server**
    
