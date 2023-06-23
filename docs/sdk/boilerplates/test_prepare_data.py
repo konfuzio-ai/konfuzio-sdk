@@ -6,7 +6,6 @@ FILE_PATH = 'tests/test_data/pdf.pdf'
 def test_prepare_data():
     """Upload Documents sychronously and ensure they have Categories."""
     from tests.variables import TEST_PROJECT_ID
-    import time
 
     FILE_PATH_1 = FILE_PATH_2 = FILE_PATH_3 = FILE_PATH
 
@@ -20,7 +19,6 @@ def test_prepare_data():
     file_paths = [FILE_PATH_1, FILE_PATH_2, FILE_PATH_3]
     for document_path in file_paths:
         # create new Documents from your local files
-        _ = Document.from_file(document_path, project=project, sync=True)
+        _ = Document.from_file(document_path, project=project, sync=False)
         # end prepare
-        time.sleep(10)
         _.delete(delete_online=True)
