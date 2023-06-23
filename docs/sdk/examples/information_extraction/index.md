@@ -16,6 +16,7 @@ and try it by yourself.
 ### Train a custom Extraction AI
 
 This section explains how to train a custom Extraction AI locally, how to save it and upload it to the Konfuzio Server. 
+To prepare the data for training and testing your AI, follow the [data preparation tutorial](tutorials.html#tutorials.html#prepare-the-data-for-training-and-testing-the-ai).
 
 By default, any Extraction AI class should derive from the `AbstractExtractionAI` class and implement the following 
 interface:

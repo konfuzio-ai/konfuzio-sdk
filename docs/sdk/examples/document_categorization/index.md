@@ -52,6 +52,7 @@ Use the name of the Category as an effective fallback logic to categorize Docume
 ### Model-based Categorization AI
 
 Build, train and test a Categorization AI using Image Models and Text Models to classify the image and text of each Page.
+To prepare the data for training and testing your AI, follow the [data preparation tutorial](tutorials.html#tutorials.html#prepare-the-data-for-training-and-testing-the-ai).
 
 For a list of available Models see [Available Categorization Models](#categorization-models-available).
 

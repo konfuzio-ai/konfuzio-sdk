@@ -2,7 +2,7 @@
 
 ## File Splitting 
 
-You can train your own File Splitting AI on the data from any Project of your choice. For that purpose, there are 
+You can train your own File Splitting AI on the data from any Project of your choice ([data preparation tutorial here](tutorials.html#tutorials.html#prepare-the-data-for-training-and-testing-the-ai). For that purpose, there are 
 several tools in the SDK that enable processing Documents that consist of multiple files and propose splitting them 
 into the Sub-Documents accordingly:
 
