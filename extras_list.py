@@ -9,6 +9,7 @@ EXTRAS = {
         'pre-commit',
         'parameterized',
         'Sphinx==4.4.0',
+        'sphinx-toolbox==3.4.0',
         'sphinx-reload==0.2.0',
         'sphinx-notfound-page==0.8',
         'm2r2==0.3.2',
