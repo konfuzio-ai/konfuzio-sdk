@@ -1039,6 +1039,10 @@ class TestInformationExtraction(unittest.TestCase):
         # feature order should stay the same to get predictable results
         assert feature_names[-1] == 'first_word_y1'
         assert feature_names[42] == 'feat_substring_count_h'
+        assert feature_names[266] == 'x0_relative'
+        assert feature_names[267] == 'x1_relative'
+        assert feature_names[268] == 'y0_relative'
+        assert feature_names[269] == 'y1_relative'
 
     def test_feature_function_n_nearest_accross_lines(self):
         """Test to generate features with n_nearest_across_lines=True."""
