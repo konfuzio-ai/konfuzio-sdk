@@ -823,6 +823,25 @@ class AbstractExtractionAI(BaseModel):
 
         self.evaluation = None
 
+    @property
+    def project(self):
+        """Get RFExtractionAI Project."""
+        if not self.category:
+            raise AttributeError(f'{self} has no Category.')
+        return self.category.project
+
+    def check_is_ready(self):
+        """
+        Check if the ExtractionAI is ready for the inference.
+
+        It is assumed that the model is ready if a Category is set, and is ready for extraction.
+
+        :raises AttributeError: When no Category is specified.
+        """
+        logger.info(f"Checking if {self} is ready for extraction.")
+        if not self.category:
+            raise AttributeError(f'{self} requires a Category.')
+
     def fit(self):
         """Use as placeholder Function."""
         logger.warning(f'{self} does not train a classifier.')
@@ -1606,12 +1625,9 @@ class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
         :raises AttributeError: When no Category is specified.
         :raises AttributeError: When no Label Classifier has been provided.
         """
-        logger.info(f"Checking if {self} is ready for extraction.")
+        super().check_is_ready()
         if self.tokenizer is None:
             raise AttributeError(f'{self} missing Tokenizer.')
-
-        if not self.category:
-            raise AttributeError(f'{self} requires a Category.')
 
         if self.clf is None:
             raise AttributeError(f'{self} does not provide a Label Classifier. Please add it.')
@@ -1620,13 +1636,6 @@ class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
 
         if self.label_set_clf is None:
             logger.warning(f'{self} does not provide a LabelSet Classfier.')
-
-    @property
-    def project(self):
-        """Get RFExtractionAI Project."""
-        if not self.category:
-            raise AttributeError(f'{self} has no Category.')
-        return self.category.project
 
     def extract(self, document: Document) -> Document:
         """

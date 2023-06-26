@@ -207,15 +207,15 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 
     def test_01_configure_pipeline(self):
         """Make sure the Data and Pipeline is configured."""
-        with pytest.raises(AttributeError, match="missing Tokenizer"):
-            self.pipeline.check_is_ready()
-
-        self.pipeline.tokenizer = WhitespaceTokenizer()
-
         with pytest.raises(AttributeError, match="requires a Category"):
             self.pipeline.check_is_ready()
 
         self.pipeline.category = self.project.get_category_by_id(id_=63)
+
+        with pytest.raises(AttributeError, match="missing Tokenizer"):
+            self.pipeline.check_is_ready()
+
+        self.pipeline.tokenizer = WhitespaceTokenizer()
 
         assert memory_size_of(self.pipeline.category) < 5e5
 
@@ -921,8 +921,8 @@ class TestInformationExtraction(unittest.TestCase):
 
     def test_extraction_without_tokenizer(self):
         """Test extraction on a Document."""
-        pipeline = RFExtractionAI()
         document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        pipeline = RFExtractionAI(category=document.category)
         with pytest.raises(AttributeError) as einfo:
             pipeline.extract(document)
         assert 'missing Tokenizer' in str(einfo.value)
