@@ -111,6 +111,7 @@ setuptools.setup(
             'm2r2==0.3.2',
             'sphinx-sitemap==2.2.0',
             'sphinx-rtd-theme==1.0.0',
+            'sphinx-toolbox==3.4.0',
             'sphinxcontrib-mermaid==0.8.1',
             'matplotlib==3.7.1',
         ]
