@@ -874,6 +874,222 @@ the following interface:</p>
 </pre></div>
 </div>
 </section>
+<section id="example-of-custom-extraction-ai-the-paragraph-extraction-ai">
+<h3>Example of Custom Extraction AI: The Paragraph Extraction AI<a class="headerlink" href="#example-of-custom-extraction-ai-the-paragraph-extraction-ai" title="Permalink to this headline">¶</a></h3>
+<p>In <a class="reference internal" href="../tutorials.html#paragraph-tokenizer-tutorial"><span class="std std-ref">the Paragraph Tokenizer tutorial</span></a>, we saw how we can use the Paragraph Tokenizer
+in <code class="docutils literal notranslate"><span class="pre">detectron</span></code> mode and with the <code class="docutils literal notranslate"><span class="pre">create_detectron_labels</span></code> option to segment a Document and create <code class="docutils literal notranslate"><span class="pre">figure</span></code>, <code class="docutils literal notranslate"><span class="pre">table</span></code>,
+<code class="docutils literal notranslate"><span class="pre">list</span></code>, <code class="docutils literal notranslate"><span class="pre">text</span></code> and <code class="docutils literal notranslate"><span class="pre">title</span></code> Annotations. The tokenizer used this way is thus able to create Annotations like in the
+following:</p>
+<a class="reference internal image-reference" href="../../_images/paragraph_tokenizer.png"><img alt="../../_images/paragraph_tokenizer.png" src="../../_images/paragraph_tokenizer.png" style="width: 411.6px; height: 582.4px;" /></a>
+<p>Here we will see how we can use the Paragraph Tokenizer to create a Custom Extraction AI. What we need to create is
+just a simple wrapper around the Paragraph Tokenizer. It shows how you can create your own Custom Extraction AI that
+you can use in Konfuzio on-prem installations or in the <a class="reference external" href="https://help.konfuzio.com/marketplace/index.html">Konfuzio Marketplace</a>.</p>
+<details class="summary-full-paragraph-extraction-ai-code">
+<summary>Full Paragraph Extraction AI code</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ParagraphExtractionAI</span><span class="p">(</span><span class="n">AbstractExtractionAI</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extract and label text regions using Detectron2.&quot;&quot;&quot;</span>
+
+    <span class="c1"># start model requirements</span>
+    <span class="n">requires_images</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">requires_text</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">requires_segmentation</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="c1"># end model requirements</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">category</span><span class="p">:</span> <span class="n">Category</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize ParagraphExtractionAI.&quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Initializing ParagraphExtractionAI.&quot;</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">category</span><span class="o">=</span><span class="n">category</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span> <span class="o">=</span> <span class="n">ParagraphTokenizer</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;detectron&#39;</span><span class="p">,</span> <span class="n">create_detectron_labels</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">extract</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document</span><span class="p">:</span> <span class="n">Document</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Document</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Infer information from a given Document.</span>
+
+<span class="sd">        :param document: Document object</span>
+<span class="sd">        :return: Document with predicted Labels</span>
+
+<span class="sd">        :raises:</span>
+<span class="sd">        AttributeError: When missing a Tokenizer</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Starting extraction of </span><span class="si">{</span><span class="n">document</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_is_ready</span><span class="p">()</span>
+
+        <span class="n">inference_document</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
+
+        <span class="n">inference_document</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="n">inference_document</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">inference_document</span>
+
+    <span class="k">def</span> <span class="nf">check_is_ready</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if the ExtractionAI is ready for the inference.</span>
+
+<span class="sd">        :raises AttributeError: When no Category is specified.</span>
+<span class="sd">        :raises IndexError: When the Category does not contain the required Labels.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">check_is_ready</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="s1">&#39;figure&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="s1">&#39;table&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="s1">&#39;list&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="s1">&#39;text&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="s1">&#39;title&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="kc">True</span>
+</pre></div>
+</div>
+</details><p><span class="raw-html-m2r"><br/></span>
+Let’s go step by step.</p>
+<ol class="arabic">
+<li><p><strong>Imports</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">AbstractExtractionAI</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.paragraph_and_sentence</span> <span class="kn">import</span> <span class="n">ParagraphTokenizer</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Category</span><span class="p">,</span> <span class="n">Document</span><span class="p">,</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Label</span>
+
+</pre></div>
+</div>
+</li>
+<li><p><strong>Custom Extraction AI model definition</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ParagraphExtractionAI</span><span class="p">(</span><span class="n">AbstractExtractionAI</span><span class="p">):</span>
+</pre></div>
+</div>
+<p>We define a class that inherits from the Konfuzio <code class="docutils literal notranslate"><span class="pre">AbstractExtractionAI</span></code> class. This class provides the interface
+that we need to implement for our Custom Extraction AI. All Extraction AI models must inherit from this class.</p>
+</li>
+<li><p><strong>Add model requirements</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="n">requires_images</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">requires_text</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">requires_segmentation</span> <span class="o">=</span> <span class="kc">True</span>
+</pre></div>
+</div>
+<p>We need to define what the model needs to be able to run. This will inform the Konfuzio Server what information needs
+to be made available to the model before running an extraction. If the model only needs text, you can ignore this step
+or add <code class="docutils literal notranslate"><span class="pre">requires_text</span> <span class="pre">=</span> <span class="pre">True</span></code> to make it explicit. If the model requires Page images, you will need to add
+<code class="docutils literal notranslate"><span class="pre">requires_images</span> <span class="pre">=</span> <span class="pre">True</span></code>. Finally, in our case we also need to add <code class="docutils literal notranslate"><span class="pre">requires_segmentation</span> <span class="pre">=</span> <span class="pre">True</span></code> to inform the Server
+that the model needs the visual segmentation information created by the Paragraph Tokenizer in <code class="docutils literal notranslate"><span class="pre">detectron</span></code> mode.</p>
+</li>
+<li><p><strong>Initialize the model</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+   <span class="bp">self</span><span class="p">,</span>
+   <span class="n">category</span><span class="p">:</span> <span class="n">Category</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+   <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+   <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">   </span><span class="sd">&quot;&quot;&quot;Initialize ParagraphExtractionAI.&quot;&quot;&quot;</span>
+   <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Initializing ParagraphExtractionAI.&quot;</span><span class="p">)</span>
+   <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">category</span><span class="o">=</span><span class="n">category</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+   <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span> <span class="o">=</span> <span class="n">ParagraphTokenizer</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;detectron&#39;</span><span class="p">,</span> <span class="n">create_detectron_labels</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We initialize the model by calling the <code class="docutils literal notranslate"><span class="pre">__init__</span></code> method of the parent class. The only required argument is the
+Category the Extraction AI will be used with. The Category is the Konfuzio object that contains all the Labels
+and LabelSets that the model will use to create Annotations. This means that you need to make sure that the Category
+object contains all the Labels and LabelSets that you need for your model. In our case, we need the <code class="docutils literal notranslate"><span class="pre">figure</span></code>, <code class="docutils literal notranslate"><span class="pre">table</span></code>,
+<code class="docutils literal notranslate"><span class="pre">list</span></code>, <code class="docutils literal notranslate"><span class="pre">text</span></code> and <code class="docutils literal notranslate"><span class="pre">title</span></code> Labels.</p>
+</li>
+<li><p><strong>Define the extract method</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="k">def</span> <span class="nf">extract</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document</span><span class="p">:</span> <span class="n">Document</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Document</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Infer information from a given Document.</span>
+
+<span class="sd">        :param document: Document object</span>
+<span class="sd">        :return: Document with predicted Labels</span>
+
+<span class="sd">        :raises:</span>
+<span class="sd">        AttributeError: When missing a Tokenizer</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Starting extraction of </span><span class="si">{</span><span class="n">document</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_is_ready</span><span class="p">()</span>
+
+        <span class="n">inference_document</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
+
+        <span class="n">inference_document</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="n">inference_document</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">inference_document</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">extract</span></code> method is the core of the Extraction AI. It takes a Document as input and returns a Document with
+Annotations. Make sure to do a <code class="docutils literal notranslate"><span class="pre">deepcopy</span></code> of the Document that is passed so that you add the new Annotations to a
+Virtual Document with no Annotations. The Annotations are created by the model and added to the Document. In our
+case, we simply call the Paragraph Tokenizer in <code class="docutils literal notranslate"><span class="pre">detectron</span></code> mode and with the <code class="docutils literal notranslate"><span class="pre">create_detectron_labels</span></code> option.</p>
+</li>
+<li><p><strong>[OPTIONAL] Define the check_is_ready method</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="k">def</span> <span class="nf">check_is_ready</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if the ExtractionAI is ready for the inference.</span>
+
+<span class="sd">        :raises AttributeError: When no Category is specified.</span>
+<span class="sd">        :raises IndexError: When the Category does not contain the required Labels.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">check_is_ready</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="s1">&#39;figure&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="s1">&#39;table&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="s1">&#39;list&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="s1">&#39;text&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="s1">&#39;title&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="kc">True</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">check_is_ready</span></code> method is used to check if the model is ready to be used. It should return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the model
+is ready to extract, and <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise. It is checked before saving the model. You don’t have to implement it,
+and it will only check that a Category is defined.</p>
+<p>In our case, we also check that the model contains all the Labels that we need. This is not strictly necessary, but
+it is a good practice to make sure that the model is ready to be used.</p>
+</li>
+<li><p><strong>Use the model locally</strong></p>
+<p>We first make sure that all needed Labels are present in the Category.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">TEST_PROJECT_ID</span><span class="p">)</span>
+<span class="n">category</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_category_by_id</span><span class="p">(</span><span class="n">TEST_PAYSLIPS_CATEGORY_ID</span><span class="p">)</span>
+
+<span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;figure&#39;</span><span class="p">,</span> <span class="s1">&#39;table&#39;</span><span class="p">,</span> <span class="s1">&#39;list&#39;</span><span class="p">,</span> <span class="s1">&#39;text&#39;</span><span class="p">,</span> <span class="s1">&#39;title&#39;</span><span class="p">]</span>
+
+<span class="c1"># creating Labels in case they do not exist</span>
+<span class="n">label_set</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_label_set_by_name</span><span class="p">(</span><span class="n">category</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>  <span class="c1"># default Category label set</span>
+
+<span class="k">for</span> <span class="n">label_name</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="n">label_name</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+        <span class="n">Label</span><span class="p">(</span><span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">label_name</span><span class="p">,</span> <span class="n">label_sets</span><span class="o">=</span><span class="p">[</span><span class="n">label_set</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>We can now use the model to extract a Document. And then we also can run extract on a Document and save the model to
+a pickle file that can be used in Konfuzio Server.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">TEST_DOCUMENT_ID</span><span class="p">)</span>
+
+<span class="n">paragraph_extraction_ai</span> <span class="o">=</span> <span class="n">ParagraphExtractionAI</span><span class="p">(</span><span class="n">category</span><span class="o">=</span><span class="n">category</span><span class="p">)</span>
+
+<span class="k">assert</span> <span class="n">paragraph_extraction_ai</span><span class="o">.</span><span class="n">check_is_ready</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">True</span>
+
+<span class="n">extracted_document</span> <span class="o">=</span> <span class="n">paragraph_extraction_ai</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">extracted_document</span><span class="o">.</span><span class="n">annotations</span><span class="p">(</span><span class="n">use_correct</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>  <span class="c1"># Show all the created Annotations</span>
+
+<span class="n">model_path</span> <span class="o">=</span> <span class="n">paragraph_extraction_ai</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Upload the model to Konfuzio Server</strong></p>
+<p>You can use the Konfuzio SDK to upload your model to your on-prem installation like this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.api</span> <span class="kn">import</span> <span class="n">upload_ai_model</span>
+
+<span class="n">upload_ai_model</span><span class="p">(</span><span class="n">model_path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">category_ids</span><span class="o">=</span><span class="p">[</span><span class="n">category</span><span class="o">.</span><span class="n">id_</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Once the model is uploaded you can also share your model with others on the <a class="reference external" href="https://help.konfuzio.com/marketplace/index.html">Konfuzio Marketplace</a>.</p>
+</li>
+</ol>
+</section>
 <section id="evaluate-a-trained-extraction-ai-model">
 <h3>Evaluate a Trained Extraction AI Model<a class="headerlink" href="#evaluate-a-trained-extraction-ai-model" title="Permalink to this headline">¶</a></h3>
 <p>In this example we will see how we can evaluate a trained <code class="docutils literal notranslate"><span class="pre">RFExtractionAI</span></code> model. We will assume that we have a trained
@@ -916,7 +1132,7 @@ it fails to handle documents with two columns. The <code class="docutils literal
 the <code class="docutils literal notranslate"><span class="pre">create_detectron_labels</span></code> setting to create Annotations with the label given by our <a class="reference external" href="https://github.com/facebookresearch/detectron2">Detectron2</a> model:
 <code class="docutils literal notranslate"><span class="pre">figure</span></code>, <code class="docutils literal notranslate"><span class="pre">table</span></code>, <code class="docutils literal notranslate"><span class="pre">list</span></code>, <code class="docutils literal notranslate"><span class="pre">text</span></code> and <code class="docutils literal notranslate"><span class="pre">title</span></code>.</p>
 <section id="paragraph-tokenizer">
-<h3>Paragraph Tokenizer<a class="headerlink" href="#paragraph-tokenizer" title="Permalink to this headline">¶</a></h3>
+<span id="paragraph-tokenizer-tutorial"></span><h3>Paragraph Tokenizer<a class="headerlink" href="#paragraph-tokenizer" title="Permalink to this headline">¶</a></h3>
 <p>For example, to tokenize a Document into paragraphs using the <code class="docutils literal notranslate"><span class="pre">ParagraphTokenizer</span></code> in <code class="docutils literal notranslate"><span class="pre">detectron</span></code> mode and the
 <code class="docutils literal notranslate"><span class="pre">create_detectron_labels</span></code> option to use the labels provided by our Detectron model, you can use the following code:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
@@ -995,7 +1211,7 @@ If at least one Annotation, Span, or Bbox within a Document fails one of the fol
 marked as unsuitable for training an Extraction AI.</p>
 </section>
 <section id="annotation-validation">
-<span id="id7"></span><h3>Annotation Validation Rules<a class="headerlink" href="#annotation-validation" title="Permalink to this headline">¶</a></h3>
+<span id="id8"></span><h3>Annotation Validation Rules<a class="headerlink" href="#annotation-validation" title="Permalink to this headline">¶</a></h3>
 <p>An <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#annotation">Annotation</a> passes the Data Validation Rules only if:</p>
 <ol class="arabic simple">
 <li><p>The Annotation is not from a Category different from the Document’s Category</p></li>
@@ -1011,7 +1227,7 @@ marked as unsuitable for training an Extraction AI.</p>
 For more information about what these boolean values mean, see <a class="reference external" href="https://help.konfuzio.com/modules/annotations/index.html">Konfuzio Server - Annotations</a>.</p>
 </section>
 <section id="span-validation">
-<span id="id8"></span><h3>Span Validation Rules<a class="headerlink" href="#span-validation" title="Permalink to this headline">¶</a></h3>
+<span id="id9"></span><h3>Span Validation Rules<a class="headerlink" href="#span-validation" title="Permalink to this headline">¶</a></h3>
 <p>A <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#span">Span</a> passes the Data Validation Rules only if:</p>
 <ol class="arabic simple">
 <li><p>The Span contains non-empty text (the start offset must be strictly greater than the end offset)</p></li>
@@ -1019,7 +1235,7 @@ For more information about what these boolean values mean, see <a class="referen
 </ol>
 </section>
 <section id="bbox-validation">
-<span id="id9"></span><h3>Bbox Validation Rules<a class="headerlink" href="#bbox-validation" title="Permalink to this headline">¶</a></h3>
+<span id="id10"></span><h3>Bbox Validation Rules<a class="headerlink" href="#bbox-validation" title="Permalink to this headline">¶</a></h3>
 <p>A <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#bbox">Bbox</a> passes the Data Validation Rules only if:</p>
 <ol class="arabic simple">
 <li><p>The Bbox has non-negative width and height (zero is allowed for compatibility reasons with many OCR engines)</p></li>

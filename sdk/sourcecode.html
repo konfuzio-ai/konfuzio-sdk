@@ -2055,7 +2055,8 @@ Extraction. arXiv. <a class="reference external" href="https://doi.org/10.48550/
 <p>Saving is done by: getting the serialized pickle object (via cloudpickle), “optimizing” the serialized object
 with the built-in pickletools.optimize function (see: <a class="reference external" href="https://docs.python.org/3/library/pickletools.html">https://docs.python.org/3/library/pickletools.html</a>),
 saving the optimized serialized object.</p>
-<p>We then compress the pickle file using shutil.copyfileobject which writes in chunks to avoid loading the entire pickle file in memory.</p>
+<p>We then compress the pickle file using shutil.copyfileobject which writes in chunks to avoid loading the
+entire pickle file in memory.</p>
 <p>Finally, we delete the cloudpickle file and are left with the compressed pickle file which has a .pkl.lz4 or
 .pkl.bz2 extension.</p>
 <dl class="field-list simple">
@@ -2093,6 +2094,18 @@ saving the optimized serialized object.</p>
 <dt class="sig sig-object py">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">add_extractions_as_annotations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">extractions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.core.frame.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">document</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">konfuzio_sdk.data.Document</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">konfuzio_sdk.data.Label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_set</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">konfuzio_sdk.data.LabelSet</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotation_set</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">konfuzio_sdk.data.AnnotationSet</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span></dt>
 <dd><p>Add the extraction of a model to the document.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">check_is_ready</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Check if the ExtractionAI is ready for the inference.</p>
+<p>It is assumed that the model is ready if a Category is set, and is ready for extraction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>AttributeError</strong> – When no Category is specified.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -2184,6 +2197,12 @@ OR the resulting merging create a span normalizable to the same type</p></li>
 <dt class="sig sig-object py">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pkl_file_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em></dt>
 <dd><p>Generate a path for a resulting pickle file.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">project</span></span></dt>
+<dd><p>Get RFExtractionAI Project.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -2405,12 +2424,6 @@ single-line Annotations that are being merged.</p>
 <dd class="field-odd"><p><strong>document</strong> – Document with multi-line Annotations</p>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">project</span></span></dt>
-<dd><p>Get RFExtractionAI Project.</p>
 </dd></dl>
 
 <dl class="py method">
