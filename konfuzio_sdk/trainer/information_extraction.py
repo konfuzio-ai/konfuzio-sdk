@@ -848,6 +848,7 @@ def process_document_data(
         string_features_first_word = list(df_string_features_first.columns.values)  # NOQA
         df = df.join(df_string_features_first, lsuffix='_caller', rsuffix='_other')
         first_word_features = ['first_word_x0', 'first_word_y0', 'first_word_x1', 'first_word_y1']
+        first_word_features += string_features_first_word
 
     # creates all the features from the offset string
     df_string_features_real = convert_to_feat(list(df["offset_string"]))
