@@ -848,6 +848,7 @@ def process_document_data(
         string_features_first_word = list(df_string_features_first.columns.values)  # NOQA
         df = df.join(df_string_features_first, lsuffix='_caller', rsuffix='_other')
         first_word_features = ['first_word_x0', 'first_word_y0', 'first_word_x1', 'first_word_y1']
+        first_word_features += string_features_first_word
 
     # creates all the features from the offset string
     df_string_features_real = convert_to_feat(list(df["offset_string"]))
@@ -870,7 +871,13 @@ def process_document_data(
     df["relative_position_in_page"] = df["page_index"] / document_n_pages
 
     abs_pos_feature_list = ["x0", "y0", "x1", "y1", "page_index", "area_quadrant_two", "area"]
-    relative_pos_feature_list = ["relative_position_in_page"]
+    relative_pos_feature_list = [
+        "x0_relative",
+        "x1_relative",
+        "y0_relative",
+        "y1_relative",
+        "relative_position_in_page",
+    ]
 
     feature_list = (
         string_feature_column_order
