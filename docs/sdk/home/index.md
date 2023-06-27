@@ -57,7 +57,7 @@ data for training your own models, for example;
 ### Category
 [Category](sourcecode.html#category) is a group of Documents united by common feature or type, i.e. invoice or receipt.
 
-To see all Categories in the Project, you can use `project.get_categories()`. 
+To see all Categories in the Project, you can use `project.categories`. 
 To find a Category the Document belongs to, you can use `document.category`.
 To get `documents` or `test_documents` under the Category, use `category.documents()` or `category.test_documents()` respectively.
 

@@ -3,7 +3,7 @@
 
 ### Working with the Category of a Document and its individual Pages
 
-You can initialize a Document with a Category, which will count as if a human manually revised it.
+You can initialize a Document with a :ref:`Category<category-concept>`, which will count as if a human manually revised it.
 
 .. literalinclude:: /sdk/boilerplates/test_document_categorization.py
    :language: python
