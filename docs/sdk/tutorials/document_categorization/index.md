@@ -1,9 +1,13 @@
 .. _document-categorization-tutorials:
 ## Document Categorization
 
-### Working with the Category of a Document and its individual Pages
+When uploading a Document to Konfuzio, the first step is to assign it to a :ref:`Category<category-concept>`. This 
+can be done manually, or automatically using a Categorization AI.
 
-You can initialize a Document with a :ref:`Category<category-concept>`, which will count as if a human manually revised it.
+### Setting the Category of a Document and its individual Pages Manually
+
+You can initialize a Document with a :ref:`Category<category-concept>`. You can also use `Document.set_category` to set 
+a Document's Category after it has been initialized. This will count as if a human manually revised it.
 
 .. literalinclude:: /sdk/boilerplates/test_document_categorization.py
    :language: python
@@ -40,9 +44,13 @@ also find these documented under [API Reference - Document](../../sourcecode.htm
 | `Page.maximum_confidence_category_annotation`   | Get the maximum confidence predicted Category<br>Annotation or the one revised by the user for this<br>Page.                                                                                                                      |
 | `Page.category`  | Get the maximum confidence predicted Category<br>or the one revised by user for this Page.                                                                                                                                        |
 
+To categorize a Document with a Categorization AI, we have two main options: the Name-based Categorization AI and the 
+more complex Model-based Categorization AI.
+
 ### Name-based Categorization AI
 
-Use the name of the Category as an effective fallback logic to categorize Documents when no Categorization AI is available:
+The name-based Categorization AI is a good fallback logic using the name of the Category to categorize Documents when 
+no model-based Categorization AI is available:
 
 .. literalinclude:: /sdk/boilerplates/test_document_categorization.py
    :language: python
@@ -52,9 +60,8 @@ Use the name of the Category as an effective fallback logic to categorize Docume
 
 ### Model-based Categorization AI
 
-Build, train and test a Categorization AI using Image Models and Text Models to classify the image and text of each Page.
-
-For a list of available Models see all the available [Categorization Models](#categorization-ai-models).
+For better results you can build, train and test a Categorization AI using Image Models and Text Models to classify 
+the image and text of each Page:
 
 .. literalinclude:: /sdk/boilerplates/test_document_categorization.py
    :language: python
@@ -67,7 +74,9 @@ For a list of available Models see all the available [Categorization Models](#ca
    :end-before: End Build
    :dedent: 4
 
-### Categorization AI Models
+For a list of available Models see all the available [Categorization Models](#categorization-ai-models) below.
+
+#### Categorization AI Models
 
 When using `build_categorization_ai_pipeline`, you can select which Image Module and/or Text Module to use for 
 classification. At least one between the Image Model or the Text Model must be specified. Both can also be used 
