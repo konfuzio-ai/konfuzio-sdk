@@ -1,6 +1,7 @@
 ## Using Ngrok to Pull Documents Uploaded Asynchronously
 
-The most convenient way to upload a large number of files to the Konfuzio 
+The most convenient way to upload a large number of files to the Konfuzio is to use the Document.from_file method in 
+asynchronous mode. 
 
 
 Install Flask
