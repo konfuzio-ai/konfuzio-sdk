@@ -1044,6 +1044,18 @@ class TestInformationExtraction(unittest.TestCase):
         assert feature_names[268] == 'y0_relative'
         assert feature_names[269] == 'y1_relative'
 
+    def test_feature_columns(self):
+        """Test list of features used and list of columns of feature dataframe excluded."""
+        from tests.trainer.features import full_feature_list, excluded_columns_list
+
+        document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        pipeline = RFExtractionAI()
+        pipeline.tokenizer = WhitespaceTokenizer()
+        features, feature_names, errors = pipeline.features(document)
+
+        assert feature_names == full_feature_list
+        assert sorted(list(set(list(features)) - set(feature_names))) == excluded_columns_list
+
     def test_feature_function_n_nearest_accross_lines(self):
         """Test to generate features with n_nearest_across_lines=True."""
         document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
