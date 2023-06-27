@@ -377,18 +377,27 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         return page
 
     def remove_dependencies(self):
-        """Remove dependencies before saving."""
+        """
+        Remove dependencies before saving.
+
+        This is needed for proper saving of the model in lz4 compressed format – if the dependencies are not removed,
+        the resulting pickle will be impossible to load.
+        """
         globals()['torch'] = None
         globals()['tf'] = None
         globals()['transformers'] = None
 
-        # Optional: Remove imports from the module namespace
         del globals()['torch']
         del globals()['tf']
         del globals()['transformers']
 
     def restore_dependencies(self):
-        """Restore removed dependencies after loading."""
+        """
+        Restore removed dependencies after loading.
+
+        This is needed for proper functioning of a loaded model because we have previously removed these dependencies
+        upon saving the model.
+        """
         from konfuzio_sdk.extras import torch, tensorflow as tf, transformers
 
         globals()['torch'] = torch
