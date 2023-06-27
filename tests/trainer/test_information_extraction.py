@@ -164,8 +164,8 @@ label_set_clf_classes = ['Brutto-Bezug', 'Lohnabrechnung', 'Netto-Bezug', 'No', 
     [
         (
             False,
-            0.7671232876712328,  # w/ full dataset: 0.9237668161434978
-            0.8115942028985508,
+            0.7945205479452054,  # w/ full dataset: 0.9237668161434978
+            0.8405797101449275,
             0.9745762711864406,
             0.9652173913043478,
             1.0,
@@ -173,14 +173,14 @@ label_set_clf_classes = ['Brutto-Bezug', 'Lohnabrechnung', 'Netto-Bezug', 'No', 
         ),
         (
             True,
-            0.7945205479452054,
-            0.8529411764705882,
-            0.9745762711864406,
+            0.8285714285714286,
+            0.8656716417910447,
+            0.9704641350210971,
             0.9652173913043478,
-            1.0,
+            0.9836065573770492,
             False,
         ),  # w/ full dataset: 0.9783549783549783
-        (False, 0.8732394366197183, 0.8985507246376812, 0.9704641350210971, 0.9652173913043478, 1.0, True),
+        (False, 0.8611111111111112, 0.8985507246376812, 0.9704641350210971, 0.9652173913043478, 1.0, True),
     ],
 )
 class TestWhitespaceRFExtractionAI(unittest.TestCase):
@@ -461,7 +461,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 @parameterized.parameterized_class(
     ('use_separate_labels', 'evaluate_full_result'),
     [
-        (False, 0.7741935483870968),  # w/ full dataset: 0.8930232558139535
+        (False, 0.7384615384615385),  # w/ full dataset: 0.8930232558139535
         (True, 0.75),  # w/ full dataset: 0.9596412556053812
     ],
 )
@@ -779,8 +779,8 @@ class TestParagraphRFExtractionAI(unittest.TestCase):
 @parameterized.parameterized_class(
     ('mode', 'n_extracted_annotations', 'n_extracted_spans', 'min_eval_f1', 'eval_tp', 'eval_fp'),
     [
-        ('detectron', 101, 225, 0.6, 20, 18),
-        ('line_distance', 97, 222, 0.25, 10, 21),  # line distance method does not work well with 2 column documents
+        ('detectron', 101, 225, 0.6, 20, 16),
+        ('line_distance', 97, 222, 0.25, 9, 26),  # line distance method does not work well with 2 column documents
     ],
 )
 class TestSentenceRFExtractionAI(unittest.TestCase):
@@ -1035,10 +1035,26 @@ class TestInformationExtraction(unittest.TestCase):
         pipeline = RFExtractionAI()
         pipeline.tokenizer = WhitespaceTokenizer()
         features, feature_names, errors = pipeline.features(document)
-        assert len(feature_names) == 271  # todo investigate if all features are calculated correctly, see #9289
+        assert len(feature_names) == 326  # todo investigate if all features are calculated correctly, see #9289
         # feature order should stay the same to get predictable results
-        assert feature_names[-1] == 'first_word_y1'
+        assert feature_names[-1] == 'first_word_feat_ends_with_minus'
         assert feature_names[42] == 'feat_substring_count_h'
+        assert feature_names[266] == 'x0_relative'
+        assert feature_names[267] == 'x1_relative'
+        assert feature_names[268] == 'y0_relative'
+        assert feature_names[269] == 'y1_relative'
+
+    def test_feature_columns(self):
+        """Test list of features used and list of columns of feature dataframe excluded."""
+        from tests.trainer.features import FULL_FEATURE_LIST, EXCLUDED_COLUMNS_LIST
+
+        document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        pipeline = RFExtractionAI()
+        pipeline.tokenizer = WhitespaceTokenizer()
+        features, feature_names, errors = pipeline.features(document)
+
+        assert feature_names == FULL_FEATURE_LIST
+        assert sorted(list(set(list(features)) - set(feature_names))) == EXCLUDED_COLUMNS_LIST
 
     def test_feature_function_n_nearest_accross_lines(self):
         """Test to generate features with n_nearest_across_lines=True."""
@@ -1046,9 +1062,9 @@ class TestInformationExtraction(unittest.TestCase):
         pipeline = RFExtractionAI(n_nearest_across_lines=True)
         pipeline.tokenizer = WhitespaceTokenizer()
         features, feature_names, errors = pipeline.features(document)
-        assert len(feature_names) == 275  # todo investigate if all features are calculated correctly, see #9289
+        assert len(feature_names) == 330  # todo investigate if all features are calculated correctly, see #9289
         # feature order should stay the same to get predictable results
-        assert feature_names[-1] == 'first_word_y1'
+        assert feature_names[-1] == 'first_word_feat_ends_with_minus'
         assert feature_names[42] == 'feat_substring_count_h'
         assert feature_names[60] == 'l_pos0'
         assert feature_names[65] == 'r_pos1'
@@ -1122,7 +1138,7 @@ class TestInformationExtraction(unittest.TestCase):
         pipeline.tokenizer = WhitespaceTokenizer()
         pipeline.n_nearest = 10
         features, feature_names, errors = pipeline.features(document)
-        assert len(feature_names) == 1103  # todo investigate if all features are calculated correctly, see #9289
+        assert len(feature_names) == 1158  # todo investigate if all features are calculated correctly, see #9289
         assert features['is_correct'].sum() == 21
         assert features['revised'].sum() == 2
 
