@@ -2,6 +2,12 @@
 
 ## File Splitting 
 
+PDFs often encapsulate multiple distinct Documents within a single file, leading to complex navigation and information 
+retrieval. Document splitting tackles this by disentangling these intertwined files into separate Documents. This 
+guide introduces you to tools and models that automate this process, streamlining your work with multi-Document PDFs.
+
+### Overview
+
 You can train your own File Splitting AI on the data from any Project of your choice. For that purpose, there are 
 several tools in the SDK that enable processing Documents that consist of multiple files and propose splitting them 
 into the Sub-Documents accordingly:
@@ -24,7 +30,7 @@ non-first.
 
 For developing a custom File Splitting approach, we propose an abstract class `AbstractFileSplittingModel`.
 
-### Train a File Splitting AI locally
+### Train a Context Aware File Splitting AI
 
 Let's see how to use the `konfuzio_sdk` to automatically split a file into several Documents. We will be using 
 a pre-built class `SplittingAI` and an instance of a trained `ContextAwareFileSplittingModel`. The latter uses a 
@@ -32,9 +38,6 @@ context-aware logic. By context-aware we mean a rule-based approach that looks f
 Pages of all Category's Documents. Upon predicting whether a Page is a potential splitting point (meaning whether it is 
 first or not), we compare Page's contents to these common first-page strings; if there is occurrence of at least one 
 such string, we mark a Page to be first (thus meaning it is a splitting point).
-
-This tutorial can also be used with the `MultimodalFileSplittingModel`; the only difference in the initialization is 
-that it does not require specifying a Tokenizer explicitly. 
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_example.py
    :language: python
@@ -47,10 +50,15 @@ that it does not require specifying a Tokenizer explicitly.
    :end-before: end file splitting
    :dedent: 4
 
+### Train a Multimodal File Splitting AI
+
+The above tutorial for the `ContextAwareFileSplittingModel` can also be used with the `MultimodalFileSplittingModel`. 
+The only difference is that the `MultimodalFileSplittingModel` does not need to be initialized with a Tokenizer.
+
 ### Develop and save a custom File Splitting AI
 
-In this tutorial, you will learn how to train a custom File Splitting AI on the data from a Project of your choice and 
-save a trained model for further usage.
+If the solutions presented above do not meet your requirements, we also allow the training of custom File Splitting AIs 
+on the data from a Project of your choice. You can then save your trained model and use it with Konfuzio.
 
 #### Intro
 
