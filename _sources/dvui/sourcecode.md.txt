@@ -1,5 +1,5 @@
 .. meta::
-:description: information on where to find the application sourcecode
+:description: information on where to find the application source code
 
 # Source Code
 
@@ -11,7 +11,7 @@ The [`src`](https://github.com/konfuzio-ai/document-validation-ui/tree/main/src)
 
 ### Assets
 
-[This folder](https://github.com/konfuzio-ai/document-validation-ui/tree/main/src/assets) contains all the images and styles. Each component has it's styles under the `scss` folder. The application uses the [Buefy](https://buefy.org) library, so if you want to edit the application theme you can go to the file `scss/variables.scss` and edit all the colors and variables to match the desired design.
+[This folder](https://github.com/konfuzio-ai/document-validation-ui/tree/main/src/assets) contains all the images and styles. Each component has its styles under the `SCSS` folder. The application uses the [Buefy](https://buefy.org) library, so if you want to edit the application theme you can go to the file `scss/variables.scss` and edit all the colors and variables to match the desired design.
 
 The application uses FontAwesome for the icons. If you need to add new ones, you can do so on the `main.js` file on the icon library setup.
 
@@ -25,11 +25,11 @@ Vue components that are responsible for making the application work. They are di
 
 ### Locales
 
-In [this folder](https://github.com/konfuzio-ai/document-validation-ui/tree/main/src/locales) you can find the translations files, which consist of key-value pairs. There can be as many files as languages needed. Translations are implemented using the library [Vue I18n](https://vue-i18n.intlify.dev/), and the expected value is rendered by using the `$t` translation API and passing the key as an argument.
+In [this folder](https://github.com/konfuzio-ai/document-validation-ui/tree/main/src/locales) you can find the translation files, which consist of key-value pairs. There can be as many files as languages needed. Translations are implemented using the library [Vue I18n](https://vue-i18n.intlify.dev/), and the expected value is rendered by using the `$t` translation API and passing the key as an argument.
 
 ### Store
 
-The [store](https://github.com/konfuzio-ai/document-validation-ui/tree/main/src/store) is implemented using [Vuex](https://vuex.vuejs.org/). It is responsible for saving all information coming from the API and local information regarding the use of the app, like the display scale. Most of the information is obtained, filtered, grouped and processed in the store files which are separated by their concept.
+The [store](https://github.com/konfuzio-ai/document-validation-ui/tree/main/src/store) is implemented using [Vuex](https://vuex.vuejs.org/). It is responsible for saving all information coming from the API and local information regarding the use of the app, like the display scale. Most of the information is obtained, filtered, grouped, and processed in the store files which are separated by their concept.
 
 ### Utils
 
@@ -37,4 +37,4 @@ All utility functions are added [here](https://github.com/konfuzio-ai/document-v
 
 ## **Tests**
 
-You can test the application by running `npm run test:unit`. Tests are developed using [Vue Test Utils](https://github.com/vuejs/vue-test-utils) and are located on the `tests` folder. Mock data is used to get information into the testing environment, so there's no requirement to connect to an API. The tests are grouped by the different components and are focused on testing the components behavior.
+You can test the application by running `npm run test:unit`. Tests are developed using [Vue Test Utils](https://github.com/vuejs/vue-test-utils) and are located in the `tests` folder. Mock data is used to get information into the testing environment, so there's no requirement to connect to an API. The tests are grouped by the different components and are focused on testing the components' behavior.
