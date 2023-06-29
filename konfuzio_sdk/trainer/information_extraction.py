@@ -32,7 +32,6 @@ from copy import deepcopy
 from heapq import nsmallest
 from inspect import signature
 from typing import Tuple, Optional, List, Union, Dict
-from warnings import warn
 
 import cloudpickle
 import lz4.frame
@@ -69,8 +68,6 @@ logger = logging.getLogger(__name__)
 
 """Multiclass classifier for document extraction."""
 CANDIDATES_CACHE_SIZE = 100
-
-warn('This module is WIP: https://gitlab.com/konfuzio/objectives/-/issues/9311', FutureWarning, stacklevel=2)
 
 
 def load_model(pickle_path: str, max_ram: Union[None, str] = None):
