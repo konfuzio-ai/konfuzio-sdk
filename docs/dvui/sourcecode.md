@@ -1,5 +1,5 @@
 .. meta::
-:description: information on where to find the application source-code
+:description: information on where to find the application source code
 
 # Source Code
 
