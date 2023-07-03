@@ -2,7 +2,7 @@
 import sys
 import unittest
 
-MODEL_PATH = 'tests/trainer/2023-05-11-15-44-10_lohnabrechnung_rfextractionai_.pkl'
+MODEL_PATH = 'tests/trainer/2023-07-03-19-30-13_lohnabrechnung_rfextractionai_.pkl.lz4'
 
 
 @unittest.skipIf(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
