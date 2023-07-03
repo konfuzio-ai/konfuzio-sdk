@@ -25,6 +25,12 @@ You can think of the _Planned_ section as a _Roadmap_ that lists Konfuzio Server
 
 Upcoming...
 
+## released-2023-06-27_21-39-25
+This version uses the Konfuzio Python SDK in version v.0.2.23 and Konfuzio Document Validation UI in version v.0.1.9.
+
+### Changed
+- Improved capabilities of the Extraction AI  ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11316)).
+
 ## released-2023-06-25_15-20-35
 This version uses the Konfuzio Python SDK in version v.0.2.22 and Konfuzio Document Validation UI in version v.0.1.9.
 
