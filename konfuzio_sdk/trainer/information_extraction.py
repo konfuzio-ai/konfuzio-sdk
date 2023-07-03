@@ -32,7 +32,6 @@ from copy import deepcopy
 from heapq import nsmallest
 from inspect import signature
 from typing import Tuple, Optional, List, Union, Dict
-from warnings import warn
 
 import cloudpickle
 import lz4.frame
@@ -69,8 +68,6 @@ logger = logging.getLogger(__name__)
 
 """Multiclass classifier for document extraction."""
 CANDIDATES_CACHE_SIZE = 100
-
-warn('This module is WIP: https://gitlab.com/konfuzio/objectives/-/issues/9311', FutureWarning, stacklevel=2)
 
 
 def load_model(pickle_path: str, max_ram: Union[None, str] = None):
@@ -848,6 +845,7 @@ def process_document_data(
         string_features_first_word = list(df_string_features_first.columns.values)  # NOQA
         df = df.join(df_string_features_first, lsuffix='_caller', rsuffix='_other')
         first_word_features = ['first_word_x0', 'first_word_y0', 'first_word_x1', 'first_word_y1']
+        first_word_features += string_features_first_word
 
     # creates all the features from the offset string
     df_string_features_real = convert_to_feat(list(df["offset_string"]))
@@ -870,7 +868,13 @@ def process_document_data(
     df["relative_position_in_page"] = df["page_index"] / document_n_pages
 
     abs_pos_feature_list = ["x0", "y0", "x1", "y1", "page_index", "area_quadrant_two", "area"]
-    relative_pos_feature_list = ["relative_position_in_page"]
+    relative_pos_feature_list = [
+        "x0_relative",
+        "x1_relative",
+        "y0_relative",
+        "y1_relative",
+        "relative_position_in_page",
+    ]
 
     feature_list = (
         string_feature_column_order
@@ -972,7 +976,7 @@ class BaseModel(metaclass=abc.ABCMeta):
         reduce_weight=True,
         compression: str = 'lz4',
         keep_documents=False,
-        max_ram=None
+        max_ram=None,
     ):
         """
         Save the label model as a compressed pickle object to the release directory.
@@ -981,7 +985,8 @@ class BaseModel(metaclass=abc.ABCMeta):
         with the built-in pickletools.optimize function (see: https://docs.python.org/3/library/pickletools.html),
         saving the optimized serialized object.
 
-        We then compress the pickle file using shutil.copyfileobject which writes in chunks to avoid loading the entire pickle file in memory.
+        We then compress the pickle file using shutil.copyfileobject which writes in chunks to avoid loading the
+        entire pickle file in memory.
 
         Finally, we delete the cloudpickle file and are left with the compressed pickle file which has a .pkl.lz4 or
         .pkl.bz2 extension.
@@ -1109,6 +1114,25 @@ class AbstractExtractionAI(BaseModel):
         self.df_train = None
 
         self.evaluation = None
+
+    @property
+    def project(self):
+        """Get RFExtractionAI Project."""
+        if not self.category:
+            raise AttributeError(f'{self} has no Category.')
+        return self.category.project
+
+    def check_is_ready(self):
+        """
+        Check if the ExtractionAI is ready for the inference.
+
+        It is assumed that the model is ready if a Category is set, and is ready for extraction.
+
+        :raises AttributeError: When no Category is specified.
+        """
+        logger.info(f"Checking if {self} is ready for extraction.")
+        if not self.category:
+            raise AttributeError(f'{self} requires a Category.')
 
     def fit(self):
         """Use as placeholder Function."""
@@ -1873,12 +1897,9 @@ class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
         :raises AttributeError: When no Category is specified.
         :raises AttributeError: When no Label Classifier has been provided.
         """
-        logger.info(f"Checking if {self} is ready for extraction.")
+        super().check_is_ready()
         if self.tokenizer is None:
             raise AttributeError(f'{self} missing Tokenizer.')
-
-        if not self.category:
-            raise AttributeError(f'{self} requires a Category.')
 
         if self.clf is None:
             raise AttributeError(f'{self} does not provide a Label Classifier. Please add it.')
@@ -1887,13 +1908,6 @@ class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
 
         if self.label_set_clf is None:
             logger.warning(f'{self} does not provide a LabelSet Classfier.')
-
-    @property
-    def project(self):
-        """Get RFExtractionAI Project."""
-        if not self.category:
-            raise AttributeError(f'{self} has no Category.')
-        return self.category.project
 
     def extract(self, document: Document) -> Document:
         """
