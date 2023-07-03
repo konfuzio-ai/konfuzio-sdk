@@ -19,7 +19,6 @@ def test_train_label_regex_tokenizer():
     label = my_project.get_label_by_name("Lohnart")
 
     for regex in label.find_regex(category=category):
-        print(regex)  # to show how the regex can look, for instance: (?:(?P<Label_861_N_672673_1638>\d\d\d\d))[ ]{1,2}
         regex_tokenizer = RegexTokenizer(regex=regex)
         tokenizer.tokenizers.append(regex_tokenizer)
 

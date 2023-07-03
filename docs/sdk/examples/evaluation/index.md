@@ -1,4 +1,4 @@
-### Evaluate a File Splitting AI
+### FileSplittingEvaluation class
 
 `FileSplittingEvaluation` class can be used to evaluate performance of Context-Aware File Splitting Model, returning a 
 set of metrics that includes precision, recall, f1 measure, True Positives, False Positives, True Negatives, and False 

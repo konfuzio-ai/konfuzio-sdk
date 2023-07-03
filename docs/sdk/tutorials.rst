@@ -13,8 +13,6 @@ Tutorials
 
 .. mdinclude:: examples/file-splitting-class/index.md
 
-.. mdinclude:: examples/custom-file-splitting-class/index.md
-
 .. mdinclude:: examples/evaluation/index.md
 
 .. mdinclude:: examples/document_categorization/index.md
@@ -30,8 +28,6 @@ Tutorials
 .. mdinclude:: examples/helloworld.md
 
 .. mdinclude:: examples/word-tokenizer/index.md
-
-.. mdinclude:: examples/pdf-form-generator/index.md
 
 Retrain Flair NER-Ontonotes-Fast with Human Revised Annotations
 ---------------------------------------------------------------

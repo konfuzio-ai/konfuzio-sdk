@@ -6,7 +6,6 @@ def test_context_aware_file_splitting():
     """Test the File Splitting section of the documentation."""
     from konfuzio_sdk.trainer.file_splitting import AbstractFileSplittingModel
     from tests.variables import TEST_PROJECT_ID
-    import os
 
     YOUR_PROJECT_ID = TEST_PROJECT_ID
     YOUR_DOCUMENT_ID = 44865
@@ -77,13 +76,3 @@ def test_context_aware_file_splitting():
         else:
             print('Page {} is predicted as the non-first.'.format(page.number))
     # end file splitting
-    # start upload
-    # from konfuzio_sdk.api import upload_ai_model, delete_ai_model
-    #
-    # # upload a saved model to the server
-    # model_id = upload_ai_model(save_path)
-    #
-    # # remove model
-    # delete_ai_model(model_id, ai_type='file_splitting')
-    # end upload
-    os.remove(save_path)
