@@ -12,7 +12,6 @@ from copy import deepcopy
 from inspect import signature
 from typing import Union, List, Dict, Tuple, Optional
 from enum import Enum
-from warnings import warn
 
 import timm
 import torchvision
@@ -34,8 +33,6 @@ from konfuzio_sdk.trainer.image import ImagePreProcessing, ImageDataAugmentation
 from konfuzio_sdk.utils import get_timestamp
 
 logger = logging.getLogger(__name__)
-
-warn('This module is WIP: https://gitlab.com/konfuzio/objectives/-/issues/9481', FutureWarning, stacklevel=2)
 
 
 class AbstractCategorizationAI(metaclass=abc.ABCMeta):
