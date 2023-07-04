@@ -79,9 +79,9 @@ def get_id(a_string, include_time: bool = False) -> int:
     else:
         unique_string = a_string
     try:
-        return int(hashlib.md5(unique_string.encode()).hexdigest(), 16)
+        return int(hashlib.md5(unique_string.encode()).hexdigest(), 16)  # NO QA
     except (UnicodeDecodeError, AttributeError):  # duck typing for bytes like objects
-        return int(hashlib.md5(unique_string).hexdigest(), 16)
+        return int(hashlib.md5(unique_string).hexdigest(), 16)  # todo change -> uuid
 
 
 def is_file(file_path, raise_exception=True, maximum_size=100000000, allow_empty=False) -> bool:

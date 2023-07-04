@@ -93,16 +93,48 @@ needed for distinguishing between preprocessing types once a model is passed int
 
 An example of how ConnectedTextTokenizer works:
 
-.. literalinclude:: /sdk/boilerplates/test_connected_text_tokenizer.py
-   :language: python
-   :start-after: Start tokenize
-   :end-before: End tokenize
-   :dedent: 4
-.. literalinclude:: /sdk/boilerplates/test_connected_text_tokenizer.py
-   :language: python
-   :start-after: Start string
-   :end-before: End string
-   :dedent: 4
+.. exec_code::
+   
+   # --- hide: start ---
+   from konfuzio_sdk.samples import LocalTextProject
+   from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
+   project = LocalTextProject()
+   tokenizer = ConnectedTextTokenizer()
+   YOUR_DOCUMENT_ID = 9
+   test_document = project.get_document_by_id(YOUR_DOCUMENT_ID)
+   assert (
+        test_document.text == "Hi all,\nI like bread.\n\fI hope to get everything done soon.\n\fMorning,\n\fI'm glad "
+        "to see you.\n\fMorning,"
+    )
+   assert test_document.spans() == []
+   # --- hide: stop ---
+   # before tokenization
+   test_document = project.get_document_by_id(YOUR_DOCUMENT_ID)
+   test_document.text
+
+   # output: "Hi all,\nI like bread.\n\fI hope to get everything done soon.\n\fMorning,\n\fI'm glad to see you."
+   #             "\n\fMorning,"
+
+   test_document.spans()
+
+   # output: []
+
+   test_document = tokenizer.tokenize(test_document)
+
+   # after tokenization
+   test_document.spans()
+
+   # output: [Span (0, 7), Span (8, 21), Span (22, 58), Span (59, 68), Span (69, 90), Span (91, 100)]
+   # --- hide: start ---
+   assert len(test_document.spans()) == 6
+   # --- hide: stop ---
+   # Start string
+   test_document.spans()[0].offset_string
+
+   # output: "Hi all,"
+   # --- hide: start ---
+   assert test_document.spans()[0].offset_string == 'Hi all,'
+
 
 The first method to define will be the `fit()` method. For each Category, we call `exclusive_first_page_strings` method, 
 which allows us to gather the strings that appear on the first Page of each Document. `allow_empty_categories` allows 

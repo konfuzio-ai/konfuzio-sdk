@@ -1,7 +1,7 @@
 ## Data Validation Rules
 
 Konfuzio automatically applies a set of rules for validating data within a [Project](https://dev.konfuzio.com/sdk/sourcecode.html#project). 
-Data Validation Rules ensure that Training and Test data is consistent and well formed for training an
+Data Validation Rules ensure that Training and Test data is consistent and well-formed for training an
 [Extraction AI](https://dev.konfuzio.com/sdk/sourcecode.html#extraction-ai) with Konfuzio.
 
 In general, if a Document fails any of the checks described in the next sections, it will not be possible to train an 
@@ -23,12 +23,20 @@ Annotations in the Document will be retrievable.
 By default, any [Project](https://dev.konfuzio.com/sdk/sourcecode.html#project) has the Data Validation Rules enabled, so nothing 
 special needs to be done to enable it.
 
-.. literalinclude:: /sdk/boilerplates/test_data_validation.py
-   :language: python
-   :start-after: Start initialization
-   :end-before: End initialization
-   :dedent: 4
+.. exec_code::
 
+   # --- hide: start ---
+   from tests.variables import TEST_PROJECT_ID
+
+   YOUR_PROJECT_ID = TEST_PROJECT_ID
+   # --- hide: stop ---
+   from konfuzio_sdk.data import Project
+
+   project = Project(id_=YOUR_PROJECT_ID)  # all the data in this Project will be validated
+   # --- hide: start ---
+   assert len(project.documents) == 26
+   
+   
 ### Document Validation Rules
 
 A [Document](https://dev.konfuzio.com/sdk/sourcecode.html#document) passes the Data Validation Rules only if all the
@@ -84,8 +92,20 @@ is consistent for training an Extraction AI. Disabling the Data Validation Rules
 [Extraction AI](https://dev.konfuzio.com/sdk/sourcecode.html#extraction-ai) with potentially duplicated, malformed,
 or inconsistent data can **decrease the quality of an Extraction AI**. Only disable them if you know what you are doing.
 
-.. literalinclude:: /sdk/boilerplates/test_data_validation.py
-   :language: python
-   :start-after: Start no val
-   :end-before: End no val
-   :dedent: 4
+.. exec_code::
+
+   # --- hide: start ---
+   from copy import deepcopy
+   from tests.variables import TEST_PROJECT_ID
+   YOUR_PROJECT_ID = TEST_PROJECT_ID
+   # --- hide: stop ---
+   from konfuzio_sdk.data import Project
+
+   project = Project(id_=YOUR_PROJECT_ID, strict_data_validation=False)
+   # --- hide: start ---
+   doc = project.documents[0]
+   virtual_doc = deepcopy(doc)
+   assert virtual_doc.bboxes
+   virtual_doc.set_text_bbox_hashes()
+   virtual_doc._text = '123' + doc.text
+   virtual_doc.check_bbox()

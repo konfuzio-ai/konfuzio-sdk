@@ -16,11 +16,6 @@ Current size can be accessed via calling `height` and `width` from the Page obje
 image representation of a Document Page. These representations are used for computer vision tasks and the SmartView.
    E.g.: [372.48, 463.68]
 
-.. literalinclude:: /sdk/boilerplates/test_coordinates_system.py
-   :language: python
-   :start-after: Start coordinates
-   :end-before: End coordinates
-   :dedent: 4
 .. exec_code::
 
    # --- hide: start ---
@@ -40,8 +35,6 @@ image representation of a Document Page. These representations are used for comp
    #hide:toggle
    assert width < height
    
-
-
 
 The coordinates system used has its start in the bottom left corner of the page.
 
