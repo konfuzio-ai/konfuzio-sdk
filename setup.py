@@ -74,6 +74,7 @@ setuptools.setup(
     include_package_data=True,
     entry_points={'console_scripts': ['konfuzio_sdk=konfuzio_sdk.cli:main']},
     install_requires=[
+        'certifi==2022.12.7',
         'cloudpickle==2.2.1',  # Used to pickle objects
         'filetype==1.0.7',  # Used to check that files are in the correct format
         'lz4',  # Used to compress pickles
@@ -110,6 +111,7 @@ setuptools.setup(
             'sphinx-reload==0.2.0',
             'sphinx-notfound-page==0.8',
             'm2r2==0.3.2',
+            'mistune==2.0.3',
             'sphinx-sitemap==2.2.0',
             'sphinx-rtd-theme==1.0.0',
             'sphinxcontrib-mermaid==0.8.1',
