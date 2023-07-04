@@ -21,11 +21,33 @@ You can think of the _Planned_ section as a _Roadmap_ that lists Konfuzio Server
 - Allow administrators of Konfuzio on-premise installations to run a speedtest ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9870)).
 - Start automatic AI retraining after User confirms that he has finished a annotation review ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9166)).
 
-## Next Release (estimated release date 9th June 2023)
-
-This version uses the Konfuzio Python SDK in version v.0.2.20 and Konfuzio Document Validation UI in version v.0.1.8.
+## Next Release (estimated release date 7th July 2023)
 
 Upcoming...
+
+## released-2023-06-27_21-39-25
+This version uses the Konfuzio Python SDK in version v.0.2.23 and Konfuzio Document Validation UI in version v.0.1.9.
+
+### Changed
+- Improved capabilities of the Extraction AI  ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11316)).
+
+## released-2023-06-25_15-20-35
+This version uses the Konfuzio Python SDK in version v.0.2.22 and Konfuzio Document Validation UI in version v.0.1.9.
+
+### Fixed
+- In some cases AI trainings stopped with the status "Contact Support" ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11285)).
+
+## released-2023-06-15_18-32-26
+This version uses the Konfuzio Python SDK in version v.0.2.20 and Konfuzio Document Validation UI in version v.0.1.8.
+
+### Changed
+- The Non-Strict Evaluation is now used for Extraction AIs by default ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11102)).
+- For self-hosted environments, the Konfuzio Server can now run for 24 hours without contact the License Server ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11152)).
+
+### Fixed
+- Large TIFF files (> 100 Pages) can now be processed ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11050)).
+- Applying a filter on the Label List view now provides correct results ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11102)).
+- An error which prevented the manual rotation of a Page to work correctly ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11047)).
 
 ## released-2023-05-30_11-01-48
 

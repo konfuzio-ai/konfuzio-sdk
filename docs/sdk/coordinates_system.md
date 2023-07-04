@@ -42,6 +42,7 @@ image representation of a Document Page. These representations are used for comp
    
 
 
+
 The coordinates system used has its start in the bottom left corner of the page.
 
 .. image:: /_static/img/coordinates_schema.png

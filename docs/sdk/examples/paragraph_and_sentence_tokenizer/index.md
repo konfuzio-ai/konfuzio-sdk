@@ -8,6 +8,8 @@ it fails to handle documents with two columns. The `detectron` mode is the defau
 the `create_detectron_labels` setting to create Annotations with the label given by our [Detectron2](https://github.com/facebookresearch/detectron2) model: 
 `figure`, `table`, `list`, `text` and `title`.
 
+.. _paragraph-tokenizer-tutorial:
+
 ### Paragraph Tokenizer
 
 For example, to tokenize a Document into paragraphs using the `ParagraphTokenizer` in `detectron` mode and the 

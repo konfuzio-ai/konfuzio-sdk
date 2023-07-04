@@ -76,6 +76,7 @@ setuptools.setup(
     install_requires=[
         'cloudpickle==2.2.1',  # Used to pickle objects
         'filetype==1.0.7',  # Used to check that files are in the correct format
+        'lz4',  # Used to compress pickles
         'nltk',
         'numpy>=1.22.4',
         'pandas>=1.3.5,<2.0.0',
@@ -95,7 +96,7 @@ setuptools.setup(
         # https://github.com/tiangolo/fastapi/issues/5048
         'scikit-learn>=1.0.2',
         'timm==0.6.7',  # for extra pytorch models, i.e. EfficientNet
-        'spacy>=2.3.5, <=3.1.4',  # used for spaCy tokenization
+        'spacy>=2.3.5',  # used for spaCy tokenization
     ],
     extras_require={
         'dev': [
@@ -105,6 +106,7 @@ setuptools.setup(
             'pre-commit',
             'parameterized',
             'Sphinx==4.4.0',
+            'sphinx-toolbox==3.4.0',
             'sphinx-reload==0.2.0',
             'sphinx-notfound-page==0.8',
             'm2r2==0.3.2',
