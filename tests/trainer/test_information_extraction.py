@@ -450,12 +450,12 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         assert len(res_doc.annotations(use_correct=False, ignore_below_threshold=True)) == 19
         return
 
-    # @classmethod
-    # def tearDownClass(cls) -> None:
-    #     """Clear Project files."""
-    #     if os.path.isfile(cls.pipeline.pipeline_path):
-    #         os.remove(cls.pipeline.pipeline_path)  # cleanup
-    #         os.remove(cls.pipeline.pipeline_path_no_konfuzio_sdk)
+    @classmethod
+    def tearDownClass(cls) -> None:
+        """Clear Project files."""
+        if os.path.isfile(cls.pipeline.pipeline_path):
+            os.remove(cls.pipeline.pipeline_path)  # cleanup
+            os.remove(cls.pipeline.pipeline_path_no_konfuzio_sdk)
 
 
 @parameterized.parameterized_class(
@@ -687,17 +687,17 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         res_doc = no_konf_pipeline.extract(document=test_document)
         assert len(res_doc.view_annotations()) == 17
 
-    # @classmethod
-    # def tearDownClass(cls) -> None:
-    #     """Clear Project files."""
-    #     dir = cls.project.regex_folder
-    #
-    #     for f in os.listdir(dir):
-    #         os.remove(os.path.join(dir, f))
-    #
-    #     if os.path.isfile(cls.pipeline.pipeline_path):
-    #         os.remove(cls.pipeline.pipeline_path)  # cleanup
-    #         os.remove(cls.pipeline.pipeline_path_no_konfuzio_sdk)
+    @classmethod
+    def tearDownClass(cls) -> None:
+        """Clear Project files."""
+        dir = cls.project.regex_folder
+
+        for f in os.listdir(dir):
+            os.remove(os.path.join(dir, f))
+
+        if os.path.isfile(cls.pipeline.pipeline_path):
+            os.remove(cls.pipeline.pipeline_path)  # cleanup
+            os.remove(cls.pipeline.pipeline_path_no_konfuzio_sdk)
 
 
 @parameterized.parameterized_class(
@@ -1882,14 +1882,14 @@ def test_load_model_wrong_pickle_data():
 def test_load_old_ai_model():
     """Test loading of an old trained model."""
     path = "tests/trainer/2022-03-10-15-14-51_lohnabrechnung_old_model.pkl"
-    with pytest.raises(ValueError, match="node array from the pickle has an incompatible dtype"):
+    with pytest.raises(TypeError, match="Loaded model's interface is not compatible with any AIs"):
         load_model(path)
 
 
 @unittest.skipIf(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
 def test_load_ai_model():
     """Test loading trained model."""
-    path = "tests/trainer/2023-07-03-19-30-13_lohnabrechnung_rfextractionai_.pkl.lz4"
+    path = "tests/trainer/2023-04-25-15-56-42_lohnabrechnung_rfextractionai_.pkl"
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
     pipeline = load_model(path)
 
