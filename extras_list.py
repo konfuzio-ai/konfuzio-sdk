@@ -13,6 +13,7 @@ EXTRAS = {
         'sphinx-reload==0.2.0',
         'sphinx-notfound-page==0.8',
         'm2r2==0.3.2',
+        'scikit-learn>=1.0.2',
         'sphinx-sitemap==2.2.0',
         'sphinx-rtd-theme==1.0.0',
         'sphinxcontrib-mermaid==0.8.1',
@@ -27,7 +28,6 @@ EXTRAS = {
         'transformers>=4.21.2',
         'tensorflow-cpu==2.12.0',
         'timm==0.6.7',
-        'scikit-learn>=1.0.2',
         'spacy>=2.3.5',
     ],
 }
