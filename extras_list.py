@@ -13,7 +13,7 @@ EXTRAS = {
         'sphinx-reload==0.2.0',
         'sphinx-notfound-page==0.8',
         'm2r2==0.3.2',
-        'scikit-learn>=1.0.2',
+        'scikit-learn==1.2.2',
         'sphinx-sitemap==2.2.0',
         'sphinx-rtd-theme==1.0.0',
         'sphinxcontrib-mermaid==0.8.1',
