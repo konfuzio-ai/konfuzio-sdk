@@ -62,7 +62,6 @@ this_directory = path.abspath(path.dirname(__file__))
 with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
-
 setuptools.setup(
     name="konfuzio_sdk",
     version=version,
@@ -76,6 +75,7 @@ setuptools.setup(
     include_package_data=True,
     entry_points={'console_scripts': ['konfuzio_sdk=konfuzio_sdk.cli:main']},
     install_requires=[
+        'cloudpickle==2.2.1',  # Used to pickle objects
         'filetype==1.0.7',  # Used to check that files are in the correct format
         'lz4',  # Used to compress pickles
         'nltk',
@@ -86,7 +86,6 @@ setuptools.setup(
         'python-decouple',  # todo add ==3.3 ?
         'requests',  # todo add ==2.24.0 ?
         'regex>=2020.6.8',  # re module but better
-        'scikit-learn>=1.0.2',
         'tabulate>=0.9.0',  # Used to pretty print DataFrames
         'tqdm',
         'pympler>=1.0.1',  # Use to get pickle file size.
