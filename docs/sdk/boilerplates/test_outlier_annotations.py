@@ -1,7 +1,15 @@
 """Test searching for the outlier Annotations under a given Label."""
+import pytest
+
+from konfuzio_sdk.settings_importer import is_dependency_installed
+
 YOUR_LABEL_NAME = 'Austellungsdatum'
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('torch'),
+    reason='Required dependencies not installed.',
+)
 def test_outlier_by_regex():
     """Test finding outlier Annotations by regex."""
     from tests.variables import TEST_PROJECT_ID
@@ -23,6 +31,10 @@ def test_outlier_by_regex():
     assert 'DE73 7607 0024 0568 9745 11' in outlier_spans
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('torch'),
+    reason='Required dependencies not installed.',
+)
 def get_outlier_by_confidence():
     """Test finding outlier Annotations by confidence."""
     from konfuzio_sdk.trainer.information_extraction import RFExtractionAI
@@ -83,6 +95,10 @@ def test_outliers_by_normalization():
     assert '22.05.2018' in outlier_spans
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('torch'),
+    reason='Required dependencies not installed.',
+)
 def test_three_methods():
     """Test combined search for outlier Annotations."""
     from tests.variables import TEST_PROJECT_ID

@@ -6,6 +6,7 @@ from os import path, getenv
 
 import setuptools
 
+from extras_list import EXTRAS
 
 # Define version or calculate it for nightly build.
 #
@@ -87,34 +88,8 @@ setuptools.setup(
         'requests',  # todo add ==2.24.0 ?
         'regex>=2020.6.8',  # re module but better
         'tabulate>=0.9.0',  # Used to pretty print DataFrames
-        'tensorflow-cpu',
-        'torch>=1.8',
-        'torchvision>=0.9',
-        'transformers>=4.21.2',  # huggingface transformers and tokenizers
         'tqdm',
         'pympler>=1.0.1',  # Use to get pickle file size.
-        'pydantic==1.10.8',  # pydantic is used by spacy. We need to force a higher pydantic version to avoid
-        # https://github.com/tiangolo/fastapi/issues/5048
-        'scikit-learn==1.2.2',
-        'timm==0.6.7',  # for extra pytorch models, i.e. EfficientNet
-        'spacy>=2.3.5',  # used for spaCy tokenization
     ],
-    extras_require={
-        'dev': [
-            'flake8',
-            'pydocstyle',
-            'pytest',
-            'pre-commit',
-            'parameterized',
-            'Sphinx==4.4.0',
-            'sphinx-toolbox==3.4.0',
-            'sphinx-reload==0.2.0',
-            'sphinx-notfound-page==0.8',
-            'm2r2==0.3.2',
-            'sphinx-sitemap==2.2.0',
-            'sphinx-rtd-theme==1.0.0',
-            'sphinxcontrib-mermaid==0.8.1',
-            'matplotlib==3.7.1',
-        ]
-    },
+    extras_require=EXTRAS,
 )

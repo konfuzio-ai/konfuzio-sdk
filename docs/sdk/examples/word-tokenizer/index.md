@@ -1,4 +1,4 @@
-## Getting Word Bounding Box (BBox) for a Document
+## Get Word Bounding Box (BBox) for a Document
 
 In this tutorial, we will walk through how to extract the bounding box ([BBox](https://dev.konfuzio.com/sdk/sourcecode.html#bbox)) 
 for words in a Document, rather than for individual characters, using the Konfuzio SDK. This process involves the use of 
