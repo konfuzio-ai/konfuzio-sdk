@@ -8,18 +8,28 @@ import tracemalloc
 import unittest
 import parameterized
 import os
+import pytest
 import sys
 import time
 
 from requests import HTTPError
 from pkg_resources import get_distribution
 
-import pytest
 import pandas as pd
 from sklearn.datasets import make_classification
 from sklearn.ensemble import RandomForestClassifier
 
 from konfuzio_sdk.data import Project, Document, AnnotationSet, Annotation, Span, LabelSet
+
+from konfuzio_sdk.api import upload_ai_model
+from konfuzio_sdk.settings_importer import is_dependency_installed
+from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, RegexTokenizer
+from konfuzio_sdk.tokenizer.paragraph_and_sentence import ParagraphTokenizer, SentenceTokenizer
+from konfuzio_sdk.tokenizer.base import ListTokenizer
+from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
+from konfuzio_sdk.samples import LocalTextProject
+from konfuzio_sdk.utils import memory_size_of
+
 from konfuzio_sdk.trainer.information_extraction import (
     num_count,
     date_count,
@@ -34,18 +44,9 @@ from konfuzio_sdk.trainer.information_extraction import (
     strip_accents,
     count_string_differences,
     year_month_day_count,
-    load_model,
     RFExtractionAI,
     AbstractExtractionAI,
 )
-
-from konfuzio_sdk.api import upload_ai_model
-from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, RegexTokenizer
-from konfuzio_sdk.tokenizer.paragraph_and_sentence import ParagraphTokenizer, SentenceTokenizer
-from konfuzio_sdk.tokenizer.base import ListTokenizer
-from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
-from konfuzio_sdk.samples import LocalTextProject
-from konfuzio_sdk.utils import memory_size_of
 
 logger = logging.getLogger(__name__)
 
@@ -151,6 +152,10 @@ separate_labels_clf_classes = [
 label_set_clf_classes = ['Brutto-Bezug', 'Lohnabrechnung', 'Netto-Bezug', 'No', 'Steuer', 'Verdiensibescheinigung']
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('torch'),
+    reason='Required dependencies not installed.',
+)
 @parameterized.parameterized_class(
     (
         'use_separate_labels',
@@ -415,7 +420,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
     @unittest.skipIf(sys.version_info[:2] == (3, 11), 'Throws "TypeError: code() argument 13 must be str, not int"')
     def test_13_load_ai_model(self):
         """Test loading of trained model."""
-        self.pipeline = load_model(self.pipeline.pipeline_path)
+        self.pipeline = RFExtractionAI.load_model(self.pipeline.pipeline_path)
 
         assert self.pipeline.python_version == '.'.join([str(v) for v in sys.version_info[:3]])
         assert self.pipeline.konfuzio_sdk_version == get_distribution("konfuzio_sdk").version
@@ -431,7 +436,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 
         assert len(res_doc.annotation_sets()) == 5
 
-        no_konfuzio_sdk_pipeline = load_model(self.pipeline.pipeline_path_no_konfuzio_sdk)
+        no_konfuzio_sdk_pipeline = RFExtractionAI.load_model(self.pipeline.pipeline_path_no_konfuzio_sdk)
         res_doc = no_konfuzio_sdk_pipeline.extract(document=test_document)
         assert len(res_doc.view_annotations()) == 17
 
@@ -443,7 +448,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         res_doc = self.pipeline.extract(document=test_document)
         assert len(res_doc.annotations(use_correct=False, ignore_below_threshold=True)) == 19
 
-        self.pipeline = load_model(self.pipeline.pipeline_path_no_konfuzio_sdk)
+        self.pipeline = RFExtractionAI.load_model(self.pipeline.pipeline_path_no_konfuzio_sdk)
 
         test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         res_doc = self.pipeline.extract(document=test_document)
@@ -458,6 +463,10 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
             os.remove(cls.pipeline.pipeline_path_no_konfuzio_sdk)
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('torch'),
+    reason='Required dependencies not installed.',
+)
 @parameterized.parameterized_class(
     ('use_separate_labels', 'evaluate_full_result'),
     [
@@ -513,7 +522,8 @@ class TestRegexRFExtractionAI(unittest.TestCase):
     def test_02_make_features(self):
         """Make sure the Data and Pipeline is configured."""
         # We have intentional unrevised annotations in the Training set which will block feature calculation,
-        # unless we set require_revised_annotations=False (which is default), which we are doing here, so we ignore them
+        # unless we set require_revised_annotations=False (which is default),
+        # which we are doing here, so we ignore them
         # See TestWhitespaceRFExtractionAI::test_2_make_features for the case with require_revised_annotations=True
         assert 1e6 < memory_size_of(self.pipeline.category) < 2.2e6
 
@@ -669,7 +679,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
 
     def test_13_load_ai_model(self):
         """Test loading of trained model."""
-        self.pipeline = load_model(self.pipeline.pipeline_path)
+        self.pipeline = RFExtractionAI.load_model(self.pipeline.pipeline_path)
 
         assert self.pipeline.python_version == '.'.join([str(v) for v in sys.version_info[:3]])
         assert self.pipeline.konfuzio_sdk_version == get_distribution("konfuzio_sdk").version
@@ -683,7 +693,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
 
         assert len(res_doc.annotation_sets()) == 5
 
-        no_konf_pipeline = load_model(self.pipeline.pipeline_path_no_konfuzio_sdk)
+        no_konf_pipeline = RFExtractionAI.load_model(self.pipeline.pipeline_path_no_konfuzio_sdk)
         res_doc = no_konf_pipeline.extract(document=test_document)
         assert len(res_doc.view_annotations()) == 17
 
@@ -700,6 +710,10 @@ class TestRegexRFExtractionAI(unittest.TestCase):
             os.remove(cls.pipeline.pipeline_path_no_konfuzio_sdk)
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('torch'),
+    reason='Required dependencies not installed.',
+)
 @parameterized.parameterized_class(
     ('mode', 'n_extracted_annotations', 'n_extracted_spans', 'fp'),
     [
@@ -776,6 +790,10 @@ class TestParagraphRFExtractionAI(unittest.TestCase):
         assert evaluation.fp() == self.fp  # 2 lines are unannotated
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('torch'),
+    reason='Required dependencies not installed.',
+)
 @parameterized.parameterized_class(
     ('mode', 'n_extracted_annotations', 'n_extracted_spans', 'min_eval_f1', 'eval_tp', 'eval_fp'),
     [
@@ -848,6 +866,10 @@ class TestSentenceRFExtractionAI(unittest.TestCase):
         assert evaluation.fp() == self.eval_fp
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('torch'),
+    reason='Required dependencies not installed.',
+)
 @unittest.skip(reason='Slow. Only use to debug memory use.')
 def test_tracemalloc_memory():
     """Set up the Data and Pipeline."""
@@ -880,6 +902,10 @@ def test_tracemalloc_memory():
     display_top(tracemalloc.take_snapshot())
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('torch'),
+    reason='Required dependencies not installed.',
+)
 class TestInformationExtraction(unittest.TestCase):
     """Test to train an extraction Model for Documents."""
 
@@ -1334,6 +1360,10 @@ class TestInformationExtraction(unittest.TestCase):
         assert not pipeline.has_compatible_interface(wrong_class)
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('torch'),
+    reason='Required dependencies not installed.',
+)
 class TestAddExtractionAsAnnotation(unittest.TestCase):
     """Test add an Extraction result as Annotation to a Document."""
 
@@ -1628,6 +1658,10 @@ class TestAddExtractionAsAnnotation(unittest.TestCase):
             )
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('torch'),
+    reason='Required dependencies not installed.',
+)
 class TestExtractionToDocument(unittest.TestCase):
     """Test the conversion of the Extraction results from the AI to a Document."""
 
@@ -1724,7 +1758,7 @@ class TestExtractionToDocument(unittest.TestCase):
         assert annotation.label_set == self.project.get_label_set_by_name('CategoryName')
 
     def test_extraction_result_for_label_set_with_single_annotation_set(self):
-        """Test conversion of an AI output with multiple extractions for a label in a Label Set - 1 Annotation Set."""
+        """Test conversion of an AI output with multiple extractions for a label in a Label Set."""
         extraction_result = {'LabelSetName': {'LabelName': pd.DataFrame(data=[self.extraction_1, self.extraction_2])}}
         virtual_doc = self.pipeline.extraction_result_to_document(
             self.sample_document, extraction_result=extraction_result
@@ -1737,7 +1771,7 @@ class TestExtractionToDocument(unittest.TestCase):
         assert annotation_1.annotation_set.id_ == annotation_2.annotation_set.id_
 
     def test_extraction_result_for_label_set_with_multiple_annotation_sets(self):
-        """Test conversion of an AI output with extractions for a label in a Label Set for different Annotation Sets."""
+        """Test conversion of an output with extractions for a label in different Annotation Sets."""
         extraction_result = {
             'LabelSetName': [
                 {'LabelName': pd.DataFrame(data=[self.extraction_1])},
@@ -1755,7 +1789,7 @@ class TestExtractionToDocument(unittest.TestCase):
         assert annotation_1.annotation_set.id_ != annotation_2.annotation_set.id_
 
     def test_extraction_result_for_non_existing_label(self):
-        """Test conversion of an AI output with extractions for a label that does not exist in the doc's category."""
+        """Test conversion of an output with extractions for a label that doesn't exist in the doc's category."""
         extraction_result = {
             'LabelSetName': [
                 {'LabelName': pd.DataFrame(data=[self.extraction_1])},
@@ -1766,7 +1800,7 @@ class TestExtractionToDocument(unittest.TestCase):
             self.pipeline.extraction_result_to_document(self.sample_document, extraction_result=extraction_result)
 
     def test_extraction_result_for_non_existing_label_set(self):
-        """Test conversion of an AI output with extractions for a labelset that does not exist in the doc's category."""
+        """Test conversion of an output with extractions for a labelset that doesn't exist in the doc's category."""
         extraction_result = {
             'LabelSetName': [{'LabelName': pd.DataFrame(data=[self.extraction_1])}],
             'NonExistingLabelSet': [{'LabelName': pd.DataFrame(data=[self.extraction_2])}],
@@ -1789,6 +1823,10 @@ class TestExtractionToDocument(unittest.TestCase):
             self.pipeline.extraction_result_to_document(self.sample_document, extraction_result=extraction_result)
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('torch'),
+    reason='Required dependencies not installed.',
+)
 class TestGetExtractionResults(unittest.TestCase):
     """Test the conversion of the Extraction results from the AI to a Document."""
 
@@ -1857,47 +1895,71 @@ class TestGetExtractionResults(unittest.TestCase):
         assert ann2.bboxes[0] == virtual_doc.spans()[1].bbox_dict()
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('torch'),
+    reason='Required dependencies not installed.',
+)
 def test_load_model_no_file():
     """Test loading of model with invalid path."""
     path = "nhtbgrved"
     with pytest.raises(FileNotFoundError, match="Invalid pickle file path"):
-        load_model(path)
+        RFExtractionAI.load_model(path)
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('torch'),
+    reason='Required dependencies not installed.',
+)
 def test_load_model_corrupt_file():
     """Test loading of corrupted model file."""
     path = "tests/trainer/corrupt.pkl"
     with pytest.raises(OSError, match="data is invalid."):
-        load_model(path)
+        RFExtractionAI.load_model(path)
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('torch'),
+    reason='Required dependencies not installed.',
+)
 def test_load_model_wrong_pickle_data():
     """Test loading of wrong pickle data."""
     path = "tests/trainer/list_test.pkl"
-    with pytest.raises(TypeError, match="Loaded model's interface is not compatible with any AIs"):
-        load_model(path)
+    with pytest.raises(TypeError, match="Konfuzio AbstractExtractionAI instance"):
+        RFExtractionAI.load_model(path)
 
 
-@unittest.skipIf(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
+@pytest.mark.skipif(
+    not is_dependency_installed('torch'),
+    reason='Required dependencies not installed.',
+)
+@unittest.skipIf(sys.version_info[:2] != (3, 8), reason='This AI can only be loaded on Python 3.8.')
 def test_load_old_ai_model():
     """Test loading of an old trained model."""
     path = "tests/trainer/2022-03-10-15-14-51_lohnabrechnung_old_model.pkl"
     with pytest.raises(TypeError, match="Loaded model's interface is not compatible with any AIs"):
-        load_model(path)
+        RFExtractionAI.load_model(path)
 
 
-@unittest.skipIf(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
+@pytest.mark.skipif(
+    not is_dependency_installed('torch'),
+    reason='Required dependencies not installed.',
+)
+@pytest.mark.skipif(sys.version_info[:2] != (3, 8), reason='This AI can only be loaded on Python 3.8.')
 def test_load_ai_model():
     """Test loading trained model."""
-    path = "tests/trainer/2023-04-25-15-56-42_lohnabrechnung_rfextractionai_.pkl"
+    path = "tests/trainer/2023-05-11-15-44-10_lohnabrechnung_rfextractionai_.pkl"
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-    pipeline = load_model(path)
+    pipeline = RFExtractionAI.load_model(path)
 
     test_document = project.get_document_by_id(TEST_DOCUMENT_ID)
     res_doc = pipeline.extract(document=test_document)
     assert len(res_doc.annotations(use_correct=False, ignore_below_threshold=True)) == 19
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('torch'),
+    reason='Required dependencies not installed.',
+)
 def test_feat_num_count():
     """Test string conversion."""
     # Debug code for df: df[df[self.label_feature_list].isin([np.nan, np.inf, -np.inf]).any(1)]
@@ -1910,87 +1972,147 @@ def test_feat_num_count():
     assert not math.isinf(res)
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('torch'),
+    reason='Required dependencies not installed.',
+)
 def test_date_count():
     """Test string conversion."""
     result = date_count("01.01.2010")
     assert result == 1
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('torch'),
+    reason='Required dependencies not installed.',
+)
 def test_date_count_right_format_wrong_date():
     """Test string conversion."""
     date_count("aa.dd.dhsfkbhsdf")
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('torch'),
+    reason='Required dependencies not installed.',
+)
 def test_date_count_index_error():
     """Test string conversion."""
     date_count("ad")
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('torch'),
+    reason='Required dependencies not installed.',
+)
 def test_digit_count():
     """Test string conversion."""
     result = digit_count("123456789ABC")
     assert result == 9
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('torch'),
+    reason='Required dependencies not installed.',
+)
 def test_num_count_wrong_format():
     """Test string conversion."""
     num_count("word")
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('torch'),
+    reason='Required dependencies not installed.',
+)
 def test_space_count():
     """Test string conversion."""
     result = space_count("1 2 3 4 5 ")
     assert result == 5
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('torch'),
+    reason='Required dependencies not installed.',
+)
 def test_space_count_with_tabs():
     """Test string conversion."""
     result = space_count("\t")
     assert result == 4
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('torch'),
+    reason='Required dependencies not installed.',
+)
 def test_special_count():
     """Test string conversion."""
     result = special_count("!_:ThreeSpecialChars")
     assert result == 3
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('torch'),
+    reason='Required dependencies not installed.',
+)
 def test_vowel_count():
     """Test string conversion."""
     result = vowel_count("vowel")
     assert result == 2
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('torch'),
+    reason='Required dependencies not installed.',
+)
 def test_upper_count():
     """Test string conversion."""
     result = upper_count("UPPERlower!")
     assert result == 5
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('torch'),
+    reason='Required dependencies not installed.',
+)
 def test_num_count():
     """Test string conversion."""
     result = num_count("1.500,34")
     assert result == 1500.34
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('torch'),
+    reason='Required dependencies not installed.',
+)
 def test_duplicate_count():
     """Test string conversion."""
     result = duplicate_count("AAABBCCDDE")
     assert result == 9
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('torch'),
+    reason='Required dependencies not installed.',
+)
 def test_substring_count():
     """Test string conversion."""
     result = substring_count(["Apple", "Annaconda"], "a")
     assert result == [1, 3]
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('torch'),
+    reason='Required dependencies not installed.',
+)
 def test_unique_char_count():
     """Test string conversion."""
     result = unique_char_count("12345678987654321")
     assert result == 9
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('torch'),
+    reason='Required dependencies not installed.',
+)
 def test_accented_char_strip_and_count():
     """Test string conversion."""
     l_test = ['Hallà', 'àèìòùé', 'Nothing']
@@ -2039,6 +2161,10 @@ test_data_year_month_day_count = [
 ]
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('torch'),
+    reason='Required dependencies not installed.',
+)
 @pytest.mark.parametrize("test_input, expected, document_id", test_data_year_month_day_count)
 def test_dates(test_input, expected, document_id):
     """Test string conversion."""
@@ -2063,6 +2189,10 @@ test_data_num = [
 ]
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('torch'),
+    reason='Required dependencies not installed.',
+)
 @pytest.mark.parametrize("test_input, expected, document_id", test_data_num)
 def test_num(test_input, expected, document_id):
     """Test string conversion."""
@@ -2173,8 +2303,8 @@ def test_num(test_input, expected, document_id):
 #     """
 #     Test training with a document where a Label is shared between 2 Label Sets.
 #
-#     The first Label Set (first ID) does not have the option for multiple Annotation Sets and the second has the option
-#     for multiple Annotation Sets.
+#     The first Label Set (first ID) does not have the option for multiple Annotation Sets and the second has the
+#     option for multiple Annotation Sets.
 #     The order is important.
 #
 #     Both Label Sets should have results.
@@ -2311,7 +2441,8 @@ def test_num(test_input, expected, document_id):
 #     def test_fit_document_not_belonging_to_category(self):
 #         """Test fit() the Label Set classifier with an invalid document - not belonging to the category."""
 #         self.extraction_ai.label_feature_list = ['dummy_feat_1']
-#         self.extraction_ai.df_train = pandas.DataFrame([{'document_id': 1, 'label_text': 'test', 'dummy_feat_1': 1}])
+#         self.extraction_ai.df_train = pandas.DataFrame([{'document_id': 1,
+#                                                           'label_text': 'test', 'dummy_feat_1': 1}])
 #         self.extraction_ai.df_valid = pandas.DataFrame()
 #         with self.assertRaises(IndexError):
 #             self.extraction_ai.fit_label_set_clf()
@@ -2330,7 +2461,8 @@ def test_num(test_input, expected, document_id):
 #     def test_fit_document_without_label_classifier(self):
 #         """Test fit() the Label Set classifier without having fitted the Label classifier."""
 #         self.extraction_ai.label_feature_list = ['dummy_feat_1']
-#         self.extraction_ai.df_train = pandas.DataFrame([{'document_id': 4, 'label_text': 'test', 'dummy_feat_1': 1}])
+#         self.extraction_ai.df_train = pandas.DataFrame([{'document_id': 4,
+#                                                           'label_text': 'test', 'dummy_feat_1': 1}])
 #         self.extraction_ai.df_valid = pandas.DataFrame()
 #         # TODO: fit should e possible without label clf (8857)
 #         self.extraction_ai.fit_label_set_clf()
@@ -2351,7 +2483,8 @@ def test_num(test_input, expected, document_id):
 #     def test_fit_document_without_label_features_list(self):
 #         """Test fit() the Label Set classifier without the Label features list."""
 #         self.extraction_ai.label_feature_list = []
-#         self.extraction_ai.df_train = pandas.DataFrame([{'document_id': 4, 'label_text': 'test', 'dummy_feat_1': 1}])
+#         self.extraction_ai.df_train = pandas.DataFrame([{'document_id': 4, 'label_text': 'test',
+#                                                           'dummy_feat_1': 1}])
 #         self.extraction_ai.df_valid = pandas.DataFrame()
 #         self.extraction_ai.fit()
 #         # TODO: fit should be possible without label features (8857)
@@ -2382,7 +2515,8 @@ def test_num(test_input, expected, document_id):
 #     def test_fit_document_without_offsets_features(self):
 #         """Test fit() the Label Set classifier without offset featuers."""
 #         self.extraction_ai.label_feature_list = ['dummy_feat_1']
-#         span_dict = {'document_id': 4, 'label_text': 'FirstName', 'dummy_feat_1': 1, 'label_id': 3, 'line_index': 0}
+#         span_dict = {'document_id': 4, 'label_text': 'FirstName', 'dummy_feat_1': 1, 'label_id': 3,
+#                       'line_index': 0}
 #         self.extraction_ai.df_train = pandas.DataFrame([span_dict])
 #         self.extraction_ai.df_valid = pandas.DataFrame()
 #         self.extraction_ai.fit()
@@ -2437,12 +2571,13 @@ def test_num(test_input, expected, document_id):
 #         }
 #
 #         self.assertIsNone(self.extraction_ai.label_set_clf)
-#         extract_result = self.extraction_ai.extract_label_set_with_clf(self.test_document, pd.DataFrame(), res_dict)
+#         extract_result = self.extraction_ai.extract_label_set_with_clf(self.test_document, pd.DataFrame(),
+#         res_dict)
 #         assert extract_result == res_dict
 #
 #
 # class TestLabelSetClfExtractMultipleFalseOnly(unittest.TestCase):
-#     """Test Label Set classifier extract method when the only Label Set has no option for multiple Annotation Sets."""
+#     """Test Label Set classifier extraction when the only Label Set has no option for multiple Annotation Sets."""
 #
 #     @classmethod
 #     def setUpClass(cls) -> None:
@@ -2515,7 +2650,7 @@ def test_num(test_input, expected, document_id):
 #
 #     @unittest.skip(reason="Not currently using the choose_top option, which also needs revision.")
 #     def test_3_extract_method_correct_label_cls_correct_label_set_clf_choose_top(self):
-#         """Test extract with correct predictions from the Label Classifier and Label Set Classifier and choose top."""
+#         """Test extract with correct preds from the Label Classifier and Label Set Classifier and choose top."""
 #         res_dict = {
 #             # label from default Label Set
 #             'Vorname': pd.DataFrame(
@@ -2614,7 +2749,7 @@ def test_num(test_input, expected, document_id):
 #
 #
 # class TestLabelSetClfExtractMultipleTrueOnly(unittest.TestCase):
-#     """Test Label Set classifier extract method when the only Label Set has option for multiple Annotation Sets."""
+#     """Test Label Set classifier extraction when the only Label Set has option for multiple Annotation Sets."""
 #
 #     @classmethod
 #     def setUpClass(cls) -> None:
@@ -2683,7 +2818,7 @@ def test_num(test_input, expected, document_id):
 #
 #     @unittest.skip(reason="Not currently using the choose_top option, which also needs revision.")
 #     def test_3_extract_method_correct_label_cls_correct_label_set_clf_choose_top(self):
-#         """Test extract with correct predictions from the Label Classifier and Label Set Classifier and choose top."""
+#         """Test extract with correct preds from the Label Classifier and Label Set Classifier and choose top."""
 #         res_dict = {
 #             # label from default Label Set
 #             'Vorname': pd.DataFrame([{'label_text': 'Vorname', 'confidence': 0.4, 'line_index': 1}]),
@@ -2730,7 +2865,8 @@ def test_num(test_input, expected, document_id):
 #         }
 #         res_label_sets = pd.DataFrame(['Brutto-Bezug', 'No', 'No', 'No', 'No'])
 #         result = self.extraction_ai.extract_from_label_set_output(res_dict, res_label_sets)
-#         assert all(result['Vorname'] == pd.DataFrame([{'label_text': 'Vorname', 'confidence': 0.4, 'line_index': 1}]))
+#         assert all(result['Vorname'] == pd.DataFrame([{'label_text': 'Vorname', 'confidence': 0.4,
+#         'line_index': 1}]))
 #         assert len(result['Brutto-Bezug']) == 1
 #         assert all(result['Brutto-Bezug'][0]['Betrag'] == res_dict['Betrag'])
 #
@@ -2871,7 +3007,7 @@ def test_num(test_input, expected, document_id):
 #
 #     @unittest.skip(reason="Not currently using the choose_top option, which also needs revision.")
 #     def test_3_extract_method_correct_label_cls_correct_label_set_clf_choose_top(self):
-#         """Test extract with correct predictions from the Label Classifier and Label Set Classifier and choose top."""
+#         """Test extract with correct preds from the Label Classifier and Label Set Classifier and choose top."""
 #         res_dict = {
 #             # label from default Label Set
 #             'Vorname': pd.DataFrame([{'label_text': 'Vorname', 'confidence': 0.4, 'line_index': 1}]),
@@ -2958,7 +3094,8 @@ def test_num(test_input, expected, document_id):
 #         )
 #
 #         result = self.extraction_ai.extract_from_label_set_output(res_dict, res_label_sets)
-#         assert all(result['Vorname'] == pd.DataFrame([{'label_text': 'Vorname', 'confidence': 0.4, 'line_index': 1}]))
+#         assert all(result['Vorname'] == pd.DataFrame([{'label_text': 'Vorname', 'confidence': 0.4,
+#         'line_index': 1}]))
 #         assert len(result['Brutto-Bezug']) == 1
 #         assert all(result['Brutto-Bezug'][0]['Betrag'] == res_dict['Betrag'])
 #         assert all(result['Verdiensibescheinigung']['Steuer-Brutto'] == res_dict['Steuer-Brutto'])
@@ -2988,7 +3125,8 @@ def test_num(test_input, expected, document_id):
 #     def test_1_fit_invalid_document(self):
 #         """Test fit() the Label Set classifier with an invalid document - not belonging to the category."""
 #         self.extraction_ai.label_feature_list = ['dummy_feat_1']
-#         self.extraction_ai.df_train = pandas.DataFrame([{'document_id': 1, 'label_text': 'test', 'dummy_feat_1': 1}])
+#         self.extraction_ai.df_train = pandas.DataFrame([{'document_id': 1, 'label_text': 'test',
+#         'dummy_feat_1': 1}])
 #         self.extraction_ai.df_valid = pandas.DataFrame()
 #         with self.assertRaises(IndexError):
 #             self.extraction_ai.fit()
@@ -3064,7 +3202,7 @@ def test_num(test_input, expected, document_id):
 #         assert extraction_ai.label_set_clf is None
 #
 #     def test_7_fit_label_set_clf_is_skipped_wrong_behaviour(self):
-#         """Test if the fit of the Label Set Classifier happens if there are only Label Sets with multiple False."""
+#         """Test if the fit of Label Set Classifier happens if there are only Label Sets with multiple False."""
 #         for label_set in self.category.label_sets:
 #             label_set.has_multiple_annotation_sets = False
 #         extraction_ai = DocumentAnnotationMultiClassModel(category=self.category)
@@ -3080,7 +3218,8 @@ def test_num(test_input, expected, document_id):
 #         with self.assertRaises(ValueError) as context:
 #             _ = self.extraction_ai.extract_from_label_set_output({}, pd.DataFrame())
 #             assert (
-#                 'Label Set Classifier result is empty and it should have the default value "No".' in context.exception
+#                 'Label Set Classifier result is empty and it should have the default value "No".'
+#                 in context.exception
 #             )
 #
 #     def test_4_extract_method_empty_label_prediction(self):
@@ -3106,7 +3245,8 @@ def test_num(test_input, expected, document_id):
 #             _ = self.extraction_ai.extract_from_label_set_output(res_dict, res_label_sets)
 #
 #             assert (
-#                 'Label Set Classifier result is empty and it should have the default value "No".' in context.exception
+#                 'Label Set Classifier result is empty and it should have the default value "No".'
+#                 in context.exception
 #             )
 #
 #
@@ -3181,7 +3321,8 @@ def test_num(test_input, expected, document_id):
 #         df = df[df['document_id'] == self.document_id]
 #
 #         label = next(x for x in self.prj.labels if x.id_ == 12470)
-#         not_multiline_annotations = [x for x in self.document.annotations() if x.label and x.label.id_ != label.id_]
+#         not_multiline_annotations = [x for x in self.document.annotations()
+#         if x.label and x.label.id_ != label.id_]
 #         for annotation in not_multiline_annotations:
 #             for span in annotation._spans:
 #                 assert annotation.id_
@@ -3189,7 +3330,8 @@ def test_num(test_input, expected, document_id):
 #                 assert annotation.annotation_set.label_set.name
 #                 assert annotation.bboxes
 #
-#                 box = get_bboxes(annotation.document.get_bbox(), annotation.start_offset, annotation.end_offset)[0]
+#                 box = get_bboxes(annotation.document.get_bbox(), annotation.start_offset,
+#                 annotation.end_offset)[0]
 #                 filter_df = df[
 #                     (df['start_offset'] == annotation.start_offset) & (df['end_offset'] == annotation.end_offset)
 #                 ]
@@ -3571,7 +3713,8 @@ def test_num(test_input, expected, document_id):
 #         self.project.add_category(self.category)
 #
 #         self.label_set = LabelSet(id_=33, project=self.project, categories=[self.category])
-#         self.label = Label(id_=22, text='LabelName', project=self.project, label_sets=[self.label_set], threshold=0.5)
+#         self.label = Label(id_=22, text='LabelName', project=self.project, label_sets=[self.label_set],
+#         threshold=0.5)
 #         document_bbox = {
 #             '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 1, 'top': 10, 'bottom': 11, 'page_number': 1},
 #             '1': {'x0': 2, 'x1': 3, 'y0': 0, 'y1': 1, 'top': 10, 'bottom': 11, 'page_number': 1},
@@ -3703,7 +3846,8 @@ def test_num(test_input, expected, document_id):
 #         self.project.add_category(self.category)
 #
 #         self.label_set = LabelSet(id_=33, project=self.project, categories=[self.category])
-#         self.label = Label(id_=22, text='LabelName', project=self.project, label_sets=[self.label_set], threshold=0.5)
+#         self.label = Label(id_=22, text='LabelName', project=self.project, label_sets=[self.label_set],
+#         threshold=0.5)
 #         document_bbox = {
 #             '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 1, 'top': 10, 'bottom': 11, 'page_number': 1},
 #             '1': {'x0': 2, 'x1': 3, 'y0': 0, 'y1': 1, 'top': 10, 'bottom': 11, 'page_number': 1},
@@ -3811,7 +3955,8 @@ def test_num(test_input, expected, document_id):
 #         self.project.add_category(self.category)
 #
 #         self.label_set = LabelSet(id_=33, project=self.project, categories=[self.category])
-#         self.label = Label(id_=22, text='LabelName', project=self.project, label_sets=[self.label_set], threshold=0.5)
+#         self.label = Label(id_=22, text='LabelName', project=self.project, label_sets=[self.label_set],
+#         threshold=0.5)
 #         document_bbox = {
 #             '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 1, 'top': 10, 'bottom': 11, 'page_number': 1},
 #             '1': {'x0': 2, 'x1': 3, 'y0': 0, 'y1': 1, 'top': 10, 'bottom': 11, 'page_number': 1},
