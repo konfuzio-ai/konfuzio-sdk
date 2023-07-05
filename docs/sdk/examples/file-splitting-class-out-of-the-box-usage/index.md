@@ -46,3 +46,19 @@ that it does not require specifying a Tokenizer explicitly.
    :start-after: start file splitting
    :end-before: end file splitting
    :dedent: 4
+
+After you have trained your custom AI, you can upload it using the steps from the [tutorial](https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html#upload-extraction-or-category-ai-to-target-instance)
+or using the method `upload_ai_model()`.
+
+For the first option, go to the Superuser AIs and select your locally stored pickle file, setting Model Type to 
+Splitting and status to Training finished, then save the AI. After that, go to the Splitting AIs, choose your AI and 
+select an action "Activate Splitting AI".
+
+For the second option, provide the path to your model to the `upload_ai_model()`. You can also remove an uploaded model
+by using `delete_ai_model()`.
+
+.. literalinclude:: /sdk/boilerplates/test_file_splitting_example.py
+   :language: python
+   :start-after: start upload
+   :end-before: end upload
+   :dedent: 4
