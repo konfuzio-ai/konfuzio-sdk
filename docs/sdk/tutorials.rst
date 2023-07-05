@@ -21,6 +21,8 @@ Tutorials
 
 .. mdinclude:: examples/data_validation/index.md
 
+.. mdinclude:: examples/async_upload_with_callback/index.md
+
 .. mdinclude:: examples/outlier-annotations/index.md
 
 .. mdinclude:: examples/helloworld.md
