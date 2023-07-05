@@ -194,6 +194,8 @@ Boxes).
 ]
 ```
 
+.. _upload-document:
+
 #### Upload Document
 
 Before you can upload a new file to your Project using the Konfuzio SDK, you must have completed the following steps:
@@ -254,6 +256,9 @@ like this:
    :start-after: start pulling loop
    :end-before: end pulling loop
    :dedent: 4
+
+For a more sophisticated pulling method for asynchronously uploaded Documents using the callback function, you can 
+checkout our :ref:`tutorial on how to use ngrok to receive callbacks from the Konfuzio Server<async_upload_with_callback>`.
 
 ###### Timeout Parameter
 

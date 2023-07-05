@@ -1,6 +1,8 @@
+.. _async_upload_with_callback:
+
 ## Using Ngrok to Pull Documents Uploaded Asynchronously
 
-The most convenient way to upload a large number of files to the Konfuzio is to use the Document.from_file method in 
+The most convenient way to upload a large number of files to the Konfuzio is to use the `Document.from_file` method in 
 asynchronous mode. That way, you can upload multiple files without having to wait for them to be processed. The downside 
 if this method is that you will not know when the processing is finished and you will be able to access the results. One 
 solution to this problem is to use a callback URL. This URL will be called by the Konfuzio server when the processing is
@@ -9,18 +11,23 @@ to use it to pull the OCR results.
 
 ### Preliminary Steps
 
+1. **Set up Konfuzio**
 
-1. First, make sure that you have the Konfuzio SDK installed and that you have a Konfuzio account with a Proejct to use. 
+    First, make sure that you have the Konfuzio SDK installed and that you have a Konfuzio account with a Project to use. 
     If you don't have this yet, please follow the instructions in the [Get Started guide](https://dev.konfuzio.com/sdk/get_started.html#get-started).
 
-2. Next, install Flask, which we will use to create a simple web server that will receive the callback from the Konfuzio
-    server. You can install Flask using pip:
+2. **Install Flask**
+
+    Next, install Flask, which we will use to create a simple web server that will receive the callback from the Konfuzio
+    Server. You can install Flask using pip:
 
     ```console
     pip install flask
     ```
 
-3. Then you will need to set up ngrok. First create an account on the [ngrok website](https://ngrok.com/). It's free 
+3. **Set up ngrok**
+
+    Then you will need to set up ngrok. First create an account on the [ngrok website](https://ngrok.com/). It's free 
     and you can use your GitHub or Google account.
 
     Once logged into ngrok, simply follow the simple instructions available at https://dashboard.ngrok.com/get-started/setup
@@ -49,6 +56,8 @@ Now that we have ngrok set up, we can see how to use it to pull the results of a
 
 2. **Create a project object**
 
+    You will find your Project id in the Konfuzio web interface.
+
     ```python
     project = Project(id_=YOUR_PROJECT_ID)
     ```
@@ -61,13 +70,18 @@ Now that we have ngrok set up, we can see how to use it to pull the results of a
 
 4. **Set the callback URL**
 
+    You will find this callback url in the ngrok console where you ran `./ngrok http 5000`.
+
     ```python
     callback_url = YOUR_CALLBACK_URL  # It should look something like "https://abcd-12-34-56-789.ngrok-free.app"
     ```
 
-    You will find this callback url in the ngrok console where you ran `./ngrok http 5000`.
-
 5. **Initialize data structures to share information between the threads**
+
+    We will use the main thread to host our Flask application and to receive the callback responses. We will use a 
+    separate thread to send the files to the Konfuzio Server. So, we will use the `callback_data_dict` to store the 
+    callback responses. The `data_lock` will be used to synchronize access to the `callback_data_dict` between the 
+    two threads, so that we can safely access it from both threads.
 
     ```python
     callback_data_dict = {}
@@ -75,19 +89,18 @@ Now that we have ngrok set up, we can see how to use it to pull the results of a
     data_lock = threading.Lock()
     ```
 
-    We will use the main thread to host our Flask application and to receive the callback responses. We will use a 
-    separate thread to send the files to the Konfuzio Server. So, we will use the `callback_data_dict` to store the 
-    callback responses. The `data_lock` will be used to synchronize access to the `callback_data_dict` between the 
-    two threads, so that we can safely access it from both threads.
-
-
 6. **Create a callback function**
+
+    Now we can create the callback function that will receive the callback responses from the Konfuzio server. We simply
+    store the callback response in the `callback_data_dict` and set the `callback_received` event to notify the thread
+    which is sending the files that the callback response has been received and that the files can be updated with the 
+    new OCR information.
 
     ```python
     @app.route('/', methods=['POST'])
     def callback():
         data = request.json
-        file_name = data.get('data_file_name') # Adjust as necessary based on your actual callback data
+        file_name = data.get('data_file_name')
         with data_lock:
             if file_name is not None and file_name in callback_data_dict:
                 callback_data_dict[file_name]['callback_data'] = data
@@ -95,12 +108,14 @@ Now that we have ngrok set up, we can see how to use it to pull the results of a
         return '', 200
     ```
 
-    Now we can create the callback function that will receive the callback responses from the Konfuzio server. We simply
-    store the callback response in the `callback_data_dict` and set the `callback_received` event to notify the thread
-    which is sending the files that the callback response has been received and that the files can be updated with the 
-    new OCR information.
-
 7. **Create a function to send your files asynchronously and update them once a callback response is received**
+
+    Now we can create the function that will send the files to the Konfuzio Server. We create a Document object for each
+    file and set the `sync` parameter to `False` to indicate that we want to upload the files asynchronously. We also 
+    set the `callback_url` parameter to the callback URL we created earlier.
+
+    We then wait for the callback responses to be received. Once the callback response for a Document has been received, 
+    we can update it and access the OCR information.
 
     ```python
     def send_files(file_names):
@@ -116,7 +131,7 @@ Now that we have ngrok set up, we can see how to use it to pull the results of a
         for file_name in callback_data_dict:
             callback_data_dict[file_name]['callback_received'].wait()
             print(f'Received callback for {file_name}')
-                   
+                    
             # Once the callback is received we can update our Documents with the OCR information
             document_id = callback_data_dict[file_name]['callback_data']['id']
 
@@ -130,23 +145,15 @@ Now that we have ngrok set up, we can see how to use it to pull the results of a
         # ...
     ```
 
-    Now we can create the function that will send the files to the Konfuzio server. We create a Document object for each
-    file and set the `sync` parameter to `False` to indicate that we want to upload the files asynchronously. We also 
-    set the `callback_url` parameter to the callback URL we created earlier.
+8. **Start the Flask application and upload the files**
 
-    We then wait for the callback responses to be received. Once the callback response for a Document has been received, 
-    we can update it and access the OCR information.
-
-
-8. **Start the Flask application and send the files**
+    Finally, we can start the Flask application and send the files. Simply add the path to all the files you want to
+    upload. 
 
     ```python
     if __name__=='__main__':
         file_names = ['LIST.pdf', 'OF.jpg', 'FILES.tiff']
-        threading.Thread(target=send_files).start()
+        threading.Thread(target=send_post, args=(file_names,)).start()
         app.run(debug=True, use_reloader=False, port=5000)
     ```
-
-    Finally, we can start the Flask application and send the files. Simply add the path to all the files you want to
-    upload. 
 
