@@ -31,9 +31,12 @@ training data.
    :end-before: end train
    :dedent: 4 
 
-## Finding Spans of a Label Not Found by a Tokenizer
+## Verify that a Tokenizer finds all Labels
 
-Here is an example of how to use the `Label.spans_not_found_by_tokenizer` method. This will allow you to determine if a RegexTokenizer is suitable at finding the Spans of a Label, or what Spans might have been annotated wrong. Say, you have a number of annotations assigned to the `IBAN` Label and want to know which Spans would not be found when using the WhiteSpace Tokenizer. You can follow this example to find all the relevant Spans.
+Here is an example of how to use the `Label.spans_not_found_by_tokenizer` method. This will allow you to determine if a 
+RegexTokenizer is suitable at finding the Spans of a Label, or what Spans might have been annotated wrong. Say, you 
+have a number of Annotations assigned to the `Austellungsdatum` Label and want to know which Spans would not be found 
+when using the Whitespace Tokenizer. You can follow this example to find all the relevant Spans.
 
 .. literalinclude:: /sdk/boilerplates/test_spans_not_found_label.py
    :language: python

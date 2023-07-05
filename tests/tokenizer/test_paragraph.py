@@ -1,5 +1,6 @@
 """Test Paragraph Tokenizer."""
 import logging
+import pytest
 import unittest
 
 from copy import deepcopy
@@ -7,6 +8,7 @@ from konfuzio_sdk.data import Project, Span, Annotation
 
 from konfuzio_sdk.tokenizer.paragraph_and_sentence import ParagraphTokenizer
 from konfuzio_sdk.trainer.information_extraction import RFExtractionAI
+from konfuzio_sdk.settings_importer import is_dependency_installed
 
 
 logger = logging.getLogger(__name__)
@@ -123,6 +125,7 @@ class TestLineDistanceParagraphTokenizer(unittest.TestCase):
         assert len(pages[1].annotations(use_correct=False)) == 12
         assert len(pages[2].annotations(use_correct=False)) == 9
 
+    @pytest.mark.skipif(not is_dependency_installed('cloudpickle'), reason='Required dependency not installed.')
     def test_paragraph_document_2_merge_vertical_like(self):
         """Test vertical_merge_like to merge Annotations like another Document."""
         virtual_doc = deepcopy(self.document_1)
