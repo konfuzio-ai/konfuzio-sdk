@@ -26,6 +26,24 @@ special needs to be done to enable it.
 .. exec_code::
 
    # --- hide: start ---
+   from copy import deepcopy
+   from tests.variables import TEST_PROJECT_ID
+   YOUR_PROJECT_ID = TEST_PROJECT_ID
+   # --- hide: stop ---
+   from konfuzio_sdk.data import Project
+
+   project = Project(id_=YOUR_PROJECT_ID, strict_data_validation=False)
+   # --- hide: start ---
+   doc = project.documents[0]
+   virtual_doc = deepcopy(doc)
+   assert virtual_doc.bboxes
+   virtual_doc.set_text_bbox_hashes()
+   virtual_doc._text = '123' + doc.text
+   virtual_doc.check_bbox()
+
+.. exec_code::
+
+   # --- hide: start ---
    from tests.variables import TEST_PROJECT_ID
 
    YOUR_PROJECT_ID = TEST_PROJECT_ID
@@ -92,20 +110,3 @@ is consistent for training an Extraction AI. Disabling the Data Validation Rules
 [Extraction AI](https://dev.konfuzio.com/sdk/sourcecode.html#extraction-ai) with potentially duplicated, malformed,
 or inconsistent data can **decrease the quality of an Extraction AI**. Only disable them if you know what you are doing.
 
-.. exec_code::
-
-   # --- hide: start ---
-   from copy import deepcopy
-   from tests.variables import TEST_PROJECT_ID
-   YOUR_PROJECT_ID = TEST_PROJECT_ID
-   # --- hide: stop ---
-   from konfuzio_sdk.data import Project
-
-   project = Project(id_=YOUR_PROJECT_ID, strict_data_validation=False)
-   # --- hide: start ---
-   doc = project.documents[0]
-   virtual_doc = deepcopy(doc)
-   assert virtual_doc.bboxes
-   virtual_doc.set_text_bbox_hashes()
-   virtual_doc._text = '123' + doc.text
-   virtual_doc.check_bbox()
