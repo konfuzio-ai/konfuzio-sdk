@@ -18,6 +18,9 @@ Tutorials
    tutorials/data_validation/index.md
    tutorials/outlier-annotations/index.md
    tutorials/regex_based_annotations/index.md
+   tutorials/pdf-form-generator/index.md
+
+.. mdinclude:: examples/pdf-form-generator/index.md
 
 Retrain Flair NER-Ontonotes-Fast with Human Revised Annotations
 ---------------------------------------------------------------

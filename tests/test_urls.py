@@ -127,7 +127,15 @@ class TestUrls(unittest.TestCase):
 
     def test_upload_ai_url(self):
         """Test to get URL to upload new AI file."""
-        self.assertEqual(get_create_ai_model_url(), f'{KONFUZIO_HOST}/api/aimodels/')
+        self.assertEqual(
+            get_create_ai_model_url(ai_type='extraction'), f'{KONFUZIO_HOST}/api/v3/extraction-ais/upload/'
+        )
+        self.assertEqual(
+            get_create_ai_model_url(ai_type='categorization'), f'{KONFUZIO_HOST}/api/v3/category-ais/upload/'
+        )
+        self.assertEqual(
+            get_create_ai_model_url(ai_type='filesplitting'), f'{KONFUZIO_HOST}/api/v3/splitting-ais/upload/'
+        )
 
     def test_change_ai_url(self):
         """Test to get URL to change AI."""
