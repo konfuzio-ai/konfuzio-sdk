@@ -74,7 +74,6 @@ def test_custom_categorization_ai():
     # start usage
     import os
     from konfuzio_sdk.data import Project
-    from konfuzio_sdk.trainer.information_extraction import load_model
     from konfuzio_sdk.trainer.document_categorization import (
         CategorizationAI,
         EfficientNet,
@@ -122,7 +121,7 @@ def test_custom_categorization_ai():
 
     # Save and load a pickle file for the model
     pickle_model_path = categorization_pipeline.save(reduce_weight=False)
-    categorization_pipeline_loaded = load_model(pickle_model_path)
+    categorization_pipeline_loaded = CategorizationAI.load_model(pickle_model_path)
     # end fit
     assert 63 in data_quality.category_ids
     assert 63 in ai_quality.category_ids
