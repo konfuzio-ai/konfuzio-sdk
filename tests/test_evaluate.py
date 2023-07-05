@@ -7,12 +7,11 @@ import pytest
 from pandas import DataFrame
 
 from konfuzio_sdk.data import Project, Document, AnnotationSet, Annotation, Span, LabelSet, Label, Category
-from konfuzio_sdk.evaluate import compare, grouped, ExtractionEvaluation, EvaluationCalculator, CategorizationEvaluation
-
+from konfuzio_sdk.evaluate import compare, grouped, EvaluationCalculator, ExtractionEvaluation, CategorizationEvaluation
 from konfuzio_sdk.samples import LocalTextProject
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
-
 from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel, SplittingAI, FileSplittingEvaluation
+
 from tests.variables import TEST_DOCUMENT_ID, OFFLINE_PROJECT
 
 
@@ -20,7 +19,7 @@ class TestCompare(unittest.TestCase):
     """Testing to compare to Documents.
 
     Implemented:
-        - prediction without complete offsets (e.g missing last character)
+        - prediction without complete offsets (e.g. missing last character)
         - missing prediction for a Label with multiple=True (https://app.konfuzio.com/a/7344142)
         - evaluation of Annotations with multiple=False in a strict mode, so all must be found
         - missing Annotation Sets (e.g. missing 1st and 3rd Annotation Set in a  Document)
