@@ -994,12 +994,6 @@ many Documents, it is advised to set the sync option to False method.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">get_document_classifier_examples</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text_vocab</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">category_vocab</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_len</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_text</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Get the per-Document examples for the Document classifier.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">get_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ocr_version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Get OCR version of the original file.</p>
 <dl class="field-list simple">
@@ -2024,6 +2018,27 @@ Extraction. arXiv. <a class="reference external" href="https://doi.org/10.48550/
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pickle_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_ram</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Load a previously saved instance of the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>pickle_path</strong> (<em>str</em>) – Path to the pickled model.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>FileNotFoundError</strong> – If the path is invalid.</p></li>
+<li><p><strong>OSError</strong> – When the data is corrupted or invalid and cannot be loaded.</p></li>
+<li><p><strong>TypeError</strong> – When the loaded pickle isn’t recognized as a Konfuzio AI model.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Extraction AI model.</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span></dt>
@@ -2055,8 +2070,8 @@ Extraction. arXiv. <a class="reference external" href="https://doi.org/10.48550/
 <p>Saving is done by: getting the serialized pickle object (via cloudpickle), “optimizing” the serialized object
 with the built-in pickletools.optimize function (see: <a class="reference external" href="https://docs.python.org/3/library/pickletools.html">https://docs.python.org/3/library/pickletools.html</a>),
 saving the optimized serialized object.</p>
-<p>We then compress the pickle file using shutil.copyfileobject which writes in chunks to avoid loading the
-entire pickle file in memory.</p>
+<p>We then compress the pickle file using shutil.copyfileobject which writes in chunks to avoid loading the entire
+pickle file in memory.</p>
 <p>Finally, we delete the cloudpickle file and are left with the compressed pickle file which has a .pkl.lz4 or
 .pkl.bz2 extension.</p>
 <dl class="field-list simple">
@@ -2182,6 +2197,27 @@ OR the resulting merging create a span normalizable to the same type</p></li>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>If the merge is valid or not.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pickle_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_ram</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Load the model and check if it has the interface compatible with the class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>pickle_path</strong> (<em>str</em>) – Path to the pickled model.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>FileNotFoundError</strong> – If the path is invalid.</p></li>
+<li><p><strong>OSError</strong> – When the data is corrupted or invalid and cannot be loaded.</p></li>
+<li><p><strong>TypeError</strong> – When the loaded pickle isn’t recognized as a Konfuzio AI model.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Extraction AI model.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2460,27 +2496,6 @@ single-line Annotations that are being merged.</p>
 </section>
 <section id="load-saved-ai-model">
 <h3>Load Saved AI Model<a class="headerlink" href="#load-saved-ai-model" title="Permalink to this headline">¶</a></h3>
-<dl class="py function">
-<dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.trainer.information_extraction.</span></span><span class="sig-name descname"><span class="pre">load_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pickle_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_ram</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Load a pkl file.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>pickle_path</strong> (<em>str</em>) – Path to the pickled model.</p>
-</dd>
-<dt class="field-even">Raises</dt>
-<dd class="field-even"><ul class="simple">
-<li><p><strong>FileNotFoundError</strong> – If the path is invalid.</p></li>
-<li><p><strong>OSError</strong> – When the data is corrupted or invalid and cannot be loaded.</p></li>
-<li><p><strong>TypeError</strong> – When the loaded pickle isn’t recognized as a Konfuzio AI model.</p></li>
-</ul>
-</dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>Extraction AI model.</p>
-</dd>
-</dl>
-</dd></dl>
-
 </section>
 </section>
 <section id="categorization-ai">
@@ -2566,6 +2581,27 @@ single-line Annotations that are being merged.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pickle_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Load the model and check if it has the interface compatible with the class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>pickle_path</strong> (<em>str</em>) – Path to the pickled model.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>FileNotFoundError</strong> – If the path is invalid.</p></li>
+<li><p><strong>OSError</strong> – When the data is corrupted or invalid and cannot be loaded.</p></li>
+<li><p><strong>TypeError</strong> – When the loaded pickle isn’t recognized as a Konfuzio AI model.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Categorization AI model.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">name_lower</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
 <dd><p>Convert class name to machine-readable name.</p>
 </dd></dl>
@@ -2633,7 +2669,7 @@ is available.</p>
 <dd><p>A trainable AI that predicts a Category for each Page of a given Document.</p>
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">build_document_classifier_iterator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">documents</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transforms:</span> <span class="pre">&lt;module</span> <span class="pre">'torchvision.transforms'</span> <span class="pre">from</span> <span class="pre">'/opt/hostedtoolcache/Python/3.8.17/x64/lib/python3.8/site-packages/torchvision/transforms/__init__.py'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_image:</span> <span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_text:</span> <span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shuffle:</span> <span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size:</span> <span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_len:</span> <span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device:</span> <span class="pre">torch.device</span> <span class="pre">=</span> <span class="pre">'cpu'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.utils.data.dataloader.DataLoader</span></span></span></dt>
+<span class="sig-name descname"><span class="pre">build_document_classifier_iterator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">documents</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transforms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shuffle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_len</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">konfuzio_sdk.extras.DataLoader</span></span></span></dt>
 <dd><p>Prepare the data necessary for the document classifier, and build the iterators for the data list.</p>
 <dl class="simple">
 <dt>For each document we split into pages and from each page we take:</dt><dd><ul class="simple">
@@ -2679,7 +2715,7 @@ is available.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduce_weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span></dt>
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduce_weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span></dt>
 <dd><p>Save only the necessary parts of the model for extraction/inference.</p>
 <p>Saves:
 - tokenizer (needed to ensure we tokenize inference examples in the same way that they are trained)
@@ -2906,6 +2942,27 @@ i.e. normalization, that apply to the VGG models also apply here.</p>
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pickle_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_ram</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Load the model and check if it has the interface compatible with the class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>pickle_path</strong> (<em>str</em>) – Path to the pickled model.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>FileNotFoundError</strong> – If the path is invalid.</p></li>
+<li><p><strong>OSError</strong> – When the data is corrupted or invalid and cannot be loaded.</p></li>
+<li><p><strong>TypeError</strong> – When the loaded pickle isn’t recognized as a Konfuzio AI model.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>File Splitting AI model.</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pkl_file_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em></dt>
@@ -3083,6 +3140,22 @@ is fitted to run prediction.</p>
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">reduce_model_weight</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
 <dd><p>Remove all non-strictly necessary parameters before saving.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">remove_dependencies</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Remove dependencies before saving.</p>
+<p>This is needed for proper saving of the model in lz4 compressed format – if the dependencies are not removed,
+the resulting pickle will be impossible to load.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">restore_dependencies</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Restore removed dependencies after loading.</p>
+<p>This is needed for proper functioning of a loaded model because we have previously removed these dependencies
+upon saving the model.</p>
 </dd></dl>
 
 </dd></dl>
