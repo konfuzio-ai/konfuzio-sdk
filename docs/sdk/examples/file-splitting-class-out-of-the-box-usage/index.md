@@ -2,11 +2,7 @@
 
 ## File Splitting 
 
-You can train your own File Splitting AI on the data from any Project of your choice ([data preparation tutorial here](tutorials.html#tutorials.html#prepare-the-data-for-training-and-testing-the-ai)). 
-Note that Pages in all the Documents used for training and testing have to be ordered correctly – that is to say, not 
-mixed up in order. The ground-truth first Page of each Document should go first in the file, ground-truth second Page 
-goes second and so on. This is needed because the Splitting AI operates on the idea that the splitting points in a 
-stream of Pages are the starting Pages of each Sub-Document in the stream.
+You can create your own AI that splits files, using data from any project you choose. To prepare this data, you can follow a tutorial provided in the [link](tutorials.html#tutorials.html#prepare-the-data-for-training-and-testing-the-ai). It's important to keep the Pages in all Documents used for training and testing in the right order. This means you shouldn't mix up the sequence of Pages. The first Page of each document should be first in the file, the second page should follow, and so on. This order is important because the file splitting AI works by identifying the start of new sections or "Sub-Documents" in a stream of Pages.
 
 For that purpose, there are several tools in the SDK that enable processing Documents that consist of multiple files and propose splitting them 
 into the Sub-Documents accordingly:
