@@ -1,4 +1,4 @@
-### Develop and save a custom File Splitting AI
+### Develop and save a Context-Aware File Splitting AI
 
 In this tutorial, you will learn how to train a custom File Splitting AI on the data from a Project of your choice and 
 save a trained model for further usage.
@@ -79,7 +79,10 @@ Then, let's initialize the `ContextAwareFileSplittingModel` class:
 
 .. literalinclude:: ../../konfuzio_sdk/trainer/file_splitting.py
    :language: python
-   :lines: 386,394,407-411
+   :start-after: begin init
+   :end-before: end init
+   :dedent: 4
+
 
 The class inherits from `AbstractFileSplittingModel`, so we run `super().__init__(categories=categories)` to properly 
 inherit its attributes. The `tokenizer` attribute will be used to process the text within the Document, separating it 
@@ -143,7 +146,9 @@ This means that those Categories would not be used in the prediction process.
 
 .. literalinclude:: ../../konfuzio_sdk/trainer/file_splitting.py
    :language: python
-   :lines: 413,431-444
+   :start-after: begin fit
+   :end-before: end fit
+   :dedent: 4
 
 Next, we define `predict()` method. The method accepts a Page as an input and checks its Span set for containing 
 first-page strings for each of the Categories. If there is at least one intersection, the Page is predicted to be a 
@@ -151,7 +156,9 @@ first Page. If there are no intersections, the Page is predicted to be a non-fir
 
 .. literalinclude:: ../../konfuzio_sdk/trainer/file_splitting.py
    :language: python
-   :lines: 446,465-476
+   :start-after: begin predict
+   :end-before: end predict
+   :dedent: 4
 
 Lastly, a `check_is_ready()` method is defined. This method is used to ensure that a model is ready for prediction: the
 checks cover that the Tokenizer and a set of Categories is defined, and that at least one of the Categories has 
@@ -159,13 +166,16 @@ exclusive first-page strings.
 
 .. literalinclude:: ../../konfuzio_sdk/trainer/file_splitting.py
    :language: python
-   :lines: 478,485-500
+   :start-after: begin check
+   :end-before: end check
+   :dedent: 4
 
 Full code of class:
 
 .. literalinclude:: ../../konfuzio_sdk/trainer/file_splitting.py
    :language: python
-   :lines: 386,394,407-413,431-446,465-478,485-500
+   :start-after: begin class (this and further comments are for the documentation)
+   :end-before: end check
 
 A quick example of the class's usage:
 
@@ -173,4 +183,4 @@ A quick example of the class's usage:
    :language: python
    :start-after: start file splitting
    :end-before: end file splitting
-   :dedent: 4
+
