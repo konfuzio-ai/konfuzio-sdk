@@ -198,12 +198,8 @@ Let's go step by step.
 ### Evaluate a Trained Extraction AI Model
 
 In this example we will see how we can evaluate a trained `RFExtractionAI` model. We will assume that we have a trained 
-<<<<<<< HEAD:docs/sdk/tutorials/information_extraction/index.md
 pickled model available. See :ref:`here <Information Extraction>` 
 for how to train such a model, and check out the [Evaluation](https://dev.konfuzio.com/sdk/sourcecode.html#ai-evaluation) 
-=======
-pickled model available. Check out the [Evaluation](https://dev.konfuzio.com/sdk/sourcecode.html#ai-evaluation) 
->>>>>>> master:docs/sdk/examples/information_extraction/index.md
 documentation for more details.
 
 .. literalinclude:: /sdk/boilerplates/test_evaluate_extraction_ai.py
