@@ -634,7 +634,7 @@ end
 </section>
 <section id="optional-8-use-azure-read-api-on-premises-or-as-service">
 <h3>[Optional] 8. Use Azure Read API (On-Premises or as Service)<a class="headerlink" href="#optional-8-use-azure-read-api-on-premises-or-as-service" title="Permalink to this headline">¶</a></h3>
-<p>The Konfuzio Server can work together with the [Azure Read API]. There are two options to use the Azure Read API in an on-premises setup.</p>
+<p>The Konfuzio Server can work together with the <a class="reference external" href="https://learn.microsoft.com/en-us/azure/cognitive-services/computer-vision/overview-ocr">Azure Read API</a>. There are two options to use the Azure Read API in an on-premises setup.</p>
 <ol class="arabic simple">
 <li><p>Use the Azure Read API as a service from the public Azure cloud.</p></li>
 <li><p>Install the Azure Read API container directly on your on-premises infrastructure via Docker.</p></li>
@@ -648,7 +648,8 @@ end
 <p>For the first option, login into the Azure Portal and create a Computer Vision resource under the Cognitive Services section.
 After the resource is created the AZURE_OCR_KEY and AZURE_OCR_BASE_URL is displayed. Those need to be added as environment variable.</p>
 <p>For the second option, please refer to the <a class="reference external" href="https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2">Azure Read API Container installation guide</a>.
-Please open a support ticket to get an AZURE_OCR_KEY and AZURE_OCR_BASE_URL which is compatible with the container.</p>
+Please open a support ticket to get an API_KEY and ENDPOINT_URL which is compatible with <a class="reference external" href="https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2">running the On-Premises container</a>.
+The ENDPOINT_URL must be reachable by the Azure Read API Container.</p>
 <section id="how-to-fix-common-azure-read-api-issues-for-on-premises">
 <h4>How to fix common Azure Read API issues for On-Premises<a class="headerlink" href="#how-to-fix-common-azure-read-api-issues-for-on-premises" title="Permalink to this headline">¶</a></h4>
 <section id="ensure-avx2-compatibility">
