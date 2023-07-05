@@ -102,44 +102,108 @@ from payslip documents.</p>
 <p>You can <img alt="OpenInColab" src="https://colab.research.google.com/assets/colab-badge.svg" /> or download it from <a class="reference external" href="https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/RFExtractionAI%20Demo.ipynb">here</a>
 and try it by yourself.</p>
 </section>
-<section id="customize-extraction-ai">
-<h2>Customize Extraction AI<a class="headerlink" href="#customize-extraction-ai" title="Permalink to this headline">¶</a></h2>
-<p>Any Custom <a class="reference external" href="sourcecode.html#extraction-ai">Extraction AI</a> (derived from the Konfuzio <code class="docutils literal notranslate"><span class="pre">AbstractExtractionAI</span></code> class) should implement
-the following interface:</p>
+<section id="train-a-custom-extraction-ai">
+<h2>Train a custom Extraction AI<a class="headerlink" href="#train-a-custom-extraction-ai" title="Permalink to this headline">¶</a></h2>
+<p>This section explains how to train a custom Extraction AI locally, how to save it and upload it to the Konfuzio Server.</p>
+<p>By default, any Extraction AI class should derive from the <code class="docutils literal notranslate"><span class="pre">AbstractExtractionAI</span></code> class and implement the following
+interface:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">AbstractExtractionAI</span>
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Document</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
-
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Document</span><span class="p">,</span> <span class="n">Category</span>
 
 <span class="k">class</span> <span class="nc">CustomExtractionAI</span><span class="p">(</span><span class="n">AbstractExtractionAI</span><span class="p">):</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">category</span><span class="p">:</span> <span class="n">Category</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">category</span><span class="p">)</span>
+        <span class="k">pass</span>
 
     <span class="c1"># initialize key variables required by the custom AI</span>
+    <span class="c1"># for instance, self.category to define within which Category the Extraction takes place</span>
 
     <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
 
     <span class="c1"># Define architecture and training that the model undergoes, i.e. a NN architecture or a custom hardcoded logic</span>
+    <span class="c1"># for instance:</span>
+    <span class="c1">#</span>
+    <span class="c1"># self.clf = RandomForestClassifier(</span>
+    <span class="c1">#             class_weight=&quot;balanced&quot;, random_state=100</span>
+    <span class="c1">#         )</span>
+    <span class="c1"># self.clf.fit(self.df_train[self.label_feature_list], self.df_train[&#39;target&#39;])</span>
+    <span class="c1">#</span>
     <span class="c1"># This method is allowed to be implemented as a no-op if you provide the trained model in other ways</span>
 
     <span class="k">def</span> <span class="nf">extract</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document</span><span class="p">:</span> <span class="n">Document</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Document</span><span class="p">:</span>
-<span class="c1"># define how the model extracts information from Documents</span>
-<span class="c1"># **NB:** The result of extraction must be a copy of the input Document with added Annotations attribute `Document._annotations`</span>
+        <span class="k">pass</span>
+
+    <span class="c1"># Define how the AI extracts information from Documents.</span>
+
+    <span class="c1"># **NB:** The result of extraction must be a copy of the input Document.</span>
+
+    <span class="c1"># Example:</span>
+    <span class="c1"># result_document = deepcopy(document)</span>
+
+    <span class="c1"># The tokenizer will create Annotations objects within the document</span>
+    <span class="c1"># tokenizer.tokenize(result_document)</span>
+
+    <span class="c1"># These Annotations will be the extraction results.</span>
+    <span class="c1"># At the moment, these Annotations have no Label, which would exclude them from the extraction results.</span>
+    <span class="c1"># We need to associate the proper Labels to each Annotation, assuming that these exist in our Project.</span>
+    <span class="c1"># name_label = self.project.get_label_by_name(&quot;Name&quot;)  # the self.project attribute is derived from Trainer</span>
+    <span class="c1"># surname_label = self.project.get_label_by_name(&quot;Surname&quot;)</span>
+    <span class="c1"># for annotation in result_document.annotations():</span>
+    <span class="c1">#     for span in annotation.spans:</span>
+    <span class="c1">#     # Each Annotation contains information about which tokenizer found it.</span>
+    <span class="c1">#     # In this example, we associate the Label straighforwardly.</span>
+    <span class="c1">#     # If your regex can produce false positives, you will want to apply some filtering logic here.</span>
+    <span class="c1">#         if name_tokenizer in span.regex_matching:</span>
+    <span class="c1">#             annotation.label = name_label</span>
+    <span class="c1">#             break</span>
+    <span class="c1">#         elif surname_tokenizer in span.regex_matching:</span>
+    <span class="c1">#             annotation.label = surname_label</span>
+    <span class="c1">#             break</span>
+
+    <span class="c1"># Suppose we want to extract &quot;A Software Company Ltd.&quot;, which does not have a clear regex pattern, but</span>
+    <span class="c1"># we know it&#39;s always the third line in the Document. We can explicitly create an Annotation based on a</span>
+    <span class="c1"># substring of the Document&#39;s text.</span>
+    <span class="c1"># company_label = self.project.get_label_by_name(&quot;Company&quot;)</span>
+    <span class="c1"># company_substring = result_document.split(&#39;\n&#39;)[2]  # third line of the Document</span>
+    <span class="c1"># start_offset = result_document.find(company_substring)</span>
+    <span class="c1"># end_offset = start_offset + len(company_substring)</span>
+    <span class="c1"># _ = Annotation(document=result_document, label=company_label, spans=[Span(start_offset, end_offset)])</span>
+
+    <span class="c1"># The resulting Document has 3 extractions. You can double-check that they are there with:</span>
+    <span class="c1"># &gt;&gt;&gt; result_document.annotations(use_correct=False)</span>
+    <span class="c1"># [</span>
+    <span class="c1">#     Annotation Name (6, 10),</span>
+    <span class="c1">#     Annotation Surname (20, 23),</span>
+    <span class="c1">#     Annotation Company (24, 27)</span>
+    <span class="c1"># ]</span>
+    <span class="c1"># return result_document</span>
+
+    <span class="k">def</span> <span class="nf">check_is_ready</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="c1"># define if all components needed for training/prediction are set, for instance, is self.tokenizer set or does</span>
+    <span class="c1"># self.category contain training and testing Documents.</span>
+
 </pre></div>
 </div>
 <p>Example usage of your Custom Extraction AI:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Document</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">load_model</span>
 
-<span class="c1"># Initialize Project and provide the AI training and test data</span>
+<span class="c1"># Initialize Project and the AI</span>
 <span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>  <span class="c1"># see https://dev.konfuzio.com/sdk/get_started.html#example-usage</span>
-
-<span class="n">extraction_pipeline</span> <span class="o">=</span> <span class="n">CustomExtractionAI</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-<span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">category</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_category_by_id</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_CATEGORY_ID</span><span class="p">)</span>
+<span class="n">category</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_category_by_id</span><span class="p">(</span><span class="n">YOUR_CATEGORY_ID</span><span class="p">)</span>
+<span class="n">extraction_pipeline</span> <span class="o">=</span> <span class="n">CustomExtractionAI</span><span class="p">(</span><span class="n">category</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># provide the categories, training and test data</span>
+<span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">category</span> <span class="o">=</span> <span class="n">category</span>
 <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">documents</span> <span class="o">=</span> <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">category</span><span class="o">.</span><span class="n">documents</span><span class="p">()</span>
 <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">test_documents</span> <span class="o">=</span> <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">category</span><span class="o">.</span><span class="n">test_documents</span><span class="p">()</span>
-
-<span class="c1"># Train the AI</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Train the AI</span>
 <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
 
 <span class="c1"># Evaluate the AI</span>
@@ -147,12 +211,26 @@ the following interface:</p>
 <span class="n">ai_quality</span> <span class="o">=</span> <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">evaluate_full</span><span class="p">(</span><span class="n">use_training_docs</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
 <span class="c1"># Extract a Document</span>
-<span class="n">document</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
+<span class="n">document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
 <span class="n">extraction_result</span><span class="p">:</span> <span class="n">Document</span> <span class="o">=</span> <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">document</span><span class="o">=</span><span class="n">document</span><span class="p">)</span>
 
 <span class="c1"># Save and load a pickle file for the model</span>
 <span class="n">pickle_model_path</span> <span class="o">=</span> <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">output_dir</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">model_folder</span><span class="p">,</span> <span class="n">include_konfuzio</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">extraction_pipeline_loaded</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="n">pickle_model_path</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The custom AI inherits from <a class="reference external" href="sourcecode.html#base-model">BaseModel</a>, which provides <code class="docutils literal notranslate"><span class="pre">BaseModel.save</span></code> to generate a
+pickle file that can be directly uploaded to the Konfuzio Server (see <a class="reference external" href="https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html#upload-extraction-or-category-ai-to-target-instance">Upload Extraction or Category AI to target instance</a>).</p>
+<p>Activating the uploaded AI on the web interface will enable the custom pipeline on your self-hosted installation.</p>
+<p>It is also possible to upload the AI from your local machine using the <code class="docutils literal notranslate"><span class="pre">upload_ai_model()</span></code> method and remove it with the
+<code class="docutils literal notranslate"><span class="pre">delete_ai_model()</span></code> method:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.api</span> <span class="kn">import</span> <span class="n">upload_ai_model</span><span class="p">,</span> <span class="n">delete_ai_model</span>
+
+<span class="c1"># upload a saved model to the server</span>
+<span class="n">model_id</span> <span class="o">=</span> <span class="n">upload_ai_model</span><span class="p">(</span><span class="n">pickle_model_path</span><span class="p">)</span>
+
+<span class="c1"># remove model</span>
+<span class="n">delete_ai_model</span><span class="p">(</span><span class="n">model_id</span><span class="p">,</span> <span class="n">ai_type</span><span class="o">=</span><span class="s1">&#39;extraction&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -375,8 +453,7 @@ a pickle file that can be used in Konfuzio Server.</p>
 <section id="evaluate-a-trained-extraction-ai-model">
 <h2>Evaluate a Trained Extraction AI Model<a class="headerlink" href="#evaluate-a-trained-extraction-ai-model" title="Permalink to this headline">¶</a></h2>
 <p>In this example we will see how we can evaluate a trained <code class="docutils literal notranslate"><span class="pre">RFExtractionAI</span></code> model. We will assume that we have a trained
-pickled model available. See <a class="reference external" href="https://dev.konfuzio.com/sdk/examples/examples.html#train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents">here</a>
-for how to train such a model, and check out the <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#ai-evaluation">Evaluation</a>
+pickled model available. Check out the <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#ai-evaluation">Evaluation</a>
 documentation for more details.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span>
 <span class="n">pipeline</span> <span class="o">=</span> <span class="n">RFExtractionAI</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">MODEL_PATH</span><span class="p">)</span>

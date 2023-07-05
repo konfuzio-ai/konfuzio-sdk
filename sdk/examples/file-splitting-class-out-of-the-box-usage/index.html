@@ -185,6 +185,22 @@ that it does not require specifying a Tokenizer explicitly.</p>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Page </span><span class="si">{}</span><span class="s1"> is predicted as the non-first.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">number</span><span class="p">))</span>
 </pre></div>
 </div>
+<p>After you have trained your custom AI, you can upload it using the steps from the <a class="reference external" href="https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html#upload-extraction-or-category-ai-to-target-instance">tutorial</a>
+or using the method <code class="docutils literal notranslate"><span class="pre">upload_ai_model()</span></code>.</p>
+<p>For the first option, go to the Superuser AIs and select your locally stored pickle file, setting Model Type to
+Splitting and status to Training finished, then save the AI. After that, go to the Splitting AIs, choose your AI and
+select an action “Activate Splitting AI”.</p>
+<p>For the second option, provide the path to your model to the <code class="docutils literal notranslate"><span class="pre">upload_ai_model()</span></code>. You can also remove an uploaded model
+by using <code class="docutils literal notranslate"><span class="pre">delete_ai_model()</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># from konfuzio_sdk.api import upload_ai_model, delete_ai_model</span>
+<span class="c1">#</span>
+<span class="c1"># # upload a saved model to the server</span>
+<span class="c1"># model_id = upload_ai_model(save_path)</span>
+<span class="c1">#</span>
+<span class="c1"># # remove model</span>
+<span class="c1"># delete_ai_model(model_id, ai_type=&#39;file_splitting&#39;)</span>
+</pre></div>
+</div>
 </section>
 </section>
 

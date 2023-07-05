@@ -4,12 +4,12 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Overview &mdash; Konfuzio  documentation</title>
+  <title>Create a custom File Splitting AI &mdash; Konfuzio  documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
     <link rel="shortcut icon" href="../../../_static/full_green_square.png"/>
-    <link rel="canonical" href="https://dev.konfuzio.com/sdk/examples/overview/index.html" />
+    <link rel="canonical" href="https://dev.konfuzio.com/sdk/examples/custom-file-splitting-class/index.html" />
   <!--[if lt IE 9]>
     <script src="../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -81,9 +81,9 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Overview</li>
+      <li>Create a custom File Splitting AI</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../../../_sources/sdk/examples/overview/index.md.txt" rel="nofollow"> View page source</a>
+            <a href="../../../_sources/sdk/examples/custom-file-splitting-class/index.md.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -91,20 +91,21 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="overview">
-<h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h1>
-<p>In this section you can find various tutorials on document-related AI processes in detail. These processes allow to
-split stack scans, categorize and extract information from the Documents.</p>
-<p>The first step we’re going to cover is <a class="reference external" href="tutorials.html#file-splitting-tutorials">File Splitting</a>
-– this happens when the original Document consists of several smaller sub-Documents and needs to be separated so that each one can be processed individually.</p>
-<p>Second part is on <a class="reference external" href="tutorials.html#document-categorization">Categorization</a>, where a Document is labelled to be of a certain Category within the Project.</p>
-<p>Third part describes <a class="reference external" href="tutorials.html#document-information-extraction">Information Extraction</a>, during which various information is obtained from unstructured texts,
-i.e. Name, Date, Recipient, or any other custom Labels.</p>
-<p>For a more in-depth look at each step, be sure to check out the
-<a class="reference external" href="explanations.html#architecture-sdk-to-server">Architecture Diagram</a> that reflects each step of the
-document-processing pipeline.</p>
-<p>Further in this section you can find tutorials on various ways you can use the SDK – for instance, <a class="reference external" href="tutorials.html#create-regex-based-annotations">how to get the Regex-based
-Annotations</a> or <a class="reference external" href="tutorials.html#getting-word-bounding-box-bbox-for-a-document">how to visualize the word-level Bounding boxes of a Document</a>.</p>
+  <section id="create-a-custom-file-splitting-ai">
+<h1>Create a custom File Splitting AI<a class="headerlink" href="#create-a-custom-file-splitting-ai" title="Permalink to this headline">¶</a></h1>
+<p>This section explains how to train a custom File Splitting AI locally, how to save it and upload it to the Konfuzio
+Server.</p>
+<p>By default, any <a class="reference external" href="sourcecode.html#file-splitting-ai">File Splitting AI</a> class should derive from the
+<code class="docutils literal notranslate"><span class="pre">AbstractFileSplittingModel</span></code> class and implement the following interface:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.api</span> <span class="kn">import</span> <span class="n">upload_ai_model</span><span class="p">,</span> <span class="n">delete_ai_model</span>
+
+<span class="c1"># upload a saved model to the server</span>
+<span class="n">model_id</span> <span class="o">=</span> <span class="n">upload_ai_model</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span>
+
+<span class="c1"># remove model</span>
+<span class="n">delete_ai_model</span><span class="p">(</span><span class="n">model_id</span><span class="p">,</span> <span class="n">ai_type</span><span class="o">=</span><span class="s1">&#39;file_splitting&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 </section>
 
 
