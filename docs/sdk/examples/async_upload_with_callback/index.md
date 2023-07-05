@@ -9,28 +9,35 @@ to use it to pull the OCR results.
 
 ### Preliminary Steps
 
-First, make sure that you have the Konfuzio SDK installed and that you have a Konfuzio account with a Proejct to use. 
-If you don't have this yet, please follow the instructions in the [Get Started guide](https://dev.konfuzio.com/sdk/get_started.html#get-started).
 
-Next, install Flask, which we will use to create a simple web server that will receive the callback from the Konfuzio
-server. You can install Flask using pip:
+1. First, make sure that you have the Konfuzio SDK installed and that you have a Konfuzio account with a Proejct to use. 
+    If you don't have this yet, please follow the instructions in the [Get Started guide](https://dev.konfuzio.com/sdk/get_started.html#get-started).
 
-```console
-pip install flask
-```
+2. Next, install Flask, which we will use to create a simple web server that will receive the callback from the Konfuzio
+    server. You can install Flask using pip:
 
-Create ngrok account
+    ```console
+    pip install flask
+    ```
 
-Once logged into ngrok, simply follow the simple instructions available at https://dashboard.ngrok.com/get-started/setup
-      
-Download ngrok
+3. Then you will need to set up ngrok. First create an account on the [ngrok website](https://ngrok.com/). It's free 
+    and you can use your GitHub or Google account.
 
-Run 
+    Once logged into ngrok, simply follow the simple instructions available at https://dashboard.ngrok.com/get-started/setup
+    On linux, all you need to do is:
+    - Download ngrok
+    - Follow the instructions to add the authentication token
+    - Run this in a terminal:
 
-```console
-./ngrok http 5000
-```
+    ```console
+    ./ngrok http 5000
+    ```
+    This should give you the URL you can use as a callback URL. It should look something like 
+    "https://abcd-12-34-56-789.ngrok-free.app".
 
+Now that we have ngrok set up, we can see how to use it to pull the results of asynchronously uploaded files.
+
+### Retrieving asynchronously uploaded files using a callback URL
 
 1. **Import the necessary modules**
 
@@ -69,10 +76,9 @@ Run
     ```
 
     We will use the main thread to host our Flask application and to receive the callback responses. We will use a 
-    separate thread to send the files to the Konfuzio server. 
-
-    We will use the `callback_data_dict` to store the callback responses. The `data_lock` will be used to synchronize
-    access to the `callback_data_dict` between the two threads, so that we can safely access it from both threads.
+    separate thread to send the files to the Konfuzio Server. So, we will use the `callback_data_dict` to store the 
+    callback responses. The `data_lock` will be used to synchronize access to the `callback_data_dict` between the 
+    two threads, so that we can safely access it from both threads.
 
 
 6. **Create a callback function**
@@ -83,41 +89,64 @@ Run
         data = request.json
         file_name = data.get('data_file_name') # Adjust as necessary based on your actual callback data
         with data_lock:
-            if thread_id is not None and thread_id in callback_data_dict:
+            if file_name is not None and file_name in callback_data_dict:
                 callback_data_dict[file_name]['callback_data'] = data
                 callback_data_dict[file_name]['callback_received'].set()
         return '', 200
     ```
 
+    Now we can create the callback function that will receive the callback responses from the Konfuzio server. We simply
+    store the callback response in the `callback_data_dict` and set the `callback_received` event to notify the thread
+    which is sending the files that the callback response has been received and that the files can be updated with the 
+    new OCR information.
+
 7. **Create a function to send your files asynchronously and update them once a callback response is received**
 
     ```python
-    def send_files():
-        file_names = ['pdf.pdf', 'test.pdf']
-        docs = []
-        for i, file_name in enumerate(file_names):
+    def send_files(file_names):
+        documents = []
+        for file_name in file_names:
             with data_lock:
                 callback_data_dict[file_name] = {'callback_received': threading.Event(), 'callback_data': None}
-            print('Sending POST requests...')
+            print('Sending files to Konfuzio servers...')
             document = Document.from_file(file_name, project=project, sync=False, callback_url=callback_url)
-            docs.append(document)
+            documents.append(document)
 
         # Wait for callbacks
         for file_name in callback_data_dict:
-            callback_data_dict[thread_id]['callback_received'].wait()
+            callback_data_dict[file_name]['callback_received'].wait()
             print(f'Received callback for {file_name}')
-        
-        for document in docs:
+                   
+            # Once the callback is received we can update our Documents with the OCR information
+            document_id = callback_data_dict[file_name]['callback_data']['id']
+
+            document = project.get_document_by_id(document_id)
             document.update()
 
-        print(docs)
+        for document in docs:
+            assert document.text is not None
+
+        print(documents)
+        # ...
     ```
+
+    Now we can create the function that will send the files to the Konfuzio server. We create a Document object for each
+    file and set the `sync` parameter to `False` to indicate that we want to upload the files asynchronously. We also 
+    set the `callback_url` parameter to the callback URL we created earlier.
+
+    We then wait for the callback responses to be received. Once the callback response for a Document has been received, 
+    we can update it and access the OCR information.
+
 
 8. **Start the Flask application and send the files**
 
     ```python
     if __name__=='__main__':
+        file_names = ['LIST.pdf', 'OF.jpg', 'FILES.tiff']
         threading.Thread(target=send_files).start()
         app.run(debug=True, use_reloader=False, port=5000)
     ```
+
+    Finally, we can start the Flask application and send the files. Simply add the path to all the files you want to
+    upload. 
 
