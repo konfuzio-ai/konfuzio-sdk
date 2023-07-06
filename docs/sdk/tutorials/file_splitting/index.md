@@ -214,8 +214,7 @@ Full code of class:
 
 .. literalinclude:: ../../konfuzio_sdk/trainer/file_splitting.py
    :language: python
-   :start-after: begin class (this and further comments are for the documentation)
-   :end-before: end check
+   :pyobject: ContextAwareFileSplittingModel
 
 A quick example of the class's usage:
 
@@ -223,6 +222,7 @@ A quick example of the class's usage:
    :language: python
    :start-after: start file splitting
    :end-before: end file splitting
+   :dedent: 4
 
 ### Create a custom File Splitting AI
 
