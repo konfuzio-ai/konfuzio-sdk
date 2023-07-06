@@ -40,12 +40,12 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
     'm2r2',
+    'sphinx_exec_code',
     'sphinx.ext.githubpages',
     'sphinx_toolbox.collapse',
     'sphinx_sitemap',
     'sphinxcontrib.mermaid',
     'notfound.extension',
-    'sphinx_exec_code',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -102,3 +102,6 @@ sitemap_url_scheme = "{link}"
 
 # sphinx-notfound-page
 notfound_urls_prefix = '/'
+
+# sphinx-exec-code
+exec_code_working_dir = '..'

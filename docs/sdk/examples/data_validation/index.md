@@ -41,20 +41,6 @@ special needs to be done to enable it.
    virtual_doc._text = '123' + doc.text
    virtual_doc.check_bbox()
 
-.. exec_code::
-
-   # --- hide: start ---
-   from tests.variables import TEST_PROJECT_ID
-
-   YOUR_PROJECT_ID = TEST_PROJECT_ID
-   # --- hide: stop ---
-   from konfuzio_sdk.data import Project
-
-   project = Project(id_=YOUR_PROJECT_ID)  # all the data in this Project will be validated
-   # --- hide: start ---
-   assert len(project.documents) == 26
-   
-   
 ### Document Validation Rules
 
 A [Document](https://dev.konfuzio.com/sdk/sourcecode.html#document) passes the Data Validation Rules only if all the
@@ -108,5 +94,18 @@ If you don't want to validate your data, you should initialize the Project with 
 We highly recommend to keep the Data Validation Rules enabled at all times, as it ensures that Training and Test data 
 is consistent for training an Extraction AI. Disabling the Data Validation Rules and training an 
 [Extraction AI](https://dev.konfuzio.com/sdk/sourcecode.html#extraction-ai) with potentially duplicated, malformed,
-or inconsistent data can **decrease the quality of an Extraction AI**. Only disable them if you know what you are doing.
+or inconsistent data can **decrease the quality of an Extraction AI**. 
 
+.. exec_code::
+   
+   #hide:start
+   from tests.variables import TEST_PROJECT_ID
+   YOUR_PROJECT_ID = TEST_PROJECT_ID
+   #hide:stop
+   from konfuzio_sdk.data import Project
+
+   project = Project(id_=YOUR_PROJECT_ID)  # all the data in this Project will be validated
+   #hide:start
+   assert len(project.documents) == 26
+   
+Only disable them if you know what you are doing.
