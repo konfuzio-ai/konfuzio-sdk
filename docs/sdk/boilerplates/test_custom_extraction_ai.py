@@ -95,7 +95,6 @@ def test_create_extraction_ai():
 
     # start init_ai
     from konfuzio_sdk.data import Project, Document
-    from konfuzio_sdk.trainer.information_extraction import load_model
 
     # Initialize Project and the AI
     project = Project(id_=YOUR_PROJECT_ID)  # see https://dev.konfuzio.com/sdk/get_started.html#example-usage
@@ -131,7 +130,7 @@ def test_create_extraction_ai():
 
     # Save and load a pickle file for the model
     pickle_model_path = extraction_pipeline.save(output_dir=project.model_folder, include_konfuzio=True)
-    extraction_pipeline_loaded = load_model(pickle_model_path)
+    extraction_pipeline_loaded = RFExtractionAI.load_model(pickle_model_path)
     # end train
     from konfuzio_sdk.evaluate import ExtractionEvaluation
 
