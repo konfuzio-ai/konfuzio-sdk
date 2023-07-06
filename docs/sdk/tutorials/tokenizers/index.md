@@ -284,7 +284,7 @@ embark on a journey to dive deeper into the Document's structure and semantics w
 
 ### Sentence Tokenizer
 
-The `SentenceTokenizer` class, akin to the [ParagraphTokenizer](https://dev.konfuzio.com/sdk/tutorials.html#paragraph-tokenizer), 
+The `SentenceTokenizer` class, akin to the :ref:`ParagraphTokenizer<paragraph-tokenizer-tutorial>`, 
 is a specialized Tokenizer designed to split a Document into sentences. It also provides two modes of operation: 
 `detectron` and `line_distance`. And just like the `ParagraphTokenizer`, you can customize the behavior of the Tokenizer 
 by passing using the `mode`, `line_height_ratio`, `height` and `create_detectron_labels` parameters. The distinguishing 

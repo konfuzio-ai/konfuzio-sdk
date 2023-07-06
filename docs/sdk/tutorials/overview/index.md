@@ -10,7 +10,7 @@ The second section is on :ref:`File Splitting<file-splitting-tutorials>`
 – this happens when the original Document consists of several smaller sub-Documents and needs to be separated so that 
 each one can be processed individually.
 
-The third section will go over the various options for :ref:`document tokenization<tokenization-tutorials>`.
+The third section will go over the various options for :ref:`Document Tokenization<tokenization-tutorials>`.
 
 The fourth part describes :ref:`Information Extraction<information-extraction-tutorials>`, during which various 
 information is obtained and labeled from unstructured texts, i.e. Name, Date, Recipient, or any other custom Labels.

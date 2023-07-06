@@ -97,7 +97,7 @@ See more details about these Categorization Models under [API Reference - Catego
 This section explains how to train a custom Categorization AI locally, how to save it and upload it to the Konfuzio 
 Server. 
 
-By default, any [Categorization AI](sourcecode.html#categorization-ai) class should derive from the 
+By default, any [Categorization AI](../../sourcecode.html#categorization-ai) class should derive from the 
 `AbstractCategorizationModel` class and implement the following interface:
 
 .. literalinclude:: /sdk/boilerplates/test_custom_categorization_ai.py
