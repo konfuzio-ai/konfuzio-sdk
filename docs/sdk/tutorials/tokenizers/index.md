@@ -1,3 +1,4 @@
+.. _tokenization-tutorials:
 ## Tokenization
 
 ### WhitespaceTokenizer
@@ -328,16 +329,16 @@ Choosing the right Tokenizer is a matter of understanding your NLP task, the str
 detail your processing requires. By aligning these elements with the functionalities provided by the different 
 Tokenizers in the Konfuzio SDK, you can select the best tool for your task.
 
-#### Finding Spans of a Label Not Found by a Tokenizer
+#### Verify that a Tokenizer finds all Labels
 
 To help you choose the right Tokenizer for your task, it can be useful to try out different Tokenizers and see which 
 Spans are found by which Tokenizer. The `Label` class provides a method called `spans_not_found_by_tokenizer` that 
 can he helpful in this regard.
 
-Here is an example of how to use the `Label.spans_not_found_by_tokenizer` method. This will allow you to determine if 
-a RegexTokenizer is suitable at finding the Spans of a Label, or what Spans might have been annotated wrong. Say, you 
-have a number of Annotations assigned to the `IBAN` Label and want to know which Spans would not be found when using the 
-WhitespaceTokenizer. You can follow this example to find all the relevant Spans.
+Here is an example of how to use the `Label.spans_not_found_by_tokenizer` method. This will allow you to determine if a 
+RegexTokenizer is suitable at finding the Spans of a Label, or what Spans might have been annotated wrong. Say, you 
+have a number of Annotations assigned to the `Austellungsdatum` Label and want to know which Spans would not be found 
+when using the Whitespace Tokenizer. You can follow this example to find all the relevant Spans.
 
 .. literalinclude:: /sdk/boilerplates/test_spans_not_found_label.py
    :language: python
