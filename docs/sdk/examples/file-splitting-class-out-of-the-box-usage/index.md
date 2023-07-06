@@ -62,8 +62,12 @@ select an action "Activate Splitting AI".
 For the second option, provide the path to your model to the `upload_ai_model()`. You can also remove an uploaded model
 by using `delete_ai_model()`.
 
-.. literalinclude:: /sdk/boilerplates/test_file_splitting_example.py
-   :language: python
-   :start-after: start upload
-   :end-before: end upload
-   :dedent: 4
+```python
+ from konfuzio_sdk.api import upload_ai_model, delete_ai_model
+
+ # upload a saved model to the server
+ model_id = upload_ai_model(save_path)
+
+ # remove model
+ delete_ai_model(model_id, ai_type='file_splitting')
+```
