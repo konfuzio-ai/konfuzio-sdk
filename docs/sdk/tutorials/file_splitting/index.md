@@ -50,12 +50,28 @@ such string, we mark a Page to be first (thus meaning it is a splitting point).
    :end-before: end file splitting
    :dedent: 4
 
+After you have trained your custom AI, you can upload it using the steps from the [tutorial](https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html#upload-extraction-or-category-ai-to-target-instance)
+or using the method `upload_ai_model()`.
+
+For the first option, go to the Superuser AIs and select your locally stored pickle file, setting Model Type to 
+Splitting and status to Training finished, then save the AI. After that, go to the Splitting AIs, choose your AI and 
+select an action "Activate Splitting AI".
+
+For the second option, provide the path to your model to the `upload_ai_model()`. You can also remove an uploaded model
+by using `delete_ai_model()`.
+
+.. literalinclude:: /sdk/boilerplates/test_file_splitting_example.py
+   :language: python
+   :start-after: start upload
+   :end-before: end upload
+   :dedent: 4
+
 ### Train a Multimodal File Splitting AI
 
 The above tutorial for the `ContextAwareFileSplittingModel` can also be used with the `MultimodalFileSplittingModel`. 
 The only difference is that the `MultimodalFileSplittingModel` does not need to be initialized with a Tokenizer.
 
-### Develop and save a custom File Splitting AI
+### Develop and save a Context-Aware File Splitting AI
 
 If the solutions presented above do not meet your requirements, we also allow the training of custom File Splitting AIs 
 on the data from a Project of your choice. You can then save your trained model and use it with Konfuzio.
@@ -136,7 +152,9 @@ Then, let's initialize the `ContextAwareFileSplittingModel` class:
 
 .. literalinclude:: ../../konfuzio_sdk/trainer/file_splitting.py
    :language: python
-   :lines: 386,394,407-411
+   :start-after: begin init
+   :end-before: end init
+   :dedent: 4
 
 The class inherits from `AbstractFileSplittingModel`, so we run `super().__init__(categories=categories)` to properly 
 inherit its attributes. The `tokenizer` attribute will be used to process the text within the Document, separating it 
@@ -168,7 +186,9 @@ This means that those Categories would not be used in the prediction process.
 
 .. literalinclude:: ../../konfuzio_sdk/trainer/file_splitting.py
    :language: python
-   :lines: 413,431-444
+   :start-after: begin fit
+   :end-before: end fit
+   :dedent: 4
 
 Next, we define `predict()` method. The method accepts a Page as an input and checks its Span set for containing 
 first-page strings for each of the Categories. If there is at least one intersection, the Page is predicted to be a 
@@ -176,7 +196,9 @@ first Page. If there are no intersections, the Page is predicted to be a non-fir
 
 .. literalinclude:: ../../konfuzio_sdk/trainer/file_splitting.py
    :language: python
-   :lines: 446,465-476
+   :start-after: begin predict
+   :end-before: end predict
+   :dedent: 4
 
 Lastly, a `check_is_ready()` method is defined. This method is used to ensure that a model is ready for prediction: the
 checks cover that the Tokenizer and a set of Categories is defined, and that at least one of the Categories has 
@@ -184,13 +206,16 @@ exclusive first-page strings.
 
 .. literalinclude:: ../../konfuzio_sdk/trainer/file_splitting.py
    :language: python
-   :lines: 478,485-500
+   :start-after: begin check
+   :end-before: end check
+   :dedent: 4
 
 Full code of class:
 
 .. literalinclude:: ../../konfuzio_sdk/trainer/file_splitting.py
    :language: python
-   :lines: 386,394,407-413,431-446,465-478,485-500
+   :start-after: begin class (this and further comments are for the documentation)
+   :end-before: end check
 
 A quick example of the class's usage:
 
@@ -198,9 +223,26 @@ A quick example of the class's usage:
    :language: python
    :start-after: start file splitting
    :end-before: end file splitting
-   :dedent: 4
 
-### FileSplittingEvaluation class
+### Create a custom File Splitting AI
+
+This section explains how to train a custom File Splitting AI locally, how to save it and upload it to the Konfuzio 
+Server. 
+
+By default, any [File Splitting AI](sourcecode.html#file-splitting-ai) class should derive from the 
+`AbstractFileSplittingModel` class and implement the following interface:
+
+```python
+from konfuzio_sdk.api import upload_ai_model, delete_ai_model
+
+# upload a saved model to the server
+model_id = upload_ai_model(save_path)
+
+# remove model
+delete_ai_model(model_id, ai_type='file_splitting')
+```
+
+### Evaluate a File Splitting AI
 
 `FileSplittingEvaluation` class can be used to evaluate performance of Context-Aware File Splitting Model, returning a 
 set of metrics that includes precision, recall, f1 measure, True Positives, False Positives, True Negatives, and False 
