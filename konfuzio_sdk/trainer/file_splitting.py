@@ -292,7 +292,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         # we combine an output of a simplified VGG19 architecture for image processing (read more about it
         # at https://iq.opengenus.org/vgg19-architecture/) and an output of BERT in an MLP-like
         # architecture (read more about it at http://shorturl.at/puKN3). a scheme of our custom architecture can be
-        # found at https://dev.konfuzio.com/sdk/tutorials.html#splitting-for-multi-file-documents-step-by-step-guide
+        # found at https://dev.konfuzio.com/sdk/tutorials/file_splitting/index.html#develop-and-save-a-context-aware-file-splitting-ai  # NOQA
         txt_input = tf.keras.Input(shape=self.input_shape, name='text')
         txt_x = tf.keras.layers.Dense(units=512, activation="relu")(txt_input)
         txt_x = tf.keras.layers.Flatten()(txt_x)

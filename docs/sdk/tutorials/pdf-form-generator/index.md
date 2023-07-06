@@ -1,3 +1,4 @@
+.. _pdf-form-generator:
 ## Build your own PDF Form Generator
 
 A simple implementation of a PDF form generator can look like the following.

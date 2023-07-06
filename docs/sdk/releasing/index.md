@@ -1,4 +1,4 @@
-
+.. _architecture-sdk-to-server:
 ## Architecture SDK to Server
 
 The following chart is automatically created by the version of the diagram on the branch master, see [source](https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/tests/SDK%20and%20Server%20Integration.drawio).
