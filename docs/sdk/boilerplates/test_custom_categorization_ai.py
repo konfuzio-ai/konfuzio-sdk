@@ -1,6 +1,16 @@
 """Test code examples for the custom Categorization AI's tutorial."""
+import pytest
+
+from konfuzio_sdk.settings_importer import is_dependency_installed
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('timm')
+    and not is_dependency_installed('torch')
+    and not is_dependency_installed('transformers')
+    and not is_dependency_installed('torchvision'),
+    reason='Required dependencies not installed.',
+)
 def test_custom_categorization_ai():
     """Test creating and using a custom Categorization AI."""
     # start init
