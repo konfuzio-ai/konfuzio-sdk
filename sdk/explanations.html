@@ -27,7 +27,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="API Reference" href="sourcecode.html" />
-    <link rel="prev" title="Tutorials" href="tutorials.html" /> 
+    <link rel="prev" title="Build your own PDF Form Generator" href="tutorials/pdf-form-generator/index.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -65,7 +65,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#bbox-concept">Bbox</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#architecture-sdk-to-server">Architecture SDK to Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id17">Architecture SDK to Server</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#directory-structure">Directory Structure</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#coordinates-system">Coordinates System</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#horizontal-merge">Horizontal Merge</a></li>
@@ -124,11 +124,11 @@
 <section id="data-layer-concepts">
 <h2>Data Layer Concepts<a class="headerlink" href="#data-layer-concepts" title="Permalink to this headline">¶</a></h2>
 <p>The relations between all major Data Layer concepts of the SDK are
-the following: a <a class="reference external" href="#id1">Project</a> consists of multiple <a class="reference external" href="#document">Documents</a>. Each one of the Documents consists of
-the <a class="reference external" href="#page">Pages</a> and belongs to a certain <a class="reference external" href="#id4">Category</a>. Text in a Document can be marked by
-<a class="reference external" href="#annotation">Annotations</a>, which can be multi-line, and where each continuous piece of text contained into an
-Annotation is a <a class="reference external" href="#id7">Span</a>. Each Annotation is located within a certain <a class="reference external" href="#id15">Bbox</a> and is defined by a
-<a class="reference external" href="#id12">Label</a> that is a part of one of the <a class="reference external" href="#label-set">Label Sets</a>. An <a class="reference external" href="#id10">Annotation Set</a> is a list of Annotations
+the following: a <a class="reference external" href="#project-concept">Project</a> consists of multiple <a class="reference external" href="#document-concept">Documents</a>. Each one of the Documents consists of
+the <a class="reference external" href="#page-concept">Pages</a> and belongs to a certain <a class="reference external" href="#category-concept">Category</a>. Text in a Document can be marked by
+<a class="reference external" href="#annotation-concept">Annotations</a>, which can be multi-line, and where each continuous piece of text contained into an
+Annotation is a <a class="reference external" href="#span-concept">Span</a>. Each Annotation is located within a certain <a class="reference external" href="#bbox-concept">Bbox</a> and is defined by a
+<a class="reference external" href="#label-concept">Label</a> that is a part of one of the <a class="reference external" href="#label-set-concept">Label Sets</a>. An <a class="reference external" href="#annotation-set-concept">Annotation Set</a> is a list of Annotations
 that share a Label Set.</p>
 <p>For more detailed information on each concept, follow the link on the concept’s name which leads to the automatically
 generated documentation.</p>
@@ -172,7 +172,7 @@ data for training your own models, for example;</p></li>
 <section id="category-concept">
 <span id="id4"></span><h3>Category<a class="headerlink" href="#category-concept" title="Permalink to this headline">¶</a></h3>
 <p><a class="reference external" href="sourcecode.html#category">Category</a> is a group of Documents united by common feature or type, i.e. invoice or receipt.</p>
-<p>To see all Categories in the Project, you can use <code class="docutils literal notranslate"><span class="pre">project.get_categories()</span></code>.
+<p>To see all Categories in the Project, you can use <code class="docutils literal notranslate"><span class="pre">project.categories</span></code>.
 To find a Category the Document belongs to, you can use <code class="docutils literal notranslate"><span class="pre">document.category</span></code>.
 To get <code class="docutils literal notranslate"><span class="pre">documents</span></code> or <code class="docutils literal notranslate"><span class="pre">test_documents</span></code> under the Category, use <code class="docutils literal notranslate"><span class="pre">category.documents()</span></code> or <code class="docutils literal notranslate"><span class="pre">category.test_documents()</span></code> respectively.</p>
 <p>You can also observe all Categories available in the Project via the Smartview: they are listed on the Project’s page in the menu on the right.</p>
@@ -219,8 +219,8 @@ to different Categories and multiple Annotation Sets.</p>
 coordinates. You can access Bboxes of the Document by calling <code class="docutils literal notranslate"><span class="pre">document.bboxes</span></code>.</p>
 </section>
 </section>
-<section id="architecture-sdk-to-server">
-<h2>Architecture SDK to Server<a class="headerlink" href="#architecture-sdk-to-server" title="Permalink to this headline">¶</a></h2>
+<section id="id17">
+<h2>Architecture SDK to Server<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h2>
 <p>The following chart is automatically created by the version of the diagram on the branch master, see <a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/tests/SDK%20and%20Server%20Integration.drawio">source</a>.</p>
 <p>If you hover over the image you can zoom or use the full page mode.</p>
 <p><span class="raw-html-m2r"><div class="mxgraph" style="max-width:100%;border:1px solid transparent;" data-mxgraph="{&quot;highlight&quot;:&quot;#0000ff&quot;,&quot;nav&quot;:true,&quot;resize&quot;:true,&quot;toolbar&quot;:&quot;zoom layers tags lightbox&quot;,&quot;edit&quot;:&quot;_blank&quot;,&quot;url&quot;:&quot;https://raw.githubusercontent.com/konfuzio-ai/konfuzio-sdk/master/docs/sdk/SDK%20and%20Server%20Integration.drawio&quot;}"></div></span></p>
@@ -620,7 +620,7 @@ Label Type: <span class="raw-html-m2r"><span style="background-color: #dcdcdc">N
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="tutorials.html" class="btn btn-neutral float-left" title="Tutorials" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="tutorials/pdf-form-generator/index.html" class="btn btn-neutral float-left" title="Build your own PDF Form Generator" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="sourcecode.html" class="btn btn-neutral float-right" title="API Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

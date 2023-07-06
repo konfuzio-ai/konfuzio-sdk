@@ -94,11 +94,11 @@
   <section id="data-layer-concepts">
 <h1>Data Layer Concepts<a class="headerlink" href="#data-layer-concepts" title="Permalink to this headline">¶</a></h1>
 <p>The relations between all major Data Layer concepts of the SDK are
-the following: a <a class="reference external" href="#id1">Project</a> consists of multiple <a class="reference external" href="#document">Documents</a>. Each one of the Documents consists of
-the <a class="reference external" href="#page">Pages</a> and belongs to a certain <a class="reference external" href="#id4">Category</a>. Text in a Document can be marked by
-<a class="reference external" href="#annotation">Annotations</a>, which can be multi-line, and where each continuous piece of text contained into an
-Annotation is a <a class="reference external" href="#id7">Span</a>. Each Annotation is located within a certain <a class="reference external" href="#id15">Bbox</a> and is defined by a
-<a class="reference external" href="#id12">Label</a> that is a part of one of the <a class="reference external" href="#label-set">Label Sets</a>. An <a class="reference external" href="#id10">Annotation Set</a> is a list of Annotations
+the following: a <a class="reference external" href="#project-concept">Project</a> consists of multiple <a class="reference external" href="#document-concept">Documents</a>. Each one of the Documents consists of
+the <a class="reference external" href="#page-concept">Pages</a> and belongs to a certain <a class="reference external" href="#category-concept">Category</a>. Text in a Document can be marked by
+<a class="reference external" href="#annotation-concept">Annotations</a>, which can be multi-line, and where each continuous piece of text contained into an
+Annotation is a <a class="reference external" href="#span-concept">Span</a>. Each Annotation is located within a certain <a class="reference external" href="#bbox-concept">Bbox</a> and is defined by a
+<a class="reference external" href="#label-concept">Label</a> that is a part of one of the <a class="reference external" href="#label-set-concept">Label Sets</a>. An <a class="reference external" href="#annotation-set-concept">Annotation Set</a> is a list of Annotations
 that share a Label Set.</p>
 <p>For more detailed information on each concept, follow the link on the concept’s name which leads to the automatically
 generated documentation.</p>
@@ -142,7 +142,7 @@ data for training your own models, for example;</p></li>
 <section id="category-concept">
 <span id="id4"></span><h2>Category<a class="headerlink" href="#category-concept" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference external" href="sourcecode.html#category">Category</a> is a group of Documents united by common feature or type, i.e. invoice or receipt.</p>
-<p>To see all Categories in the Project, you can use <code class="docutils literal notranslate"><span class="pre">project.get_categories()</span></code>.
+<p>To see all Categories in the Project, you can use <code class="docutils literal notranslate"><span class="pre">project.categories</span></code>.
 To find a Category the Document belongs to, you can use <code class="docutils literal notranslate"><span class="pre">document.category</span></code>.
 To get <code class="docutils literal notranslate"><span class="pre">documents</span></code> or <code class="docutils literal notranslate"><span class="pre">test_documents</span></code> under the Category, use <code class="docutils literal notranslate"><span class="pre">category.documents()</span></code> or <code class="docutils literal notranslate"><span class="pre">category.test_documents()</span></code> respectively.</p>
 <p>You can also observe all Categories available in the Project via the Smartview: they are listed on the Project’s page in the menu on the right.</p>

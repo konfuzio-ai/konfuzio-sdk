@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document Information Extraction &mdash; Konfuzio  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../_static/full_green_square.png"/>
+    <link rel="canonical" href="https://dev.konfuzio.com/sdk/tutorials/information_extraction/index.html" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="https://unpkg.com/mermaid@9.4.0/dist/mermaid.min.js"></script>
+        <script>mermaid.initialize({startOnLoad:true});</script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Data Validation Rules" href="../data_validation/index.html" />
+    <link rel="prev" title="Tokenization" href="../tokenizers/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> Konfuzio
+            <img src="../../../_static/docs__static_square_transparent_super_small.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Konfuzio SDK</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">What is the Konfuzio SDK?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../get_started.html">Get Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../tutorials.html">Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../overview/index.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../document_categorization/index.html">Document Categorization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../file_splitting/index.html">File Splitting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tokenizers/index.html">Tokenization</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Document Information Extraction</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents">Train a Konfuzio SDK Model to Extract Information From Payslip Documents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#train-a-custom-extraction-ai">Train a custom Extraction AI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#example-of-custom-extraction-ai-the-paragraph-extraction-ai">Example of Custom Extraction AI: The Paragraph Extraction AI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#evaluate-a-trained-extraction-ai-model">Evaluate a Trained Extraction AI Model</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../data_validation/index.html">Data Validation Rules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../outlier-annotations/index.html">Find possible outliers among the ground-truth Annotations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../regex_based_annotations/index.html">Create Regex-based Annotations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pdf-form-generator/index.html">Build your own PDF Form Generator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials.html#retrain-flair-ner-ontonotes-fast-with-human-revised-annotations">Retrain Flair NER-Ontonotes-Fast with Human Revised Annotations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials.html#count-relevant-expressions-in-annual-reports">Count Relevant Expressions in Annual Reports</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sourcecode.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contribution.html">Contribution Guide</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/releases">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/index.html">What is the Konfuzio Server?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/api-v3.html">REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/on_premises.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/changelog_app.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Document Validation UI</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../dvui/index.html">What is the Konfuzio Document Validation UI?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dvui/explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dvui/sourcecode.html">Source Code</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/releases">Changelog</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Konfuzio</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../tutorials.html">Tutorials</a> &raquo;</li>
+      <li>Document Information Extraction</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/sdk/tutorials/information_extraction/index.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="document-information-extraction">
+<h1>Document Information Extraction<a class="headerlink" href="#document-information-extraction" title="Permalink to this headline">¶</a></h1>
+<section id="train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents">
+<h2>Train a Konfuzio SDK Model to Extract Information From Payslip Documents<a class="headerlink" href="#train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents" title="Permalink to this headline">¶</a></h2>
+<p id="information-extraction">The tutorial <em>RFExtractionAI Demo</em> aims to show you how to use the Konfuzio SDK package to use a simple <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#konfuzio_sdk.tokenizer.regex.WhitespaceTokenizer">Whitespace
+tokenizer</a> and to
+train a “RFExtractionAI” model to find and extract relevant information like Name, Date and Recipient
+from payslip documents.</p>
+<p>You can <span class="raw-html-m2r"><a href="https://colab.research.google.com/github/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/tutorials/RFExtractionAI%20Demo.ipynb">
+<img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a></span> or download it from <a class="reference external" href="https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/tutorials/RFExtractionAI%20Demo.ipynb">here</a>
+and try it by yourself.</p>
+</section>
+<section id="train-a-custom-extraction-ai">
+<h2>Train a custom Extraction AI<a class="headerlink" href="#train-a-custom-extraction-ai" title="Permalink to this headline">¶</a></h2>
+<p>This section explains how to train a custom Extraction AI locally, how to save it and upload it to the Konfuzio Server.</p>
+<p>By default, any Extraction AI class should derive from the <code class="docutils literal notranslate"><span class="pre">AbstractExtractionAI</span></code> class and implement the following
+interface:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">AbstractExtractionAI</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Document</span><span class="p">,</span> <span class="n">Category</span>
+
+<span class="k">class</span> <span class="nc">CustomExtractionAI</span><span class="p">(</span><span class="n">AbstractExtractionAI</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">category</span><span class="p">:</span> <span class="n">Category</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">category</span><span class="p">)</span>
+        <span class="k">pass</span>
+
+    <span class="c1"># initialize key variables required by the custom AI</span>
+    <span class="c1"># for instance, self.category to define within which Category the Extraction takes place</span>
+
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="c1"># Define architecture and training that the model undergoes, i.e. a NN architecture or a custom hardcoded logic</span>
+    <span class="c1"># for instance:</span>
+    <span class="c1">#</span>
+    <span class="c1"># self.clf = RandomForestClassifier(</span>
+    <span class="c1">#             class_weight=&quot;balanced&quot;, random_state=100</span>
+    <span class="c1">#         )</span>
+    <span class="c1"># self.clf.fit(self.df_train[self.label_feature_list], self.df_train[&#39;target&#39;])</span>
+    <span class="c1">#</span>
+    <span class="c1"># This method is allowed to be implemented as a no-op if you provide the trained model in other ways</span>
+
+    <span class="k">def</span> <span class="nf">extract</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document</span><span class="p">:</span> <span class="n">Document</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Document</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="c1"># Define how the AI extracts information from Documents.</span>
+
+    <span class="c1"># **NB:** The result of extraction must be a copy of the input Document.</span>
+
+    <span class="c1"># Example:</span>
+    <span class="c1"># result_document = deepcopy(document)</span>
+
+    <span class="c1"># The tokenizer will create Annotations objects within the document</span>
+    <span class="c1"># tokenizer.tokenize(result_document)</span>
+
+    <span class="c1"># These Annotations will be the extraction results.</span>
+    <span class="c1"># At the moment, these Annotations have no Label, which would exclude them from the extraction results.</span>
+    <span class="c1"># We need to associate the proper Labels to each Annotation, assuming that these exist in our Project.</span>
+    <span class="c1"># name_label = self.project.get_label_by_name(&quot;Name&quot;)  # the self.project attribute is derived from Trainer</span>
+    <span class="c1"># surname_label = self.project.get_label_by_name(&quot;Surname&quot;)</span>
+    <span class="c1"># for annotation in result_document.annotations():</span>
+    <span class="c1">#     for span in annotation.spans:</span>
+    <span class="c1">#     # Each Annotation contains information about which tokenizer found it.</span>
+    <span class="c1">#     # In this example, we associate the Label straighforwardly.</span>
+    <span class="c1">#     # If your regex can produce false positives, you will want to apply some filtering logic here.</span>
+    <span class="c1">#         if name_tokenizer in span.regex_matching:</span>
+    <span class="c1">#             annotation.label = name_label</span>
+    <span class="c1">#             break</span>
+    <span class="c1">#         elif surname_tokenizer in span.regex_matching:</span>
+    <span class="c1">#             annotation.label = surname_label</span>
+    <span class="c1">#             break</span>
+
+    <span class="c1"># Suppose we want to extract &quot;A Software Company Ltd.&quot;, which does not have a clear regex pattern, but</span>
+    <span class="c1"># we know it&#39;s always the third line in the Document. We can explicitly create an Annotation based on a</span>
+    <span class="c1"># substring of the Document&#39;s text.</span>
+    <span class="c1"># company_label = self.project.get_label_by_name(&quot;Company&quot;)</span>
+    <span class="c1"># company_substring = result_document.split(&#39;\n&#39;)[2]  # third line of the Document</span>
+    <span class="c1"># start_offset = result_document.find(company_substring)</span>
+    <span class="c1"># end_offset = start_offset + len(company_substring)</span>
+    <span class="c1"># _ = Annotation(document=result_document, label=company_label, spans=[Span(start_offset, end_offset)])</span>
+
+    <span class="c1"># The resulting Document has 3 extractions. You can double-check that they are there with:</span>
+    <span class="c1"># &gt;&gt;&gt; result_document.annotations(use_correct=False)</span>
+    <span class="c1"># [</span>
+    <span class="c1">#     Annotation Name (6, 10),</span>
+    <span class="c1">#     Annotation Surname (20, 23),</span>
+    <span class="c1">#     Annotation Company (24, 27)</span>
+    <span class="c1"># ]</span>
+    <span class="c1"># return result_document</span>
+
+    <span class="k">def</span> <span class="nf">check_is_ready</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="c1"># define if all components needed for training/prediction are set, for instance, is self.tokenizer set or does</span>
+    <span class="c1"># self.category contain training and testing Documents.</span>
+
+</pre></div>
+</div>
+<p>Example usage of your Custom Extraction AI:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Document</span>
+
+<span class="c1"># Initialize Project and the AI</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>  <span class="c1"># see https://dev.konfuzio.com/sdk/get_started.html#example-usage</span>
+<span class="n">category</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_category_by_id</span><span class="p">(</span><span class="n">YOUR_CATEGORY_ID</span><span class="p">)</span>
+<span class="n">extraction_pipeline</span> <span class="o">=</span> <span class="n">CustomExtractionAI</span><span class="p">(</span><span class="n">category</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># provide the categories, training and test data</span>
+<span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">category</span> <span class="o">=</span> <span class="n">category</span>
+<span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">documents</span> <span class="o">=</span> <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">category</span><span class="o">.</span><span class="n">documents</span><span class="p">()</span>
+<span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">test_documents</span> <span class="o">=</span> <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">category</span><span class="o">.</span><span class="n">test_documents</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Train the AI</span>
+<span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+
+<span class="c1"># Evaluate the AI</span>
+<span class="n">data_quality</span> <span class="o">=</span> <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">evaluate_full</span><span class="p">(</span><span class="n">use_training_docs</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">ai_quality</span> <span class="o">=</span> <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">evaluate_full</span><span class="p">(</span><span class="n">use_training_docs</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># Extract a Document</span>
+<span class="n">document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
+<span class="n">extraction_result</span><span class="p">:</span> <span class="n">Document</span> <span class="o">=</span> <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">document</span><span class="o">=</span><span class="n">document</span><span class="p">)</span>
+
+<span class="c1"># Save and load a pickle file for the model</span>
+<span class="n">pickle_model_path</span> <span class="o">=</span> <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">output_dir</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">model_folder</span><span class="p">,</span> <span class="n">include_konfuzio</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">extraction_pipeline_loaded</span> <span class="o">=</span> <span class="n">RFExtractionAI</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">pickle_model_path</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The custom AI inherits from <a class="reference external" href="sourcecode.html#base-model">BaseModel</a>, which provides <code class="docutils literal notranslate"><span class="pre">BaseModel.save</span></code> to generate a
+pickle file that can be directly uploaded to the Konfuzio Server (see <a class="reference external" href="https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html#upload-extraction-or-category-ai-to-target-instance">Upload Extraction or Category AI to target instance</a>).</p>
+<p>Activating the uploaded AI on the web interface will enable the custom pipeline on your self-hosted installation.</p>
+<p>It is also possible to upload the AI from your local machine using the <code class="docutils literal notranslate"><span class="pre">upload_ai_model()</span></code> method and remove it with the
+<code class="docutils literal notranslate"><span class="pre">delete_ai_model()</span></code> method:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.api</span> <span class="kn">import</span> <span class="n">upload_ai_model</span><span class="p">,</span> <span class="n">delete_ai_model</span>
+
+<span class="c1"># upload a saved model to the server</span>
+<span class="n">model_id</span> <span class="o">=</span> <span class="n">upload_ai_model</span><span class="p">(</span><span class="n">pickle_model_path</span><span class="p">)</span>
+
+<span class="c1"># remove model</span>
+<span class="n">delete_ai_model</span><span class="p">(</span><span class="n">model_id</span><span class="p">,</span> <span class="n">ai_type</span><span class="o">=</span><span class="s1">&#39;extraction&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="example-of-custom-extraction-ai-the-paragraph-extraction-ai">
+<h2>Example of Custom Extraction AI: The Paragraph Extraction AI<a class="headerlink" href="#example-of-custom-extraction-ai-the-paragraph-extraction-ai" title="Permalink to this headline">¶</a></h2>
+<p>In <a class="reference internal" href="../tokenizers/index.html#paragraph-tokenizer-tutorial"><span class="std std-ref">the Paragraph Tokenizer tutorial</span></a>, we saw how we can use the Paragraph Tokenizer
+in <code class="docutils literal notranslate"><span class="pre">detectron</span></code> mode and with the <code class="docutils literal notranslate"><span class="pre">create_detectron_labels</span></code> option to segment a Document and create <code class="docutils literal notranslate"><span class="pre">figure</span></code>, <code class="docutils literal notranslate"><span class="pre">table</span></code>,
+<code class="docutils literal notranslate"><span class="pre">list</span></code>, <code class="docutils literal notranslate"><span class="pre">text</span></code> and <code class="docutils literal notranslate"><span class="pre">title</span></code> Annotations. The tokenizer used this way is thus able to create Annotations like in the
+following:</p>
+<a class="reference internal image-reference" href="../../../_images/paragraph_tokenizer.png"><img alt="../../../_images/paragraph_tokenizer.png" src="../../../_images/paragraph_tokenizer.png" style="width: 411.6px; height: 582.4px;" /></a>
+<p>Here we will see how we can use the Paragraph Tokenizer to create a Custom Extraction AI. What we need to create is
+just a simple wrapper around the Paragraph Tokenizer. It shows how you can create your own Custom Extraction AI that
+you can use in Konfuzio on-prem installations or in the <a class="reference external" href="https://help.konfuzio.com/marketplace/index.html">Konfuzio Marketplace</a>.</p>
+<details class="summary-full-paragraph-extraction-ai-code">
+<summary>Full Paragraph Extraction AI code</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ParagraphExtractionAI</span><span class="p">(</span><span class="n">AbstractExtractionAI</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extract and label text regions using Detectron2.&quot;&quot;&quot;</span>
+
+    <span class="c1"># start model requirements</span>
+    <span class="n">requires_images</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">requires_text</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">requires_segmentation</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="c1"># end model requirements</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">category</span><span class="p">:</span> <span class="n">Category</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize ParagraphExtractionAI.&quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Initializing ParagraphExtractionAI.&quot;</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">category</span><span class="o">=</span><span class="n">category</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span> <span class="o">=</span> <span class="n">ParagraphTokenizer</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;detectron&#39;</span><span class="p">,</span> <span class="n">create_detectron_labels</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">extract</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document</span><span class="p">:</span> <span class="n">Document</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Document</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Infer information from a given Document.</span>
+
+<span class="sd">        :param document: Document object</span>
+<span class="sd">        :return: Document with predicted Labels</span>
+
+<span class="sd">        :raises:</span>
+<span class="sd">        AttributeError: When missing a Tokenizer</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Starting extraction of </span><span class="si">{</span><span class="n">document</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_is_ready</span><span class="p">()</span>
+
+        <span class="n">inference_document</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
+
+        <span class="n">inference_document</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="n">inference_document</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">inference_document</span>
+
+    <span class="k">def</span> <span class="nf">check_is_ready</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if the ExtractionAI is ready for the inference.</span>
+
+<span class="sd">        :raises AttributeError: When no Category is specified.</span>
+<span class="sd">        :raises IndexError: When the Category does not contain the required Labels.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">check_is_ready</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="s1">&#39;figure&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="s1">&#39;table&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="s1">&#39;list&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="s1">&#39;text&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="s1">&#39;title&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="kc">True</span>
+</pre></div>
+</div>
+</details><p><span class="raw-html-m2r"><br/></span>
+Let’s go step by step.</p>
+<ol class="arabic">
+<li><p><strong>Imports</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">AbstractExtractionAI</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.paragraph_and_sentence</span> <span class="kn">import</span> <span class="n">ParagraphTokenizer</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Category</span><span class="p">,</span> <span class="n">Document</span><span class="p">,</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Label</span>
+
+</pre></div>
+</div>
+</li>
+<li><p><strong>Custom Extraction AI model definition</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ParagraphExtractionAI</span><span class="p">(</span><span class="n">AbstractExtractionAI</span><span class="p">):</span>
+</pre></div>
+</div>
+<p>We define a class that inherits from the Konfuzio <code class="docutils literal notranslate"><span class="pre">AbstractExtractionAI</span></code> class. This class provides the interface
+that we need to implement for our Custom Extraction AI. All Extraction AI models must inherit from this class.</p>
+</li>
+<li><p><strong>Add model requirements</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="n">requires_images</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">requires_text</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">requires_segmentation</span> <span class="o">=</span> <span class="kc">True</span>
+</pre></div>
+</div>
+<p>We need to define what the model needs to be able to run. This will inform the Konfuzio Server what information needs
+to be made available to the model before running an extraction. If the model only needs text, you can ignore this step
+or add <code class="docutils literal notranslate"><span class="pre">requires_text</span> <span class="pre">=</span> <span class="pre">True</span></code> to make it explicit. If the model requires Page images, you will need to add
+<code class="docutils literal notranslate"><span class="pre">requires_images</span> <span class="pre">=</span> <span class="pre">True</span></code>. Finally, in our case we also need to add <code class="docutils literal notranslate"><span class="pre">requires_segmentation</span> <span class="pre">=</span> <span class="pre">True</span></code> to inform the Server
+that the model needs the visual segmentation information created by the Paragraph Tokenizer in <code class="docutils literal notranslate"><span class="pre">detectron</span></code> mode.</p>
+</li>
+<li><p><strong>Initialize the model</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+   <span class="bp">self</span><span class="p">,</span>
+   <span class="n">category</span><span class="p">:</span> <span class="n">Category</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+   <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+   <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">   </span><span class="sd">&quot;&quot;&quot;Initialize ParagraphExtractionAI.&quot;&quot;&quot;</span>
+   <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Initializing ParagraphExtractionAI.&quot;</span><span class="p">)</span>
+   <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">category</span><span class="o">=</span><span class="n">category</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+   <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span> <span class="o">=</span> <span class="n">ParagraphTokenizer</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;detectron&#39;</span><span class="p">,</span> <span class="n">create_detectron_labels</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We initialize the model by calling the <code class="docutils literal notranslate"><span class="pre">__init__</span></code> method of the parent class. The only required argument is the
+Category the Extraction AI will be used with. The Category is the Konfuzio object that contains all the Labels
+and LabelSets that the model will use to create Annotations. This means that you need to make sure that the Category
+object contains all the Labels and LabelSets that you need for your model. In our case, we need the <code class="docutils literal notranslate"><span class="pre">figure</span></code>, <code class="docutils literal notranslate"><span class="pre">table</span></code>,
+<code class="docutils literal notranslate"><span class="pre">list</span></code>, <code class="docutils literal notranslate"><span class="pre">text</span></code> and <code class="docutils literal notranslate"><span class="pre">title</span></code> Labels.</p>
+</li>
+<li><p><strong>Define the extract method</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="k">def</span> <span class="nf">extract</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document</span><span class="p">:</span> <span class="n">Document</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Document</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Infer information from a given Document.</span>
+
+<span class="sd">        :param document: Document object</span>
+<span class="sd">        :return: Document with predicted Labels</span>
+
+<span class="sd">        :raises:</span>
+<span class="sd">        AttributeError: When missing a Tokenizer</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Starting extraction of </span><span class="si">{</span><span class="n">document</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_is_ready</span><span class="p">()</span>
+
+        <span class="n">inference_document</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
+
+        <span class="n">inference_document</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="n">inference_document</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">inference_document</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">extract</span></code> method is the core of the Extraction AI. It takes a Document as input and returns a Document with
+Annotations. Make sure to do a <code class="docutils literal notranslate"><span class="pre">deepcopy</span></code> of the Document that is passed so that you add the new Annotations to a
+Virtual Document with no Annotations. The Annotations are created by the model and added to the Document. In our
+case, we simply call the Paragraph Tokenizer in <code class="docutils literal notranslate"><span class="pre">detectron</span></code> mode and with the <code class="docutils literal notranslate"><span class="pre">create_detectron_labels</span></code> option.</p>
+</li>
+<li><p><strong>[OPTIONAL] Define the check_is_ready method</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="k">def</span> <span class="nf">check_is_ready</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if the ExtractionAI is ready for the inference.</span>
+
+<span class="sd">        :raises AttributeError: When no Category is specified.</span>
+<span class="sd">        :raises IndexError: When the Category does not contain the required Labels.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">check_is_ready</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="s1">&#39;figure&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="s1">&#39;table&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="s1">&#39;list&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="s1">&#39;text&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="s1">&#39;title&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="kc">True</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">check_is_ready</span></code> method is used to check if the model is ready to be used. It should return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the model
+is ready to extract, and <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise. It is checked before saving the model. You don’t have to implement it,
+and it will only check that a Category is defined.</p>
+<p>In our case, we also check that the model contains all the Labels that we need. This is not strictly necessary, but
+it is a good practice to make sure that the model is ready to be used.</p>
+</li>
+<li><p><strong>Use the model locally</strong></p>
+<p>We first make sure that all needed Labels are present in the Category.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">TEST_PROJECT_ID</span><span class="p">)</span>
+<span class="n">category</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_category_by_id</span><span class="p">(</span><span class="n">TEST_PAYSLIPS_CATEGORY_ID</span><span class="p">)</span>
+
+<span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;figure&#39;</span><span class="p">,</span> <span class="s1">&#39;table&#39;</span><span class="p">,</span> <span class="s1">&#39;list&#39;</span><span class="p">,</span> <span class="s1">&#39;text&#39;</span><span class="p">,</span> <span class="s1">&#39;title&#39;</span><span class="p">]</span>
+
+<span class="c1"># creating Labels in case they do not exist</span>
+<span class="n">label_set</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_label_set_by_name</span><span class="p">(</span><span class="n">category</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>  <span class="c1"># default Category label set</span>
+
+<span class="k">for</span> <span class="n">label_name</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="n">label_name</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+        <span class="n">Label</span><span class="p">(</span><span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">label_name</span><span class="p">,</span> <span class="n">label_sets</span><span class="o">=</span><span class="p">[</span><span class="n">label_set</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>We can now use the model to extract a Document. And then we also can run extract on a Document and save the model to
+a pickle file that can be used in Konfuzio Server.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">TEST_DOCUMENT_ID</span><span class="p">)</span>
+
+<span class="n">paragraph_extraction_ai</span> <span class="o">=</span> <span class="n">ParagraphExtractionAI</span><span class="p">(</span><span class="n">category</span><span class="o">=</span><span class="n">category</span><span class="p">)</span>
+
+<span class="k">assert</span> <span class="n">paragraph_extraction_ai</span><span class="o">.</span><span class="n">check_is_ready</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">True</span>
+
+<span class="n">extracted_document</span> <span class="o">=</span> <span class="n">paragraph_extraction_ai</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">extracted_document</span><span class="o">.</span><span class="n">annotations</span><span class="p">(</span><span class="n">use_correct</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>  <span class="c1"># Show all the created Annotations</span>
+
+<span class="n">model_path</span> <span class="o">=</span> <span class="n">paragraph_extraction_ai</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Upload the model to Konfuzio Server</strong></p>
+<p>You can use the Konfuzio SDK to upload your model to your on-prem installation like this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.api</span> <span class="kn">import</span> <span class="n">upload_ai_model</span>
+
+<span class="n">upload_ai_model</span><span class="p">(</span><span class="n">model_path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">category_ids</span><span class="o">=</span><span class="p">[</span><span class="n">category</span><span class="o">.</span><span class="n">id_</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Once the model is uploaded you can also share your model with others on the <a class="reference external" href="https://help.konfuzio.com/marketplace/index.html">Konfuzio Marketplace</a>.</p>
+</li>
+</ol>
+</section>
+<section id="evaluate-a-trained-extraction-ai-model">
+<h2>Evaluate a Trained Extraction AI Model<a class="headerlink" href="#evaluate-a-trained-extraction-ai-model" title="Permalink to this headline">¶</a></h2>
+<p>In this example we will see how we can evaluate a trained <code class="docutils literal notranslate"><span class="pre">RFExtractionAI</span></code> model. We will assume that we have a trained
+pickled model available. See <a class="reference internal" href="#information-extraction"><span class="std std-ref">here</span></a>
+for how to train such a model, and check out the <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#ai-evaluation">Evaluation</a>
+documentation for more details.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">RFExtractionAI</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">MODEL_PATH</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># To get the evaluation of the full pipeline</span>
+<span class="n">evaluation</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">evaluate_full</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Full evaluation F1 score: </span><span class="si">{</span><span class="n">evaluation</span><span class="o">.</span><span class="n">f1</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Full evaluation recall: </span><span class="si">{</span><span class="n">evaluation</span><span class="o">.</span><span class="n">recall</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Full evaluation precision: </span><span class="si">{</span><span class="n">evaluation</span><span class="o">.</span><span class="n">precision</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># To get the evaluation of the Tokenizer alone</span>
+<span class="n">evaluation</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">evaluate_tokenizer</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tokenizer evaluation F1 score: </span><span class="si">{</span><span class="n">evaluation</span><span class="o">.</span><span class="n">tokenizer_f1</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># To get the evaluation of the Label classifier given perfect tokenization</span>
+<span class="n">evaluation</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">evaluate_clf</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Label classifier evaluation F1 score: </span><span class="si">{</span><span class="n">evaluation</span><span class="o">.</span><span class="n">clf_f1</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># To get the evaluation of the LabelSet given perfect Label classification</span>
+<span class="n">evaluation</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">evaluate_clf</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Label Set evaluation F1 score: </span><span class="si">{</span><span class="n">evaluation</span><span class="o">.</span><span class="n">f1</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../tokenizers/index.html" class="btn btn-neutral float-left" title="Tokenization" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../data_validation/index.html" class="btn btn-neutral float-right" title="Data Validation Rules" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Helm und Nagel GmbH.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-D02B3QF8Z3"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-D02B3QF8Z3');
+</script>
+<script src="https://cmp.osano.com/16CVyMSbk3Iar1G3f/97ee6223-b0cb-4f8c-abd6-a25a0d6f6507/osano.js"></script>
+<script>window._nQc="89655017";</script>
+<script async src="https://serve.albacross.com/track.js"></script>
+<script data-jsd-embedded data-key="42374b9a-2f7b-46ec-ae7b-b79a89aa3dd9" data-base-url="https://jsd-widget.atlassian.com" src="https://jsd-widget.atlassian.com/assets/embed.js"></script>
+
+
+</body>
+</html>
