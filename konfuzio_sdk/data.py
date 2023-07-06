@@ -18,7 +18,6 @@ from enum import Enum
 import dateutil.parser
 from PIL import Image, ImageDraw, ImageFont
 from tqdm import tqdm
-import torch
 
 from konfuzio_sdk.api import (
     konfuzio_session,
@@ -3655,67 +3654,6 @@ class Document(Data):
                 i += 1
                 start_offset = end_offset + 1
         return new_doc
-
-    def get_document_classifier_examples(self, text_vocab, category_vocab, max_len, use_image, use_text):
-        """Get the per-Document examples for the Document classifier."""
-        document_images = []
-        document_tokens = []
-        document_labels = []
-        document_ids = []
-        document_page_numbers = []
-
-        # validate the data for the Document
-        if use_image:
-            self.get_images()  # gets the images if they do not exist
-            images = [page.image for page in self.pages()]  # gets the paths to the images
-            # @TODO move this validation to the Document class or the Page class
-            assert len(images) > 0, f'No images found for Document {self.id_}'
-            if not use_text:  # if only using images then make texts a list of None
-                page_texts = [None] * len(images)
-        if use_text:
-            page_texts = self.text.split('\f')
-            # @TODO move this validation to the Document class or the Page class
-            assert len(page_texts) > 0, f'No text found for Document {self.id_}'
-            if not use_image:  # if only using text then make images used a list of None
-                images = [None] * len(page_texts)
-
-        # check we have the same number of images and text pages
-        # only useful when we have both an image and a text module
-        # @TODO move this validation to the Document class or the Page class
-        assert len(images) == len(page_texts), (
-            f'Number of images ({len(images)}) is not equal to the number of Pages {len(page_texts)} for Document '
-            f'{self.id_}'
-        )
-
-        for page in self.pages():
-            if use_image:
-                # if using an image module, store the path to the image
-                document_images.append(page.image)
-            else:
-                # if not using image module then don't need the image paths
-                # so we just have a list of None to keep the lists the same length
-                document_images.append(None)
-            if use_text:
-                # if using a text module, tokenize the Page, trim to max length and then numericalize
-                # REPLACE page_tokens = tokenizer.get_tokens(page_text)[:max_len]
-                # page_encoded = [text_vocab.stoi(span.offset_string) for span in
-                # self.spans(start_offset=page.start_offset, end_offset=page.end_offset)]
-                # document_tokens.append(torch.LongTensor(page_encoded))
-                text_vocab.numericalize(page)
-                document_tokens.append(torch.LongTensor(page.text_encoded))
-            else:
-                # if not using text module then don't need the tokens
-                # so we just have a list of None to keep the lists the same length
-                document_tokens.append(None)
-            # get Document classification (defined by the Category template)
-            category_id = str(self.category.id_) if self.category != self.project.no_category else 'NO_CATEGORY'
-            # append the classification (Category), the Document's ID and the number of each Page
-            document_labels.append(torch.LongTensor([category_vocab.stoi(category_id)]))
-            doc_id = self.id_ or self.copy_of_id
-            document_ids.append(torch.LongTensor([doc_id]))
-            document_page_numbers.append(torch.LongTensor([page.index]))
-
-        return document_images, document_tokens, document_labels, document_ids, document_page_numbers
 
     def get_page_by_id(self, page_id: int, original: bool = False) -> Page:
         """

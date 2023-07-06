@@ -169,7 +169,7 @@ def get_label_url(label_id: int, host: str = KONFUZIO_HOST) -> str:
     """
     Generate URL to access a Label.
 
-    :param Label_id: ID of the Label as integer
+    :param label_id: ID of the Label as integer
     :param host: Konfuzio host
     :return: URL to access a Label
     """
@@ -204,13 +204,18 @@ def get_annotation_url(document_id: int, annotation_id: int, project_id: int, ho
     return f'{host}/api/projects/{project_id}/docs/{document_id}/annotations/{annotation_id}/'
 
 
-def get_create_ai_model_url(host: str = KONFUZIO_HOST) -> str:
+def get_create_ai_model_url(ai_type: str, host: str = KONFUZIO_HOST) -> str:
     """
     Get url to create new AiModel.
 
     :return: URL
     """
-    return f'{host}/api/aimodels/'
+    if ai_type == 'extraction':
+        return f'{host}/api/v3/extraction-ais/upload/'
+    elif ai_type == 'categorization':
+        return f'{host}/api/v3/category-ais/upload/'
+    elif ai_type == 'filesplitting':
+        return f'{host}/api/v3/splitting-ais/upload/'
 
 
 def get_update_ai_model_url(ai_model_id, host: str = KONFUZIO_HOST) -> str:
@@ -220,3 +225,17 @@ def get_update_ai_model_url(ai_model_id, host: str = KONFUZIO_HOST) -> str:
     :return: URL
     """
     return f'{host}/api/aimodels/{ai_model_id}/'
+
+
+def get_ai_model_url(ai_model_id: int, ai_type: str, host: str = KONFUZIO_HOST) -> str:
+    """
+    Get url to modify or delete an AI model.
+
+    :return: a dictionary of potential URLs
+    """
+    if ai_type == 'extraction':
+        return f'{host}/api/v3/extraction-ais/{ai_model_id}/'
+    elif ai_type == 'categorization':
+        return f'{host}/api/v3/category-ais/{ai_model_id}/'
+    elif ai_type == 'filesplitting':
+        return f'{host}/api/v3/splitting-ais/{ai_model_id}/'

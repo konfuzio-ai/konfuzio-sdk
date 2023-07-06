@@ -24,7 +24,8 @@ from konfuzio_sdk.data import (
     Bbox,
     BboxValidationTypes,
 )
-from konfuzio_sdk.trainer.information_extraction import RFExtractionAI
+from konfuzio_sdk.settings_importer import is_dependency_installed
+from konfuzio_sdk.tokenizer.base import ListTokenizer
 from konfuzio_sdk.utils import is_file, get_spans_from_bbox
 from tests.variables import (
     OFFLINE_PROJECT,
@@ -33,7 +34,7 @@ from tests.variables import (
     TEST_PAYSLIPS_CATEGORY_ID,
     TEST_RECEIPTS_CATEGORY_ID,
 )
-from konfuzio_sdk.tokenizer.base import ListTokenizer
+
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, RegexTokenizer, ConnectedTextTokenizer
 from konfuzio_sdk.samples import LocalTextProject
 
@@ -562,8 +563,14 @@ class TestOfflineExampleData(unittest.TestCase):
         assert len(outlier_test_spans) == 6
         assert 'DE38 7609 0900 0001 2XXX XX' in outlier_test_spans
 
+    @pytest.mark.skipif(
+        not is_dependency_installed('torch'),
+        reason='Required dependencies not installed.',
+    )
     def test_find_outlier_annotations_by_confidence(self):
         """Test finding the Annotations with the least confidence."""
+        from konfuzio_sdk.trainer.information_extraction import RFExtractionAI
+
         label = self.project.get_label_by_name('Austellungsdatum')
         pipeline = RFExtractionAI()
         pipeline.tokenizer = ListTokenizer(tokenizers=[])
@@ -579,8 +586,8 @@ class TestOfflineExampleData(unittest.TestCase):
         )
         pipeline.fit()
         evaluation = pipeline.evaluate_full(strict=False, use_training_docs=True)
-        outliers = label.get_probable_outliers_by_confidence(evaluation, 0.8)
-        assert len(outliers) == 1
+        outliers = label.get_probable_outliers_by_confidence(evaluation, 0.9)
+        assert len(outliers) == 2
         outlier_spans = [span.offset_string for annotation in outliers for span in annotation.spans]
         assert '24.05.2018' in outlier_spans
 

@@ -486,7 +486,7 @@ docker run --name flower -d --add-host=host:10.0.0.1 \
 
 ### [Optional] 8. Use Azure Read API (On-Premises or as Service)
 
-The Konfuzio Server can work together with the [Azure Read API]. There are two options to use the Azure Read API in an on-premises setup.
+The Konfuzio Server can work together with the [Azure Read API](https://learn.microsoft.com/en-us/azure/cognitive-services/computer-vision/overview-ocr). There are two options to use the Azure Read API in an on-premises setup.
 1. Use the Azure Read API as a service from the public Azure cloud.
 2. Install the Azure Read API container directly on your on-premises infrastructure via Docker.
 
@@ -501,7 +501,8 @@ For the first option, login into the Azure Portal and create a Computer Vision r
 After the resource is created the AZURE_OCR_KEY and AZURE_OCR_BASE_URL is displayed. Those need to be added as environment variable.
 
 For the second option, please refer to the [Azure Read API Container installation guide](https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2).
-Please open a support ticket to get an AZURE_OCR_KEY and AZURE_OCR_BASE_URL which is compatible with the container.
+Please open a support ticket to get an API_KEY and ENDPOINT_URL which is compatible with [running the On-Premises container](https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2). 
+The ENDPOINT_URL must be reachable by the Azure Read API Container.   
 
 #### How to fix common Azure Read API issues for On-Premises 
 
