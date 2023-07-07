@@ -64,7 +64,6 @@ class Vocab:
 
         assert len(self) > 0, 'Did not find any categories when building the category vocab!'
         # NO_CATEGORY ('0') should be label zero so we can avoid calculating accuracy over it later
-        assert self.stoi('0') == 0
 
     def __len__(self):
         """Allow us to do len(Vocab) to get the length of the vocabulary."""

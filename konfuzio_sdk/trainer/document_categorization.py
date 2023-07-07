@@ -1035,6 +1035,7 @@ class CategorizationAI(AbstractCategorizationAI):
         counter.update([str(category.id_) for category in self.categories])
 
         template_vocab = Vocab(counter, min_freq=1, max_size=None, unk_token=None, pad_token=None, special_tokens=['0'])
+        assert template_vocab.stoi('0') == 0, '0 category should be mapped to 0 index!'
 
         return template_vocab
 
