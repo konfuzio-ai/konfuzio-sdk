@@ -63,8 +63,7 @@ class Vocab:
             self.pad_idx = self.stoi(pad_token)
 
         assert len(self) > 0, 'Did not find any categories when building the category vocab!'
-        # NO_CATEGORY should be label zero so we can avoid calculating accuracy over it later
-        assert self.stoi('NO_CATEGORY') == 0
+        # NO_CATEGORY ('0') should be label zero so we can avoid calculating accuracy over it later
 
     def __len__(self):
         """Allow us to do len(Vocab) to get the length of the vocabulary."""

@@ -1029,13 +1029,13 @@ class CategorizationAI(AbstractCategorizationAI):
         """Build a vocabulary over the Categories."""
         logger.info('building category vocab')
 
-        counter = collections.Counter(NO_CATEGORY=0)
+        counter = collections.Counter()
+        counter['0'] = 0  # add a 0 category for the NO_CATEGORY category
 
         counter.update([str(category.id_) for category in self.categories])
 
-        template_vocab = Vocab(
-            counter, min_freq=1, max_size=None, unk_token=None, pad_token=None, special_tokens=['NO_CATEGORY']
-        )
+        template_vocab = Vocab(counter, min_freq=1, max_size=None, unk_token=None, pad_token=None, special_tokens=['0'])
+        assert template_vocab.stoi('0') == 0, '0 category should be mapped to 0 index!'
 
         return template_vocab
 
@@ -1138,7 +1138,7 @@ class CategorizationAI(AbstractCategorizationAI):
                     # so we just have a list of None to keep the lists the same length
                     document_tokens.append(None)
                 # get document classification (defined by the category template)
-                category_id = str(tokenized_doc.category.id_) if tokenized_doc.category is not None else 'NO_CATEGORY'
+                category_id = str(tokenized_doc.category.id_)
                 # append the classification (category), the document's id number and the page number of each page
                 document_labels.append(torch.LongTensor([self.category_vocab.stoi(category_id)]))
                 doc_id = tokenized_doc.id_ or tokenized_doc.copy_of_id
@@ -1421,10 +1421,8 @@ class CategorizationAI(AbstractCategorizationAI):
         # what was the label of that class?
         # what was the confidence of that class?
         predicted_class = int(mean_prediction.argmax())
-        if categories[predicted_class] == 'NO_CATEGORY':
-            predicted_label = 0
-        else:
-            predicted_label = int(categories[predicted_class])
+
+        predicted_label = int(categories[predicted_class])
         predicted_confidence = mean_prediction[predicted_class]
 
         return (predicted_label, predicted_confidence), predictions_df
