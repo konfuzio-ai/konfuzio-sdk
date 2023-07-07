@@ -4,21 +4,45 @@
 
 You can initialize a Document with a Category, which will count as if a human manually revised it.
 
-.. literalinclude:: /sdk/boilerplates/test_document_categorization.py
-   :language: python
-   :start-after: start init
-   :end-before: end init
-   :dedent: 4
+.. exec_code::
+   
+   # --- hide: start ---
+   from konfuzio_sdk.data import Project, Document 
+   from tests.variables import TEST_PROJECT_ID
+   YOUR_PROJECT_ID = TEST_PROJECT_ID
+   YOUR_CATEGORY_ID = 63
+   YOUR_DOCUMENT_ID = 44865
+   # --- hide: stop ---
+   project = Project(id_=YOUR_PROJECT_ID)
+   my_category = project.get_category_by_id(YOUR_CATEGORY_ID)
+
+   my_document = Document(text="My text.", project=project, category=my_category)
+   assert my_document.category == my_category
+   my_document.set_category(my_category)
+   assert my_document.category_is_revised is True
+   # --- hide: start ---
+   my_document.delete()
 
 If a Document is initialized with no Category, it will automatically be set to NO_CATEGORY. Another Category can be 
 manually set later.
 
-.. literalinclude:: /sdk/boilerplates/test_document_categorization.py
-   :language: python
-   :start-after: start no_category
-   :end-before: end no_category
-   :dedent: 4
-
+.. exec_code::
+   
+   # --- hide: start ---
+   from konfuzio_sdk.data import Project
+   project = Project(id_=46)
+   YOUR_DOCUMENT_ID = 44865
+   my_category = project.get_category_by_id(63)
+   # --- hide: stop ---
+   document = project.get_document_by_id(YOUR_DOCUMENT_ID)
+   document.set_category(None)
+   assert document.category == project.no_category
+   document.set_category(my_category)
+   assert document.category == my_category
+   assert document.category_is_revised is True
+   # This will set it for all of its Pages as well.
+   for page in document.pages():
+       assert page.category == my_category
 
 If you use a Categorization AI to automatically assign a Category to a Document (such as the 
 [NameBasedCategorizationAI](tutorials.html#name-based-categorization-ai)), each Page will be assigned a 
@@ -43,11 +67,43 @@ also find these documented under [API Reference - Document](sourcecode.html#docu
 
 Use the name of the Category as an effective fallback logic to categorize Documents when no Categorization AI is available:
 
-.. literalinclude:: /sdk/boilerplates/test_document_categorization.py
-   :language: python
-   :start-after: start name-based
-   :end-before: end name-based
-   :dedent: 4
+.. exec_code::
+   
+   # --- hide: start ---
+   from tests.variables import TEST_PROJECT_ID
+
+   YOUR_PROJECT_ID = TEST_PROJECT_ID
+   YOUR_DOCUMENT_ID = 44865
+   # --- hide: stop ---
+   from konfuzio_sdk.data import Project
+   from konfuzio_sdk.trainer.document_categorization import NameBasedCategorizationAI
+
+   # Set up your Project.
+   project = Project(id_=YOUR_PROJECT_ID)
+
+   # Initialize the Categorization Model.
+   categorization_model = NameBasedCategorizationAI(project.categories)
+
+   # Retrieve a Document to categorize.
+   test_document = project.get_document_by_id(YOUR_DOCUMENT_ID)
+
+   # The Categorization Model returns a copy of the SDK Document with Category attribute
+   # (use inplace=True to maintain the original Document instead).
+   # If the input Document is already categorized, the already present Category is used
+   # (use recategorize=True if you want to force a recategorization).
+   result_doc = categorization_model.categorize(document=test_document)
+
+   # Each Page is categorized individually.
+   for page in result_doc.pages():
+       assert page.category == project.categories[0]
+       print(f"Found category {page.category} for {page}")
+
+   # The Category of the Document is defined when all pages' Categories are equal.
+   # If the Document contains mixed Categories, only the Page level Category will be defined,
+   # and the Document level Category will be NO_CATEGORY.
+   # --- skip: start ---
+   print(f"Found category {result_doc.category} for {result_doc}")
+   # --- skip: stop ---
 
 ### Model-based Categorization AI
 
@@ -55,16 +111,56 @@ Build, train and test a Categorization AI using Image Models and Text Models to 
 
 For a list of available Models see [Available Categorization Models](#categorization-models-available).
 
-.. literalinclude:: /sdk/boilerplates/test_document_categorization.py
-   :language: python
-   :start-after: start imports
-   :end-before: end imports
-   :dedent: 4
-.. literalinclude:: /sdk/boilerplates/test_document_categorization.py
-   :language: python
-   :start-after: Start Build
-   :end-before: End Build
-   :dedent: 4
+.. exec_code::
+
+   # --- hide: start ---
+   from tests.variables import TEST_PROJECT_ID
+   YOUR_PROJECT_ID = TEST_PROJECT_ID
+   YOUR_DOCUMENT_ID = 44865
+   # --- hide: stop ---
+   from konfuzio_sdk.data import Project, Document
+   from konfuzio_sdk.trainer.document_categorization import build_categorization_ai_pipeline
+   from konfuzio_sdk.trainer.document_categorization import ImageModel, TextModel, CategorizationAI
+
+   # Set up your Project.
+   project = Project(id_=YOUR_PROJECT_ID)
+   # --- hide: start ---
+   for doc in project.documents + project.test_documents:
+       doc.get_images()
+   for document in project.documents[3:] + project.test_documents[1:]:
+       document.dataset_status = 4  # remove documents from the dataset to make these testcases faster
+   project.get_document_by_id(44864).dataset_status = 4
+   # --- hide: stop ---
+   # Build the Categorization AI architecture using a template
+   # of pre-built Image and Text classification Models.
+   categorization_pipeline = build_categorization_ai_pipeline(
+        categories=project.categories,
+        documents=project.documents,
+        test_documents=project.test_documents,
+        image_model=ImageModel.EfficientNetB0,
+        text_model=TextModel.NBOWSelfAttention,
+    )
+
+   # Train the AI.
+   categorization_pipeline.fit(n_epochs=1, optimizer={'name': 'Adam'})
+
+   # Evaluate the AI
+   data_quality = categorization_pipeline.evaluate(use_training_docs=True)
+   ai_quality = categorization_pipeline.evaluate()
+   assert data_quality.f1(None) == 1.0
+   assert ai_quality.f1(None) == 1.0
+
+   # Categorize a Document
+   document = project.get_document_by_id(YOUR_DOCUMENT_ID)
+   categorization_result = categorization_pipeline.categorize(document=document)
+   assert isinstance(categorization_result, Document)
+   # --- skip: start ---
+   for page in categorization_result.pages():
+       print(f"Found category {page.category} for {page}")
+   # --- skip: stop ---
+   # Save and load a pickle file for the AI
+   pickle_ai_path = categorization_pipeline.save()
+   categorization_pipeline = CategorizationAI.load_model(pickle_ai_path)
 
 .. _categorization-models-available:
 #### Available Categorization Models
@@ -74,6 +170,31 @@ classification. At least one between the Image Model or the Text Model must be s
 at the same time.
 
 The list of available Categorization Models is implemented as an Enum containing the following elements:
+
+.. exec_code::
+   
+   from konfuzio_sdk.trainer.document_categorization import ImageModel, TextModel
+
+   # Image Models
+   ImageModel.VGG11
+   ImageModel.VGG13
+   ImageModel.VGG16
+   ImageModel.VGG19
+   ImageModel.EfficientNetB0
+   ImageModel.EfficientNetB1
+   ImageModel.EfficientNetB2
+   ImageModel.EfficientNetB3
+   ImageModel.EfficientNetB4
+   ImageModel.EfficientNetB5
+   ImageModel.EfficientNetB6
+   ImageModel.EfficientNetB7
+   ImageModel.EfficientNetB8
+
+   # Text Models
+   TextModel.NBOW
+   TextModel.NBOWSelfAttention
+   TextModel.LSTM
+   TextModel.BERT
 
 See more details about these Categorization Models under [API Reference - Categorization AI](sourcecode.html#categorization-ai).
 
