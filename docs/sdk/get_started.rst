@@ -6,4 +6,4 @@ Get Started
 
 .. mdinclude:: configuration_reference.md
 
-.. mdinclude:: examples/intro.md
+.. mdinclude:: tutorials/index.md

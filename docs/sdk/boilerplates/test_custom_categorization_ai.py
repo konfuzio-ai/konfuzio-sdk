@@ -1,6 +1,16 @@
 """Test code examples for the custom Categorization AI's tutorial."""
+import pytest
+
+from konfuzio_sdk.settings_importer import is_dependency_installed
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('timm')
+    and not is_dependency_installed('torch')
+    and not is_dependency_installed('transformers')
+    and not is_dependency_installed('torchvision'),
+    reason='Required dependencies not installed.',
+)
 def test_custom_categorization_ai():
     """Test creating and using a custom Categorization AI."""
     # start init
@@ -74,7 +84,6 @@ def test_custom_categorization_ai():
     # start usage
     import os
     from konfuzio_sdk.data import Project
-    from konfuzio_sdk.trainer.information_extraction import load_model
     from konfuzio_sdk.trainer.document_categorization import (
         CategorizationAI,
         EfficientNet,
@@ -122,7 +131,7 @@ def test_custom_categorization_ai():
 
     # Save and load a pickle file for the model
     pickle_model_path = categorization_pipeline.save(reduce_weight=False)
-    categorization_pipeline_loaded = load_model(pickle_model_path)
+    categorization_pipeline_loaded = CategorizationAI.load_model(pickle_model_path)
     # end fit
     assert 63 in data_quality.category_ids
     assert 63 in ai_quality.category_ids

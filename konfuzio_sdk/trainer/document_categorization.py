@@ -1517,7 +1517,7 @@ def build_categorization_ai_pipeline(
 
     Build a Categorization AI neural network by choosing an ImageModel and a TextModel.
 
-    See an in-depth tutorial at https://dev.konfuzio.com/sdk/tutorials.html#model-based-categorization-ai
+    See an in-depth tutorial at https://dev.konfuzio.com/sdk/tutorials/data_validation/index.html
     """
     # Configure Categories, with training and test Documents for the Categorization AI
     categorization_pipeline = CategorizationAI(categories)
