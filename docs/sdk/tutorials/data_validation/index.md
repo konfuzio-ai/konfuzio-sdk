@@ -8,12 +8,12 @@ In general, if a Document fails any of the checks described in the next sections
 AI with that Document.
 
 More specifically:
-- If a Document fails any of the checks described in the [Bbox Validation Rules](#id7) section, it 
+- If a Document fails any of the checks described in the [Bbox Validation Rules](#bbox-validation) section, it 
 will not be possible to initialize the Project as a Python object (such as with 
 `project = Project(YOUR_PROJECT_ID)`), and a `ValueError` will be raised. All other Documents in the Project will be 
 able to be initialized.
 - If a Document fails any of the checks described in the sections 
-[Annotation Validation Rules](#id5) and [Span Validation Rules](#id6), it 
+[Annotation Validation Rules](#annotation-validation) and [Span Validation Rules](#span-validation), it 
 will not be possible to retrieve the Annotations (including their Spans) that fail the specific checks (such as with 
 `annotation = document.get_annotation_by_id(YOUR_ANNOTATION_ID)`), and a `ValueError` will be raised. All other 
 Annotations in the Document will be retrievable.
