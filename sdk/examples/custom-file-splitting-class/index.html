@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Create a custom File Splitting AI &mdash; Konfuzio  documentation</title>
+  <title>&lt;no title&gt; &mdash; Konfuzio  documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
@@ -81,7 +81,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Create a custom File Splitting AI</li>
+      <li>&lt;no title&gt;</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../../../_sources/sdk/examples/custom-file-splitting-class/index.md.txt" rel="nofollow"> View page source</a>
       </li>
@@ -91,23 +91,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="create-a-custom-file-splitting-ai">
-<h1>Create a custom File Splitting AI<a class="headerlink" href="#create-a-custom-file-splitting-ai" title="Permalink to this headline">¶</a></h1>
-<p>This section explains how to train a custom File Splitting AI locally, how to save it and upload it to the Konfuzio
-Server.</p>
-<p>By default, any <a class="reference external" href="sourcecode.html#file-splitting-ai">File Splitting AI</a> class should derive from the
-<code class="docutils literal notranslate"><span class="pre">AbstractFileSplittingModel</span></code> class and implement the following interface:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.api</span> <span class="kn">import</span> <span class="n">upload_ai_model</span><span class="p">,</span> <span class="n">delete_ai_model</span>
-
-<span class="c1"># upload a saved model to the server</span>
-<span class="n">model_id</span> <span class="o">=</span> <span class="n">upload_ai_model</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span>
-
-<span class="c1"># remove model</span>
-<span class="n">delete_ai_model</span><span class="p">(</span><span class="n">model_id</span><span class="p">,</span> <span class="n">ai_type</span><span class="o">=</span><span class="s1">&#39;file_splitting&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-</section>
-
+  
 
            </div>
           </div>

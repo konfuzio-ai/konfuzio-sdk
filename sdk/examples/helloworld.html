@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Create Regex-based Annotations &mdash; Konfuzio  documentation</title>
+  <title>&lt;no title&gt; &mdash; Konfuzio  documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
@@ -81,7 +81,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Create Regex-based Annotations</li>
+      <li>&lt;no title&gt;</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../../_sources/sdk/examples/helloworld.md.txt" rel="nofollow"> View page source</a>
       </li>
@@ -91,104 +91,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="create-regex-based-annotations">
-<h1>Create Regex-based Annotations<a class="headerlink" href="#create-regex-based-annotations" title="Permalink to this headline">¶</a></h1>
-<p><strong>Pro Tip</strong>: Read our technical blog post <a class="reference external" href="https://helm-nagel.com/Automated-Regex-Generation-based-on-examples">Automated Regex</a> to find out how we use Regex to detect outliers in our annotated data.</p>
-<p>Let’s see a simple example of how can we use the <code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span></code> package to get information on a project and to post annotations.</p>
-<p>You can follow the example below to post annotations of a certain word or expression in the first document uploaded.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">re</span>
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Annotation</span><span class="p">,</span> <span class="n">Span</span>
-
-<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Word/expression to annotate in the Document</span>
-<span class="c1"># should match an existing one in your Document</span>
-<span class="n">input_expression</span> <span class="o">=</span> <span class="s2">&quot;Musterstraße&quot;</span>
-
-<span class="c1"># Label for the Annotation</span>
-<span class="n">label_name</span> <span class="o">=</span> <span class="s2">&quot;Lohnart&quot;</span>
-<span class="c1"># Getting the Label from the Project</span>
-<span class="n">my_label</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="n">label_name</span><span class="p">)</span>
-
-<span class="c1"># LabelSet to which the Label belongs</span>
-<span class="n">label_set</span> <span class="o">=</span> <span class="n">my_label</span><span class="o">.</span><span class="n">label_sets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-<span class="c1"># First Document in the Project</span>
-<span class="n">document</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-<span class="c1"># Matches of the word/expression in the Document</span>
-<span class="n">matches_locations</span> <span class="o">=</span> <span class="p">[(</span><span class="n">m</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">m</span><span class="o">.</span><span class="n">end</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="n">input_expression</span><span class="p">,</span> <span class="n">document</span><span class="o">.</span><span class="n">text</span><span class="p">)]</span>
-
-<span class="c1"># List to save the links to the Annotations created</span>
-<span class="n">new_annotations_links</span> <span class="o">=</span> <span class="p">[]</span>
-
-<span class="c1"># Create Annotation for each match</span>
-<span class="k">for</span> <span class="n">offsets</span> <span class="ow">in</span> <span class="n">matches_locations</span><span class="p">:</span>
-    <span class="n">span</span> <span class="o">=</span> <span class="n">Span</span><span class="p">(</span><span class="n">start_offset</span><span class="o">=</span><span class="n">offsets</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">end_offset</span><span class="o">=</span><span class="n">offsets</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-    <span class="n">annotation_obj</span> <span class="o">=</span> <span class="n">Annotation</span><span class="p">(</span>
-        <span class="n">document</span><span class="o">=</span><span class="n">document</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">my_label</span><span class="p">,</span> <span class="n">label_set</span><span class="o">=</span><span class="n">label_set</span><span class="p">,</span> <span class="n">confidence</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">spans</span><span class="o">=</span><span class="p">[</span><span class="n">span</span><span class="p">],</span> <span class="n">is_correct</span><span class="o">=</span><span class="kc">True</span>
-    <span class="p">)</span>
-    <span class="n">new_annotation_added</span> <span class="o">=</span> <span class="n">annotation_obj</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
-    <span class="k">if</span> <span class="n">new_annotation_added</span><span class="p">:</span>
-        <span class="n">new_annotations_links</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">annotation_obj</span><span class="o">.</span><span class="n">get_link</span><span class="p">())</span>
-    <span class="n">annotation_obj</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">delete_online</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="n">new_annotations_links</span><span class="p">)</span>
-</pre></div>
-</div>
-</section>
-<section id="train-label-regex-tokenizer">
-<h1>Train Label Regex Tokenizer<a class="headerlink" href="#train-label-regex-tokenizer" title="Permalink to this headline">¶</a></h1>
-<p>You can use the <code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span></code> package to train a custom Regex tokenizer.</p>
-<p>In this example, you will see how to find regex expressions that match with occurrences of the “Lohnart” Label in the
-training data.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.regex</span> <span class="kn">import</span> <span class="n">RegexTokenizer</span>
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.base</span> <span class="kn">import</span> <span class="n">ListTokenizer</span>
-
-<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
-<span class="n">category</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_category_by_id</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_CATEGORY_ID</span><span class="p">)</span>
-
-<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">ListTokenizer</span><span class="p">(</span><span class="n">tokenizers</span><span class="o">=</span><span class="p">[])</span>
-
-<span class="n">label</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="s2">&quot;Lohnart&quot;</span><span class="p">)</span>
-
-<span class="k">for</span> <span class="n">regex</span> <span class="ow">in</span> <span class="n">label</span><span class="o">.</span><span class="n">find_regex</span><span class="p">(</span><span class="n">category</span><span class="o">=</span><span class="n">category</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">regex</span><span class="p">)</span>  <span class="c1"># to show how the regex can look, for instance: (?:(?P&lt;Label_861_N_672673_1638&gt;\d\d\d\d))[ ]{1,2}</span>
-    <span class="n">regex_tokenizer</span> <span class="o">=</span> <span class="n">RegexTokenizer</span><span class="p">(</span><span class="n">regex</span><span class="o">=</span><span class="n">regex</span><span class="p">)</span>
-    <span class="n">tokenizer</span><span class="o">.</span><span class="n">tokenizers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">regex_tokenizer</span><span class="p">)</span>
-
-<span class="c1"># You can then use it to create an Annotation for every matching string in a Document.</span>
-<span class="n">document</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
-<span class="n">tokenizer</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
-</pre></div>
-</div>
-</section>
-<section id="verify-that-a-tokenizer-finds-all-labels">
-<h1>Verify that a Tokenizer finds all Labels<a class="headerlink" href="#verify-that-a-tokenizer-finds-all-labels" title="Permalink to this headline">¶</a></h1>
-<p>Here is an example of how to use the <code class="docutils literal notranslate"><span class="pre">Label.spans_not_found_by_tokenizer</span></code> method. This will allow you to determine if a
-RegexTokenizer is suitable at finding the Spans of a Label, or what Spans might have been annotated wrong. Say, you
-have a number of Annotations assigned to the <code class="docutils literal notranslate"><span class="pre">Austellungsdatum</span></code> Label and want to know which Spans would not be found
-when using the Whitespace Tokenizer. You can follow this example to find all the relevant Spans.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.regex</span> <span class="kn">import</span> <span class="n">WhitespaceTokenizer</span>
-
-<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
-<span class="n">category</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">categories</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">WhitespaceTokenizer</span><span class="p">()</span>
-
-<span class="n">label</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="s1">&#39;Austellungsdatum&#39;</span><span class="p">)</span>
-
-<span class="n">spans_not_found</span> <span class="o">=</span> <span class="n">label</span><span class="o">.</span><span class="n">spans_not_found_by_tokenizer</span><span class="p">(</span><span class="n">tokenizer</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="p">[</span><span class="n">category</span><span class="p">])</span>
-
-<span class="k">for</span> <span class="n">span</span> <span class="ow">in</span> <span class="n">spans_not_found</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">span</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">span</span><span class="o">.</span><span class="n">offset_string</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-</section>
-
+  
 
            </div>
           </div>
