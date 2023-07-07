@@ -42,7 +42,6 @@ extras = [
     'transformers>=4.21.2',
     'tensorflow-cpu==2.12.0',
     'timm==0.6.7',
-    'scikit-learn>=1.0.2',
     'spacy>=2.3.5',
 ]
 
