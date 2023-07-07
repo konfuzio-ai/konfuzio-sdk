@@ -73,6 +73,17 @@ You can also observe all Categories available in the Project via the Smartview: 
 
 .. _span-concept:
 
+### Category Annotation
+[Category Annotation](sourcecode.html#category-annotation) defines a Category of a Page or a Document. There can be 
+more than one Category Annotation per Document and per Page; Category Annotations typically come with different
+confidence levels.
+
+To get a Category Annotation of a particular Category for the Page, use `Page.get_category_annotation(category)`. 
+
+To get a maximum-confidence Category Annotation for a Page, use `Page.maximum_confidence_category_annotation`.
+
+To see a maximum-confidence Category Annotation for a Document, use `Document.maximum_confidence_category_annotation`.
+
 ### Span
 [Span](sourcecode.html#span) is a part of the Document's text without the line breaks. Each Span has `start_offset` and `end_offset` denoting its starting and finishing characters in `document.text`. 
 
