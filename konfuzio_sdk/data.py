@@ -43,6 +43,7 @@ from konfuzio_sdk.utils import (
     sdk_isinstance,
     exception_or_log_error,
     get_missing_offsets,
+    get_file_type_and_extension,
 )
 
 logger = logging.getLogger(__name__)
@@ -2644,6 +2645,7 @@ class Document(Data):
         :param sync: Whether to wait for the file to be processed by the server
         :return: New Document
         """
+        get_file_type_and_extension(path)  # check if file is valid
         response = upload_file_konfuzio_api(
             path,
             project_id=project.id_,
