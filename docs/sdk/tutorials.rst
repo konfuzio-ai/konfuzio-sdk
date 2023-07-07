@@ -11,6 +11,7 @@ Tutorials
    :caption: Tutorials
 
    tutorials/overview/index.md
+   tutorials/data-preparation/index.md
    tutorials/document_categorization/index.md
    tutorials/file_splitting/index.md
    tutorials/tokenizers/index.md
