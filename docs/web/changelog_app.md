@@ -21,9 +21,19 @@ You can think of the _Planned_ section as a _Roadmap_ that lists Konfuzio Server
 - Allow administrators of Konfuzio on-premise installations to run a speedtest ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9870)).
 - Start automatic AI retraining after User confirms that he has finished a annotation review ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9166)).
 
-## Next Release (estimated release date 7th July 2023)
+## Next Release (estimated release date 10th July 2023)
 
-Upcoming...
+### Added
+- [When using the Categorization AI, it is now possible to choose between Image and Text AI Modules](https://help.konfuzio.com/modules/projects/index.html#categorization-ai-parameters) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11279)).
+
+### Changed
+- [Documents can be accessed via https://app.konfuzio.com/d/DOCUMENT_ID](https://dev.konfuzio.com/dvui/explanations.html#full-mode) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10772)).
+
+### Fixed
+- In some cases Label Sets could not be deleted ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11007)).
+- The sorting by number of training and test Document on the Extraction AI list page ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11261)).
+- Documents could not be processed for specific OCR settings ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11344)).
+- When using the Sentence or Paragraph Tokenizer, the Training process did not complete ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11345)).
 
 ## released-2023-06-27_21-39-25
 This version uses the Konfuzio Python SDK in version v.0.2.23 and Konfuzio Document Validation UI in version v.0.1.9.
