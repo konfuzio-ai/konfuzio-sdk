@@ -13,6 +13,7 @@ Container Registry
 The sequence is as follows:
 
 .. mermaid::
+
     sequenceDiagram
         participant GenericWorker as Generic Worker
         participant KubernetesAgent as Kubernetes Agent
@@ -30,6 +31,7 @@ The sequence is as follows:
         
 
 .. mermaid::
+
     graph TD
         a("Fast API (/extract)")
         b("Konfuzio SDK")

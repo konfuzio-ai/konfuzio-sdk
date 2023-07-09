@@ -17,6 +17,8 @@ and try it by yourself.
 .. |OpenInColab| image:: https://colab.research.google.com/assets/colab-badge.svg
 .. _OpenInColab: https://colab.research.google.com/github/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/tutorials/RFExtractionAI%20Demo.ipynb
 
+To prepare the data for training and testing your AI, you can follow the [data preparation tutorial](tutorials.html#tutorials.html#prepare-the-data-for-training-and-testing-the-ai).
+
 ### Train a custom Extraction AI
 
 This section explains how to train a custom Extraction AI locally, how to save it and upload it to the Konfuzio Server. 

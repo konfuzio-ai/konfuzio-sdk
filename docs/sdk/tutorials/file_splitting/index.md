@@ -8,8 +8,13 @@ guide introduces you to tools and models that automate this process, streamlinin
 
 ### Overview
 
-You can train your own File Splitting AI on the data from any Project of your choice. For that purpose, there are 
-several tools in the SDK that enable processing Documents that consist of multiple files and propose splitting them 
+You can train your own File Splitting AI on the data from any Project of your choice ([data preparation tutorial here](tutorials.html#tutorials.html#prepare-the-data-for-training-and-testing-the-ai)). 
+Note that Pages in all the Documents used for training and testing have to be ordered correctly – that is to say, not 
+mixed up in order. The ground-truth first Page of each Document should go first in the file, ground-truth second Page 
+goes second and so on. This is needed because the Splitting AI operates on the idea that the splitting points in a 
+stream of Pages are the starting Pages of each Sub-Document in the stream.
+
+For that purpose, there are several tools in the SDK that enable processing Documents that consist of multiple files and propose splitting them 
 into the Sub-Documents accordingly:
 
 - A Context Aware File Splitting Model uses a simple hands-on logic based on scanning Category's Documents and finding
@@ -60,11 +65,15 @@ select an action "Activate Splitting AI".
 For the second option, provide the path to your model to the `upload_ai_model()`. You can also remove an uploaded model
 by using `delete_ai_model()`.
 
-.. literalinclude:: /sdk/boilerplates/test_file_splitting_example.py
-   :language: python
-   :start-after: start upload
-   :end-before: end upload
-   :dedent: 4
+```python
+ from konfuzio_sdk.api import upload_ai_model, delete_ai_model
+
+ # upload a saved model to the server
+ model_id = upload_ai_model(save_path)
+
+ # remove model
+ delete_ai_model(model_id, ai_type='file_splitting')
+```
 
 ### Train a Multimodal File Splitting AI
 
@@ -232,15 +241,11 @@ Server.
 By default, any [File Splitting AI](sourcecode.html#file-splitting-ai) class should derive from the 
 `AbstractFileSplittingModel` class and implement the following interface:
 
-```python
-from konfuzio_sdk.api import upload_ai_model, delete_ai_model
-
-# upload a saved model to the server
-model_id = upload_ai_model(save_path)
-
-# remove model
-delete_ai_model(model_id, ai_type='file_splitting')
-```
+.. literalinclude:: /sdk/boilerplates/test_custom_file_splitting_ai.py
+   :language: python
+   :start-after: start class
+   :end-before: end class
+   :dedent: 4
 
 ### Evaluate a File Splitting AI
 
