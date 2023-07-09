@@ -27,6 +27,8 @@ Upcoming...
 
 ## released-2023-07-08_11-32-24
 
+This version uses the Konfuzio Python SDK in version v.0.2.24 and Konfuzio Document Validation UI in version v.0.1.9.
+
 ### Added
 - [When using the Categorization AI, it is now possible to choose between Image and Text AI Modules](https://help.konfuzio.com/modules/projects/index.html#categorization-ai-parameters) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11279)).
 
