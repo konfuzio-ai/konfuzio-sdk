@@ -21,7 +21,11 @@ You can think of the _Planned_ section as a _Roadmap_ that lists Konfuzio Server
 - Allow administrators of Konfuzio on-premise installations to run a speedtest ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9870)).
 - Start automatic AI retraining after User confirms that he has finished a annotation review ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9166)).
 
-## Next Release (estimated release date 10th July 2023)
+## Next Release (estimated release date 21th July 2023)
+
+Upcoming...
+
+## released-2023-07-08_11-32-24
 
 ### Added
 - [When using the Categorization AI, it is now possible to choose between Image and Text AI Modules](https://help.konfuzio.com/modules/projects/index.html#categorization-ai-parameters) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11279)).
