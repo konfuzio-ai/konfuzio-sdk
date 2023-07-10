@@ -279,7 +279,7 @@ _It is important to note that this process will NOT make all your Projects’ Do
 
 By default, we provide a bare-bones HTML snippet that looks similar to this:
 
-`<iframe src="https://app.konfuzio.com/d/<id>/" width="100%" height="600" frameborder="0"></iframe>`
+`<iframe src="https://app.konfuzio.com/d/<id>/?embed=1" width="100%" height="600" frameborder="0"></iframe>`
 
 This creates on your page an iframe with 100% width (full width of its container) and a height of 600 pixels that don't have a border. You can customize the iframe‘s size and other options by changing these and other attributes (see [iframe documentation](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe)).
 
