@@ -27,9 +27,9 @@ from konfuzio_sdk.urls import (
     get_document_url,
     get_document_segmentation_details_url,
     get_labels_url,
-    get_update_ai_model_url,
     get_create_ai_model_url,
     get_page_image_url,
+    get_ai_model_url,
 )
 from konfuzio_sdk.utils import is_file
 
@@ -572,7 +572,18 @@ def upload_ai_model(ai_model_path: str, category_ids: List[int] = None, session=
     :param session: session to connect to server
     :return:
     """
-    url = get_create_ai_model_url()
+    if 'extraction' in ai_model_path:
+        ai_type = 'extraction'
+    elif 'filesplitting' in ai_model_path:
+        ai_type = 'filesplitting'
+    elif 'categorization' in ai_model_path:
+        ai_type = 'categorization'
+    else:
+        raise ValueError(
+            "Cannot define AI type by the file name. Pass an AI model that is named according to the \
+                          SDK's naming conventions."
+        )
+    url = get_create_ai_model_url(ai_type)
     if is_file(ai_model_path):
         model_name = os.path.basename(ai_model_path)
         with open(ai_model_path, 'rb') as f:
@@ -581,13 +592,66 @@ def upload_ai_model(ai_model_path: str, category_ids: List[int] = None, session=
             r = session.post(url, files=multipart_form_data, headers=headers)
     data = r.json()
     ai_model_id = data['id']
-    ai_model = data['ai_model']
+    ai_model = data['name']
 
     if category_ids:
-        url = get_update_ai_model_url(ai_model_id)
+        url = get_ai_model_url(ai_model_id, ai_type)
         data = {'templates': category_ids}
         headers = {'content-type': 'application/json'}
         session.patch(url, data=json.dumps(data), headers=headers)
 
-    logger.info(f'New AI Model uploaded {ai_model} to {url}')
-    return ai_model
+    logger.info(f'New AI Model {ai_model} uploaded to {url}')
+    return ai_model_id
+
+
+def delete_ai_model(ai_model_id: int, ai_type: str, session=konfuzio_session()):
+    """
+    Delete an AI model from the server.
+
+    :param ai_model_id: an ID of the model to be deleted.
+    :param ai_type: if a model is an Extraction AI, a Categorization AI or a File Splitting AI. Should be one of the
+    following: 'file_splitting', 'extraction', 'categorization'.
+    :param session: session to connect to the server.
+    """
+    if ai_type not in ['file_splitting', 'extraction', 'categorization']:
+        raise ValueError("ai_type should have the value of 'file_splitting', 'extraction', or 'categorization'.")
+    url = get_ai_model_url(ai_model_id, ai_type)
+    r = session.delete(url)
+    if r.status_code == 200:
+        return json.loads(r.text)['id']
+    elif r.status_code == 204:
+        return r
+    else:
+        raise ConnectionError(f'Error{r.status_code}: {r.content} {r.url}')
+
+
+def update_ai_model(ai_model_id: int, ai_type: str, session=konfuzio_session(), **kwargs):
+    """
+    Update an AI model from the server.
+
+    :param ai_model_id: an ID of the model to be updated.
+    :param ai_type: if a model is an Extraction AI, a Categorization AI or a File Splitting AI. Should be one of the
+    following: 'file_splitting', 'extraction', 'categorization'.
+    :param session: session to connect to the server.
+    """
+    if ai_type not in ['file_splitting', 'extraction', 'categorization']:
+        raise ValueError("ai_type should have the value of 'file_splitting', 'extraction', or 'categorization'.")
+    url = get_ai_model_url(ai_model_id, ai_type)
+
+    data = {}
+    name = kwargs.get('name', None)
+    description = kwargs.get('description', None)
+    category = kwargs.get('category', None)
+
+    if name is not None:
+        data.update({"data_file_name": name})
+
+    if description is not None:
+        data.update({"description": description})
+
+    if category is not None:
+        data.update({"category": category})
+
+    r = session.patch(url=url, json=data)
+
+    return json.loads(r.text)

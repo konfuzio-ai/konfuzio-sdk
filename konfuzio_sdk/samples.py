@@ -515,6 +515,7 @@ a2  s4
             start_offset=0,
             end_offset=22,
             number=1,
+            copy_of_id=1,
         )
         _.is_first_page = True
 
@@ -525,6 +526,7 @@ a2  s4
             start_offset=23,
             end_offset=59,
             number=2,
+            copy_of_id=2,
         )
 
         _ = Page(
@@ -534,6 +536,7 @@ a2  s4
             start_offset=60,
             end_offset=69,
             number=3,
+            copy_of_id=3,
         )
         _.is_first_page = True
 
@@ -544,6 +547,7 @@ a2  s4
             start_offset=70,
             end_offset=91,
             number=4,
+            copy_of_id=4,
         )
 
         _ = Page(
@@ -553,6 +557,7 @@ a2  s4
             start_offset=92,
             end_offset=101,
             number=5,
+            copy_of_id=5,
         )
         _.is_first_page = True
 
@@ -565,6 +570,7 @@ a2  s4
             start_offset=0,
             end_offset=22,
             number=1,
+            copy_of_id=6,
         )
 
         _ = Page(
@@ -574,6 +580,7 @@ a2  s4
             start_offset=23,
             end_offset=57,
             number=2,
+            copy_of_id=7,
         )
 
         text_5 = "Morning,\nI like bread.\n\fWhat are your plans for today?"
@@ -585,6 +592,7 @@ a2  s4
             start_offset=0,
             end_offset=22,
             number=1,
+            copy_of_id=8,
         )
 
         _ = Page(
@@ -594,6 +602,7 @@ a2  s4
             start_offset=23,
             end_offset=52,
             number=2,
+            copy_of_id=9,
         )
 
         text_6 = "Morning,\nI wanted to call you.\n\fWhat's up?"
@@ -605,6 +614,7 @@ a2  s4
             start_offset=0,
             end_offset=30,
             number=1,
+            copy_of_id=10,
         )
         _ = Page(
             id_=None,
@@ -613,6 +623,7 @@ a2  s4
             start_offset=31,
             end_offset=41,
             number=2,
+            copy_of_id=11,
         )
 
         text_7 = "Evening,\nI like fish.\n\fHow was your day?"
@@ -624,6 +635,7 @@ a2  s4
             start_offset=0,
             end_offset=21,
             number=1,
+            copy_of_id=12,
         )
 
         _ = Page(
@@ -633,39 +645,160 @@ a2  s4
             start_offset=22,
             end_offset=39,
             number=2,
+            copy_of_id=13,
         )
 
         text_8 = "Hi all,\nI like bread.\nWhat are your plans for today?\nEvening,\nI like it.\nHow was your week?"
         document_8 = Document(id_=14, project=self, category=category_3, text=text_8, dataset_status=3)
-        _ = Page(id_=None, original_size=(320, 240), document=document_8, start_offset=0, end_offset=21, number=1)
-        _ = Page(id_=None, original_size=(320, 240), document=document_8, start_offset=22, end_offset=53, number=2)
-        _ = Page(id_=None, original_size=(320, 240), document=document_8, start_offset=54, end_offset=74, number=3)
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document_8,
+            start_offset=0,
+            end_offset=21,
+            number=1,
+            copy_of_id=14,
+        )
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document_8,
+            start_offset=22,
+            end_offset=53,
+            number=2,
+            copy_of_id=15,
+        )
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document_8,
+            start_offset=54,
+            end_offset=74,
+            number=3,
+            copy_of_id=16,
+        )
         _.is_first_page = True
-        _ = Page(id_=None, original_size=(320, 240), document=document_8, start_offset=75, end_offset=93, number=4)
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document_8,
+            start_offset=75,
+            end_offset=93,
+            number=4,
+            copy_of_id=17,
+        )
 
         text_9 = (
             "Hi all,\nI like bread.\nWhat are your plans for today?\nEvening,\nI like it.\nHow was your week? \n"
             "Evening,"
         )
         document_9 = Document(id_=15, project=self, category=category_4, text=text_9, dataset_status=3)
-        _ = Page(id_=None, original_size=(320, 240), document=document_9, start_offset=0, end_offset=21, number=1)
-        _ = Page(id_=None, original_size=(320, 240), document=document_9, start_offset=22, end_offset=53, number=2)
-        _ = Page(id_=None, original_size=(320, 240), document=document_9, start_offset=54, end_offset=74, number=3)
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document_9,
+            start_offset=0,
+            end_offset=21,
+            number=1,
+            copy_of_id=18,
+        )
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document_9,
+            start_offset=22,
+            end_offset=53,
+            number=2,
+            copy_of_id=19,
+        )
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document_9,
+            start_offset=54,
+            end_offset=74,
+            number=3,
+            copy_of_id=20,
+        )
         _.is_first_page = True
-        _ = Page(id_=None, original_size=(320, 240), document=document_9, start_offset=75, end_offset=93, number=4)
-        _ = Page(id_=None, original_size=(320, 240), document=document_9, start_offset=95, end_offset=103, number=5)
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document_9,
+            start_offset=75,
+            end_offset=93,
+            number=4,
+            copy_of_id=21,
+        )
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document_9,
+            start_offset=95,
+            end_offset=103,
+            number=5,
+            copy_of_id=22,
+        )
         _.is_first_page = True
 
         text_10 = "Hi all,\nI like bread.\nEvening,\nI like fish."
         document_10 = Document(id_=16, project=self, category=category_4, text=text_10, dataset_status=3)
-        _ = Page(id_=None, original_size=(320, 240), document=document_10, start_offset=0, end_offset=21, number=1)
-        _ = Page(id_=None, original_size=(320, 240), document=document_10, start_offset=22, end_offset=43, number=2)
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document_10,
+            start_offset=0,
+            end_offset=21,
+            number=1,
+            copy_of_id=23,
+        )
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document_10,
+            start_offset=22,
+            end_offset=43,
+            number=2,
+            copy_of_id=24,
+        )
 
         text_11 = "Hi all,\nI like bread.\nHow was your week?\n "
         document_11 = Document(id_=17, project=self, category=category_4, text=text_11, dataset_status=3)
-        _ = Page(id_=None, original_size=(320, 240), document=document_11, start_offset=0, end_offset=21, number=1)
-        _ = Page(id_=None, original_size=(320, 240), document=document_11, start_offset=22, end_offset=40, number=2)
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document_11,
+            start_offset=0,
+            end_offset=21,
+            number=1,
+            copy_of_id=25,
+        )
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document_11,
+            start_offset=22,
+            end_offset=40,
+            number=2,
+            copy_of_id=26,
+        )
 
         document_12 = Document(id_=19, project=self, text=text_11, dataset_status=3)
-        _ = Page(id_=None, original_size=(320, 240), document=document_12, start_offset=0, end_offset=21, number=1)
-        _ = Page(id_=None, original_size=(320, 240), document=document_12, start_offset=22, end_offset=40, number=2)
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document_12,
+            start_offset=0,
+            end_offset=21,
+            number=1,
+            copy_of_id=27,
+        )
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document_12,
+            start_offset=22,
+            end_offset=40,
+            number=2,
+            copy_of_id=28,
+        )

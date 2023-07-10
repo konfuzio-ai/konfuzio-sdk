@@ -32,7 +32,6 @@ from konfuzio_sdk.utils import (
     get_spans_from_bbox,
 )
 
-TEST_STRING = "sample string"
 FOLDER_ROOT = os.path.dirname(os.path.realpath(__file__))
 TEST_PDF_FILE = os.path.join(FOLDER_ROOT, 'test_data', 'pdf.pdf')
 TEST_IMAGE_FILE = os.path.join(FOLDER_ROOT, 'test_data', 'png.png')
@@ -50,7 +49,7 @@ class TestUtils(unittest.TestCase):
 
     def test_get_id(self):
         """Test if the returned unique id_ is an instance of String."""
-        assert isinstance(get_id(TEST_STRING), int)
+        assert isinstance(get_id(), str)
 
     def test_get_timestamp(self):
         """Test if the returned timestamp is an instance of String."""

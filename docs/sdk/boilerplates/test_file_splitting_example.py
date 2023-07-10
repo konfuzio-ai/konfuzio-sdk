@@ -1,22 +1,37 @@
 """Test a code example for the File Splitting section of the documentation."""
+import pytest
+
 from typing import List
 
+from konfuzio_sdk.settings_importer import is_dependency_installed
 
-def test_file_splitting():
+
+@pytest.mark.skipif(
+    not is_dependency_installed('torch')
+    and not is_dependency_installed('transformers')
+    and not is_dependency_installed('tensorflow')
+    and not is_dependency_installed('cloudpickle'),
+    reason='Required dependencies not installed.',
+)
+def test_context_aware_file_splitting():
     """Test the File Splitting section of the documentation."""
-    from konfuzio_sdk.data import Page, Category, Project
     from konfuzio_sdk.trainer.file_splitting import AbstractFileSplittingModel
-    from konfuzio_sdk.trainer.file_splitting import SplittingAI
-    from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel
-    from konfuzio_sdk.trainer.information_extraction import load_model
-    from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
-
     from tests.variables import TEST_PROJECT_ID
+    import os
 
     YOUR_PROJECT_ID = TEST_PROJECT_ID
     YOUR_DOCUMENT_ID = 44865
+    # start imports
+    from konfuzio_sdk.data import Page, Category, Project
+    from konfuzio_sdk.trainer.file_splitting import SplittingAI
+    from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel
+    from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
+
+    # end imports
+
     [List, Page, Category, AbstractFileSplittingModel]  # for referencing in the imports and passing the linting
 
+    # start file splitting
     # initialize a Project and fetch a test Document of your choice
     project = Project(id_=YOUR_PROJECT_ID)
     test_document = project.get_document_by_id(YOUR_DOCUMENT_ID)
@@ -26,11 +41,6 @@ def test_file_splitting():
     file_splitting_model = ContextAwareFileSplittingModel(
         categories=project.categories, tokenizer=ConnectedTextTokenizer()
     )
-    # to run a Multimodal File Splitting Model instead, replace the line above with the following lines. note that
-    # training a Multimodal File Splitting Model can take longer that Context Aware File Splitting Model.
-    #
-    # from konfuzio_sdk.trainer.file_splitting import MultimodalFileSplittingModel
-    # file_splitting_model = MultimodalFileSplittingModel(categories=project.categories)
 
     # for an example run, you can take only a slice of training documents to make fitting faster
     file_splitting_model.documents = file_splitting_model.documents[:10]
@@ -52,7 +62,7 @@ def test_file_splitting():
 
     # usage with the Splitting AI – you can load a pre-saved model or pass an initialized instance as the input
     # in this example, we load a previously saved one
-    model = load_model(save_path)
+    model = ContextAwareFileSplittingModel.load_model(save_path)
 
     # initialize the Splitting AI
     splitting_ai = SplittingAI(model)
@@ -76,3 +86,5 @@ def test_file_splitting():
             )
         else:
             print('Page {} is predicted as the non-first.'.format(page.number))
+    # end file splitting
+    os.remove(save_path)

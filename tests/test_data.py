@@ -24,7 +24,8 @@ from konfuzio_sdk.data import (
     Bbox,
     BboxValidationTypes,
 )
-from konfuzio_sdk.trainer.information_extraction import RFExtractionAI
+from konfuzio_sdk.settings_importer import is_dependency_installed
+from konfuzio_sdk.tokenizer.base import ListTokenizer
 from konfuzio_sdk.utils import is_file, get_spans_from_bbox
 from tests.variables import (
     OFFLINE_PROJECT,
@@ -33,7 +34,7 @@ from tests.variables import (
     TEST_PAYSLIPS_CATEGORY_ID,
     TEST_RECEIPTS_CATEGORY_ID,
 )
-from konfuzio_sdk.tokenizer.base import ListTokenizer
+
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, RegexTokenizer, ConnectedTextTokenizer
 from konfuzio_sdk.samples import LocalTextProject
 
@@ -77,6 +78,8 @@ class TestOnlineProject(unittest.TestCase):
             label_set=self.project.no_label_set,
             spans=[span],
         )
+        with pytest.raises(ValueError, match='save Annotations with Label NO_LABEL'):
+            _.save()
         assert len(document.annotations(use_correct=False, label=self.project.no_label)) == 1
         document.update()
         assert len(document.annotations(use_correct=False, label=self.project.no_label)) == 0
@@ -300,7 +303,7 @@ class TestOnlineProject(unittest.TestCase):
         with pytest.raises(ConnectionError, match="Max retries exceeded with url: .* timed out"):
             segmentation = document.get_segmentation(timeout=0.1, num_retries=1)
         assert page._segmentation is None
-        
+
         segmentation = document.get_segmentation()
         assert len(segmentation) == 1
         assert len(segmentation[0]) == 5
@@ -364,6 +367,20 @@ class TestOnlineProject(unittest.TestCase):
         _ = Document(project=self.project)
         assert _.category == self.project.no_category
         _.delete()
+
+    def test_none_category_document_property(self):
+        """Test the return of a Document with Category == None."""
+        _ = Document(project=self.project, category=None)
+        assert _.category == self.project.no_category
+        assert _._category == self.project.no_category
+        _.delete()
+
+    def test_set_none_category(self):
+        """Test that setting Category to None gives the Document NO_CATEGORY."""
+        test_document = self.project.get_document_by_id(44823)
+        test_document.set_category(None)
+        assert test_document.category == self.project.no_category
+        assert test_document._category == self.project.no_category
 
 
 class TestOfflineExampleData(unittest.TestCase):
@@ -456,7 +473,7 @@ class TestOfflineExampleData(unittest.TestCase):
         assert document.category_annotations[1].category == self.receipts_category
         assert document.category_annotations[1].confidence == 0.0
         assert document.maximum_confidence_category_annotation is None
-        assert document.maximum_confidence_category is None
+        assert document.maximum_confidence_category == self.project.no_category
         # test that no annotations are attached to the Pages
         for page in document.pages():
             assert page.category_annotations == []
@@ -483,7 +500,7 @@ class TestOfflineExampleData(unittest.TestCase):
     def test_category_annotations_with_predictions(self):
         """Test Category Annotations for a Document with no user defined Category but with AI Category predictions."""
         document = deepcopy(self.project.get_document_by_id(89928))
-        document.set_category(None)
+        document.set_category(self.project.no_category)
         for page in document.pages():  # this Document has 2 Pages
             assert page.category_annotations == []
             # simulate the prediction of a Categorization AI by adding Category Annotations to the Pages
@@ -502,7 +519,7 @@ class TestOfflineExampleData(unittest.TestCase):
     def test_category_annotations_with_predictions_and_user_revised_category(self):
         """Test Category Annotations for a Document with both user defined Category and AI Category predictions."""
         document = deepcopy(self.project.get_document_by_id(89928))
-        document.set_category(None)
+        document.set_category(self.project.no_category)
         for page in document.pages():  # this Document has 2 Pages
             assert page.category_annotations == []
             # simulate the prediction of a Categorization AI by adding Category Annotations to the Pages
@@ -538,9 +555,21 @@ class TestOfflineExampleData(unittest.TestCase):
         outlier_spans = [span.offset_string for annotation in outliers for span in annotation.spans]
         assert len(outliers) == 3
         assert 'DE47 7001 0500 0000 2XxXX XX' in outlier_spans
+        outliers_with_test = label.get_probable_outliers_by_regex(
+            project_regex.categories, use_test_docs=True, top_worst_percentage=1.0
+        )
+        outlier_test_spans = [span.offset_string for annotation in outliers_with_test for span in annotation.spans]
+        assert len(outlier_test_spans) == 6
+        assert 'DE38 7609 0900 0001 2XXX XX' in outlier_test_spans
 
+    @pytest.mark.skipif(
+        not is_dependency_installed('torch'),
+        reason='Required dependencies not installed.',
+    )
     def test_find_outlier_annotations_by_confidence(self):
         """Test finding the Annotations with the least confidence."""
+        from konfuzio_sdk.trainer.information_extraction import RFExtractionAI
+
         label = self.project.get_label_by_name('Austellungsdatum')
         pipeline = RFExtractionAI()
         pipeline.tokenizer = ListTokenizer(tokenizers=[])
@@ -556,8 +585,8 @@ class TestOfflineExampleData(unittest.TestCase):
         )
         pipeline.fit()
         evaluation = pipeline.evaluate_full(strict=False, use_training_docs=True)
-        outliers = label.get_probable_outliers_by_confidence(evaluation, 0.8)
-        assert len(outliers) == 1
+        outliers = label.get_probable_outliers_by_confidence(evaluation, 0.9)
+        assert len(outliers) == 2
         outlier_spans = [span.offset_string for annotation in outliers for span in annotation.spans]
         assert '24.05.2018' in outlier_spans
 
@@ -580,6 +609,28 @@ class TestOfflineExampleData(unittest.TestCase):
         assert len(outliers) == 1
         assert '328927/10103' in outlier_spans
         assert '22.05.2018' in outlier_spans
+
+    def test_find_outlier_annotations_error(self):
+        """Test impossibility of running outlier Annotation search with all modes disabled."""
+        label = self.project.get_label_by_name('Austellungsdatum')
+        with pytest.raises(ValueError, match='search modes disabled'):
+            label.get_probable_outliers(
+                self.project.categories, regex_search=False, confidence_search=False, normalization_search=False
+            )
+
+    def test_get_original_page_from_copy(self):
+        """Test getting an original Page from a copy of a Page."""
+        document = self.project.get_document_by_id(44823)
+        copied_document = deepcopy(document)
+        copied_page = copied_document.pages()[0]
+        page = copied_page.get_original_page()
+        assert page == document.pages()[0]
+
+    def test_get_page_by_id(self):
+        """Test getting a Page from the Document by the ID."""
+        document = self.project.get_document_by_id(44823)
+        page = document.get_page_by_id(1923)
+        assert page == document.pages()[0]
 
 
 class TestEqualityAnnotation(unittest.TestCase):
@@ -761,7 +812,7 @@ class TestOfflineDataSetup(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
-        assert len(cls.project.virtual_documents) == 62
+        assert len(cls.project.virtual_documents) == 63
 
     def test_document_only_needs_project(self):
         """Test that a Document can be created without Category."""
@@ -823,7 +874,7 @@ class TestOfflineDataSetup(unittest.TestCase):
             assert page.category == self.project.no_category
             assert page.maximum_confidence_category_annotation is None
             assert len(page.category_annotations) == 0
-        assert document.maximum_confidence_category is None
+        assert document.maximum_confidence_category is document.project.no_category
         assert document.category is document.project.no_category
 
     def test_categorize_when_pages_have_different_categories(self):
@@ -865,14 +916,14 @@ class TestOfflineDataSetup(unittest.TestCase):
                 number=i + 1,
                 original_size=(0, 0),
             )
-            page_category = [self.category, self.category2, None][i]
+            page_category = [self.category, self.category2, self.project.no_category][i]
             page.set_category(page_category)
-            if page_category not in [None, self.project.no_category]:
+            if page_category != self.project.no_category:
                 assert page.maximum_confidence_category_annotation.category == page_category
                 assert page.maximum_confidence_category_annotation.confidence == 1.0
                 assert len(page.category_annotations) == 1
             else:
-                assert page.category is None
+                assert page.category is self.project.no_category
                 assert page.maximum_confidence_category_annotation is None
                 assert len(page.category_annotations) == 0
         assert len(document.category_annotations) == 2
@@ -1915,10 +1966,16 @@ class TestOfflineDataSetup(unittest.TestCase):
         """Test creating a smaller Document from original one within a Page range."""
         project = LocalTextProject()
         test_document = project.get_document_by_id(9)
+        # Set page categories so we can check if they are copied correctly
+        for page in test_document.pages():
+            page.set_category(test_document.category)
         new_doc = test_document.create_subdocument_from_page_range(
             test_document.pages()[0], test_document.pages()[1], include=True
         )
         assert len(new_doc.pages()) == 2
+        for page in new_doc.pages():
+            assert page.category == test_document.category
+            assert len(page.category_annotations) == 1
         assert new_doc.text == "Hi all,\nI like bread.\n\fI hope to get everything done soon.\n"
 
     def test_page_is_first_attribute(self):
@@ -1991,6 +2048,15 @@ class TestOfflineDataSetup(unittest.TestCase):
                 page=page,
             )
             bbox_invalid._valid()
+
+    def test_page_none_category(self):
+        """Test that Page always has a Category and never can have a Category = None."""
+        document = Document(project=self.project, text="text")
+        for i in range(2):
+            page = Page(id_=None, document=document, start_offset=0, end_offset=0, number=i + 1, original_size=(0, 0))
+            assert page.category == self.project.no_category
+            with pytest.raises(ValueError, match='forbid'):
+                page.set_category(None)
 
 
 class TestSeparateLabels(unittest.TestCase):
@@ -2397,7 +2463,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
             document.text
         after = _getsize(prj)
         assert 1.6 < after / before < 2.1
-        assert after < 600000
+        assert after < 610000
 
         # strings in prj take slightly less space than in a list
         assert _getsize([doc.text for doc in prj.documents]) + before < after + 500

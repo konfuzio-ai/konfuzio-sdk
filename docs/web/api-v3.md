@@ -55,7 +55,7 @@ KeyCloak integration can be found on our
 #### Token authentication
 
 You send a `POST` request with your Konfuzio username (email) and password to our [authentication endpoint](https://app.konfuzio.com/v3/swagger/#/auth), which
-returns a token string that you can use in lieu of your actual credentials for subsequent requests, providing it with a
+returns a token string that you can use in lieu of your actual credentials for subsequent requests, providing it with an
 HTTP header in the format `Authorization: Token <token>`.
 
 This token doesn't currently expire, so you can use indefinitely, but you can delete it (and regenerated) via
@@ -111,7 +111,7 @@ To use the token:
 
 #### Accessing and using the token via the Konfuzio SDK
 
-To get an acces token, simply run `konfuzio_sdk init` in the terminal and enter your login credentials. The token will
+To get an access token, simply run `konfuzio_sdk init` in the terminal and enter your login credentials. The token will
 be stored in the `.env` file in your working directory. Then you are good to go and can use the SDK to access the API.
 
 For more information on this and other information on what you can do with the SDK, see the [SDK Get Started](https://dev.konfuzio.com/sdk/get_started.html#initialize-the-package) page.
@@ -222,28 +222,28 @@ Refer to the `Swagger documentation <http:/app.konfuzio.com/v3/swagger/>`\_ for 
 supports using the `fields` parameter. When supported, any field in the response schema can be used in the `fields`
 parameter.
 
-### Coordinates and bounding boxes
+### Coordinates and Bounding Boxes
 
-There are three concepts related to coordinates and bounding boxes that are used throughout the API v3:
+There are three concepts related to coordinates and Bounding Boxes that are used throughout the API v3:
 
-- **Bounding boxes** (or **bboxes**). A bbox is a rectangle representing a subset of a document page. It has the
+- **Bounding Boxes** (or **Bboxes**). A Bbox is a rectangle representing a subset of a Document Page. It has the
   following properties:
-  - `x0`, `xy`, `y0`, `y1`: the four points representing the coordinates of the rectangle on the page.
-  - `page_index`: the page of the document the bbox refers too.
-- **Spans**. A span, like the bbox, is a rectangle representing a subset of a document page; unlike the bbox, it also
-  represents the _text data_ contained inside the rectangle. So it has the same properties as the bbox, but it adds
+  - `x0`, `xy`, `y0`, `y1`: the four points representing the coordinates of the rectangle on the Page.
+  - `page_index`: the Page of the Document the Bbox refers too.
+- **Spans**. A Span, like the Bbox, is a rectangle representing a subset of a Document Page; unlike the Bbox, it also
+  represents the _text data_ contained inside the rectangle. So it has the same properties as the Bbox, but it adds
   more:
-  - `offset_string` (optional when user-provided): the text contained inside this span. This can be manually set by the
+  - `offset_string` (optional when user-provided): the text contained inside this Span. This can be manually set by the
     user if the text existing at the specified coordinates is wrong.
   - `offset_string_original` (read-only): the text that was originally present at the specified coordinates. This is
     usually the same as `offset_string` unless it has been changed manually.
-  - `start_offset`, `end_offset` (read-only): the start and end character of the text contained inside this span, in
-    relation to the document's text.
-- **Character bounding boxes** (or **char bboxes**). A char bbox is a rectangle representing a single character on the
-  page of a document. This is always returned by the Konfuzio server and cannot be set manually. It has the same
-  properties as the bbox, but it adds more:
-  - `text` (read-only): the single character contained by this bbox.
-  - `line_index` (read-only): the line the character is in, related to all the lines in the document.
+  - `start_offset`, `end_offset` (read-only): the start and end character of the text contained inside this Span, in
+    relation to the Document's text.
+- **Character Bounding boxes** (or **char Bboxes**). A char Bbox is a rectangle representing a single character on the
+  Page of a Document. This is always returned by the Konfuzio server and cannot be set manually. It has the same
+  properties as the Dbox, but it adds more:
+  - `text` (read-only): the single character contained by this Bbox.
+  - `line_index` (read-only): the line the character is in, related to all the lines in the Document.
 
 If the endpoint you're working with uses a `span` or `bbox` field, refer to its Swagger schema and to the summary above
 to understand which fields it needs.
@@ -260,10 +260,10 @@ like [cURL Converter](https://curlconverter.com).
 The guides assume you already have a [token](#token-authentication) that you will use in the headers of
 every API call. If you're copy-pasting the snippets, remember to replace `YOUR_TOKEN` with the actual token value.
 
-### Setup a project with labels, label sets and categories
+### Set up a Project with Labels, Label Sets and Categories
 
 This guide will walk you through the API-based initial setup of a Project with all the initial data you need to start
-uploading documents and training the AI.
+uploading Documents and training the AI.
 
 #### Create a Project
 
@@ -283,11 +283,11 @@ curl --request POST \
 This call will return a JSON object that, among other properties, will show the `id` of the created Project. Take note
 of it, as you will need it in the next steps.
 
-#### Create a category
+#### Create a Category
 
 A [Category](https://help.konfuzio.com/modules/categories/index.html) is used to group Documents by type and can be
 associated to an [extraction AI](https://help.konfuzio.com/modules/extractions/index.html). For example, you might want
-to create a category called "Invoice". To do so, you will make a call to
+to create a Category called "Invoice". To do so, you will make a call to
 our [category creation endpoint](https://app.konfuzio.com/v3/swagger/#/categories/categories_create):
 
 ```
@@ -332,14 +332,14 @@ one, so in this case it's going to be a list with a single integer). Remember to
 with the actual values you got from the previous steps. You can check the endpoint documentation for more available
 options.
 
-These calls will return a JSON object that, among other properties, will show the `id` of the created labels. Take note
-of it, as you will need it in the next steps. You can retrieve a list of your created labels by sending a `GET` request
+These calls will return a JSON object that, among other properties, will show the `id` of the created Labels. Take note
+of it, as you will need it in the next steps. You can retrieve a list of your created Labels by sending a `GET` request
 to the same endpoint.
 
 #### Create a Label Set
 
 A [Label Set](https://help.konfuzio.com/modules/sets/index.html) is used to group Labels that make sense together.
-Sometimes these Labels might occur multiple times in a document — in our "invoice" example, there's going to be one set
+Sometimes these Labels might occur multiple times in a Document — in our "invoice" example, there's going to be one set
 of "amount" and "product" for each line item we have in the invoice. We can call it "line item" and we can create it
 with an API request to
 our [label set creation endpoint](https://app.konfuzio.com/v3/swagger/#/label-sets/label_sets_create):
@@ -365,58 +365,200 @@ Your basic setup is done! You're now ready to upload Documents and train the AI.
 
 ### Upload a Document
 
-After your initial project setup, you can start uploading Documents. To upload a Document, you will make a call to
+After your initial Project setup, you can start uploading Documents. To upload a Document, you will make a call to
 our [Document creation endpoint](https://app.konfuzio.com/v3/swagger/#/documents/documents_create).
 
 .. note::
   Unlike most other endpoints, the Document creation endpoint only supports `multipart/form-data` requests (to support
   file uploading), so you won't have to JSON-encode your request this time.
-  
-  
+
+#### Uploading a Document to Konfuzio
+
+This tutorial will guide you on how to upload a Document to the Konfuzio platform.
+
+Before starting, note that there are three possible ways to create a project on Konfuzio:
+
+1.  Via the API (as shown in this tutorial)
+2.  Using the web interface (for more information, watch the video tutorial at [help.konfuzio.com/quickstart/](https://chat.openai.com/c/help.konfuzio.com/quickstart/))
+3.  By accepting an invitation to a ready Project (in this case, no setup is necessary on your part)
+
+[After setting up your Project](https://dev.konfuzio.com/web/api-v3.html#create-a-project), you can start uploading 
+Documents. Document uploading is accomplished by making a POST request to our Document creation endpoint. Unlike most 
+endpoints, this one only supports multipart/form-data requests to accommodate file uploading, hence JSON-encoding your 
+request is not necessary this time.
+
+#### Synchronous Document Upload
+
+This tutorial will guide you on how to perform a synchronous Document upload to Konfuzio. In this mode, the server will 
+wait for the Document processing to finish before returning a response with the extracted data.
+
+After setting up your Project, you can upload Documents. This is done by making a POST request to our Document creation
+endpoint. This endpoint only supports multipart/form-data requests to facilitate file uploading, so you don't need to 
+JSON-encode your request.
+
+```bash
+curl --request POST\
+  --url https://app.konfuzio.com/api/v3/documents/\
+  --header 'Content-Type: multipart/form-data'\
+  --header 'Authorization: Token YOUR_TOKEN'\
+  --form project=PROJECT_ID\
+  --form sync=true\
+  --form data_file='@LOCAL_FILE_NAME';type=application/pdf
+````
+
+- Replace `YOUR_TOKEN` with your authorization token.
+- `PROJECT_ID` should be replaced with the ID of your Project.
+- `LOCAL_FILE_NAME` is the path to the file on your disk you wish to upload. Make sure to keep the `@` in front of it.
+- The `sync` parameter is set to `true`, which means the server will wait for the Document processing to finish before 
+returning a response.
+
+Note that this synchronous mode might take a long time for large Documents, so it's recommended to set a high timeout 
+for your request. After the upload, the API will return the extracted data from the Document.
+
+#### Asynchronous Document Upload with Assignee Notification
+
+In this tutorial, we will guide you through the process of asynchronously uploading a Document to Konfuzio. This method 
+is particularly beneficial when dealing with large Documents or Documents with many Pages. We will also discuss how you 
+can use the `assignee` parameter to notify a specific user by email after the Document upload.
+
+Here's an example of an asynchronous Document upload request, which includes the `assignee` parameter:
+
+```bash
+curl --request POST\
+  --url https://app.konfuzio.com/api/v3/documents/\
+  --header 'Content-Type: multipart/form-data'\
+  --header 'Authorization: Token YOUR_TOKEN'\
+  --form project=PROJECT_ID\
+  --form sync=false\
+  --form assignee=example@example.org\
+  --form data_file='@LOCAL_FILE_NAME';type=application/pdf`
+```
+
+In this request:
+
+-   Replace `YOUR_TOKEN` with your authorization token.
+-   `PROJECT_ID` should be replaced with the ID of your Project.
+-   `CATEGORY_ID` is optional. If present, it must be the ID of a Category belonging to your Project. If this is not 
+set, the app will try to automatically detect the Document category based on the available options.
+-   `sync` is set to false for asynchronous processing. With this, the API will immediately return a response after the 
+upload, confirming that the Document was received and is now queuing for extraction.
+-   `callback_url` is optional. If provided, the Document details are sent to the specified URL via a POST request 
+after the processing of the Document has been completed.
+-   `assignee` is optional. If provided, it is the email of the user assigned to work on this Document, which must be a 
+member of the Project you're uploading the Document to.
+-   `LOCAL_FILE_NAME` is the path to the existing file on your disk you wish to upload. Keep the `@` in front of it.
+
+Using the `assignee` parameter allows you to assign a specific user to work on the uploaded Document. The assignee, who 
+must be a member of your Project, will receive an email notification once the Document is uploaded. This feature is 
+beneficial when specific Documents require attention from specific team members, as it automatically informs them about 
+the new task.
+
+After the upload, you can use the Document retrieve endpoint to check if the Document has finished processing, and if 
+so, retrieve the extracted data.
+
+#### Document Upload by Disabling Automatic Categorization
+
+This tutorial guides you on how to disable automatic categorization when uploading a Document to Konfuzio by specifying 
+the category of the Document manually. This can be useful when you want to ensure that a Document is assigned to a 
+specific Category, or when automatic categorization may not accurately categorize a Document due to its content or 
+layout.
+
+Once your Project is set up, you can upload Documents. This is done by making a POST request to our Document creation 
+endpoint. This endpoint only supports multipart/form-data requests to facilitate file uploading, so you don't need to 
+JSON-encode your request.
+
+```mermaid
+sequenceDiagram
+    Customer Software->>Konfuzio Server: Document POST (without category)
+    Konfuzio Server-->>Konfuzio Server: Auto Categorization
+    Konfuzio Server->>Konfuzio Server: Document Processing
+    Konfuzio Server-->>Customer Software: Webhook*
+    Customer Software->>Konfuzio Server: Document POST (with category)
+    Konfuzio Server->>Konfuzio Server: Document Processing (No Categorization)
+    Konfuzio Server-->>Customer Software: Webhook*
+```
+
+In this sequence diagram, the first flow represents the process when a Document is uploaded without a Category. 
+Konfuzio Server performs automatic categorization before processing the Document. A webhook is then sent to the 
+Customer Software after processing.
+
+The second flow represents the process when a Document is uploaded with a Category. Since the Category is already 
+specified, Konfuzio Server skips the categorization step and directly processes the Document. After processing, a 
+webhook is sent to the Customer Software.
+
+Here's an example of how to manually specify the Category of a Document:
+
+```bash
+curl --request POST\
+  --url https://app.konfuzio.com/api/v3/documents/\
+  --header 'Content-Type: multipart/form-data'\
+  --header 'Authorization: Token YOUR_TOKEN'\
+  --form project=PROJECT_ID\
+  --form category=CATEGORY_ID\
+  --form data_file='@LOCAL_FILE_NAME';type=application/pdf 
+```
+
+- Replace `YOUR_TOKEN` with your authorization token.
+- `PROJECT_ID` should be replaced with the ID of your Project.
+- `CATEGORY_ID` is the ID of a Category that belongs to your Project. By specifying this, you are bypassing Konfuzio's 
+automatic categorization process.
+- `LOCAL_FILE_NAME` is the path to the file on your disk you wish to upload. Make sure to keep the `@` in front of it.
+
+By manually specifying the Category of a Document, you ensure that the Document is categorized as you intend, without 
+relying on automatic categorization. This can be helpful in situations where the content or layout of a Document might 
+confuse the automatic categorization process. After the upload, the API will return the uploaded Document's ID and its 
+current status.
+
+#### Asynchronous Document Processing with Webhook
+
+This tutorial will guide you on how to use webhooks for asynchronous Document processing in Konfuzio.
+
+Once your {p}roject is set up, you can upload Documents. This is done by making a POST request to our Document creation 
+endpoint. This endpoint only supports multipart/form-data requests to accommodate file uploading, so you won't have to 
+JSON-encode your request.
+
+Webhooks allow you to receive a POST request from Konfuzio once the processing of your Document is complete. This 
+method is especially beneficial when dealing with large Documents or Documents with many Pages as it allows your 
+application to continue working on other tasks while the Document processing takes place. Here's an overview of the 
+process:
+
 ```mermaid
 sequenceDiagram
     Customer Software->>Konfuzio Server: Document POST
     Konfuzio Server-->>Customer Software: Webhook*
 ```
 
-A Webhook is sent after processing, if the URL via `callback_url` is given when uploading the Document.
-If you want to configure additional webhooks, please feel free to [contact us](https://konfuzio.com/kontakt/). 
-The Webhook is sent from one of the following IP addresses: 167.235.194.147, 168.119.108.13, 5.75.234.115, 138.201.119.223, 5.75.212.167. 
+In the sequence above, your software (Customer Software) sends a Document POST request to Konfuzio Server to upload a 
+Document. Once the processing of the Document is complete, Konfuzio Server sends a webhook (a POST request) back to 
+your software.
 
-```
-curl --request POST \
-  --url https://app.konfuzio.com/api/v3/documents/ \
-  --header 'Content-Type: multipart/form-data' \
-  --header 'Authorization: Token YOUR_TOKEN' \
-  --form project=PROJECT_ID \
-  --form category=CATEGORY_ID \
-  --form sync=true \
-  --form callback_url=https://callback.example.org \
-  --form assignee=example@example.org \
-  --form data_file='@LOCAL_FILE_NAME';type=application/pdf
+Here is how you can include a callback URL in your Document upload request to use webhooks:
+
+```bash
+curl --request POST\
+  --url https://app.konfuzio.com/api/v3/documents/\
+  --header 'Content-Type: multipart/form-data'\
+  --header 'Authorization: Token YOUR_TOKEN'\
+  --form project=PROJECT_ID\
+  --form callback_url=https://callback.example.org\
+  --form data_file='@LOCAL_FILE_NAME';type=application/pdf`
 ```
 
 In this request:
 
-- `PROJECT_ID` should be replaced with the ID of your project.
-- The `category` is optional. If present, `CATEGORY_ID` must be the ID of a Category belonging to your project. If this
-  is not set, the app will try to automatically detect the Document category basaed on the available options.
-- The `sync` parameter is optional. If set to `false` (the default), the API will immediately return a response after
-  the upload, confirming that the Document was received and is now queuing for extraction. If set to `true`, the server
-  will wait for the Document processing to be done before returning a response with the extracted data. This might take
-  a long time with big documents, so it is recommended to use `sync=false` or set a high timeout for your request.
-- The `callback_url` parameter is optional. If provided, the document details are sent to the specified URL via a POST
-  request after the processing of the Document has been completed. Future Document changes via web interface or
-  [API](https://app.konfuzio.com/v3/swagger/#/documents/documents_update) might also cause the callback URL to be
-  called again if the changes trigger a re-extraction (for example when changing the Category of the Document).
-- The `assignee` parameter is optional. If provided, it is the email of the user assigned to work on this Document,
-  which must be a member of the Project you're uploading the Document to.
-- Finally, `data_file` is the Document you're going to upload. Replace `LOCAL_FILE_NAME` with the path to the existing
-  file on your disk, and if you're using the example code remember to keep the `@` in front of it.
+-   Replace `YOUR_TOKEN` with your authorization token.
+-   `PROJECT_ID` should be replaced with the ID of your Project.
+-   `callback_url` is the URL where the webhook should be sent once the Document is processed.
+-   `LOCAL_FILE_NAME` is the path to the file on your disk you wish to upload. Keep the `@` in front of it.
 
-The API will return the uploaded Document's ID and its current status. You can then use
-the [Document retrieve endpoint](https://app.konfuzio.com/v3/swagger/#/documents/documents_retrieve) to check if the
-Document has finished processing, and if so, retrieve the extracted data.
+The `callback_url` parameter is optional. If provided, Konfuzio will send the Document details to the specified URL 
+via a POST request after the Document has been processed. This means your application can continue working on other 
+tasks and only needs to handle the Document data once it's ready.
+
+This asynchronous approach is advantageous when dealing with Documents that contain many Pages or require a long 
+processing time, as it doesn't block your application while waiting for the response. Instead, your application is 
+notified via the webhook once the data is ready.
+
 
 ### Create an Annotation
 
@@ -458,21 +600,21 @@ In this request:
   create a new Annotation Set associated with that Label Set. You can only do this if the Label Set
   has `has_multiple_sections` set to `true`. (See the note below for some examples.)
 - `label` should use the correct `LABEL_ID` for your Annotation.
-- `span` is a [list of spans](#coordinates-and-bounding-boxes).
+- `span` is a [list of Spans](#coordinates-and-bounding-boxes).
 - Other fields are optional.
 
 As the `span` identifies a *position* on the page, there are multiple ways to identify the correct one for the
 Annotation you want to create:
 
-1. The [document bbox endpoint](https://app.konfuzio.com/v3/swagger/#/documents/documents_bbox_retrieve) returns an
+1. The [Document Bbox endpoint](https://app.konfuzio.com/v3/swagger/#/documents/documents_bbox_retrieve) returns an
    object with all the *characters* from the Document with their coordinates. The characters can be identified by their
    offset (the keys in the object) and they can be easily converted in a list for the `span` attribute. You can also
    send a POST call to this endpoint with some coordinates to return a subset of the Document's characters that is
    completely contained into the sent coordinates.
-2. The [document page endpoint](https://app.konfuzio.com/v3/swagger/#/documents/documents_pages_retrieve) has an
+2. The [Document Page endpoint](https://app.konfuzio.com/v3/swagger/#/documents/documents_pages_retrieve) has an
    `entities` attribute that contains all the *words* from the Document with their coordinates. These can be easily 
    converted in a list for the `span` attribute.
-3. The [document search endpoint](https://app.konfuzio.com/v3/swagger/#/documents/documents_search_create) takes a
+3. The [Document search endpoint](https://app.konfuzio.com/v3/swagger/#/documents/documents_search_create) takes a
    string as input and returns a list of all its occurrences in the Document. These can be fed directly to the `span`
    attribute.
 
@@ -563,7 +705,7 @@ This procedure will help the next Extraction AI training you create, as it will 
 information it extracted was correct and the points where it was not. Once there are no "Feedback Required" and
 "Unfilled" items, the Document can be marked as "reviewed".
 
-To retrieve the list of Annotations for a document, you can use the Annotation list endpoint:
+To retrieve the list of Annotations for a Document, you can use the Annotation list endpoint:
 
 ```
 curl --request GET \
@@ -641,18 +783,18 @@ curl --request PATCH \
   --data '{"is_reviewed": true}'
 ```
 
-### Post-process a document: split, rotate and sort pages
+### Post-process a Document: split, rotate and sort Pages
 
 We offer a [postprocess endpoint](https://app.konfuzio.com/v3/swagger/#/documents/documents_postprocess_create)
 that allows you to change uploaded Documents in three ways, which can be combined into a single API request:
 
-- _Split_: divide a Document into two or more Documents, with the same total number of pages. Note: you cannot join
-  documents that have been split, you will have to upload a new Document.
-- _Rotate_: change the orientation of one or more pages in a Document, in multiple of 90 degrees.
-- _Sort_: change the order of the pages in a document.
+- _Split_: divide a Document into two or more Documents, with the same total number of Pages. Note: you cannot join
+  Documents that have been split, you will have to upload a new Document.
+- _Rotate_: change the orientation of one or more Pages in a Document, in multiple of 90 degrees.
+- _Sort_: change the order of the Pages in a Document.
 
 The endpoint accepts a list of objects, each one representing a single output Document. (If you're not using the
-splitting functionality, this list should only contain one document). The `pages` property you send determines the
+splitting functionality, this list should only contain one Document). The `pages` property you send determines the
 content of the Document.
 
 ### Document splitting suggestions
@@ -704,7 +846,7 @@ curl --request GET \
 
 This will save the file in the current directory.
 
-### Create your own document dashboard
+### Create your own Document dashboard
 
 In cases where our [public documents and iframes](https://help.konfuzio.com/integrations/public-documents/) are not
 enough, you can build your own solution. Here we explain how you can easily build a read-only dashboard for your
@@ -723,12 +865,12 @@ If you're using React, Angular or other technologies, you can use API v3 to buil
 For feature parity with our read-only document dashboard, you only need to use two endpoints, and if you're only
 handling public documents, you don't need authentication for these two endpoints.
 
-- The [document detail](https://app.konfuzio.com/v3/swagger/#/documents/documents_retrieve) endpoint provides general
-  information about the document you're querying, as well as its extracted data. Most of the data you will need is
+- The [Document detail](https://app.konfuzio.com/v3/swagger/#/documents/documents_retrieve) endpoint provides general
+  information about the Document you're querying, as well as its extracted data. Most of the data you will need is
   inside the `annotation_sets` object of the response.
-- The [document page detail](https://app.konfuzio.com/v3/swagger/#/documents/documents_pages_retrieve) endpoint
-  provides information about a document's page, including its `entites` (a list of words inside the page, with their
-  coordinates) and its `page_image` (a URL you can use to load the image version of the page).
+- The [Document Page detail](https://app.konfuzio.com/v3/swagger/#/documents/documents_pages_retrieve) endpoint
+  provides information about a Document's Page, including its `entites` (a list of words inside the Page, with their
+  coordinates) and its `page_image` (a URL you can use to load the image version of the Page).
 
 For more advanced use cases, you can refer to our [Swagger documentation](http:/app.konfuzio.com/v3/swagger/) and/or
 contact support for guidance.

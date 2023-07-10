@@ -13,6 +13,13 @@ are using PyCharm have a look at [Quickstart with Pycharm](quickstart_pycharm.ht
 
   `pip install konfuzio_sdk`
 
+* It is also possible to choose between the lightweight SDK and the SDK with the AI-related components (latter one is 
+taking up more disk space). By default, the SDK is installed as a lightweight instance. To install the full instance,
+run the following command:
+
+  `pip install konfuzio_sdk[ai]`
+  
+
 *Notes*:
 
 * Supported Python environments are 3.8, 3.9, 3.10, 3.11.

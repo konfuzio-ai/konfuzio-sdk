@@ -14,17 +14,11 @@ replacing the end-to-end pipeline into two parts.
 Sun, H., Kuang, Z., Yue, X., Lin, C., & Zhang, W. (2021). Spatial Dual-Modality Graph Reasoning for Key Information
 Extraction. arXiv. https://doi.org/10.48550/ARXIV.2103.14470
 """
-import abc
-import bz2
 import collections
 import difflib
 import functools
-import itertools
 import logging
 import os
-import pathlib
-import shutil
-import sys
 import time
 import unicodedata
 
@@ -32,16 +26,14 @@ from copy import deepcopy
 from heapq import nsmallest
 from inspect import signature
 from typing import Tuple, Optional, List, Union, Dict
-from warnings import warn
 
 import numpy
 import pandas
-import cloudpickle
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.utils.validation import check_is_fitted
 
-from konfuzio_sdk.data import Data, Document, Annotation, Category, AnnotationSet, Label, LabelSet, Span
-
+from konfuzio_sdk.data import Document, Annotation, Category, AnnotationSet, Label, LabelSet, Span
+from konfuzio_sdk.trainer.base import BaseModel
 from konfuzio_sdk.tokenizer.paragraph_and_sentence import ParagraphTokenizer, SentenceTokenizer
 
 from konfuzio_sdk.normalize import (
@@ -54,8 +46,6 @@ from konfuzio_sdk.regex import regex_matches
 from konfuzio_sdk.utils import (
     get_timestamp,
     get_bbox,
-    normalize_memory,
-    get_sdk_version,
     memory_size_of,
     sdk_isinstance,
 )
@@ -68,89 +58,6 @@ logger = logging.getLogger(__name__)
 
 """Multiclass classifier for document extraction."""
 CANDIDATES_CACHE_SIZE = 100
-
-warn('This module is WIP: https://gitlab.com/konfuzio/objectives/-/issues/9311', FutureWarning, stacklevel=2)
-
-
-def load_model(pickle_path: str, max_ram: Union[None, str] = None):
-    """
-    Load a pkl file.
-
-    :param pickle_path: Path to the pickled model.
-    :type pickle_path: str
-    :raises FileNotFoundError: If the path is invalid.
-    :raises OSError: When the data is corrupted or invalid and cannot be loaded.
-    :raises TypeError: When the loaded pickle isn't recognized as a Konfuzio AI model.
-    :return: Extraction AI model.
-    """
-    logger.info(f"Starting loading AI model with path {pickle_path}")
-
-    if not os.path.isfile(pickle_path):
-        raise FileNotFoundError("Invalid pickle file path:", pickle_path)
-
-    # The current local id iterator might otherwise be overriden
-    prev_local_id = next(Data.id_iter)
-
-    try:
-        if pickle_path.endswith(".pt"):
-            from konfuzio_sdk.trainer.document_categorization import load_categorization_model
-
-            model = load_categorization_model(pickle_path)
-        else:
-            with bz2.open(pickle_path, 'rb') as file:
-                model = cloudpickle.load(file)
-    except OSError:
-        raise OSError(f"Pickle file {pickle_path} data is invalid.")
-    except AttributeError as err:
-        if "__forward_module__" in str(err) and '3.9' in sys.version:
-            raise AttributeError("Pickle saved with incompatible Python version.") from err
-        elif "__forward_is_class__" in str(err) and '3.8' in sys.version:
-            raise AttributeError("Pickle saved with incompatible Python version.") from err
-        raise
-    except ValueError as err:
-        if "unsupported pickle protocol: 5" in str(err) and '3.7' in sys.version:
-            raise ValueError("Pickle saved with incompatible Python version.") from err
-        raise
-
-    if hasattr(model, 'python_version'):
-        logger.info(f"Loaded AI model trained with Python {model.python_version}")
-    if hasattr(model, 'konfuzio_sdk_version'):
-        logger.info(f"Loaded AI model trained with Konfuzio SDK version {model.konfuzio_sdk_version}")
-
-    max_ram = normalize_memory(max_ram)
-    if max_ram and memory_size_of(model) > max_ram:
-        logger.error(f"Loaded model's memory use ({memory_size_of(model)}) is greater than max_ram ({max_ram})")
-
-    # to avoid circular import issue
-    from konfuzio_sdk.trainer.document_categorization import AbstractCategorizationAI
-    from konfuzio_sdk.trainer.file_splitting import AbstractFileSplittingModel
-
-    if not (
-        AbstractExtractionAI.has_compatible_interface(model)
-        or AbstractFileSplittingModel.has_compatible_interface(model)
-        or AbstractCategorizationAI.has_compatible_interface(model)
-    ):
-        raise TypeError(
-            "Loaded model's interface is not compatible with any AIs. Please provide a model that has all the "
-            "abstract methods implemented."
-        )
-
-    if not hasattr(model, "name"):
-        raise TypeError("Saved model file needs to be a Konfuzio AbstractExtractionAI instance.")
-    elif model.name in {
-        "DocumentAnnotationMultiClassModel",
-        "DocumentEntityMulticlassModel",
-        "SeparateLabelsAnnotationMultiClassModel",
-        "SeparateLabelsEntityMultiClassModel",
-    }:
-        logger.warning(f"Loading legacy {model.name} AI model.")
-    else:
-        logger.info(f"Loading {model.name} AI model.")
-
-    curr_local_id = next(Data.id_iter)
-    Data.id_iter = itertools.count(max(prev_local_id, curr_local_id))
-
-    return model
 
 
 # # existent model classes
@@ -844,6 +751,7 @@ def process_document_data(
         string_features_first_word = list(df_string_features_first.columns.values)  # NOQA
         df = df.join(df_string_features_first, lsuffix='_caller', rsuffix='_other')
         first_word_features = ['first_word_x0', 'first_word_y0', 'first_word_x1', 'first_word_y1']
+        first_word_features += string_features_first_word
 
     # creates all the features from the offset string
     df_string_features_real = convert_to_feat(list(df["offset_string"]))
@@ -866,7 +774,13 @@ def process_document_data(
     df["relative_position_in_page"] = df["page_index"] / document_n_pages
 
     abs_pos_feature_list = ["x0", "y0", "x1", "y1", "page_index", "area_quadrant_two", "area"]
-    relative_pos_feature_list = ["relative_position_in_page"]
+    relative_pos_feature_list = [
+        "x0_relative",
+        "x1_relative",
+        "y0_relative",
+        "y1_relative",
+        "relative_position_in_page",
+    ]
 
     feature_list = (
         string_feature_column_order
@@ -894,182 +808,6 @@ def substring_on_page(substring, annotation, page_text_list) -> bool:
         return substring in page_text_list[annotation.page_index]
 
 
-class BaseModel(metaclass=abc.ABCMeta):
-    """Base model to define common methods for all AIs."""
-
-    requires_text = False
-    requires_images = False
-
-    def __init__(self):
-        """Initialize a BaseModel class."""
-        self.output_dir = None
-        self.documents = []
-        self.test_documents = []
-        self.python_version = '.'.join([str(v) for v in sys.version_info[:3]])
-        self.konfuzio_sdk_version = get_sdk_version()
-
-    @property
-    def name(self):
-        """Model class name."""
-        return self.__class__.__name__
-
-    def name_lower(self):
-        """Convert class name to machine-readable name."""
-        return f'{self.name.lower().strip()}'
-
-    @abc.abstractmethod
-    def check_is_ready(self):
-        """Check if the Model is ready for inference."""
-
-    @property
-    @abc.abstractmethod
-    def temp_pkl_file_path(self):
-        """Generate a path for temporary pickle file."""
-
-    @property
-    @abc.abstractmethod
-    def pkl_file_path(self):
-        """Generate a path for a resulting pickle file."""
-
-    @staticmethod
-    @abc.abstractmethod
-    def has_compatible_interface(other):
-        """
-        Validate that an instance of an AI implements the same interface defined by this AI class.
-
-        :param other: An instance of an AI to compare with.
-        """
-
-    def reduce_model_weight(self):
-        """Remove all non-strictly necessary parameters before saving."""
-        self.project.lose_weight()
-        self.tokenizer.lose_weight()
-
-    def ensure_model_memory_usage_within_limit(self, max_ram: Optional[str] = None):
-        """
-        Ensure that a model is not exceeding allowed max_ram.
-
-        :param max_ram: Specify maximum memory usage condition to save model.
-        :type max_ram: str
-        """
-        # if no argument passed, get project max_ram
-        if not max_ram and self.project is not None:
-            max_ram = self.project.max_ram
-
-        max_ram = normalize_memory(max_ram)
-
-        if max_ram and memory_size_of(self) > max_ram:
-            raise MemoryError(f"AI model memory use ({memory_size_of(self)}) exceeds maximum ({max_ram=}).")
-
-    def save(
-        self, output_dir: str = None, include_konfuzio=True, reduce_weight=True, keep_documents=False, max_ram=None
-    ):
-        """
-        Save the label model as bz2 compressed pickle object to the release directory.
-
-        Saving is done by: getting the serialized pickle object (via cloudpickle), "optimizing" the serialized object
-        with the built-in pickletools.optimize function (see: https://docs.python.org/3/library/pickletools.html),
-        saving the optimized serialized object.
-
-        We then compress the pickle file with bz2 using shutil.copyfileobject which writes in chunks to avoid loading
-        the entire pickle file in memory.
-
-        Finally, we delete the cloudpickle file and are left with the bz2 file which has a .pkl extension.
-
-        :param output_dir: Folder to save AI model in. If None, the default Project folder is used.
-        :param include_konfuzio: Enables pickle serialization as a value, not as a reference (for more info, read
-        https://github.com/cloudpipe/cloudpickle#overriding-pickles-serialization-mechanism-for-importable-constructs).
-        :param reduce_weight: Remove all non-strictly necessary parameters before saving.
-        :param max_ram: Specify maximum memory usage condition to save model.
-        :raises MemoryError: When the size of the model in memory is greater than the maximum value.
-        :return: Path of the saved model file.
-        """
-        logger.info('Saving model')
-        self.check_is_ready()
-
-        logger.info(f'{output_dir=}')
-        logger.info(f'{include_konfuzio=}')
-        logger.info(f'{reduce_weight=}')
-        logger.info(f'{keep_documents=}')
-        logger.info(f'{max_ram=}')
-        logger.info(f'{self.konfuzio_sdk_version=}')
-
-        logger.info('Getting save paths')
-        if not output_dir:
-            self.output_dir = self.project.model_folder
-            logger.info(f'new {self.output_dir=}')
-        else:
-            self.output_dir = output_dir
-
-        # make sure output dir exists
-        pathlib.Path(self.output_dir).mkdir(parents=True, exist_ok=True)
-
-        temp_pkl_file_path = self.temp_pkl_file_path
-        pkl_file_path = self.pkl_file_path
-
-        project_docs = self.project._documents  # to restore project documents after save
-        if reduce_weight:
-            self.reduce_model_weight()
-
-        if keep_documents:
-            # keep reference to Documents at Project level in case they were removed in the reduce_model_weight step
-            self.project._documents = self.documents + self.test_documents
-        else:
-            logger.info('Removing documents before save')
-            # to restore Model train and test documents after save
-            restore_documents = self.documents
-            restore_test_documents = self.test_documents
-            self.documents = []
-            self.test_documents = []
-
-        logger.info(f'Model size: {memory_size_of(self) / 1_000_000} MB')
-
-        try:
-            self.ensure_model_memory_usage_within_limit(max_ram)
-        except MemoryError as e:
-            # restore Documents so that the Project can still be used
-            self.project._documents = project_docs
-            if not keep_documents:
-                self.documents = restore_documents
-                self.test_documents = restore_test_documents
-            raise e
-
-        sys.setrecursionlimit(999999)
-
-        if include_konfuzio:
-            import konfuzio_sdk
-
-            cloudpickle.register_pickle_by_value(konfuzio_sdk)
-            # todo register all dependencies?
-
-        logger.info('Saving model with cloudpickle')
-        # first save with cloudpickle
-        with open(temp_pkl_file_path, 'wb') as f:  # see: https://stackoverflow.com/a/9519016/5344492
-            cloudpickle.dump(self, f)
-
-        logger.info('Compressing model with bz2')
-
-        # then save to bz2 in chunks
-        with open(temp_pkl_file_path, 'rb') as input_f:
-            with bz2.open(pkl_file_path, 'wb') as output_f:
-                shutil.copyfileobj(input_f, output_f)
-
-        logger.info('Deleting cloudpickle file')
-        # then delete cloudpickle file
-        os.remove(temp_pkl_file_path)
-
-        size_string = f'{os.path.getsize(pkl_file_path) / 1_000_000} MB'
-        logger.info(f'Model ({size_string}) {self.name_lower()} was saved to {pkl_file_path}')
-
-        # restore Documents of the Category and Model so that we can continue using them as before
-        if not keep_documents:
-            self.documents = restore_documents
-            self.test_documents = restore_test_documents
-        self.project._documents = project_docs
-
-        return pkl_file_path
-
-
 class AbstractExtractionAI(BaseModel):
     """Parent class for all Extraction AIs, to extract information from unstructured human-readable text."""
 
@@ -1088,6 +826,25 @@ class AbstractExtractionAI(BaseModel):
         self.df_train = None
 
         self.evaluation = None
+
+    @property
+    def project(self):
+        """Get RFExtractionAI Project."""
+        if not self.category:
+            raise AttributeError(f'{self} has no Category.')
+        return self.category.project
+
+    def check_is_ready(self):
+        """
+        Check if the ExtractionAI is ready for the inference.
+
+        It is assumed that the model is ready if a Category is set, and is ready for extraction.
+
+        :raises AttributeError: When no Category is specified.
+        """
+        logger.info(f"Checking if {self} is ready for extraction.")
+        if not self.category:
+            raise AttributeError(f'{self} requires a Category.')
 
     def fit(self):
         """Use as placeholder Function."""
@@ -1371,6 +1128,26 @@ class AbstractExtractionAI(BaseModel):
             self.output_dir, f'{get_timestamp()}_{self.category.name.lower()}_' f'{self.name_lower()}_.pkl'
         )
         return pkl_file_path
+
+    @staticmethod
+    def load_model(pickle_path: str, max_ram: Union[None, str] = None):
+        """
+        Load the model and check if it has the interface compatible with the class.
+
+        :param pickle_path: Path to the pickled model.
+        :type pickle_path: str
+        :raises FileNotFoundError: If the path is invalid.
+        :raises OSError: When the data is corrupted or invalid and cannot be loaded.
+        :raises TypeError: When the loaded pickle isn't recognized as a Konfuzio AI model.
+        :return: Extraction AI model.
+        """
+        model = super(AbstractExtractionAI, AbstractExtractionAI).load_model(pickle_path, max_ram)
+        if not AbstractExtractionAI.has_compatible_interface(model):
+            raise TypeError(
+                "Loaded model's interface is not compatible with any AIs. Please provide a model that has all the "
+                "abstract methods implemented."
+            )
+        return model
 
 
 class GroupAnnotationSets:
@@ -1852,12 +1629,9 @@ class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
         :raises AttributeError: When no Category is specified.
         :raises AttributeError: When no Label Classifier has been provided.
         """
-        logger.info(f"Checking if {self} is ready for extraction.")
+        super().check_is_ready()
         if self.tokenizer is None:
             raise AttributeError(f'{self} missing Tokenizer.')
-
-        if not self.category:
-            raise AttributeError(f'{self} requires a Category.')
 
         if self.clf is None:
             raise AttributeError(f'{self} does not provide a Label Classifier. Please add it.')
@@ -1866,13 +1640,6 @@ class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
 
         if self.label_set_clf is None:
             logger.warning(f'{self} does not provide a LabelSet Classfier.')
-
-    @property
-    def project(self):
-        """Get RFExtractionAI Project."""
-        if not self.category:
-            raise AttributeError(f'{self} has no Category.')
-        return self.category.project
 
     def extract(self, document: Document) -> Document:
         """
@@ -1895,7 +1662,7 @@ class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
         inference_document = deepcopy(document)
 
         # In case document category was changed after RFExtractionAI training
-        inference_document._category = None
+        inference_document._category = self.project.no_category
         inference_document.set_category(self.category)
 
         # 2. tokenize

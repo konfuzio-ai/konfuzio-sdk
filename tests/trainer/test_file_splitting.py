@@ -1,12 +1,16 @@
 """Test Splitting AI and the models' training, saving and prediction."""
+import bz2
+import cloudpickle
 import os
 import pathlib
 import pytest
+import shutil
 import unittest
 
 from copy import deepcopy
 
 from konfuzio_sdk.data import Category, Document, Project
+from konfuzio_sdk.settings_importer import is_dependency_installed
 from konfuzio_sdk.samples import LocalTextProject
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
 from konfuzio_sdk.trainer.file_splitting import (
@@ -15,10 +19,13 @@ from konfuzio_sdk.trainer.file_splitting import (
     MultimodalFileSplittingModel,
 )
 
-from konfuzio_sdk.trainer.document_categorization import NameBasedCategorizationAI
-from konfuzio_sdk.trainer.information_extraction import load_model
 
-
+@pytest.mark.skipif(
+    not is_dependency_installed('torch')
+    and not is_dependency_installed('transformers')
+    and not is_dependency_installed('tensorflow'),
+    reason='Required dependencies not installed.',
+)
 class TestContextAwareFileSplittingModel(unittest.TestCase):
     """Test Context Aware File Splitting Model."""
 
@@ -79,12 +86,12 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
 
     def test_load_incompatible_model(self):
         """Test initializing a model that does not pass has_compatible_interface check."""
-        wrong_class = NameBasedCategorizationAI(LocalTextProject().categories)
+        wrong_class = ConnectedTextTokenizer()
         assert not self.file_splitting_model.has_compatible_interface(wrong_class)
 
     def test_load_model_from_different_class(self):
-        """Test initializing Splitting AI with a model that does not inherit from AbstractFileSplittingModel class."""
-        wrong_class = NameBasedCategorizationAI(LocalTextProject().categories)
+        """Test Splitting AI with a model that doesn't inherit from AbstractFileSplittingModel class."""
+        wrong_class = ConnectedTextTokenizer()
         with pytest.raises(ValueError, match="model is not inheriting from AbstractFileSplittingModel"):
             SplittingAI(model=wrong_class)
 
@@ -128,10 +135,9 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
 
     def test_pickle_model_save_load(self):
         """Test saving Context Aware File Splitting Model to a pickle."""
-        self.file_splitting_model.output_dir = self.project.model_folder
         self.file_splitting_model.path = self.file_splitting_model.save(keep_documents=True, max_ram='5MB')
         assert os.path.isfile(self.file_splitting_model.path)
-        model = load_model(self.file_splitting_model.path)
+        model = ContextAwareFileSplittingModel.load_model(self.file_splitting_model.path)
         for category_gt, category_load in zip(self.file_splitting_model.categories, model.categories):
             gt_exclusive_first_page_strings = category_gt.exclusive_first_page_strings(
                 tokenizer=ConnectedTextTokenizer()
@@ -143,13 +149,35 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
 
     def test_pickle_model_save_lose_weight(self):
         """Test saving Context Aware File Splitting Model with reduce_weight."""
-        self.file_splitting_model.output_dir = self.project.model_folder
         self.file_splitting_model.path = self.file_splitting_model.save(
             reduce_weight=True, keep_documents=True, max_ram='5MB'
         )
         assert os.path.isfile(self.file_splitting_model.path)
-        model = load_model(self.file_splitting_model.path)
+        model = ContextAwareFileSplittingModel.load_model(self.file_splitting_model.path)
         for category_gt, category_load in zip(self.file_splitting_model.categories, model.categories):
+            gt_exclusive_first_page_strings = category_gt.exclusive_first_page_strings(
+                tokenizer=ConnectedTextTokenizer()
+            )
+            load_exclusive_first_page_strings = category_load.exclusive_first_page_strings(
+                tokenizer=ConnectedTextTokenizer()
+            )
+            assert gt_exclusive_first_page_strings == load_exclusive_first_page_strings
+
+    def test_old_pickle_model_save_load(self):
+        """Test saving and loading a model using the older bz2-compression-including save and load methods."""
+        temp_pkl_file_path = self.project.project_folder + '/models/temp.pkl'
+        pkl_file_path = self.project.project_folder + '/models/model.pkl'
+        pathlib.Path(self.project.project_folder + '/models').mkdir(parents=True, exist_ok=True)
+        self.file_splitting_model.ensure_model_memory_usage_within_limit(max_ram=None)
+        with open(temp_pkl_file_path, 'wb') as f:
+            cloudpickle.dump(self.file_splitting_model, f)
+        with open(temp_pkl_file_path, 'rb') as input_f:
+            with bz2.open(pkl_file_path, 'wb') as output_f:
+                shutil.copyfileobj(input_f, output_f)
+        os.remove(temp_pkl_file_path)
+        with bz2.open(pkl_file_path, 'rb') as file:
+            loaded = cloudpickle.load(file)
+        for category_gt, category_load in zip(self.file_splitting_model.categories, loaded.categories):
             gt_exclusive_first_page_strings = category_gt.exclusive_first_page_strings(
                 tokenizer=ConnectedTextTokenizer()
             )
@@ -209,33 +237,41 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
     def test_splitting_with_inplace(self):
         """Test Context Aware File Splitting Model's predict method with inplace=True."""
         splitting_ai = SplittingAI(self.file_splitting_model)
-        test_document = self.file_splitting_model.tokenizer.tokenize(self.test_document)
-        pred = splitting_ai.propose_split_documents(test_document, return_pages=True, inplace=True)[0]
+        pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True, inplace=True)[0]
         for page in pred.pages():
             if page.number in (1, 3, 5):
                 assert page.is_first_page
             else:
                 assert not page.is_first_page
             assert page.is_first_page_confidence == 1
-        assert pred == test_document
+        assert pred == self.test_document
 
     def test_suggest_first_pages(self):
-        """Test Splitting AI's suggesting first Pages."""
+        """Test AI's suggesting potential split points of a deepcopy of a Document without the actual splitting."""
         splitting_ai = SplittingAI(self.file_splitting_model)
-        test_document = self.file_splitting_model.tokenizer.tokenize(deepcopy(self.test_document))
-        pred = splitting_ai.propose_split_documents(test_document, return_pages=True)[0]
-        for page in pred.pages():
+        predictions = splitting_ai.propose_split_documents(self.test_document, return_pages=True)
+        assert len(predictions) == 1
+        prediction = predictions[0]
+        for page in prediction.pages():
             if page.number in (1, 3, 5):
                 assert page.is_first_page
             else:
                 assert not page.is_first_page
             assert page.is_first_page_confidence == 1
+        for page_original, page_predicted in zip(self.test_document.pages(), prediction.pages()):
+            assert page_original.category == page_predicted.category
         pathlib.Path(self.file_splitting_model.path).unlink()
 
 
 TEST_WITH_FULL_DATASET = False
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('torch')
+    and not is_dependency_installed('transformers')
+    and not is_dependency_installed('tensorflow'),
+    reason='Required dependencies not installed.',
+)
 class TestMultimodalFileSplittingModel(unittest.TestCase):
     """Test Multimodal File Splitting Model."""
 
@@ -275,11 +311,10 @@ class TestMultimodalFileSplittingModel(unittest.TestCase):
                 assert not page.is_first_page
                 assert page.is_first_page_confidence
 
-    @pytest.mark.skip(reason="Takes too long to test upon pushing; skipping can be removed for local testing.")
     def test_save_load_model(self):
         """Test saving and loading pickle file of the model."""
         path = self.file_splitting_model.save()
-        loaded = load_model(path)
+        loaded = MultimodalFileSplittingModel.load_model(path)
         splitting_ai = SplittingAI(model=loaded)
         assert isinstance(splitting_ai.model, MultimodalFileSplittingModel)
         pathlib.Path(path).unlink()

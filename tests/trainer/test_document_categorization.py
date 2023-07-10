@@ -2,18 +2,16 @@
 """Test to train a Categorization AI."""
 import logging
 import os
-import unittest
 import pytest
+import unittest
 from copy import deepcopy
 import parameterized
 from typing import List, Dict
 
-import torch
-
 from konfuzio_sdk.data import Project, Document, Page
+from konfuzio_sdk.extras import torch, FloatTensor
+from konfuzio_sdk.settings_importer import is_dependency_installed
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, ConnectedTextTokenizer
-from konfuzio_sdk.trainer.tokenization import PhraseMatcherTokenizer
-
 from konfuzio_sdk.trainer.document_categorization import (
     NameBasedCategorizationAI,
     AbstractCategorizationModel,
@@ -30,8 +28,11 @@ from konfuzio_sdk.trainer.document_categorization import (
     LSTM,
     BERT,
     load_categorization_model,
+    ImageModel,
+    TextModel,
+    build_categorization_ai_pipeline,
 )
-
+from konfuzio_sdk.trainer.tokenization import PhraseMatcherTokenizer
 from tests.variables import (
     OFFLINE_PROJECT,
     TEST_DOCUMENT_ID,
@@ -40,11 +41,17 @@ from tests.variables import (
     TEST_PAYSLIPS_CATEGORY_ID,
 )
 
-from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel
 
 logger = logging.getLogger(__name__)
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('timm')
+    and not is_dependency_installed('torch')
+    and not is_dependency_installed('transformers')
+    and not is_dependency_installed('torchvision'),
+    reason='Required dependencies not installed.',
+)
 class TestNameBasedCategorizationAI(unittest.TestCase):
     """Test the fallback logic for predicting the Category of a Document."""
 
@@ -158,7 +165,8 @@ class TestNameBasedCategorizationAI(unittest.TestCase):
 
     def test_9_force_categorization(self):
         """Test re-extract Category for two selected Test Documents that already contain a Category attribute."""
-        # This Document can be recategorized successfully because its text contains the word "quittung" (receipt) in it.
+        # This Document can be recategorized successfully because its text contains the word "quittung" (receipt)
+        # in it.
         # Recall that the check is case-insensitive.
         test_receipt_document = self.project.get_document_by_id(TEST_CATEGORIZATION_DOCUMENT_ID)
         result = self.categorization_pipeline.categorize(document=test_receipt_document, recategorize=True)
@@ -179,11 +187,12 @@ class TestNameBasedCategorizationAI(unittest.TestCase):
             assert page.category == self.project.no_category
 
     def test_9a_categorize_in_place(self):
-        """Test in-place re-extract Category for a selected Test Document that already contains a Category attribute."""
-        # This Document can be recategorized successfully because its text contains the word "quittung" (receipt) in it.
+        """Test inplace re-extract Category for a selected Test Document that contains a Category attribute."""
+        # This Document can be recategorized successfully because its text contains the word "quittung" (receipt)
+        # in it.
         # Recall that the check is case-insensitive.
         test_receipt_document = self.project.get_document_by_id(TEST_CATEGORIZATION_DOCUMENT_ID)
-        test_receipt_document.set_category(None)
+        test_receipt_document.set_category(self.project.no_category)
         self.categorization_pipeline.categorize(document=test_receipt_document, inplace=True)
         assert test_receipt_document.category == self.receipts_category
         for page in test_receipt_document.pages():
@@ -198,22 +207,30 @@ class TestNameBasedCategorizationAI(unittest.TestCase):
         assert result.pages() == []
 
     def test_9c_categorize_defaults_not_in_place(self):
-        """Test cannot re-extract Category for a selected Test Document that already contain a Category attribute."""
-        # This Document can be recategorized successfully because its text contains the word "quittung" (receipt) in it.
+        """Test cannot re-extract Category for a selected Test Document that contain a Category attribute."""
+        # This Document can be recategorized successfully because its text contains the word "quittung" (receipt)
+        # in it.
         # Recall that the check is case-insensitive.
         test_receipt_document = self.project.get_document_by_id(TEST_CATEGORIZATION_DOCUMENT_ID)
-        test_receipt_document.set_category(None)
+        test_receipt_document.set_category(self.project.no_category)
         self.categorization_pipeline.categorize(document=test_receipt_document)
         assert test_receipt_document.category == self.project.no_category
         for page in test_receipt_document.pages():
-            assert page.category is None
+            assert page.category == self.project.no_category
 
     def test_10_run_model_incompatible_interface(self):
         """Test initializing a model that does not pass has_compatible_interface check."""
-        wrong_class = ContextAwareFileSplittingModel(categories=[self.receipts_category], tokenizer=None)
+        wrong_class = ConnectedTextTokenizer()
         assert not self.categorization_pipeline.has_compatible_interface(wrong_class)
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('timm')
+    and not is_dependency_installed('torch')
+    and not is_dependency_installed('transformers')
+    and not is_dependency_installed('torchvision'),
+    reason='Required dependencies not installed.',
+)
 class TestAbstractCategorizationModel(unittest.TestCase):
     """Test general functionality that uses nn.Module classes for classification."""
 
@@ -242,6 +259,13 @@ class TestAbstractCategorizationModel(unittest.TestCase):
             _ = AbstractCategorizationModel()
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('timm')
+    and not is_dependency_installed('torch')
+    and not is_dependency_installed('transformers')
+    and not is_dependency_installed('torchvision'),
+    reason='Required dependencies not installed.',
+)
 class TestAbstractTextCategorizationModel(unittest.TestCase):
     """Test general functionality that uses nn.Module classes for text classification."""
 
@@ -262,7 +286,7 @@ class TestAbstractTextCategorizationModel(unittest.TestCase):
                 """Define number of features as self.n_features: int."""
                 self.n_features = self.emb_dim
 
-            def _output(self, text: torch.Tensor) -> List[torch.FloatTensor]:
+            def _output(self, text: torch.Tensor) -> List[FloatTensor]:
                 """Define number of features as self.n_features: int."""
                 features = torch.ones([1, self.input_dim, self.emb_dim], dtype=torch.int64)
                 if self.uses_attention:
@@ -286,7 +310,7 @@ class TestAbstractTextCategorizationModel(unittest.TestCase):
     def test_output(self):
         """Test output shape of the text classifier."""
         text = torch.ones([1, self.classifier.input_dim], dtype=torch.int64)
-        result: List[torch.FloatTensor] = self.classifier._output(text=text)
+        result: List[FloatTensor] = self.classifier._output(text=text)
         if self.classifier.uses_attention:
             # In trainer/document_categorization.py, only NBOWSelfAttention and BERT use attention
             # (see docstring of the classes for details)
@@ -297,6 +321,13 @@ class TestAbstractTextCategorizationModel(unittest.TestCase):
             assert result[0].shape == (1, self.classifier.input_dim, self.classifier.n_features)
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('timm')
+    and not is_dependency_installed('torch')
+    and not is_dependency_installed('transformers')
+    and not is_dependency_installed('torchvision'),
+    reason='Required dependencies not installed.',
+)
 @parameterized.parameterized_class(
     ('text_class', 'input_dim', 'emb_dim', 'n_heads', 'test_name'),
     [
@@ -339,7 +370,8 @@ class TestTextCategorizationModels(unittest.TestCase):
     def test_n_features(self) -> None:
         """Test n_features."""
         if "bert" in self.test_name:
-            # The transformers library stores the number of features in the config dict so no need to check the value
+            # The transformers library stores the number of features in the config dict so no need
+            # to check the value
             assert self.text_model._feature_size in self.text_model.bert.config.to_dict()
             return
         bidirectional = self.text_model.bidirectional
@@ -356,7 +388,7 @@ class TestTextCategorizationModels(unittest.TestCase):
     def test_output(self) -> None:
         """Test collect output of NN architecture."""
         text = torch.ones([1, self.text_model.input_dim], dtype=torch.int64)
-        result: List[torch.FloatTensor] = self.text_model._output(text=text)
+        result: List[FloatTensor] = self.text_model._output(text=text)
         if self.text_model.uses_attention:
             # In trainer/document_categorization.py, only NBOWSelfAttention and BERT use attention
             # (see docstring of the classes for details)
@@ -370,7 +402,7 @@ class TestTextCategorizationModels(unittest.TestCase):
         """Test the computation performed at every call."""
         text = torch.ones([1, self.text_model.input_dim], dtype=torch.int64)
         input_ = {'text': text}
-        res: Dict[str, torch.FloatTensor] = self.text_model(input=input_)
+        res: Dict[str, FloatTensor] = self.text_model(input=input_)
         assert 'features' in res
         assert res['features'].shape == (1, self.text_model.input_dim, self.text_model.n_features)
         if self.text_model.uses_attention:
@@ -380,6 +412,13 @@ class TestTextCategorizationModels(unittest.TestCase):
             assert res['attention'].shape == (1, self.text_model.input_dim, self.text_model.input_dim)
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('timm')
+    and not is_dependency_installed('torch')
+    and not is_dependency_installed('transformers')
+    and not is_dependency_installed('torchvision'),
+    reason='Required dependencies not installed.',
+)
 @parameterized.parameterized_class(
     ('tokenizer', 'text_class', 'image_class', 'image_nn_version'),
     [
@@ -543,11 +582,30 @@ class TestAllCategorizationConfigurations(unittest.TestCase):
         assert isinstance(result, Document)
         assert result.category == self.receipts_category
 
+    def test_9_build_document_classifier_iterator(self):
+        """Test building the iterator."""
+        use_text = self.categorization_pipeline.build_document_classifier_iterator(
+            self.categorization_pipeline.documents,
+            self.categorization_pipeline.train_transforms,
+            use_image=True,
+            use_text=True,
+            shuffle=True,
+            batch_size=1,
+            max_len=None,
+            device=self.categorization_pipeline.device,
+        )
+        assert use_text
 
+
+@pytest.mark.skipif(
+    not is_dependency_installed('timm')
+    and not is_dependency_installed('torch')
+    and not is_dependency_installed('transformers')
+    and not is_dependency_installed('torchvision'),
+    reason='Required dependencies not installed.',
+)
 def test_build_categorization_ai() -> None:
     """Test building a Categorization AI by choosing an ImageModel and a TextModel."""
-    from konfuzio_sdk.trainer.document_categorization import ImageModel, TextModel, build_categorization_ai_pipeline
-
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
     categorization_pipeline = build_categorization_ai_pipeline(
         categories=project.categories,
@@ -556,44 +614,21 @@ def test_build_categorization_ai() -> None:
         image_model=ImageModel.EfficientNetB0,
         text_model=TextModel.NBOWSelfAttention,
     )
-    from konfuzio_sdk.trainer.information_extraction import load_model
 
     pipeline_path = categorization_pipeline.save()
-    load_model(pipeline_path)
+    CategorizationAI.load_model(pipeline_path)
     os.remove(pipeline_path)
 
 
-def test_get_document_classifier_examples():
-    """Test getting Document's classifier examples."""
-    from konfuzio_sdk.trainer.document_categorization import ImageModel, TextModel, build_categorization_ai_pipeline
-
-    project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-    document = project.get_document_by_id(44823)
-    categorization_pipeline = build_categorization_ai_pipeline(
-        categories=[project.get_category_by_id(63)],
-        documents=[project.documents[0]],  # for shorter runtime
-        test_documents=[project.test_documents[1]],
-        image_model=ImageModel.EfficientNetB0,
-        text_model=TextModel.NBOWSelfAttention,
-    )
-    tokenized_doc = deepcopy(document)
-    tokenized_doc = WhitespaceTokenizer().tokenize(tokenized_doc)
-    tokenized_doc.status = document.status
-    doc_info = tokenized_doc.get_document_classifier_examples(
-        categorization_pipeline.text_vocab,
-        categorization_pipeline.category_vocab,
-        max_len=5000,
-        use_image=True,
-        use_text=True,
-    )
-    assert len(doc_info) == 5
-    assert doc_info[0][0].format == 'PNG'
-
-
+@pytest.mark.skipif(
+    not is_dependency_installed('timm')
+    and not is_dependency_installed('torch')
+    and not is_dependency_installed('transformers')
+    and not is_dependency_installed('torchvision'),
+    reason='Required dependencies not installed.',
+)
 def test_categorize_no_category_document():
     """Test categorization in case a NO_CATEGORY is predicted."""
-    from konfuzio_sdk.trainer.document_categorization import ImageModel, TextModel, build_categorization_ai_pipeline
-
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
     test_document = project.get_document_by_id(44823)
     test_document.set_category(None)

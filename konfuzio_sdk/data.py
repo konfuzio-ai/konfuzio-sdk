@@ -18,7 +18,6 @@ from enum import Enum
 import dateutil.parser
 from PIL import Image, ImageDraw, ImageFont
 from tqdm import tqdm
-import torch
 
 from konfuzio_sdk.api import (
     konfuzio_session,
@@ -108,7 +107,6 @@ class Page(Data):
         image_size: Tuple[int, int] = (None, None),
         start_offset: Optional[int] = None,
         end_offset: Optional[int] = None,
-        category: Optional['Category'] = None,
         copy_of_id: Optional[int] = None,
     ):
         """
@@ -154,7 +152,7 @@ class Page(Data):
         )
         self.image_path = os.path.join(document_folder, f'page_{self.number}.png')
 
-        self._category = category if category else self.document._category
+        self._category = self.document._category
         self.category_annotations: List['CategoryAnnotation'] = []
         self._human_chosen_category_annotation: Optional[CategoryAnnotation] = None
         self._segmentation = None
@@ -400,9 +398,11 @@ class Page(Data):
 
         :param category: The Category to set for the Page.
         """
+        if not category:
+            raise ValueError("We forbid setting a Page's Category to None.")
         logger.info(f'Setting {self} Category to {category}.')
         self._category = category
-        if category is None:
+        if category is self.document.project.no_category:
             self.category_annotations = []
             self._human_chosen_category_annotation = None
             return
@@ -435,6 +435,27 @@ class Page(Data):
         else:
             return self._category
 
+    def get_original_page(self) -> 'Page':
+        """
+        Return an "original" Page in case the current Page is a copy without an ID.
+
+        An "original" Page is a Page from the Document that is not a copy and not a Virtual Document. This Page has an
+        ID.
+
+        The method is used in the File Splitting pipeline to retain the original Document's information in
+        the Sub-Documents that were created from its splitting. The original Document is a Document that has an ID and
+        is not a deepcopy.
+        """
+        if self.id_ and self.document.id_:
+            return self
+        elif self.copy_of_id:
+            if self.document.id_:
+                return self.document.get_page_by_id(self.copy_of_id)
+            else:
+                return self.document.project.get_document_by_id(self.document.copy_of_id).get_page_by_id(
+                    self.copy_of_id
+                )
+
 
 class BboxValidationTypes(Enum):
     """Define validation strictness for bounding boxes.
@@ -456,7 +477,7 @@ class Bbox:
     This option is available for compatibility reasons since some OCR engines can sometimes return character level
     bboxes with zero width or height. If STRICT, it doesn't allow zero size bboxes. If DISABLED, it allows bboxes that
     have negative size, or coordinates beyond the Page bounds.
-    For the default behaviour see https://dev.konfuzio.com/sdk/tutorials.html#data-validation-rules.
+    For the default behaviour see https://dev.konfuzio.com/sdk/tutorials/data_validation/index.html
 
     :param validation: One of ALLOW_ZERO_SIZE (default), STRICT, or DISABLED.
     """
@@ -532,7 +553,8 @@ class Bbox:
 
         if round(self.y1, round_decimals) > round(self.page.height, round_decimals):
             exception_or_log_error(
-                msg=f"{self} exceeds height of {self.page}.",
+                msg=f"{self} exceeds height of {self.page} by \
+{round(self.y1, round_decimals) - round(self.page.height, round_decimals)}.",
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
                 handler=handler,
@@ -540,7 +562,8 @@ class Bbox:
 
         if round(self.x1, round_decimals) > round(self.page.width, round_decimals):
             exception_or_log_error(
-                msg=f"{self} exceeds width of {self.page}.",
+                msg=f"{self} exceeds width of {self.page} by \
+{round(self.x1, round_decimals) - round(self.page.width, round_decimals)}.",
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
                 handler=handler,
@@ -780,9 +803,9 @@ class LabelSet(Data):
 
     def add_category(self, category: 'Category'):
         """
-        Add Category to Project, if it does not exist.
+        Add Category to the Label Set, if it does not exist.
 
-        :param category: Category to add in the Project
+        :param category: Category to add to the Label Set
         """
         if category not in self.categories:
             self.categories.append(category)
@@ -1643,7 +1666,7 @@ class Span(Data):
         :param annotation: The Annotation the Span belongs to. If not set, the Span is considered "virtual"
         :param document: Document the Span belongs to. If not specified, the annotation document is used.
         :param strict_validation: Whether to apply strict validation rules.
-        See https://dev.konfuzio.com/sdk/tutorials.html#data-validation-rules.
+        See https://dev.konfuzio.com/sdk/tutorials/data_validation/index.html
         """
         self.id_local = next(Data.id_iter)
 
@@ -1670,7 +1693,7 @@ class Span(Data):
         Validate containted data.
 
         :param strict: If False, it allows Spans to have zero length, or span more than one visual line. For more
-        details see https://dev.konfuzio.com/sdk/tutorials.html#data-validation-rules.
+        details see https://dev.konfuzio.com/sdk/tutorials/data_validation/index.html
         """
         if self.end_offset == self.start_offset == 0:
             logger.error(f"{self} is intentionally left empty.")
@@ -2722,10 +2745,10 @@ class Document(Data):
         """
         if self.maximum_confidence_category_annotation is not None:
             return self.maximum_confidence_category_annotation.category
-        return None
+        return self.project.no_category
 
     @property
-    def category(self) -> Optional[Category]:
+    def category(self) -> Category:
         """
         Return the Category of the Document.
 
@@ -2766,9 +2789,11 @@ class Document(Data):
 
     def set_category(self, category: Category) -> None:
         """Set the Category of the Document and the Category of all of its Pages as revised."""
+        if not category:
+            category = self.project.no_category
         logger.info(f"Setting Category of {self} to {category}.")
-        if (self._category not in [None, self.project.no_category]) and (
-            category not in [self._category, None, self.project.no_category]
+        if category not in [self._category, self.project.no_category] and (
+            self._category and self._category.name != self.project.no_category.name
         ):
             raise ValueError(
                 "We forbid changing Category when already existing, because this requires some validations that are "
@@ -2894,7 +2919,6 @@ class Document(Data):
                 number=page.number,
                 original_size=(page.width, page.height),
                 image_size=(page.image_width, page.image_height),
-                category=page.category,
             )
             _.image_bytes = page.image_bytes
         return document
@@ -3160,7 +3184,7 @@ class Document(Data):
         """Add an Annotation to a Document.
 
         The Annotation is only added to the Document if the data validation tests are passing for this Annotation.
-        See https://dev.konfuzio.com/sdk/tutorials.html#data-validation-rules.
+        See https://dev.konfuzio.com/sdk/tutorials/data_validation/index.html
 
         :param annotation: Annotation to add in the Document
         :return: Input Annotation.
@@ -3622,96 +3646,44 @@ class Document(Data):
         for page in self.pages():
             end_offset = start_offset + len(page.text)
             page_id = page.id_ if page.id_ else page.copy_of_id
-            if include:
-                if page.number in range(start_page.number, end_page.number + 1):
-                    _ = Page(
-                        id_=None,
-                        original_size=(page.height, page.width),
-                        document=new_doc,
-                        start_offset=start_offset,
-                        end_offset=end_offset,
-                        copy_of_id=page_id,
-                        number=i,
-                        category=page.category,
+            if (include and page.number in range(start_page.number, end_page.number + 1)) or (
+                not include and page.number in range(start_page.number, end_page.number)
+            ):
+                new_page = Page(
+                    id_=None,
+                    original_size=(page.height, page.width),
+                    document=new_doc,
+                    start_offset=start_offset,
+                    end_offset=end_offset,
+                    copy_of_id=page_id,
+                    number=i,
+                )
+                for category_annotation in page.category_annotations:
+                    CategoryAnnotation(
+                        category=category_annotation.category,
+                        confidence=category_annotation.confidence,
+                        page=new_page,
                     )
-                    i += 1
-                    start_offset = end_offset + 1
-            else:
-                if page.number in range(start_page.number, end_page.number):
-                    _ = Page(
-                        id_=None,
-                        original_size=(page.height, page.width),
-                        document=new_doc,
-                        start_offset=start_offset,
-                        end_offset=end_offset,
-                        copy_of_id=page_id,
-                        number=i,
-                        category=page.category,
-                    )
-                    i += 1
-                    start_offset = end_offset + 1
+                i += 1
+                start_offset = end_offset + 1
         return new_doc
 
-    def get_document_classifier_examples(self, text_vocab, category_vocab, max_len, use_image, use_text):
-        """Get the per-Document examples for the Document classifier."""
-        document_images = []
-        document_tokens = []
-        document_labels = []
-        document_ids = []
-        document_page_numbers = []
+    def get_page_by_id(self, page_id: int, original: bool = False) -> Page:
+        """
+        Get a Page by its ID.
 
-        # validate the data for the Document
-        if use_image:
-            self.get_images()  # gets the images if they do not exist
-            images = [page.image for page in self.pages()]  # gets the paths to the images
-            # @TODO move this validation to the Document class or the Page class
-            assert len(images) > 0, f'No images found for Document {self.id_}'
-            if not use_text:  # if only using images then make texts a list of None
-                page_texts = [None] * len(images)
-        if use_text:
-            page_texts = self.text.split('\f')
-            # @TODO move this validation to the Document class or the Page class
-            assert len(page_texts) > 0, f'No text found for Document {self.id_}'
-            if not use_image:  # if only using text then make images used a list of None
-                images = [None] * len(page_texts)
-
-        # check we have the same number of images and text pages
-        # only useful when we have both an image and a text module
-        # @TODO move this validation to the Document class or the Page class
-        assert len(images) == len(page_texts), (
-            f'Number of images ({len(images)}) is not equal to the number of Pages {len(page_texts)} for Document '
-            f'{self.id_}'
-        )
-
+        :param page_id: An ID of the Page to fetch.
+        :type page_id: int
+        """
         for page in self.pages():
-            if use_image:
-                # if using an image module, store the path to the image
-                document_images.append(page.image)
+            if page.id_ == page_id:
+                return page
+            if original:
+                raise IndexError(f'Page id {page_id} was not found in {self}.')
             else:
-                # if not using image module then don't need the image paths
-                # so we just have a list of None to keep the lists the same length
-                document_images.append(None)
-            if use_text:
-                # if using a text module, tokenize the Page, trim to max length and then numericalize
-                # REPLACE page_tokens = tokenizer.get_tokens(page_text)[:max_len]
-                # page_encoded = [text_vocab.stoi(span.offset_string) for span in
-                # self.spans(start_offset=page.start_offset, end_offset=page.end_offset)]
-                # document_tokens.append(torch.LongTensor(page_encoded))
-                text_vocab.numericalize(page)
-                document_tokens.append(torch.LongTensor(page.text_encoded))
-            else:
-                # if not using text module then don't need the tokens
-                # so we just have a list of None to keep the lists the same length
-                document_tokens.append(None)
-            # get Document classification (defined by the Category template)
-            category_id = str(self.category.id_) if self.category != self.project.no_category else 'NO_CATEGORY'
-            # append the classification (Category), the Document's ID and the number of each Page
-            document_labels.append(torch.LongTensor([category_vocab.stoi(category_id)]))
-            doc_id = self.id_ or self.copy_of_id
-            document_ids.append(torch.LongTensor([doc_id]))
-            document_page_numbers.append(torch.LongTensor([page.index]))
-
-        return document_images, document_tokens, document_labels, document_ids, document_page_numbers
+                if not page.id_ and page.copy_of_id == page_id:
+                    logger.warning(f'Page id {page_id} was not found in {self}, only a Page copy.')
+                    return page
 
 
 class Project(Data):
@@ -3734,7 +3706,7 @@ class Project(Data):
         :param update: Whether to sync local files with the Project online.
         :param max_ram: Maximum RAM used by AI models trained on this Project.
         :param strict_data_validation: Whether to apply strict data validation rules.
-        See https://dev.konfuzio.com/sdk/tutorials.html#data-validation-rules.
+        See https://dev.konfuzio.com/sdk/tutorials/data_validation/index.html
         """
         self.id_local = next(Data.id_iter)
         self.id_ = id_  # A Project with None ID is not retrieved from the HOST
@@ -3943,8 +3915,10 @@ class Project(Data):
                 # the _default_of_label_set_ids are the Categories the Label Set is used in
                 for label_set_id in label_set._default_of_label_set_ids:
                     category = self.get_category_by_id(label_set_id)
-                    label_set.add_category(category)  # The Label Set is linked to a Category it created
-                    category.add_label_set(label_set)
+                    if category not in label_set.categories:
+                        label_set.add_category(category)  # The Label Set is linked to a Category it created
+                    if label_set not in category.label_sets:
+                        category.add_label_set(label_set)
 
     def get_label_sets(self, reload=False):
         """Get LabelSets in the Project."""

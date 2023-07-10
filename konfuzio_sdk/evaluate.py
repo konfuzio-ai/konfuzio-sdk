@@ -5,10 +5,7 @@ from typing import Dict, Tuple, List, Optional, Union
 import pandas
 import numpy
 from sklearn.utils.extmath import weighted_mode
-from sklearn.metrics import (
-    confusion_matrix,
-    classification_report,
-)
+from sklearn.metrics import confusion_matrix, classification_report
 
 from konfuzio_sdk.utils import sdk_isinstance, memory_size_of
 from konfuzio_sdk.data import Category, Document
@@ -274,7 +271,7 @@ def compare(
 class EvaluationCalculator:
     """Calculate precision, recall, f1, based on TP, FP, FN."""
 
-    def __init__(self, tp: int = 0, fp: int = 0, fn: int = 0, tn: int = 0, allow_zero: bool = True):
+    def __init__(self, tp: int = 0, fp: int = 0, fn: int = 0, tn: int = 0, zero_division='warn'):
         """
         Store evaluation information.
 
@@ -282,42 +279,78 @@ class EvaluationCalculator:
         :param fp: False Positives.
         :param fn: False Negatives.
         :param tn: True Negatives.
-        :param allow_zero: If true, will calculate None for precision and recall when the straightforward application
-        of the formula would otherwise result in 0/0. Raises ZeroDivisionError otherwise.
+        :param zero_division: Defines how to handle situations when precision, recall or F1 measure calculations result
+        in zero division.
+        Possible values: 'warn' – log a warning and assign a calculated metric a value of 0.
+        0 - assign a calculated metric a value of 0.
+        'error' – raise a ZeroDivisionError.
+        None – assign None to a calculated metric.
         """
         self.tp = tp
         self.fp = fp
         self.fn = fn
         self.tn = tn
-        self._valid(allow_zero)
-
-    def _valid(self, allow_zero: bool = True) -> None:
-        """Check for 0/0 on precision, recall, and F1 calculation."""
-        if allow_zero:
-            return
-        if self.fp + self.fn == 0:
-            raise ZeroDivisionError("FP and FN are zero, please specify allow_zero=True if you want F1 to be None.")
-        if self.tp + self.fp == 0:
-            raise ZeroDivisionError(
-                "TP and FP are zero, please specify allow_zero=True if you want precision to be None."
-            )
-        if self.tp + self.fn == 0:
-            raise ZeroDivisionError("TP and FN are zero, please specify allow_zero=True if you want recall to be None.")
+        assert zero_division in ['warn', 'error', 0, None], (
+            "The value of zero_division has to be 'warn', 'error', 0 " "or None"
+        )
+        self.zero_division = zero_division
 
     @property
     def precision(self) -> Optional[float]:
-        """Apply precision formula. Returns None if TP+FP=0."""
-        return None if (self.tp + self.fp == 0) else self.tp / (self.tp + self.fp)
+        """
+        Apply precision formula.
+
+        :raises ZeroDivisionError: When TP and FP are 0 and zero_division is set to 'error'
+        """
+        if self.tp + self.fp != 0:
+            precision = self.tp / (self.tp + self.fp)
+        else:
+            if self.zero_division == 'error':
+                raise ZeroDivisionError('TP and FP are zero, impossible to calculate precision.')
+            elif self.zero_division == 'warn':
+                precision = 0
+                logging.warning('TP and FP are zero, precision is set to 0.')
+            else:
+                precision = self.zero_division
+        return precision
 
     @property
     def recall(self) -> Optional[float]:
-        """Apply recall formula. Returns None if TP+FN=0."""
-        return None if (self.tp + self.fn == 0) else self.tp / (self.tp + self.fn)
+        """
+        Apply recall formula.
+
+        :raises ZeroDivisionError: When TP and FN are 0 and zero_division is set to 'error'
+        """
+        if self.tp + self.fn != 0:
+            recall = self.tp / (self.tp + self.fn)
+        else:
+            if self.zero_division == 'error':
+                raise ZeroDivisionError('TP and FN are zero, recall is impossible to calculate.')
+            elif self.zero_division == 'warn':
+                recall = 0
+                logging.warning('TP and FN are zero, recall is set to 0.')
+            else:
+                recall = self.zero_division
+        return recall
 
     @property
     def f1(self) -> Optional[float]:
-        """Apply F1-score formula. Returns None if precision and recall are both None."""
-        return None if (self.tp + 0.5 * (self.fp + self.fn) == 0) else self.tp / (self.tp + 0.5 * (self.fp + self.fn))
+        """
+        Apply F1-score formula.
+
+        :raises ZeroDivisionError: When precision and recall are 0 and zero_division is set to 'error'
+        """
+        if self.tp + 0.5 * (self.fp + self.fn) != 0:
+            f1 = self.tp / (self.tp + 0.5 * (self.fp + self.fn))
+        else:
+            if self.zero_division == 'error':
+                raise ZeroDivisionError('Precision and recall are zero, F1 is impossible to calculate.')
+            elif self.zero_division == 'warn':
+                f1 = 0
+                logging.warning('Precision and recall are zero, F1 score is set to 0.')
+            else:
+                f1 = self.zero_division
+        return f1
 
     def metrics_logging(self):
         """Log metrics."""
@@ -339,12 +372,19 @@ class ExtractionEvaluation:
         strict: bool = True,
         use_view_annotations: bool = True,
         ignore_below_threshold: bool = True,
+        zero_division='warn',
     ):
         """
         Relate to the two document instances.
 
         :param documents: A list of tuple Documents that should be compared.
         :param strict: Evaluate on a Character exact level without any postprocessing.
+        :param zero_division: Defines how to handle situations when precision, recall or F1 measure calculations result
+        in zero division.
+        Possible values: 'warn' – log a warning and assign a calculated metric a value of 0.
+        0 - assign a calculated metric a value of 0.
+        'error' – raise a ZeroDivisionError.
+        None – assign None to a calculated metric.
         :param use_view_annotations:
             Bool for whether to filter evaluated Document with view_annotations. Will filter out all overlapping Spans
             and below threshold Annotations. Should lead to faster evaluation.
@@ -359,6 +399,7 @@ class ExtractionEvaluation:
         self.ignore_below_threshold = ignore_below_threshold
         self.only_use_correct = True
         self.data = None
+        self.zero_division = zero_division
         self.calculate()
         logger.info(f"Size of evaluation DataFrame: {memory_size_of(self.data)/1000} KB.")
 
@@ -445,16 +486,24 @@ class ExtractionEvaluation:
     def get_evaluation_data(self, search, allow_zero: bool = True) -> EvaluationCalculator:
         """Get precision, recall, f1, based on TP, FP, FN."""
         return EvaluationCalculator(
-            tp=self.tp(search), fp=self.fp(search), fn=self.fn(search), tn=self.tn(search), allow_zero=allow_zero
+            tp=self.tp(search),
+            fp=self.fp(search),
+            fn=self.fn(search),
+            tn=self.tn(search),
+            zero_division=self.zero_division,
         )
 
     def precision(self, search=None) -> Optional[float]:
         """Calculate the Precision and see f1 to calculate imbalanced classes."""
-        return EvaluationCalculator(tp=self.tp(search=search), fp=self.fp(search=search)).precision
+        return EvaluationCalculator(
+            tp=self.tp(search=search), fp=self.fp(search=search), zero_division=self.zero_division
+        ).precision
 
     def recall(self, search=None) -> Optional[float]:
         """Calculate the Recall and see f1 to calculate imbalanced classes."""
-        return EvaluationCalculator(tp=self.tp(search=search), fn=self.fn(search=search)).recall
+        return EvaluationCalculator(
+            tp=self.tp(search=search), fn=self.fn(search=search), zero_division=self.zero_division
+        ).recall
 
     def f1(self, search=None) -> Optional[float]:
         """Calculate the F1 Score of one class.
@@ -476,7 +525,12 @@ class ExtractionEvaluation:
             3. If you have three Labels and three documents, calculate six F-1 Scores and use the arithmetic mean.
 
         """
-        return EvaluationCalculator(tp=self.tp(search=search), fp=self.fp(search=search), fn=self.fn(search=search)).f1
+        return EvaluationCalculator(
+            tp=self.tp(search=search),
+            fp=self.fp(search=search),
+            fn=self.fn(search=search),
+            zero_division=self.zero_division,
+        ).f1
 
     def tokenizer_f1(self, search=None) -> Optional[float]:
         """
@@ -488,6 +542,7 @@ class ExtractionEvaluation:
             tp=self.tokenizer_tp(search=search),
             fp=self.tokenizer_fp(search=search),
             fn=self.tokenizer_fn(search=search),
+            zero_division=self.zero_division,
         ).f1
 
     def clf_f1(self, search=None) -> Optional[float]:
@@ -500,6 +555,7 @@ class ExtractionEvaluation:
             tp=self.clf_tp(search=search),
             fp=self.clf_fp(search=search),
             fn=self.clf_fn(search=search),
+            zero_division=self.zero_division,
         ).f1
 
     def _apply(self, group, issue_name):
@@ -526,17 +582,24 @@ class ExtractionEvaluation:
 class CategorizationEvaluation:
     """Calculated evaluation measures for the classification task of Document categorization."""
 
-    def __init__(self, categories: List[Category], documents: List[Tuple[Document, Document]]):
+    def __init__(self, categories: List[Category], documents: List[Tuple[Document, Document]], zero_division='warn'):
         """
         Relate to the two document instances.
 
         :param categories: The Categories to be evaluated.
         :param documents: A list of tuple Documents that should be compared.
+        :param zero_division: Defines how to handle situations when precision, recall or F1 measure calculations result
+        in zero division.
+        Possible values: 'warn' – log a warning and assign a calculated metric a value of 0.
+        0 - assign a calculated metric a value of 0.
+        'error' – raise a ZeroDivisionError.
+        None – assign None to a calculated metric.
         """
         self.categories = categories
         self.documents = documents
         self._evaluation_results = None
         self._clf_report = None
+        self.zero_division = zero_division
         self.calculate()
 
     @property
@@ -564,7 +627,7 @@ class CategorizationEvaluation:
 
     def confusion_matrix(self) -> pandas.DataFrame:
         """Confusion matrix."""
-        return confusion_matrix(self.actual_classes, self.predicted_classes, labels=self.category_ids + [-1])
+        return confusion_matrix(self.actual_classes, self.predicted_classes, labels=self.category_ids + [0])
 
     def _get_tp_tn_fp_fn_per_category(self) -> Dict[int, EvaluationCalculator]:
         """
@@ -604,7 +667,7 @@ class CategorizationEvaluation:
             fn = sum_rows[ind] - tp
             tn = sum_all - fn - fp - tp
             results[category_id] = EvaluationCalculator(
-                tp=tp, fp=fp, fn=fn, tn=tn
+                tp=tp, fp=fp, fn=fn, tn=tn, zero_division=self.zero_division
             )  # the value is evaluation calculator, not a tuple as a result
 
         return results
@@ -667,7 +730,11 @@ class CategorizationEvaluation:
         :type allow_zero: bool
         """
         return EvaluationCalculator(
-            tp=self.tp(search), fp=self.fp(search), fn=self.fn(search), tn=self.tn(search), allow_zero=allow_zero
+            tp=self.tp(search),
+            fp=self.fp(search),
+            fn=self.fn(search),
+            tn=self.tn(search),
+            zero_division=self.zero_division,
         )
 
     def _metric(self, metric: str, category: Optional[Category]) -> Optional[float]:
@@ -700,7 +767,12 @@ class CategorizationEvaluation:
 class FileSplittingEvaluation:
     """Evaluate the quality of the filesplitting logic."""
 
-    def __init__(self, ground_truth_documents: List[Document], prediction_documents: List[Document]):
+    def __init__(
+        self,
+        ground_truth_documents: List[Document],
+        prediction_documents: List[Document],
+        zero_division='warn',
+    ):
         """
         Initialize and run the metrics calculation.
 
@@ -708,9 +780,16 @@ class FileSplittingEvaluation:
         :type ground_truth_documents: list
         :param prediction_documents: A list of Documents with Pages newly predicted to be first or non-first.
         :type prediction_documents: list
+        :param zero_division: Defines how to handle situations when precision, recall or F1 measure calculations result
+        in zero division.
+        Possible values: 'warn' – log a warning and assign a calculated metric a value of 0.
+        0 - assign a calculated metric a value of 0.
+        'error' – raise a ZeroDivisionError.
+        None – assign None to a calculated metric.
         :raises ValueError: When ground_truth_documents and prediction_documents are not the same length.
         :raises ValueError: When a Page does not have a value of is_first_page.
         :raises ValueError: When an original Document and prediction are not referring to the same Document.
+
         """
         if len(ground_truth_documents) != len(prediction_documents):
             raise ValueError("ground_truth_documents and prediction_documents must be same length.")
@@ -738,6 +817,7 @@ class FileSplittingEvaluation:
             [document[0], document[1]] for document in zip(ground_truth_documents, prediction_documents)
         ]
         self.project = projects[0]  # because we check that exactly one Project exists across the Documents
+        self.zero_division = zero_division
         self.evaluation_results = None
         self.evaluation_results_by_category = None
         self.calculate()
@@ -770,23 +850,14 @@ class FileSplittingEvaluation:
                     fn += 1
                 elif not page_gt.is_first_page and not page_pr.is_first_page:
                     tn += 1
-        evaluation_calculator = EvaluationCalculator(tp=tp, fp=fp, fn=fn, tn=tn)
-        if tp + fp != 0:  # excess evaluation calculator usage, can be called once
-            precision = evaluation_calculator.precision
-        else:
-            raise ZeroDivisionError("TP and FP are zero.")
-        if tp + fn != 0:
-            recall = evaluation_calculator.recall
-        else:
-            raise ZeroDivisionError("TP and FN are zero.")
-        if precision + recall != 0:
-            f1 = evaluation_calculator.f1
-        else:
-            raise ZeroDivisionError("FP and FN are zero.")
+        evaluation_calculator = EvaluationCalculator(tp=tp, fp=fp, fn=fn, tn=tn, zero_division=self.zero_division)
+        precision = evaluation_calculator.precision
+        recall = evaluation_calculator.recall
+        f1 = evaluation_calculator.f1
         return tp, fp, fn, tn, precision, recall, f1
 
     def calculate(self):
-        """Calculate metrics for the filesplitting logic."""
+        """Calculate metrics for the File Splitting logic."""
         tp, fp, fn, tn, precision, recall, f1 = self._metric_calculations()
         self.evaluation_results = {
             'true_positives': tp,
@@ -844,7 +915,11 @@ class FileSplittingEvaluation:
         :type allow_zero: bool
         """
         return EvaluationCalculator(
-            tp=self.tp(search), fp=self.fp(search), fn=self.fn(search), tn=self.tn(search), allow_zero=allow_zero
+            tp=self.tp(search),
+            fp=self.fp(search),
+            fn=self.fn(search),
+            tn=self.tn(search),
+            zero_division=self.zero_division,
         )
 
     def tp(self, search: Category = None) -> int:

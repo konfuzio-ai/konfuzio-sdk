@@ -15,3 +15,5 @@ the Konfuzio SDK interacts with the Konfuzio Server.
 
 .. mdinclude:: releasing/contribution.md
 
+.. mdinclude:: how-to-write-documentation/index.md
+

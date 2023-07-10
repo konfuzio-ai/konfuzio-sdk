@@ -3,31 +3,20 @@ import abc
 import logging
 import os
 import PIL
-import torch
 
 import numpy as np
-import tensorflow as tf
 
 from copy import deepcopy
 from inspect import signature
-from tensorflow.keras import Input
-from tensorflow.keras.layers import Dense, Conv2D, MaxPool2D, Flatten, Concatenate
-from tensorflow.keras.models import Model
-from tensorflow.keras.preprocessing.image import img_to_array
-from transformers import BertTokenizer, AutoModel, AutoConfig
-from typing import List
+from typing import List, Union
 
 from konfuzio_sdk.data import Document, Page, Category
+from konfuzio_sdk.extras import torch, tensorflow as tf, transformers
 from konfuzio_sdk.evaluate import FileSplittingEvaluation
 from konfuzio_sdk.trainer.information_extraction import BaseModel
 from konfuzio_sdk.utils import get_timestamp
 
 logger = logging.getLogger(__name__)
-
-# proper compiling of Multimodal File Splitting Model requires eager running instead of lazy
-# because of multiple inputs (read more about eager vs lazy (graph) here)
-# https://towardsdatascience.com/eager-execution-vs-graph-execution-which-is-better-38162ea4dbf6
-tf.config.experimental_run_functions_eagerly(True)
 
 
 class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
@@ -98,7 +87,7 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
         """
         pkl_file_path = os.path.join(
             self.output_dir,
-            f'{get_timestamp()}_{self.project.id_}_{self.name_lower()}.pkl',
+            f'{get_timestamp()}_{self.project.id_}_{self.name_lower()}',
         )
         return pkl_file_path
 
@@ -129,6 +118,26 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
         except AttributeError:
             return False
 
+    @staticmethod
+    def load_model(pickle_path: str, max_ram: Union[None, str] = None):
+        """
+        Load the model and check if it has the interface compatible with the class.
+
+        :param pickle_path: Path to the pickled model.
+        :type pickle_path: str
+        :raises FileNotFoundError: If the path is invalid.
+        :raises OSError: When the data is corrupted or invalid and cannot be loaded.
+        :raises TypeError: When the loaded pickle isn't recognized as a Konfuzio AI model.
+        :return: File Splitting AI model.
+        """
+        model = super(AbstractFileSplittingModel, AbstractFileSplittingModel).load_model(pickle_path, max_ram)
+        if not AbstractFileSplittingModel.has_compatible_interface(model):
+            raise TypeError(
+                "Loaded model's interface is not compatible with any AIs. Please provide a model that has all the "
+                "abstract methods implemented."
+            )
+        return model
+
 
 class MultimodalFileSplittingModel(AbstractFileSplittingModel):
     """
@@ -147,7 +156,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
     def __init__(
         self,
         categories: List[Category],
-        text_processing_model: str = 'nlpaueb/legal-bert-base-uncased',
+        text_processing_model: str = 'nlpaueb/legal-bert-small-uncased',
         scale: int = 2,
         *args,
         **kwargs,
@@ -167,6 +176,10 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         """
         logging.info('Initializing Multimodal File Splitting Model.')
         super().__init__(categories=categories)
+        # proper compiling of Multimodal File Splitting Model requires eager running instead of lazy
+        # because of multiple inputs (read more about eager vs lazy (graph) here)
+        # https://towardsdatascience.com/eager-execution-vs-graph-execution-which-is-better-38162ea4dbf6
+        tf.config.experimental_run_functions_eagerly(True)
         self.output_dir = self.project.model_folder
         self.requires_images = True
         self.requires_text = True
@@ -180,11 +193,11 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         self.scale = scale
         self.model = None
         logger.info('Initializing BERT components of the Multimodal File Splitting Model.')
-        configuration = AutoConfig.from_pretrained(text_processing_model)
+        configuration = transformers.AutoConfig.from_pretrained(text_processing_model)
         configuration.num_labels = 2
         configuration.output_hidden_states = True
-        self.bert_model = AutoModel.from_pretrained(text_processing_model, config=configuration)
-        self.bert_tokenizer = BertTokenizer.from_pretrained(
+        self.bert_model = transformers.AutoModel.from_pretrained(text_processing_model, config=configuration)
+        self.bert_tokenizer = transformers.BertTokenizer.from_pretrained(
             text_processing_model, do_lower_case=True, max_length=2000, padding="max_length", truncate=True
         )
 
@@ -225,7 +238,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         for page_image in page_images:
             image = page_image.convert('RGB')
             image = image.resize((224, 224))
-            image = img_to_array(image)
+            image = tf.keras.preprocessing.image.img_to_array(image)
             image = image.reshape((1, image.shape[0], image.shape[1], image.shape[2]))
             image = image[..., ::-1]  # replacement of keras's preprocess_input implementation because of dimensionality
             image[0] -= 103.939
@@ -279,37 +292,34 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         # we combine an output of a simplified VGG19 architecture for image processing (read more about it
         # at https://iq.opengenus.org/vgg19-architecture/) and an output of BERT in an MLP-like
         # architecture (read more about it at http://shorturl.at/puKN3). a scheme of our custom architecture can be
-        # found at https://dev.konfuzio.com/sdk/tutorials.html#splitting-for-multi-file-documents-step-by-step-guide
-        txt_input = Input(shape=self.input_shape, name='text')
-        txt_x = Dense(units=768, activation="relu")(txt_input)
-        txt_x = Flatten()(txt_x)
-        txt_x = Dense(units=256 * self.scale, activation="relu")(txt_x)
-        img_input = Input(shape=(224, 224, 3), name='image')
-        img_x = Conv2D(input_shape=(224, 224, 3), filters=64, kernel_size=(3, 3), padding="same", activation="relu")(
-            img_input
-        )
-        img_x = Conv2D(filters=64, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
-        img_x = MaxPool2D(pool_size=(2, 2), strides=(2, 2))(img_x)
-        img_x = Conv2D(filters=128, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
-        img_x = Conv2D(filters=128, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
-        img_x = MaxPool2D(pool_size=(2, 2), strides=(2, 2))(img_x)
-        img_x = Conv2D(filters=256, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
-        img_x = Conv2D(filters=256, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
-        img_x = Conv2D(filters=256, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
-        img_x = MaxPool2D(pool_size=(2, 2), strides=(2, 2))(img_x)
-        img_x = Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
-        img_x = Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
-        img_x = Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
-        img_x = MaxPool2D(pool_size=(2, 2), strides=(2, 2))(img_x)
-        img_x = Flatten()(img_x)
-        img_x = Dense(units=256 * self.scale, activation="relu")(img_x)
-        img_x = Dense(units=256 * self.scale, activation="relu", name='img_outputs')(img_x)
-        concatenated = Concatenate(axis=-1)([img_x, txt_x])
-        x = Dense(50, input_shape=(512 * self.scale,), activation='relu')(concatenated)
-        x = Dense(50, activation='elu')(x)
-        x = Dense(50, activation='elu')(x)
-        output = Dense(1, activation='sigmoid')(x)
-        self.model = Model(inputs=[img_input, txt_input], outputs=output)
+        # found at https://dev.konfuzio.com/sdk/tutorials/file_splitting/index.html#develop-and-save-a-context-aware-file-splitting-ai  # NOQA
+        txt_input = tf.keras.Input(shape=self.input_shape, name='text')
+        txt_x = tf.keras.layers.Dense(units=512, activation="relu")(txt_input)
+        txt_x = tf.keras.layers.Flatten()(txt_x)
+        txt_x = tf.keras.layers.Dense(units=256 * self.scale, activation="relu")(txt_x)
+        img_input = tf.keras.Input(shape=(224, 224, 3), name='image')
+        img_x = tf.keras.layers.Conv2D(
+            input_shape=(224, 224, 3), filters=64, kernel_size=(3, 3), padding="same", activation="relu"
+        )(img_input)
+        img_x = tf.keras.layers.Conv2D(filters=64, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
+        img_x = tf.keras.layers.MaxPool2D(pool_size=(2, 2), strides=(2, 2))(img_x)
+        img_x = tf.keras.layers.Conv2D(filters=128, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
+        img_x = tf.keras.layers.Conv2D(filters=128, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
+        img_x = tf.keras.layers.MaxPool2D(pool_size=(2, 2), strides=(2, 2))(img_x)
+        img_x = tf.keras.layers.Conv2D(filters=256, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
+        img_x = tf.keras.layers.Conv2D(filters=256, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
+        img_x = tf.keras.layers.MaxPool2D(pool_size=(2, 2), strides=(2, 2))(img_x)
+        img_x = tf.keras.layers.Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
+        img_x = tf.keras.layers.MaxPool2D(pool_size=(2, 2), strides=(2, 2))(img_x)
+        img_x = tf.keras.layers.Flatten()(img_x)
+        img_x = tf.keras.layers.Dense(units=256 * self.scale, activation="relu")(img_x)
+        img_x = tf.keras.layers.Dense(units=256 * self.scale, activation="relu", name='img_outputs')(img_x)
+        concatenated = tf.keras.layers.Concatenate(axis=-1)([img_x, txt_x])
+        x = tf.keras.layers.Dense(50, input_shape=(512 * self.scale,), activation='relu')(concatenated)
+        x = tf.keras.layers.Dense(50, activation='elu')(x)
+        x = tf.keras.layers.Dense(50, activation='elu')(x)
+        output = tf.keras.layers.Dense(1, activation='sigmoid')(x)
+        self.model = tf.keras.models.Model(inputs=[img_input, txt_input], outputs=output)
         self.model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
         logger.info('Multimodal File Splitting Model compiling finished.')
         if not use_gpu:
@@ -344,12 +354,12 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         txt_data = np.asarray(txt_data)
         image = page.get_image().convert('RGB')
         image = image.resize((224, 224))
-        image = img_to_array(image)
+        image = tf.keras.preprocessing.image.img_to_array(image)
         image = image.reshape((1, image.shape[0], image.shape[1], image.shape[2]))
         image = image[..., ::-1]
         image[0] -= 103.939
         img_data = np.concatenate([image])
-        preprocessed = [img_data.reshape((1, 224, 224, 3)), txt_data.reshape((1, 1, 768))]
+        preprocessed = [img_data.reshape((1, 224, 224, 3)), txt_data.reshape((1, 1, 512))]
         if not use_gpu:
             with tf.device('/cpu:0'):
                 prediction = self.model.predict(preprocessed, verbose=0)[0, 0]
@@ -365,6 +375,34 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         else:
             page.is_first_page = False
         return page
+
+    def remove_dependencies(self):
+        """
+        Remove dependencies before saving.
+
+        This is needed for proper saving of the model in lz4 compressed format – if the dependencies are not removed,
+        the resulting pickle will be impossible to load.
+        """
+        globals()['torch'] = None
+        globals()['tf'] = None
+        globals()['transformers'] = None
+
+        del globals()['torch']
+        del globals()['tf']
+        del globals()['transformers']
+
+    def restore_dependencies(self):
+        """
+        Restore removed dependencies after loading.
+
+        This is needed for proper functioning of a loaded model because we have previously removed these dependencies
+        upon saving the model.
+        """
+        from konfuzio_sdk.extras import torch, tensorflow as tf, transformers
+
+        globals()['torch'] = torch
+        globals()['tf'] = tf
+        globals()['transformers'] = transformers
 
     def check_is_ready(self):
         """
@@ -382,7 +420,10 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         if not self.model:
             raise AttributeError(f'{self} has to be fitted before running a prediction.')
 
+        self.restore_dependencies()
 
+
+# begin class (this and further comments are for the documentation)
 class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
     """
     A File Splitting Model that uses a context-aware logic.
@@ -391,6 +432,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
     Category's Documents.
     """
 
+    # begin init
     def __init__(self, categories: List[Category], tokenizer, *args, **kwargs):
         """
         Initialize the Context Aware File Splitting Model.
@@ -410,6 +452,9 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         self.requires_text = True
         self.requires_images = False
 
+    # end init
+
+    # begin fit
     def fit(self, allow_empty_categories: bool = False, *args, **kwargs):
         """
         Gather the strings exclusive for first Pages in a given stream of Documents.
@@ -443,6 +488,9 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
                 else:
                     raise ValueError(f'No exclusive first-page strings were found for {category}.')
 
+    # end fit
+
+    # begin predict
     def predict(self, page: Page) -> Page:
         """
         Predict a Page as first or non-first.
@@ -475,6 +523,9 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         page.is_first_page_confidence = 1
         return page
 
+    # end predict
+
+    # begin check
     def check_is_ready(self):
         """
         Check File Splitting Model is ready for inference.
@@ -498,6 +549,8 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
                 f"Cannot run prediction as none of the Categories in {self.project} have "
                 f"_exclusive_first_page_strings."
             )
+
+    # end check
 
 
 class SplittingAI:
@@ -529,15 +582,19 @@ class SplittingAI:
         """
         if not self.model.requires_images:
             if inplace:
-                document = self.tokenizer.tokenize(document)
+                processed_document = self.tokenizer.tokenize(document)
             else:
-                document = self.tokenizer.tokenize(deepcopy(document))
-            for page in document.pages():
+                processed_document = self.tokenizer.tokenize(deepcopy(document))
+            # we set a Page's Category explicitly because we don't want to lose original Page's Category information
+            # because by default a Page is assigned a Category of a Document, and they are not necessarily the same
+            for page in processed_document.pages():
                 self.model.predict(page)
+                page.set_category(page.get_original_page().category)
         else:
+            processed_document = document
             for page in document.pages():
                 self.model.predict(page)
-        return [document]
+        return [processed_document]
 
     def _suggest_page_split(self, document: Document) -> List[Document]:
         """
@@ -600,8 +657,6 @@ class SplittingAI:
         :return: A list of suggested new Sub-Documents built from the original Document or a list with a Document
         with Pages marked .is_first_page on splitting points.
         """
-        if not document.category:
-            raise AttributeError("A Document without Category cannot be split.")
         if self.model.requires_images:
             document.get_images()
         if return_pages:
@@ -610,13 +665,19 @@ class SplittingAI:
             processed = self._suggest_page_split(document)
         return processed
 
-    def evaluate_full(self, use_training_docs: bool = False) -> FileSplittingEvaluation:
+    def evaluate_full(self, use_training_docs: bool = False, zero_division='warn') -> FileSplittingEvaluation:
         """
         Evaluate the Splitting AI's performance.
 
         :param use_training_docs: If enabled, runs evaluation on the training data to define its quality; if disabled,
         runs evaluation on the test data.
         :type use_training_docs: bool
+        :param zero_division: Defines how to handle situations when precision, recall or F1 measure calculations result
+        in zero division.
+        Possible values: 'warn' – log a warning and assign a calculated metric a value of 0.
+        0 - assign a calculated metric a value of 0.
+        'error' – raise a ZeroDivisionError.
+        None – assign None to a calculated metric.
         :return: Evaluation information for the model.
         """
         pred_docs = []
@@ -628,7 +689,7 @@ class SplittingAI:
             predictions = self.propose_split_documents(doc, return_pages=True)
             assert len(predictions) == 1
             pred_docs.append(predictions[0])
-        self.full_evaluation = FileSplittingEvaluation(original_docs, pred_docs)
+        self.full_evaluation = FileSplittingEvaluation(original_docs, pred_docs, zero_division)
         return self.full_evaluation
 
 

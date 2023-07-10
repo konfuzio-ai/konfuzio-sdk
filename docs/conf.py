@@ -41,6 +41,7 @@ extensions = [
     'sphinx.ext.coverage',
     'm2r2',
     'sphinx.ext.githubpages',
+    'sphinx_toolbox.collapse',
     'sphinx_sitemap',
     'sphinxcontrib.mermaid',
     'notfound.extension',

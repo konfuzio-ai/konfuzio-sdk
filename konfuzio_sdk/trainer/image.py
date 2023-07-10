@@ -1,6 +1,7 @@
-"""Pre processing and data augmentation for images."""
-import torchvision
+"""Preprocessing and data augmentation for images."""
 import PIL.ImageOps
+
+from konfuzio_sdk.extras import torchvision
 
 
 class InvertImage:

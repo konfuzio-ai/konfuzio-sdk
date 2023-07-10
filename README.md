@@ -52,6 +52,15 @@ Then you can use pip to install Konfuzio SDK and run init:
 The init will create a Token to connect to the Konfuzio Server. This will create variables `KONFUZIO_USER`,
 `KONFUZIO_TOKEN` and `KONFUZIO_HOST` in an `.env` file in your working directory.
 
+By default, the SDK is installed without the AI-related dependencies like `torch` or `transformers` and allows for using 
+only the Data-related SDK concepts but not the AI models. To install the SDK with the AI components,
+run the following command:
+  ```
+  git clone https://github.com/konfuzio-ai/konfuzio-sdk.git
+  cd konfuzio-sdk
+  pip install -e .[ai]
+  ```
+
 Find the full installation guide [here](https://dev.konfuzio.com/sdk/get_started.html#install-sdk)
 or setup PyCharm as described [here](https://dev.konfuzio.com/sdk/quickstart_pycharm.html).
 

@@ -1,6 +1,5 @@
 """Utils for the konfuzio sdk package."""
 import datetime
-import hashlib
 import itertools
 import logging
 import operator
@@ -8,6 +7,7 @@ import os
 import pkg_resources
 import regex as re
 import unicodedata
+import uuid
 import zipfile
 from contextlib import contextmanager
 from io import BytesIO
@@ -66,22 +66,18 @@ def exception_or_log_error(
         logger.error(msg)
 
 
-def get_id(a_string, include_time: bool = False) -> int:
+def get_id(include_time: bool = False) -> str:
     """
     Generate a unique ID.
 
-    :param a_string: String used to generating the unique ID
     :param include_time: Bool to include the time in the unique ID
     :return: Unique ID
     """
+    unique_id = str(uuid.uuid4())
     if include_time:
-        unique_string = a_string + get_timestamp(konfuzio_format='%Y-%m-%d-%H-%M-%S.%f')
+        return unique_id + get_timestamp(konfuzio_format='%Y-%m-%d-%H-%M-%S.%f')
     else:
-        unique_string = a_string
-    try:
-        return int(hashlib.md5(unique_string.encode()).hexdigest(), 16)
-    except (UnicodeDecodeError, AttributeError):  # duck typing for bytes like objects
-        return int(hashlib.md5(unique_string).hexdigest(), 16)
+        return unique_id
 
 
 def is_file(file_path, raise_exception=True, maximum_size=100000000, allow_empty=False) -> bool:
@@ -99,8 +95,8 @@ def is_file(file_path, raise_exception=True, maximum_size=100000000, allow_empty
         if file_size > 0 or allow_empty:
             if file_size > maximum_size:
                 logger.warning(f'Please check your BIG file with size {file_size / 1000000:.2f} MB at {file_path}.')
-            with open(file_path, 'rb') as f:
-                logger.debug(f"File expected and found at {file_path} with ID {get_id(f.read())}")
+            with open(file_path, 'rb'):
+                logger.debug(f"File expected and found at {file_path} with ID {get_id()}")
             return True
         else:
             if raise_exception:

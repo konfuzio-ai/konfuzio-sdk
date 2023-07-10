@@ -12,44 +12,48 @@ from copy import deepcopy
 from inspect import signature
 from typing import Union, List, Dict, Tuple, Optional
 from enum import Enum
-from warnings import warn
 
-import timm
-import torchvision
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import transformers
 import numpy as np
 import pandas as pd
 import tqdm
-from torch.utils.data import DataLoader
 
 from konfuzio_sdk.tokenizer.base import AbstractTokenizer
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
 from konfuzio_sdk.data import Document, Page, Category, CategoryAnnotation
+from konfuzio_sdk.extras import (
+    timm,
+    torch,
+    torchvision,
+    transformers,
+    Module,
+    Tensor,
+    FloatTensor,
+    Optimizer,
+    DataLoader,
+    LongTensor,
+    torch_no_grad,
+)
 from konfuzio_sdk.evaluate import CategorizationEvaluation
 from konfuzio_sdk.tokenizer.base import Vocab
+from konfuzio_sdk.trainer.base import BaseModel
 from konfuzio_sdk.trainer.image import ImagePreProcessing, ImageDataAugmentation
 from konfuzio_sdk.utils import get_timestamp
 
 logger = logging.getLogger(__name__)
 
-warn('This module is WIP: https://gitlab.com/konfuzio/objectives/-/issues/9481', FutureWarning, stacklevel=2)
 
-
-class AbstractCategorizationAI(metaclass=abc.ABCMeta):
+class AbstractCategorizationAI(BaseModel, metaclass=abc.ABCMeta):
     """Abstract definition of a CategorizationAI."""
 
     def __init__(self, categories: List[Category], *args, **kwargs):
         """Initialize AbstractCategorizationAI."""
+        super().__init__()
         self.documents = None
         self.test_documents = None
         self.categories = categories
         self.project = None
         if categories is not None:
             self.project = categories[0].project
-        self.name = self.__class__.__name__
         self.evaluation = None
 
     def name_lower(self):
@@ -184,6 +188,26 @@ class AbstractCategorizationAI(metaclass=abc.ABCMeta):
         except AttributeError:
             return False
 
+    @staticmethod
+    def load_model(pickle_path: str, device='cpu'):
+        """
+        Load the model and check if it has the interface compatible with the class.
+
+        :param pickle_path: Path to the pickled model.
+        :type pickle_path: str
+        :raises FileNotFoundError: If the path is invalid.
+        :raises OSError: When the data is corrupted or invalid and cannot be loaded.
+        :raises TypeError: When the loaded pickle isn't recognized as a Konfuzio AI model.
+        :return: Categorization AI model.
+        """
+        model = load_categorization_model(pickle_path, device)
+        if not AbstractCategorizationAI.has_compatible_interface(model):
+            raise TypeError(
+                "Loaded model's interface is not compatible with any AIs. Please provide a model that has all the "
+                "abstract methods implemented."
+            )
+        return model
+
 
 class NameBasedCategorizationAI(AbstractCategorizationAI):
     """A simple, non-trainable model that predicts a Category for a given Document based on a predefined rule.
@@ -225,7 +249,7 @@ class NameBasedCategorizationAI(AbstractCategorizationAI):
         return page
 
 
-class AbstractCategorizationModel(nn.Module, metaclass=abc.ABCMeta):
+class AbstractCategorizationModel(Module, metaclass=abc.ABCMeta):
     """Define general functionality to work with nn.Module classes used for categorization."""
 
     @abc.abstractmethod
@@ -265,10 +289,10 @@ class AbstractTextCategorizationModel(AbstractCategorizationModel, metaclass=abc
         self._define_features()
 
     @abc.abstractmethod
-    def _output(self, text: torch.Tensor) -> List[torch.FloatTensor]:
+    def _output(self, text: Tensor) -> List[FloatTensor]:
         """Collect output of NN architecture."""
 
-    def forward(self, input: Dict[str, torch.Tensor]) -> Dict[str, torch.FloatTensor]:
+    def forward(self, input: Dict[str, Tensor]) -> Dict[str, FloatTensor]:
         """Define the computation performed at every call."""
         text = input['text']
         # text = [batch, seq len]
@@ -312,14 +336,14 @@ class NBOW(AbstractTextCategorizationModel):
 
     def _load_architecture(self) -> None:
         """Load NN architecture."""
-        self.embedding = nn.Embedding(self.input_dim, self.emb_dim)
-        self.dropout = nn.Dropout(self.dropout_rate)
+        self.embedding = torch.nn.Embedding(self.input_dim, self.emb_dim)
+        self.dropout = torch.nn.Dropout(self.dropout_rate)
 
     def _define_features(self) -> None:
         """Define the number of features as the embedding size."""
         self.n_features = self.emb_dim
 
-    def _output(self, text: torch.Tensor) -> List[torch.FloatTensor]:
+    def _output(self, text: Tensor) -> List[FloatTensor]:
         """Collect output of the concatenation embedding -> dropout."""
         text_features = self.dropout(self.embedding(text))
         return [text_features]
@@ -358,15 +382,15 @@ class NBOWSelfAttention(AbstractTextCategorizationModel):
 
     def _load_architecture(self) -> None:
         """Load NN architecture."""
-        self.embedding = nn.Embedding(self.input_dim, self.emb_dim)
-        self.multihead_attention = nn.MultiheadAttention(self.emb_dim, self.n_heads)
-        self.dropout = nn.Dropout(self.dropout_rate)
+        self.embedding = torch.nn.Embedding(self.input_dim, self.emb_dim)
+        self.multihead_attention = torch.nn.MultiheadAttention(self.emb_dim, self.n_heads)
+        self.dropout = torch.nn.Dropout(self.dropout_rate)
 
     def _define_features(self) -> None:
         """Define the number of features as the embedding size."""
         self.n_features = self.emb_dim
 
-    def _output(self, text: torch.Tensor) -> List[torch.FloatTensor]:
+    def _output(self, text: Tensor) -> List[FloatTensor]:
         """Collect output of the multiple attention heads."""
         embeddings = self.dropout(self.embedding(text))
         # transposing so that the batch size is first. the result is embeddings = [batch, seq len, emb dim]
@@ -420,17 +444,17 @@ class LSTM(AbstractTextCategorizationModel):
 
     def _load_architecture(self) -> None:
         """Load NN architecture."""
-        self.embedding = nn.Embedding(self.input_dim, self.emb_dim)
-        self.lstm = nn.LSTM(
+        self.embedding = torch.nn.Embedding(self.input_dim, self.emb_dim)
+        self.lstm = torch.nn.LSTM(
             self.emb_dim, self.hid_dim, self.n_layers, dropout=self.dropout_rate, bidirectional=self.bidirectional
         )
-        self.dropout = nn.Dropout(self.dropout_rate)
+        self.dropout = torch.nn.Dropout(self.dropout_rate)
 
     def _define_features(self) -> None:
         """If the architecture is bidirectional, the feature size is twice as large as the hidden layer size."""
         self.n_features = self.hid_dim * 2 if self.bidirectional else self.hid_dim
 
-    def _output(self, text: torch.Tensor) -> List[torch.FloatTensor]:
+    def _output(self, text: Tensor) -> List[FloatTensor]:
         """Collect output of the LSTM model."""
         embeddings = self.dropout(self.embedding(text))
         # embeddings = [batch size, seq len, emb dim]
@@ -501,7 +525,7 @@ class BERT(AbstractTextCategorizationModel):
         """Get the maximum length of a sequence that can be passed to the BERT module."""
         return self.bert.config.max_position_embeddings
 
-    def _output(self, text: torch.Tensor) -> List[torch.FloatTensor]:
+    def _output(self, text: Tensor) -> List[FloatTensor]:
         """Collect output of the HuggingFace BERT model."""
         bert_output = self.bert(text, output_attentions=True, return_dict=False)
         if len(bert_output) == 2:  # distill-bert models only output features and attention
@@ -519,10 +543,10 @@ class BERT(AbstractTextCategorizationModel):
         return [text_features, attention]
 
 
-class PageCategorizationModel(nn.Module):
+class PageCategorizationModel(Module):
     """Container for Categorization Models."""
 
-    def forward(self, input: Dict[str, torch.Tensor]) -> Dict[str, torch.FloatTensor]:
+    def forward(self, input: Dict[str, Tensor]) -> Dict[str, FloatTensor]:
         """Forward pass."""
         raise NotImplementedError
 
@@ -542,10 +566,10 @@ class PageTextCategorizationModel(PageCategorizationModel):
         self.output_dim = output_dim
         self.dropout_rate = dropout_rate
 
-        self.fc_out = nn.Linear(text_model.n_features, output_dim)
-        self.dropout = nn.Dropout(dropout_rate)
+        self.fc_out = torch.nn.Linear(text_model.n_features, output_dim)
+        self.dropout = torch.nn.Dropout(dropout_rate)
 
-    def forward(self, input: Dict[str, torch.Tensor]) -> Dict[str, torch.FloatTensor]:
+    def forward(self, input: Dict[str, Tensor]) -> Dict[str, FloatTensor]:
         """Forward pass."""
         encoded_text = self.text_model(input)
         text_features = encoded_text['features']
@@ -589,10 +613,10 @@ class AbstractImageCategorizationModel(AbstractCategorizationModel, metaclass=ab
         """Define how model weights are frozen."""
 
     @abc.abstractmethod
-    def _output(self, image: torch.Tensor) -> List[torch.FloatTensor]:
+    def _output(self, image: Tensor) -> List[FloatTensor]:
         """Collect output of NN architecture."""
 
-    def forward(self, input: Dict[str, torch.Tensor]) -> Dict[str, torch.FloatTensor]:
+    def forward(self, input: Dict[str, Tensor]) -> Dict[str, FloatTensor]:
         """Define the computation performed at every call."""
         image = input['image']
         # image = [batch, channels, height, width]
@@ -650,7 +674,7 @@ class VGG(AbstractImageCategorizationModel):
         """VGG11 uses a 7x7x512 max pooling layer."""
         self.n_features = 512 * 7 * 7
 
-    def _output(self, image: torch.Tensor) -> torch.FloatTensor:
+    def _output(self, image: Tensor) -> FloatTensor:
         """Collect output of NN architecture."""
         image_features = self.vgg.features(image)
         image_features = self.vgg.avgpool(image_features)
@@ -712,7 +736,7 @@ class EfficientNet(AbstractImageCategorizationModel):
         """Depends on given EfficientNet model."""
         self.n_features = self.get_n_features()
 
-    def _output(self, image: torch.Tensor) -> torch.FloatTensor:
+    def _output(self, image: Tensor) -> FloatTensor:
         """Collect output of NN architecture."""
         image_features = self.efficientnet(image)
         return image_features
@@ -733,10 +757,10 @@ class PageImageCategorizationModel(PageCategorizationModel):
         self.output_dim = output_dim
         self.dropout_rate = dropout_rate
 
-        self.fc_out = nn.Linear(image_model.n_features, output_dim)
-        self.dropout = nn.Dropout(dropout_rate)
+        self.fc_out = torch.nn.Linear(image_model.n_features, output_dim)
+        self.dropout = torch.nn.Dropout(dropout_rate)
 
-    def forward(self, input: Dict[str, torch.Tensor]) -> Dict[str, torch.FloatTensor]:
+    def forward(self, input: Dict[str, Tensor]) -> Dict[str, FloatTensor]:
         """Forward pass."""
         encoded_image = self.image_model(input)
         image_features = encoded_image['features']
@@ -771,10 +795,10 @@ class AbstractMultimodalCategorizationModel(AbstractCategorizationModel, metacla
         self._define_features()
 
     @abc.abstractmethod
-    def _output(self, image_features: torch.Tensor, text_features: torch.Tensor) -> torch.FloatTensor:
+    def _output(self, image_features: Tensor, text_features: Tensor) -> FloatTensor:
         """Collect output of NN architecture."""
 
-    def forward(self, input: Dict[str, torch.Tensor]) -> Dict[str, torch.FloatTensor]:
+    def forward(self, input: Dict[str, Tensor]) -> Dict[str, FloatTensor]:
         """Define the computation performed at every call."""
         image_features = input['image_features']
         # image_features = [batch, n_image_features]
@@ -806,25 +830,25 @@ class MultimodalConcatenate(AbstractMultimodalCategorizationModel):
 
     def _load_architecture(self) -> None:
         """Load NN architecture."""
-        self.fc1 = nn.Linear(self.n_image_features + self.n_text_features, self.hid_dim)
-        self.fc2 = nn.Linear(self.hid_dim, self.hid_dim)
+        self.fc1 = torch.nn.Linear(self.n_image_features + self.n_text_features, self.hid_dim)
+        self.fc2 = torch.nn.Linear(self.hid_dim, self.hid_dim)
         if self.output_dim is not None:
-            self.fc3 = nn.Linear(self.hid_dim, self.output_dim)
+            self.fc3 = torch.nn.Linear(self.hid_dim, self.output_dim)
 
     def _define_features(self) -> None:
         """Define number of features as self.n_features: int."""
         self.n_features = self.hid_dim
 
-    def _output(self, image_features: torch.Tensor, text_features: torch.Tensor) -> torch.Tensor:
+    def _output(self, image_features: Tensor, text_features: Tensor) -> Tensor:
         """Collect output of NN architecture."""
         concat_features = torch.cat((image_features, text_features), dim=1)
         # concat_features = [batch, n_image_features + n_text_features]
-        x = F.relu(self.fc1(concat_features))
+        x = torch.nn.functional.relu(self.fc1(concat_features))
         # x = [batch size, hid dim]
-        x = F.relu(self.fc2(x))
+        x = torch.nn.functional.relu(self.fc2(x))
         # x = [batch size, hid dim]
         if hasattr(self, 'fc3'):
-            x = F.relu(self.fc3(x))
+            x = torch.nn.functional.relu(self.fc3(x))
         return x
 
 
@@ -856,10 +880,10 @@ class PageMultimodalCategorizationModel(PageCategorizationModel):
         self.multimodal_model = multimodal_model  # input: (image feats, text feats), output: multimodal feats
         self.output_dim = output_dim
 
-        self.fc_out = nn.Linear(multimodal_model.n_features, output_dim)
-        self.dropout = nn.Dropout(dropout_rate)
+        self.fc_out = torch.nn.Linear(multimodal_model.n_features, output_dim)
+        self.dropout = torch.nn.Dropout(dropout_rate)
 
-    def forward(self, input: Dict[str, torch.Tensor]) -> Dict[str, torch.FloatTensor]:
+    def forward(self, input: Dict[str, Tensor]) -> Dict[str, FloatTensor]:
         """Define the computation performed at every call."""
         encoded_image = self.image_model(input)
         image_features = encoded_image['features']
@@ -879,7 +903,7 @@ class PageMultimodalCategorizationModel(PageCategorizationModel):
         return output
 
 
-def get_optimizer(classifier: PageCategorizationModel, config: dict) -> torch.optim.Optimizer:
+def get_optimizer(classifier: PageCategorizationModel, config: dict) -> Optimizer:
     """Get an optimizer for a given Model given a config."""
     logger.info('getting optimizer')
 
@@ -1005,13 +1029,13 @@ class CategorizationAI(AbstractCategorizationAI):
         """Build a vocabulary over the Categories."""
         logger.info('building category vocab')
 
-        counter = collections.Counter(NO_CATEGORY=0)
+        counter = collections.Counter()
+        counter['0'] = 0  # add a 0 category for the NO_CATEGORY category
 
         counter.update([str(category.id_) for category in self.categories])
 
-        template_vocab = Vocab(
-            counter, min_freq=1, max_size=None, unk_token=None, pad_token=None, special_tokens=['NO_CATEGORY']
-        )
+        template_vocab = Vocab(counter, min_freq=1, max_size=None, unk_token=None, pad_token=None, special_tokens=['0'])
+        assert template_vocab.stoi('0') == 0, '0 category should be mapped to 0 index!'
 
         return template_vocab
 
@@ -1037,13 +1061,13 @@ class CategorizationAI(AbstractCategorizationAI):
     def build_document_classifier_iterator(
         self,
         documents,
-        transforms: torchvision.transforms,
+        transforms,
         use_image: bool,
         use_text: bool,
         shuffle: bool,
         batch_size: int,
         max_len: int,
-        device: torch.device = 'cpu',
+        device='cpu',
     ) -> DataLoader:
         """
         Prepare the data necessary for the document classifier, and build the iterators for the data list.
@@ -1067,12 +1091,63 @@ class CategorizationAI(AbstractCategorizationAI):
             if self.tokenizer is not None:
                 tokenized_doc = self.tokenizer.tokenize(tokenized_doc)
             tokenized_doc.status = document.status  # to allow to retrieve images from the original pages
-            doc_info = tokenized_doc.get_document_classifier_examples(
-                self.text_vocab, self.category_vocab, max_len, use_image, use_text
-            )
-            data.extend(zip(*doc_info))
+            document_images = []
+            document_tokens = []
+            document_labels = []
+            document_ids = []
+            document_page_numbers = []
+            if use_image:
+                tokenized_doc.get_images()  # gets the images if they do not exist
+                image_paths = [page.image_path for page in tokenized_doc.pages()]  # gets the paths to the images
+                # @TODO move this validation to the Document class or the Page class
+                assert len(image_paths) > 0, f'No images found for document {tokenized_doc.id_}'
+                if not use_text:  # if only using images then make texts a list of None
+                    page_texts = [None] * len(image_paths)
+            if use_text:
+                page_texts = tokenized_doc.text.split('\f')
+                # @TODO move this validation to the Document class or the Page class
+                assert len(page_texts) > 0, f'No text found for document {tokenized_doc.id_}'
+                if not use_image:  # if only using text then make images used a list of None
+                    image_paths = [None] * len(page_texts)
 
-        def collate(batch, transforms) -> Dict[str, torch.LongTensor]:
+            # check we have the same number of images and text pages
+            # only useful when we have both an image and a text module
+            # @TODO move this validation to the Document class or the Page class
+            assert len(image_paths) == len(
+                page_texts
+            ), f'No. of images ({len(image_paths)}) != No. of pages {len(page_texts)} for document {tokenized_doc.id_}'
+
+            for page in tokenized_doc.pages():
+                if use_image:
+                    # if using an image module, store the path to the image
+                    document_images.append(page.get_image())
+                else:
+                    # if not using image module then don't need the image paths
+                    # so we just have a list of None to keep the lists the same length
+                    document_images.append(None)
+                if use_text:
+                    # if using a text module, tokenize the page, trim to max length and then numericalize
+                    # REPLACE page_tokens = tokenizer.get_tokens(page_text)[:max_len]
+                    # page_encoded = [text_vocab.stoi(span.offset_string) for span in
+                    # self.spans(start_offset=page.start_offset, end_offset=page.end_offset)]
+                    # document_tokens.append(torch.LongTensor(page_encoded))
+                    self.text_vocab.numericalize(page)
+                    document_tokens.append(torch.LongTensor(page.text_encoded))
+                else:
+                    # if not using text module then don't need the tokens
+                    # so we just have a list of None to keep the lists the same length
+                    document_tokens.append(None)
+                # get document classification (defined by the category template)
+                category_id = str(tokenized_doc.category.id_)
+                # append the classification (category), the document's id number and the page number of each page
+                document_labels.append(torch.LongTensor([self.category_vocab.stoi(category_id)]))
+                doc_id = tokenized_doc.id_ or tokenized_doc.copy_of_id
+                document_ids.append(torch.LongTensor([doc_id]))
+                document_page_numbers.append(torch.LongTensor([page.index]))
+            doc_info = zip(document_images, document_tokens, document_labels, document_ids, document_page_numbers)
+            data.extend(doc_info)
+
+        def collate(batch, transforms) -> Dict[str, LongTensor]:
             image, text, label, doc_id, page_num = zip(*batch)
             if use_image:
                 # if we are using images, they are already loaded as `PIL.Image`s, apply transforms and place on GPU
@@ -1100,15 +1175,15 @@ class CategorizationAI(AbstractCategorizationAI):
         data_collate = functools.partial(collate, transforms=transforms)
 
         # build the iterators
-        iterator = DataLoader(data, batch_size=batch_size, shuffle=shuffle, collate_fn=data_collate)
+        iterator = torch.utils.data.DataLoader(data, batch_size=batch_size, shuffle=shuffle, collate_fn=data_collate)
 
         return iterator
 
     def _train(
         self,
         examples: DataLoader,
-        loss_fn: torch.nn.Module,
-        optimizer: torch.optim.Optimizer,
+        loss_fn: Module,
+        optimizer: Optimizer,
     ) -> List[float]:
         """Perform one epoch of training."""
         self.classifier.train()
@@ -1230,7 +1305,7 @@ class CategorizationAI(AbstractCategorizationAI):
         """Reduce the size of the model by running lose_weight on the tokenizer."""
         self.tokenizer.lose_weight()
 
-    @torch.no_grad()
+    @torch_no_grad
     def _predict(self, page_images, text, batch_size=2, *args, **kwargs) -> Tuple[Tuple[int, float], pd.DataFrame]:
         """
         Get the predicted category for a document.
@@ -1346,10 +1421,8 @@ class CategorizationAI(AbstractCategorizationAI):
         # what was the label of that class?
         # what was the confidence of that class?
         predicted_class = int(mean_prediction.argmax())
-        if categories[predicted_class] == 'NO_CATEGORY':
-            predicted_label = 0
-        else:
-            predicted_label = int(categories[predicted_class])
+
+        predicted_label = int(categories[predicted_class])
         predicted_confidence = mean_prediction[predicted_class]
 
         return (predicted_label, predicted_confidence), predictions_df
@@ -1442,7 +1515,7 @@ def build_categorization_ai_pipeline(
 
     Build a Categorization AI neural network by choosing an ImageModel and a TextModel.
 
-    See an in-depth tutorial at https://dev.konfuzio.com/sdk/tutorials.html#model-based-categorization-ai
+    See an in-depth tutorial at https://dev.konfuzio.com/sdk/tutorials/data_validation/index.html
     """
     # Configure Categories, with training and test Documents for the Categorization AI
     categorization_pipeline = CategorizationAI(categories)

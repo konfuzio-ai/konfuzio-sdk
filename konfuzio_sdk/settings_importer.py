@@ -1,6 +1,7 @@
 """Central place to collect settings from Projects and make them available in the konfuzio_sdk package."""
 import logging
 import os
+import pkg_resources
 import sys
 
 from decouple import AutoConfig
@@ -24,6 +25,33 @@ LOG_FORMAT = (
     "%(asctime)s [%(name)-20.20s] [%(threadName)-10.10s] [%(levelname)-8.8s] "
     "[%(funcName)-20.20s][%(lineno)-4.4d] %(message)-10s"
 )
+
+
+def is_dependency_installed(dependency: str) -> bool:
+    """Check if a package is installed."""
+    return dependency in {pkg.key for pkg in pkg_resources.working_set}
+
+
+OPTIONAL_IMPORT_ERROR = "A library *modulename* has not been found."
+
+extras = [
+    'chardet==5.1.0',
+    'pydantic==1.10.8',
+    'torch>=1.8',
+    'torchvision>=0.9',
+    'transformers>=4.21.2',
+    'tensorflow-cpu==2.12.0',
+    'timm==0.6.7',
+    'spacy>=2.3.5',
+]
+
+for extra in extras:
+    extra = extra.split()[0].split('>=')[0].split('==')[0]
+    is_installed = is_dependency_installed(extra)
+    if not is_installed:
+        logging.error(OPTIONAL_IMPORT_ERROR.replace('*modulename*', extra))
+
+DO_NOT_LOG_IMPORT_ERRORS = True
 
 
 def get_handlers():
