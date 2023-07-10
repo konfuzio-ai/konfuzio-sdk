@@ -1,17 +1,23 @@
+.. _information-extraction-tutorials:
 ## Document Information Extraction
 
 ### Train a Konfuzio SDK Model to Extract Information From Payslip Documents
+
+.. _Information Extraction:
 
 The tutorial *RFExtractionAI Demo* aims to show you how to use the Konfuzio SDK package to use a simple `Whitespace
 tokenizer <https://dev.konfuzio.com/sdk/sourcecode.html#konfuzio_sdk.tokenizer.regex.WhitespaceTokenizer>`_ and to
 train a "RFExtractionAI" model to find and extract relevant information like Name, Date and Recipient
 from payslip documents.
 
-You can |OpenInColab| or download it from [here](https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/RFExtractionAI%20Demo.ipynb)
+You can <a href="https://colab.research.google.com/github/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/tutorials/RFExtractionAI%20Demo.ipynb">
+<img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a> or download it from [here](https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/tutorials/RFExtractionAI%20Demo.ipynb)
 and try it by yourself.
 
 .. |OpenInColab| image:: https://colab.research.google.com/assets/colab-badge.svg
-.. _OpenInColab: https://colab.research.google.com/github/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/RFExtractionAI%20Demo.ipynb
+.. _OpenInColab: https://colab.research.google.com/github/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/tutorials/RFExtractionAI%20Demo.ipynb
+
+To prepare the data for training and testing your AI, you can follow the [data preparation tutorial](tutorials.html#tutorials.html#prepare-the-data-for-training-and-testing-the-ai).
 
 ### Train a custom Extraction AI
 
@@ -309,7 +315,8 @@ Let's go step by step.
 ### Evaluate a Trained Extraction AI Model
 
 In this example we will see how we can evaluate a trained `RFExtractionAI` model. We will assume that we have a trained 
-pickled model available. Check out the [Evaluation](https://dev.konfuzio.com/sdk/sourcecode.html#ai-evaluation) 
+pickled model available. See :ref:`here <Information Extraction>` 
+for how to train such a model, and check out the [Evaluation](https://dev.konfuzio.com/sdk/sourcecode.html#ai-evaluation) 
 documentation for more details.
 
 .. literalinclude:: /sdk/boilerplates/test_evaluate_extraction_ai.py

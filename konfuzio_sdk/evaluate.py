@@ -627,7 +627,7 @@ class CategorizationEvaluation:
 
     def confusion_matrix(self) -> pandas.DataFrame:
         """Confusion matrix."""
-        return confusion_matrix(self.actual_classes, self.predicted_classes, labels=self.category_ids + [-1])
+        return confusion_matrix(self.actual_classes, self.predicted_classes, labels=self.category_ids + [0])
 
     def _get_tp_tn_fp_fn_per_category(self) -> Dict[int, EvaluationCalculator]:
         """

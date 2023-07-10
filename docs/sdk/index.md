@@ -19,8 +19,8 @@ For documentation about how to train and evaluate document understanding AIs, as
 Konfuzio Server web interface, please see our [Konfuzio Guide](https://help.konfuzio.com/tutorials/quickstart/index.html).
 
 If you need to **add custom functionality** to the document processes of the Konfuzio Server, the Konfuzio SDK 
-is the tool for you. You can customize pipelines for automatic document [Categorization](https://dev.konfuzio.com/sdk/tutorials.html#document-categorization),
-[File Splitting](https://dev.konfuzio.com/sdk/tutorials.html#file-splitting-tutorials), and [Extraction](https://dev.konfuzio.com/sdk/tutorials.html#document-information-extraction).
+is the tool for you. You can customize pipelines for automatic document :ref:`Categorization<document-categorization-tutorials>`,
+:ref:`File Splitting<file-splitting-tutorials>`, and :ref:`Extraction<information-extraction-tutorials>`.
 These processes allow to split stack scans, categorize and extract information from the Documents.
 
 .. note::
@@ -29,6 +29,6 @@ These processes allow to split stack scans, categorize and extract information f
 ### Other use cases around documents
 
 You can also use the Konfuzio SDK for other Document-related purposes like filling in the PDF forms via the generator. 
-For further information, check out our tutorial on [how to create a PDF form generator](https://dev.konfuzio.com/sdk/tutorials.html#build-your-own-pdf-form-generator).
+For further information, check out our tutorial on :ref:`how to create a PDF form generator<pdf-form-generator>`.
 
 

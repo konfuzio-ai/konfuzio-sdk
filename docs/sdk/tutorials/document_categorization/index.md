@@ -1,8 +1,13 @@
+.. _document-categorization-tutorials:
 ## Document Categorization
 
-### Working with the Category of a Document and its individual Pages
+When uploading a Document to Konfuzio, the first step is to assign it to a :ref:`Category<category-concept>`. This 
+can be done manually, or automatically using a Categorization AI.
 
-You can initialize a Document with a Category, which will count as if a human manually revised it.
+### Setting the Category of a Document and its individual Pages Manually
+
+You can initialize a Document with a :ref:`Category<category-concept>`. You can also use `Document.set_category` to set 
+a Document's Category after it has been initialized. This will count as if a human manually revised it.
 
 .. exec_code::
    
@@ -45,11 +50,11 @@ manually set later.
        assert page.category == my_category
 
 If you use a Categorization AI to automatically assign a Category to a Document (such as the 
-[NameBasedCategorizationAI](tutorials.html#name-based-categorization-ai)), each Page will be assigned a 
+[NameBasedCategorizationAI](#name-based-categorization-ai), each Page will be assigned a 
 Category Annotation with predicted confidence information, and the following properties will be accessible. You can 
-also find these documented under [API Reference - Document](sourcecode.html#document), 
-[API Reference - Page](sourcecode.html#page) and 
-[API Reference - Category Annotation](sourcecode.html#category-annotation).
+also find these documented under [API Reference - Document](../../sourcecode.html#document), 
+[API Reference - Page](../../sourcecode.html#page) and 
+[API Reference - Category Annotation](../../sourcecode.html#category-annotation).
 
 | Property                     | Description                                                                                                                                                                                                                       |
 |-------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -63,9 +68,13 @@ also find these documented under [API Reference - Document](sourcecode.html#docu
 | `Page.maximum_confidence_category_annotation`   | Get the maximum confidence predicted Category<br>Annotation or the one revised by the user for this<br>Page.                                                                                                                      |
 | `Page.category`  | Get the maximum confidence predicted Category<br>or the one revised by user for this Page.                                                                                                                                        |
 
+To categorize a Document with a Categorization AI, we have two main options: the Name-based Categorization AI and the 
+more complex Model-based Categorization AI.
+
 ### Name-based Categorization AI
 
-Use the name of the Category as an effective fallback logic to categorize Documents when no Categorization AI is available:
+The name-based Categorization AI is a good fallback logic using the name of the Category to categorize Documents when 
+no model-based Categorization AI is available:
 
 .. exec_code::
    
@@ -107,9 +116,8 @@ Use the name of the Category as an effective fallback logic to categorize Docume
 
 ### Model-based Categorization AI
 
-Build, train and test a Categorization AI using Image Models and Text Models to classify the image and text of each Page.
-
-For a list of available Models see [Available Categorization Models](#categorization-models-available).
+For better results you can build, train and test a Categorization AI using Image Models and Text Models to classify 
+the image and text of each Page:
 
 .. exec_code::
 
@@ -162,8 +170,11 @@ For a list of available Models see [Available Categorization Models](#categoriza
    pickle_ai_path = categorization_pipeline.save()
    categorization_pipeline = CategorizationAI.load_model(pickle_ai_path)
 
-.. _categorization-models-available:
-#### Available Categorization Models
+To prepare the data for training and testing your AI, follow the [data preparation tutorial](tutorials.html#tutorials.html#prepare-the-data-for-training-and-testing-the-ai).
+
+For a list of available Models see all the available [Categorization Models](#categorization-ai-models) below.
+
+#### Categorization AI Models
 
 When using `build_categorization_ai_pipeline`, you can select which Image Module and/or Text Module to use for 
 classification. At least one between the Image Model or the Text Model must be specified. Both can also be used 
@@ -196,14 +207,14 @@ The list of available Categorization Models is implemented as an Enum containing
    TextModel.LSTM
    TextModel.BERT
 
-See more details about these Categorization Models under [API Reference - Categorization AI](sourcecode.html#categorization-ai).
+See more details about these Categorization Models under [API Reference - Categorization AI](../../sourcecode.html#categorization-ai).
 
 ### Customize Categorization AI
 
 This section explains how to train a custom Categorization AI locally, how to save it and upload it to the Konfuzio 
 Server. 
 
-By default, any [Categorization AI](sourcecode.html#categorization-ai) class should derive from the 
+By default, any [Categorization AI](../../sourcecode.html#categorization-ai) class should derive from the 
 `AbstractCategorizationModel` class and implement the following interface:
 
 .. exec_code::
@@ -363,5 +374,5 @@ interface to categorize Documents, as exemplified in the code examples above. It
 to categorize each Page. The Page Categorization Model is a container for Categorization Models: it wraps the feature 
 output layers of each contained Model with a Dropout Layer and a Fully Connected Layer.
 
-<div class="mxgraph" style="max-width:100%;border:1px solid transparent;" data-mxgraph="{&quot;highlight&quot;:&quot;#0000ff&quot;,&quot;nav&quot;:true,&quot;resize&quot;:true,&quot;toolbar&quot;:&quot;zoom layers tags lightbox&quot;,&quot;edit&quot;:&quot;_blank&quot;,&quot;url&quot;:&quot;https://raw.githubusercontent.com/konfuzio-ai/konfuzio-sdk/master/docs/sdk/examples/document_categorization/CategorizationAI.drawio&quot;}"></div>
-<script type="text/javascript" src="https://viewer.diagrams.net/embed2.js?&fetch=https%3A%2F%2Fraw.githubusercontent.com%2Fkonfuzio-ai%2Fkonfuzio-sdk%2Fmaster%2Fdocs%2Fsdk%2Fexamples%2Fdocument_categorization%2FCategorizationAI.drawio"></script>
+<div class="mxgraph" style="max-width:100%;border:1px solid transparent;" data-mxgraph="{&quot;highlight&quot;:&quot;#0000ff&quot;,&quot;nav&quot;:true,&quot;resize&quot;:true,&quot;toolbar&quot;:&quot;zoom layers tags lightbox&quot;,&quot;edit&quot;:&quot;_blank&quot;,&quot;url&quot;:&quot;https://raw.githubusercontent.com/konfuzio-ai/konfuzio-sdk/master/docs/sdk/tutorials/document_categorization/CategorizationAI.drawio&quot;}"></div>
+<script type="text/javascript" src="https://viewer.diagrams.net/embed2.js?&fetch=https%3A%2F%2Fraw.githubusercontent.com%2Fkonfuzio-ai%2Fkonfuzio-sdk%2Fmaster%2Fdocs%2Fsdk%2Ftutorials%2Fdocument_categorization%2FCategorizationAI.drawio"></script>
