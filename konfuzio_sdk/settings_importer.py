@@ -46,7 +46,7 @@ extras = [
 ]
 
 for extra in extras:
-    extra = extra.split()[0].split('>=')[0].split('==')[0].split('-')[0]
+    extra = extra.split()[0].split('>=')[0].split('==')[0]
     is_installed = is_dependency_installed(extra)
     if not is_installed:
         logging.error(OPTIONAL_IMPORT_ERROR.replace('*modulename*', extra))
