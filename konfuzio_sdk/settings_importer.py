@@ -32,7 +32,11 @@ def is_dependency_installed(dependency: str) -> bool:
     return dependency in {pkg.key for pkg in pkg_resources.working_set}
 
 
-OPTIONAL_IMPORT_ERROR = "A library *modulename* has not been found."
+OPTIONAL_IMPORT_ERROR = (
+    "A library *modulename* has not been found, so Konfuzio SDK is initialized without the AI "
+    "components. To install Konfuzio SDK with all the AI-related libraries, see "
+    "https://dev.konfuzio.com/sdk/get_started/index.html#install-konfuzio-sdk-package."
+)
 
 extras = [
     'chardet==5.1.0',
