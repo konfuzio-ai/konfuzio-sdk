@@ -1763,7 +1763,7 @@ class TestOfflineDataSetup(unittest.TestCase):
 
         # Add annotation for the first time
         span = Span(start_offset=1, end_offset=2)
-        with pytest.raises(ValueError, match="where the Сategory is"):
+        with pytest.raises(ValueError, match="where the Category is"):
             _ = Annotation(
                 document=document,
                 is_correct=True,
