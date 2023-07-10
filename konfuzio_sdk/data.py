@@ -3206,7 +3206,7 @@ class Document(Data):
                 if annotation.label is self.project.no_label and annotation.label_set is self.project.no_label_set:
                     self._annotations.append(annotation)
                 else:
-                    raise ValueError(f'We cannot add {annotation} to {self} where the Сategory is {self.category}')
+                    raise ValueError(f'We cannot add {annotation} to {self} where the Category is {self.category}')
         else:
             exception_or_log_error(
                 msg=f'In {self} the {annotation} is a duplicate of {duplicated} and will not be added.',
