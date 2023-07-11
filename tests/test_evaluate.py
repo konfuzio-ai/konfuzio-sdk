@@ -214,6 +214,19 @@ class TestCompare(unittest.TestCase):
         assert evaluation["tokenizer_false_positive"].sum() == 24
         assert evaluation["tokenizer_false_negative"].sum() == 0
 
+    def test_false_positive_document_id_predicted(self):
+        """Test that false positive rows contain the document id."""
+        prj = Project(id_=None, project_folder=OFFLINE_PROJECT)
+        doc_b = prj.get_document_by_id(TEST_DOCUMENT_ID)
+        doc_a = Document(project=prj, category=doc_b.category)
+        evaluation = compare(doc_a, doc_b, ignore_below_threshold=False)
+
+        assert len(evaluation) == 25
+        assert evaluation["false_positive"].sum() == 23
+
+        false_positives = evaluation[evaluation["false_positive"]]
+        assert set(false_positives['document_id_predicted']) == {TEST_DOCUMENT_ID}
+
     def test_strict_nothing_can_be_predicted(self):
         """Support to evaluate that nothing must be found in a document."""
         prj = Project(id_=None, project_folder=OFFLINE_PROJECT)
