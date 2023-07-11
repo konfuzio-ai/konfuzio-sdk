@@ -26,7 +26,7 @@ You can think of the _Planned_ section as a _Roadmap_ that lists Konfuzio Server
 Upcoming...
 
 ## released-2023-07-11_16-07-40
-This version uses the Konfuzio Python SDK in version v.0.2.24 and Konfuzio Document Validation UI in version v.0.1.9.
+This version uses the Konfuzio Python SDK in version v.0.2.25 and Konfuzio Document Validation UI in version v.0.1.9.
 
 ### Fixed
 - The fallback to process corrupted PDFs was not working correctly ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11355)).
