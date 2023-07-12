@@ -138,7 +138,7 @@ Now that we have ngrok set up, we can see how to use it to pull the results of a
             document = project.get_document_by_id(document_id)
             document.update()
 
-        for document in docs:
+        for document in documents:
             assert document.text is not None
 
         print(documents)
@@ -153,7 +153,7 @@ Now that we have ngrok set up, we can see how to use it to pull the results of a
     ```python
     if __name__=='__main__':
         file_names = ['LIST.pdf', 'OF.jpg', 'FILES.tiff']
-        threading.Thread(target=send_post, args=(file_names,)).start()
+        threading.Thread(target=send_files, args=(file_names,)).start()
         app.run(debug=True, use_reloader=False, port=5000)
     ```
 

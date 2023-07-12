@@ -23,6 +23,11 @@ You can think of the _Planned_ section as a _Roadmap_ that lists Konfuzio Server
 
 ## Next Release (estimated release date 21th July 2023)
 
+Upcoming...
+
+## released-2023-07-11_16-07-40
+This version uses the Konfuzio Python SDK in version v.0.2.25 and Konfuzio Document Validation UI in version v.0.1.9.
+
 ### Fixed
 - The fallback to process corrupted PDFs was not working correctly ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11355)).
 - On https://app.konfuzio.com the trial period for new User was not set ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11403)).
