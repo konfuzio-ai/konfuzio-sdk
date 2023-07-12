@@ -19,7 +19,7 @@ import pandas as pd
 from sklearn.datasets import make_classification
 from sklearn.ensemble import RandomForestClassifier
 
-from konfuzio_sdk.data import Project, Document, AnnotationSet, Annotation, Span, LabelSet
+from konfuzio_sdk.data import Category, Project, Document, AnnotationSet, Annotation, Span, LabelSet
 
 from konfuzio_sdk.api import upload_ai_model
 from konfuzio_sdk.settings_importer import is_dependency_installed
@@ -28,7 +28,7 @@ from konfuzio_sdk.tokenizer.paragraph_and_sentence import ParagraphTokenizer, Se
 from konfuzio_sdk.tokenizer.base import ListTokenizer
 from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
 from konfuzio_sdk.samples import LocalTextProject
-from konfuzio_sdk.utils import memory_size_of
+from konfuzio_sdk.utils import memory_size_of, is_file
 
 from konfuzio_sdk.trainer.information_extraction import (
     num_count,
@@ -1360,6 +1360,42 @@ class TestInformationExtraction(unittest.TestCase):
 
         wrong_class = WrongClass()
         assert not pipeline.has_compatible_interface(wrong_class)
+
+
+class ToyCustomExtractionAI(AbstractExtractionAI):
+    """Toy custom Extraction AI returning empty Document."""
+
+    def __init__(self, category: Category):
+        """Initialize toy extraction AI."""
+        super().__init__(category)
+
+    def extract(self, document: Document) -> Document:
+        """Extract toy extraction AI."""
+        empty_doc = deepcopy(document)
+        return empty_doc
+
+
+class TestCustomExtractionAI(unittest.TestCase):
+    """Test creation of a custom ExtractionAI models."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Set up toy Custom ExtractionAI."""
+        cls.project = LocalTextProject()
+        cls.category = cls.project.get_category_by_id(1)
+        cls.sample_document = cls.project.local_none_document
+
+    def test_toy_custom_extraction_ai(self):
+        """Test creation of a toy Custom ExtractionAI."""
+        pipeline = ToyCustomExtractionAI(category=self.category)
+        assert pipeline.category is self.category
+        empty_doc = pipeline.extract(self.sample_document)
+        assert len(empty_doc.annotations(use_correct=False)) == 0
+
+        model_path = pipeline.save()
+        is_file(model_path, raise_exception=True)
+
+        os.remove(model_path)
 
 
 @pytest.mark.skipif(
