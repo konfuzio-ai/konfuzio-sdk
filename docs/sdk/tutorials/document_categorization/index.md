@@ -94,13 +94,18 @@ The list of available Categorization Models is implemented as an Enum containing
 
 See more details about these Categorization Models under [API Reference - Categorization AI](../../sourcecode.html#categorization-ai).
 
-### Customize Categorization AI
+### Create a custom Categorization AI
 
 This section explains how to train a custom Categorization AI locally, how to save it and upload it to the Konfuzio 
-Server. 
+Server. If you run this tutorial in Colab and experience any version compatibility issues when working with the SDK, restart the
+runtime and initialize the SDK once again; this will resolve the issue.
+
+Note: you don't necessarily need to create the AI from scratch if you already have some document-processing architecture.
+You just need to wrap it into the class that corresponds to our Categorization AI structure. Follow the steps in this 
+tutorial to find out what are the requirements for that.
 
 By default, any [Categorization AI](../../sourcecode.html#categorization-ai) class should derive from the 
-`AbstractCategorizationModel` class and implement the following interface:
+`AbstractCategorizationModel` class and implement the following methods:
 
 .. literalinclude:: /sdk/boilerplates/test_custom_categorization_ai.py
    :language: python
@@ -122,7 +127,8 @@ Example usage of your Custom Categorization AI:
    :dedent: 4
 
 After you have trained your custom AI, you can upload it using the steps from the [tutorial](https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html#upload-extraction-or-category-ai-to-target-instance)
-or using the method `upload_ai_model()`. You can also remove an uploaded model by using `delete_ai_model()`.
+or using the method `upload_ai_model()`, provided that you have the Superuser rights. You can also remove an uploaded 
+model by using `delete_ai_model()`.
 
 ```python
 from konfuzio_sdk.api import upload_ai_model, delete_ai_model

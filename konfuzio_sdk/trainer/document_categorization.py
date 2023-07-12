@@ -218,7 +218,7 @@ class NameBasedCategorizationAI(AbstractCategorizationAI):
     """
 
     def fit(self) -> None:
-        """Use as placeholder Function."""
+        """Use as placeholder Function because there's no classifier to be trainer."""
         raise NotImplementedError(
             f'{self} uses a fallback logic for categorizing Documents, and does not train a classifier.'
         )

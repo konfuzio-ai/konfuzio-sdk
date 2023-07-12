@@ -9,6 +9,8 @@ def test_create_extraction_ai():
 
     class CustomExtractionAI(AbstractExtractionAI):
         def __init__(self, category: Category, *args, **kwargs):
+            # we need to specify Category because it defines which Labels will be used in the Extraction, i.e. which
+            # Labels will be present in the processed Document
             super().__init__(category)
             pass
 
@@ -25,6 +27,8 @@ def test_create_extraction_ai():
         #             class_weight="balanced", random_state=100
         #         )
         # self.clf.fit(self.df_train[self.label_feature_list], self.df_train['target'])
+        #
+        # This method does not return anything; rather, it modifies the self.model if you provide this attribute.
         #
         # This method is allowed to be implemented as a no-op if you provide the trained model in other ways
 
@@ -106,9 +110,9 @@ def test_create_extraction_ai():
     category = project.get_category_by_id(63)
     extraction_pipeline = RFExtractionAI()
     extraction_pipeline.tokenizer = ListTokenizer(tokenizers=[])
+    extraction_pipeline.category = category
     # start category
     # provide the categories, training and test data
-    extraction_pipeline.category = category
     extraction_pipeline.documents = extraction_pipeline.category.documents()
     extraction_pipeline.test_documents = extraction_pipeline.category.test_documents()
     # end category
@@ -120,10 +124,6 @@ def test_create_extraction_ai():
     # Train the AI
     extraction_pipeline.fit()
 
-    # Evaluate the AI
-    data_quality = extraction_pipeline.evaluate_full(use_training_docs=True)
-    ai_quality = extraction_pipeline.evaluate_full(use_training_docs=False)
-
     # Extract a Document
     document = project.get_document_by_id(YOUR_DOCUMENT_ID)
     extraction_result: Document = extraction_pipeline.extract(document=document)
@@ -132,20 +132,7 @@ def test_create_extraction_ai():
     pickle_model_path = extraction_pipeline.save(output_dir=project.model_folder, include_konfuzio=True)
     extraction_pipeline_loaded = RFExtractionAI.load_model(pickle_model_path)
     # end train
-    from konfuzio_sdk.evaluate import ExtractionEvaluation
-
-    assert isinstance(data_quality, ExtractionEvaluation)
-    assert isinstance(ai_quality, ExtractionEvaluation)
     assert isinstance(extraction_result, Document)
     assert isinstance(extraction_pipeline_loaded, RFExtractionAI)
 
-    # start upload
-    # from konfuzio_sdk.api import upload_ai_model, delete_ai_model
-    #
-    # # upload a saved model to the server
-    # model_id = upload_ai_model(pickle_model_path)
-    #
-    # # remove model
-    # delete_ai_model(model_id, ai_type='extraction')
-    # end upload
     os.remove(pickle_model_path)

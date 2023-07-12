@@ -10,6 +10,7 @@ def test_custom_file_splitting_ai():
 
     class CustomFileSplittingModel(AbstractFileSplittingModel):
         def __init__(self, categories: List[Category], *args, **kwargs):
+            # we need Categories because we define the split points based off on the Documents within certain Categories
             super().__init__(categories)
             pass
 
@@ -26,6 +27,8 @@ def test_custom_file_splitting_ai():
         #
         # for category in self.categories:
         #     cur_first_page_strings = category.exclusive_first_page_strings(tokenizer=self.tokenizer)
+        #
+        # This method does not return anything; rather, it modifies the self.model if you provide this attribute.
         #
         # This method is allowed to be implemented as a no-op if you provide the trained model in other ways
 
