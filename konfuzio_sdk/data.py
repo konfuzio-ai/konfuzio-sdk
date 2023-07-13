@@ -4100,8 +4100,8 @@ def download_training_and_test_data(id_: int):
     """
     Migrate your Project to another HOST.
 
-    See https://help.konfuzio.com/integrations/migration-between-konfuzio-server-instances/index.html
-        #migrate-projects-between-konfuzio-server-instances
+    See https://dev.konfuzio.com/web/migration-between-konfuzio-server-instances/index.html
+
     """
     prj = Project(id_=id_, update=True)
 
