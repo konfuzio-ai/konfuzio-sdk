@@ -706,7 +706,6 @@ class TestRegexRFExtractionAI(unittest.TestCase):
 
         for f in os.listdir(dir):
             os.remove(os.path.join(dir, f))
-
         if os.path.isfile(cls.pipeline.pipeline_path):
             os.remove(cls.pipeline.pipeline_path)  # cleanup
             os.remove(cls.pipeline.pipeline_path_no_konfuzio_sdk)
@@ -1384,18 +1383,30 @@ class TestCustomExtractionAI(unittest.TestCase):
         cls.project = LocalTextProject()
         cls.category = cls.project.get_category_by_id(1)
         cls.sample_document = cls.project.local_none_document
+        cls.pipeline = ToyCustomExtractionAI(category=cls.category)
 
     def test_toy_custom_extraction_ai(self):
         """Test creation of a toy Custom ExtractionAI."""
-        pipeline = ToyCustomExtractionAI(category=self.category)
-        assert pipeline.category is self.category
-        empty_doc = pipeline.extract(self.sample_document)
+        assert self.pipeline.category is self.category
+        empty_doc = self.pipeline.extract(self.sample_document)
         assert len(empty_doc.annotations(use_correct=False)) == 0
 
-        model_path = pipeline.save()
-        is_file(model_path, raise_exception=True)
+        self.pipeline.pipeline_path = self.pipeline.save()
 
-        os.remove(model_path)
+    def test_load_model(self):
+        """Test loading and running the saved model."""
+        is_file(self.pipeline.pipeline_path, raise_exception=True)
+        loaded_pipeline = ToyCustomExtractionAI.load(self.pipeline.pipeline_path)
+        assert loaded_pipeline.category is self.category
+        empty_doc = loaded_pipeline.extract(self.sample_document)
+        assert len(empty_doc.annotations(use_correct=False)) == 0
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        """Clear created files."""
+        is_file(cls.pipeline.pipeline_path, raise_exception=True)
+
+        os.remove(cls.pipeline.pipeline_path)
 
 
 @pytest.mark.skipif(
