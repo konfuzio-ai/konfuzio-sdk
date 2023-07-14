@@ -587,7 +587,7 @@ def upload_ai_model(ai_model_path: str, category_ids: List[int] = None, session=
     if is_file(ai_model_path):
         model_name = os.path.basename(ai_model_path)
         with open(ai_model_path, 'rb') as f:
-            multipart_form_data = {'ai_model': (model_name, f)}
+            multipart_form_data = {'file': (model_name, f)}
             headers = {"Prefer": "respond-async"}
             r = session.post(url, files=multipart_form_data, headers=headers)
     data = r.json()
