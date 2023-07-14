@@ -1385,7 +1385,7 @@ class TestCustomExtractionAI(unittest.TestCase):
         cls.sample_document = cls.project.local_none_document
         cls.pipeline = ToyCustomExtractionAI(category=cls.category)
 
-    def test_toy_custom_extraction_ai(self):
+    def test_01_toy_custom_extraction_ai(self):
         """Test creation of a toy Custom ExtractionAI."""
         assert self.pipeline.category is self.category
         empty_doc = self.pipeline.extract(self.sample_document)
@@ -1393,11 +1393,11 @@ class TestCustomExtractionAI(unittest.TestCase):
 
         self.pipeline.pipeline_path = self.pipeline.save()
 
-    def test_load_model(self):
+    def test_02_load_model(self):
         """Test loading and running the saved model."""
         is_file(self.pipeline.pipeline_path, raise_exception=True)
-        loaded_pipeline = ToyCustomExtractionAI.load(self.pipeline.pipeline_path)
-        assert loaded_pipeline.category is self.category
+        loaded_pipeline = ToyCustomExtractionAI.load_model(self.pipeline.pipeline_path)
+        assert loaded_pipeline.category == self.category
         empty_doc = loaded_pipeline.extract(self.sample_document)
         assert len(empty_doc.annotations(use_correct=False)) == 0
 
