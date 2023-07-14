@@ -52,6 +52,7 @@ Review the release notes and and the source code on `GitHub <https://github.com/
    web/explanations.rst
    web/api-v3.md
    web/on_premises.md
+   web/passwords/index.md
    web/changelog_app.md
 
 .. toctree::
