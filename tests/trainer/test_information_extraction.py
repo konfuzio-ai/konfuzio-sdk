@@ -21,7 +21,7 @@ from sklearn.ensemble import RandomForestClassifier
 
 from konfuzio_sdk.data import Project, Document, AnnotationSet, Annotation, Span, LabelSet
 
-from konfuzio_sdk.api import upload_ai_model
+from konfuzio_sdk.api import upload_ai_model, update_ai_model, delete_ai_model
 from konfuzio_sdk.settings_importer import is_dependency_installed
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, RegexTokenizer
 from konfuzio_sdk.tokenizer.paragraph_and_sentence import ParagraphTokenizer, SentenceTokenizer
@@ -330,12 +330,17 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         assert previous_size > memory_size_of(self.pipeline)
 
     @pytest.mark.xfail(reason='Your user might not have the correct permission to upload an AI.')
-    def test_05_upload_ai_model(self):
+    def test_05_upload_modify_delete_ai_model(self):
         """Upload the model."""
         assert os.path.isfile(self.pipeline.pipeline_path)
 
         try:
-            upload_ai_model(ai_model_path=self.pipeline.pipeline_path, category_ids=[self.pipeline.category.id_])
+            model_id = upload_ai_model(
+                ai_model_path=self.pipeline.pipeline_path, category_id=self.pipeline.category.id_
+            )
+            updated = update_ai_model(model_id, ai_type='extraction', description='test_description')
+            assert updated
+            delete_ai_model(model_id, ai_type='extraction')
         except HTTPError as e:
             assert '403' in str(e)
 

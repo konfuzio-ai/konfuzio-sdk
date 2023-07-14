@@ -563,15 +563,21 @@ def get_results_from_segmentation(doc_id: int, project_id: int, session=konfuzio
     return segmentation_result
 
 
-def upload_ai_model(ai_model_path: str, category_ids: List[int] = None, session=konfuzio_session()):  # noqa: F821
+def upload_ai_model(
+    ai_model_path: str, project_id: int = None, category_id: int = None, session=konfuzio_session()
+):  # noqa: F821
     """
     Upload an ai_model to the text-annotation server.
 
     :param ai_model_path: Path to the ai_model
-    :param category_ids: define ids of Categories the model should become available after upload.
+    :param project_id: An ID of a Project to which the AI is uploaded. Needed for the File Splitting and Categorization
+    AIs.
+    :param category_id: An ID of a Category on which the AI is trained. Needed for the Extraction AIs.
     :param session: session to connect to server
     :return:
     """
+    if (not project_id) and (not category_id):
+        raise ValueError('Project ID or Category ID has to be specified; both values cannot be empty.')
     if 'extraction' in ai_model_path:
         ai_type = 'extraction'
     elif 'filesplitting' in ai_model_path:
@@ -589,16 +595,14 @@ def upload_ai_model(ai_model_path: str, category_ids: List[int] = None, session=
         with open(ai_model_path, 'rb') as f:
             multipart_form_data = {'file': (model_name, f)}
             headers = {"Prefer": "respond-async"}
-            r = session.post(url, files=multipart_form_data, headers=headers)
+            if not ai_type == 'extraction':
+                data = {'project': str(project_id)}
+            else:
+                data = {'category': str(category_id)}
+            r = session.post(url, files=multipart_form_data, data=data, headers=headers)
     data = r.json()
     ai_model_id = data['id']
     ai_model = data['name']
-
-    if category_ids:
-        url = get_ai_model_url(ai_model_id, ai_type)
-        data = {'templates': category_ids}
-        headers = {'content-type': 'application/json'}
-        session.patch(url, data=json.dumps(data), headers=headers)
 
     logger.info(f'New AI Model {ai_model} uploaded to {url}')
     return ai_model_id
@@ -613,9 +617,10 @@ def delete_ai_model(ai_model_id: int, ai_type: str, session=konfuzio_session()):
     following: 'file_splitting', 'extraction', 'categorization'.
     :param session: session to connect to the server.
     """
-    if ai_type not in ['file_splitting', 'extraction', 'categorization']:
-        raise ValueError("ai_type should have the value of 'file_splitting', 'extraction', or 'categorization'.")
+    if ai_type not in ['filesplitting', 'extraction', 'categorization']:
+        raise ValueError("ai_type should have the value of 'filesplitting', 'extraction', or 'categorization'.")
     url = get_ai_model_url(ai_model_id, ai_type)
+    print(url)
     r = session.delete(url)
     if r.status_code == 200:
         return json.loads(r.text)['id']
@@ -634,23 +639,19 @@ def update_ai_model(ai_model_id: int, ai_type: str, session=konfuzio_session(), 
     following: 'file_splitting', 'extraction', 'categorization'.
     :param session: session to connect to the server.
     """
-    if ai_type not in ['file_splitting', 'extraction', 'categorization']:
-        raise ValueError("ai_type should have the value of 'file_splitting', 'extraction', or 'categorization'.")
+    if ai_type not in ['filesplitting', 'extraction', 'categorization']:
+        raise ValueError("ai_type should have the value of 'filesplitting', 'extraction', or 'categorization'.")
     url = get_ai_model_url(ai_model_id, ai_type)
 
     data = {}
     name = kwargs.get('name', None)
     description = kwargs.get('description', None)
-    category = kwargs.get('category', None)
 
     if name is not None:
-        data.update({"data_file_name": name})
+        data.update({"name": name})
 
     if description is not None:
         data.update({"description": description})
-
-    if category is not None:
-        data.update({"category": category})
 
     r = session.patch(url=url, json=data)
 

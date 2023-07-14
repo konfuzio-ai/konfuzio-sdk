@@ -23,7 +23,6 @@ from konfuzio_sdk.api import (
     get_project_list,
     get_document_details,
     get_project_details,
-    upload_ai_model,
     init_env,
     _get_auth_token,
     create_new_project,
@@ -416,12 +415,6 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
     def test_download_file_konfuzio_api_with_whitespace_name_file(self):
         """Test to download a file which includes a whitespace in the name."""
         download_file_konfuzio_api(document_id=44860)
-
-    @pytest.mark.xfail(reason='Your user might not have the correct permission to upload an AI.')
-    def test_upload_ai_model(self):
-        """Test to upload an AI model."""
-        path = os.path.join(FOLDER_ROOT, 'test_data', 'pdf.pdf')
-        upload_ai_model(ai_model_path=path, category_ids=[63])
 
     @patch("requests.post")
     def test_get_auth_token(self, function):

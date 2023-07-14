@@ -8,7 +8,9 @@ import shutil
 import unittest
 
 from copy import deepcopy
+from requests import HTTPError
 
+from konfuzio_sdk.api import upload_ai_model, update_ai_model, delete_ai_model
 from konfuzio_sdk.data import Category, Document, Project
 from konfuzio_sdk.settings_importer import is_dependency_installed
 from konfuzio_sdk.samples import LocalTextProject
@@ -162,6 +164,18 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
                 tokenizer=ConnectedTextTokenizer()
             )
             assert gt_exclusive_first_page_strings == load_exclusive_first_page_strings
+
+    @pytest.mark.xfail(reason='Your user might not have the correct permission to upload an AI.')
+    def test_pickle_model_upload_modify_delete(self):
+        """Upload the model."""
+        assert os.path.isfile(self.file_splitting_model.path)
+        try:
+            model_id = upload_ai_model(ai_model_path=self.file_splitting_model.path, project_id=46)
+            updated = update_ai_model(model_id, ai_type='filesplitting', description='test_description')
+            assert updated
+            delete_ai_model(model_id, ai_type='filesplitting')
+        except HTTPError as e:
+            assert '403' in str(e)
 
     def test_old_pickle_model_save_load(self):
         """Test saving and loading a model using the older bz2-compression-including save and load methods."""
