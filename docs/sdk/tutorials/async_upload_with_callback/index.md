@@ -1,13 +1,14 @@
 .. _async_upload_with_callback:
 
-## Using Ngrok to Pull Documents Uploaded Asynchronously
+## Pull Documents Uploaded Asynchronously with a Webhook
 
-The most convenient way to upload a large number of files to the Konfuzio is to use the `Document.from_file` method in 
-asynchronous mode. That way, you can upload multiple files without having to wait for them to be processed. The downside 
-if this method is that you will not know when the processing is finished and you will be able to access the results. One 
-solution to this problem is to use a callback URL. This URL will be called by the Konfuzio server when the processing is
-finished. In this tutorial, we will show you how to upload multiple files and use ngrok to create a callback URL and how 
-to use it to pull the OCR results.
+The most convenient way to upload a large number of files to Konfuzio is to use the `Document.from_file` method in 
+asynchronous mode. That way, you can upload multiple files without having to wait for them to be processed by our 
+backend. The downside of this method is that you will not know when the processing is finished and when you will be 
+able to access the results. One solution to this problem is to use a [webhook callback URL](https://dev.konfuzio.com/web/api-v3.html#asynchronous-document-processing-with-webhook). 
+This URL can notify your application when the processing is done. In this tutorial we will use [ngrok](https://ngrok.com/) 
+to expose a localweb server and create a callback URL that will receive the callback responses from the Konfuzio Server 
+and then allow us to update the files with the OCR information.
 
 ### Preliminary Steps
 
