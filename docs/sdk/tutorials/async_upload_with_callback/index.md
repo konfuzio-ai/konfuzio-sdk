@@ -28,8 +28,10 @@ and then allow us to update the files with the OCR information.
 
 3. **Set up ngrok**
 
-    Then you will need to set up ngrok. First create an account on the [ngrok website](https://ngrok.com/). It's free 
-    and you can use your GitHub or Google account.
+    Then you will need to set up ngrok. If you already have a public web server able to receive post calls, you can 
+    ignore this step and just use the callback URL to your web server's callback end point. To set up ngrok, first 
+    create an account on the [ngrok website](https://ngrok.com/). It's free and you can use your GitHub or Google 
+    account.
 
     Once logged into ngrok, simply follow the simple instructions available at https://dashboard.ngrok.com/get-started/setup
     On linux, all you need to do is:
