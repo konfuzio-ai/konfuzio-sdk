@@ -228,7 +228,7 @@ If you want to serve the application locally to run on a browser (default URL: h
 
 ### Run the Document Validation UI in non-Vue applications
 
-If your application is developed using technologies other than Vue (for example React or Angular), you can build the Document Validation UI application into a package, as described in our [configuration example](#configure-the-app), and import it to your existing project, or install it as an npm package.
+If your application is developed using technologies other than Vue (for example React or Angular), you can build the Document Validation UI application into a package, as described in our [configuration example](#configure-the-application), and import it to your existing project, or install it as an npm package.
 
 #### Run in React
 
@@ -242,7 +242,7 @@ At [this link](https://www.ais.com/using-a-vue-component-in-an-angular-app/) you
 
 #### HTML iframe as Public Document
 
-You can mark your Documents as public. Marking Documents as "public" will generate a read-only, publicly accessible URL that does not require authentication. This allows you to share a link to the Document and its extracted data, or embed it in another website. See [Read Only mode](./modes.md/#read-only-mode) for reference.
+You can mark your Documents as public. Marking Documents as "public" will generate a read-only, publicly accessible URL that does not require authentication. This allows you to share a link to the Document and its extracted data, or embed it in another website. See [Read Only mode](#read-only-mode) for reference.
 
 ##### Share a Document with a link
 
