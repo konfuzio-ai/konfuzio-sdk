@@ -26,17 +26,20 @@ You will also need a [Document uploaded](https://app.konfuzio.com/v3/swagger/#/d
 
 .. image:: ./images/docid.png
 
-To complete the setup, create an environment variables file `.env` on the root of the repository based on the [.env.example](https://github.com/konfuzio-ai/document-validation-ui/blob/main/.env.example) for specifying the following values:
+To complete the setup, create an environment variables file `.env` on the root of the repository based on the [.env.example](https://github.com/konfuzio-ai/document-validation-ui/blob/main/.env.example) for specifying the following required values:
 
-- The user token
-- The Document id
+- The user token: `VUE_APP_GUEST_USER_TOKEN`
+- The Document id: `VUE_APP_DOCUMENT_ID`
 
 Some other optional variables you can include are:
 
-- The API URL
-- The images URL
-- The default language of the app
-- The Category ID
+- The API URL: `VUE_APP_API_URL`. It will be `https://app.konfuzio.com/api/v3` if left empty.
+- The images URL: `VUE_APP_DOCUMENT_IMAGES_URL`. It will be `https://app.konfuzio.com` if left empty.
+- The language of the app: `VUE_APP_I18N_LOCALE`. The default will be `en` if none is provided in this file or in the `HTML`.
+- The default language of the app: `VUE_APP_I18N_FALLBACK_LOCALE`. The same as for the language of the app applies.
+- Sentry [DSN](https://docs.sentry.io/product/sentry-basics/dsn-explainer/?original_referrer=https%3A%2F%2Fwww.google.com%2F): `VUE_APP_SENTRY_DSN`
+- Sentry [environment](https://docs.sentry.io/product/sentry-basics/environments/?original_referrer=https%3A%2F%2Fwww.google.com%2F): `VUE_APP_SENTRY_ENVIRONMENT`
+- The path to a list of Documents in the application: `VUE_APP_DOCUMENTS_LIST_PATH`. This variable will be used to redirect the user to the specified list of Documents in the application so that they can continue with the review process of other Documents after certain changes like [splitting](https://help.konfuzio.com/document-validation-ui/review-documents/split/index.html), rotating or sorting. A `/` character should be added both at the start and end of the pathname.
 
 You can also set the Document id through the URL query parameters like `?document=ID`. This will have priority over any other Document id that is set on `.env` or in `index.html`. For the other variables, the `.env` will also have priority from the ones defined in the HTML.
 
@@ -151,7 +154,7 @@ The following examples, based on the two configuration options mentioned before,
 
 <body>
  <div id="app">
-    <app document="document_id" user_token=”user_token” locale="de/en/es"></app>
+    <app document="document_id" user_token=”user_token” locale="de/en/es" documents_list_path="/document_list_path/"></app>
   </div>
 </body>
 ```
@@ -160,7 +163,7 @@ The following examples, based on the two configuration options mentioned before,
 
 ```
  <div id="app">
-    <app document="document_id" user_token=”user_token” locale="de/en/es"></app>
+    <app document="document_id" user_token=”user_token” locale="de/en/es" documents_list_path="/document_list_path/"></app>
   </div>
 
    <script src="/server/bundle/document_validation_ui.js"></script>
@@ -309,7 +312,7 @@ _Please note that the default values from the examples below are based on Konfuz
 
 ```
 <div id="app">
-   <app document="id" locale="de/en/es" user_token="token"></app>
+   <app document="id" locale="de/en/es" user_token="token" documents_list_path="/document_list_path/"></app>
  </div>
 
 <style>
