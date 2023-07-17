@@ -83,7 +83,7 @@ class BaseModel(metaclass=abc.ABCMeta):
         prev_local_id = next(Data.id_iter)
 
         try:
-            if pickle_path.endswith(".pt"):
+            if 'pt' in pickle_path.split('.'):
                 from konfuzio_sdk.trainer.document_categorization import load_categorization_model
 
                 model = load_categorization_model(pickle_path)

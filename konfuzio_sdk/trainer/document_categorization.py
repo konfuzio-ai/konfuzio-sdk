@@ -3,6 +3,8 @@
 import abc
 import collections
 import functools
+import io
+import lz4
 import os
 import math
 import logging
@@ -987,9 +989,14 @@ class CategorizationAI(AbstractCategorizationAI):
         logger.info(f'Saving model of type Categorization AI in {path}')
 
         # save all necessary model data
-        torch.save(data_to_save, path)
-        self.pipeline_path = path
-        return path
+        torch.save(data_to_save, path + '.lz4')
+        compressed = lz4.frame.compress(path + '.lz4')
+        self.pipeline_path = path + '.lz4'
+        os.remove(path)
+
+        with open(self.pipeline_path, 'wb') as output_f:
+            output_f.write(compressed)
+        return self.pipeline_path
 
     def build_preprocessing_pipeline(self, use_image: bool, image_augmentation=None, image_preprocessing=None) -> None:
         """Set up the pre-processing and data augmentation when necessary."""
@@ -1662,8 +1669,10 @@ def load_categorization_model(pt_path: str, device: Optional[str] = 'cpu'):
         else:
             device = 'cpu'
 
-    with open(pt_path, 'rb') as f:  # todo check if we need to open 'rb' at all
-        file_data = torch.load(pt_path, map_location=torch.device(device))
+    with open(pt_path, 'rb') as f_in:
+        compressed = f_in.read()
+        decompressed = lz4.frame.decompress(compressed)
+        file_data = torch.load(io.BytesIO(decompressed), map_location=torch.device(device))
 
     if isinstance(file_data, dict):
         file_data = _load_categorization_model(pt_path)
