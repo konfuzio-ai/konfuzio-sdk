@@ -200,7 +200,7 @@ You can download the application by cloning our [GitHub repository](https://gith
 
 2. Configure the Application
 
-Decide if the application will be run as [Read Only or Full Mode](./modes.md).
+Decide if the application will be run as [Read Only or Full Mode](#read-only-mode-vs-full-mode).
 
 3. Install all packages
 
