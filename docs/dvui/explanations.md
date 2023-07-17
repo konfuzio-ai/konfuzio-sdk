@@ -35,8 +35,8 @@ Some other optional variables you can include are:
 
 - The API URL: `VUE_APP_API_URL`. It will be `https://app.konfuzio.com/api/v3` if left empty.
 - The images URL: `VUE_APP_DOCUMENT_IMAGES_URL`. It will be `https://app.konfuzio.com` if left empty.
-- The language of the app: `VUE_APP_I18N_LOCALE`. The default will be `en` if none is provided in this file or in the `HTML`.
-- The default language of the app: `VUE_APP_I18N_FALLBACK_LOCALE`. The same as for the language of the app applies.
+- The language of the application: `VUE_APP_I18N_LOCALE`. The default will be `en` if none is provided in this file or in the `HTML`.
+- The default language of the application: `VUE_APP_I18N_FALLBACK_LOCALE`. The same as for the language of the application applies.
 - Sentry [DSN](https://docs.sentry.io/product/sentry-basics/dsn-explainer/?original_referrer=https%3A%2F%2Fwww.google.com%2F): `VUE_APP_SENTRY_DSN`
 - Sentry [environment](https://docs.sentry.io/product/sentry-basics/environments/?original_referrer=https%3A%2F%2Fwww.google.com%2F): `VUE_APP_SENTRY_ENVIRONMENT`
 - The path to a list of Documents in the application: `VUE_APP_DOCUMENTS_LIST_PATH`. This variable will be used to redirect the user to the specified list of Documents in the application so that they can continue with the review process of other Documents after certain changes like [splitting](https://help.konfuzio.com/document-validation-ui/review-documents/split/index.html), rotating or sorting. A `/` character should be added both at the start and end of the pathname.
@@ -45,7 +45,7 @@ You can also set the Document id through the URL query parameters like `?documen
 
 ## Multilingual User Interface
 
-The Document Validation UI can currently be used in three languages: German (de), English (en), and Spanish (es). You can specify what the default language of the application will be in the `.env` file, like so:
+The Document Validation UI can currently be used in three languages: German (de), English (en), and Spanish (es). As mentioned in the previous section, you can specify what the default language of the application will be in the `.env` file, like so:
 
 ```
 VUE_APP_I18N_LOCALE=
@@ -228,7 +228,7 @@ If you want to serve the application locally to run on a browser (default URL: h
 
 ### Run the Document Validation UI in non-Vue applications
 
-If your application is developed using technologies other than Vue (for example React or Angular), you can build the Document Validation UI app into a package, as described in our [configuration example](#configure-the-app), and import it to your existing project, or install it as an npm package.
+If your application is developed using technologies other than Vue (for example React or Angular), you can build the Document Validation UI application into a package, as described in our [configuration example](#configure-the-app), and import it to your existing project, or install it as an npm package.
 
 #### Run in React
 
