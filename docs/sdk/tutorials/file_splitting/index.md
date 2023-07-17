@@ -55,7 +55,7 @@ such string, we mark a Page to be first (thus meaning it is a splitting point).
    :end-before: end file splitting
    :dedent: 4
 
-After you have trained your custom AI, you can upload it using the steps from the [tutorial](https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html#upload-extraction-or-category-ai-to-target-instance)
+After you have trained and saved your custom AI, you can upload it using the steps from the [tutorial](https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html#upload-extraction-or-category-ai-to-target-instance)
 or using the method `upload_ai_model()`.
 
 For the first option, go to the Superuser AIs and select your locally stored pickle file, setting Model Type to 

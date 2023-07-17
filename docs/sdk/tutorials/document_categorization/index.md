@@ -126,7 +126,7 @@ Example usage of your Custom Categorization AI:
    :end-before: end fit
    :dedent: 4
 
-After you have trained your custom AI, you can upload it using the steps from the [tutorial](https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html#upload-extraction-or-category-ai-to-target-instance)
+After you have trained and saved your custom AI, you can upload it using the steps from the [tutorial](https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html#upload-extraction-or-category-ai-to-target-instance)
 or using the method `upload_ai_model()`, provided that you have the Superuser rights. You can also remove an uploaded 
 model by using `delete_ai_model()`.
 

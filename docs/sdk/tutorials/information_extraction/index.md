@@ -43,8 +43,8 @@ Example usage of your Custom Extraction AI:
       :end-before: end train
       :dedent: 4
 
-The custom AI inherits from [BaseModel](sourcecode.html#base-model), which provides `BaseModel.save` to generate a 
-pickle file that can be directly uploaded to the Konfuzio Server (see [Upload Extraction or Category AI to target instance](https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html#upload-extraction-or-category-ai-to-target-instance)). 
+The custom AI inherits from [BaseModel](sourcecode.html#base-model), which provides `BaseModel.save` that saves a 
+model into a compressed pickle file that can be directly uploaded to the Konfuzio Server (see [Upload Extraction or Category AI to target instance](https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html#upload-extraction-or-category-ai-to-target-instance)). 
 
 Activating the uploaded AI on the web interface will enable the custom pipeline on your self-hosted installation.
 
