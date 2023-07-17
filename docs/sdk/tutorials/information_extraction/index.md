@@ -2,7 +2,11 @@
 ## Document Information Extraction
 
 Information Extraction is a process of obtaining information from the Document's unstructured text and labelling it 
-with Labels like Name, Date, Recipient, or any other custom Labels. 
+with Labels like Name, Date, Recipient, or any other custom Labels. The result of Extraction looks like this:
+
+.. image:: /sdk/tutorials/information_extraction/example.png
+   :width: 300px
+   :align: center
 
 ### Train a custom Extraction AI
 
@@ -43,8 +47,16 @@ Example usage of your Custom Extraction AI:
       :end-before: end train
       :dedent: 4
 
-The custom AI inherits from [BaseModel](sourcecode.html#base-model), which provides `BaseModel.save` that saves a 
-model into a compressed pickle file that can be directly uploaded to the Konfuzio Server (see [Upload Extraction or Category AI to target instance](https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html#upload-extraction-or-category-ai-to-target-instance)). 
+The custom AI inherits from AbstractExtractionAI, which in turn inherits from [BaseModel](sourcecode.html#base-model).
+The inheritance can be seen on a scheme below:
+
+.. mermaid::
+    
+    graph LR;
+        BaseModel[BaseModel] --> AbstractExtractionAI[AbstractExtractionAI] --> CustomExtractionAI[CustomExtractionAI];
+
+`BaseModel` provides `save` method that saves a model into a compressed pickle file that can be directly uploaded to the 
+Konfuzio Server (see [Upload Extraction or Category AI to target instance](https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html#upload-extraction-or-category-ai-to-target-instance)). 
 
 Activating the uploaded AI on the web interface will enable the custom pipeline on your self-hosted installation.
 

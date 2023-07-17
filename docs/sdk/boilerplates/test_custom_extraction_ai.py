@@ -10,7 +10,10 @@ def test_create_extraction_ai():
     class CustomExtractionAI(AbstractExtractionAI):
         def __init__(self, category: Category, *args, **kwargs):
             # we need to specify Category because it defines which Labels will be used in the Extraction, i.e. which
-            # Labels will be present in the processed Document
+            # Labels will be present in the processed Document.
+            #
+            # the Labels can be created manually or dynamically – during extraction process – the latter is possible
+            # when "Create Labels and Label Sets" is enabled in a Superuser Project's settings, if a user is a Supeuser
             super().__init__(category)
             pass
 
