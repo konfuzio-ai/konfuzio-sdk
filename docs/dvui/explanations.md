@@ -79,7 +79,7 @@ Once the package is installed, you can configure the application in two ways:
 
 ##### Pointing to the dist folder
 
-You can use the compiled version under the `dist` folder on the package source, by pointing to it from the `index.html` and making any necessary changes to the `HTML` properties on the `App` tag.
+You can use the compiled version under the `dist` folder on the package source, by pointing to it from the `index.html` and making any necessary changes to the `HTML` properties on the `App` tag. See an example [here](#imports-from-the-dist-folder).
 
 ![dist-npm-package.png](./images/dist-npm-package.png)
 
@@ -119,22 +119,13 @@ module.exports = {
 };
 ```
 
+See how to add it in the `HTML` [in this example](#webpack-bundle).
+
 ##### HTML
 
 In the `HTML`, we should load the script we created with Webpack or the compiled version under the `dist` folder, and customize the variables we want. Please note that customizing the variables is optional and that any variable in the `.env` will have priority from the variables defined in the `index.html`.
 
 The following examples, based on the two configuration options mentioned before, include the custom variables (Document id, user token, locale), but it is not mandatory to add these, which should still be added to the `.env` file.
-
-###### Webpack bundle
-
-```
- <div id="app">
-    <app document="document_id" user_token=”user_token” locale="de/en/es"></app>
-  </div>
-
-   <script src="/server/bundle/document_validation_ui.js"></script>
-
-```
 
 ###### Imports from the dist folder
 
@@ -163,6 +154,17 @@ The following examples, based on the two configuration options mentioned before,
     <app document="document_id" user_token=”user_token” locale="de/en/es"></app>
   </div>
 </body>
+```
+
+###### Webpack bundle
+
+```
+ <div id="app">
+    <app document="document_id" user_token=”user_token” locale="de/en/es"></app>
+  </div>
+
+   <script src="/server/bundle/document_validation_ui.js"></script>
+
 ```
 
 ### Integrate with CDN
