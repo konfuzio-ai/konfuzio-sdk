@@ -3,7 +3,6 @@
 import abc
 import collections
 import functools
-import io
 import lz4
 import os
 import math
@@ -950,7 +949,7 @@ class CategorizationAI(AbstractCategorizationAI):
         self.device = torch.device('cuda' if (torch.cuda.is_available() and use_cuda) else 'cpu')
         self.train_transforms = None
 
-    def save(self, path: Union[None, str] = None, reduce_weight: bool = True) -> str:
+    def save(self, path: Union[None, str] = None, tmp_path: Union[None, str] = None, reduce_weight: bool = True) -> str:
         """
         Save only the necessary parts of the model for extraction/inference.
 
@@ -979,23 +978,29 @@ class CategorizationAI(AbstractCategorizationAI):
 
         # Save only the necessary parts of the model for extraction/inference.
         # if no path is given then we use a default path and filename
-        if path is None:
+        if not tmp_path:
+            tmp_path = os.path.join(
+                self.categories[0].project.project_folder,
+                'models',
+                f'{get_timestamp()}_{self.name_lower()}_{self.project.id_}_tmp.pt.lz4',
+            )
+        if not path:
             path = os.path.join(
                 self.categories[0].project.project_folder,
                 'models',
-                f'{get_timestamp()}_{self.name_lower()}_{self.project.id_}.pt',
+                f'{get_timestamp()}_{self.name_lower()}_{self.project.id_}.pt.lz4',
             )
 
         logger.info(f'Saving model of type Categorization AI in {path}')
 
         # save all necessary model data
-        torch.save(data_to_save, path + '.lz4')
-        compressed = lz4.frame.compress(path + '.lz4')
-        self.pipeline_path = path + '.lz4'
-        os.remove(path)
-
-        with open(self.pipeline_path, 'wb') as output_f:
-            output_f.write(compressed)
+        torch.save(data_to_save, tmp_path)
+        with open(tmp_path, 'rb') as f_in:
+            with open(path, 'wb') as f_out:
+                compressed = lz4.frame.compress(f_in.read())
+                f_out.write(compressed)
+        self.pipeline_path = path
+        os.remove(tmp_path)
         return self.pipeline_path
 
     def build_preprocessing_pipeline(self, use_image: bool, image_augmentation=None, image_preprocessing=None) -> None:
@@ -1669,15 +1674,17 @@ def load_categorization_model(pt_path: str, device: Optional[str] = 'cpu'):
         else:
             device = 'cpu'
 
-    with open(pt_path, 'rb') as f_in:
-        compressed = f_in.read()
-        decompressed = lz4.frame.decompress(compressed)
-        file_data = torch.load(io.BytesIO(decompressed), map_location=torch.device(device))
+    with lz4.frame.open(pt_path, 'rb') as f:
+        file_data = torch.load(f, map_location=torch.device(device))
+
+    # with open(pt_path, 'rb') as f:  # todo check if we need to open 'rb' at all
+    #     file_data = torch.load(pt_path, map_location=torch.device(device))
 
     if isinstance(file_data, dict):
         file_data = _load_categorization_model(pt_path)
     else:
         with open(pt_path, 'rb') as f:
-            file_data = torch.load(f, map_location=torch.device(device))
+            decompressed_data = lz4.frame.decompress(f.read())
+        file_data = torch.load(decompressed_data, map_location=torch.device(device))
 
     return file_data
