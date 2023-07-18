@@ -55,6 +55,7 @@ Now that we have ngrok set up, we can see how to use it to pull the results of a
     from flask import Flask, request
     from konfuzio_sdk.data import Project, Document
     import threading
+    from werkzeug.serving import run_simple
     ```
 
 2. **Create a project object**
@@ -117,35 +118,34 @@ Now that we have ngrok set up, we can see how to use it to pull the results of a
     file and set the `sync` parameter to `False` to indicate that we want to upload the files asynchronously. We also 
     set the `callback_url` parameter to the callback URL we created earlier.
 
-    We then wait for the callback responses to be received. Once the callback response for a Document has been received, 
-    we can update it and access the OCR information.
+    We then start a thread for each Document to wait for the callback response to be received. Once the callback 
+    response for a Document has been received, we can update it with the OCR information.
 
     ```python
+    def update_file(document, file_name):
+        print(f'Waiting for callback for {document}')
+        callback_data_dict[file_name]['callback_received'].wait()
+        
+        print(f'Received callback for {document}')
+
+        # Once the callback is received we can update our Document with the OCR information    
+        document.update()
+        assert document.ocr_ready
+
+        print(f'Updated {document} information with OCR results')
+
     def send_files(file_names):
-        documents = []
         for file_name in file_names:
             with data_lock:
-                callback_data_dict[file_name] = {'callback_received': threading.Event(), 'callback_data': None}
-            print('Sending files to Konfuzio servers...')
+                callback_data_dict[file_name] = {'callback_received': threading.Event(), 'callback_data': None, 'document': None}
+            print(f'Sending {file_name} to Konfuzio servers...')
             document = Document.from_file(file_name, project=project, sync=False, callback_url=callback_url)
-            documents.append(document)
+            with data_lock:
+                callback_data_dict[file_name]['document'] = document
 
         # Wait for callbacks
         for file_name in callback_data_dict:
-            callback_data_dict[file_name]['callback_received'].wait()
-            print(f'Received callback for {file_name}')
-                    
-            # Once the callback is received we can update our Documents with the OCR information
-            document_id = callback_data_dict[file_name]['callback_data']['id']
-
-            document = project.get_document_by_id(document_id)
-            document.update()
-
-        for document in documents:
-            assert document.text is not None
-
-        print(documents)
-        # ...
+            threading.Thread(target=update_file, args=(callback_data_dict[file_name]['document'], file_name,)).start()
     ```
 
 8. **Start the Flask application and upload the files**
@@ -155,8 +155,9 @@ Now that we have ngrok set up, we can see how to use it to pull the results of a
 
     ```python
     if __name__=='__main__':
+        thread = threading.Thread(target=lambda: run_simple("0.0.0.0", 5000, app))
+        thread.start()
         file_names = ['LIST.pdf', 'OF.jpg', 'FILES.tiff']
         threading.Thread(target=send_files, args=(file_names,)).start()
-        app.run(debug=True, use_reloader=False, port=5000)
     ```
 
