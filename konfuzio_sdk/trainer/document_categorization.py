@@ -3,7 +3,9 @@
 import abc
 import collections
 import functools
-import lz4
+import io
+
+import lz4.frame
 import os
 import math
 import logging
@@ -1674,17 +1676,18 @@ def load_categorization_model(pt_path: str, device: Optional[str] = 'cpu'):
         else:
             device = 'cpu'
 
-    with lz4.frame.open(pt_path, 'rb') as f:
-        file_data = torch.load(f, map_location=torch.device(device))
+    if pt_path.endswith('lz4'):
+        with open(pt_path, 'rb') as f:
+            compressed = f.read()
 
-    # with open(pt_path, 'rb') as f:  # todo check if we need to open 'rb' at all
-    #     file_data = torch.load(pt_path, map_location=torch.device(device))
+        decompressed_data = lz4.frame.decompress(compressed)
+        file_data = torch.load(io.BytesIO(decompressed_data), map_location=torch.device(device))
+
+    else:
+        with open(pt_path, 'rb') as f:  # todo check if we need to open 'rb' at all
+            file_data = torch.load(pt_path, map_location=torch.device(device))
 
     if isinstance(file_data, dict):
         file_data = _load_categorization_model(pt_path)
-    else:
-        with open(pt_path, 'rb') as f:
-            decompressed_data = lz4.frame.decompress(f.read())
-        file_data = torch.load(decompressed_data, map_location=torch.device(device))
 
     return file_data
