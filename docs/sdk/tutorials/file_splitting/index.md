@@ -55,7 +55,7 @@ such string, we mark a Page to be first (thus meaning it is a splitting point).
    :end-before: end file splitting
    :dedent: 4
 
-After you have trained your custom AI, you can upload it using the steps from the [tutorial](https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html#upload-extraction-or-category-ai-to-target-instance)
+After you have trained and saved your custom AI, you can upload it using the steps from the [tutorial](https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html#upload-extraction-or-category-ai-to-target-instance)
 or using the method `upload_ai_model()`.
 
 For the first option, go to the Superuser AIs and select your locally stored pickle file, setting Model Type to 
@@ -236,10 +236,15 @@ A quick example of the class's usage:
 ### Create a custom File Splitting AI
 
 This section explains how to train a custom File Splitting AI locally, how to save it and upload it to the Konfuzio 
-Server. 
+Server. If you run this tutorial in Colab and experience any version compatibility issues when working with the SDK, restart the
+runtime and initialize the SDK once again; this will resolve the issue.
+
+Note: you don't necessarily need to create the AI from scratch if you already have some document-processing architecture.
+You just need to wrap it into the class that corresponds to our File Splitting AI structure. Follow the steps in this 
+tutorial to find out what are the requirements for that.
 
 By default, any [File Splitting AI](sourcecode.html#file-splitting-ai) class should derive from the 
-`AbstractFileSplittingModel` class and implement the following interface:
+`AbstractFileSplittingModel` class and implement the following methods:
 
 .. literalinclude:: /sdk/boilerplates/test_custom_file_splitting_ai.py
    :language: python

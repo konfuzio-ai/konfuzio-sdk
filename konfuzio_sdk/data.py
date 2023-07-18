@@ -2677,6 +2677,8 @@ class Document(Data):
                 category_template=category_id if category_id else response['category_template'],
                 text=response['text'],
                 status=response['status'],
+                data_file_name=response['data_file_name'],
+                file_url=response['file_url'],
                 dataset_status=dataset_status,
             )
         else:
@@ -2686,6 +2688,7 @@ class Document(Data):
                 update=True,
                 category_template=category_id,
                 status=[0, "Queuing for OCR"],
+                data_file_name=response['data_file_name'],
                 dataset_status=dataset_status,
             )
 
@@ -3158,6 +3161,8 @@ class Document(Data):
         if self.is_online:
             data = get_document_details(document_id=self.id_, project_id=self.project.id_, session=self.session)
             self.status = data["status"]
+            self.file_url = data["file_url"]
+            self.name = data["data_file_name"]
             self.updated_at = dateutil.parser.isoparse(data["updated_at"])
             if data["category_template"]:
                 self._category = self.project.get_category_by_id(data["category_template"])
