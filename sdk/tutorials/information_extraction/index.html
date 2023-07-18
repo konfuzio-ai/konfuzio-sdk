@@ -54,10 +54,10 @@
 <li class="toctree-l2"><a class="reference internal" href="../file_splitting/index.html">File Splitting</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tokenizers/index.html">Tokenization</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Document Information Extraction</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents">Train a Konfuzio SDK Model to Extract Information From Payslip Documents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#train-a-custom-extraction-ai">Train a custom Extraction AI</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#example-of-custom-extraction-ai-the-paragraph-extraction-ai">Example of Custom Extraction AI: The Paragraph Extraction AI</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#evaluate-a-trained-extraction-ai-model">Evaluate a Trained Extraction AI Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents">Train a Konfuzio SDK Model to Extract Information From Payslip Documents</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../data_validation/index.html">Data Validation Rules</a></li>
@@ -117,27 +117,30 @@
              
   <section id="document-information-extraction">
 <h1>Document Information Extraction<a class="headerlink" href="#document-information-extraction" title="Permalink to this headline">¶</a></h1>
-<section id="train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents">
-<h2>Train a Konfuzio SDK Model to Extract Information From Payslip Documents<a class="headerlink" href="#train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents" title="Permalink to this headline">¶</a></h2>
-<p id="information-extraction">The tutorial <em>RFExtractionAI Demo</em> aims to show you how to use the Konfuzio SDK package to use a simple <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#konfuzio_sdk.tokenizer.regex.WhitespaceTokenizer">Whitespace
-tokenizer</a> and to
-train a “RFExtractionAI” model to find and extract relevant information like Name, Date and Recipient
-from payslip documents.</p>
-<p>You can <span class="raw-html-m2r"><a href="https://colab.research.google.com/github/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/tutorials/RFExtractionAI%20Demo.ipynb">
-<img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a></span> or download it from <a class="reference external" href="https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/tutorials/RFExtractionAI%20Demo.ipynb">here</a>
-and try it by yourself.</p>
-<p>To prepare the data for training and testing your AI, you can follow the <a class="reference external" href="tutorials.html#tutorials.html#prepare-the-data-for-training-and-testing-the-ai">data preparation tutorial</a>.</p>
-</section>
+<p>Information Extraction is a process of obtaining information from the Document’s unstructured text and labelling it
+with Labels like Name, Date, Recipient, or any other custom Labels. The result of Extraction looks like this:</p>
+<a class="reference internal image-reference" href="../../../_images/example.png"><img alt="../../../_images/example.png" class="align-center" src="../../../_images/example.png" style="width: 300px;" /></a>
 <section id="train-a-custom-extraction-ai">
 <h2>Train a custom Extraction AI<a class="headerlink" href="#train-a-custom-extraction-ai" title="Permalink to this headline">¶</a></h2>
-<p>This section explains how to train a custom Extraction AI locally, how to save it and upload it to the Konfuzio Server.</p>
+<p>This section explains how to create a custom Extraction AI locally, how to save it and upload it to the Konfuzio Server.
+If you run this tutorial in Colab and experience any version compatibility issues when working with the SDK, restart the
+runtime and initialize the SDK once again; this will resolve the issue.</p>
+<p>Note: you don’t necessarily need to create the AI from scratch if you already have some document-processing architecture.
+You just need to wrap it into the class that corresponds to our Extraction AI structure. Follow the steps in this
+tutorial to find out what are the requirements for that.</p>
+<p>To prepare the data for training or testing your AI, you can follow the <a class="reference external" href="tutorials.html#tutorials.html#prepare-the-data-for-training-and-testing-the-ai">data preparation tutorial</a>.</p>
 <p>By default, any Extraction AI class should derive from the <code class="docutils literal notranslate"><span class="pre">AbstractExtractionAI</span></code> class and implement the following
-interface:</p>
+methods:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">AbstractExtractionAI</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Document</span><span class="p">,</span> <span class="n">Category</span>
 
 <span class="k">class</span> <span class="nc">CustomExtractionAI</span><span class="p">(</span><span class="n">AbstractExtractionAI</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">category</span><span class="p">:</span> <span class="n">Category</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># we need to specify Category because it defines which Labels will be used in the Extraction, i.e. which</span>
+        <span class="c1"># Labels will be present in the processed Document.</span>
+        <span class="c1">#</span>
+        <span class="c1"># the Labels can be created manually or dynamically – during extraction process – the latter is possible</span>
+        <span class="c1"># when &quot;Create Labels and Label Sets&quot; is enabled in a Superuser Project&#39;s settings, if a user is a Supeuser</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">category</span><span class="p">)</span>
         <span class="k">pass</span>
 
@@ -154,6 +157,8 @@ interface:</p>
     <span class="c1">#             class_weight=&quot;balanced&quot;, random_state=100</span>
     <span class="c1">#         )</span>
     <span class="c1"># self.clf.fit(self.df_train[self.label_feature_list], self.df_train[&#39;target&#39;])</span>
+    <span class="c1">#</span>
+    <span class="c1"># This method does not return anything; rather, it modifies the self.model if you provide this attribute.</span>
     <span class="c1">#</span>
     <span class="c1"># This method is allowed to be implemented as a no-op if you provide the trained model in other ways</span>
 
@@ -223,17 +228,12 @@ interface:</p>
 </pre></div>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># provide the categories, training and test data</span>
-<span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">category</span> <span class="o">=</span> <span class="n">category</span>
 <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">documents</span> <span class="o">=</span> <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">category</span><span class="o">.</span><span class="n">documents</span><span class="p">()</span>
 <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">test_documents</span> <span class="o">=</span> <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">category</span><span class="o">.</span><span class="n">test_documents</span><span class="p">()</span>
 </pre></div>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Train the AI</span>
 <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
-
-<span class="c1"># Evaluate the AI</span>
-<span class="n">data_quality</span> <span class="o">=</span> <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">evaluate_full</span><span class="p">(</span><span class="n">use_training_docs</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">ai_quality</span> <span class="o">=</span> <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">evaluate_full</span><span class="p">(</span><span class="n">use_training_docs</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
 <span class="c1"># Extract a Document</span>
 <span class="n">document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
@@ -244,11 +244,18 @@ interface:</p>
 <span class="n">extraction_pipeline_loaded</span> <span class="o">=</span> <span class="n">RFExtractionAI</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">pickle_model_path</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The custom AI inherits from <a class="reference external" href="sourcecode.html#base-model">BaseModel</a>, which provides <code class="docutils literal notranslate"><span class="pre">BaseModel.save</span></code> to generate a
-pickle file that can be directly uploaded to the Konfuzio Server (see <a class="reference external" href="https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html#upload-extraction-or-category-ai-to-target-instance">Upload Extraction or Category AI to target instance</a>).</p>
+<p>The custom AI inherits from AbstractExtractionAI, which in turn inherits from <a class="reference external" href="sourcecode.html#base-model">BaseModel</a>.
+The inheritance can be seen on a scheme below:</p>
+<div class="mermaid">
+            graph LR;
+    BaseModel[BaseModel] --&gt; AbstractExtractionAI[AbstractExtractionAI] --&gt; CustomExtractionAI[CustomExtractionAI];
+        </div><p><code class="docutils literal notranslate"><span class="pre">BaseModel</span></code> provides <code class="docutils literal notranslate"><span class="pre">save</span></code> method that saves a model into a compressed pickle file that can be directly uploaded to the
+Konfuzio Server (see <a class="reference external" href="https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html#upload-extraction-or-category-ai-to-target-instance">Upload Extraction or Category AI to target instance</a>).</p>
 <p>Activating the uploaded AI on the web interface will enable the custom pipeline on your self-hosted installation.</p>
-<p>It is also possible to upload the AI from your local machine using the <code class="docutils literal notranslate"><span class="pre">upload_ai_model()</span></code> method and remove it with the
-<code class="docutils literal notranslate"><span class="pre">delete_ai_model()</span></code> method:</p>
+<p>Note that if you want to create Labels and Label Sets dynamically (when running the AI, instead of adding them manually
+on app), you need to enable creating them in the Superuser Project settings if you have the corresponding rights.</p>
+<p>If you have the Superuser rights, it is also possible to upload the AI from your local machine using the
+<code class="docutils literal notranslate"><span class="pre">upload_ai_model()</span></code> method and remove it with the <code class="docutils literal notranslate"><span class="pre">delete_ai_model()</span></code> method:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.api</span> <span class="kn">import</span> <span class="n">upload_ai_model</span><span class="p">,</span> <span class="n">delete_ai_model</span>
 
 <span class="c1"># upload a saved model to the server</span>
@@ -504,6 +511,16 @@ documentation for more details.</p>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Label Set evaluation F1 score: </span><span class="si">{</span><span class="n">evaluation</span><span class="o">.</span><span class="n">f1</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
+</section>
+<section id="train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents">
+<h2>Train a Konfuzio SDK Model to Extract Information From Payslip Documents<a class="headerlink" href="#train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents" title="Permalink to this headline">¶</a></h2>
+<p id="information-extraction">The tutorial <em>RFExtractionAI Demo</em> aims to show you how to use the Konfuzio SDK package to use a simple <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#konfuzio_sdk.tokenizer.regex.WhitespaceTokenizer">Whitespace
+tokenizer</a> and to
+train a “RFExtractionAI” model to find and extract relevant information like Name, Date and Recipient
+from payslip documents.</p>
+<p>You can <span class="raw-html-m2r"><a href="https://colab.research.google.com/github/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/tutorials/RFExtractionAI%20Demo.ipynb">
+<img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a></span> or download it from <a class="reference external" href="https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/tutorials/RFExtractionAI%20Demo.ipynb">here</a>
+and try it by yourself.</p>
 </section>
 </section>
 

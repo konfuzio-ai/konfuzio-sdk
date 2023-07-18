@@ -227,7 +227,7 @@ such string, we mark a Page to be first (thus meaning it is a splitting point).<
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Page </span><span class="si">{}</span><span class="s1"> is predicted as the non-first.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">number</span><span class="p">))</span>
 </pre></div>
 </div>
-<p>After you have trained your custom AI, you can upload it using the steps from the <a class="reference external" href="https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html#upload-extraction-or-category-ai-to-target-instance">tutorial</a>
+<p>After you have trained and saved your custom AI, you can upload it using the steps from the <a class="reference external" href="https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html#upload-extraction-or-category-ai-to-target-instance">tutorial</a>
 or using the method <code class="docutils literal notranslate"><span class="pre">upload_ai_model()</span></code>.</p>
 <p>For the first option, go to the Superuser AIs and select your locally stored pickle file, setting Model Type to
 Splitting and status to Training finished, then save the AI. After that, go to the Splitting AIs, choose your AI and
@@ -325,30 +325,6 @@ reassign it within the same instance of the model, all previously gathered strin
 ones. <code class="docutils literal notranslate"><span class="pre">requires_images</span></code> and <code class="docutils literal notranslate"><span class="pre">requires_text</span></code> determine whether these types of data are used for prediction; this is
 needed for distinguishing between preprocessing types once a model is passed into the Splitting AI.</p>
 <p>An example of how ConnectedTextTokenizer works:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># before tokenization</span>
-<span class="n">test_document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
-<span class="n">test_document</span><span class="o">.</span><span class="n">text</span>
-
-<span class="c1"># output: &quot;Hi all,\nI like bread.\n\fI hope to get everything done soon.\n\fMorning,\n\fI&#39;m glad to see you.&quot;</span>
-<span class="c1">#             &quot;\n\fMorning,&quot;</span>
-
-<span class="n">test_document</span><span class="o">.</span><span class="n">spans</span><span class="p">()</span>
-
-<span class="c1"># output: []</span>
-
-<span class="n">test_document</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="n">test_document</span><span class="p">)</span>
-
-<span class="c1"># after tokenization</span>
-<span class="n">test_document</span><span class="o">.</span><span class="n">spans</span><span class="p">()</span>
-
-<span class="c1"># output: [Span (0, 7), Span (8, 21), Span (22, 58), Span (59, 68), Span (69, 90), Span (91, 100)]</span>
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">test_document</span><span class="o">.</span><span class="n">spans</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">offset_string</span>
-
-<span class="c1"># output: &quot;Hi all,&quot;</span>
-</pre></div>
-</div>
 <p>The first method to define will be the <code class="docutils literal notranslate"><span class="pre">fit()</span></code> method. For each Category, we call <code class="docutils literal notranslate"><span class="pre">exclusive_first_page_strings</span></code> method,
 which allows us to gather the strings that appear on the first Page of each Document. <code class="docutils literal notranslate"><span class="pre">allow_empty_categories</span></code> allows
 for returning empty lists for Categories that haven’t had any exclusive first-page strings found across their Documents.
@@ -422,15 +398,20 @@ exclusive first-page strings.</p>
 <section id="create-a-custom-file-splitting-ai">
 <h2>Create a custom File Splitting AI<a class="headerlink" href="#create-a-custom-file-splitting-ai" title="Permalink to this headline">¶</a></h2>
 <p>This section explains how to train a custom File Splitting AI locally, how to save it and upload it to the Konfuzio
-Server.</p>
+Server. If you run this tutorial in Colab and experience any version compatibility issues when working with the SDK, restart the
+runtime and initialize the SDK once again; this will resolve the issue.</p>
+<p>Note: you don’t necessarily need to create the AI from scratch if you already have some document-processing architecture.
+You just need to wrap it into the class that corresponds to our File Splitting AI structure. Follow the steps in this
+tutorial to find out what are the requirements for that.</p>
 <p>By default, any <a class="reference external" href="sourcecode.html#file-splitting-ai">File Splitting AI</a> class should derive from the
-<code class="docutils literal notranslate"><span class="pre">AbstractFileSplittingModel</span></code> class and implement the following interface:</p>
+<code class="docutils literal notranslate"><span class="pre">AbstractFileSplittingModel</span></code> class and implement the following methods:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.file_splitting</span> <span class="kn">import</span> <span class="n">AbstractFileSplittingModel</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Page</span><span class="p">,</span> <span class="n">Category</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
 
 <span class="k">class</span> <span class="nc">CustomFileSplittingModel</span><span class="p">(</span><span class="n">AbstractFileSplittingModel</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">categories</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Category</span><span class="p">],</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># we need Categories because we define the split points based off on the Documents within certain Categories</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">categories</span><span class="p">)</span>
         <span class="k">pass</span>
 
@@ -447,6 +428,8 @@ Server.</p>
     <span class="c1">#</span>
     <span class="c1"># for category in self.categories:</span>
     <span class="c1">#     cur_first_page_strings = category.exclusive_first_page_strings(tokenizer=self.tokenizer)</span>
+    <span class="c1">#</span>
+    <span class="c1"># This method does not return anything; rather, it modifies the self.model if you provide this attribute.</span>
     <span class="c1">#</span>
     <span class="c1"># This method is allowed to be implemented as a no-op if you provide the trained model in other ways</span>
 

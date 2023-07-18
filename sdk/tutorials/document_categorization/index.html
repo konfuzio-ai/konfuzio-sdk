@@ -57,7 +57,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#categorization-ai-models">Categorization AI Models</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#customize-categorization-ai">Customize Categorization AI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#create-a-custom-categorization-ai">Create a custom Categorization AI</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#categorization-ai-overview-diagram">Categorization AI Overview Diagram</a></li>
 </ul>
 </li>
@@ -310,18 +310,23 @@ at the same time.</p>
 <p>See more details about these Categorization Models under <a class="reference external" href="../../sourcecode.html#categorization-ai">API Reference - Categorization AI</a>.</p>
 </section>
 </section>
-<section id="customize-categorization-ai">
-<h2>Customize Categorization AI<a class="headerlink" href="#customize-categorization-ai" title="Permalink to this headline">¶</a></h2>
+<section id="create-a-custom-categorization-ai">
+<h2>Create a custom Categorization AI<a class="headerlink" href="#create-a-custom-categorization-ai" title="Permalink to this headline">¶</a></h2>
 <p>This section explains how to train a custom Categorization AI locally, how to save it and upload it to the Konfuzio
-Server.</p>
+Server. If you run this tutorial in Colab and experience any version compatibility issues when working with the SDK, restart the
+runtime and initialize the SDK once again; this will resolve the issue.</p>
+<p>Note: you don’t necessarily need to create the AI from scratch if you already have some document-processing architecture.
+You just need to wrap it into the class that corresponds to our Categorization AI structure. Follow the steps in this
+tutorial to find out what are the requirements for that.</p>
 <p>By default, any <a class="reference external" href="../../sourcecode.html#categorization-ai">Categorization AI</a> class should derive from the
-<code class="docutils literal notranslate"><span class="pre">AbstractCategorizationModel</span></code> class and implement the following interface:</p>
+<code class="docutils literal notranslate"><span class="pre">AbstractCategorizationModel</span></code> class and implement the following methods:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.document_categorization</span> <span class="kn">import</span> <span class="n">AbstractCategorizationAI</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Page</span><span class="p">,</span> <span class="n">Category</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
 
 <span class="k">class</span> <span class="nc">CustomCategorizationAI</span><span class="p">(</span><span class="n">AbstractCategorizationAI</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">categories</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Category</span><span class="p">],</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># a list of Categories between which the AI will differentiate</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">categories</span><span class="p">)</span>
         <span class="k">pass</span>
 
@@ -343,6 +348,8 @@ Server.</p>
     <span class="c1">#             device=&#39;cpu&#39;,</span>
     <span class="c1">#         )</span>
     <span class="c1"># self.classifier._fit_classifier(self.classifier_iterator, **kwargs)</span>
+    <span class="c1">#</span>
+    <span class="c1"># This method does not return anything; rather, it modifies the self.model if you provide this attribute.</span>
     <span class="c1">#</span>
     <span class="c1"># This method is allowed to be implemented as a no-op if you provide the trained model in other ways</span>
 
@@ -431,8 +438,9 @@ Server.</p>
 <span class="n">categorization_pipeline_loaded</span> <span class="o">=</span> <span class="n">CategorizationAI</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">pickle_model_path</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>After you have trained your custom AI, you can upload it using the steps from the <a class="reference external" href="https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html#upload-extraction-or-category-ai-to-target-instance">tutorial</a>
-or using the method <code class="docutils literal notranslate"><span class="pre">upload_ai_model()</span></code>. You can also remove an uploaded model by using <code class="docutils literal notranslate"><span class="pre">delete_ai_model()</span></code>.</p>
+<p>After you have trained and saved your custom AI, you can upload it using the steps from the <a class="reference external" href="https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html#upload-extraction-or-category-ai-to-target-instance">tutorial</a>
+or using the method <code class="docutils literal notranslate"><span class="pre">upload_ai_model()</span></code>, provided that you have the Superuser rights. You can also remove an uploaded
+model by using <code class="docutils literal notranslate"><span class="pre">delete_ai_model()</span></code>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.api</span> <span class="kn">import</span> <span class="n">upload_ai_model</span><span class="p">,</span> <span class="n">delete_ai_model</span>
 
 <span class="c1"># upload a saved model to the server</span>
