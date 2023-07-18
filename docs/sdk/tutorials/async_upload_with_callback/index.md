@@ -7,7 +7,7 @@ asynchronous mode. That way, you can upload multiple files without having to wai
 backend. The downside of this method is that you will not know when the processing is finished and when you will be 
 able to access the results. One solution to this problem is to use a [webhook callback URL](https://dev.konfuzio.com/web/api-v3.html#asynchronous-document-processing-with-webhook). 
 This URL can notify your application when the processing is done. In this tutorial we will use [ngrok](https://ngrok.com/) 
-to expose a localweb server and create a callback URL that will receive the callback responses from the Konfuzio Server 
+to expose a local web server and create a callback URL that will receive the callback responses from the Konfuzio Server 
 and then allow us to update the files with the OCR information.
 
 ### Preliminary Steps
