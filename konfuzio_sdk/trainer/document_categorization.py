@@ -1671,15 +1671,11 @@ def load_categorization_model(pt_path: str, device: Optional[str] = 'cpu'):
     :return: Categorization AI model.
     """
     if device is None:
-        if torch.cuda.is_available():
-            device = 'cuda'
-        else:
-            device = 'cpu'
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     if pt_path.endswith('lz4'):
         with open(pt_path, 'rb') as f:
             compressed = f.read()
-
         decompressed_data = lz4.frame.decompress(compressed)
         file_data = torch.load(io.BytesIO(decompressed_data), map_location=torch.device(device))
 
@@ -1688,6 +1684,15 @@ def load_categorization_model(pt_path: str, device: Optional[str] = 'cpu'):
             file_data = torch.load(pt_path, map_location=torch.device(device))
 
     if isinstance(file_data, dict):
-        file_data = _load_categorization_model(pt_path)
+        if pt_path.endswith('lz4'):
+            file_data = _load_categorization_model(io.BytesIO(decompressed_data))
+        else:
+            file_data = _load_categorization_model(pt_path)
+    else:
+        if pt_path.endswith('lz4'):
+            file_data = torch.load(io.BytesIO(decompressed_data), map_location=torch.device(device))
+        else:
+            with open(pt_path, 'rb') as f:
+                file_data = torch.load(f, map_location=torch.device(device))
 
     return file_data
