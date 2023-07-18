@@ -25,6 +25,7 @@ class BaseModel(metaclass=abc.ABCMeta):
     def __init__(self):
         """Initialize a BaseModel class."""
         self.output_dir = None
+        self.tokenizer = None
         self.documents = None
         self.test_documents = None
         self.python_version = '.'.join([str(v) for v in sys.version_info[:3]])
@@ -134,7 +135,12 @@ class BaseModel(metaclass=abc.ABCMeta):
     def reduce_model_weight(self):
         """Remove all non-strictly necessary parameters before saving."""
         self.project.lose_weight()
-        self.tokenizer.lose_weight()
+        if (
+            self.tokenizer is not None
+            and hasattr(self.tokenizer, "lose_weight")
+            and callable(self.tokenizer.lose_weight)
+        ):
+            self.tokenizer.lose_weight()
 
     def ensure_model_memory_usage_within_limit(self, max_ram: Optional[str] = None):
         """
