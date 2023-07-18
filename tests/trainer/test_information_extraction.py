@@ -329,7 +329,6 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 
         assert previous_size > memory_size_of(self.pipeline)
 
-    @pytest.mark.xfail(reason='Your user might not have the correct permission to upload an AI.')
     def test_05_upload_modify_delete_ai_model(self):
         """Upload the model."""
         assert os.path.isfile(self.pipeline.pipeline_path)

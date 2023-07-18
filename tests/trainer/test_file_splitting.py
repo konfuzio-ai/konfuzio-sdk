@@ -165,7 +165,6 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
             )
             assert gt_exclusive_first_page_strings == load_exclusive_first_page_strings
 
-    @pytest.mark.xfail(reason='Your user might not have the correct permission to upload an AI.')
     def test_pickle_model_upload_modify_delete(self):
         """Upload the model."""
         assert os.path.isfile(self.file_splitting_model.path)

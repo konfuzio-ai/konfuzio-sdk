@@ -620,7 +620,6 @@ def delete_ai_model(ai_model_id: int, ai_type: str, session=konfuzio_session()):
     if ai_type not in ['filesplitting', 'extraction', 'categorization']:
         raise ValueError("ai_type should have the value of 'filesplitting', 'extraction', or 'categorization'.")
     url = get_ai_model_url(ai_model_id, ai_type)
-    print(url)
     r = session.delete(url)
     if r.status_code == 200:
         return json.loads(r.text)['id']
