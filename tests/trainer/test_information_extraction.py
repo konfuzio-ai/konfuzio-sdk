@@ -19,7 +19,7 @@ import pandas as pd
 from sklearn.datasets import make_classification
 from sklearn.ensemble import RandomForestClassifier
 
-from konfuzio_sdk.data import Project, Document, AnnotationSet, Annotation, Span, LabelSet
+from konfuzio_sdk.data import Category, Project, Document, AnnotationSet, Annotation, Span, LabelSet
 
 from konfuzio_sdk.api import upload_ai_model, update_ai_model, delete_ai_model
 from konfuzio_sdk.settings_importer import is_dependency_installed
@@ -28,7 +28,7 @@ from konfuzio_sdk.tokenizer.paragraph_and_sentence import ParagraphTokenizer, Se
 from konfuzio_sdk.tokenizer.base import ListTokenizer
 from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
 from konfuzio_sdk.samples import LocalTextProject
-from konfuzio_sdk.utils import memory_size_of
+from konfuzio_sdk.utils import memory_size_of, is_file
 
 from konfuzio_sdk.trainer.information_extraction import (
     num_count,
@@ -710,7 +710,6 @@ class TestRegexRFExtractionAI(unittest.TestCase):
 
         for f in os.listdir(dir):
             os.remove(os.path.join(dir, f))
-
         if os.path.isfile(cls.pipeline.pipeline_path):
             os.remove(cls.pipeline.pipeline_path)  # cleanup
             os.remove(cls.pipeline.pipeline_path_no_konfuzio_sdk)
@@ -1364,6 +1363,54 @@ class TestInformationExtraction(unittest.TestCase):
 
         wrong_class = WrongClass()
         assert not pipeline.has_compatible_interface(wrong_class)
+
+
+class ToyCustomExtractionAI(AbstractExtractionAI):
+    """Toy custom Extraction AI returning empty Document."""
+
+    def __init__(self, category: Category):
+        """Initialize toy extraction AI."""
+        super().__init__(category)
+
+    def extract(self, document: Document) -> Document:
+        """Extract toy extraction AI."""
+        empty_doc = deepcopy(document)
+        return empty_doc
+
+
+class TestCustomExtractionAI(unittest.TestCase):
+    """Test creation of a custom ExtractionAI models."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Set up toy Custom ExtractionAI."""
+        cls.project = LocalTextProject()
+        cls.category = cls.project.get_category_by_id(1)
+        cls.sample_document = cls.project.local_none_document
+        cls.pipeline = ToyCustomExtractionAI(category=cls.category)
+
+    def test_01_toy_custom_extraction_ai(self):
+        """Test creation of a toy Custom ExtractionAI."""
+        assert self.pipeline.category is self.category
+        empty_doc = self.pipeline.extract(self.sample_document)
+        assert len(empty_doc.annotations(use_correct=False)) == 0
+
+        self.pipeline.pipeline_path = self.pipeline.save()
+
+    def test_02_load_model(self):
+        """Test loading and running the saved model."""
+        is_file(self.pipeline.pipeline_path, raise_exception=True)
+        loaded_pipeline = ToyCustomExtractionAI.load_model(self.pipeline.pipeline_path)
+        assert loaded_pipeline.category == self.category
+        empty_doc = loaded_pipeline.extract(self.sample_document)
+        assert len(empty_doc.annotations(use_correct=False)) == 0
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        """Clear created files."""
+        is_file(cls.pipeline.pipeline_path, raise_exception=True)
+
+        os.remove(cls.pipeline.pipeline_path)
 
 
 @pytest.mark.skipif(
