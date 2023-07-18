@@ -332,6 +332,10 @@ class TestOnlineProject(unittest.TestCase):
         doc = Document.from_file('tests/test_data/pdf.pdf', self.project, dataset_status=1)
         doc_id = doc.id_
 
+        assert doc in self.project.preparation_documents
+        assert doc.name == "pdf.pdf"
+        assert doc.get_file(ocr_version=True).split('/')[-1] == "pdf_ocr.pdf"
+
         # Test Document modification
         assert doc.dataset_status == 1
         assert doc.assignee is None
