@@ -3683,6 +3683,7 @@ class Project(Data):
         update=False,
         max_ram=None,
         strict_data_validation: bool = True,
+        credentials: dict = {},
         **kwargs,
     ):
         """
@@ -3693,6 +3694,7 @@ class Project(Data):
         :param update: Whether to sync local files with the Project online.
         :param max_ram: Maximum RAM used by AI models trained on this Project.
         :param strict_data_validation: Whether to apply strict data validation rules.
+        :param credentials: A dict of key/values that are available in the Project.
         See https://dev.konfuzio.com/sdk/tutorials/data_validation/index.html
         """
         self.id_local = next(Data.id_iter)
@@ -3707,6 +3709,7 @@ class Project(Data):
         self._meta_data = []
         self._max_ram = max_ram
         self._strict_data_validation = strict_data_validation
+        self.credentials = credentials
 
         # paths
         self.meta_file_path = os.path.join(self.project_folder, "documents_meta.json5")
@@ -4082,6 +4085,20 @@ class Project(Data):
             if category.id_ == id_:
                 return category
         raise IndexError(f'Category id {id_} was not found in {self}.')
+
+    def get_credentials(self, key):
+        """
+        Return the value of the key in the credentials dict or in the config file.
+
+        Returns None if the key is not found.
+
+        :param key: Key of the credential to get.
+        """
+        if key in self.credentials:
+            return self.credentials[key]
+        else:
+            from .settings_importer import config
+            return config(key, default=None)
 
     def delete(self):
         """Delete the Project folder."""
