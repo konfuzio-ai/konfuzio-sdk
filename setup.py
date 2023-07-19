@@ -78,19 +78,19 @@ setuptools.setup(
         'certifi==2022.12.7',
         'cloudpickle==2.2.1',  # Used to pickle objects
         'filetype==1.0.7',  # Used to check that files are in the correct format
-        'lz4',  # Used to compress pickles
+        'lz4==4.3.2',  # Used to compress pickles
         'matplotlib==3.7.1',
-        'nltk',
+        'nltk==3.6.3',
         'numpy>=1.22.4',
         'pandas>=1.3.5,<2.0.0',
         'Pillow>=8.4.0',
-        'python-dateutil',
-        'python-decouple',  # todo add ==3.3 ?
-        'requests',  # todo add ==2.24.0 ?
+        'python-dateutil==2.8.2',
+        'python-decouple==3.3',
+        'requests==2.24.0',
         'regex>=2020.6.8',  # re module but better
         'scikit-learn==1.2.2',
         'tabulate>=0.9.0',  # Used to pretty print DataFrames
-        'tqdm',
+        'tqdm==4.64.0',
         'pympler>=1.0.1',  # Use to get pickle file size.
     ],
     extras_require=EXTRAS,
