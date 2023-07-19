@@ -20,7 +20,8 @@ To prepare the data for training or testing your AI, you can follow the [data pr
 
 By default, any Extraction AI class should derive from the `AbstractExtractionAI` class and implement the `extract()` 
 method. In this tutorial, we'll demonstrate how to create a simple custom Extraction AI that extracts dates provided in 
-a certain format.
+a certain format. Note that to enable Labels' and Label Sets' dynamic creation during extraction, you need to have
+Superuser rights and enable this setting in a [Superuser Project](https://help.konfuzio.com/modules/administration/superuserprojects/index.html#create-labels-and-label-sets).
 
 .. literalinclude:: /sdk/boilerplates/test_custom_extraction_ai.py
       :language: python
@@ -34,16 +35,6 @@ Example usage of your Custom Extraction AI:
       :language: python
       :start-after: start init_ai
       :end-before: end init_ai
-      :dedent: 4
-.. literalinclude:: /sdk/boilerplates/test_custom_extraction_ai.py
-      :language: python
-      :start-after: start category
-      :end-before: end category
-      :dedent: 4
-.. literalinclude:: /sdk/boilerplates/test_custom_extraction_ai.py
-      :language: python
-      :start-after: start train
-      :end-before: end train
       :dedent: 4
 
 The custom AI inherits from AbstractExtractionAI, which in turn inherits from [BaseModel](sourcecode.html#base-model).

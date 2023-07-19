@@ -14,40 +14,70 @@ from konfuzio_sdk.settings_importer import is_dependency_installed
 def test_custom_categorization_ai():
     """Test creating and using a custom Categorization AI."""
     # start init
-    import re
+    from konfuzio_sdk.trainer.document_categorization import AbstractCategorizationAI
+    from konfuzio_sdk.data import Page, Category
+    from typing import List
 
-    from konfuzio_sdk.data import Document, Span, AnnotationSet, Annotation, Label
-    from konfuzio_sdk.trainer.information_extraction import AbstractExtractionAI
+    class CustomCategorizationAI(AbstractCategorizationAI):
+        def __init__(self, categories: List[Category], *args, **kwargs):
+            # a list of Categories between which the AI will differentiate
+            super().__init__(categories)
+            pass
 
-    class CustomExtractionAI(AbstractExtractionAI):
-        def extract(self, document: Document) -> Document:
-            if document.annotations(use_correct=False):  # check if any Annotations exists
-                return document
-            else:
-                # define a Label Set that will contain Labels for Annotations your Extraction AI extracts
-                label_set = document.project.get_label_set_by_id(id_=document.category.id_)
-                # get or create a Label that will be used for annotating
-                label_name = 'Date'
-                if label_name in [label.name for label in document.project.labels]:
-                    label = document.project.get_label_by_name(label_name)
-                else:
-                    label = Label(text=label_name, project=project, label_sets=[label_set])
-                for re_match in re.finditer(r'(\d+/\d+/\d+)', document.text, flags=re.MULTILINE):
-                    span = Span(start_offset=re_match.span(1)[0], end_offset=re_match.span(1)[1])
-                    # create Annotation Set for the Annotation. Note that every Annotation Set
-                    # has to contain at least one Annotation, and Annotation always should be
-                    # a part of an Annotation Set.
-                    annotation_set = AnnotationSet(document=document, label_set=label_set)
-                    _ = Annotation(
-                        document=document,
-                        label=label,
-                        annotation_set=annotation_set,
-                        label_set=label_set,
-                        confidence=1.0,  # note that only the Annotations with confidence higher
-                        # than 10% will be shown in the extracted Document.
-                        spans=[span],
-                    )
-            return document
+        # initialize key variables required by the custom AI:
+        # for instance, self.documents and self.test_documents to train and test the AI on, self.categories to determine
+        # which Categories will the AI be able to predict
+
+        def fit(self):
+            pass
+
+        # Define architecture and training that the model undergoes, i.e. a NN architecture or a custom hardcoded logic
+        # for instance:
+        #
+        # self.classifier_iterator = build_document_classifier_iterator(
+        #             self.documents,
+        #             self.train_transforms,
+        #             use_image = True,
+        #             use_text = False,
+        #             device='cpu',
+        #         )
+        # self.classifier._fit_classifier(self.classifier_iterator, **kwargs)
+        #
+        # This method does not return anything; rather, it modifies the self.model if you provide this attribute.
+        #
+        # This method is allowed to be implemented as a no-op if you provide the trained model in other ways
+
+        def _categorize_page(self, page: Page) -> Page:
+            pass
+
+        # define how the model assigns a Category to a Page.
+        # for instance:
+        #
+        # predicted_category_id, predicted_confidence = self._predict(page_image)
+        #
+        # for category in self.categories:
+        #     if category.id_ == predicted_category_id:
+        #         _ = CategoryAnnotation(category=category, confidence=predicted_confidence, page=page)
+        #
+        # **NB:** The result of extraction must be the input Page with added Categorization attribute `Page.category`
+
+        def save(self, path: str):
+            pass
+
+        # define how to save a model in a .pt format – for example, in a way it's defined in the CategorizationAI
+        #
+        #  data_to_save = {
+        #             'tokenizer': self.tokenizer,
+        #             'image_preprocessing': self.image_preprocessing,
+        #             'image_augmentation': self.image_augmentation,
+        #             'text_vocab': self.text_vocab,
+        #             'category_vocab': self.category_vocab,
+        #             'classifier': self.classifier,
+        #             'eval_transforms': self.eval_transforms,
+        #             'train_transforms': self.train_transforms,
+        #             'model_type': 'CategorizationAI',
+        #         }
+        # torch.save(data_to_save, path)
 
     # end init
     from tests.variables import TEST_PROJECT_ID, TEST_DOCUMENT_ID
