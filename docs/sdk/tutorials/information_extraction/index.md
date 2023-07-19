@@ -19,7 +19,8 @@ tutorial to find out what are the requirements for that.
 To prepare the data for training or testing your AI, you can follow the [data preparation tutorial](tutorials.html#tutorials.html#prepare-the-data-for-training-and-testing-the-ai).
 
 By default, any Extraction AI class should derive from the `AbstractExtractionAI` class and implement the `extract()` 
-method:
+method. In this tutorial, we'll demonstrate how to create a simple custom Extraction AI that extracts dates provided in 
+a certain format.
 
 .. literalinclude:: /sdk/boilerplates/test_custom_extraction_ai.py
       :language: python
