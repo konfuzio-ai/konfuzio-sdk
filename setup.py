@@ -86,7 +86,7 @@ setuptools.setup(
         'Pillow>=8.4.0',
         'python-dateutil==2.8.2',
         'python-decouple==3.3',
-        'requests==2.24.0',
+        'requests',
         'regex>=2020.6.8',  # re module but better
         'scikit-learn==1.2.2',
         'tabulate>=0.9.0',  # Used to pretty print DataFrames
