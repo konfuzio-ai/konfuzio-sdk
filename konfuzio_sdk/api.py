@@ -629,7 +629,7 @@ def delete_ai_model(ai_model_id: int, ai_type: str, session=konfuzio_session()):
         raise ConnectionError(f'Error{r.status_code}: {r.content} {r.url}')
 
 
-def update_ai_model(ai_model_id: int, ai_type: str, session=konfuzio_session(), **kwargs):
+def update_ai_model(ai_model_id: int, ai_type: str, patch: bool = True, session=konfuzio_session(), **kwargs):
     """
     Update an AI model from the server.
 
@@ -652,6 +652,9 @@ def update_ai_model(ai_model_id: int, ai_type: str, session=konfuzio_session(), 
     if description is not None:
         data.update({"description": description})
 
-    r = session.patch(url=url, json=data)
+    if patch:
+        r = session.patch(url=url, json=data)
+    else:
+        r = session.put(url=url, json=data)
 
     return json.loads(r.text)

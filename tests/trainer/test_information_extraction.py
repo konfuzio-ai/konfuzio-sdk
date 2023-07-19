@@ -339,6 +339,8 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
             )
             updated = update_ai_model(model_id, ai_type='extraction', description='test_description')
             assert updated
+            updated = update_ai_model(model_id, ai_type='extraction', patch=False, description='test_description')
+            assert updated
             delete_ai_model(model_id, ai_type='extraction')
         except HTTPError as e:
             assert '403' in str(e)

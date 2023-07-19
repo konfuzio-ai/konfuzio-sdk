@@ -172,6 +172,8 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
             model_id = upload_ai_model(ai_model_path=self.file_splitting_model.path, project_id=46)
             updated = update_ai_model(model_id, ai_type='filesplitting', description='test_description')
             assert updated
+            updated = update_ai_model(model_id, ai_type='filesplitting', patch=False, description='test_description')
+            assert updated
             delete_ai_model(model_id, ai_type='filesplitting')
         except HTTPError as e:
             assert '403' in str(e)

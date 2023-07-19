@@ -6,8 +6,10 @@ import pytest
 import unittest
 from copy import deepcopy
 import parameterized
+from requests import HTTPError
 from typing import List, Dict
 
+from konfuzio_sdk.api import upload_ai_model, update_ai_model, delete_ai_model
 from konfuzio_sdk.data import Project, Document, Page
 from konfuzio_sdk.extras import torch, FloatTensor
 from konfuzio_sdk.settings_importer import is_dependency_installed
@@ -528,10 +530,18 @@ class TestAllCategorizationConfigurations(unittest.TestCase):
         self.categorization_pipeline.pipeline_path = self.categorization_pipeline.save()
         assert os.path.isfile(self.categorization_pipeline.pipeline_path)
 
-    @pytest.mark.skip(reason="To be defined how to upload a categorization model.")
     def test_4_upload_ai_model(self) -> None:
         """Upload the model."""
-        raise NotImplementedError
+        assert os.path.isfile(self.categorization_pipeline.pipeline_path)
+        try:
+            model_id = upload_ai_model(ai_model_path=self.categorization_pipeline.pipeline_path, project_id=46)
+            updated = update_ai_model(model_id, ai_type='categorization', description='test_description')
+            assert updated
+            updated = update_ai_model(model_id, ai_type='categorization', patch=False, description='test_description')
+            assert updated
+            delete_ai_model(model_id, ai_type='categorization')
+        except HTTPError as e:
+            assert '403' in str(e)
 
     def test_5a_data_quality(self) -> None:
         """Evaluate CategorizationModel on Training documents."""
