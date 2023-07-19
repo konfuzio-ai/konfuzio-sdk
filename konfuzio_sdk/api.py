@@ -643,11 +643,7 @@ def update_ai_model(ai_model_id: int, ai_type: str, patch: bool = True, session=
     url = get_ai_model_url(ai_model_id, ai_type)
 
     data = {}
-    name = kwargs.get('name', None)
     description = kwargs.get('description', None)
-
-    if name is not None:
-        data.update({"name": name})
 
     if description is not None:
         data.update({"description": description})
