@@ -20,6 +20,7 @@ def test_custom_categorization_ai():
 
     class CustomCategorizationAI(AbstractCategorizationAI):
         def __init__(self, categories: List[Category], *args, **kwargs):
+            # a list of Categories between which the AI will differentiate
             super().__init__(categories)
             pass
 
@@ -41,6 +42,8 @@ def test_custom_categorization_ai():
         #             device='cpu',
         #         )
         # self.classifier._fit_classifier(self.classifier_iterator, **kwargs)
+        #
+        # This method does not return anything; rather, it modifies the self.model if you provide this attribute.
         #
         # This method is allowed to be implemented as a no-op if you provide the trained model in other ways
 
