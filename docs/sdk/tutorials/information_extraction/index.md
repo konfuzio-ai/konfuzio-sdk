@@ -64,17 +64,7 @@ Note that if you want to create Labels and Label Sets dynamically (when running 
 on app), you need to enable creating them in the Superuser Project settings if you have the corresponding rights.
 
 If you have the Superuser rights, it is also possible to upload the AI from your local machine using the 
-`upload_ai_model()` method and remove it with the `delete_ai_model()` method:
-
-```python
-from konfuzio_sdk.api import upload_ai_model, delete_ai_model
-
-# upload a saved model to the server
-model_id = upload_ai_model(pickle_model_path)
-
-# remove model
-delete_ai_model(model_id, ai_type='extraction')
-```
+`upload_ai_model()` as described in [Upload your AI](https://dev.konfuzio.com/sdk/tutorials/upload-your-ai/index.html).
 
 ### Example of Custom Extraction AI: The Paragraph Extraction AI
 

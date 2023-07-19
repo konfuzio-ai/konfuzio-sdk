@@ -127,18 +127,7 @@ Example usage of your Custom Categorization AI:
    :dedent: 4
 
 After you have trained and saved your custom AI, you can upload it using the steps from the [tutorial](https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html#upload-extraction-or-category-ai-to-target-instance)
-or using the method `upload_ai_model()`, provided that you have the Superuser rights. You can also remove an uploaded 
-model by using `delete_ai_model()`.
-
-```python
-from konfuzio_sdk.api import upload_ai_model, delete_ai_model
-
-# upload a saved model to the server
-model_id = upload_ai_model(pickle_model_path)
-
-# remove model
-delete_ai_model(model_id, ai_type='categorization')
-```
+or using the method `upload_ai_model()` as described in [Upload your AI](https://dev.konfuzio.com/sdk/tutorials/upload-your-ai/index.html), provided that you have the Superuser rights.
 
 ### Categorization AI Overview Diagram
 

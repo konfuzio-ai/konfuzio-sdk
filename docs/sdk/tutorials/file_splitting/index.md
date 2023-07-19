@@ -62,18 +62,7 @@ For the first option, go to the Superuser AIs and select your locally stored pic
 Splitting and status to Training finished, then save the AI. After that, go to the Splitting AIs, choose your AI and 
 select an action "Activate Splitting AI".
 
-For the second option, provide the path to your model to the `upload_ai_model()`. You can also remove an uploaded model
-by using `delete_ai_model()`.
-
-```python
- from konfuzio_sdk.api import upload_ai_model, delete_ai_model
-
- # upload a saved model to the server
- model_id = upload_ai_model(save_path)
-
- # remove model
- delete_ai_model(model_id, ai_type='file_splitting')
-```
+For the second option, you can refer to [Upload your AI](https://dev.konfuzio.com/sdk/tutorials/upload-your-ai/index.html).
 
 ### Train a Multimodal File Splitting AI
 

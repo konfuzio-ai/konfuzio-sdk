@@ -16,6 +16,7 @@ Tutorials
    tutorials/file_splitting/index.md
    tutorials/tokenizers/index.md
    tutorials/information_extraction/index.md
+   tutorials/upload-your-ai/index.md
    tutorials/data_validation/index.md
    tutorials/outlier-annotations/index.md
    tutorials/regex_based_annotations/index.md
