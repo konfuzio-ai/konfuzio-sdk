@@ -11,8 +11,6 @@ with Labels like Name, Date, Recipient, or any other custom Labels. The result o
 ### Train a custom Extraction AI
 
 This section explains how to create a custom Extraction AI locally, how to save it and upload it to the Konfuzio Server.
-If you run this tutorial in Colab and experience any version compatibility issues when working with the SDK, restart the
-runtime and initialize the SDK once again; this will resolve the issue.
 
 Note: you don't necessarily need to create the AI from scratch if you already have some document-processing architecture.
 You just need to wrap it into the class that corresponds to our Extraction AI structure. Follow the steps in this 
@@ -20,8 +18,8 @@ tutorial to find out what are the requirements for that.
 
 To prepare the data for training or testing your AI, you can follow the [data preparation tutorial](tutorials.html#tutorials.html#prepare-the-data-for-training-and-testing-the-ai).
 
-By default, any Extraction AI class should derive from the `AbstractExtractionAI` class and implement the following 
-methods:
+By default, any Extraction AI class should derive from the `AbstractExtractionAI` class and implement the `extract()` 
+method:
 
 .. literalinclude:: /sdk/boilerplates/test_custom_extraction_ai.py
       :language: python
