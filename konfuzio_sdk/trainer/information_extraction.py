@@ -847,7 +847,7 @@ class AbstractExtractionAI(BaseModel):
             raise AttributeError(f'{self} requires a Category.')
 
     def fit(self):
-        """Use as placeholder Function."""
+        """Use as placeholder Function because the Abstract AI does not train a classifier."""
         logger.warning(f'{self} does not train a classifier.')
         pass
 
