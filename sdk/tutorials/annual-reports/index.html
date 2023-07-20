@@ -4,12 +4,12 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Prepare the data for training and testing the AI &mdash; Konfuzio  documentation</title>
+  <title>Count Relevant Expressions in Annual Reports &mdash; Konfuzio  documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
     <link rel="shortcut icon" href="../../../_static/full_green_square.png"/>
-    <link rel="canonical" href="https://dev.konfuzio.com/sdk/tutorials/data-preparation/index.html" />
+    <link rel="canonical" href="https://dev.konfuzio.com/sdk/tutorials/annual-reports/index.html" />
   <!--[if lt IE 9]>
     <script src="../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -23,8 +23,8 @@
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="Document Categorization" href="../document_categorization/index.html" />
-    <link rel="prev" title="Tutorials" href="../../tutorials.html" /> 
+    <link rel="next" title="Explanations" href="../../explanations.html" />
+    <link rel="prev" title="Retrain Flair NER-Ontonotes-Fast with Human Revised Annotations" href="../ner-ontonotes-fast/index.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -48,7 +48,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../index.html">What is the Konfuzio SDK?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../get_started.html">Get Started</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../tutorials.html">Tutorials</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Prepare the data for training and testing the AI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../data-preparation/index.html">Prepare the data for training and testing the AI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../document_categorization/index.html">Document Categorization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../file_splitting/index.html">File Splitting</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tokenizers/index.html">Tokenization</a></li>
@@ -58,7 +58,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../regex_based_annotations/index.html">Create Regex-based Annotations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../pdf-form-generator/index.html">Build your own PDF Form Generator</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../ner-ontonotes-fast/index.html">Retrain Flair NER-Ontonotes-Fast with Human Revised Annotations</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../annual-reports/index.html">Count Relevant Expressions in Annual Reports</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Count Relevant Expressions in Annual Reports</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../explanations.html">Explanations</a></li>
@@ -98,9 +98,9 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
           <li><a href="../../tutorials.html">Tutorials</a> &raquo;</li>
-      <li>Prepare the data for training and testing the AI</li>
+      <li>Count Relevant Expressions in Annual Reports</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../../../_sources/sdk/tutorials/data-preparation/index.md.txt" rel="nofollow"> View page source</a>
+            <a href="../../../_sources/sdk/tutorials/annual-reports/index.md.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -108,39 +108,22 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="prepare-the-data-for-training-and-testing-the-ai">
-<h1>Prepare the data for training and testing the AI<a class="headerlink" href="#prepare-the-data-for-training-and-testing-the-ai" title="Permalink to this headline">¶</a></h1>
-<p>Before training the AI model, the Documents for training and testing need to be uploaded into the Project. You can use
-the Server app (here’s the <a class="reference external" href="https://help.konfuzio.com/modules/documents/index.html">tutorial</a>).</p>
-<p>Note: all uploaded Documents have to have their Pages in the correct order.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># if you want to create a new Project, use the create_new_project method</span>
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.api</span> <span class="kn">import</span> <span class="n">create_new_project</span>
-
-<span class="n">project</span> <span class="o">=</span> <span class="n">create_new_project</span><span class="p">(</span><span class="s1">&#39;project_name&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># if you want to use the existing Project, initialize it</span>
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Document</span>
-
-<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">TEST_PROJECT_ID</span><span class="p">)</span>
-
-<span class="c1"># provide paths to your locally stored Documents</span>
-<span class="n">file_paths</span> <span class="o">=</span> <span class="p">[</span><span class="n">FILE_PATH_1</span><span class="p">,</span> <span class="n">FILE_PATH_2</span><span class="p">,</span> <span class="n">FILE_PATH_3</span><span class="p">]</span>
-<span class="k">for</span> <span class="n">document_path</span> <span class="ow">in</span> <span class="n">file_paths</span><span class="p">:</span>
-    <span class="c1"># create new Documents from your local files</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">Document</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">document_path</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span> <span class="n">sync</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>You can also assign the status of a training or testing Document to the newly uploaded Documents as described in <a class="reference external" href="get_started.html#modify-document">Modify Document</a>
-section: <code class="docutils literal notranslate"><span class="pre">dataset_status</span> <span class="pre">==</span> <span class="pre">1</span></code> is equal to the training status, <code class="docutils literal notranslate"><span class="pre">dataset_status</span> <span class="pre">==</span> <span class="pre">2</span></code> is equal to the testing status.</p>
+  <section id="count-relevant-expressions-in-annual-reports">
+<h1>Count Relevant Expressions in Annual Reports<a class="headerlink" href="#count-relevant-expressions-in-annual-reports" title="Permalink to this headline">¶</a></h1>
+<p>The tutorial <em>Count Relevant Expressions in Annual Reports</em> aims to show you how to use the Konfuzio SDK package to
+retrieve structured and organized information that can be used for a deeper analysis and understanding of your data.
+It will show you how to identify and count pre-specified expressions in documents and how to collect that information.</p>
+<p>You can <a class="reference external" href="https://colab.research.google.com/github/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/tutorials/word_count.ipynb"><img alt="OpenInColab2" src="https://colab.research.google.com/assets/colab-badge.svg" /></a> or download it from
+<a class="reference external" href="https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/tutorials/word_count.ipynb">here</a>
+and try it by yourself.</p>
 </section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../../tutorials.html" class="btn btn-neutral float-left" title="Tutorials" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="../document_categorization/index.html" class="btn btn-neutral float-right" title="Document Categorization" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../ner-ontonotes-fast/index.html" class="btn btn-neutral float-left" title="Retrain Flair NER-Ontonotes-Fast with Human Revised Annotations" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../../explanations.html" class="btn btn-neutral float-right" title="Explanations" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

@@ -23,7 +23,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Overview" href="tutorials/overview/index.html" />
+    <link rel="next" title="Prepare the data for training and testing the AI" href="tutorials/data-preparation/index.html" />
     <link rel="prev" title="Get Started" href="get_started.html" /> 
 </head>
 
@@ -48,7 +48,6 @@
 <li class="toctree-l1"><a class="reference internal" href="index.html">What is the Konfuzio SDK?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="get_started.html">Get Started</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Tutorials</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="tutorials/overview/index.html">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorials/data-preparation/index.html">Prepare the data for training and testing the AI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorials/document_categorization/index.html">Document Categorization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorials/file_splitting/index.html">File Splitting</a></li>
@@ -58,8 +57,8 @@
 <li class="toctree-l2"><a class="reference internal" href="tutorials/outlier-annotations/index.html">Find possible outliers among the ground-truth Annotations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorials/regex_based_annotations/index.html">Create Regex-based Annotations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorials/pdf-form-generator/index.html">Build your own PDF Form Generator</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#retrain-flair-ner-ontonotes-fast-with-human-revised-annotations">Retrain Flair NER-Ontonotes-Fast with Human Revised Annotations</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#count-relevant-expressions-in-annual-reports">Count Relevant Expressions in Annual Reports</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/ner-ontonotes-fast/index.html">Retrain Flair NER-Ontonotes-Fast with Human Revised Annotations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/annual-reports/index.html">Count Relevant Expressions in Annual Reports</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="explanations.html">Explanations</a></li>
@@ -112,27 +111,20 @@
 <h1>Tutorials<a class="headerlink" href="#tutorials" title="Permalink to this headline">¶</a></h1>
 <p><em>Tutorials are lessons that take the reader by the hand through a series of steps to complete a project of some kind.</em>
 <em>Tutorials are learning-oriented.</em></p>
+<p>In this section you can find various tutorials on document-related AI processes in detail. These processes allow to
+split stack scans, categorize and extract information from the Documents.</p>
+<p>The first step we’re going to cover is <a class="reference internal" href="tutorials/document_categorization/index.html#document-categorization-tutorials"><span class="std std-ref">Categorization</span></a>, where a Document is
+labelled to be of a certain Category within the Project.</p>
+<p>The second section is on <a class="reference internal" href="tutorials/file_splitting/index.html#file-splitting-tutorials"><span class="std std-ref">File Splitting</span></a>
+– this happens when the original Document consists of several smaller sub-Documents and needs to be separated so that
+each one can be processed individually.</p>
+<p>The third section will go over the various options for <a class="reference internal" href="tutorials/tokenizers/index.html#tokenization-tutorials"><span class="std std-ref">Document Tokenization</span></a>.</p>
+<p>The fourth part describes <a class="reference internal" href="tutorials/information_extraction/index.html#information-extraction-tutorials"><span class="std std-ref">Information Extraction</span></a>, during which various
+information is obtained and labeled from unstructured texts, i.e. Name, Date, Recipient, or any other custom Labels.</p>
+<p>For a more in-depth look at each step, be sure to check out the <a class="reference internal" href="releasing/index.html#architecture-sdk-to-server"><span class="std std-ref">Architecture Diagram</span></a>
+that reflects each step of the document-processing pipeline.</p>
 <div class="toctree-wrapper compound">
 </div>
-<section id="retrain-flair-ner-ontonotes-fast-with-human-revised-annotations">
-<h2>Retrain Flair NER-Ontonotes-Fast with Human Revised Annotations<a class="headerlink" href="#retrain-flair-ner-ontonotes-fast-with-human-revised-annotations" title="Permalink to this headline">¶</a></h2>
-<p>The tutorial <em>HRetrain Flair NER-Ontonotes-Fast with Human Revised Annotations</em> aims to show you how to use the
-Konfuzio SDK package to include an easy feedback workflow in your training pipeline. It also gives an example of how you
-can take advantage of open-source models to speed up the annotation process and use the feedback workflow to adapt the
-domain knowledge of the model to your aim.</p>
-<p>You can <a class="reference external" href="https://colab.research.google.com/github/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/tutorials/human_in_the_loop.ipynb"><img alt="OpenInColab1" src="https://colab.research.google.com/assets/colab-badge.svg" /></a> or download it from
-<a class="reference external" href="https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/tutorials/human_in_the_loop.ipynb">here</a>
-and try it by yourself.</p>
-</section>
-<section id="count-relevant-expressions-in-annual-reports">
-<h2>Count Relevant Expressions in Annual Reports<a class="headerlink" href="#count-relevant-expressions-in-annual-reports" title="Permalink to this headline">¶</a></h2>
-<p>The tutorial <em>Count Relevant Expressions in Annual Reports</em> aims to show you how to use the Konfuzio SDK package to
-retrieve structured and organized information that can be used for a deeper analysis and understanding of your data.
-It will show you how to identify and count pre-specified expressions in documents and how to collect that information.</p>
-<p>You can <a class="reference external" href="https://colab.research.google.com/github/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/tutorials/word_count.ipynb"><img alt="OpenInColab2" src="https://colab.research.google.com/assets/colab-badge.svg" /></a> or download it from
-<a class="reference external" href="https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/tutorials/word_count.ipynb">here</a>
-and try it by yourself.</p>
-</section>
 </section>
 
 
@@ -140,7 +132,7 @@ and try it by yourself.</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="get_started.html" class="btn btn-neutral float-left" title="Get Started" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="tutorials/overview/index.html" class="btn btn-neutral float-right" title="Overview" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="tutorials/data-preparation/index.html" class="btn btn-neutral float-right" title="Prepare the data for training and testing the AI" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
