@@ -7,11 +7,11 @@ The Document Validation UI is built using [Vue.js version 2](https://v2.vuejs.or
 
 The entry point of the application is the `main.js`, which loads all the Vue libraries and therefore opens the first Vue component, the `App.vue`. This component has the responsibility to tell the store to fetch the API data required to load the components. These files can be found under the `src` folder.
 
-The [`src`](https://github.com/konfuzio-ai/document-validation-ui/tree/main/src) folder is the root of the project and is divided into:
+[This folder](https://github.com/konfuzio-ai/document-validation-ui/tree/main/src) is the root of the project and is divided into:
 
 ### Assets
 
-[This folder](https://github.com/konfuzio-ai/document-validation-ui/tree/main/src/assets) contains all the images and styles. Each component has its styles under the `SCSS` folder. The application uses the [Buefy](https://buefy.org) library, so if you want to edit the application theme you can go to the file `scss/variables.scss` and edit all the colors and variables to match the desired design.
+[The assets folder](https://github.com/konfuzio-ai/document-validation-ui/tree/main/src/assets) contains all the images and styles. Each component has its styles under the `SCSS` folder. The application uses the [Buefy](https://buefy.org) library, so if you want to edit the application theme you can go to the file `scss/variables.scss` and edit all the colors and variables to match the desired design.
 
 The application uses FontAwesome for the icons. If you need to add new ones, you can do so on the `main.js` file on the icon library setup.
 

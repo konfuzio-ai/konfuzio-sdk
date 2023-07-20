@@ -26,23 +26,26 @@ You will also need a [Document uploaded](https://app.konfuzio.com/v3/swagger/#/d
 
 .. image:: ./images/docid.png
 
-To complete the setup, create an environment variables file `.env` on the root of the repository based on the [.env.example](https://github.com/konfuzio-ai/document-validation-ui/blob/main/.env.example) for specifying the following values:
+To complete the setup, create an environment variables file `.env` on the root of the repository based on the [.env.example](https://github.com/konfuzio-ai/document-validation-ui/blob/main/.env.example) for specifying the following required values:
 
-- The user token
-- The Document id
+- The user token: `VUE_APP_GUEST_USER_TOKEN`
+- The Document id: `VUE_APP_DOCUMENT_ID`
 
 Some other optional variables you can include are:
 
-- The API URL
-- The images URL
-- The default language of the app
-- The Category ID
+- The API URL: `VUE_APP_API_URL`. It will be `https://app.konfuzio.com/api/v3` if left empty.
+- The images URL: `VUE_APP_DOCUMENT_IMAGES_URL`. It will be `https://app.konfuzio.com` if left empty.
+- The language of the application: `VUE_APP_I18N_LOCALE`. The default will be `en` if none is provided in this file or in the `HTML`.
+- The default language of the application: `VUE_APP_I18N_FALLBACK_LOCALE`. The same as for the language of the application applies.
+- Sentry [DSN](https://docs.sentry.io/product/sentry-basics/dsn-explainer/?original_referrer=https%3A%2F%2Fwww.google.com%2F): `VUE_APP_SENTRY_DSN`
+- Sentry [environment](https://docs.sentry.io/product/sentry-basics/environments/?original_referrer=https%3A%2F%2Fwww.google.com%2F): `VUE_APP_SENTRY_ENVIRONMENT`
+- The path to a list of Documents in the application: `VUE_APP_DOCUMENTS_LIST_PATH`. This variable will be used to redirect the user to the specified list of Documents in the application so that they can continue with the review process of other Documents after certain changes like [splitting](https://help.konfuzio.com/document-validation-ui/review-documents/split/index.html), rotating or sorting. A `/` character should be added both at the start and end of the pathname.
 
 You can also set the Document id through the URL query parameters like `?document=ID`. This will have priority over any other Document id that is set on `.env` or in `index.html`. For the other variables, the `.env` will also have priority from the ones defined in the HTML.
 
 ## Multilingual User Interface
 
-The Document Validation UI can currently be used in three languages: German (de), English (en), and Spanish (es). You can specify what the default language of the application will be in the `.env` file, like so:
+The Document Validation UI can currently be used in three languages: German (de), English (en), and Spanish (es). As mentioned in the previous section, you can specify what the default language of the application will be in the `.env` file, like so:
 
 ```
 VUE_APP_I18N_LOCALE=
@@ -79,7 +82,7 @@ Once the package is installed, you can configure the application in two ways:
 
 ##### Pointing to the dist folder
 
-You can use the compiled version under the `dist` folder on the package source, by pointing to it from the `index.html` and making any necessary changes to the `HTML` properties on the `App` tag.
+You can use the compiled version under the `dist` folder on the package source, by pointing to it from the `index.html` and making any necessary changes to the `HTML` properties on the `App` tag. See an example [here](#imports-from-the-dist-folder).
 
 ![dist-npm-package.png](./images/dist-npm-package.png)
 
@@ -119,22 +122,13 @@ module.exports = {
 };
 ```
 
+See how to add it in the `HTML` [in this example](#webpack-bundle).
+
 ##### HTML
 
 In the `HTML`, we should load the script we created with Webpack or the compiled version under the `dist` folder, and customize the variables we want. Please note that customizing the variables is optional and that any variable in the `.env` will have priority from the variables defined in the `index.html`.
 
 The following examples, based on the two configuration options mentioned before, include the custom variables (Document id, user token, locale), but it is not mandatory to add these, which should still be added to the `.env` file.
-
-###### Webpack bundle
-
-```
- <div id="app">
-    <app document="document_id" user_token=”user_token” locale="de/en/es"></app>
-  </div>
-
-   <script src="/server/bundle/document_validation_ui.js"></script>
-
-```
 
 ###### Imports from the dist folder
 
@@ -160,9 +154,20 @@ The following examples, based on the two configuration options mentioned before,
 
 <body>
  <div id="app">
-    <app document="document_id" user_token=”user_token” locale="de/en/es"></app>
+    <app document="document_id" user_token=”user_token” locale="de/en/es" documents_list_path="/document_list_path/"></app>
   </div>
 </body>
+```
+
+###### Webpack bundle
+
+```
+ <div id="app">
+    <app document="document_id" user_token=”user_token” locale="de/en/es" documents_list_path="/document_list_path/"></app>
+  </div>
+
+   <script src="/server/bundle/document_validation_ui.js"></script>
+
 ```
 
 ### Integrate with CDN
@@ -195,7 +200,7 @@ You can download the application by cloning our [GitHub repository](https://gith
 
 2. Configure the Application
 
-Decide if the application will be run as [Read Only or Full Mode](./modes.md).
+Decide if the application will be run as [Read Only or Full Mode](#read-only-mode-vs-full-mode).
 
 3. Install all packages
 
@@ -223,7 +228,7 @@ If you want to serve the application locally to run on a browser (default URL: h
 
 ### Run the Document Validation UI in non-Vue applications
 
-If your application is developed using technologies other than Vue (for example React or Angular), you can build the Document Validation UI app into a package, as described in our [configuration example](#configure-the-app), and import it to your existing project, or install it as an npm package.
+If your application is developed using technologies other than Vue (for example React or Angular), you can build the Document Validation UI application into a package, as described in our [configuration example](#configure-the-application), and import it to your existing project, or install it as an npm package.
 
 #### Run in React
 
@@ -237,7 +242,7 @@ At [this link](https://www.ais.com/using-a-vue-component-in-an-angular-app/) you
 
 #### HTML iframe as Public Document
 
-You can mark your Documents as public. Marking Documents as "public" will generate a read-only, publicly accessible URL that does not require authentication. This allows you to share a link to the Document and its extracted data, or embed it in another website. See [Read Only mode](./modes.md/#read-only-mode) for reference.
+You can mark your Documents as public. Marking Documents as "public" will generate a read-only, publicly accessible URL that does not require authentication. This allows you to share a link to the Document and its extracted data, or embed it in another website. See [Read Only mode](#read-only-mode) for reference.
 
 ##### Share a Document with a link
 
@@ -309,7 +314,7 @@ _Please note that the default values from the examples below are based on Konfuz
 
 ```
 <div id="app">
-   <app document="id" locale="de/en/es" user_token="token"></app>
+   <app document="id" locale="de/en/es" user_token="token" documents_list_path="/document_list_path/"></app>
  </div>
 
 <style>
