@@ -100,7 +100,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#how-to-customize-the-document-validation-ui">How to customize the Document Validation UI?</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#how-to-add-the-custom-variables-to-your-project">How to add the custom variables to your project?</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id3">HTML</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id4">HTML</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#css-file">CSS file</a></li>
 </ul>
 </li>
@@ -159,24 +159,27 @@
 <p>If you want to run the widget in full mode to be able to interact with the Document by editing Annotations, Document Pages, and other functionalities, you will need to have a user account created (more information in our <a class="reference external" href="/dvui/explanations.html#managing-users-in-the-konfuzio-document-validation-ui">Managing users</a> section). Then, you should generate a user token by accessing the <a class="reference external" href="https://app.konfuzio.com/v3/swagger/">Konfuzio API version 3 Auth Request</a> and making a request with your username and password. If the provided credentials are correct, then a Token will be generated that you can copy and add to the <code class="docutils literal notranslate"><span class="pre">.env</span></code> file (see below for more details).</p>
 <p>You will also need a <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/documents/documents_create">Document uploaded</a> and a Document id, and will need to be logged in to <a class="reference external" href="https://app.konfuzio.com/">Konfuzio</a>) before being able to upload the Document. After successfully uploading it, if you want to show it on the Document Validation UI, you can copy the Document id from the URL, as shown in the image below:</p>
 <img alt="../_images/docid.png" src="../_images/docid.png" />
-<p>To complete the setup, create an environment variables file <code class="docutils literal notranslate"><span class="pre">.env</span></code> on the root of the repository based on the <a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/blob/main/.env.example">.env.example</a> for specifying the following values:</p>
+<p>To complete the setup, create an environment variables file <code class="docutils literal notranslate"><span class="pre">.env</span></code> on the root of the repository based on the <a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/blob/main/.env.example">.env.example</a> for specifying the following required values:</p>
 <ul class="simple">
-<li><p>The user token</p></li>
-<li><p>The Document id</p></li>
+<li><p>The user token: <code class="docutils literal notranslate"><span class="pre">VUE_APP_GUEST_USER_TOKEN</span></code></p></li>
+<li><p>The Document id: <code class="docutils literal notranslate"><span class="pre">VUE_APP_DOCUMENT_ID</span></code></p></li>
 </ul>
 <p>Some other optional variables you can include are:</p>
 <ul class="simple">
-<li><p>The API URL</p></li>
-<li><p>The images URL</p></li>
-<li><p>The default language of the app</p></li>
-<li><p>The Category ID</p></li>
+<li><p>The API URL: <code class="docutils literal notranslate"><span class="pre">VUE_APP_API_URL</span></code>. It will be <code class="docutils literal notranslate"><span class="pre">https://app.konfuzio.com/api/v3</span></code> if left empty.</p></li>
+<li><p>The images URL: <code class="docutils literal notranslate"><span class="pre">VUE_APP_DOCUMENT_IMAGES_URL</span></code>. It will be <code class="docutils literal notranslate"><span class="pre">https://app.konfuzio.com</span></code> if left empty.</p></li>
+<li><p>The language of the application: <code class="docutils literal notranslate"><span class="pre">VUE_APP_I18N_LOCALE</span></code>. The default will be <code class="docutils literal notranslate"><span class="pre">en</span></code> if none is provided in this file or in the <code class="docutils literal notranslate"><span class="pre">HTML</span></code>.</p></li>
+<li><p>The default language of the application: <code class="docutils literal notranslate"><span class="pre">VUE_APP_I18N_FALLBACK_LOCALE</span></code>. The same as for the language of the application applies.</p></li>
+<li><p>Sentry <a class="reference external" href="https://docs.sentry.io/product/sentry-basics/dsn-explainer/?original_referrer=https%3A%2F%2Fwww.google.com%2F">DSN</a>: <code class="docutils literal notranslate"><span class="pre">VUE_APP_SENTRY_DSN</span></code></p></li>
+<li><p>Sentry <a class="reference external" href="https://docs.sentry.io/product/sentry-basics/environments/?original_referrer=https%3A%2F%2Fwww.google.com%2F">environment</a>: <code class="docutils literal notranslate"><span class="pre">VUE_APP_SENTRY_ENVIRONMENT</span></code></p></li>
+<li><p>The path to a list of Documents in the application: <code class="docutils literal notranslate"><span class="pre">VUE_APP_DOCUMENTS_LIST_PATH</span></code>. This variable will be used to redirect the user to the specified list of Documents in the application so that they can continue with the review process of other Documents after certain changes like <a class="reference external" href="https://help.konfuzio.com/document-validation-ui/review-documents/split/index.html">splitting</a>, rotating or sorting. A <code class="docutils literal notranslate"><span class="pre">/</span></code> character should be added both at the start and end of the pathname.</p></li>
 </ul>
 <p>You can also set the Document id through the URL query parameters like <code class="docutils literal notranslate"><span class="pre">?document=ID</span></code>. This will have priority over any other Document id that is set on <code class="docutils literal notranslate"><span class="pre">.env</span></code> or in <code class="docutils literal notranslate"><span class="pre">index.html</span></code>. For the other variables, the <code class="docutils literal notranslate"><span class="pre">.env</span></code> will also have priority from the ones defined in the HTML.</p>
 </section>
 </section>
 <section id="multilingual-user-interface">
 <h2>Multilingual User Interface<a class="headerlink" href="#multilingual-user-interface" title="Permalink to this headline">¶</a></h2>
-<p>The Document Validation UI can currently be used in three languages: German (de), English (en), and Spanish (es). You can specify what the default language of the application will be in the <code class="docutils literal notranslate"><span class="pre">.env</span></code> file, like so:</p>
+<p>The Document Validation UI can currently be used in three languages: German (de), English (en), and Spanish (es). As mentioned in the previous section, you can specify what the default language of the application will be in the <code class="docutils literal notranslate"><span class="pre">.env</span></code> file, like so:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">VUE_APP_I18N_LOCALE</span><span class="o">=</span>
 <span class="n">VUE_APP_I18N_FALLBACK_LOCALE</span><span class="o">=</span>
 </pre></div>
@@ -203,7 +206,7 @@
 <p>Once the package is installed, you can configure the application in two ways:</p>
 <section id="pointing-to-the-dist-folder">
 <h5>Pointing to the dist folder<a class="headerlink" href="#pointing-to-the-dist-folder" title="Permalink to this headline">¶</a></h5>
-<p>You can use the compiled version under the <code class="docutils literal notranslate"><span class="pre">dist</span></code> folder on the package source, by pointing to it from the <code class="docutils literal notranslate"><span class="pre">index.html</span></code> and making any necessary changes to the <code class="docutils literal notranslate"><span class="pre">HTML</span></code> properties on the <code class="docutils literal notranslate"><span class="pre">App</span></code> tag.</p>
+<p>You can use the compiled version under the <code class="docutils literal notranslate"><span class="pre">dist</span></code> folder on the package source, by pointing to it from the <code class="docutils literal notranslate"><span class="pre">index.html</span></code> and making any necessary changes to the <code class="docutils literal notranslate"><span class="pre">HTML</span></code> properties on the <code class="docutils literal notranslate"><span class="pre">App</span></code> tag. See an example <a class="reference external" href="#imports-from-the-dist-folder">here</a>.</p>
 <a class="reference external image-reference" href="./images/dist-npm-package.png"><img alt="dist-npm-package.png" src="../_images/dist-npm-package.png" /></a>
 </section>
 <section id="using-a-javascript-bundler">
@@ -240,22 +243,13 @@ module.exports = {
 };
 </pre></div>
 </div>
+<p>See how to add it in the <code class="docutils literal notranslate"><span class="pre">HTML</span></code> <a class="reference external" href="#webpack-bundle">in this example</a>.</p>
 </section>
 </section>
 <section id="html">
 <h5>HTML<a class="headerlink" href="#html" title="Permalink to this headline">¶</a></h5>
 <p>In the <code class="docutils literal notranslate"><span class="pre">HTML</span></code>, we should load the script we created with Webpack or the compiled version under the <code class="docutils literal notranslate"><span class="pre">dist</span></code> folder, and customize the variables we want. Please note that customizing the variables is optional and that any variable in the <code class="docutils literal notranslate"><span class="pre">.env</span></code> will have priority from the variables defined in the <code class="docutils literal notranslate"><span class="pre">index.html</span></code>.</p>
 <p>The following examples, based on the two configuration options mentioned before, include the custom variables (Document id, user token, locale), but it is not mandatory to add these, which should still be added to the <code class="docutils literal notranslate"><span class="pre">.env</span></code> file.</p>
-<section id="webpack-bundle">
-<h6>Webpack bundle<a class="headerlink" href="#webpack-bundle" title="Permalink to this headline">¶</a></h6>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&lt;div id=&quot;app&quot;&gt;
-   &lt;app document=&quot;document_id&quot; user_token=”user_token” locale=&quot;de/en/es&quot;&gt;&lt;/app&gt;
- &lt;/div&gt;
-
-  &lt;script src=&quot;/server/bundle/document_validation_ui.js&quot;&gt;&lt;/script&gt;
-</pre></div>
-</div>
-</section>
 <section id="imports-from-the-dist-folder">
 <h6>Imports from the dist folder<a class="headerlink" href="#imports-from-the-dist-folder" title="Permalink to this headline">¶</a></h6>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&lt;head&gt;
@@ -279,9 +273,19 @@ module.exports = {
 
 &lt;body&gt;
  &lt;div id=&quot;app&quot;&gt;
-    &lt;app document=&quot;document_id&quot; user_token=”user_token” locale=&quot;de/en/es&quot;&gt;&lt;/app&gt;
+    &lt;app document=&quot;document_id&quot; user_token=”user_token” locale=&quot;de/en/es&quot; documents_list_path=&quot;/document_list_path/&quot;&gt;&lt;/app&gt;
   &lt;/div&gt;
 &lt;/body&gt;
+</pre></div>
+</div>
+</section>
+<section id="webpack-bundle">
+<h6>Webpack bundle<a class="headerlink" href="#webpack-bundle" title="Permalink to this headline">¶</a></h6>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&lt;div id=&quot;app&quot;&gt;
+   &lt;app document=&quot;document_id&quot; user_token=”user_token” locale=&quot;de/en/es&quot; documents_list_path=&quot;/document_list_path/&quot;&gt;&lt;/app&gt;
+ &lt;/div&gt;
+
+  &lt;script src=&quot;/server/bundle/document_validation_ui.js&quot;&gt;&lt;/script&gt;
 </pre></div>
 </div>
 </section>
@@ -315,7 +319,7 @@ module.exports = {
 <ol class="arabic simple">
 <li><p>Configure the Application</p></li>
 </ol>
-<p>Decide if the application will be run as <a class="reference external" href="./modes.md">Read Only or Full Mode</a>.</p>
+<p>Decide if the application will be run as <a class="reference external" href="#read-only-mode-vs-full-mode">Read Only or Full Mode</a>.</p>
 <ol class="arabic simple">
 <li><p>Install all packages</p></li>
 </ol>
@@ -339,7 +343,7 @@ module.exports = {
 </section>
 <section id="run-the-document-validation-ui-in-non-vue-applications">
 <h3>Run the Document Validation UI in non-Vue applications<a class="headerlink" href="#run-the-document-validation-ui-in-non-vue-applications" title="Permalink to this headline">¶</a></h3>
-<p>If your application is developed using technologies other than Vue (for example React or Angular), you can build the Document Validation UI app into a package, as described in our <a class="reference external" href="#configure-the-app">configuration example</a>, and import it to your existing project, or install it as an npm package.</p>
+<p>If your application is developed using technologies other than Vue (for example React or Angular), you can build the Document Validation UI application into a package, as described in our <a class="reference external" href="#configure-the-application">configuration example</a>, and import it to your existing project, or install it as an npm package.</p>
 <section id="run-in-react">
 <h4>Run in React<a class="headerlink" href="#run-in-react" title="Permalink to this headline">¶</a></h4>
 <p>You can find a full example of using the Document Validation UI in a React application <a class="reference external" href="https://medium.com/&#64;pateldhruv020/using-vue-component-in-react-9161f30d29a0">here</a>.</p>
@@ -353,7 +357,7 @@ module.exports = {
 <h3>Iframe integration<a class="headerlink" href="#iframe-integration" title="Permalink to this headline">¶</a></h3>
 <section id="html-iframe-as-public-document">
 <h4>HTML iframe as Public Document<a class="headerlink" href="#html-iframe-as-public-document" title="Permalink to this headline">¶</a></h4>
-<p>You can mark your Documents as public. Marking Documents as “public” will generate a read-only, publicly accessible URL that does not require authentication. This allows you to share a link to the Document and its extracted data, or embed it in another website. See <a class="reference external" href="./modes.md/#read-only-mode">Read Only mode</a> for reference.</p>
+<p>You can mark your Documents as public. Marking Documents as “public” will generate a read-only, publicly accessible URL that does not require authentication. This allows you to share a link to the Document and its extracted data, or embed it in another website. See <a class="reference external" href="#read-only-mode">Read Only mode</a> for reference.</p>
 <section id="share-a-document-with-a-link">
 <h5>Share a Document with a link<a class="headerlink" href="#share-a-document-with-a-link" title="Permalink to this headline">¶</a></h5>
 <p>From the details page, you can copy a public URL to your Document, which you can share with other people. Apart from the URL, it does not contain any Konfuzio branding.</p>
@@ -400,10 +404,10 @@ Once you’ve selected your desired color, the user interface will update in rea
 <h3>How to add the custom variables to your project?<a class="headerlink" href="#how-to-add-the-custom-variables-to-your-project" title="Permalink to this headline">¶</a></h3>
 <p>Below are two examples of how to set the custom variables, whether in the <code class="docutils literal notranslate"><span class="pre">index.html</span></code> or in a dedicated <code class="docutils literal notranslate"><span class="pre">CSS</span></code> file.</p>
 <p><em>Please note that the default values from the examples below are based on Konfuzio’s default styles.</em></p>
-<section id="id3">
-<h4>HTML<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
+<section id="id4">
+<h4>HTML<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">div</span> <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;app&quot;</span><span class="o">&gt;</span>
-   <span class="o">&lt;</span><span class="n">app</span> <span class="n">document</span><span class="o">=</span><span class="s2">&quot;id&quot;</span> <span class="n">locale</span><span class="o">=</span><span class="s2">&quot;de/en/es&quot;</span> <span class="n">user_token</span><span class="o">=</span><span class="s2">&quot;token&quot;</span><span class="o">&gt;&lt;/</span><span class="n">app</span><span class="o">&gt;</span>
+   <span class="o">&lt;</span><span class="n">app</span> <span class="n">document</span><span class="o">=</span><span class="s2">&quot;id&quot;</span> <span class="n">locale</span><span class="o">=</span><span class="s2">&quot;de/en/es&quot;</span> <span class="n">user_token</span><span class="o">=</span><span class="s2">&quot;token&quot;</span> <span class="n">documents_list_path</span><span class="o">=</span><span class="s2">&quot;/document_list_path/&quot;</span><span class="o">&gt;&lt;/</span><span class="n">app</span><span class="o">&gt;</span>
  <span class="o">&lt;/</span><span class="n">div</span><span class="o">&gt;</span>
 
 <span class="o">&lt;</span><span class="n">style</span><span class="o">&gt;</span>

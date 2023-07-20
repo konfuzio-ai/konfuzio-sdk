@@ -66,9 +66,19 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">What is the Konfuzio Document Validation UI?</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#components">Components</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#document-thumbnails">Document Thumbnails</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#document-page">Document Page</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#document-annotations">Document Annotations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#primary-components">Primary Components</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#document-thumbnails">Document Thumbnails</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#document-page">Document Page</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#document-annotations">Document Annotations</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#secondary-components">Secondary Components</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#document-edit">Document Edit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#document-top-bar">Document Top Bar</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#document-modals">Document Modals</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#documents-list">Documents List</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -110,21 +120,47 @@
 <p>If you want to read the full user guide visit <a class="reference external" href="https://help.konfuzio.com/document-validation-ui/index.html">this link</a>.</p>
 <section id="components">
 <h2>Components<a class="headerlink" href="#components" title="Permalink to this headline">¶</a></h2>
-<p>The app has four main components:</p>
+<p>The app has three primary components, and four secondary ones:</p>
+<section id="primary-components">
+<h3>Primary Components<a class="headerlink" href="#primary-components" title="Permalink to this headline">¶</a></h3>
 <section id="document-thumbnails">
-<h3>Document Thumbnails<a class="headerlink" href="#document-thumbnails" title="Permalink to this headline">¶</a></h3>
+<h4>Document Thumbnails<a class="headerlink" href="#document-thumbnails" title="Permalink to this headline">¶</a></h4>
 <a class="reference external image-reference" href="./images/document_thumbnails.svg"><img alt="document_thumbnails.svg" src="../_images/document_thumbnails.svg" /></a>
 <p>This is a simple component that loads the Document images and displays them in a vertical list to act as a thumbnail selector. It is fully clickable and it updates its state automatically.</p>
 </section>
 <section id="document-page">
-<h3>Document Page<a class="headerlink" href="#document-page" title="Permalink to this headline">¶</a></h3>
+<h4>Document Page<a class="headerlink" href="#document-page" title="Permalink to this headline">¶</a></h4>
 <a class="reference external image-reference" href="./images/document_page.svg"><img alt="document_page.svg" src="../_images/document_page.svg" /></a>
 <p>This component is responsible for drawing the Document and handling any interaction with it. It uses <a class="reference external" href="https://konvajs.org/docs/vue/index.html">Konva JS</a> to render a canvas element that has the Document image as background and shapes on top. Most of the shapes are Annotations from the Konfuzio API.</p>
 </section>
 <section id="document-annotations">
-<h3>Document Annotations<a class="headerlink" href="#document-annotations" title="Permalink to this headline">¶</a></h3>
+<h4>Document Annotations<a class="headerlink" href="#document-annotations" title="Permalink to this headline">¶</a></h4>
 <a class="reference external image-reference" href="./images/document_annotations.svg"><img alt="document_annotations.svg" src="../_images/document_annotations.svg" /></a>
-<p>This component is responsible for creating a list to interact with each Annotation on the Document. You can accept, decline or edit the Annotation, edit empty Labels, and change the Annotation bounding box, among other things.</p>
+<p>This component creates a list to interact with each Annotation on the Document. You can accept, decline or edit the Annotation, edit empty Labels, and change the Annotation bounding box, among other things.</p>
+</section>
+</section>
+<section id="secondary-components">
+<h3>Secondary Components<a class="headerlink" href="#secondary-components" title="Permalink to this headline">¶</a></h3>
+<section id="document-edit">
+<h4>Document Edit<a class="headerlink" href="#document-edit" title="Permalink to this headline">¶</a></h4>
+<p>This component is responsible for the edit mode interface, where splitting, reordering and rotating take place.</p>
+<p>The interface comprises two sections, each featuring a Document preview for enhanced usability.</p>
+<p>In the first section, a dynamic grid showcases a collection of Document images that can be reordered, split, and rotated. Clicking on an image updates the corresponding page in the preview.</p>
+<p>The second section accommodates one or multiple rows, depending on whether the Document is being split. Each row includes an input field to modify the file name and a dropdown menu to select a different Category, if applicable.</p>
+</section>
+<section id="document-top-bar">
+<h4>Document Top Bar<a class="headerlink" href="#document-top-bar" title="Permalink to this headline">¶</a></h4>
+<p>The Document Top Bar contains a dropdown menu to change the Category of the current Document, and it also shows the name of the Document, which can be edited.</p>
+<p>It also handles important action buttons that allow the Document review to be finished, as well as changes made in the Document Edit component to be saved.</p>
+</section>
+<section id="document-modals">
+<h4>Document Modals<a class="headerlink" href="#document-modals" title="Permalink to this headline">¶</a></h4>
+<p>This smaller component is composed of modals that do not belong to one specific component but affect the interface as a whole.</p>
+</section>
+<section id="documents-list">
+<h4>Documents List<a class="headerlink" href="#documents-list" title="Permalink to this headline">¶</a></h4>
+<p>This component is not currently being used in the application. It displays a list of Documents at the top of the interface, over the Document Top Bar, that have been filtered by the currently authenticated user and that belong to the same Category of the current Document. Clicking a Document from the list will open it.</p>
+</section>
 </section>
 </section>
 </section>

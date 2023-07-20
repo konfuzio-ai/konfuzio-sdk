@@ -101,11 +101,6 @@
 <li class="toctree-l3"><a class="reference internal" href="#post-process-a-document-split-rotate-and-sort-pages">Post-process a Document: split, rotate and sort Pages</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#document-splitting-suggestions">Document splitting suggestions</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#download-the-ocr-version-of-an-uploaded-document">Download the OCR version of an uploaded Document</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#create-your-own-document-dashboard">Create your own Document dashboard</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#start-from-our-vue-js-code">Start from our Vue.js code</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#start-from-scratch">Start from scratch</a></li>
-</ul>
-</li>
 </ul>
 </li>
 </ul>
@@ -207,12 +202,6 @@ that can be used to generate language-specific API clients.</p>
 <li><p><a class="reference internal" href="#post-process-a-document-split-rotate-and-sort-pages" id="id39">Post-process a Document: split, rotate and sort Pages</a></p></li>
 <li><p><a class="reference internal" href="#document-splitting-suggestions" id="id40">Document splitting suggestions</a></p></li>
 <li><p><a class="reference internal" href="#download-the-ocr-version-of-an-uploaded-document" id="id41">Download the OCR version of an uploaded Document</a></p></li>
-<li><p><a class="reference internal" href="#create-your-own-document-dashboard" id="id42">Create your own Document dashboard</a></p>
-<ul>
-<li><p><a class="reference internal" href="#start-from-our-vue-js-code" id="id43">Start from our Vue.js code</a></p></li>
-<li><p><a class="reference internal" href="#start-from-scratch" id="id44">Start from scratch</a></p></li>
-</ul>
-</li>
 </ul>
 </li>
 </ul>
@@ -290,7 +279,29 @@ header <code class="docutils literal notranslate"><span class="pre">Authorizatio
 <section id="python-example">
 <h4><a class="toc-backref" href="#id14">Python example</a><a class="headerlink" href="#python-example" title="Permalink to this headline">¶</a></h4>
 <p>To get a token:</p>
+<dl class="field-list simple">
+<dt class="field-odd">language</dt>
+<dd class="field-odd"><p>python</p>
+</dd>
+<dt class="field-even">lines</dt>
+<dd class="field-even"><p>6,9-14,26-27</p>
+</dd>
+<dt class="field-odd">dedent</dt>
+<dd class="field-odd"><p>4</p>
+</dd>
+</dl>
 <p>To use the token:</p>
+<dl class="field-list simple">
+<dt class="field-odd">language</dt>
+<dd class="field-odd"><p>python</p>
+</dd>
+<dt class="field-even">lines</dt>
+<dd class="field-even"><p>6,9-11,16-19,26-27</p>
+</dd>
+<dt class="field-odd">dedent</dt>
+<dd class="field-odd"><p>4</p>
+</dd>
+</dl>
 </section>
 <section id="accessing-and-using-the-token-via-the-konfuzio-sdk">
 <h4><a class="toc-backref" href="#id15">Accessing and using the token via the Konfuzio SDK</a><a class="headerlink" href="#accessing-and-using-the-token-via-the-konfuzio-sdk" title="Permalink to this headline">¶</a></h4>
@@ -300,10 +311,7 @@ be stored in the <code class="docutils literal notranslate"><span class="pre">.e
 </section>
 <section id="authenticating-with-a-token-as-a-query-parameter-upcoming-feature">
 <h4><a class="toc-backref" href="#id16">Authenticating with a Token as a Query Parameter (<em>Upcoming feature</em>)</a><a class="headerlink" href="#authenticating-with-a-token-as-a-query-parameter-upcoming-feature" title="Permalink to this headline">¶</a></h4>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Please open a [support ticket](<a class="reference external" href="https://konfuzio.com/support/">https://konfuzio.com/support/</a>) if you would like to have early access to this feature.</p>
-</div>
+<p>Please open a <a class="reference external" href="https://konfuzio.com/support/">support ticket</a> if you would like to have early access to this feature.</p>
 <p>Sometimes you might need to use one of our endpoints with a third party service that doesn’t allow you to specify
 certain types of information (like authentication tokens) in the request. In these cases, you can use a special method
 to authenticate your request using a token as a query parameter.</p>
@@ -315,11 +323,8 @@ include the token in your request by adding it as a query parameter at the end o
 </div>
 <p>Just replace 123456 with your own authentication token, and you’ll be able to use this method to authenticate your
 request.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
 <p>This functionality is offered as part of the Google-Sheet export function, as well as usable on
 any other csv importable software (SAP, Excel, etc).</p>
-</div>
 </section>
 </section>
 <section id="response-codes">
@@ -528,11 +533,8 @@ invoice.</p>
 <h3><a class="toc-backref" href="#id30">Upload a Document</a><a class="headerlink" href="#upload-a-document" title="Permalink to this headline">¶</a></h3>
 <p>After your initial Project setup, you can start uploading Documents. To upload a Document, you will make a call to
 our <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/documents/documents_create">Document creation endpoint</a>.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Unlike most other endpoints, the Document creation endpoint only supports <cite>multipart/form-data</cite> requests (to support
+<p>Unlike most other endpoints, the Document creation endpoint only supports <code class="docutils literal notranslate"><span class="pre">multipart/form-data</span></code> requests (to support
 file uploading), so you won’t have to JSON-encode your request this time.</p>
-</div>
 <section id="uploading-a-document-to-konfuzio">
 <h4><a class="toc-backref" href="#id31">Uploading a Document to Konfuzio</a><a class="headerlink" href="#uploading-a-document-to-konfuzio" title="Permalink to this headline">¶</a></h4>
 <p>This tutorial will guide you on how to upload a Document to the Konfuzio platform.</p>
@@ -561,7 +563,6 @@ JSON-encode your request.</p>
 <span class="w">  </span>--form<span class="w"> </span><span class="nv">project</span><span class="o">=</span>PROJECT_ID<span class="se">\</span>
 <span class="w">  </span>--form<span class="w"> </span><span class="nv">sync</span><span class="o">=</span>true<span class="se">\</span>
 <span class="w">  </span>--form<span class="w"> </span><span class="nv">data_file</span><span class="o">=</span><span class="s1">&#39;@LOCAL_FILE_NAME&#39;</span><span class="p">;</span><span class="nv">type</span><span class="o">=</span>application/pdf
-<span class="sb">`</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -754,26 +755,24 @@ converted in a list for the <code class="docutils literal notranslate"><span cla
 string as input and returns a list of all its occurrences in the Document. These can be fed directly to the <code class="docutils literal notranslate"><span class="pre">span</span></code>
 attribute.</p></li>
 </ol>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
 <p>Annotation Sets are never created directly. When you create an Annotation, you can specify whether to re-use an
 existing Annotation Set, or to create a new one. You can refer to the following diagram to decide whether to use
-<cite>annotation_set</cite> or <cite>label_set</cite> in your request.</p>
-</div>
+<code class="docutils literal notranslate"><span class="pre">annotation_set</span></code> or <code class="docutils literal notranslate"><span class="pre">label_set</span></code> in your request.</p>
 <div class="mermaid">
-            graph TD
-  A[Creating an Annotation in a Document&lt;br&gt;for Label &lt;code&gt;L&lt;/code&gt; and Label Set &lt;code&gt;A&lt;/code&gt;]
-  A --&gt; B[Can the Label Set &lt;code&gt;A&lt;/code&gt; have multiple Annotation Sets?]
-  B --&gt; z[Yes] --&gt; C[Is this Annotation&lt;br&gt;for a new Annotation Set&lt;br&gt;or an existing one &lt;code&gt;B&lt;/code&gt;?]
-  C --&gt; x[New one] --&gt; E[&quot;&lt;code&gt;label=L, label_set=A&lt;/code&gt;&lt;br&gt;(will create a new Annotation Set &lt;code&gt;C&lt;/code&gt;)&quot;]
-  C --&gt; y[Existing] --&gt; D[&lt;code&gt;label=L, annotation_set=B&lt;/code&gt;]
-  B --&gt; f[No] --&gt; F[Does the Label Set &lt;code&gt;A&lt;/code&gt;&lt;br&gt; already have a single&lt;br&gt;corresponding Annotation Set &lt;code&gt;B&lt;/code&gt;?]
-  F --&gt; G[Yes]
-  G --&gt; D
-  G --&gt; I[&quot;&lt;code&gt;label=L, label_set=A&lt;/code&gt;&lt;br&gt;(will reuse the existing Annotation Set &lt;code&gt;B&lt;/code&gt;)&quot;]
-  F --&gt; H[No]
-  H --&gt; E
-        </div></section>
+            [&lt;system_message: &lt;paragraph...&gt;&gt;]
+        </div><p>graph TD
+A[Creating an Annotation in a Document<span class="raw-html-m2r"><br></span>for Label <span class="raw-html-m2r"><code>L</code></span> and Label Set <span class="raw-html-m2r"><code>A</code></span>]
+A –&gt; B[Can the Label Set <span class="raw-html-m2r"><code>A</code></span> have multiple Annotation Sets?]
+B –&gt; z[Yes] –&gt; C[Is this Annotation<span class="raw-html-m2r"><br></span>for a new Annotation Set<span class="raw-html-m2r"><br></span>or an existing one <span class="raw-html-m2r"><code>B</code></span>?]
+C –&gt; x[New one] –&gt; E[”<span class="raw-html-m2r"><code>label=L, label_set=A</code></span><span class="raw-html-m2r"><br></span>(will create a new Annotation Set <span class="raw-html-m2r"><code>C</code></span>)”]
+C –&gt; y[Existing] –&gt; D[<span class="raw-html-m2r"><code>label=L, annotation_set=B</code></span>]
+B –&gt; f[No] –&gt; F[Does the Label Set <span class="raw-html-m2r"><code>A</code></span><span class="raw-html-m2r"><br></span> already have a single<span class="raw-html-m2r"><br></span>corresponding Annotation Set <span class="raw-html-m2r"><code>B</code></span>?]
+F –&gt; G[Yes]
+G –&gt; D
+G –&gt; I[”<span class="raw-html-m2r"><code>label=L, label_set=A</code></span><span class="raw-html-m2r"><br></span>(will reuse the existing Annotation Set <span class="raw-html-m2r"><code>B</code></span>)”]
+F –&gt; H[No]
+H –&gt; E</p>
+</section>
 <section id="create-training-data-and-train-the-ai">
 <h3><a class="toc-backref" href="#id37">Create training data and train the AI</a><a class="headerlink" href="#create-training-data-and-train-the-ai" title="Permalink to this headline">¶</a></h3>
 <p>Once you have uploaded enough Documents and created enough Annotations, you can start training an
@@ -807,19 +806,20 @@ better than the previous AI’s.</p>
 been revised and the information inside them is correct.</p>
 <p>To clarify how reviewing works, let’s take a look at the statuses this data can go through:</p>
 <div class="mermaid">
-            flowchart TD
-  A(Feedback Required&lt;br&gt;&lt;small&gt;Annotations created by AI)
-  B(Unfilled&lt;br&gt;&lt;small&gt;Potential Annotations that are&lt;br&gt;not found by the AI)
-  C[Created by Human]
-  D[Not Found&lt;br&gt;&lt;small&gt;Missing Annotation instances&lt;/small&gt;]
-  E[Accepted]
-  F[Declined]
-  A --&gt; E
-  A --&gt; F
-  F --&gt; B
-  B --&gt; C
-  B --&gt; D
-        </div><ul class="simple">
+            [&lt;system_message: &lt;paragraph...&gt;&gt;]
+        </div><p>flowchart TD
+A(Feedback Required<span class="raw-html-m2r"><br></span><span class="raw-html-m2r"><small>Annotations created by AI)
+B(Unfilled<br><small>Potential Annotations that are<br>not found by the AI)
+C[Created by Human]
+D[Not Found<br><small>Missing Annotation instances</small></span>]
+E[Accepted]
+F[Declined]
+A –&gt; E
+A –&gt; F
+F –&gt; B
+B –&gt; C
+B –&gt; D</p>
+<ul class="simple">
 <li><p>Annotations created by an AI extraction are initially marked as <strong>Feedback Required</strong>.</p></li>
 <li><p>They can be <strong>Accepted</strong>, which means that the information they contain is correct.</p></li>
 <li><p>They can be <strong>Declined</strong>, in case the information is wrong.</p></li>
@@ -846,12 +846,9 @@ information it extracted was correct and the points where it was not. Once there
   <span class="o">--</span><span class="n">header</span> <span class="s1">&#39;Authorization: Token YOUR_TOKEN&#39;</span>
 </pre></div>
 </div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The <cite>annotation_sets</cite> property contains both existing Annotation Sets and “potential” ones, i.e. Label Sets from the
+<p>The <code class="docutils literal notranslate"><span class="pre">annotation_sets</span></code> property contains both existing Annotation Sets and “potential” ones, i.e. Label Sets from the
 Document’s Category which do not have a corresponding Annotation Set on the Document yet. These are easy to see
-because they don’t have any Annotation and their <cite>id</cite> is <cite>null</cite>.</p>
-</div>
+because they don’t have any Annotation and their <code class="docutils literal notranslate"><span class="pre">id</span></code> is <code class="docutils literal notranslate"><span class="pre">null</span></code>.</p>
 <p>Whichever method you choose, you should be able to retrieve an ID for the Annotation(s) you want to revise. Unrevised
 Annotations are easily filterable in the list because they have the properties <code class="docutils literal notranslate"><span class="pre">&quot;revised&quot;:</span> <span class="pre">false</span></code> and
 <code class="docutils literal notranslate"><span class="pre">&quot;is_correct&quot;:</span> <span class="pre">false</span></code>. (See the
@@ -914,10 +911,7 @@ content of the Document.</p>
 </section>
 <section id="document-splitting-suggestions">
 <h3><a class="toc-backref" href="#id40">Document splitting suggestions</a><a class="headerlink" href="#document-splitting-suggestions" title="Permalink to this headline">¶</a></h3>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>[Contact us](<a class="reference external" href="https://konfuzio.com/en/support/">https://konfuzio.com/en/support/</a>) to enable this functionality.</p>
-</div>
+<p><a class="reference external" href="https://konfuzio.com/en/support/">Contact us</a> to enable this functionality.</p>
 <p>The training data that was <a class="reference external" href="#create-training-data-and-train-the-ai">previously created</a> can also be used to train a
 Splitting AI to automatically propose splitting suggestions for uploaded documents.</p>
 <p>To get started, you should “Enable Document splitting” in your
@@ -931,12 +925,9 @@ this list, either as it is or after editing it and changing details, into the
 <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/documents/documents_postprocess_create">postprocess endpoint</a> to actualize
 the AI’s suggestions. You can also pass a list with one Document and all the page IDs to effectively reject the
 suggestions and proceed with the original Document.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
 <p>Once Document Splitting is enabled for a Project, newly uploaded Documents where splitting is detected will stay in
-the “Waiting for splitting confirmation” (<cite>41</cite>) status until the user takes action on the AI’s suggestions. After
+the “Waiting for splitting confirmation” (<code class="docutils literal notranslate"><span class="pre">41</span></code>) status until the user takes action on the AI’s suggestions. After
 that, extraction will run as usual on the resulting Documents.</p>
-</div>
 <p>After being split, the new Documents will keep a reference to the original “Document Set” via the <code class="docutils literal notranslate"><span class="pre">document_set</span></code>
 property. Querying the <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/document-sets">Document Sets endpoint</a> with that ID will
 return all the existing Documents derived from the same original Document.</p>
@@ -957,34 +948,6 @@ this:</p>
 </pre></div>
 </div>
 <p>This will save the file in the current directory.</p>
-</section>
-<section id="create-your-own-document-dashboard">
-<h3><a class="toc-backref" href="#id42">Create your own Document dashboard</a><a class="headerlink" href="#create-your-own-document-dashboard" title="Permalink to this headline">¶</a></h3>
-<p>In cases where our <a class="reference external" href="https://help.konfuzio.com/integrations/public-documents/">public documents and iframes</a> are not
-enough, you can build your own solution. Here we explain how you can easily build a read-only dashboard for your
-documents.</p>
-<section id="start-from-our-vue-js-code">
-<h4><a class="toc-backref" href="#id43">Start from our Vue.js code</a><a class="headerlink" href="#start-from-our-vue-js-code" title="Permalink to this headline">¶</a></h4>
-<p>Our document dashboard is based on Vue.js and completely implemented with the API v3. You can check out our solution
-<a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui">on GitHub</a> and customize it to your needs. You will find a
-technical overview and component description <a class="reference external" href="/dvui/index.html">here</a>.</p>
-</section>
-<section id="start-from-scratch">
-<h4><a class="toc-backref" href="#id44">Start from scratch</a><a class="headerlink" href="#start-from-scratch" title="Permalink to this headline">¶</a></h4>
-<p>If you’re using React, Angular or other technologies, you can use API v3 to build your own solution.</p>
-<p>For feature parity with our read-only document dashboard, you only need to use two endpoints, and if you’re only
-handling public documents, you don’t need authentication for these two endpoints.</p>
-<ul class="simple">
-<li><p>The <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/documents/documents_retrieve">Document detail</a> endpoint provides general
-information about the Document you’re querying, as well as its extracted data. Most of the data you will need is
-inside the <code class="docutils literal notranslate"><span class="pre">annotation_sets</span></code> object of the response.</p></li>
-<li><p>The <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/documents/documents_pages_retrieve">Document Page detail</a> endpoint
-provides information about a Document’s Page, including its <code class="docutils literal notranslate"><span class="pre">entites</span></code> (a list of words inside the Page, with their
-coordinates) and its <code class="docutils literal notranslate"><span class="pre">page_image</span></code> (a URL you can use to load the image version of the Page).</p></li>
-</ul>
-<p>For more advanced use cases, you can refer to our <a class="reference external" href="http:/app.konfuzio.com/v3/swagger/">Swagger documentation</a> and/or
-contact support for guidance.</p>
-</section>
 </section>
 </section>
 </section>
