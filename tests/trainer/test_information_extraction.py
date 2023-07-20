@@ -1540,7 +1540,7 @@ class TestAddExtractionAsAnnotation(unittest.TestCase):
         document.set_category(self.project.no_category)
         annotation_set = AnnotationSet(id_=108, document=document, label_set=self.label_set)
 
-        with pytest.raises(ValueError, match='We cannot add .* where the Сategory is'):
+        with pytest.raises(ValueError, match='We cannot add .* where the Category is'):
             RFExtractionAI().add_extractions_as_annotations(
                 extractions=self.extraction_df,
                 document=document,
