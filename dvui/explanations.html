@@ -382,8 +382,9 @@ module.exports = {
 <section id="customize-the-iframe">
 <h4>Customize the iframe<a class="headerlink" href="#customize-the-iframe" title="Permalink to this headline">¶</a></h4>
 <p>By default, we provide a bare-bones HTML snippet that looks similar to this:</p>
-<p><code class="docutils literal notranslate"><span class="pre">&lt;iframe</span> <span class="pre">src=&quot;https://app.konfuzio.com/d/&lt;id&gt;/&quot;</span> <span class="pre">width=&quot;100%&quot;</span> <span class="pre">height=&quot;600&quot;</span> <span class="pre">frameborder=&quot;0&quot;&gt;&lt;/iframe&gt;</span></code></p>
-<p>This creates on your page an iframe with 100% width (full width of its container) and a height of 600 pixels that don’t have a border. You can customize the iframe‘s size and other options by changing these and other attributes (see <a class="reference external" href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe">iframe documentation</a>).</p>
+<p><code class="docutils literal notranslate"><span class="pre">&lt;iframe</span> <span class="pre">src=&quot;https://app.konfuzio.com/d/&lt;id&gt;/?embed=1&quot;</span> <span class="pre">width=&quot;100%&quot;</span> <span class="pre">height=&quot;600&quot;</span> <span class="pre">frameborder=&quot;0&quot;&gt;&lt;/iframe&gt;</span></code></p>
+<p>This creates on your page an iframe with 100% width (full width of its container) and a height of 600 pixels that don’t have a border. The <code class="docutils literal notranslate"><span class="pre">embed</span></code> parameter forces the DVUI to render without the Konfuzio header, so it blends easily into an existing page.</p>
+<p>You can customize the iframe‘s size and other options by changing these and other attributes (see <a class="reference external" href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe">iframe documentation</a>).</p>
 <a class="reference external image-reference" href="./images/public_dvui.png"><img alt="public_dvui.png" src="../_images/public_dvui.png" /></a>
 </section>
 </section>
