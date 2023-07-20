@@ -1683,7 +1683,7 @@ class Span(Data):
         details see https://dev.konfuzio.com/sdk/tutorials/data_validation/index.html
         """
         if self.end_offset == self.start_offset == 0:
-            logger.error(f"{self} is intentionally left empty.")
+            logger.warning(f"{self} is intentionally left empty.")
         elif self.start_offset < 0 or self.end_offset < 0:
             exception_or_log_error(
                 msg=f"{self} must span text.",
