@@ -1,7 +1,7 @@
 Retrain Flair NER-Ontonotes-Fast with Human Revised Annotations
 ---------------------------------------------------------------
 
-The tutorial *HRetrain Flair NER-Ontonotes-Fast with Human Revised Annotations* aims to show you how to use the
+The tutorial *Retrain Flair NER-Ontonotes-Fast with Human Revised Annotations* aims to show you how to use the
 Konfuzio SDK package to include an easy feedback workflow in your training pipeline. It also gives an example of how you
 can take advantage of open-source models to speed up the annotation process and use the feedback workflow to adapt the
 domain knowledge of the model to your aim.
