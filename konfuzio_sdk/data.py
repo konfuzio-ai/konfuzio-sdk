@@ -1683,7 +1683,7 @@ class Span(Data):
         details see https://dev.konfuzio.com/sdk/tutorials/data_validation/index.html
         """
         if self.end_offset == self.start_offset == 0:
-            logger.error(f"{self} is intentionally left empty.")
+            logger.warning(f"{self} is intentionally left empty.")
         elif self.start_offset < 0 or self.end_offset < 0:
             exception_or_log_error(
                 msg=f"{self} must span text.",
@@ -1907,7 +1907,7 @@ class Span(Data):
                 "label_set_id": self.annotation.label_set.id_,
                 "annotation_id": self.annotation.id_,
                 "annotation_set_id": self.annotation.annotation_set.id_,
-                "document_id": self.document.id_,
+                "document_id": self.document.id_ if self.document.id_ else self.document.copy_of_id,
                 "document_id_local": self.document.id_local,
                 "category_id": self.document.category.id_,
                 "line_index": self.line_index,
