@@ -1696,7 +1696,7 @@ class Span(Data):
         details see https://dev.konfuzio.com/sdk/tutorials/data_validation/index.html
         """
         if self.end_offset == self.start_offset == 0:
-            logger.error(f"{self} is intentionally left empty.")
+            logger.warning(f"{self} is intentionally left empty.")
         elif self.start_offset < 0 or self.end_offset < 0:
             exception_or_log_error(
                 msg=f"{self} must span text.",
@@ -1920,7 +1920,7 @@ class Span(Data):
                 "label_set_id": self.annotation.label_set.id_,
                 "annotation_id": self.annotation.id_,
                 "annotation_set_id": self.annotation.annotation_set.id_,
-                "document_id": self.document.id_,
+                "document_id": self.document.id_ if self.document.id_ else self.document.copy_of_id,
                 "document_id_local": self.document.id_local,
                 "category_id": self.document.category.id_,
                 "line_index": self.line_index,
@@ -3224,7 +3224,7 @@ class Document(Data):
                 if annotation.label is self.project.no_label and annotation.label_set is self.project.no_label_set:
                     self._annotations.append(annotation)
                 else:
-                    raise ValueError(f'We cannot add {annotation} to {self} where the Сategory is {self.category}')
+                    raise ValueError(f'We cannot add {annotation} to {self} where the Category is {self.category}')
         else:
             exception_or_log_error(
                 msg=f'In {self} the {annotation} is a duplicate of {duplicated} and will not be added.',
@@ -4123,8 +4123,8 @@ def download_training_and_test_data(id_: int):
     """
     Migrate your Project to another HOST.
 
-    See https://help.konfuzio.com/integrations/migration-between-konfuzio-server-instances/index.html
-        #migrate-projects-between-konfuzio-server-instances
+    See https://dev.konfuzio.com/web/migration-between-konfuzio-server-instances/index.html
+
     """
     prj = Project(id_=id_, update=True)
 
