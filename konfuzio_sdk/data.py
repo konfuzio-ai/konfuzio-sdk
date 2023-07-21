@@ -1107,6 +1107,14 @@ class Label(Data):
 
         return annotations
 
+    def spans(self, categories: List[Category], use_correct=True, ignore_below_threshold=False) -> List['Span']:
+        """Return all Spans belonging to an Annotation of this Label."""
+        annotations = self.annotations(
+            categories=categories, use_correct=use_correct, ignore_below_threshold=ignore_below_threshold
+        )
+        spans = [span for annotation in annotations for span in annotation.spans]
+        return spans
+
     def has_multiline_annotations(self, categories: List[Category] = None) -> bool:
         """Return if any Label annotations are multi-line."""
         if categories is None and self._has_multiline_annotations is None:
@@ -1174,7 +1182,7 @@ class Label(Data):
             annotation_precision = 0
 
         try:
-            annotation_recall = total_correct_findings / len(self.annotations(categories=[category]))
+            annotation_recall = total_correct_findings / len(self.spans(categories=[category]))
         except ZeroDivisionError:
             annotation_recall = 0
 
@@ -1187,6 +1195,11 @@ class Label(Data):
             f_score = 2 * (annotation_precision * annotation_recall) / (annotation_precision + annotation_recall)
         except ZeroDivisionError:
             f_score = 0
+
+        assert 0 <= annotation_precision <= 1
+        assert 0 <= annotation_recall <= 1
+        assert 0 <= document_recall <= 1
+        assert 0 <= f_score <= 1
 
         if documents:
             evaluation = {
@@ -3507,14 +3520,14 @@ class Document(Data):
 
         label_annotations = self.annotations(label=label)
 
-        label_annotations_offsets = {
+        label_spans_offsets = {
             (span.start_offset, span.end_offset): ann for ann in label_annotations for span in ann.spans
         }
 
         for finding in findings_in_document:
             key = (finding['start_offset'], finding['end_offset'])
-            if key in label_annotations_offsets:
-                correct_findings.append(label_annotations_offsets[key])
+            if key in label_spans_offsets:
+                correct_findings.append(label_spans_offsets[key])
 
         try:
             annotation_precision = len(correct_findings) / len(findings_in_document)
@@ -3522,7 +3535,7 @@ class Document(Data):
             annotation_precision = 0
 
         try:
-            annotation_recall = len(correct_findings) / len(label_annotations)
+            annotation_recall = len(correct_findings) / len(label_spans_offsets)
         except ZeroDivisionError:
             annotation_recall = 0
 
@@ -3530,6 +3543,11 @@ class Document(Data):
             f1_score = 2 * (annotation_precision * annotation_recall) / (annotation_precision + annotation_recall)
         except ZeroDivisionError:
             f1_score = 0
+
+        assert 0 <= annotation_precision <= 1
+        assert 0 <= annotation_recall <= 1
+        assert 0 <= f1_score <= 1
+
         return {
             'id': self.id_local,
             'regex': regex,
