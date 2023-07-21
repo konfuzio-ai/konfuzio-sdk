@@ -114,9 +114,10 @@
 specific text patterns within a Document. Let’s say we have a Document, and we want to highlight every instance of the
 term “Musterstraße”, which might represent a specific street name or location. Our task is to find this term, label it
 as “Lohnart”, and associate it with the ‘Brutto-Bezug’ Label Set.</p>
-<p>You can follow the example below to post Annotations of a certain word or expression in an uploaded Document.</p>
+<p>You can follow the example below to post Annotations of a certain word or expression in an uploaded Document. The
+posting is done with the usage of the API call to the Server in the <code class="docutils literal notranslate"><span class="pre">save()</span></code> command.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">re</span>
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Annotation</span><span class="p">,</span> <span class="n">Span</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Annotation</span><span class="p">,</span> <span class="n">Span</span><span class="p">,</span> <span class="n">AnnotationSet</span>
 
 <span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
 </pre></div>
@@ -145,12 +146,23 @@ as “Lohnart”, and associate it with the ‘Brutto-Bezug’ Label Set.</p>
 <span class="c1"># Create Annotation for each match</span>
 <span class="k">for</span> <span class="n">offsets</span> <span class="ow">in</span> <span class="n">matches_locations</span><span class="p">:</span>
     <span class="n">span</span> <span class="o">=</span> <span class="n">Span</span><span class="p">(</span><span class="n">start_offset</span><span class="o">=</span><span class="n">offsets</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">end_offset</span><span class="o">=</span><span class="n">offsets</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">annotation_set</span> <span class="o">=</span> <span class="n">AnnotationSet</span><span class="p">(</span><span class="n">document</span><span class="o">=</span><span class="n">document</span><span class="p">,</span> <span class="n">label_set</span><span class="o">=</span><span class="n">label_set</span><span class="p">)</span>
+    <span class="c1"># note that no Annotation can exist outside the Annotation Set and every Annotation Set has to contain at least</span>
+    <span class="c1"># one Annotation</span>
     <span class="n">annotation_obj</span> <span class="o">=</span> <span class="n">Annotation</span><span class="p">(</span>
-        <span class="n">document</span><span class="o">=</span><span class="n">document</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">my_label</span><span class="p">,</span> <span class="n">label_set</span><span class="o">=</span><span class="n">label_set</span><span class="p">,</span> <span class="n">confidence</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">spans</span><span class="o">=</span><span class="p">[</span><span class="n">span</span><span class="p">],</span> <span class="n">is_correct</span><span class="o">=</span><span class="kc">True</span>
+        <span class="n">document</span><span class="o">=</span><span class="n">document</span><span class="p">,</span>
+        <span class="n">annotation_set</span><span class="o">=</span><span class="n">annotation_set</span><span class="p">,</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">my_label</span><span class="p">,</span>
+        <span class="n">label_set</span><span class="o">=</span><span class="n">label_set</span><span class="p">,</span>
+        <span class="n">confidence</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">spans</span><span class="o">=</span><span class="p">[</span><span class="n">span</span><span class="p">],</span>
+        <span class="n">is_correct</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span>
+    <span class="c1"># ensure that the Annotation is saved online</span>
     <span class="n">new_annotation_added</span> <span class="o">=</span> <span class="n">annotation_obj</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">new_annotation_added</span><span class="p">:</span>
         <span class="n">new_annotations_links</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">annotation_obj</span><span class="o">.</span><span class="n">get_link</span><span class="p">())</span>
+    <span class="c1"># if you want to remove the Annotation and ensure it&#39;s deleted online, you can use the following:</span>
     <span class="n">annotation_obj</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">delete_online</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">new_annotations_links</span><span class="p">)</span>

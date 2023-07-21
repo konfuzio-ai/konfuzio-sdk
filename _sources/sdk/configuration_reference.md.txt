@@ -25,6 +25,8 @@ run the following command:
 * Supported Python environments are 3.8, 3.9, 3.10, 3.11.
 * Please use Python 3.8 if you plan to upload your AIs to a self-hosted Konfuzio Server environment. 
 * If you are not using a virtual environment, you may need to add the installation directory to your PATH.
+* If you run this tutorial in Colab and experience any version compatibility issues when working with the SDK, restart 
+the runtime and initialize the SDK once again; this will resolve the issue.
 
 ### 3. Initialize the package
 

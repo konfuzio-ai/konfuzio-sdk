@@ -121,126 +121,76 @@ with Labels like Name, Date, Recipient, or any other custom Labels. The result o
 <a class="reference internal image-reference" href="../../../_images/example.png"><img alt="../../../_images/example.png" class="align-center" src="../../../_images/example.png" style="width: 300px;" /></a>
 <section id="train-a-custom-extraction-ai">
 <h2>Train a custom Extraction AI<a class="headerlink" href="#train-a-custom-extraction-ai" title="Permalink to this headline">¶</a></h2>
-<p>This section explains how to create a custom Extraction AI locally, how to save it and upload it to the Konfuzio Server.
-If you run this tutorial in Colab and experience any version compatibility issues when working with the SDK, restart the
-runtime and initialize the SDK once again; this will resolve the issue.</p>
+<p>This section explains how to create a custom Extraction AI locally, how to save it and upload it to the Konfuzio Server.</p>
 <p>Note: you don’t necessarily need to create the AI from scratch if you already have some document-processing architecture.
 You just need to wrap it into the class that corresponds to our Extraction AI structure. Follow the steps in this
 tutorial to find out what are the requirements for that.</p>
 <p>To prepare the data for training or testing your AI, you can follow the <a class="reference external" href="tutorials.html#tutorials.html#prepare-the-data-for-training-and-testing-the-ai">data preparation tutorial</a>.</p>
-<p>By default, any Extraction AI class should derive from the <code class="docutils literal notranslate"><span class="pre">AbstractExtractionAI</span></code> class and implement the following
-methods:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">AbstractExtractionAI</span>
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Document</span><span class="p">,</span> <span class="n">Category</span>
+<p>By default, any Extraction AI class should derive from the <code class="docutils literal notranslate"><span class="pre">AbstractExtractionAI</span></code> class and implement the <code class="docutils literal notranslate"><span class="pre">extract()</span></code>
+method. In this tutorial, we’ll demonstrate how to create a simple custom Extraction AI that extracts dates provided in
+a certain format. Note that to enable Labels’ and Label Sets’ dynamic creation during extraction, you need to have
+Superuser rights and enable this setting in a <a class="reference external" href="https://help.konfuzio.com/modules/administration/superuserprojects/index.html#create-labels-and-label-sets">Superuser Project</a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">re</span>
+
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Document</span><span class="p">,</span> <span class="n">Span</span><span class="p">,</span> <span class="n">AnnotationSet</span><span class="p">,</span> <span class="n">Annotation</span><span class="p">,</span> <span class="n">Label</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">AbstractExtractionAI</span>
 
 <span class="k">class</span> <span class="nc">CustomExtractionAI</span><span class="p">(</span><span class="n">AbstractExtractionAI</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">category</span><span class="p">:</span> <span class="n">Category</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="c1"># we need to specify Category because it defines which Labels will be used in the Extraction, i.e. which</span>
-        <span class="c1"># Labels will be present in the processed Document.</span>
-        <span class="c1">#</span>
-        <span class="c1"># the Labels can be created manually or dynamically – during extraction process – the latter is possible</span>
-        <span class="c1"># when &quot;Create Labels and Label Sets&quot; is enabled in a Superuser Project&#39;s settings, if a user is a Supeuser</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">category</span><span class="p">)</span>
-        <span class="k">pass</span>
-
-    <span class="c1"># initialize key variables required by the custom AI</span>
-    <span class="c1"># for instance, self.category to define within which Category the Extraction takes place</span>
-
-    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">pass</span>
-
-    <span class="c1"># Define architecture and training that the model undergoes, i.e. a NN architecture or a custom hardcoded logic</span>
-    <span class="c1"># for instance:</span>
-    <span class="c1">#</span>
-    <span class="c1"># self.clf = RandomForestClassifier(</span>
-    <span class="c1">#             class_weight=&quot;balanced&quot;, random_state=100</span>
-    <span class="c1">#         )</span>
-    <span class="c1"># self.clf.fit(self.df_train[self.label_feature_list], self.df_train[&#39;target&#39;])</span>
-    <span class="c1">#</span>
-    <span class="c1"># This method does not return anything; rather, it modifies the self.model if you provide this attribute.</span>
-    <span class="c1">#</span>
-    <span class="c1"># This method is allowed to be implemented as a no-op if you provide the trained model in other ways</span>
-
     <span class="k">def</span> <span class="nf">extract</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document</span><span class="p">:</span> <span class="n">Document</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Document</span><span class="p">:</span>
-        <span class="k">pass</span>
-
-    <span class="c1"># Define how the AI extracts information from Documents.</span>
-
-    <span class="c1"># **NB:** The result of extraction must be a copy of the input Document.</span>
-
-    <span class="c1"># Example:</span>
-    <span class="c1"># result_document = deepcopy(document)</span>
-
-    <span class="c1"># The tokenizer will create Annotations objects within the document</span>
-    <span class="c1"># tokenizer.tokenize(result_document)</span>
-
-    <span class="c1"># These Annotations will be the extraction results.</span>
-    <span class="c1"># At the moment, these Annotations have no Label, which would exclude them from the extraction results.</span>
-    <span class="c1"># We need to associate the proper Labels to each Annotation, assuming that these exist in our Project.</span>
-    <span class="c1"># name_label = self.project.get_label_by_name(&quot;Name&quot;)  # the self.project attribute is derived from Trainer</span>
-    <span class="c1"># surname_label = self.project.get_label_by_name(&quot;Surname&quot;)</span>
-    <span class="c1"># for annotation in result_document.annotations():</span>
-    <span class="c1">#     for span in annotation.spans:</span>
-    <span class="c1">#     # Each Annotation contains information about which tokenizer found it.</span>
-    <span class="c1">#     # In this example, we associate the Label straighforwardly.</span>
-    <span class="c1">#     # If your regex can produce false positives, you will want to apply some filtering logic here.</span>
-    <span class="c1">#         if name_tokenizer in span.regex_matching:</span>
-    <span class="c1">#             annotation.label = name_label</span>
-    <span class="c1">#             break</span>
-    <span class="c1">#         elif surname_tokenizer in span.regex_matching:</span>
-    <span class="c1">#             annotation.label = surname_label</span>
-    <span class="c1">#             break</span>
-
-    <span class="c1"># Suppose we want to extract &quot;A Software Company Ltd.&quot;, which does not have a clear regex pattern, but</span>
-    <span class="c1"># we know it&#39;s always the third line in the Document. We can explicitly create an Annotation based on a</span>
-    <span class="c1"># substring of the Document&#39;s text.</span>
-    <span class="c1"># company_label = self.project.get_label_by_name(&quot;Company&quot;)</span>
-    <span class="c1"># company_substring = result_document.split(&#39;\n&#39;)[2]  # third line of the Document</span>
-    <span class="c1"># start_offset = result_document.find(company_substring)</span>
-    <span class="c1"># end_offset = start_offset + len(company_substring)</span>
-    <span class="c1"># _ = Annotation(document=result_document, label=company_label, spans=[Span(start_offset, end_offset)])</span>
-
-    <span class="c1"># The resulting Document has 3 extractions. You can double-check that they are there with:</span>
-    <span class="c1"># &gt;&gt;&gt; result_document.annotations(use_correct=False)</span>
-    <span class="c1"># [</span>
-    <span class="c1">#     Annotation Name (6, 10),</span>
-    <span class="c1">#     Annotation Surname (20, 23),</span>
-    <span class="c1">#     Annotation Company (24, 27)</span>
-    <span class="c1"># ]</span>
-    <span class="c1"># return result_document</span>
-
-    <span class="k">def</span> <span class="nf">check_is_ready</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="k">pass</span>
-
-    <span class="c1"># define if all components needed for training/prediction are set, for instance, is self.tokenizer set or does</span>
-    <span class="c1"># self.category contain training and testing Documents.</span>
+        <span class="k">if</span> <span class="n">document</span><span class="o">.</span><span class="n">annotations</span><span class="p">(</span><span class="n">use_correct</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>  <span class="c1"># check if any Annotations exists</span>
+            <span class="k">return</span> <span class="n">document</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># define a Label Set that will contain Labels for Annotations your Extraction AI extracts</span>
+            <span class="n">label_set</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">get_label_set_by_id</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">document</span><span class="o">.</span><span class="n">category</span><span class="o">.</span><span class="n">id_</span><span class="p">)</span>
+            <span class="c1"># get or create a Label that will be used for annotating</span>
+            <span class="n">label_name</span> <span class="o">=</span> <span class="s1">&#39;Date&#39;</span>
+            <span class="k">if</span> <span class="n">label_name</span> <span class="ow">in</span> <span class="p">[</span><span class="n">label</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">document</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">labels</span><span class="p">]:</span>
+                <span class="n">label</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="n">label_name</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">label</span> <span class="o">=</span> <span class="n">Label</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">label_name</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span> <span class="n">label_sets</span><span class="o">=</span><span class="p">[</span><span class="n">label_set</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">re_match</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;(\d+/\d+/\d+)&#39;</span><span class="p">,</span> <span class="n">document</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">MULTILINE</span><span class="p">):</span>
+                <span class="n">span</span> <span class="o">=</span> <span class="n">Span</span><span class="p">(</span><span class="n">start_offset</span><span class="o">=</span><span class="n">re_match</span><span class="o">.</span><span class="n">span</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">end_offset</span><span class="o">=</span><span class="n">re_match</span><span class="o">.</span><span class="n">span</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span>
+                <span class="c1"># create Annotation Set for the Annotation. Note that every Annotation Set</span>
+                <span class="c1"># has to contain at least one Annotation, and Annotation always should be</span>
+                <span class="c1"># a part of an Annotation Set.</span>
+                <span class="n">annotation_set</span> <span class="o">=</span> <span class="n">AnnotationSet</span><span class="p">(</span><span class="n">document</span><span class="o">=</span><span class="n">document</span><span class="p">,</span> <span class="n">label_set</span><span class="o">=</span><span class="n">label_set</span><span class="p">)</span>
+                <span class="n">_</span> <span class="o">=</span> <span class="n">Annotation</span><span class="p">(</span>
+                    <span class="n">document</span><span class="o">=</span><span class="n">document</span><span class="p">,</span>
+                    <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span>
+                    <span class="n">annotation_set</span><span class="o">=</span><span class="n">annotation_set</span><span class="p">,</span>
+                    <span class="n">label_set</span><span class="o">=</span><span class="n">label_set</span><span class="p">,</span>
+                    <span class="n">confidence</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>  <span class="c1"># note that only the Annotations with confidence higher</span>
+                    <span class="c1"># than 10% will be shown in the extracted Document.</span>
+                    <span class="n">spans</span><span class="o">=</span><span class="p">[</span><span class="n">span</span><span class="p">],</span>
+                <span class="p">)</span>
+        <span class="k">return</span> <span class="n">document</span>
 
 </pre></div>
 </div>
 <p>Example usage of your Custom Extraction AI:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Document</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
 
-<span class="c1"># Initialize Project and the AI</span>
+<span class="c1"># Initialize Project and provide the AI training and test data</span>
 <span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>  <span class="c1"># see https://dev.konfuzio.com/sdk/get_started.html#example-usage</span>
 <span class="n">category</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_category_by_id</span><span class="p">(</span><span class="n">YOUR_CATEGORY_ID</span><span class="p">)</span>
-<span class="n">extraction_pipeline</span> <span class="o">=</span> <span class="n">CustomExtractionAI</span><span class="p">(</span><span class="n">category</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># provide the categories, training and test data</span>
-<span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">documents</span> <span class="o">=</span> <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">category</span><span class="o">.</span><span class="n">documents</span><span class="p">()</span>
-<span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">test_documents</span> <span class="o">=</span> <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">category</span><span class="o">.</span><span class="n">test_documents</span><span class="p">()</span>
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Train the AI</span>
-<span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+<span class="n">categorization_pipeline</span> <span class="o">=</span> <span class="n">CustomExtractionAI</span><span class="p">(</span><span class="n">category</span><span class="p">)</span>
+
+<span class="c1"># Create a sample test Document to run extraction on</span>
+<span class="n">example_text</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    19/05/1996 is my birthday.</span>
+<span class="s2">    04/07/1776 is the Independence day.</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+<span class="n">sample_document</span> <span class="o">=</span> <span class="n">Document</span><span class="p">(</span><span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">example_text</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="n">category</span><span class="p">)</span>
 
 <span class="c1"># Extract a Document</span>
-<span class="n">document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
-<span class="n">extraction_result</span><span class="p">:</span> <span class="n">Document</span> <span class="o">=</span> <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">document</span><span class="o">=</span><span class="n">document</span><span class="p">)</span>
+<span class="n">extracted</span> <span class="o">=</span> <span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">sample_document</span><span class="p">)</span>
+<span class="c1"># we set use_correct=False because we didn&#39;t change the default flag is_correct=False upon creating the Annotations</span>
+<span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">extracted</span><span class="o">.</span><span class="n">annotations</span><span class="p">(</span><span class="n">use_correct</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span> <span class="o">==</span> <span class="mi">2</span>
 
 <span class="c1"># Save and load a pickle file for the model</span>
-<span class="n">pickle_model_path</span> <span class="o">=</span> <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">output_dir</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">model_folder</span><span class="p">,</span> <span class="n">include_konfuzio</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">extraction_pipeline_loaded</span> <span class="o">=</span> <span class="n">RFExtractionAI</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">pickle_model_path</span><span class="p">)</span>
+<span class="n">pickle_model_path</span> <span class="o">=</span> <span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+<span class="n">extraction_pipeline_loaded</span> <span class="o">=</span> <span class="n">CustomExtractionAI</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">pickle_model_path</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The custom AI inherits from AbstractExtractionAI, which in turn inherits from <a class="reference external" href="sourcecode.html#base-model">BaseModel</a>.
