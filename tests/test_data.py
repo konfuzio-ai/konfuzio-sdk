@@ -2340,6 +2340,14 @@ class TestKonfuzioDataSetup(unittest.TestCase):
             'Verdiensibescheinigung',
         ]
 
+    def test_label_spans(self):
+        """Test get Label Spans in the Project."""
+        category = self.prj.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID)
+        label = self.prj.get_label_by_name('Austellungsdatum')
+
+        assert len(label.annotations(categories=[category])) == 24
+        assert len(label.spans(categories=[category])) == 25
+
     def test_get_images(self):
         """Test get paths to the images of the first Training Document."""
         document = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
