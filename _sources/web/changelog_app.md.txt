@@ -35,6 +35,7 @@ This version uses the Konfuzio Python SDK in version v.0.2.26 and Konfuzio Docum
 ### Fixed
 - [The document postprocess endpoint now inclused the pages attribute](https://app.konfuzio.com/v3/swagger/#/documents/documents_postprocess_create) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11419)).
 - [The status code documentation for the upload AI endpoints have been corrected](https://app.konfuzio.com/v3/swagger/#/category-ais/category_ais_upload_create) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11427)).
+- [When using the FileSystemStorage on self-hosted installation, conflicting file name have not be resolved to a unique file name](https://dev.konfuzio.com/web/on_premises.html#blob-storage-settings) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11347)).
   
 ## released-2023-07-11_16-07-40
 This version uses the Konfuzio Python SDK in version v.0.2.25 and Konfuzio Document Validation UI in version v.0.1.9.
