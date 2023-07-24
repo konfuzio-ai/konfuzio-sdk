@@ -530,7 +530,42 @@ Remember to uncheck the "Supported Tags Only" box to access all available versio
 
 
 
-### [Optional] 9. Install document segmentation container
+### [Optional] 9. Install document Document Layout Analysis (Segmentation) container
+
+The Konfuzio Server leverages Document Layout Analysis' capabilities to enhance its Natural Language Processing and Object Detection services. You can read more about it on our [blog](https://konfuzio.com/en/document-layout-analysis/). The platform's architecture features multiple Document Layout Analysis containers, each encapsulating a Fast API instance and a Worker. The modular structure of these containers allows scalability based on specific requirements.
+
+Each Fast API instance and its corresponding Worker communicate with a shared Redis instance, a robust in-memory data structure store used for caching and message brokerage. As a high-performance web framework, Fast API is pivotal in constructing efficient APIs.
+
+The process unfolds as follows: The Konfuzio Server forwards document layout analysis tasks to a Container via the Fast API instance. In response, the Fast API generates a task entry in Redis, which a Worker can subsequently pick up and process. Upon completion, the worker returns the results back to the Fast API via Redis, creating a seamless flow of information.
+
+This architecture thus delivers a scalable, high-performance environment equipped to manage substantial loads. It ensures efficient object detection and natural language processing capabilities based on the detectron library, making it an optimal choice for handling complex computational tasks.
+
+```mermaid
+graph RL
+a <--> l("Konfuzio Server")
+a <--> m("Other Applications")
+b <--> a("Load-Balancer (Optional)")
+d <--> a
+f <--> a
+t("Redis") <--> b
+t("Redis") <--> c
+t("Redis") <--> d
+t("Redis") <--> e
+t("Redis") <--> f
+t("Redis") <--> g
+subgraph all1["Document Layout Analysis Container - 1"]
+b("Fast API")
+c("Worker") 
+end
+subgraph all2["Document Layout Analysis Container - 2"]
+d("Fast API")
+e("Worker") 
+end
+subgraph all3["Document Layout Analysis Container - N"]
+f("Fast API")
+g("Worker") 
+end
+```
 
 Download the container with the credentials provided by Konfuzio.
 
@@ -544,14 +579,14 @@ docker pull REGISTRY_URL/konfuzio/text-annotation/detectron2/main:released-2023-
 docker run --env-file /path_to_env_file.env REGISTRY_URL/konfuzio/text-annotation/detectron2/main:released-2023-07-20_17-51-49 run.sh
 ```
 
-The segmentation container needs to be started with the following environment variables which you can enter into your .env file
+The "Document Layout Analysis Container" needs to be started with the following environment variables which you can enter into your .env file
 ```
 BROKER_URL=  # Set this to an unused Redis database
 RESULT_BACKEND=  # Set this to an unused Redis database
 ```
 
-We recommend to run the segmentation container with 8GB of RAM. The segmentation container can be started and used with less RAM, however this may not work on large images. 
-After the segmentation container is running you need to set the [DETECTRON_URL](/web/on_premises.html#detectron-url) to point to the segmentation container. 
+We recommend to run the "Document Layout Analysis Container" with 8GB of RAM. The container can be started and used with less RAM, however this may not work on large images. 
+After the "Document Layout Analysis Container" is running you need to set the [DETECTRON_URL](/web/on_premises.html#detectron-url) for Konfuzio Servre to point to the "Document Layout Analysis Container".
 
 
 ### [Optional] 10. Install document summarization container
