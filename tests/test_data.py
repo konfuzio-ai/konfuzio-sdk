@@ -1767,7 +1767,7 @@ class TestOfflineDataSetup(unittest.TestCase):
 
         # Add annotation for the first time
         span = Span(start_offset=1, end_offset=2)
-        with pytest.raises(ValueError, match="where the Сategory is"):
+        with pytest.raises(ValueError, match="where the Category is"):
             _ = Annotation(
                 document=document,
                 is_correct=True,
@@ -2339,6 +2339,14 @@ class TestKonfuzioDataSetup(unittest.TestCase):
             'Steuer',
             'Verdiensibescheinigung',
         ]
+
+    def test_label_spans(self):
+        """Test get Label Spans in the Project."""
+        category = self.prj.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID)
+        label = self.prj.get_label_by_name('Austellungsdatum')
+
+        assert len(label.annotations(categories=[category])) == 24
+        assert len(label.spans(categories=[category])) == 25
 
     def test_get_images(self):
         """Test get paths to the images of the first Training Document."""

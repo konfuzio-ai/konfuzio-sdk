@@ -127,6 +127,7 @@ def _normalize_string_to_absolute_float(offset_string: str) -> Optional[float]:
         .replace(':', '')
         .replace('“', '')
         .replace("'", '')
+        .replace('’', '')
         .replace('/', '')
         .replace('>', '')
         .replace('(', '')

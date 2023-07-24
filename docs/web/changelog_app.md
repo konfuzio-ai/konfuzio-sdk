@@ -21,10 +21,22 @@ You can think of the _Planned_ section as a _Roadmap_ that lists Konfuzio Server
 - Allow administrators of Konfuzio on-premise installations to run a speedtest ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9870)).
 - Start automatic AI retraining after User confirms that he has finished a annotation review ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9166)).
 
-## Next Release (estimated release date 21th July 2023)
+## Next Release (estimated release date 7th August 2023)
 
 Upcoming...
 
+## released-2023-07-22_17-14-51
+This version uses the Konfuzio Python SDK in version v.0.2.26 and Konfuzio Document Validation UI in version v.0.1.10.
+
+### Added
+- [Show the navigation sidebar when using the DVUI](https://dev.konfuzio.com/dvui/index.html) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10879)).
+- [Show the User ID on the /api/v3/auth/me API endpint](https://app.konfuzio.com/v3/swagger/#/auth) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11375)).
+
+### Fixed
+- [The document postprocess endpoint now inclused the pages attribute](https://app.konfuzio.com/v3/swagger/#/documents/documents_postprocess_create) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11419)).
+- [The status code documentation for the upload AI endpoints have been corrected](https://app.konfuzio.com/v3/swagger/#/category-ais/category_ais_upload_create) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11427)).
+- [When using the FileSystemStorage on self-hosted installation, conflicting file name have not be resolved to a unique file name](https://dev.konfuzio.com/web/on_premises.html#blob-storage-settings) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11347)).
+  
 ## released-2023-07-11_16-07-40
 This version uses the Konfuzio Python SDK in version v.0.2.25 and Konfuzio Document Validation UI in version v.0.1.9.
 

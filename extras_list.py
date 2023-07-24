@@ -2,11 +2,11 @@
 
 EXTRAS = {
     'dev': [
-        'flake8',
-        'pydocstyle',
-        'pytest',
-        'pre-commit',
-        'parameterized',
+        'flake8>=6.0.0',
+        'pydocstyle>=6.3.0',
+        'pytest>=7.1.2',
+        'pre-commit>=2.20.0',
+        'parameterized>=0.8.1',
         'Sphinx==4.4.0',
         'sphinx-toolbox==3.4.0',
         'sphinx-reload==0.2.0',

@@ -5,7 +5,8 @@ specific text patterns within a Document. Let's say we have a Document, and we w
 term "Musterstraße", which might represent a specific street name or location. Our task is to find this term, label it 
 as "Lohnart", and associate it with the 'Brutto-Bezug' Label Set.
 
-You can follow the example below to post Annotations of a certain word or expression in an uploaded Document.
+You can follow the example below to post Annotations of a certain word or expression in an uploaded Document. The 
+posting is done with the usage of the API call to the Server in the `save()` command.
 
 .. literalinclude:: /sdk/boilerplates/test_regex_based_annotations.py
    :language: python
