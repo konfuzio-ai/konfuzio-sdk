@@ -530,7 +530,7 @@ Remember to uncheck the "Supported Tags Only" box to access all available versio
 
 
 
-### [Optional] 9. Install document Document Layout Analysis (Segmentation) container
+### [Optional] 9. Install the Document Layout Analysis (Segmentation) Container
 
 The Konfuzio Server leverages Document Layout Analysis' capabilities to enhance its Natural Language Processing and Object Detection services. You can read more about it on our [blog](https://konfuzio.com/en/document-layout-analysis/). The platform's architecture features multiple Document Layout Analysis containers, each encapsulating a Fast API instance and a Worker. The modular structure of these containers allows scalability based on specific requirements.
 
