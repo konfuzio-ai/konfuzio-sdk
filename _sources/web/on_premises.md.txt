@@ -669,7 +669,7 @@ g("Detectron Worker")
 end
 ```
 
-Document Layout Analysis is available on [https://app.konfuzio.com](https://app.konfuzio.com) as well as for self-hosted environment via [Docker](https://dev.konfuzio.com/web/on_premises.html#optional-9-install-document-document-layout-analysis-segmentation-container) or on [Kubernetes via Helm](https://dev.konfuzio.com/web/on_premises.html#kubernetes).
+Document Layout Analysis is available on [https://app.konfuzio.com](https://app.konfuzio.com) as well as for self-hosted environment via [Docker](https://dev.konfuzio.com/web/on_premises.html#optional-9-install-the-document-layout-analysis-segmentation-container) or on [Kubernetes via Helm](https://dev.konfuzio.com/web/on_premises.html#kubernetes).
 
 ## Docker-Compose vs. Kubernetes
 
