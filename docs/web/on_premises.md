@@ -541,29 +541,29 @@ The process unfolds as follows: The Konfuzio Server forwards document layout ana
 This architecture thus delivers a scalable, high-performance environment equipped to manage substantial loads. It ensures efficient object detection and natural language processing capabilities based on the detectron library, making it an optimal choice for handling complex computational tasks.
 
 ```mermaid
-graph RL
-a <--> l("Konfuzio Server")
-a <--> m("Other Applications")
-b <--> a("Load-Balancer (Optional)")
-d <--> a
-f <--> a
-t("Redis") <--> b
-t("Redis") <--> c
-t("Redis") <--> d
-t("Redis") <--> e
-t("Redis") <--> f
-t("Redis") <--> g
-subgraph all1["Document Layout Analysis Container - 1"]
+graph 
+l("Konfuzio Server") <--> a
+m("Other Applications") <--> a
+a("Load-Balancer (Optional)") <--> b
+a <--> d
+a <--> f
+b <--> t("Redis")
+c <--> t("Redis")
+d("Redis") <--> t("Redis")
+e("Redis") <--> t("Redis")
+f("Redis") <--> t("Redis")
+g("Redis") <--> t("Redis")
+subgraph all1["Detectron Container - 1"]
 b("Fast API")
-c("Worker") 
+c("Detectron Worker") 
 end
-subgraph all2["Document Layout Analysis Container - 2"]
+subgraph all2["Detectron Container - 2"]
 d("Fast API")
-e("Worker") 
+e("Detectron Worker") 
 end
-subgraph all3["Document Layout Analysis Container - N"]
+subgraph all3["Detectron Container - N"]
 f("Fast API")
-g("Worker") 
+g("Detectron Worker") 
 end
 ```
 
