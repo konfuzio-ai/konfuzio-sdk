@@ -95,7 +95,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#how-to-fix-common-azure-read-api-issues-for-on-premises">How to fix common Azure Read API issues for On-Premises</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#optional-9-install-document-document-layout-analysis-segmentation-container">[Optional] 9. Install document Document Layout Analysis (Segmentation) container</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#optional-9-install-the-document-layout-analysis-segmentation-container">[Optional] 9. Install the Document Layout Analysis (Segmentation) Container</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#optional-10-install-document-summarization-container">[Optional] 10. Install document summarization container</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#a-upgrade-to-newer-konfuzio-version">11a. Upgrade to newer Konfuzio Version</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#b-downgrade-to-older-konfuzio-version">11b. Downgrade to older Konfuzio Version</a></li>
@@ -675,8 +675,8 @@ Remember to uncheck the “Supported Tags Only” box to access all available ve
 </section>
 </section>
 </section>
-<section id="optional-9-install-document-document-layout-analysis-segmentation-container">
-<h3>[Optional] 9. Install document Document Layout Analysis (Segmentation) container<a class="headerlink" href="#optional-9-install-document-document-layout-analysis-segmentation-container" title="Permalink to this headline">¶</a></h3>
+<section id="optional-9-install-the-document-layout-analysis-segmentation-container">
+<h3>[Optional] 9. Install the Document Layout Analysis (Segmentation) Container<a class="headerlink" href="#optional-9-install-the-document-layout-analysis-segmentation-container" title="Permalink to this headline">¶</a></h3>
 <p>The Konfuzio Server leverages Document Layout Analysis’ capabilities to enhance its Natural Language Processing and Object Detection services. You can read more about it on our <a class="reference external" href="https://konfuzio.com/en/document-layout-analysis/">blog</a>. The platform’s architecture features multiple Document Layout Analysis containers, each encapsulating a Fast API instance and a Worker. The modular structure of these containers allows scalability based on specific requirements.</p>
 <p>Each Fast API instance and its corresponding Worker communicate with a shared Redis instance, a robust in-memory data structure store used for caching and message brokerage. As a high-performance web framework, Fast API is pivotal in constructing efficient APIs.</p>
 <p>The process unfolds as follows: The Konfuzio Server forwards document layout analysis tasks to a Container via the Fast API instance. In response, the Fast API generates a task entry in Redis, which a Worker can subsequently pick up and process. Upon completion, the worker returns the results back to the Fast API via Redis, creating a seamless flow of information.</p>
