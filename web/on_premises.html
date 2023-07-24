@@ -106,6 +106,7 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#document-layout-analysis">Document Layout Analysis</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#docker-compose-vs-kubernetes">Docker-Compose vs. Kubernetes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#custom-ai-model-training-via-ci-pipelines">Custom AI model training via CI pipelines</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#sso-via-openid-connect-oidc">SSO via OpenID Connect (OIDC)</a><ul>
@@ -677,36 +678,7 @@ Remember to uncheck the “Supported Tags Only” box to access all available ve
 </section>
 <section id="optional-9-install-the-document-layout-analysis-segmentation-container">
 <h3>[Optional] 9. Install the Document Layout Analysis (Segmentation) Container<a class="headerlink" href="#optional-9-install-the-document-layout-analysis-segmentation-container" title="Permalink to this headline">¶</a></h3>
-<p>The Konfuzio Server leverages Document Layout Analysis’ capabilities to enhance its Natural Language Processing and Object Detection services. You can read more about it on our <a class="reference external" href="https://konfuzio.com/en/document-layout-analysis/">blog</a>. The platform’s architecture features multiple Document Layout Analysis containers, each encapsulating a Fast API instance and a Worker. The modular structure of these containers allows scalability based on specific requirements.</p>
-<p>Each Fast API instance and its corresponding Worker communicate with a shared Redis instance, a robust in-memory data structure store used for caching and message brokerage. As a high-performance web framework, Fast API is pivotal in constructing efficient APIs.</p>
-<p>The process unfolds as follows: The Konfuzio Server forwards document layout analysis tasks to a Container via the Fast API instance. In response, the Fast API generates a task entry in Redis, which a Worker can subsequently pick up and process. Upon completion, the worker returns the results back to the Fast API via Redis, creating a seamless flow of information.</p>
-<p>This architecture thus delivers a scalable, high-performance environment equipped to manage substantial loads. It ensures efficient object detection and natural language processing capabilities based on the detectron library, making it an optimal choice for handling complex computational tasks.</p>
-<div class="mermaid">
-            graph
-l(&quot;Konfuzio Server&quot;) &lt;--&gt; a
-m(&quot;Other Applications&quot;) &lt;--&gt; a
-a(&quot;Load-Balancer (Optional)&quot;) &lt;--&gt; b
-a &lt;--&gt; d
-a &lt;--&gt; f
-b &lt;--&gt; t(&quot;Redis&quot;)
-c &lt;--&gt; t(&quot;Redis&quot;)
-d(&quot;Redis&quot;) &lt;--&gt; t(&quot;Redis&quot;)
-e(&quot;Redis&quot;) &lt;--&gt; t(&quot;Redis&quot;)
-f(&quot;Redis&quot;) &lt;--&gt; t(&quot;Redis&quot;)
-g(&quot;Redis&quot;) &lt;--&gt; t(&quot;Redis&quot;)
-subgraph all1[&quot;Detectron Container - 1&quot;]
-b(&quot;Fast API&quot;)
-c(&quot;Detectron Worker&quot;)
-end
-subgraph all2[&quot;Detectron Container - 2&quot;]
-d(&quot;Fast API&quot;)
-e(&quot;Detectron Worker&quot;)
-end
-subgraph all3[&quot;Detectron Container - N&quot;]
-f(&quot;Fast API&quot;)
-g(&quot;Detectron Worker&quot;)
-end
-        </div><p>Download the container with the credentials provided by Konfuzio.</p>
+<p>Download the container with the credentials provided by Konfuzio.</p>
 <p>Registry URL: {PROVIDED_BY_KONFUZIO}<span class="raw-html-m2r"><br></span>
 Username: {PROVIDED_BY_KONFUZIO}<span class="raw-html-m2r"><br></span>
 Password: {PROVIDED_BY_KONFUZIO}</p>
@@ -850,6 +822,39 @@ The following steps need to be undertaken:</p>
 </div>
 </section>
 </section>
+</section>
+<section id="document-layout-analysis">
+<h2>Document Layout Analysis<a class="headerlink" href="#document-layout-analysis" title="Permalink to this headline">¶</a></h2>
+<p>The Konfuzio Server leverages Document Layout Analysis’ capabilities to enhance its Natural Language Processing and Object Detection services. You can read more about it on our <a class="reference external" href="https://konfuzio.com/en/document-layout-analysis/">blog</a>. The platform’s architecture features multiple Document Layout Analysis containers, each encapsulating a Fast API instance and a Worker. The modular structure of these containers allows scalability based on specific requirements.</p>
+<p>Each Fast API instance and its corresponding Worker communicate with a shared Redis instance, a robust in-memory data structure store used for caching and message brokerage. As a high-performance web framework, Fast API is pivotal in constructing efficient APIs.</p>
+<p>The process unfolds as follows: The Konfuzio Server forwards document layout analysis tasks to a Container via the Fast API instance. In response, the Fast API generates a task entry in Redis, which a Worker can subsequently pick up and process. Upon completion, the worker returns the results back to the Fast API via Redis, creating a seamless flow of information.</p>
+<p>This architecture thus delivers a scalable, high-performance environment equipped to manage substantial loads. It ensures efficient object detection and natural language processing capabilities based on the detectron library, making it an optimal choice for handling complex computational tasks.</p>
+<div class="mermaid">
+            graph
+l(&quot;Konfuzio Server&quot;) &lt;--&gt; a
+m(&quot;Other Applications&quot;) &lt;--&gt; a
+a(&quot;Load-Balancer (Optional)&quot;) &lt;--&gt; b
+a &lt;--&gt; d
+a &lt;--&gt; f
+b &lt;--&gt; t(&quot;Redis&quot;)
+c &lt;--&gt; t(&quot;Redis&quot;)
+d(&quot;Redis&quot;) &lt;--&gt; t(&quot;Redis&quot;)
+e(&quot;Redis&quot;) &lt;--&gt; t(&quot;Redis&quot;)
+f(&quot;Redis&quot;) &lt;--&gt; t(&quot;Redis&quot;)
+g(&quot;Redis&quot;) &lt;--&gt; t(&quot;Redis&quot;)
+subgraph all1[&quot;Detectron Container - 1&quot;]
+b(&quot;Fast API&quot;)
+c(&quot;Detectron Worker&quot;)
+end
+subgraph all2[&quot;Detectron Container - 2&quot;]
+d(&quot;Fast API&quot;)
+e(&quot;Detectron Worker&quot;)
+end
+subgraph all3[&quot;Detectron Container - N&quot;]
+f(&quot;Fast API&quot;)
+g(&quot;Detectron Worker&quot;)
+end
+        </div><p>Document Layout Analysis is available on <a class="reference external" href="https://app.konfuzio.com">https://app.konfuzio.com</a> as well as for self-hosted environment via <a class="reference external" href="https://dev.konfuzio.com/web/on_premises.html#optional-9-install-document-document-layout-analysis-segmentation-container">Docker</a> or on <a class="reference external" href="https://dev.konfuzio.com/web/on_premises.html#kubernetes">Kubernetes via Helm</a>.</p>
 </section>
 <section id="docker-compose-vs-kubernetes">
 <h2>Docker-Compose vs. Kubernetes<a class="headerlink" href="#docker-compose-vs-kubernetes" title="Permalink to this headline">¶</a></h2>
@@ -1216,7 +1221,7 @@ Set to 0 for no limit, but beware of timeouts as the CSV files are exported sync
 <section id="id8">
 <h5>DETECTRON_URL<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h5>
 <p>Default: None</p>
-<p>This is used to connect to the optional <a class="reference external" href="/web/on_premises.html#optional-9-install-document-segmentation-container">segmentation container</a>. This is a URL in the form of ‘<a class="reference external" href="http://detectron-service:8181/predict">http://detectron-service:8181/predict</a>’.
+<p>This is used to connect to the optional <a class="reference external" href="/web/on_premises.html#optional-9-install-document-segmentation-container">Document Layout Analysis Container</a>. This is a URL in the form of ‘<a class="reference external" href="http://detectron-service:8181/predict">http://detectron-service:8181/predict</a>’.
 You might need to adjust the detectron-service to your service name or IP.</p>
 <p><em>Type: string</em></p>
 </section>
