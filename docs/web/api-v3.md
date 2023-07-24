@@ -98,16 +98,16 @@ curl --request GET \
 To get a token:
 
 .. literalinclude:: ../web/boilerplates/test_rest_api.py
-   :language: python
-   :lines: 6,9-14,26-27
-   :dedent: 4
+:language: python
+:lines: 6,9-14,26-27
+:dedent: 4
 
 To use the token:
 
 .. literalinclude:: ../web/boilerplates/test_rest_api.py
-   :language: python
-   :lines: 6,9-11,16-19,26-27
-   :dedent: 4
+:language: python
+:lines: 6,9-11,16-19,26-27
+:dedent: 4
 
 #### Accessing and using the token via the Konfuzio SDK
 
@@ -119,7 +119,7 @@ For more information on this and other information on what you can do with the S
 #### Authenticating with a Token as a Query Parameter (_Upcoming feature_)
 
 .. Note::
-    Please open a [support ticket](https://konfuzio.com/support/) if you would like to have early access to this feature.
+Please open a [support ticket](https://konfuzio.com/support/) if you would like to have early access to this feature.
 
 Sometimes you might need to use one of our endpoints with a third party service that doesn't allow you to specify
 certain types of information (like authentication tokens) in the request. In these cases, you can use a special method
@@ -132,16 +132,14 @@ Here's an example of what that might look like:
 
 ```html
 http://app.konfuzio.com/api/v3/projects/3/export/all.csv?token=123456
-
 ```
 
 Just replace 123456 with your own authentication token, and you'll be able to use this method to authenticate your
 request.
 
 .. Note::
-    This functionality is offered as part of the Google-Sheet export function, as well as usable on
-    any other csv importable software (SAP, Excel, etc).
-
+This functionality is offered as part of the Google-Sheet export function, as well as usable on
+any other csv importable software (SAP, Excel, etc).
 
 ### Response codes
 
@@ -369,8 +367,8 @@ After your initial Project setup, you can start uploading Documents. To upload a
 our [Document creation endpoint](https://app.konfuzio.com/v3/swagger/#/documents/documents_create).
 
 .. note::
-  Unlike most other endpoints, the Document creation endpoint only supports `multipart/form-data` requests (to support
-  file uploading), so you won't have to JSON-encode your request this time.
+Unlike most other endpoints, the Document creation endpoint only supports `multipart/form-data` requests (to support
+file uploading), so you won't have to JSON-encode your request this time.
 
 #### Uploading a Document to Konfuzio
 
@@ -382,18 +380,18 @@ Before starting, note that there are three possible ways to create a project on 
 2.  Using the web interface (for more information, watch the video tutorial at [help.konfuzio.com/quickstart/](https://chat.openai.com/c/help.konfuzio.com/quickstart/))
 3.  By accepting an invitation to a ready Project (in this case, no setup is necessary on your part)
 
-[After setting up your Project](https://dev.konfuzio.com/web/api-v3.html#create-a-project), you can start uploading 
-Documents. Document uploading is accomplished by making a POST request to our Document creation endpoint. Unlike most 
-endpoints, this one only supports multipart/form-data requests to accommodate file uploading, hence JSON-encoding your 
+[After setting up your Project](https://dev.konfuzio.com/web/api-v3.html#create-a-project), you can start uploading
+Documents. Document uploading is accomplished by making a POST request to our Document creation endpoint. Unlike most
+endpoints, this one only supports multipart/form-data requests to accommodate file uploading, hence JSON-encoding your
 request is not necessary this time.
 
 #### Synchronous Document Upload
 
-This tutorial will guide you on how to perform a synchronous Document upload to Konfuzio. In this mode, the server will 
+This tutorial will guide you on how to perform a synchronous Document upload to Konfuzio. In this mode, the server will
 wait for the Document processing to finish before returning a response with the extracted data.
 
 After setting up your Project, you can upload Documents. This is done by making a POST request to our Document creation
-endpoint. This endpoint only supports multipart/form-data requests to facilitate file uploading, so you don't need to 
+endpoint. This endpoint only supports multipart/form-data requests to facilitate file uploading, so you don't need to
 JSON-encode your request.
 
 ```bash
@@ -404,21 +402,21 @@ curl --request POST\
   --form project=PROJECT_ID\
   --form sync=true\
   --form data_file='@LOCAL_FILE_NAME';type=application/pdf
-````
+```
 
 - Replace `YOUR_TOKEN` with your authorization token.
 - `PROJECT_ID` should be replaced with the ID of your Project.
 - `LOCAL_FILE_NAME` is the path to the file on your disk you wish to upload. Make sure to keep the `@` in front of it.
-- The `sync` parameter is set to `true`, which means the server will wait for the Document processing to finish before 
-returning a response.
+- The `sync` parameter is set to `true`, which means the server will wait for the Document processing to finish before
+  returning a response.
 
-Note that this synchronous mode might take a long time for large Documents, so it's recommended to set a high timeout 
+Note that this synchronous mode might take a long time for large Documents, so it's recommended to set a high timeout
 for your request. After the upload, the API will return the extracted data from the Document.
 
 #### Asynchronous Document Upload with Assignee Notification
 
-In this tutorial, we will guide you through the process of asynchronously uploading a Document to Konfuzio. This method 
-is particularly beneficial when dealing with large Documents or Documents with many Pages. We will also discuss how you 
+In this tutorial, we will guide you through the process of asynchronously uploading a Document to Konfuzio. This method
+is particularly beneficial when dealing with large Documents or Documents with many Pages. We will also discuss how you
 can use the `assignee` parameter to notify a specific user by email after the Document upload.
 
 Here's an example of an asynchronous Document upload request, which includes the `assignee` parameter:
@@ -436,35 +434,35 @@ curl --request POST\
 
 In this request:
 
--   Replace `YOUR_TOKEN` with your authorization token.
--   `PROJECT_ID` should be replaced with the ID of your Project.
--   `CATEGORY_ID` is optional. If present, it must be the ID of a Category belonging to your Project. If this is not 
-set, the app will try to automatically detect the Document category based on the available options.
--   `sync` is set to false for asynchronous processing. With this, the API will immediately return a response after the 
-upload, confirming that the Document was received and is now queuing for extraction.
--   `callback_url` is optional. If provided, the Document details are sent to the specified URL via a POST request 
-after the processing of the Document has been completed.
--   `assignee` is optional. If provided, it is the email of the user assigned to work on this Document, which must be a 
-member of the Project you're uploading the Document to.
--   `LOCAL_FILE_NAME` is the path to the existing file on your disk you wish to upload. Keep the `@` in front of it.
+- Replace `YOUR_TOKEN` with your authorization token.
+- `PROJECT_ID` should be replaced with the ID of your Project.
+- `CATEGORY_ID` is optional. If present, it must be the ID of a Category belonging to your Project. If this is not
+  set, the app will try to automatically detect the Document category based on the available options.
+- `sync` is set to false for asynchronous processing. With this, the API will immediately return a response after the
+  upload, confirming that the Document was received and is now queuing for extraction.
+- `callback_url` is optional. If provided, the Document details are sent to the specified URL via a POST request
+  after the processing of the Document has been completed.
+- `assignee` is optional. If provided, it is the email of the user assigned to work on this Document, which must be a
+  member of the Project you're uploading the Document to.
+- `LOCAL_FILE_NAME` is the path to the existing file on your disk you wish to upload. Keep the `@` in front of it.
 
-Using the `assignee` parameter allows you to assign a specific user to work on the uploaded Document. The assignee, who 
-must be a member of your Project, will receive an email notification once the Document is uploaded. This feature is 
-beneficial when specific Documents require attention from specific team members, as it automatically informs them about 
+Using the `assignee` parameter allows you to assign a specific user to work on the uploaded Document. The assignee, who
+must be a member of your Project, will receive an email notification once the Document is uploaded. This feature is
+beneficial when specific Documents require attention from specific team members, as it automatically informs them about
 the new task.
 
-After the upload, you can use the Document retrieve endpoint to check if the Document has finished processing, and if 
+After the upload, you can use the Document retrieve endpoint to check if the Document has finished processing, and if
 so, retrieve the extracted data.
 
 #### Document Upload by Disabling Automatic Categorization
 
-This tutorial guides you on how to disable automatic categorization when uploading a Document to Konfuzio by specifying 
-the category of the Document manually. This can be useful when you want to ensure that a Document is assigned to a 
-specific Category, or when automatic categorization may not accurately categorize a Document due to its content or 
+This tutorial guides you on how to disable automatic categorization when uploading a Document to Konfuzio by specifying
+the category of the Document manually. This can be useful when you want to ensure that a Document is assigned to a
+specific Category, or when automatic categorization may not accurately categorize a Document due to its content or
 layout.
 
-Once your Project is set up, you can upload Documents. This is done by making a POST request to our Document creation 
-endpoint. This endpoint only supports multipart/form-data requests to facilitate file uploading, so you don't need to 
+Once your Project is set up, you can upload Documents. This is done by making a POST request to our Document creation
+endpoint. This endpoint only supports multipart/form-data requests to facilitate file uploading, so you don't need to
 JSON-encode your request.
 
 ```mermaid
@@ -478,12 +476,12 @@ sequenceDiagram
     Konfuzio Server-->>Customer Software: Webhook*
 ```
 
-In this sequence diagram, the first flow represents the process when a Document is uploaded without a Category. 
-Konfuzio Server performs automatic categorization before processing the Document. A webhook is then sent to the 
+In this sequence diagram, the first flow represents the process when a Document is uploaded without a Category.
+Konfuzio Server performs automatic categorization before processing the Document. A webhook is then sent to the
 Customer Software after processing.
 
-The second flow represents the process when a Document is uploaded with a Category. Since the Category is already 
-specified, Konfuzio Server skips the categorization step and directly processes the Document. After processing, a 
+The second flow represents the process when a Document is uploaded with a Category. Since the Category is already
+specified, Konfuzio Server skips the categorization step and directly processes the Document. After processing, a
 webhook is sent to the Customer Software.
 
 Here's an example of how to manually specify the Category of a Document:
@@ -495,31 +493,31 @@ curl --request POST\
   --header 'Authorization: Token YOUR_TOKEN'\
   --form project=PROJECT_ID\
   --form category=CATEGORY_ID\
-  --form data_file='@LOCAL_FILE_NAME';type=application/pdf 
+  --form data_file='@LOCAL_FILE_NAME';type=application/pdf
 ```
 
 - Replace `YOUR_TOKEN` with your authorization token.
 - `PROJECT_ID` should be replaced with the ID of your Project.
-- `CATEGORY_ID` is the ID of a Category that belongs to your Project. By specifying this, you are bypassing Konfuzio's 
-automatic categorization process.
+- `CATEGORY_ID` is the ID of a Category that belongs to your Project. By specifying this, you are bypassing Konfuzio's
+  automatic categorization process.
 - `LOCAL_FILE_NAME` is the path to the file on your disk you wish to upload. Make sure to keep the `@` in front of it.
 
-By manually specifying the Category of a Document, you ensure that the Document is categorized as you intend, without 
-relying on automatic categorization. This can be helpful in situations where the content or layout of a Document might 
-confuse the automatic categorization process. After the upload, the API will return the uploaded Document's ID and its 
+By manually specifying the Category of a Document, you ensure that the Document is categorized as you intend, without
+relying on automatic categorization. This can be helpful in situations where the content or layout of a Document might
+confuse the automatic categorization process. After the upload, the API will return the uploaded Document's ID and its
 current status.
 
 #### Asynchronous Document Processing with Webhook
 
 This tutorial will guide you on how to use webhooks for asynchronous Document processing in Konfuzio.
 
-Once your {p}roject is set up, you can upload Documents. This is done by making a POST request to our Document creation 
-endpoint. This endpoint only supports multipart/form-data requests to accommodate file uploading, so you won't have to 
+Once your {p}roject is set up, you can upload Documents. This is done by making a POST request to our Document creation
+endpoint. This endpoint only supports multipart/form-data requests to accommodate file uploading, so you won't have to
 JSON-encode your request.
 
-Webhooks allow you to receive a POST request from Konfuzio once the processing of your Document is complete. This 
-method is especially beneficial when dealing with large Documents or Documents with many Pages as it allows your 
-application to continue working on other tasks while the Document processing takes place. Here's an overview of the 
+Webhooks allow you to receive a POST request from Konfuzio once the processing of your Document is complete. This
+method is especially beneficial when dealing with large Documents or Documents with many Pages as it allows your
+application to continue working on other tasks while the Document processing takes place. Here's an overview of the
 process:
 
 ```mermaid
@@ -528,8 +526,8 @@ sequenceDiagram
     Konfuzio Server-->>Customer Software: Webhook*
 ```
 
-In the sequence above, your software (Customer Software) sends a Document POST request to Konfuzio Server to upload a 
-Document. Once the processing of the Document is complete, Konfuzio Server sends a webhook (a POST request) back to 
+In the sequence above, your software (Customer Software) sends a Document POST request to Konfuzio Server to upload a
+Document. Once the processing of the Document is complete, Konfuzio Server sends a webhook (a POST request) back to
 your software.
 
 Here is how you can include a callback URL in your Document upload request to use webhooks:
@@ -546,19 +544,18 @@ curl --request POST\
 
 In this request:
 
--   Replace `YOUR_TOKEN` with your authorization token.
--   `PROJECT_ID` should be replaced with the ID of your Project.
--   `callback_url` is the URL where the webhook should be sent once the Document is processed.
--   `LOCAL_FILE_NAME` is the path to the file on your disk you wish to upload. Keep the `@` in front of it.
+- Replace `YOUR_TOKEN` with your authorization token.
+- `PROJECT_ID` should be replaced with the ID of your Project.
+- `callback_url` is the URL where the webhook should be sent once the Document is processed.
+- `LOCAL_FILE_NAME` is the path to the file on your disk you wish to upload. Keep the `@` in front of it.
 
-The `callback_url` parameter is optional. If provided, Konfuzio will send the Document details to the specified URL 
-via a POST request after the Document has been processed. This means your application can continue working on other 
+The `callback_url` parameter is optional. If provided, Konfuzio will send the Document details to the specified URL
+via a POST request after the Document has been processed. This means your application can continue working on other
 tasks and only needs to handle the Document data once it's ready.
 
-This asynchronous approach is advantageous when dealing with Documents that contain many Pages or require a long 
-processing time, as it doesn't block your application while waiting for the response. Instead, your application is 
+This asynchronous approach is advantageous when dealing with Documents that contain many Pages or require a long
+processing time, as it doesn't block your application while waiting for the response. Instead, your application is
 notified via the webhook once the data is ready.
-
 
 ### Create an Annotation
 
@@ -603,40 +600,40 @@ In this request:
 - `span` is a [list of Spans](#coordinates-and-bounding-boxes).
 - Other fields are optional.
 
-As the `span` identifies a *position* on the page, there are multiple ways to identify the correct one for the
+As the `span` identifies a _position_ on the page, there are multiple ways to identify the correct one for the
 Annotation you want to create:
 
 1. The [Document Bbox endpoint](https://app.konfuzio.com/v3/swagger/#/documents/documents_bbox_retrieve) returns an
-   object with all the *characters* from the Document with their coordinates. The characters can be identified by their
+   object with all the _characters_ from the Document with their coordinates. The characters can be identified by their
    offset (the keys in the object) and they can be easily converted in a list for the `span` attribute. You can also
    send a POST call to this endpoint with some coordinates to return a subset of the Document's characters that is
    completely contained into the sent coordinates.
 2. The [Document Page endpoint](https://app.konfuzio.com/v3/swagger/#/documents/documents_pages_retrieve) has an
-   `entities` attribute that contains all the *words* from the Document with their coordinates. These can be easily 
+   `entities` attribute that contains all the _words_ from the Document with their coordinates. These can be easily
    converted in a list for the `span` attribute.
 3. The [Document search endpoint](https://app.konfuzio.com/v3/swagger/#/documents/documents_search_create) takes a
    string as input and returns a list of all its occurrences in the Document. These can be fed directly to the `span`
    attribute.
 
 .. note::
-  Annotation Sets are never created directly. When you create an Annotation, you can specify whether to re-use an
-  existing Annotation Set, or to create a new one. You can refer to the following diagram to decide whether to use
-  `annotation_set` or `label_set` in your request.
+Annotation Sets are never created directly. When you create an Annotation, you can specify whether to re-use an
+existing Annotation Set, or to create a new one. You can refer to the following diagram to decide whether to use
+`annotation_set` or `label_set` in your request.
 
 .. mermaid::
 
-  graph TD
-    A[Creating an Annotation in a Document<br>for Label <code>L</code> and Label Set <code>A</code>]
-    A --> B[Can the Label Set <code>A</code> have multiple Annotation Sets?]
-    B --> z[Yes] --> C[Is this Annotation<br>for a new Annotation Set<br>or an existing one <code>B</code>?]
-    C --> x[New one] --> E["<code>label=L, label_set=A</code><br>(will create a new Annotation Set <code>C</code>)"]
-    C --> y[Existing] --> D[<code>label=L, annotation_set=B</code>]
-    B --> f[No] --> F[Does the Label Set <code>A</code><br> already have a single<br>corresponding Annotation Set <code>B</code>?]
-    F --> G[Yes]
-    G --> D
-    G --> I["<code>label=L, label_set=A</code><br>(will reuse the existing Annotation Set <code>B</code>)"]
-    F --> H[No]
-    H --> E
+graph TD
+A[Creating an Annotation in a Document<br>for Label <code>L</code> and Label Set <code>A</code>]
+A --> B[Can the Label Set <code>A</code> have multiple Annotation Sets?]
+B --> z[Yes] --> C[Is this Annotation<br>for a new Annotation Set<br>or an existing one <code>B</code>?]
+C --> x[New one] --> E["<code>label=L, label_set=A</code><br>(will create a new Annotation Set <code>C</code>)"]
+C --> y[Existing] --> D[<code>label=L, annotation_set=B</code>]
+B --> f[No] --> F[Does the Label Set <code>A</code><br> already have a single<br>corresponding Annotation Set <code>B</code>?]
+F --> G[Yes]
+G --> D
+G --> I["<code>label=L, label_set=A</code><br>(will reuse the existing Annotation Set <code>B</code>)"]
+F --> H[No]
+H --> E
 
 ### Create training data and train the AI
 
@@ -678,18 +675,18 @@ To clarify how reviewing works, let's take a look at the statuses this data can 
 
 .. mermaid::
 
-  flowchart TD
-    A(Feedback Required<br><small>Annotations created by AI)
-    B(Unfilled<br><small>Potential Annotations that are<br>not found by the AI)
-    C[Created by Human]
-    D[Not Found<br><small>Missing Annotation instances</small>]
-    E[Accepted]
-    F[Declined]
-    A --> E
-    A --> F
-    F --> B
-    B --> C
-    B --> D
+flowchart TD
+A(Feedback Required<br><small>Annotations created by AI)
+B(Unfilled<br><small>Potential Annotations that are<br>not found by the AI)
+C[Created by Human]
+D[Not Found<br><small>Missing Annotation instances</small>]
+E[Accepted]
+F[Declined]
+A --> E
+A --> F
+F --> B
+B --> C
+B --> D
 
 - Annotations created by an AI extraction are initially marked as **Feedback Required**.
 - They can be **Accepted**, which means that the information they contain is correct.
@@ -723,9 +720,9 @@ curl --request GET \
 ```
 
 .. note::
-  The `annotation_sets` property contains both existing Annotation Sets and "potential" ones, i.e. Label Sets from the
-  Document's Category which do not have a corresponding Annotation Set on the Document yet. These are easy to see
-  because they don't have any Annotation and their `id` is `null`.
+The `annotation_sets` property contains both existing Annotation Sets and "potential" ones, i.e. Label Sets from the
+Document's Category which do not have a corresponding Annotation Set on the Document yet. These are easy to see
+because they don't have any Annotation and their `id` is `null`.
 
 Whichever method you choose, you should be able to retrieve an ID for the Annotation(s) you want to revise. Unrevised
 Annotations are easily filterable in the list because they have the properties `"revised": false` and
@@ -800,7 +797,7 @@ content of the Document.
 ### Document splitting suggestions
 
 .. note::
-  [Contact us](https://konfuzio.com/en/support/) to enable this functionality.
+[Contact us](https://konfuzio.com/en/support/) to enable this functionality.
 
 The training data that was [previously created](#create-training-data-and-train-the-ai) can also be used to train a
 Splitting AI to automatically propose splitting suggestions for uploaded documents.
@@ -819,9 +816,9 @@ the AI's suggestions. You can also pass a list with one Document and all the pag
 suggestions and proceed with the original Document.
 
 .. note::
-  Once Document Splitting is enabled for a Project, newly uploaded Documents where splitting is detected will stay in
-  the "Waiting for splitting confirmation" (`41`) status until the user takes action on the AI's suggestions. After
-  that, extraction will run as usual on the resulting Documents.
+Once Document Splitting is enabled for a Project, newly uploaded Documents where splitting is detected will stay in
+the "Waiting for splitting confirmation" (`41`) status until the user takes action on the AI's suggestions. After
+that, extraction will run as usual on the resulting Documents.
 
 After being split, the new Documents will keep a reference to the original "Document Set" via the `document_set`
 property. Querying the [Document Sets endpoint](https://app.konfuzio.com/v3/swagger/#/document-sets) with that ID will
@@ -829,7 +826,7 @@ return all the existing Documents derived from the same original Document.
 
 ### Download the OCR version of an uploaded Document
 
-After uploading a Document, the Konfuzio server also creates a [PDF OCR version](#ocr-processing) of it with indexed and 
+After uploading a Document, the Konfuzio server also creates a [PDF OCR version](#ocr-processing) of it with indexed and
 selectable text. This version is also used to generate images for each page for our SmartView functionality. If you
 need it, you can download this OCR version of the Document: the `file_url` property of the
 [document retrieve endpoint](https://app.konfuzio.com/v3/swagger/#/documents/documents_retrieve) contains the URL to it
@@ -845,32 +842,3 @@ curl --request GET \
 ```
 
 This will save the file in the current directory.
-
-### Create your own Document dashboard
-
-In cases where our [public documents and iframes](https://help.konfuzio.com/integrations/public-documents/) are not
-enough, you can build your own solution. Here we explain how you can easily build a read-only dashboard for your
-documents.
-
-#### Start from our Vue.js code
-
-Our document dashboard is based on Vue.js and completely implemented with the API v3. You can check out our solution
-[on GitHub](https://github.com/konfuzio-ai/document-validation-ui) and customize it to your needs. You will find a
-technical overview and component description [here](/dvui/index.html).
-
-#### Start from scratch
-
-If you're using React, Angular or other technologies, you can use API v3 to build your own solution.
-
-For feature parity with our read-only document dashboard, you only need to use two endpoints, and if you're only
-handling public documents, you don't need authentication for these two endpoints.
-
-- The [Document detail](https://app.konfuzio.com/v3/swagger/#/documents/documents_retrieve) endpoint provides general
-  information about the Document you're querying, as well as its extracted data. Most of the data you will need is
-  inside the `annotation_sets` object of the response.
-- The [Document Page detail](https://app.konfuzio.com/v3/swagger/#/documents/documents_pages_retrieve) endpoint
-  provides information about a Document's Page, including its `entites` (a list of words inside the Page, with their
-  coordinates) and its `page_image` (a URL you can use to load the image version of the Page).
-
-For more advanced use cases, you can refer to our [Swagger documentation](http:/app.konfuzio.com/v3/swagger/) and/or
-contact support for guidance.

@@ -56,9 +56,7 @@ By default, the SDK is installed without the AI-related dependencies like `torch
 only the Data-related SDK concepts but not the AI models. To install the SDK with the AI components,
 run the following command:
   ```
-  git clone https://github.com/konfuzio-ai/konfuzio-sdk.git
-  cd konfuzio-sdk
-  pip install -e .[ai]
+  pip install konfuzio_sdk[ai]
   ```
 
 Find the full installation guide [here](https://dev.konfuzio.com/sdk/get_started.html#install-sdk)

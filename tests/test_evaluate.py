@@ -214,6 +214,10 @@ class TestCompare(unittest.TestCase):
         assert evaluation["tokenizer_false_positive"].sum() == 24
         assert evaluation["tokenizer_false_negative"].sum() == 0
 
+        # Checking that false positive rows include the document_id of the Document
+        false_positives = evaluation[evaluation["false_positive"]]
+        assert set(false_positives['document_id_predicted']) == {TEST_DOCUMENT_ID}
+
     def test_strict_nothing_can_be_predicted(self):
         """Support to evaluate that nothing must be found in a document."""
         prj = Project(id_=None, project_folder=OFFLINE_PROJECT)
