@@ -36,9 +36,49 @@ Here you find a few examples:
 
 ## Billing and License
 
-A Konfuzio Server self-hosted license can be purchased [online](https://konfuzio.com/en/price/). After your order has been placed, we will provide you with credentials to [download the Konfuzio Docker Images](https://dev.konfuzio.com/web/on_premises.html#download-docker-image) and a BILLING_API_KEY which needs to be set as [environment variable](/web/on_premises.html#environment-variables-for-konfuzio-server). The Konfuzio Container reports the usage once a day to our billing server (i.e. https://app.konfuzio.com). Konfuzio containers don't send customer data, such as the image or text that's being analyzed, to the billing server.
+When you purchase a Konfuzio Server self-hosted license online, we provide you with the necessary credentials to download the Konfuzio Docker Images. If you deploy via Kubernetes you can find the Helm Charts already [here](https://git.konfuzio.com/shared/charts). An essential part of this process is the unique BILLING_API_KEY. This key should be set as an environment variable when starting the Konfuzio Server using the following information.
 
-If you operate Konfuzio Server in an air-gapped environment, the Konfuzio Docker images are licensed to operate for one year (based on the release date) without being connected to the billing server.
+### Setup Billing API 
+
+The BILLING_API_KEY needs to be passed as environment variables to the running Docker container.
+
+Here is an example command for setting the `BILLING_API_KEY` environment variable:
+
+`docker run -e BILLING_API_KEY=your_api_key_here -d your_docker_image`
+
+In the command above, replace `your_api_key_here` with the actual billing API key and `your_docker_image` with the name of your Docker image.
+
+Here's what each part of the command does:
+
+-   `docker run`: This is the command to start a new Docker container.
+-   `-e`: This option allows you to set environment variables. You can also use `--env` instead of `-e`.
+-   `BILLING_API_KEY=your_api_key_here`: This sets the `BILLING_API_KEY` environment variable to your actual API key.
+-   `-d`: This option starts the Docker container in detached mode, which means it runs in the background.
+-   `your_docker_image`: This is the name of your Docker image. You replace this with the actual name of your Docker image.
+
+Instead of using "plain" Docker we recommed to use our [Helm Chart](https://dev.konfuzio.com/web/on_premises.html#quick-start-via-kubernetes-and-helm) or [Docker-Compose](https://dev.konfuzio.com/web/on_premises.html#quick-start-via-docker-compose) to install Konfuzio Server. 
+For Docker-Compose you can simply replace the BILLING_API_KEY placeholder in the [docker-compose.yaml](https://dev.konfuzio.com/_static/docker-compose.yml) file.
+When using Helm, the BILLING_API_KEY is set as 'envs.BILLING_API_KEY' in the [values.yaml](https://git.konfuzio.com/shared/charts/-/edit/master/values.yaml#L4) file.
+
+Konfuzio Container continues to report usage to our billing server, i.e., app.konfuzio.com, once a day. We assure you that the containers do not transmit any customer data, such as the image or text that's being analyzed, to the billing server.
+
+### Important Updates
+
+If the unique key associated with the Contract on app.konfuzio.com is removed, your self-hosted installation will cease to function within 24 hours. Currently, there is no limit on the number of pages that can be processed within this time. The Konfuzio Server will also refuse to start if any Python file within the container has been modified to preserve the integrity of our license checks.
+
+### Technical Background
+
+Our server restarts itself after 500 requests by default. The code that prevents changes to Python files in the container has been obfuscated to ensure a significant challenge for anyone attempting to modify the source code.
+
+### Air-gapped Environments and Upcoming Changes
+
+For those operating the Konfuzio Server in air-gapped environments, your Konfuzio Docker images are licensed to operate for one year, based on the release date, without needing to connect to our billing server.
+
+Soon, however, we will be introducing changes to our license check mechanism. The entire license check will be deactivated if a BILLING_API_KEY is not set. We are currently notifying self-hosted users about this upcoming change, urging them to configure their billing credentials. For more information, please refer to the Billing and License section in our documentation.
+
+For users requiring further instructions, especially those operating in air-gapped environments, please [contact us](https://konfuzio.com/support) for assistance.
+
+We appreciate your understanding and cooperation as we continue to enhance our security, licensing, and billing measures for all self-hosted installations of the Konfuzio Server.
 
 ## Kubernetes
 
@@ -268,10 +308,11 @@ The following commands allow you to get a Konfuzio Server installation running w
 helm repo add konfuzio-repo https://git.konfuzio.com/api/v4/projects/106/packages/helm/stable
 helm repo update
 helm install my-konfuzio konfuzio-repo/konfuzio-chart  \  
-  --set envs.HOST_NAME="host-name-for-you-installation.com"  \  
+  --set envs.HOST_NAME="host-name-for-you-installation.com"  \
+  --set envs.BILLING_API_KEY="******"  \  
   --set image.tag="released-******"  \  
-  --set image.imageCredentials.username=******  \
-  --set image.imageCredentials.password=******
+  --set image.imageCredentials.username="******"  \
+  --set image.imageCredentials.password="******"
 ```
 
 ### Upgrade
@@ -529,8 +570,7 @@ In such cases, consider switching to a previous Docker tag. You can view the com
 Remember to uncheck the "Supported Tags Only" box to access all available versions.
 
 
-
-### [Optional] 9. Install document segmentation container
+### [Optional] 9. Install the Document Layout Analysis (Segmentation) Container
 
 Download the container with the credentials provided by Konfuzio.
 
@@ -540,20 +580,18 @@ Password: {PROVIDED_BY_KONFUZIO}
 
 ```
 docker login REGISTRY_URL  
-docker pull REGISTRY_URL/konfuzio/text-annotation/detectron2/master:released-2022-11-24_08-46-17
-docker run --env-file /path_to_env_file.env REGISTRY_URL/konfuzio/text-annotation/detectron2/master:released-2022-11-24_08-46-17 bash -c "export LC_ALL=C.UTF-8; export LANG=C.UTF-8;./run_celery.sh
+docker pull REGISTRY_URL/konfuzio/text-annotation/detectron2/main:released-2023-07-20_17-51-49
+docker run --env-file /path_to_env_file.env REGISTRY_URL/konfuzio/text-annotation/detectron2/main:released-2023-07-20_17-51-49 run.sh
 ```
 
-The segmentation container needs to be started with the following environment variables which you can enter into your .env file
+The "Document Layout Analysis Container" needs to be started with the following environment variables which you can enter into your .env file
 ```
-GPU=True  # If GPU is present
-C_FORCE_ROOT=True
 BROKER_URL=  # Set this to an unused Redis database
 RESULT_BACKEND=  # Set this to an unused Redis database
 ```
 
-We recommend to run the segmentation container with 8GB of RAM. The segmentation container can be started and used with less RAM, however this may not work on large images. 
-After the segmentation container is running you need to set the [DETECTRON_URL](/web/on_premises.html#detectron-url) to point to the segmentation container. 
+We recommend to run the "Document Layout Analysis Container" with 8GB of RAM. The container can be started and used with less RAM, however this may not work on large images. 
+After the "Document Layout Analysis Container" is running you need to set the [DETECTRON_URL](/web/on_premises.html#detectron-url) for Konfuzio Servre to point to the "Document Layout Analysis Container".
 
 
 ### [Optional] 10. Install document summarization container
@@ -635,8 +673,44 @@ With this setup, around 2500 Pages per hour can be processed using OCR and Extra
 
   Other factors that can affect performance include network latency, disk speed, and the complexity of the processing algorithms. It's essential to consider all these factors when designing and deploying document processing systems to ensure optimal performance.
 
+## Document Layout Analysis
 
+The Konfuzio Server leverages Document Layout Analysis' capabilities to enhance its Natural Language Processing and Object Detection services. You can read more about it on our [blog](https://konfuzio.com/en/document-layout-analysis/). The platform's architecture features multiple Document Layout Analysis containers, each encapsulating a Fast API instance and a Worker. The modular structure of these containers allows scalability based on specific requirements.
 
+Each Fast API instance and its corresponding Worker communicate with a shared Redis instance, a robust in-memory data structure store used for caching and message brokerage. As a high-performance web framework, Fast API is pivotal in constructing efficient APIs.
+
+The process unfolds as follows: The Konfuzio Server forwards document layout analysis tasks to a Container via the Fast API instance. In response, the Fast API generates a task entry in Redis, which a Worker can subsequently pick up and process. Upon completion, the worker returns the results back to the Fast API via Redis, creating a seamless flow of information.
+
+This architecture thus delivers a scalable, high-performance environment equipped to manage substantial loads. It ensures efficient object detection and natural language processing capabilities based on the detectron library, making it an optimal choice for handling complex computational tasks.
+
+```mermaid
+graph 
+l("Konfuzio Server") <--> a
+m("Other Applications") <--> a
+a("Load-Balancer (Optional)") <--> b
+a <--> d
+a <--> f
+b <--> t("Redis")
+c <--> t("Redis")
+d("Redis") <--> t("Redis")
+e("Redis") <--> t("Redis")
+f("Redis") <--> t("Redis")
+g("Redis") <--> t("Redis")
+subgraph all1["Detectron Container - 1"]
+b("Fast API")
+c("Detectron Worker") 
+end
+subgraph all2["Detectron Container - 2"]
+d("Fast API")
+e("Detectron Worker") 
+end
+subgraph all3["Detectron Container - N"]
+f("Fast API")
+g("Detectron Worker") 
+end
+```
+
+Document Layout Analysis is available on [https://app.konfuzio.com](https://app.konfuzio.com) as well as for self-hosted environment via [Docker](https://dev.konfuzio.com/web/on_premises.html#optional-9-install-the-document-layout-analysis-segmentation-container) or on [Kubernetes via Helm](https://dev.konfuzio.com/web/on_premises.html#kubernetes).
 
 ## Docker-Compose vs. Kubernetes
 
@@ -782,10 +856,13 @@ Superusers can migrate Extraction and Categorization AIs via the webinterface. T
 
 ### Migrate a Project
 
-Export the Project data from the source Konfuzio server system.  
+Export the Project data from the source Konfuzio Server system.  
 ```
 pip install konfuzio_sdk  
-konfuzio_sdk init  
+# The "init" command will ask you to enter a username, password and hostname to connect to Konfuzio Server.
+# Please enter the hostname without trailing backslash. For example "https://app.konfuzio.com" instead of "https://app.konfuzio.com/".
+# The init commands creates a .env in the current directory. To reset the SDK connection, you can delete this file.
+konfuzio_sdk init
 konfuzio_sdk export_project <PROJECT_ID>
 ```
 
@@ -917,7 +994,7 @@ _Type: boolean_
 ##### DETECTRON_URL 
 Default: None
 
-This is used to connect to the optional [segmentation container](/web/on_premises.html#optional-9-install-document-segmentation-container). This is a URL in the form of 'http://detectron-service:8181/predict'.
+This is used to connect to the optional [Document Layout Analysis Container](/web/on_premises.html#optional-9-install-document-segmentation-container). This is a URL in the form of 'http://detectron-service:8181/predict'.
 You might need to adjust the detectron-service to your service name or IP.
 
 _Type: string_
