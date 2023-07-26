@@ -980,18 +980,22 @@ class CategorizationAI(AbstractCategorizationAI):
 
         # Save only the necessary parts of the model for extraction/inference.
         # if no path is given then we use a default path and filename
-        if not tmp_path:
-            tmp_path = os.path.join(
-                self.categories[0].project.project_folder,
-                'models',
-                f'{get_timestamp()}_{self.name_lower()}_{self.project.id_}_tmp.pt.lz4',
-            )
+
+        # tmp_path is needed for saving an intermediate .pt file that later will be compressed with lz4 and deleted
+
         if not path:
             path = os.path.join(
                 self.categories[0].project.project_folder,
                 'models',
                 f'{get_timestamp()}_{self.name_lower()}_{self.project.id_}.pt.lz4',
             )
+            tmp_path = os.path.join(
+                self.categories[0].project.project_folder,
+                'models',
+                f'{get_timestamp()}_{self.name_lower()}_{self.project.id_}_tmp.pt',
+            )
+        else:
+            tmp_path = path.split('.')[0] + '_tmp.pt'
 
         logger.info(f'Saving model of type Categorization AI in {path}')
 
