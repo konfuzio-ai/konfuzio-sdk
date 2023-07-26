@@ -1037,8 +1037,11 @@ A commonly chosen provider is <a class="reference external" href="https://www.ke
 </section>
 <section id="migrate-a-project">
 <h3>Migrate a Project<a class="headerlink" href="#migrate-a-project" title="Permalink to this headline">¶</a></h3>
-<p>Export the Project data from the source Konfuzio server system.</p>
+<p>Export the Project data from the source Konfuzio Server system.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">konfuzio_sdk</span>
+<span class="c1"># The &quot;init&quot; command will ask you to enter a username, password and hostname to connect to Konfuzio Server.</span>
+<span class="c1"># Please enter the hostname without trailing backslash. For example &quot;https://app.konfuzio.com&quot; instead of &quot;https://app.konfuzio.com/&quot;.</span>
+<span class="c1"># The init commands creates a .env in the current directory. To reset the SDK connection, you can delete this file.</span>
 <span class="n">konfuzio_sdk</span> <span class="n">init</span>
 <span class="n">konfuzio_sdk</span> <span class="n">export_project</span> <span class="o">&lt;</span><span class="n">PROJECT_ID</span><span class="o">&gt;</span>
 </pre></div>

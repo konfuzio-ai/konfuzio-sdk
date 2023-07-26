@@ -815,10 +815,13 @@ Superusers can migrate Extraction and Categorization AIs via the webinterface. T
 
 ### Migrate a Project
 
-Export the Project data from the source Konfuzio server system.  
+Export the Project data from the source Konfuzio Server system.  
 ```
 pip install konfuzio_sdk  
-konfuzio_sdk init  
+# The "init" command will ask you to enter a username, password and hostname to connect to Konfuzio Server.
+# Please enter the hostname without trailing backslash. For example "https://app.konfuzio.com" instead of "https://app.konfuzio.com/".
+# The init commands creates a .env in the current directory. To reset the SDK connection, you can delete this file.
+konfuzio_sdk init
 konfuzio_sdk export_project <PROJECT_ID>
 ```
 
