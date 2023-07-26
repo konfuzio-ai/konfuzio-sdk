@@ -40,7 +40,7 @@ When you purchase a Konfuzio Server self-hosted license online, we provide you w
 
 ### Setup Billing API 
 
-You can set environment variables when running a Docker container using the `-e` or `--env` option with the `docker run` command.
+The BILLING_API_KEY needs to be passed as environment variables to the running Docker container.
 
 Here is an example command for setting the `BILLING_API_KEY` environment variable:
 
@@ -55,6 +55,10 @@ Here's what each part of the command does:
 -   `BILLING_API_KEY=your_api_key_here`: This sets the `BILLING_API_KEY` environment variable to your actual API key.
 -   `-d`: This option starts the Docker container in detached mode, which means it runs in the background.
 -   `your_docker_image`: This is the name of your Docker image. You replace this with the actual name of your Docker image.
+
+Instead of using "plain" docker we recommed to use our [Helm Chart](https://dev.konfuzio.com/web/on_premises.html#quick-start-via-kubernetes-and-helm) or [Docker-Compose](https://dev.konfuzio.com/web/on_premises.html#quick-start-via-docker-compose) to install Konfuzio Server. 
+For Docker-Compose you can simply replace the BILLING_API_KEY placeholder in the [docker-compose.yaml](https://dev.konfuzio.com/_static/docker-compose.yml) file.
+When using Helm the BILLING_API_KEY is set as envs.BILLING_API_KEY in the [values.yaml](https://git.konfuzio.com/shared/charts/-/edit/master/values.yaml#L4) file.
 
 Konfuzio Container continues to report usage to our billing server, i.e., app.konfuzio.com, once a day. We assure you that the containers do not transmit any customer data, such as the image or text that's being analyzed, to the billing server.
 
