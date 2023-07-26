@@ -36,9 +36,49 @@ Here you find a few examples:
 
 ## Billing and License
 
-A Konfuzio Server self-hosted license can be purchased [online](https://konfuzio.com/en/price/). After your order has been placed, we will provide you with credentials to [download the Konfuzio Docker Images](https://dev.konfuzio.com/web/on_premises.html#download-docker-image) and a BILLING_API_KEY which needs to be set as [environment variable](/web/on_premises.html#environment-variables-for-konfuzio-server). The Konfuzio Container reports the usage once a day to our billing server (i.e. https://app.konfuzio.com). Konfuzio containers don't send customer data, such as the image or text that's being analyzed, to the billing server.
+When you purchase a Konfuzio Server self-hosted license online, we provide you with the necessary credentials to download the Konfuzio Docker Images. If you deploy via Kubernetes you can find the Helm Charts already [here](https://git.konfuzio.com/shared/charts). An essential part of this process is the unique BILLING_API_KEY. This key should be set as an environment variable when starting the Konfuzio Server using the following information.
 
-If you operate Konfuzio Server in an air-gapped environment, the Konfuzio Docker images are licensed to operate for one year (based on the release date) without being connected to the billing server.
+### Setup Billing API 
+
+The BILLING_API_KEY needs to be passed as environment variables to the running Docker container.
+
+Here is an example command for setting the `BILLING_API_KEY` environment variable:
+
+`docker run -e BILLING_API_KEY=your_api_key_here -d your_docker_image`
+
+In the command above, replace `your_api_key_here` with the actual billing API key and `your_docker_image` with the name of your Docker image.
+
+Here's what each part of the command does:
+
+-   `docker run`: This is the command to start a new Docker container.
+-   `-e`: This option allows you to set environment variables. You can also use `--env` instead of `-e`.
+-   `BILLING_API_KEY=your_api_key_here`: This sets the `BILLING_API_KEY` environment variable to your actual API key.
+-   `-d`: This option starts the Docker container in detached mode, which means it runs in the background.
+-   `your_docker_image`: This is the name of your Docker image. You replace this with the actual name of your Docker image.
+
+Instead of using "plain" Docker we recommed to use our [Helm Chart](https://dev.konfuzio.com/web/on_premises.html#quick-start-via-kubernetes-and-helm) or [Docker-Compose](https://dev.konfuzio.com/web/on_premises.html#quick-start-via-docker-compose) to install Konfuzio Server. 
+For Docker-Compose you can simply replace the BILLING_API_KEY placeholder in the [docker-compose.yaml](https://dev.konfuzio.com/_static/docker-compose.yml) file.
+When using Helm, the BILLING_API_KEY is set as 'envs.BILLING_API_KEY' in the [values.yaml](https://git.konfuzio.com/shared/charts/-/edit/master/values.yaml#L4) file.
+
+Konfuzio Container continues to report usage to our billing server, i.e., app.konfuzio.com, once a day. We assure you that the containers do not transmit any customer data, such as the image or text that's being analyzed, to the billing server.
+
+### Important Updates
+
+If the unique key associated with the Contract on app.konfuzio.com is removed, your self-hosted installation will cease to function within 24 hours. Currently, there is no limit on the number of pages that can be processed within this time. The Konfuzio Server will also refuse to start if any Python file within the container has been modified to preserve the integrity of our license checks.
+
+### Technical Background
+
+Our server restarts itself after 500 requests by default. The code that prevents changes to Python files in the container has been obfuscated to ensure a significant challenge for anyone attempting to modify the source code.
+
+### Air-gapped Environments and Upcoming Changes
+
+For those operating the Konfuzio Server in air-gapped environments, your Konfuzio Docker images are licensed to operate for one year, based on the release date, without needing to connect to our billing server.
+
+Soon, however, we will be introducing changes to our license check mechanism. The entire license check will be deactivated if a BILLING_API_KEY is not set. We are currently notifying self-hosted users about this upcoming change, urging them to configure their billing credentials. For more information, please refer to the Billing and License section in our documentation.
+
+For users requiring further instructions, especially those operating in air-gapped environments, please [contact us](https://konfuzio.com/support) for assistance.
+
+We appreciate your understanding and cooperation as we continue to enhance our security, licensing, and billing measures for all self-hosted installations of the Konfuzio Server.
 
 ## Kubernetes
 

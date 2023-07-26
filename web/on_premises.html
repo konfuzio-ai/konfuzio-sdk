@@ -60,7 +60,13 @@
 <li class="toctree-l1"><a class="reference internal" href="explanations.html">Explanations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api-v3.html">REST API</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation Guide</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#billing-and-license">Billing and License</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#billing-and-license">Billing and License</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#setup-billing-api">Setup Billing API</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#important-updates">Important Updates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#technical-background">Technical Background</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#air-gapped-environments-and-upcoming-changes">Air-gapped Environments and Upcoming Changes</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#kubernetes">Kubernetes</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#required-tools">Required tools</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#kubectl">kubectl</a></li>
@@ -136,7 +142,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#usage-of-postgresql">Usage of PostgreSQL</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id7">Environment Variables</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id10">Environment Variables</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#environment-variables-for-konfuzio-server">Environment Variables for Konfuzio Server</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#general-settings">1. General Settings</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#background-tasks-via-celery">2. Background Tasks via Celery</a></li>
@@ -219,8 +225,41 @@
 </ul>
 <section id="billing-and-license">
 <h2>Billing and License<a class="headerlink" href="#billing-and-license" title="Permalink to this headline">¶</a></h2>
-<p>A Konfuzio Server self-hosted license can be purchased <a class="reference external" href="https://konfuzio.com/en/price/">online</a>. After your order has been placed, we will provide you with credentials to <a class="reference external" href="https://dev.konfuzio.com/web/on_premises.html#download-docker-image">download the Konfuzio Docker Images</a> and a BILLING_API_KEY which needs to be set as <a class="reference external" href="/web/on_premises.html#environment-variables-for-konfuzio-server">environment variable</a>. The Konfuzio Container reports the usage once a day to our billing server (i.e. <a class="reference external" href="https://app.konfuzio.com">https://app.konfuzio.com</a>). Konfuzio containers don’t send customer data, such as the image or text that’s being analyzed, to the billing server.</p>
-<p>If you operate Konfuzio Server in an air-gapped environment, the Konfuzio Docker images are licensed to operate for one year (based on the release date) without being connected to the billing server.</p>
+<p>When you purchase a Konfuzio Server self-hosted license online, we provide you with the necessary credentials to download the Konfuzio Docker Images. If you deploy via Kubernetes you can find the Helm Charts already <a class="reference external" href="https://git.konfuzio.com/shared/charts">here</a>. An essential part of this process is the unique BILLING_API_KEY. This key should be set as an environment variable when starting the Konfuzio Server using the following information.</p>
+<section id="setup-billing-api">
+<h3>Setup Billing API<a class="headerlink" href="#setup-billing-api" title="Permalink to this headline">¶</a></h3>
+<p>The BILLING_API_KEY needs to be passed as environment variables to the running Docker container.</p>
+<p>Here is an example command for setting the <code class="docutils literal notranslate"><span class="pre">BILLING_API_KEY</span></code> environment variable:</p>
+<p><code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">run</span> <span class="pre">-e</span> <span class="pre">BILLING_API_KEY=your_api_key_here</span> <span class="pre">-d</span> <span class="pre">your_docker_image</span></code></p>
+<p>In the command above, replace <code class="docutils literal notranslate"><span class="pre">your_api_key_here</span></code> with the actual billing API key and <code class="docutils literal notranslate"><span class="pre">your_docker_image</span></code> with the name of your Docker image.</p>
+<p>Here’s what each part of the command does:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">run</span></code>: This is the command to start a new Docker container.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-e</span></code>: This option allows you to set environment variables. You can also use <code class="docutils literal notranslate"><span class="pre">--env</span></code> instead of <code class="docutils literal notranslate"><span class="pre">-e</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">BILLING_API_KEY=your_api_key_here</span></code>: This sets the <code class="docutils literal notranslate"><span class="pre">BILLING_API_KEY</span></code> environment variable to your actual API key.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-d</span></code>: This option starts the Docker container in detached mode, which means it runs in the background.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">your_docker_image</span></code>: This is the name of your Docker image. You replace this with the actual name of your Docker image.</p></li>
+</ul>
+<p>Instead of using “plain” Docker we recommed to use our <a class="reference external" href="https://dev.konfuzio.com/web/on_premises.html#quick-start-via-kubernetes-and-helm">Helm Chart</a> or <a class="reference external" href="https://dev.konfuzio.com/web/on_premises.html#quick-start-via-docker-compose">Docker-Compose</a> to install Konfuzio Server.
+For Docker-Compose you can simply replace the BILLING_API_KEY placeholder in the <a class="reference external" href="https://dev.konfuzio.com/_static/docker-compose.yml">docker-compose.yaml</a> file.
+When using Helm, the BILLING_API_KEY is set as ‘envs.BILLING_API_KEY’ in the <a class="reference external" href="https://git.konfuzio.com/shared/charts/-/edit/master/values.yaml#L4">values.yaml</a> file.</p>
+<p>Konfuzio Container continues to report usage to our billing server, i.e., app.konfuzio.com, once a day. We assure you that the containers do not transmit any customer data, such as the image or text that’s being analyzed, to the billing server.</p>
+</section>
+<section id="important-updates">
+<h3>Important Updates<a class="headerlink" href="#important-updates" title="Permalink to this headline">¶</a></h3>
+<p>If the unique key associated with the Contract on app.konfuzio.com is removed, your self-hosted installation will cease to function within 24 hours. Currently, there is no limit on the number of pages that can be processed within this time. The Konfuzio Server will also refuse to start if any Python file within the container has been modified to preserve the integrity of our license checks.</p>
+</section>
+<section id="technical-background">
+<h3>Technical Background<a class="headerlink" href="#technical-background" title="Permalink to this headline">¶</a></h3>
+<p>Our server restarts itself after 500 requests by default. The code that prevents changes to Python files in the container has been obfuscated to ensure a significant challenge for anyone attempting to modify the source code.</p>
+</section>
+<section id="air-gapped-environments-and-upcoming-changes">
+<h3>Air-gapped Environments and Upcoming Changes<a class="headerlink" href="#air-gapped-environments-and-upcoming-changes" title="Permalink to this headline">¶</a></h3>
+<p>For those operating the Konfuzio Server in air-gapped environments, your Konfuzio Docker images are licensed to operate for one year, based on the release date, without needing to connect to our billing server.</p>
+<p>Soon, however, we will be introducing changes to our license check mechanism. The entire license check will be deactivated if a BILLING_API_KEY is not set. We are currently notifying self-hosted users about this upcoming change, urging them to configure their billing credentials. For more information, please refer to the Billing and License section in our documentation.</p>
+<p>For users requiring further instructions, especially those operating in air-gapped environments, please <a class="reference external" href="https://konfuzio.com/support">contact us</a> for assistance.</p>
+<p>We appreciate your understanding and cooperation as we continue to enhance our security, licensing, and billing measures for all self-hosted installations of the Konfuzio Server.</p>
+</section>
 </section>
 <section id="kubernetes">
 <h2>Kubernetes<a class="headerlink" href="#kubernetes" title="Permalink to this headline">¶</a></h2>
@@ -1046,7 +1085,7 @@ A commonly chosen provider is <a class="reference external" href="https://www.ke
 <span class="n">konfuzio_sdk</span> <span class="n">export_project</span> <span class="o">&lt;</span><span class="n">PROJECT_ID</span><span class="o">&gt;</span>
 </pre></div>
 </div>
-<p>The export will be saved in a folder with the name <a href="#id10"><span class="problematic" id="id11">data_</span></a><span class="raw-html-m2r"><project_id></span>. This folder needs to be transferred to the target system
+<p>The export will be saved in a folder with the name <a href="#id13"><span class="problematic" id="id14">data_</span></a><span class="raw-html-m2r"><project_id></span>. This folder needs to be transferred to the target system
 The first argument is the path to the export folder, the second is the project name of the imported project on the target system.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">manage</span><span class="o">.</span><span class="n">py</span> <span class="n">project_import</span> <span class="s2">&quot;/konfuzio-target-system/data_123/&quot;</span> <span class="s2">&quot;NewProjectName&quot;</span>
 </pre></div>
@@ -1094,7 +1133,7 @@ The first argument is the path to the export folder, the second is the project n
 </tr>
 </tbody>
 </table>
-<p><a href="#id4"><span class="problematic" id="id5">*</span></a>If you use <a class="reference external" href="/web/on_premises.html#kubernetes">Kubernetes Deployment</a> you can choose the ‘in-Cluster’ option for Postgres, Redis and S3-Storage.</p>
+<p><a href="#id7"><span class="problematic" id="id8">*</span></a>If you use <a class="reference external" href="/web/on_premises.html#kubernetes">Kubernetes Deployment</a> you can choose the ‘in-Cluster’ option for Postgres, Redis and S3-Storage.</p>
 </section>
 <section id="usage-of-postgresql">
 <h3>Usage of PostgreSQL<a class="headerlink" href="#usage-of-postgresql" title="Permalink to this headline">¶</a></h3>
@@ -1150,8 +1189,8 @@ The first argument is the path to the export folder, the second is the project n
 </table>
 <!-- This table was created by running select data_type, count(*) from information_schema.columns where table_schema = 'public'  group by data_type ; --></section>
 </section>
-<section id="id7">
-<h2>Environment Variables<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h2>
+<section id="id10">
+<h2>Environment Variables<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h2>
 <section id="environment-variables-for-konfuzio-server">
 <h3>Environment Variables for Konfuzio Server<a class="headerlink" href="#environment-variables-for-konfuzio-server" title="Permalink to this headline">¶</a></h3>
 <section id="general-settings">
@@ -1221,15 +1260,15 @@ Set to 0 for no limit, but beware of timeouts as the CSV files are exported sync
 <a class="reference external" href="https://github.com/Kikobeats/free-email-domains/blob/master/domains.json">the blocklist</a>.</p>
 <p><em>Type: boolean</em></p>
 </section>
-<section id="id8">
-<h5>DETECTRON_URL<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h5>
+<section id="id11">
+<h5>DETECTRON_URL<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h5>
 <p>Default: None</p>
 <p>This is used to connect to the optional <a class="reference external" href="/web/on_premises.html#optional-9-install-document-segmentation-container">Document Layout Analysis Container</a>. This is a URL in the form of ‘<a class="reference external" href="http://detectron-service:8181/predict">http://detectron-service:8181/predict</a>’.
 You might need to adjust the detectron-service to your service name or IP.</p>
 <p><em>Type: string</em></p>
 </section>
-<section id="id9">
-<h5>SUMMARIZATION_URL<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h5>
+<section id="id12">
+<h5>SUMMARIZATION_URL<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h5>
 <p>Default: None</p>
 <p>This is used to connect to the optional <a class="reference external" href="/web/on_premises.html#optional-10-install-document-summarization-container">summarization container</a>. This is a URL in the form of ‘<a class="reference external" href="http://summarization-service:8181/predict">http://summarization-service:8181/predict</a>’.
 You might need to adjust the summarization-service to your service name or IP.</p>
