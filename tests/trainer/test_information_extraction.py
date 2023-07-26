@@ -1380,7 +1380,7 @@ class TestCustomExtractionAI(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Set up toy Custom ExtractionAI."""
-        cls.project = LocalTextProject()
+        cls.project = LocalTextProject(credentials={'TEST_KEY': 'TEST VALUE'})
         cls.category = cls.project.get_category_by_id(1)
         cls.sample_document = cls.project.local_none_document
         cls.pipeline = ToyCustomExtractionAI(category=cls.category)
@@ -1397,6 +1397,8 @@ class TestCustomExtractionAI(unittest.TestCase):
         """Test loading and running the saved model."""
         is_file(self.pipeline.pipeline_path, raise_exception=True)
         loaded_pipeline = ToyCustomExtractionAI.load_model(self.pipeline.pipeline_path)
+        # Test that previously provided credentials are not stored in the pickle
+        assert loaded_pipeline.project.credentials == {}
         assert loaded_pipeline.category == self.category
         empty_doc = loaded_pipeline.extract(self.sample_document)
         assert len(empty_doc.annotations(use_correct=False)) == 0
