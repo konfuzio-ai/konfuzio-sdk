@@ -1,4 +1,5 @@
 """Test Document Categorization code examples from the documentation."""
+import os
 import pytest
 
 from konfuzio_sdk.settings_importer import is_dependency_installed
@@ -164,3 +165,4 @@ def test_model_based_categorization():
     TextModel.LSTM
     TextModel.BERT
     # End Models
+    os.remove(pickle_ai_path)
