@@ -606,6 +606,7 @@ class Bbox:
     @classmethod
     def from_image_size(cls, x0, x1, y0, y1, page: Page) -> 'Bbox':
         """Create Bbox from the image dimensions based result to the scale of the characters Bboxes of the Document.
+
         Transform the Bbox coordinates from a top-down y-axis & left-right x-axis & image-scaled system
         to a bottom-up y-axis & left-right x-axis & page-scaled system.
 
