@@ -11,7 +11,6 @@ from konfuzio_sdk.utils import (
     get_spans_from_bbox,
     detectron_get_paragraph_bboxes,
 )
-from konfuzio_sdk.api import get_results_from_segmentation
 
 logger = logging.getLogger(__name__)
 
