@@ -262,7 +262,7 @@ class Page(Data):
     def text(self):
         """Get Document text corresponding to the Page."""
         doc_text = self.document.text
-        page_text = self.document.text[self.start_offset : self.end_offset]
+        page_text = self.document.text[self.start_offset: self.end_offset]
         if doc_text.split('\f')[self.index] != page_text:
             raise IndexError(f'{self} text offsets do not match Document text.')
         return page_text
@@ -606,6 +606,8 @@ class Bbox:
     @classmethod
     def from_image_size(cls, x0, x1, y0, y1, page: Page) -> 'Bbox':
         """Create Bbox from the image dimensions based result to the scale of the characters Bboxes of the Document.
+        Transform the Bbox coordinates from a top-down y-axis & left-right x-axis & image-scaled system
+        to a bottom-up y-axis & left-right x-axis & page-scaled system.
 
         :return: Bbox with the rescaled dimensions.
         """
@@ -615,8 +617,8 @@ class Bbox:
 
         temp_y0 = (image_height - y0) * factor_y
         temp_y1 = (image_height - y1) * factor_y
-        y0 = temp_y1
-        y1 = temp_y0
+        y0 = temp_y0
+        y1 = temp_y1
         x0 = x0 * factor_x
         x1 = x1 * factor_x
 
@@ -706,7 +708,7 @@ class AnnotationSet(Data):
         """Calculate starting line of this Annotation Set."""
         if self.start_offset is None:
             return None
-        return self.document.text[0 : self.start_offset].count('\n')
+        return self.document.text[0: self.start_offset].count('\n')
 
     @property
     def end_offset(self) -> Optional[int]:
@@ -720,7 +722,7 @@ class AnnotationSet(Data):
         """Calculate ending line of this Annotation Set."""
         if self.end_offset is None:
             return None
-        return self.document.text[0 : self.end_offset].count('\n')
+        return self.document.text[0: self.end_offset].count('\n')
 
 
 class LabelSet(Data):
@@ -1284,7 +1286,7 @@ class Label(Data):
                     ):
                         if before_span.annotation.label is self.project.no_label:
                             to_rep_offset_string = before_span.annotation.document.text[
-                                max(before_start_offset, before_span.start_offset) : before_span.end_offset
+                                max(before_start_offset, before_span.start_offset): before_span.end_offset
                             ]
                             before_regex += suggest_regex_for_string(to_rep_offset_string, replace_characters=True)
                         else:
@@ -1300,7 +1302,7 @@ class Label(Data):
                     ):
                         if after_span.annotation.label is self.project.no_label:
                             to_rep_offset_string = after_span.annotation.document.text[
-                                after_span.start_offset : min(after_end_offset, after_span.end_offset)
+                                after_span.start_offset: min(after_end_offset, after_span.end_offset)
                             ]
                             after_regex += suggest_regex_for_string(to_rep_offset_string, replace_characters=True)
                         else:
@@ -1852,7 +1854,7 @@ class Span(Data):
     def offset_string(self) -> Union[str, None]:
         """Calculate the offset string of a Span."""
         if self.document and self.document.text:
-            return self.document.text[self.start_offset : self.end_offset]
+            return self.document.text[self.start_offset: self.end_offset]
         else:
             return None
 
@@ -3035,7 +3037,7 @@ class Document(Data):
 
             for missing in missings:
                 new_spans = []
-                offset_text = self.text[missing.start : missing.stop]
+                offset_text = self.text[missing.start: missing.stop]
                 # we split Spans which span multiple lines, so that one Span comprises one line
                 offset_of_offset = 0
                 line_breaks = [
@@ -3642,9 +3644,9 @@ class Document(Data):
         :returns: A new sub-Document.
         """
         if include:
-            pages_text = self.text[start_page.start_offset : end_page.end_offset]
+            pages_text = self.text[start_page.start_offset: end_page.end_offset]
         else:
-            pages_text = self.text[start_page.start_offset : end_page.start_offset]
+            pages_text = self.text[start_page.start_offset: end_page.start_offset]
         new_doc = Document(project=self.project, id_=None, text=pages_text, category=self.category)
         i = 1
         start_offset = 0
