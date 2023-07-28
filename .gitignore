@@ -11,3 +11,7 @@ settings.py
 *.tar.gz
 *data_*
 *.ipynb*
+dist
+build
+.vscode
+tests/example_project_data
