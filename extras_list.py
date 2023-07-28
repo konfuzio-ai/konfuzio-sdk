@@ -20,9 +20,9 @@ EXTRAS = {
         'chardet==5.1.0',
         'pydantic==1.10.8',  # pydantic is used by spacy. We need to force a higher pydantic version to avoid
         # https://github.com/tiangolo/fastapi/issues/5048
-        'torch>=1.8',
-        'torchvision>=0.9',
-        'transformers>=4.21.2',
+        'torch==1.8.1',
+        'torchvision==0.9.1',
+        'transformers==4.30.2',
         'tensorflow-cpu==2.12.0',
         'timm==0.6.7',
         'spacy>=2.3.5',

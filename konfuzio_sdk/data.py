@@ -4116,6 +4116,7 @@ class Project(Data):
             value = self.credentials[key]
         else:
             from .settings_importer import config
+
             value = config(key, default=None)
         if not value:
             logger.warning(f'No value found for {key} in {self}.')
