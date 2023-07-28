@@ -965,7 +965,9 @@ class CategorizationAI(AbstractCategorizationAI):
         Note: "path" is a deprecated parameter, "output_dir" is used for the sake of uniformity across all AIs.
 
         :param output_dir: A path to save the model to.
+        :type output_dir: str
         :param reduce_weight: Reduces the weight of a model by removing Documents and reducing weight of a Tokenizer.
+        :type reduce_weight: bool
         """
         if 'path' in kwargs:
             raise ValueError("'path' is a deprecated argument. Use 'output_dir' to specify the path to save the model.")
