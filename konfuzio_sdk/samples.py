@@ -7,9 +7,9 @@ class LocalTextProject(Project):
 
     local_training_document: Document = None
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         """Create basic structure of a Project."""
-        super().__init__(id_=None)
+        super().__init__(id_=None, *args, **kwargs)
         self.set_offline()
         category = Category(project=self, id_=1, name="CategoryName")
         default_label_set = LabelSet(id_=1, project=self, name="CategoryName", categories=[category])
