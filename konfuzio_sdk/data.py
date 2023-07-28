@@ -4108,15 +4108,18 @@ class Project(Data):
         """
         Return the value of the key in the credentials dict or in the config file.
 
-        Returns None if the key is not found.
+        Returns None and emits a warning if the key is not found.
 
         :param key: Key of the credential to get.
         """
         if key in self.credentials:
-            return self.credentials[key]
+            value = self.credentials[key]
         else:
             from .settings_importer import config
-            return config(key, default=None)
+            value = config(key, default=None)
+        if not value:
+            logger.warning(f'No value found for {key} in {self}.')
+        return value
 
     def delete(self):
         """Delete the Project folder."""
