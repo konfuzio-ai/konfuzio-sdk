@@ -951,7 +951,7 @@ class CategorizationAI(AbstractCategorizationAI):
         self.device = torch.device('cuda' if (torch.cuda.is_available() and use_cuda) else 'cpu')
         self.train_transforms = None
 
-    def save(self, path: Union[None, str] = None, tmp_path: Union[None, str] = None, reduce_weight: bool = True) -> str:
+    def save(self, output_dir: Union[None, str] = None, reduce_weight: bool = True, **kwargs) -> str:
         """
         Save only the necessary parts of the model for extraction/inference.
 
@@ -961,7 +961,11 @@ class CategorizationAI(AbstractCategorizationAI):
         - vocabs (to ensure the tokens/labels are mapped to the same integers as training)
         - configs (to ensure we load the same models used in training)
         - state_dicts (the classifier parameters achieved through training)
+
+        Note: "path" is a deprecated parameter, "output_dir" is used for the sake of uniformity across all AIs.
         """
+        if 'path' in kwargs:
+            raise ValueError("'path' is a deprecated argument. Use 'output_dir' to specify the path to save the model.")
         if reduce_weight:
             self.reduce_model_weight()
 
@@ -983,30 +987,30 @@ class CategorizationAI(AbstractCategorizationAI):
 
         # tmp_path is needed for saving an intermediate .pt file that later will be compressed with lz4 and deleted
 
-        if not path:
-            path = os.path.join(
+        if not output_dir:
+            output_dir = os.path.join(
                 self.categories[0].project.project_folder,
                 'models',
                 f'{get_timestamp()}_{self.name_lower()}_{self.project.id_}.pt.lz4',
             )
-            tmp_path = os.path.join(
+            tmp_output_dir = os.path.join(
                 self.categories[0].project.project_folder,
                 'models',
                 f'{get_timestamp()}_{self.name_lower()}_{self.project.id_}_tmp.pt',
             )
         else:
-            tmp_path = path.split('.')[0] + '_tmp.pt'
+            tmp_output_dir = output_dir.split('.')[0] + '_tmp.pt'
 
-        logger.info(f'Saving model of type Categorization AI in {path}')
+        logger.info(f'Saving model of type Categorization AI in {output_dir}')
 
         # save all necessary model data
-        torch.save(data_to_save, tmp_path)
-        with open(tmp_path, 'rb') as f_in:
-            with open(path, 'wb') as f_out:
+        torch.save(data_to_save, tmp_output_dir)
+        with open(tmp_output_dir, 'rb') as f_in:
+            with open(output_dir, 'wb') as f_out:
                 compressed = lz4.frame.compress(f_in.read())
                 f_out.write(compressed)
-        self.pipeline_path = path
-        os.remove(tmp_path)
+        self.pipeline_path = output_dir
+        os.remove(tmp_output_dir)
         return self.pipeline_path
 
     def build_preprocessing_pipeline(self, use_image: bool, image_augmentation=None, image_preprocessing=None) -> None:
@@ -1016,7 +1020,7 @@ class CategorizationAI(AbstractCategorizationAI):
         if image_preprocessing is None:
             image_preprocessing = {'target_size': (1000, 1000), 'grayscale': True}
 
-        # if we are using an image model in our classifier then we need to set-up the
+        # if we are using an image model in our classifier then we need to set up the
         # pre-processing and data augmentation for the images
         if use_image:
             self.image_preprocessing = image_preprocessing
