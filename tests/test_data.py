@@ -846,6 +846,17 @@ class TestOfflineDataSetup(unittest.TestCase):
         for category in self.project.categories:
             assert self.project.no_label_set in category.project.label_sets
 
+    def test_project_credentials(self):
+        """Test that a Project can be initialized with credentials and they are stored as an attribute."""
+        assert hasattr(self.project, 'credentials')
+        assert self.project.credentials == {}
+        credentials = {'EXAMPLE_KEY_1': 'EXAMPLE_VALUE_1', 'EXAMPLE_KEY_2': 'EXAMPLE_VALUE_2'}
+        project = Project(id_=None, credentials=credentials)
+        assert project.credentials == credentials
+        assert project.get_credentials('EXAMPLE_KEY_1') == 'EXAMPLE_VALUE_1'
+        assert project.get_credentials('EXAMPLE_KEY_2') == 'EXAMPLE_VALUE_2'
+        assert project.get_credentials('EXAMPLE_NONEXISTING_KEY') is None
+
     def test_document_no_label_annotation_set_label_set(self):
         """Test that Label Set of the no_label_annotation_set of the Document has the no_label_set of the Project."""
         assert self.document.no_label_annotation_set.label_set == self.project.no_label_set
@@ -1773,7 +1784,7 @@ class TestOfflineDataSetup(unittest.TestCase):
 
         # Add annotation for the first time
         span = Span(start_offset=1, end_offset=2)
-        with pytest.raises(ValueError, match="where the Сategory is"):
+        with pytest.raises(ValueError, match="where the Category is"):
             _ = Annotation(
                 document=document,
                 is_correct=True,
@@ -2345,6 +2356,14 @@ class TestKonfuzioDataSetup(unittest.TestCase):
             'Steuer',
             'Verdiensibescheinigung',
         ]
+
+    def test_label_spans(self):
+        """Test get Label Spans in the Project."""
+        category = self.prj.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID)
+        label = self.prj.get_label_by_name('Austellungsdatum')
+
+        assert len(label.annotations(categories=[category])) == 24
+        assert len(label.spans(categories=[category])) == 25
 
     def test_get_images(self):
         """Test get paths to the images of the first Training Document."""

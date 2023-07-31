@@ -1108,6 +1108,14 @@ class Label(Data):
 
         return annotations
 
+    def spans(self, categories: List[Category], use_correct=True, ignore_below_threshold=False) -> List['Span']:
+        """Return all Spans belonging to an Annotation of this Label."""
+        annotations = self.annotations(
+            categories=categories, use_correct=use_correct, ignore_below_threshold=ignore_below_threshold
+        )
+        spans = [span for annotation in annotations for span in annotation.spans]
+        return spans
+
     def has_multiline_annotations(self, categories: List[Category] = None) -> bool:
         """Return if any Label annotations are multi-line."""
         if categories is None and self._has_multiline_annotations is None:
@@ -1175,7 +1183,7 @@ class Label(Data):
             annotation_precision = 0
 
         try:
-            annotation_recall = total_correct_findings / len(self.annotations(categories=[category]))
+            annotation_recall = total_correct_findings / len(self.spans(categories=[category]))
         except ZeroDivisionError:
             annotation_recall = 0
 
@@ -1188,6 +1196,11 @@ class Label(Data):
             f_score = 2 * (annotation_precision * annotation_recall) / (annotation_precision + annotation_recall)
         except ZeroDivisionError:
             f_score = 0
+
+        assert 0 <= annotation_precision <= 1
+        assert 0 <= annotation_recall <= 1
+        assert 0 <= document_recall <= 1
+        assert 0 <= f_score <= 1
 
         if documents:
             evaluation = {
@@ -1684,7 +1697,7 @@ class Span(Data):
         details see https://dev.konfuzio.com/sdk/tutorials/data_validation/index.html
         """
         if self.end_offset == self.start_offset == 0:
-            logger.error(f"{self} is intentionally left empty.")
+            logger.warning(f"{self} is intentionally left empty.")
         elif self.start_offset < 0 or self.end_offset < 0:
             exception_or_log_error(
                 msg=f"{self} must span text.",
@@ -1908,7 +1921,7 @@ class Span(Data):
                 "label_set_id": self.annotation.label_set.id_,
                 "annotation_id": self.annotation.id_,
                 "annotation_set_id": self.annotation.annotation_set.id_,
-                "document_id": self.document.id_,
+                "document_id": self.document.id_ if self.document.id_ else self.document.copy_of_id,
                 "document_id_local": self.document.id_local,
                 "category_id": self.document.category.id_,
                 "line_index": self.line_index,
@@ -3221,7 +3234,7 @@ class Document(Data):
                 if annotation.label is self.project.no_label and annotation.label_set is self.project.no_label_set:
                     self._annotations.append(annotation)
                 else:
-                    raise ValueError(f'We cannot add {annotation} to {self} where the Сategory is {self.category}')
+                    raise ValueError(f'We cannot add {annotation} to {self} where the Category is {self.category}')
         else:
             exception_or_log_error(
                 msg=f'In {self} the {annotation} is a duplicate of {duplicated} and will not be added.',
@@ -3517,14 +3530,14 @@ class Document(Data):
 
         label_annotations = self.annotations(label=label)
 
-        label_annotations_offsets = {
+        label_spans_offsets = {
             (span.start_offset, span.end_offset): ann for ann in label_annotations for span in ann.spans
         }
 
         for finding in findings_in_document:
             key = (finding['start_offset'], finding['end_offset'])
-            if key in label_annotations_offsets:
-                correct_findings.append(label_annotations_offsets[key])
+            if key in label_spans_offsets:
+                correct_findings.append(label_spans_offsets[key])
 
         try:
             annotation_precision = len(correct_findings) / len(findings_in_document)
@@ -3532,7 +3545,7 @@ class Document(Data):
             annotation_precision = 0
 
         try:
-            annotation_recall = len(correct_findings) / len(label_annotations)
+            annotation_recall = len(correct_findings) / len(label_spans_offsets)
         except ZeroDivisionError:
             annotation_recall = 0
 
@@ -3540,6 +3553,11 @@ class Document(Data):
             f1_score = 2 * (annotation_precision * annotation_recall) / (annotation_precision + annotation_recall)
         except ZeroDivisionError:
             f1_score = 0
+
+        assert 0 <= annotation_precision <= 1
+        assert 0 <= annotation_recall <= 1
+        assert 0 <= f1_score <= 1
+
         return {
             'id': self.id_local,
             'regex': regex,
@@ -3693,6 +3711,7 @@ class Project(Data):
         update=False,
         max_ram=None,
         strict_data_validation: bool = True,
+        credentials: dict = {},
         **kwargs,
     ):
         """
@@ -3703,6 +3722,7 @@ class Project(Data):
         :param update: Whether to sync local files with the Project online.
         :param max_ram: Maximum RAM used by AI models trained on this Project.
         :param strict_data_validation: Whether to apply strict data validation rules.
+        :param credentials: A dict of key/values that are available in the Project.
         See https://dev.konfuzio.com/sdk/tutorials/data_validation/index.html
         """
         self.id_local = next(Data.id_iter)
@@ -3717,6 +3737,7 @@ class Project(Data):
         self._meta_data = []
         self._max_ram = max_ram
         self._strict_data_validation = strict_data_validation
+        self.credentials = credentials
 
         # paths
         self.meta_file_path = os.path.join(self.project_folder, "documents_meta.json5")
@@ -4093,6 +4114,23 @@ class Project(Data):
                 return category
         raise IndexError(f'Category id {id_} was not found in {self}.')
 
+    def get_credentials(self, key):
+        """
+        Return the value of the key in the credentials dict or in the config file.
+
+        Returns None and emits a warning if the key is not found.
+
+        :param key: Key of the credential to get.
+        """
+        if key in self.credentials:
+            value = self.credentials[key]
+        else:
+            from .settings_importer import config
+            value = config(key, default=None)
+        if not value:
+            logger.warning(f'No value found for {key} in {self}.')
+        return value
+
     def delete(self):
         """Delete the Project folder."""
         shutil.rmtree(self.project_folder)
@@ -4115,8 +4153,8 @@ def download_training_and_test_data(id_: int):
     """
     Migrate your Project to another HOST.
 
-    See https://help.konfuzio.com/integrations/migration-between-konfuzio-server-instances/index.html
-        #migrate-projects-between-konfuzio-server-instances
+    See https://dev.konfuzio.com/web/migration-between-konfuzio-server-instances/index.html
+
     """
     prj = Project(id_=id_, update=True)
 

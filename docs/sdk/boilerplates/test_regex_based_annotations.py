@@ -8,7 +8,7 @@ def test_regex_based_annotations():
     YOUR_PROJECT_ID = TEST_PROJECT_ID
     # start imports
     import re
-    from konfuzio_sdk.data import Project, Annotation, Span
+    from konfuzio_sdk.data import Project, Annotation, Span, AnnotationSet
 
     my_project = Project(id_=YOUR_PROJECT_ID)
     # end imports
@@ -38,12 +38,23 @@ def test_regex_based_annotations():
     # Create Annotation for each match
     for offsets in matches_locations:
         span = Span(start_offset=offsets[0], end_offset=offsets[1])
+        annotation_set = AnnotationSet(document=document, label_set=label_set)
+        # note that no Annotation can exist outside the Annotation Set and every Annotation Set has to contain at least
+        # one Annotation
         annotation_obj = Annotation(
-            document=document, label=my_label, label_set=label_set, confidence=1.0, spans=[span], is_correct=True
+            document=document,
+            annotation_set=annotation_set,
+            label=my_label,
+            label_set=label_set,
+            confidence=1.0,
+            spans=[span],
+            is_correct=True,
         )
+        # ensure that the Annotation is saved online
         new_annotation_added = annotation_obj.save()
         if new_annotation_added:
             new_annotations_links.append(annotation_obj.get_link())
+        # if you want to remove the Annotation and ensure it's deleted online, you can use the following:
         annotation_obj.delete(delete_online=True)
 
     print(new_annotations_links)
