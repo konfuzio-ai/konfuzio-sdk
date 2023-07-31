@@ -1009,7 +1009,7 @@ class CategorizationAI(AbstractCategorizationAI):
         # make sure output dir exists
         pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
 
-        # temp_pt_file_path is needed to save an intermediate .pt file that later will be compressed and deleted
+        # temp_pt_file_path is needed to save an intermediate .pt file that later will be compressed and deleted.
         temp_pt_file_path = self.temp_pt_file_path
         compressed_file_path = self.compressed_file_path
 
