@@ -247,6 +247,8 @@ class BaseModel(metaclass=abc.ABCMeta):
 
         if hasattr(self, 'remove_dependencies'):
             self.remove_dependencies()
+        if hasattr(self, 'client'):
+            self.client = None
 
         logger.info('Saving model with cloudpickle')
         # first save with cloudpickle

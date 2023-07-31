@@ -9,6 +9,7 @@ import lz4.frame
 import os
 import math
 import logging
+import pathlib
 import tempfile
 import uuid
 from copy import deepcopy
@@ -951,6 +952,34 @@ class CategorizationAI(AbstractCategorizationAI):
         self.device = torch.device('cuda' if (torch.cuda.is_available() and use_cuda) else 'cpu')
         self.train_transforms = None
 
+    @property
+    def temp_pt_file_path(self) -> str:
+        """
+        Generate a path for s temporary model file in .pt format.
+
+        :returns: A string with the path.
+        """
+        temp_pt_file_path = os.path.join(
+            self.categories[0].project.project_folder,
+            'models',
+            f'{get_timestamp()}_{self.name_lower()}_{self.project.id_}_tmp.pt',
+        )
+        return temp_pt_file_path
+
+    @property
+    def compressed_file_path(self) -> str:
+        """
+        Generate a path for a resulting compressed file in .lz4 format.
+
+        :returns: A string with the path.
+        """
+        output_dir = os.path.join(
+            self.categories[0].project.project_folder,
+            'models',
+            f'{get_timestamp()}_{self.name_lower()}_{self.project.id_}.pt.lz4',
+        )
+        return output_dir
+
     def save(self, output_dir: Union[None, str] = None, reduce_weight: bool = True, **kwargs) -> str:
         """
         Save only the necessary parts of the model for extraction/inference.
@@ -974,6 +1003,16 @@ class CategorizationAI(AbstractCategorizationAI):
         if reduce_weight:
             self.reduce_model_weight()
 
+        if not output_dir:
+            output_dir = self.project.model_folder
+
+        # make sure output dir exists
+        pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
+
+        # temp_pt_file_path is needed to save an intermediate .pt file that later will be compressed and deleted
+        temp_pt_file_path = self.temp_pt_file_path
+        compressed_file_path = self.compressed_file_path
+
         # create dictionary to save all necessary model data
         data_to_save = {
             'tokenizer': self.tokenizer,
@@ -990,32 +1029,16 @@ class CategorizationAI(AbstractCategorizationAI):
         # Save only the necessary parts of the model for extraction/inference.
         # if no path is given then we use a default path and filename
 
-        # tmp_path is needed for saving an intermediate .pt file that later will be compressed with lz4 and deleted
-
-        if not output_dir:
-            output_dir = os.path.join(
-                self.categories[0].project.project_folder,
-                'models',
-                f'{get_timestamp()}_{self.name_lower()}_{self.project.id_}.pt.lz4',
-            )
-            tmp_output_dir = os.path.join(
-                self.categories[0].project.project_folder,
-                'models',
-                f'{get_timestamp()}_{self.name_lower()}_{self.project.id_}_tmp.pt',
-            )
-        else:
-            tmp_output_dir = output_dir.split('.')[0] + '_tmp.pt'
-
-        logger.info(f'Saving model of type Categorization AI in {output_dir}')
+        logger.info(f'Saving model of type Categorization AI in {compressed_file_path}')
 
         # save all necessary model data
-        torch.save(data_to_save, tmp_output_dir)
-        with open(tmp_output_dir, 'rb') as f_in:
-            with open(output_dir, 'wb') as f_out:
+        torch.save(data_to_save, temp_pt_file_path)
+        with open(temp_pt_file_path, 'rb') as f_in:
+            with open(compressed_file_path, 'wb') as f_out:
                 compressed = lz4.frame.compress(f_in.read())
                 f_out.write(compressed)
-        self.pipeline_path = output_dir
-        os.remove(tmp_output_dir)
+        self.pipeline_path = compressed_file_path
+        os.remove(temp_pt_file_path)
         return self.pipeline_path
 
     def build_preprocessing_pipeline(self, use_image: bool, image_augmentation=None, image_preprocessing=None) -> None:
