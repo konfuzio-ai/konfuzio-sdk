@@ -607,8 +607,11 @@ class Bbox:
     def from_image_size(cls, x0, x1, y0, y1, page: Page) -> 'Bbox':
         """Create Bbox from the image dimensions based result to the scale of the characters Bboxes of the Document.
 
-        Transform the Bbox coordinates from a top-down y-axis & left-right x-axis & image-scaled system
-        to a bottom-up y-axis & left-right x-axis & page-scaled system.
+        Compute the coordinates of the bottom-left and the top-right corners in
+        a (down-to-up y-axis, left-right x-axis, page-scaled system).
+
+        :param: (x0,y0) and (x1,y1) are the coordniates of resp. the top-left and the bottom-right corners
+        in a (up-to-down y-axis, left-right x-axis, image-scaled) system.
 
         :return: Bbox with the rescaled dimensions.
         """
@@ -618,8 +621,8 @@ class Bbox:
 
         temp_y0 = (image_height - y0) * factor_y
         temp_y1 = (image_height - y1) * factor_y
-        y0 = temp_y0
-        y1 = temp_y1
+        y0 = temp_y1
+        y1 = temp_y0
         x0 = x0 * factor_x
         x1 = x1 * factor_x
 
@@ -4119,6 +4122,7 @@ class Project(Data):
             value = self.credentials[key]
         else:
             from .settings_importer import config
+
             value = config(key, default=None)
         if not value:
             logger.warning(f'No value found for {key} in {self}.')
