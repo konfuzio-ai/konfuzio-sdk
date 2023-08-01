@@ -858,6 +858,8 @@ class AbstractExtractionAI(BaseModel):
 
     def extract(self, document: Document) -> Document:
         """Perform preliminary extraction steps."""
+        logger.info(f"Starting extraction of {document}.")
+
         self.check_is_ready()  # check if the model is ready for extraction
 
         document = deepcopy(document)  # to get a Virtual Document with no Annotations
