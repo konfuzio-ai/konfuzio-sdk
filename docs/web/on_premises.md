@@ -40,27 +40,32 @@ When you purchase a Konfuzio Server self-hosted license online, we provide you w
 
 ### Setup Billing API 
 
-The BILLING_API_KEY needs to be passed as environment variables to the running Docker container.
+The `BILLING_API_KEY` needs to be passed as environment variable to the running Docker container. 
+This is inline with the fact that all configuration of Konfuzio is done via [environment variables](https://dev.konfuzio.com/web/on_premises.html#environment-variables-for-konfuzio-server).
 
-Here is an example command for setting the `BILLING_API_KEY` environment variable:
+Here is an example command to illustrate the setting of the `BILLING_API_KEY` environment variable:
 
-`docker run -e BILLING_API_KEY=your_api_key_here -d your_docker_image`
+```
+docker run -e BILLING_API_KEY=your_api_key_here -d your_docker_image
+```
 
 In the command above, replace `your_api_key_here` with the actual billing API key and `your_docker_image` with the name of your Docker image.
 
 Here's what each part of the command does:
 
 -   `docker run`: This is the command to start a new Docker container.
--   `-e`: This option allows you to set environment variables. You can also use `--env` instead of `-e`.
--   `BILLING_API_KEY=your_api_key_here`: This sets the `BILLING_API_KEY` environment variable to your actual API key.
+-   `-e`: This option allows you to set environment variables. You can also use "--env" instead of "-e".
+-   `BILLING_API_KEY=your_api_key_here`: This sets the "BILLING_API_KEY" environment variable to your actual API key.
 -   `-d`: This option starts the Docker container in detached mode, which means it runs in the background.
 -   `your_docker_image`: This is the name of your Docker image. You replace this with the actual name of your Docker image.
 
-Instead of using "plain" Docker we recommed to use our [Helm Chart](https://dev.konfuzio.com/web/on_premises.html#quick-start-via-kubernetes-and-helm) or [Docker-Compose](https://dev.konfuzio.com/web/on_premises.html#quick-start-via-docker-compose) to install Konfuzio Server. 
-For Docker-Compose you can simply replace the BILLING_API_KEY placeholder in the [docker-compose.yaml](https://dev.konfuzio.com/_static/docker-compose.yml) file.
-When using Helm, the BILLING_API_KEY is set as 'envs.BILLING_API_KEY' in the [values.yaml](https://git.konfuzio.com/shared/charts/-/edit/master/values.yaml#L4) file.
 
-Konfuzio Container continues to report usage to our billing server, i.e., app.konfuzio.com, once a day. We assure you that the containers do not transmit any customer data, such as the image or text that's being analyzed, to the billing server.
+Instead of using ["plain" Docker](https://dev.konfuzio.com/web/on_premises.html#docker-single-vm-setup) we recommend to use our [Helm Chart](https://dev.konfuzio.com/web/on_premises.html#quick-start-via-kubernetes-and-helm) or [Docker-Compose](https://dev.konfuzio.com/web/on_premises.html#quick-start-via-docker-compose) to install Konfuzio Server. 
+
+- For Docker-Compose you can simply replace the BILLING_API_KEY placeholder in the [docker-compose.yaml](https://dev.konfuzio.com/_static/docker-compose.yml) file.
+- When using Helm on Kubernetes, the BILLING_API_KEY is set as 'envs.BILLING_API_KEY' in the [values.yaml](https://git.konfuzio.com/shared/charts/-/edit/master/values.yaml#L4) file.
+
+The Konfuzio container continues to report usage to our billing server, i.e., app.konfuzio.com, once a day. We assure you that the containers do not transmit any customer data, such as the image or text that's being analyzed, to the billing server.
 
 ### Important Updates
 
@@ -580,8 +585,8 @@ Password: {PROVIDED_BY_KONFUZIO}
 
 ```
 docker login REGISTRY_URL  
-docker pull REGISTRY_URL/konfuzio/text-annotation/detectron2/main:released-2023-07-20_17-51-49
-docker run --env-file /path_to_env_file.env REGISTRY_URL/konfuzio/text-annotation/detectron2/main:released-2023-07-20_17-51-49 run.sh
+docker pull REGISTRY_URL/konfuzio/text-annotation/detectron2/main:released-2023-08-01_16-41-43
+docker run --env-file /path_to_env_file.env REGISTRY_URL/konfuzio/text-annotation/detectron2/main:released-2023-08-01_16-41-43 run.sh
 ```
 
 The "Document Layout Analysis Container" needs to be started with the following environment variables which you can enter into your .env file
