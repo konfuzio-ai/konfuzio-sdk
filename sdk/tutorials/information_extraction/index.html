@@ -137,32 +137,34 @@ Superuser rights and enable this setting in a <a class="reference external" href
 
 <span class="k">class</span> <span class="nc">CustomExtractionAI</span><span class="p">(</span><span class="n">AbstractExtractionAI</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">extract</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document</span><span class="p">:</span> <span class="n">Document</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Document</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">document</span><span class="o">.</span><span class="n">annotations</span><span class="p">(</span><span class="n">use_correct</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>  <span class="c1"># check if any Annotations exists</span>
-            <span class="k">return</span> <span class="n">document</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract regex matches for dates.&quot;&quot;&quot;</span>
+        <span class="c1"># call the parent method to get a Virtual Document with no Annotations and with the Category changed to the</span>
+        <span class="c1"># one saved within the Extraction AI</span>
+        <span class="n">document</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
+
+        <span class="c1"># define a Label Set that will contain Labels for Annotations your Extraction AI extracts</span>
+        <span class="n">label_set</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">get_label_set_by_id</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">document</span><span class="o">.</span><span class="n">category</span><span class="o">.</span><span class="n">id_</span><span class="p">)</span>
+        <span class="c1"># get or create a Label that will be used for annotating</span>
+        <span class="n">label_name</span> <span class="o">=</span> <span class="s1">&#39;Date&#39;</span>
+        <span class="k">if</span> <span class="n">label_name</span> <span class="ow">in</span> <span class="p">[</span><span class="n">label</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">document</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">labels</span><span class="p">]:</span>
+            <span class="n">label</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="n">label_name</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># define a Label Set that will contain Labels for Annotations your Extraction AI extracts</span>
-            <span class="n">label_set</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">get_label_set_by_id</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">document</span><span class="o">.</span><span class="n">category</span><span class="o">.</span><span class="n">id_</span><span class="p">)</span>
-            <span class="c1"># get or create a Label that will be used for annotating</span>
-            <span class="n">label_name</span> <span class="o">=</span> <span class="s1">&#39;Date&#39;</span>
-            <span class="k">if</span> <span class="n">label_name</span> <span class="ow">in</span> <span class="p">[</span><span class="n">label</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">document</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">labels</span><span class="p">]:</span>
-                <span class="n">label</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="n">label_name</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">label</span> <span class="o">=</span> <span class="n">Label</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">label_name</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span> <span class="n">label_sets</span><span class="o">=</span><span class="p">[</span><span class="n">label_set</span><span class="p">])</span>
-            <span class="k">for</span> <span class="n">re_match</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;(\d+/\d+/\d+)&#39;</span><span class="p">,</span> <span class="n">document</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">MULTILINE</span><span class="p">):</span>
-                <span class="n">span</span> <span class="o">=</span> <span class="n">Span</span><span class="p">(</span><span class="n">start_offset</span><span class="o">=</span><span class="n">re_match</span><span class="o">.</span><span class="n">span</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">end_offset</span><span class="o">=</span><span class="n">re_match</span><span class="o">.</span><span class="n">span</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span>
-                <span class="c1"># create Annotation Set for the Annotation. Note that every Annotation Set</span>
-                <span class="c1"># has to contain at least one Annotation, and Annotation always should be</span>
-                <span class="c1"># a part of an Annotation Set.</span>
-                <span class="n">annotation_set</span> <span class="o">=</span> <span class="n">AnnotationSet</span><span class="p">(</span><span class="n">document</span><span class="o">=</span><span class="n">document</span><span class="p">,</span> <span class="n">label_set</span><span class="o">=</span><span class="n">label_set</span><span class="p">)</span>
-                <span class="n">_</span> <span class="o">=</span> <span class="n">Annotation</span><span class="p">(</span>
-                    <span class="n">document</span><span class="o">=</span><span class="n">document</span><span class="p">,</span>
-                    <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span>
-                    <span class="n">annotation_set</span><span class="o">=</span><span class="n">annotation_set</span><span class="p">,</span>
-                    <span class="n">label_set</span><span class="o">=</span><span class="n">label_set</span><span class="p">,</span>
-                    <span class="n">confidence</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>  <span class="c1"># note that only the Annotations with confidence higher</span>
-                    <span class="c1"># than 10% will be shown in the extracted Document.</span>
-                    <span class="n">spans</span><span class="o">=</span><span class="p">[</span><span class="n">span</span><span class="p">],</span>
-                <span class="p">)</span>
+            <span class="n">label</span> <span class="o">=</span> <span class="n">Label</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">label_name</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span> <span class="n">label_sets</span><span class="o">=</span><span class="p">[</span><span class="n">label_set</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">re_match</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;(\d+/\d+/\d+)&#39;</span><span class="p">,</span> <span class="n">document</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">MULTILINE</span><span class="p">):</span>
+            <span class="n">span</span> <span class="o">=</span> <span class="n">Span</span><span class="p">(</span><span class="n">start_offset</span><span class="o">=</span><span class="n">re_match</span><span class="o">.</span><span class="n">span</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">end_offset</span><span class="o">=</span><span class="n">re_match</span><span class="o">.</span><span class="n">span</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="c1"># create Annotation Set for the Annotation. Note that every Annotation Set</span>
+            <span class="c1"># has to contain at least one Annotation, and Annotation always should be</span>
+            <span class="c1"># a part of an Annotation Set.</span>
+            <span class="n">annotation_set</span> <span class="o">=</span> <span class="n">AnnotationSet</span><span class="p">(</span><span class="n">document</span><span class="o">=</span><span class="n">document</span><span class="p">,</span> <span class="n">label_set</span><span class="o">=</span><span class="n">label_set</span><span class="p">)</span>
+            <span class="n">_</span> <span class="o">=</span> <span class="n">Annotation</span><span class="p">(</span>
+                <span class="n">document</span><span class="o">=</span><span class="n">document</span><span class="p">,</span>
+                <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span>
+                <span class="n">annotation_set</span><span class="o">=</span><span class="n">annotation_set</span><span class="p">,</span>
+                <span class="n">label_set</span><span class="o">=</span><span class="n">label_set</span><span class="p">,</span>
+                <span class="n">confidence</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>  <span class="c1"># note that only the Annotations with confidence higher</span>
+                <span class="c1"># than 10% will be shown in the extracted Document.</span>
+                <span class="n">spans</span><span class="o">=</span><span class="p">[</span><span class="n">span</span><span class="p">],</span>
+            <span class="p">)</span>
         <span class="k">return</span> <span class="n">document</span>
 
 </pre></div>
@@ -256,11 +258,7 @@ you can use in Konfuzio on-prem installations or in the <a class="reference exte
 <span class="sd">        :raises:</span>
 <span class="sd">        AttributeError: When missing a Tokenizer</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Starting extraction of </span><span class="si">{</span><span class="n">document</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">check_is_ready</span><span class="p">()</span>
-
-        <span class="n">inference_document</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
+        <span class="n">inference_document</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
 
         <span class="n">inference_document</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="n">inference_document</span><span class="p">)</span>
 
@@ -288,9 +286,7 @@ you can use in Konfuzio on-prem installations or in the <a class="reference exte
 Let’s go step by step.</p>
 <ol class="arabic">
 <li><p><strong>Imports</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
-
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">AbstractExtractionAI</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">AbstractExtractionAI</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.paragraph_and_sentence</span> <span class="kn">import</span> <span class="n">ParagraphTokenizer</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Category</span><span class="p">,</span> <span class="n">Document</span><span class="p">,</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Label</span>
 
@@ -346,11 +342,7 @@ object contains all the Labels and LabelSets that you need for your model. In ou
 <span class="sd">        :raises:</span>
 <span class="sd">        AttributeError: When missing a Tokenizer</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Starting extraction of </span><span class="si">{</span><span class="n">document</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">check_is_ready</span><span class="p">()</span>
-
-        <span class="n">inference_document</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
+        <span class="n">inference_document</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
 
         <span class="n">inference_document</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="n">inference_document</span><span class="p">)</span>
 
