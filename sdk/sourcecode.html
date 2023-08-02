@@ -258,6 +258,14 @@ For the default behaviour see <a class="reference external" href="https://dev.ko
 <dt class="sig sig-object py">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_image_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">page</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">konfuzio_sdk.data.Page</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">konfuzio_sdk.data.Bbox</span></span></span></dt>
 <dd><p>Create Bbox from the image dimensions based result to the scale of the characters Bboxes of the Document.</p>
+<p>Compute the coordinates of the bottom-left and the top-right corners in
+a (down-to-up y-axis, left-right x-axis, page-scaled system).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Param</dt>
+<dd class="field-odd"><p>(x0,y0) and (x1,y1) are the coordniates of resp. the top-left and the bottom-right corners</p>
+</dd>
+</dl>
+<p>in a (up-to-down y-axis, left-right x-axis, image-scaled) system.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>Bbox with the rescaled dimensions.</p>
