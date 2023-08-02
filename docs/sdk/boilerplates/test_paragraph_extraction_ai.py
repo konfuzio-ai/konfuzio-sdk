@@ -3,8 +3,6 @@ import logging
 import os
 
 # start imports
-from copy import deepcopy
-
 from konfuzio_sdk.trainer.information_extraction import AbstractExtractionAI
 from konfuzio_sdk.tokenizer.paragraph_and_sentence import ParagraphTokenizer
 from konfuzio_sdk.data import Category, Document, Project, Label
@@ -47,11 +45,7 @@ class ParagraphExtractionAI(AbstractExtractionAI):
         :raises:
         AttributeError: When missing a Tokenizer
         """
-        logger.info(f"Starting extraction of {document}.")
-
-        self.check_is_ready()
-
-        inference_document = deepcopy(document)
+        inference_document = super().extract(document)
 
         inference_document = self.tokenizer.tokenize(inference_document)
 

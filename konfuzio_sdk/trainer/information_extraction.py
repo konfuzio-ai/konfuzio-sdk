@@ -856,10 +856,19 @@ class AbstractExtractionAI(BaseModel):
         logger.warning(f'{self} does not evaluate results.')
         pass
 
-    def extract(self):
-        """Use as placeholder Function."""
-        logger.warning(f'{self} does not extract.')
-        pass
+    def extract(self, document: Document) -> Document:
+        """Perform preliminary extraction steps."""
+        logger.info(f"Starting extraction of {document}.")
+
+        self.check_is_ready()  # check if the model is ready for extraction
+
+        document = deepcopy(document)  # to get a Virtual Document with no Annotations
+
+        # So that the Document belongs to the Category that is saved with the ExtractionAI
+        document._category = self.project.no_category
+        document.set_category(self.category)
+
+        return document
 
     def extraction_result_to_document(self, document: Document, extraction_result: dict) -> Document:
         """Return a virtual Document annotated with AI Model output."""
@@ -1653,17 +1662,8 @@ class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
          NotFittedError: When CLF is not fitted
 
         """
-        logger.info(f"Starting extraction of {document}.")
-
-        self.check_is_ready()
-
-        # Main Logic -------------------------
-        # 1. start inference with new document
-        inference_document = deepcopy(document)
-
-        # In case document category was changed after RFExtractionAI training
-        inference_document._category = self.project.no_category
-        inference_document.set_category(self.category)
+        # 1. create Virtual inference Document with Category set to the Category of the ExtractionAI
+        inference_document = super().extract(document)
 
         # 2. tokenize
         self.tokenizer.tokenize(inference_document)

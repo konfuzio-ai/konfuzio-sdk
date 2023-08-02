@@ -11,32 +11,34 @@ def test_create_extraction_ai():
 
     class CustomExtractionAI(AbstractExtractionAI):
         def extract(self, document: Document) -> Document:
-            if document.annotations(use_correct=False):  # check if any Annotations exists
-                return document
+            """Extract regex matches for dates."""
+            # call the parent method to get a Virtual Document with no Annotations and with the Category changed to the
+            # one saved within the Extraction AI
+            document = super().extract(document)
+
+            # define a Label Set that will contain Labels for Annotations your Extraction AI extracts
+            label_set = document.project.get_label_set_by_id(id_=document.category.id_)
+            # get or create a Label that will be used for annotating
+            label_name = 'Date'
+            if label_name in [label.name for label in document.project.labels]:
+                label = document.project.get_label_by_name(label_name)
             else:
-                # define a Label Set that will contain Labels for Annotations your Extraction AI extracts
-                label_set = document.project.get_label_set_by_id(id_=document.category.id_)
-                # get or create a Label that will be used for annotating
-                label_name = 'Date'
-                if label_name in [label.name for label in document.project.labels]:
-                    label = document.project.get_label_by_name(label_name)
-                else:
-                    label = Label(text=label_name, project=project, label_sets=[label_set])
-                for re_match in re.finditer(r'(\d+/\d+/\d+)', document.text, flags=re.MULTILINE):
-                    span = Span(start_offset=re_match.span(1)[0], end_offset=re_match.span(1)[1])
-                    # create Annotation Set for the Annotation. Note that every Annotation Set
-                    # has to contain at least one Annotation, and Annotation always should be
-                    # a part of an Annotation Set.
-                    annotation_set = AnnotationSet(document=document, label_set=label_set)
-                    _ = Annotation(
-                        document=document,
-                        label=label,
-                        annotation_set=annotation_set,
-                        label_set=label_set,
-                        confidence=1.0,  # note that only the Annotations with confidence higher
-                        # than 10% will be shown in the extracted Document.
-                        spans=[span],
-                    )
+                label = Label(text=label_name, project=project, label_sets=[label_set])
+            for re_match in re.finditer(r'(\d+/\d+/\d+)', document.text, flags=re.MULTILINE):
+                span = Span(start_offset=re_match.span(1)[0], end_offset=re_match.span(1)[1])
+                # create Annotation Set for the Annotation. Note that every Annotation Set
+                # has to contain at least one Annotation, and Annotation always should be
+                # a part of an Annotation Set.
+                annotation_set = AnnotationSet(document=document, label_set=label_set)
+                _ = Annotation(
+                    document=document,
+                    label=label,
+                    annotation_set=annotation_set,
+                    label_set=label_set,
+                    confidence=1.0,  # note that only the Annotations with confidence higher
+                    # than 10% will be shown in the extracted Document.
+                    spans=[span],
+                )
             return document
 
     # end custom
