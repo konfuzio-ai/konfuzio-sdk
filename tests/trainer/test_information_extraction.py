@@ -1378,7 +1378,7 @@ class ToyCustomExtractionAI(AbstractExtractionAI):
 
     def extract(self, document: Document) -> Document:
         """Extract toy extraction AI."""
-        empty_doc = deepcopy(document)
+        empty_doc = super().extract(document)
         return empty_doc
 
 
