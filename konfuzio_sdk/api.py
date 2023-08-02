@@ -35,6 +35,8 @@ from konfuzio_sdk.utils import is_file
 
 logger = logging.getLogger(__name__)
 
+AI_TYPES = ['filesplitting', 'extraction', 'categorization']
+
 
 def _get_auth_token(username, password, host=KONFUZIO_HOST) -> str:
     """
@@ -563,27 +565,26 @@ def get_results_from_segmentation(doc_id: int, project_id: int, session=konfuzio
     return segmentation_result
 
 
-def upload_ai_model(
-    ai_model_path: str, project_id: int = None, category_id: int = None, session=konfuzio_session()
-):  # noqa: F821
+def upload_ai_model(ai_model_path: str, project_id: int = None, category_id: int = None, session=konfuzio_session()):
     """
     Upload an ai_model to the text-annotation server.
 
     :param ai_model_path: Path to the ai_model
     :param project_id: An ID of a Project to which the AI is uploaded. Needed for the File Splitting and Categorization
-    AIs.
-    :param category_id: An ID of a Category on which the AI is trained. Needed for the Extraction AIs.
+    AIs because they function on a Project level.
+    :param category_id: An ID of a Category on which the AI is trained. Needed for the Extraction AI because it
+    functions on a Category level and requires a single Category.
     :param session: session to connect to server
+    :raises: ValueError when neither project_id nor category_id is specified.
+    :raises: HTTPError when a request is unsuccessful.
     :return:
     """
     if (not project_id) and (not category_id):
         raise ValueError('Project ID or Category ID has to be specified; both values cannot be empty.')
-    if 'extraction' in ai_model_path:
-        ai_type = 'extraction'
-    elif 'filesplitting' in ai_model_path:
-        ai_type = 'filesplitting'
-    elif 'categorization' in ai_model_path:
-        ai_type = 'categorization'
+    for cur_ai_type in AI_TYPES:
+        if cur_ai_type in ai_model_path:
+            ai_type = cur_ai_type
+        break
     else:
         raise ValueError(
             "Cannot define AI type by the file name. Pass an AI model that is named according to the \
@@ -600,6 +601,10 @@ def upload_ai_model(
             else:
                 data = {'category': str(category_id)}
             r = session.post(url, files=multipart_form_data, data=data, headers=headers)
+            try:
+                r.raise_for_status()
+            except HTTPError as e:
+                raise HTTPError(r.text) from e
     data = r.json()
     ai_model_id = data['id']
     ai_model = data['name']
@@ -614,11 +619,13 @@ def delete_ai_model(ai_model_id: int, ai_type: str, session=konfuzio_session()):
 
     :param ai_model_id: an ID of the model to be deleted.
     :param ai_type: if a model is an Extraction AI, a Categorization AI or a File Splitting AI. Should be one of the
-    following: 'file_splitting', 'extraction', 'categorization'.
+    following: 'filesplitting', 'extraction', 'categorization'.
     :param session: session to connect to the server.
+    :raises: ValueError if ai_type is not correctly specified.
+    :raises: ConnectionError when a request is unsuccessful.
     """
-    if ai_type not in ['filesplitting', 'extraction', 'categorization']:
-        raise ValueError("ai_type should have the value of 'filesplitting', 'extraction', or 'categorization'.")
+    if ai_type not in AI_TYPES:
+        raise ValueError(f"ai_type should be one of the following: {', '.join(AI_TYPES)}")
     url = get_ai_model_url(ai_model_id, ai_type)
     r = session.delete(url)
     if r.status_code == 200:
@@ -635,11 +642,14 @@ def update_ai_model(ai_model_id: int, ai_type: str, patch: bool = True, session=
 
     :param ai_model_id: an ID of the model to be updated.
     :param ai_type: if a model is an Extraction AI, a Categorization AI or a File Splitting AI. Should be one of the
-    following: 'file_splitting', 'extraction', 'categorization'.
+    following: 'filesplitting', 'extraction', 'categorization'.
+    :param patch: If true, adds info instead of replacing it.
     :param session: session to connect to the server.
+    :raises: ValueError if ai_type is not correctly specified.
+    :raises: HTTPError when a request is unsuccessful.
     """
-    if ai_type not in ['filesplitting', 'extraction', 'categorization']:
-        raise ValueError("ai_type should have the value of 'filesplitting', 'extraction', or 'categorization'.")
+    if ai_type not in AI_TYPES:
+        raise ValueError(f"ai_type should be one of the following: {', '.join(AI_TYPES)}")
     url = get_ai_model_url(ai_model_id, ai_type)
 
     data = {}
@@ -647,10 +657,13 @@ def update_ai_model(ai_model_id: int, ai_type: str, patch: bool = True, session=
 
     if description is not None:
         data.update({"description": description})
-
     if patch:
         r = session.patch(url=url, json=data)
     else:
         r = session.put(url=url, json=data)
+    try:
+        r.raise_for_status()
+    except HTTPError as e:
+        raise HTTPError(r.text) from e
 
     return json.loads(r.text)

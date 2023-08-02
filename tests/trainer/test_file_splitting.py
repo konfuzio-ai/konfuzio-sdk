@@ -170,11 +170,13 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
         assert os.path.isfile(self.file_splitting_model.path)
         try:
             model_id = upload_ai_model(ai_model_path=self.file_splitting_model.path, project_id=46)
+            assert isinstance(model_id, int)
             updated = update_ai_model(model_id, ai_type='filesplitting', description='test_description')
-            assert updated
+            assert updated['description'] == 'test_description'
             updated = update_ai_model(model_id, ai_type='filesplitting', patch=False, description='test_description')
-            assert updated
-            delete_ai_model(model_id, ai_type='filesplitting')
+            assert updated['description'] == 'test_description'
+            removed_model_id = delete_ai_model(model_id, ai_type='filesplitting')
+            assert isinstance(removed_model_id, int)
         except HTTPError as e:
             assert '403' in str(e)
 

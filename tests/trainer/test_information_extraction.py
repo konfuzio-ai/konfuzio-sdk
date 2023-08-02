@@ -337,11 +337,13 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
             model_id = upload_ai_model(
                 ai_model_path=self.pipeline.pipeline_path, category_id=self.pipeline.category.id_
             )
+            assert isinstance(model_id, int)
             updated = update_ai_model(model_id, ai_type='extraction', description='test_description')
-            assert updated
+            assert updated['description'] == 'test_description'
             updated = update_ai_model(model_id, ai_type='extraction', patch=False, description='test_description')
-            assert updated
-            delete_ai_model(model_id, ai_type='extraction')
+            assert updated['description'] == 'test_description'
+            removed_model_id = delete_ai_model(model_id, ai_type='extraction')
+            assert isinstance(removed_model_id, int)
         except HTTPError as e:
             assert '403' in str(e)
 

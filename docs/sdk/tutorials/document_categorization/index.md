@@ -2,7 +2,7 @@
 ## Document Categorization
 
 When uploading a Document to Konfuzio, the first step is to assign it to a :ref:`Category<category-concept>`. This 
-can be done manually, or automatically using a Categorization AI.
+can be done manually, or automatically using a Categorization AI. Categorization always happens on a Project level.
 
 ### Setting the Category of a Document and its individual Pages Manually
 

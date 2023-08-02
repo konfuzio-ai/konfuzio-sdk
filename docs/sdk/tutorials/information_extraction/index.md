@@ -8,6 +8,8 @@ with Labels like Name, Date, Recipient, or any other custom Labels. The result o
    :width: 300px
    :align: center
 
+Information Extraction always happens at a Category level, that is, operates under a single Category.
+
 ### Train a custom Extraction AI
 
 This section explains how to create a custom Extraction AI locally, how to save it and upload it to the Konfuzio Server.
