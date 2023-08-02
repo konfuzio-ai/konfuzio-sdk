@@ -4,14 +4,15 @@ version: "3.9"
 ######  Do not skip. These variables need to be customized.                  ######
 ###################################################################################
 x-user-variables: &user-variables
-  HOST_NAME: http://localhost:81
-  SECRET_KEY: ""
-  AZURE_OCR_KEY: ""
+  HOST_NAME: http://localhost:80
+  BILLING_API_KEY: "<<INSERT_BILLING_API_KEY>>"
+  SECRET_KEY: "<<INSERT_RANDOM_VALUE>>"
+  AZURE_OCR_KEY: "<<OPTINAL_INSERT_AZURE_OCR_KEY>>"
 
 x-user-azure-ocr-variables: &user-azure-ocr-variables
   Eula: accept
-  Billing: ""
-  ApiKey: ""
+  Billing: "<<OPTINAL_INSERT_AZURE_BILLING_URL>>"
+  ApiKey: "<<OPTINAL_INSERT_AZURE_OCR_KEY>>"
 
 x-konfuzio_image: &konfuzio_image
   image: git.konfuzio.com:5050/konfuzio/text-annotation/master:<<INSERT_DOCKER_TAG>>
