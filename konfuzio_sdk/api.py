@@ -584,7 +584,7 @@ def upload_ai_model(ai_model_path: str, project_id: int = None, category_id: int
     for cur_ai_type in AI_TYPES:
         if cur_ai_type in ai_model_path:
             ai_type = cur_ai_type
-        break
+            break
     else:
         raise ValueError(
             "Cannot define AI type by the file name. Pass an AI model that is named according to the \
