@@ -1814,8 +1814,6 @@ class Span(Data):
         _ = self.line_index  # quick validate if start and end is in the same line of text
 
         if self._bbox is None:
-            warn('WIP: Modifications before the next stable release expected.', FutureWarning, stacklevel=2)
-            # todo: verify that one Span relates to Character in on line of text
             character_range = range(self.start_offset, self.end_offset)
             document = self.document
             characters = {key: document.bboxes.get(key) for key in character_range if document.text[key] != ' '}
