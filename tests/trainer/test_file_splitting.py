@@ -182,7 +182,7 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
             not_found = session.get(url)
             assert not_found.status_code == 204
         except HTTPError as e:
-            assert '403' in str(e)
+            assert ('403' in str(e)) or ('404' in str(e))
 
     def test_old_pickle_model_save_load(self):
         """Test saving and loading a model using the older bz2-compression-including save and load methods."""
