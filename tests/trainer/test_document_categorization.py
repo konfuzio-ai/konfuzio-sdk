@@ -9,7 +9,7 @@ import parameterized
 from requests import HTTPError
 from typing import List, Dict
 
-from konfuzio_sdk.api import upload_ai_model, update_ai_model, delete_ai_model
+from konfuzio_sdk.api import upload_ai_model, update_ai_model, delete_ai_model, konfuzio_session
 from konfuzio_sdk.data import Project, Document, Page
 from konfuzio_sdk.extras import torch, FloatTensor
 from konfuzio_sdk.settings_importer import is_dependency_installed
@@ -35,6 +35,7 @@ from konfuzio_sdk.trainer.document_categorization import (
     build_categorization_ai_pipeline,
 )
 from konfuzio_sdk.trainer.tokenization import PhraseMatcherTokenizer
+from konfuzio_sdk.urls import get_create_ai_model_url
 from tests.variables import (
     OFFLINE_PROJECT,
     TEST_DOCUMENT_ID,
@@ -540,8 +541,11 @@ class TestAllCategorizationConfigurations(unittest.TestCase):
             assert updated['description'] == 'test_description'
             updated = update_ai_model(model_id, ai_type='categorization', patch=False, description='test_description')
             assert updated['description'] == 'test_description'
-            removed_model_id = delete_ai_model(model_id, ai_type='categorization')
-            assert isinstance(removed_model_id, int)
+            delete_ai_model(model_id, ai_type='categorization')
+            url = get_create_ai_model_url(ai_type='categorization')
+            session = konfuzio_session()
+            not_found = session.get(url)
+            assert not_found.status_code == 204
         except HTTPError as e:
             assert '403' in str(e)
 

@@ -21,13 +21,14 @@ from sklearn.ensemble import RandomForestClassifier
 
 from konfuzio_sdk.data import Category, Project, Document, AnnotationSet, Annotation, Span, LabelSet
 
-from konfuzio_sdk.api import upload_ai_model, update_ai_model, delete_ai_model
+from konfuzio_sdk.api import upload_ai_model, update_ai_model, delete_ai_model, konfuzio_session
 from konfuzio_sdk.settings_importer import is_dependency_installed
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, RegexTokenizer
 from konfuzio_sdk.tokenizer.paragraph_and_sentence import ParagraphTokenizer, SentenceTokenizer
 from konfuzio_sdk.tokenizer.base import ListTokenizer
 from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
 from konfuzio_sdk.samples import LocalTextProject
+from konfuzio_sdk.urls import get_create_ai_model_url
 from konfuzio_sdk.utils import memory_size_of, is_file
 
 from konfuzio_sdk.trainer.information_extraction import (
@@ -342,8 +343,11 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
             assert updated['description'] == 'test_description'
             updated = update_ai_model(model_id, ai_type='extraction', patch=False, description='test_description')
             assert updated['description'] == 'test_description'
-            removed_model_id = delete_ai_model(model_id, ai_type='extraction')
-            assert isinstance(removed_model_id, int)
+            delete_ai_model(model_id, ai_type='extraction')
+            url = get_create_ai_model_url(ai_type='extraction')
+            session = konfuzio_session()
+            not_found = session.get(url)
+            assert not_found.status_code == 204
         except HTTPError as e:
             assert '403' in str(e)
 
