@@ -3371,7 +3371,6 @@ class Document(Data):
     @property
     def bboxes(self) -> Dict[int, Bbox]:
         """Use the cached bbox version."""
-        warn('WIP: Modifications before the next stable release expected.', FutureWarning, stacklevel=2)
         if self.bboxes_available and self._characters is None:
             bbox = self.get_bbox()
             boxes = {}
