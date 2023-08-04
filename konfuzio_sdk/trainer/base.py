@@ -213,8 +213,10 @@ class BaseModel(metaclass=abc.ABCMeta):
         pkl_file_path = self.pkl_file_path
 
         project_docs = self.project._documents  # to restore project documents after save
+        restore_credentials = self.project.credentials
         restore_documents = self.documents
         restore_test_documents = self.test_documents
+        self.project.credentials = {}  # to avoid saving credentials
         if reduce_weight:
             self.reduce_model_weight()
         if not keep_documents:
@@ -280,5 +282,6 @@ class BaseModel(metaclass=abc.ABCMeta):
             self.documents = restore_documents
             self.test_documents = restore_test_documents
         self.project._documents = project_docs
+        self.project.credentials = restore_credentials
 
         return pkl_file_path

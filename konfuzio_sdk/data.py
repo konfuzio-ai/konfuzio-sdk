@@ -607,6 +607,12 @@ class Bbox:
     def from_image_size(cls, x0, x1, y0, y1, page: Page) -> 'Bbox':
         """Create Bbox from the image dimensions based result to the scale of the characters Bboxes of the Document.
 
+        Compute the coordinates of the bottom-left and the top-right corners in
+        a (down-to-up y-axis, left-right x-axis, page-scaled system).
+
+        :param: (x0,y0) and (x1,y1) are the coordniates of resp. the top-left and the bottom-right corners
+        in a (up-to-down y-axis, left-right x-axis, image-scaled) system.
+
         :return: Bbox with the rescaled dimensions.
         """
         factor_y = page.height / page.image_height
@@ -3701,6 +3707,7 @@ class Project(Data):
         update=False,
         max_ram=None,
         strict_data_validation: bool = True,
+        credentials: dict = {},
         **kwargs,
     ):
         """
@@ -3711,6 +3718,7 @@ class Project(Data):
         :param update: Whether to sync local files with the Project online.
         :param max_ram: Maximum RAM used by AI models trained on this Project.
         :param strict_data_validation: Whether to apply strict data validation rules.
+        :param credentials: A dict of key/values that are available in the Project.
         See https://dev.konfuzio.com/sdk/tutorials/data_validation/index.html
         """
         self.id_local = next(Data.id_iter)
@@ -3725,6 +3733,7 @@ class Project(Data):
         self._meta_data = []
         self._max_ram = max_ram
         self._strict_data_validation = strict_data_validation
+        self.credentials = credentials
 
         # paths
         self.meta_file_path = os.path.join(self.project_folder, "documents_meta.json5")
@@ -4100,6 +4109,24 @@ class Project(Data):
             if category.id_ == id_:
                 return category
         raise IndexError(f'Category id {id_} was not found in {self}.')
+
+    def get_credentials(self, key):
+        """
+        Return the value of the key in the credentials dict or in the config file.
+
+        Returns None and emits a warning if the key is not found.
+
+        :param key: Key of the credential to get.
+        """
+        if key in self.credentials:
+            value = self.credentials[key]
+        else:
+            from .settings_importer import config
+
+            value = config(key, default=None)
+        if not value:
+            logger.warning(f'No value found for {key} in {self}.')
+        return value
 
     def delete(self):
         """Delete the Project folder."""
