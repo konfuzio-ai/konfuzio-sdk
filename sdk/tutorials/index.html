@@ -256,28 +256,70 @@ Boxes).</p>
 </pre></div>
 </div>
 <section id="upload-document">
-<h3>Upload Document<a class="headerlink" href="#upload-document" title="Permalink to this headline">¶</a></h3>
-<p>To upload a new file (see <a class="reference external" href="https://help.konfuzio.com/specification/supported_file_types/index.html">Supported File Types</a>)
-in your Project using the SDK, you can use the <code class="docutils literal notranslate"><span class="pre">Document.from_file</span></code> method. You can choose to create the Document in
-a synchronous or asynchronous way. The synchronous way will wait for the Document to be processed and return a ready
-Document. The asynchronous way will only return an empty Document object which you can use to check the status of the
-processing. Simply call <code class="docutils literal notranslate"><span class="pre">document.update()</span></code> to check if the Document is ready and the OCR processing is done.</p>
-<p>If you want to upload a file, and start working with it as soon as the OCR processing step is done, we recommend
-using <code class="docutils literal notranslate"><span class="pre">from_file</span></code> with <code class="docutils literal notranslate"><span class="pre">sync</span></code> set to True as it will wait for the Document to be processed and then return a ready
-Document. Beware, this may take from a few seconds up to over a minute depending on the size of the file.</p>
+<span id="id1"></span><h3>Upload Document<a class="headerlink" href="#upload-document" title="Permalink to this headline">¶</a></h3>
+<p>Before you can upload a new file to your Project using the Konfuzio SDK, you must have completed the following steps:</p>
+<ol class="arabic simple">
+<li><p>Register for a Konfuzio account</p></li>
+<li><p>Create a Project on Konfuzio</p></li>
+<li><p>Install the Konfuzio SDK</p></li>
+</ol>
+<p>For detailed instructions on these preliminary steps, refer above to the <a class="reference external" href="https://dev.konfuzio.com/sdk/get_started.html#get-started">Get Started guide</a>.</p>
+<p>After completing the above steps, you can proceed with uploading a new file to your Project using the Konfuzio SDK. The
+files must be of types specified in the <a class="reference external" href="https://help.konfuzio.com/specification/supported_file_types/index.html">Supported File Types</a>.
+Here, we’re focusing on the <code class="docutils literal notranslate"><span class="pre">Document.from_file</span></code> method to create a <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#document">Konfuzio Document</a>.</p>
+<p>A Konfuzio Document is an object representing the file you upload, it will contain the OCR (Optical Character Recognition)
+information of the file once processed by Konfuzio’s server.</p>
+<section id="synchronous-and-asynchronous-upload">
+<h4>Synchronous and Asynchronous Upload<a class="headerlink" href="#synchronous-and-asynchronous-upload" title="Permalink to this headline">¶</a></h4>
+<p>You have two options for uploading your file: a synchronous method and an asynchronous method. The method is determined
+by the <code class="docutils literal notranslate"><span class="pre">sync</span></code> parameter in the <code class="docutils literal notranslate"><span class="pre">from_file</span></code> method.</p>
+<ol class="arabic">
+<li><p><strong>Synchronous upload (sync=True)</strong>: The file is uploaded to the Konfuzio servers, and the method waits for the
+file to be processed. Once done, it returns a Document object with the OCR information. This is useful if you want
+to start working with the Document immediately after the OCR processing is completed.</p>
+<p>Here’s an example of how to use the <code class="docutils literal notranslate"><span class="pre">from_file</span></code> method with <code class="docutils literal notranslate"><span class="pre">sync</span></code> set to <code class="docutils literal notranslate"><span class="pre">True</span></code>:</p>
+</li>
+</ol>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span> <span class="o">=</span> <span class="n">Document</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">FILE_PATH</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">my_project</span><span class="p">,</span> <span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>If however you are trying to upload a large number of files and don’t want to wait for them to be processed you can use
-the asynchronous option which returns an empty Document object. You can then use the <code class="docutils literal notranslate"><span class="pre">update</span></code> method to check if the
-Document is ready and the OCR processing is done.</p>
+<ol class="arabic">
+<li><p><strong>Asynchronous upload (sync=False)</strong>: With this setting, the method immediately returns an empty Document object
+after initiating the upload. The OCR processing takes place in the background. This method is advantageous when
+uploading a large file or a large number of files, as it doesn’t require waiting for each file’s processing to complete.</p>
+<p>Here is how to use the asynchronous method:</p>
+</li>
+</ol>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span> <span class="o">=</span> <span class="n">Document</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">FILE_PATH</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">my_project</span><span class="p">,</span> <span class="n">sync</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Once the OCR process is done, you can get the Document OCR results with:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+<p>After asynchronous upload, you can check the status of the Document processing using the <code class="docutils literal notranslate"><span class="pre">document.update()</span></code> method on
+the returned Document object. If the Document is ready, this method will update the Document object with the OCR information.</p>
+<p>It’s important to note that if the Document is not ready, you may need to call <code class="docutils literal notranslate"><span class="pre">document.update()</span></code> again at a later time.
+This could be done manually or by setting up a looping mechanism depending on your application’s workflow.</p>
+<p>To check if the document is ready and update it with the OCR information, you can implement a custom pulling strategy
+like this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+    <span class="n">document</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">document</span><span class="o">.</span><span class="n">ocr_ready</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">document</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">break</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="mi">3</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>For a more sophisticated pulling method for asynchronously uploaded Documents using the callback function, you can
+checkout our <a class="reference internal" href="async_upload_with_callback/index.html#async-upload-with-callback"><span class="std std-ref">tutorial on how to use ngrok to receive callbacks from the Konfuzio Server</span></a>.</p>
+</section>
+<section id="timeout-parameter">
+<h4>Timeout Parameter<a class="headerlink" href="#timeout-parameter" title="Permalink to this headline">¶</a></h4>
+<p>When making a server request, there’s a default timeout value of 2 minutes. This means that if the server doesn’t respond
+within 2 minutes, the operation will stop waiting for a response and return an error. If you’re uploading a larger file,
+it might take more time to process, and the default timeout value might not be sufficient. In such a case, you can
+increase the timeout by setting the timeout parameter to a higher value.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span> <span class="o">=</span> <span class="n">Document</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">FILE_PATH</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">my_project</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># 300 seconds timeout</span>
+</pre></div>
+</div>
+</section>
 </section>
 <section id="modify-document">
 <h3>Modify Document<a class="headerlink" href="#modify-document" title="Permalink to this headline">¶</a></h3>
@@ -292,7 +334,7 @@ it like this:</p>
 </section>
 <section id="update-document">
 <h3>Update Document<a class="headerlink" href="#update-document" title="Permalink to this headline">¶</a></h3>
-<p>If there are changes in the Document in the Konfuzio Server, you can update the Document with:</p>
+<p>If there are changes in the Document in the Konfuzio Server, you can update your local version of the Document with:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -341,24 +383,18 @@ For example, you can get the path to the file with the Document text with:</p>
 </section>
 <section id="delete-document">
 <h3>Delete Document<a class="headerlink" href="#delete-document" title="Permalink to this headline">¶</a></h3>
-<section id="delete-document-locally">
-<h4>Delete Document Locally<a class="headerlink" href="#delete-document-locally" title="Permalink to this headline">¶</a></h4>
 <p>To locally delete a Document, you can use:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>The Document will be deleted from your local data folder, but it will remain in the Konfuzio Server.
 If you want to get it again you can update the Project.</p>
-</section>
-<section id="delete-document-online">
-<h4>Delete Document Online<a class="headerlink" href="#delete-document-online" title="Permalink to this headline">¶</a></h4>
 <p>If you would like to delete a Document in the remote server you can simply use the <code class="docutils literal notranslate"><span class="pre">Document.delete</span></code> method the <code class="docutils literal notranslate"><span class="pre">delete_online</span></code> setting set to <code class="docutils literal notranslate"><span class="pre">True</span></code>. You can only delete Documents with a dataset status of None (0). <strong>Be careful!</strong> Once the Document is deleted online, we will have no way of recovering it.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">delete_online</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>If <code class="docutils literal notranslate"><span class="pre">delete_online</span></code> is set to False (the default), the Document will only be deleted on your local machine, and will be
 reloaded next time you load the Project, or if you run the <code class="docutils literal notranslate"><span class="pre">Project.init_or_update_document</span></code> method directly.</p>
-</section>
 </section>
 </section>
 </section>
