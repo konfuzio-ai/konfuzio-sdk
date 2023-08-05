@@ -586,7 +586,7 @@ Password: {PROVIDED_BY_KONFUZIO}
 ```
 docker login REGISTRY_URL  
 docker pull REGISTRY_URL/konfuzio/text-annotation/detectron2/main:released-2023-08-03_11-39-42
-docker run --env-file /path_to_env_file.env REGISTRY_URL/konfuzio/text-annotation/detectron2/main:released-2023-08-03_11-39-42 run.sh
+docker run --env-file /path_to_env_file.env REGISTRY_URL/konfuzio/text-annotation/detectron2/main:released-2023-08-03_11-39-42 ./run.sh
 ```
 
 The "Document Layout Analysis Container" needs to be started with the following environment variables which you can enter into your .env file
