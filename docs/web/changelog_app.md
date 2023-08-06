@@ -24,6 +24,9 @@ You can think of the _Planned_ section as a _Roadmap_ that lists Konfuzio Server
 ## Next Release (estimated release date 7th August 2023)
 This version uses the Konfuzio Python SDK in version v.0.2.28 and Konfuzio Document Validation UI in version v.0.1.10.
 
+### Added
+- [Show the background tasks for each Document as a graph](https://help.konfuzio.com/modules/documents/index.html#document-workflow) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11115)).
+
 ### Changed
 - [Update the Document Layout Analysis capabilities](https://dev.konfuzio.com/web/on_premises.html#document-layout-analysis) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11350)).
 
