@@ -591,13 +591,14 @@ docker run --env-file /path_to_env_file.env REGISTRY_URL/konfuzio/text-annotatio
 
 The "Document Layout Analysis Container" needs to be started with the following environment variables which you can enter into your .env file
 ```
-BROKER_URL=  # Set this to an unused Redis database
-RESULT_BACKEND=  # Set this to an unused Redis database
+BROKER_URL=  # Set this to an unused Redis database (e.g. "redis://redis:6379/2")
+RESULT_BACKEND=  # Set this to an unused Redis database (e.g. "redis://redis:6379/3")
 ```
 
 We recommend to run the "Document Layout Analysis Container" with 8GB of RAM. The container can be started and used with less RAM, however this may not work on large images. 
-After the "Document Layout Analysis Container" is running you need to set the [DETECTRON_URL](/web/on_premises.html#detectron-url) for Konfuzio Servre to point to the "Document Layout Analysis Container".
+After the "Document Layout Analysis Container" is running you need to set the [DETECTRON_URL](/web/on_premises.html#detectron-url) for Konfuzio Server to point to the "Document Layout Analysis Container".
 
+To learn more about how the Document Layout Analysis Container works internally, please [click here](https://dev.konfuzio.com/web/on_premises.html#document-layout-analysis).
 
 ### [Optional] 10. Install document summarization container
 

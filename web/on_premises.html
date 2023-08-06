@@ -733,12 +733,13 @@ Password: {PROVIDED_BY_KONFUZIO}</p>
 </pre></div>
 </div>
 <p>The “Document Layout Analysis Container” needs to be started with the following environment variables which you can enter into your .env file</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">BROKER_URL</span><span class="o">=</span>  <span class="c1"># Set this to an unused Redis database</span>
-<span class="n">RESULT_BACKEND</span><span class="o">=</span>  <span class="c1"># Set this to an unused Redis database</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">BROKER_URL</span><span class="o">=</span>  <span class="c1"># Set this to an unused Redis database (e.g. &quot;redis://redis:6379/2&quot;)</span>
+<span class="n">RESULT_BACKEND</span><span class="o">=</span>  <span class="c1"># Set this to an unused Redis database (e.g. &quot;redis://redis:6379/3&quot;)</span>
 </pre></div>
 </div>
 <p>We recommend to run the “Document Layout Analysis Container” with 8GB of RAM. The container can be started and used with less RAM, however this may not work on large images.
-After the “Document Layout Analysis Container” is running you need to set the <a class="reference external" href="/web/on_premises.html#detectron-url">DETECTRON_URL</a> for Konfuzio Servre to point to the “Document Layout Analysis Container”.</p>
+After the “Document Layout Analysis Container” is running you need to set the <a class="reference external" href="/web/on_premises.html#detectron-url">DETECTRON_URL</a> for Konfuzio Server to point to the “Document Layout Analysis Container”.</p>
+<p>To learn more about how the Document Layout Analysis Container works internally, please <a class="reference external" href="https://dev.konfuzio.com/web/on_premises.html#document-layout-analysis">click here</a>.</p>
 </section>
 <section id="optional-10-install-document-summarization-container">
 <h3>[Optional] 10. Install document summarization container<a class="headerlink" href="#optional-10-install-document-summarization-container" title="Permalink to this headline">¶</a></h3>
