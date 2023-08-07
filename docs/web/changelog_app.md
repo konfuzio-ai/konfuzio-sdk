@@ -25,7 +25,7 @@ You can think of the _Planned_ section as a _Roadmap_ that lists Konfuzio Server
 Upcoming...
 
 ## released-2023-08-07_13-49-58
-This version uses the Konfuzio Python SDK in version v.0.2.28 and Konfuzio Document Validation UI in version v.0.1.10.
+This version uses the Konfuzio Python SDK in version v.0.2.28 and Konfuzio Document Validation UI in version v.0.1.11.
 
 ### Added
 - [Show the background tasks for each Document as a graph](https://help.konfuzio.com/modules/documents/index.html#document-workflow) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11115)).
