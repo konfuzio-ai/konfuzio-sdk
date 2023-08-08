@@ -44,6 +44,24 @@ https://YOUR_HOST/projects/PROJECT_ID/docs/DOCUMENT_ID/bbox-annotations/.
 
 Here are some of the properties and methods of the Document you might need when working with the SDK:
 - `document.id_` – get an ID of the Document;
+- `document.status` – get the status of the Document in the pipeline. The status can be one of the following:
+    - Queuing for OCR: 0
+    - Queuing for extraction: 1
+    - Done: 2
+    - Could not be processed: 111
+    - OCR in progress: 10
+    - Extraction in progress: 20
+    - Queuing for categorization: 3
+    - Categorization in progress: 30
+    - Queuing for splitting: 4
+    - Splitting in progress: 40
+    - Waiting for splitting confirmation: 41
+- `document.dataset_status` – get the dataset status of the Document. The dataset status can be one of the following:
+    - None: 0
+    - Preparation: 1
+    - Training: 2
+    - Test: 3
+    - Excluded: 4
 - `document.text` – get a full text of the Document;
 - `document.pages()` – a list of Pages in the Document;
 - `document.update()` – download a newer version of the Document from the Server in case you have made some changes in 
