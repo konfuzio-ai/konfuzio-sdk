@@ -158,7 +158,7 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#example-env-file-for-konfuzio-server">Example .env file for Konfuzio Server</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#environment-variables-for-read-api-container">Environment Variables for Read API Container</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#environment-variables-for-detectron-container">Environment Variables for Detectron Container</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#environment-variables-for-document-layout-analysis-container">Environment Variables for Document Layout Analysis Container</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#profiling">Profiling</a></li>
@@ -756,8 +756,8 @@ Password: {PROVIDED_BY_KONFUZIO}</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">GPU</span><span class="o">=</span><span class="kc">True</span>  <span class="c1"># If GPU is present</span>
 <span class="n">TASK_ALWAYS_EAGER</span><span class="o">=</span><span class="kc">False</span>
 <span class="n">C_FORCE_ROOT</span><span class="o">=</span><span class="kc">True</span>
-<span class="n">BROKER_URL</span><span class="o">=</span>  <span class="c1"># Set this to an unused Redis database</span>
-<span class="n">RESULT_BACKEND</span><span class="o">=</span>  <span class="c1"># Set this to an unused Redis database</span>
+<span class="n">BROKER_URL</span><span class="o">=</span>  <span class="c1"># Set this to an unused Redis database (e.g. &quot;redis://redis:6379/4&quot;)</span>
+<span class="n">RESULT_BACKEND</span><span class="o">=</span>  <span class="c1"># Set this to an unused Redis database (e.g. &quot;redis://redis:6379/5&quot;)</span>
 </pre></div>
 </div>
 <p>We recommend to run the segmentation container with 4GB of RAM. The segmentation container can be started and used with less RAM, however this may not work on large images.
@@ -1915,19 +1915,17 @@ AZURE_OCR_VERSION=v3.2
 </pre></div>
 </div>
 </section>
-<section id="environment-variables-for-detectron-container">
-<h3>Environment Variables for Detectron Container<a class="headerlink" href="#environment-variables-for-detectron-container" title="Permalink to this headline">¶</a></h3>
+<section id="environment-variables-for-document-layout-analysis-container">
+<h3>Environment Variables for Document Layout Analysis Container<a class="headerlink" href="#environment-variables-for-document-layout-analysis-container" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span># Connect Broker (mandatory).
 BROKER_URL=
 # Connect result backend (mandatory).
 RESULT_BACKEND=
-# Decide if GPU used (True/False) (mandatory).
-GPU=
-# Allow root (mandatory).
-C_FORCE_ROOT=True
 # Connect Sentry (optional).
+SENTRY_DSN=
 SENTRY_ENVIRONMENT=
 SENTRY_RELEASE=
+SENTRY_TRACES_SAMPLE_RATE=
 # Setting for task processing (optional).
 WORKER_SEND_TASK_EVENTS=
 TASK_SEND_SENT_EVENT=
