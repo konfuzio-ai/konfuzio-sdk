@@ -619,8 +619,8 @@ The summarization container needs to be started with the following environment v
 GPU=True  # If GPU is present
 TASK_ALWAYS_EAGER=False
 C_FORCE_ROOT=True
-BROKER_URL=  # Set this to an unused Redis database
-RESULT_BACKEND=  # Set this to an unused Redis database
+BROKER_URL=  # Set this to an unused Redis database (e.g. "redis://redis:6379/4")
+RESULT_BACKEND=  # Set this to an unused Redis database (e.g. "redis://redis:6379/5")
 
 ```
 
@@ -1704,20 +1704,18 @@ AZURE_OCR_BASE_URL=http://host:5000
 AZURE_OCR_VERSION=v3.2
 ```
 
-### Environment Variables for Detectron Container
+### Environment Variables for Document Layout Analysis Container
 
 ```text
 # Connect Broker (mandatory).
 BROKER_URL=
 # Connect result backend (mandatory).
 RESULT_BACKEND=
-# Decide if GPU used (True/False) (mandatory).
-GPU=
-# Allow root (mandatory).
-C_FORCE_ROOT=True
 # Connect Sentry (optional).
+SENTRY_DSN=
 SENTRY_ENVIRONMENT=
 SENTRY_RELEASE=
+SENTRY_TRACES_SAMPLE_RATE=
 # Setting for task processing (optional).
 WORKER_SEND_TASK_EVENTS=
 TASK_SEND_SENT_EVENT=
