@@ -89,7 +89,7 @@ You can also observe all Categories available in the Project via the Smartview: 
 - `page.spans()` – get a list of Spans on the Page;
 - `page.number` – get Page's number, starting from 1.
 
-.. _span-concept:
+.. _category-annotation-concept:
 
 ### Category Annotation
 [Category Annotation](sourcecode.html#category-annotation) defines a Category of a Page or a Document. There can be 
@@ -101,6 +101,8 @@ To get a Category Annotation of a particular Category for the Page, use `Page.ge
 To get a maximum-confidence Category Annotation for a Page, use `Page.maximum_confidence_category_annotation`.
 
 To see a maximum-confidence Category Annotation for a Document, use `Document.maximum_confidence_category_annotation`.
+
+.. _span-concept:
 
 ### Span
 [Span](sourcecode.html#span) is a part of the Document's text without the line breaks. Each Span has `start_offset` and `end_offset` denoting its starting and finishing characters in `document.text`. 
