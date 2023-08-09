@@ -197,7 +197,7 @@ Let's go step by step.
 
 ### Example of Custom Extraction AI: Barcode Extraction AI with `zxing-cpp`
 
-In this tutorial, we'll walk through the creation of a custom Barcode Extraction AI using the `zxing-cpp` library. We'll implement the extraction logic, create custom annotations, and integrate the AI with the `konfuzio-sdk` library. This AI will be able to detect barcodes from documents and generate bounding box annotations for the detected barcodes.
+In this tutorial, we'll walk through the creation of a custom Barcode Extraction AI using the `zxing-cpp` library. We'll implement the Extraction AI logic, create custom Annotations, and integrate the AI with the `konfuzio-sdk` library. This AI will be able to detect barcodes from Documents and generate bounding box Annotations for the detected barcodes.
 
 #### Requirements
 
@@ -213,7 +213,7 @@ Before we start, make sure you have the following:
 
 ---
 
-The first step is to create a Custom [Annotation](https://dev.konfuzio.com/sdk/sourcecode.html?highlight=annotation#annotation) class that includes custom bounding boxes for our detected barcodes. These bounding boxes will be later used by the [Server](https://dev.konfuzio.com/web/index.html#what-is-the-konfuzio-server) as well as the [DVUI](https://dev.konfuzio.com/dvui/index.html#what-is-the-konfuzio-document-validation-ui) to annotate the barcodes in the document.
+The first step is to create a Custom [Annotation](https://dev.konfuzio.com/sdk/sourcecode.html?highlight=annotation#annotation) class that includes custom bounding boxes for our detected barcodes. These bounding boxes will be later used by the [Server](https://dev.konfuzio.com/web/index.html#what-is-the-konfuzio-server) as well as the [DVUI](https://dev.konfuzio.com/dvui/index.html#what-is-the-konfuzio-document-validation-ui) to annotate the barcodes in the Document.
 
 ```python
 from typing import Dict, List
@@ -526,9 +526,9 @@ class CustomExtractionAI(AbstractExtractionAI):
 
 ---
 
-Now, let's create the main script to run the custom Extraction AI and process the documents:
+Now, let's create the main script to run the custom Extraction AI and process the Documents:
 
-We start by defining our `project_id` (don't forget to change the project_id to your own project id, it should be an `int`) then we save the Extraction AI as a [pickle](https://docs.python.org/3/library/pickle.html) file that we will upload to the [Server](https://dev.konfuzio.com/web/index.html#what-is-the-konfuzio-server) later.
+We start by defining our `project_id` (don't forget to change the project_id to your own project_id, it should be an `int`) then we save the Extraction AI as a [pickle](https://docs.python.org/3/library/pickle.html) file that we will upload to the [Server](https://dev.konfuzio.com/web/index.html#what-is-the-konfuzio-server) later.
 
 ```python
 project_id = "my_project_id"
