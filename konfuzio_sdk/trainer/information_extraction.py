@@ -2120,7 +2120,7 @@ class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
             no_label_annotations = virtual_document.annotations(
                 use_correct=False, label=virtual_document.project.no_label
             )
-            label_annotations = [x for x in virtual_document.annotations(use_correct=False) if x.label.id_ is not None]
+            label_annotations = [x for x in virtual_document.annotations(use_correct=False) if not x.label.id_]
 
             # We calculate features of documents as long as they have IDs, even if they are offline.
             # The assumption is that if they have an ID, then the data came either from the API or from the DB.

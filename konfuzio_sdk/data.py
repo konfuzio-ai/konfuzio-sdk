@@ -2063,8 +2063,6 @@ class Annotation(Data):
 
         self._bbox = None
 
-        self._bbox = None
-
         if accuracy is not None:  # it's a confidence
             self.confidence = accuracy
         elif confidence is not None:
@@ -2080,21 +2078,13 @@ class Annotation(Data):
             self.label: Label = self.document.project.get_label_by_id(label)
         elif sdk_isinstance(label, Label):
             self.label: Label = label
+        elif isinstance(label, str):
+            self.label: Label = self.document.project.get_label_by_name(label)
+        elif label is None:
+            self.label = self.document.project.no_label
+            logger.warning(f'{self} in {self.document} initialized without Label information. Using NO_LABEL.')
         else:
-            raise ValueError(f'{self.__class__.__name__} {self.id_local} has no Label.')
-
-        # if no label_set_id we check if is passed by section_label_id
-        if label_set_id is None and kwargs.get("section_label_id") is not None:
-            label_set_id = kwargs.get("section_label_id")
-
-        # handles association to an Annotation Set if the Annotation belongs to a Category
-        if isinstance(label_set_id, int):
-            self.label_set: LabelSet = self.document.project.get_label_set_by_id(label_set_id)
-        elif sdk_isinstance(label_set, LabelSet):
-            self.label_set = label_set
-        else:
-            self.label_set = None
-            logger.info(f'{self.__class__.__name__} {self.id_local} has no Label Set.')
+            raise ValueError(f'Cannot initialize with {label=}. Must be int, str or Label.')
 
         # make sure an Annotation Set is available
         if isinstance(annotation_set_id, int):
@@ -2104,8 +2094,47 @@ class Annotation(Data):
             # do not relate to the Document
             self.annotation_set: AnnotationSet = self.document.get_annotation_set_by_id(annotation_set.id_)
         else:
+            # it will be set later, or an excpetion is raised at the end of the init
             self.annotation_set = None
-            logger.warning(f'{self} in {self.document} created but without Annotation Set information.')
+
+        # if no label_set_id we check if is passed by section_label_id
+        if label_set_id is None and kwargs.get("section_label_id") is not None:
+            label_set_id = kwargs.get("section_label_id")
+
+        # handles association to an Annotation Set if the Annotation belongs to a Category
+        if isinstance(label_set_id, int):
+            label_set: LabelSet = self.document.project.get_label_set_by_id(label_set_id)
+        elif label_set is None and label_set_id is None and len(label.label_sets) == 1:
+            label_set = label.label_sets[0]
+
+        if sdk_isinstance(label_set, LabelSet) and self.annotation_set is not None:
+            assert (
+                label_set == self.annotation_set.label_set
+            ), f"Conflicting Label Set information provided\
+                  {label_set=} and {self.annotation_set.label_set=}"
+        elif self.annotation_set is None:
+            if sdk_isinstance(label_set, LabelSet):
+                if label_set.has_multiple_annotation_sets:
+                    raise ValueError(
+                        f"Cannot assign {self} to AnnotationSet. {label_set} can have multiple Annotation Sets. "
+                        f"Please provide the Annotation Set or AnnotationSet ID."
+                    )
+                else:
+                    annotation_set = [
+                        ann_set for ann_set in self.document.annotation_sets() if ann_set.label_set == label_set
+                    ]
+                    if len(annotation_set) == 1:
+                        annotation_set = annotation_set[0]
+                    elif len(annotation_set) == 0:
+                        annotation_set = AnnotationSet(
+                            label_set=label_set, id_=next(Data.id_iter), document=self.document
+                        )
+                    else:
+                        raise ValueError(
+                            f"Found multiple Annotation Sets for {label_set} in {self.document}. "
+                            f"This should not happen because {label_set.has_multiple_annotation_sets=}."
+                        )
+                    self.annotation_set = annotation_set
 
         for span in spans or []:
             self.add_span(span)
@@ -2128,8 +2157,6 @@ class Annotation(Data):
             # Legacy support for creating Annotations with a single offset
             bbox = kwargs.get('bbox', {})
             _ = Span(start_offset=kwargs.get("start_offset"), end_offset=kwargs.get("end_offset"), annotation=self)
-            # self.add_span(sa)
-
             logger.warning(f'{self} is empty')
 
         self.top = None
@@ -2164,6 +2191,8 @@ class Annotation(Data):
             raise NotImplementedError(f'{self} has no Document and cannot be created.')
         if not self.label_set:
             raise NotImplementedError(f'{self} has no Label Set and cannot be created.')
+        if not self.annotation_set:
+            raise NotImplementedError(f'{self} has no Annotation Set and cannot be created.')
         if not self.label:
             raise NotImplementedError(f'{self} has no Label and cannot be created.')
         if not self.spans:
@@ -2248,6 +2277,11 @@ class Annotation(Data):
     def eval_dict(self) -> List[dict]:
         """Calculate the Span information to evaluate the Annotation."""
         return [span.eval_dict() for span in self.spans]
+
+    @property
+    def label_set(self) -> LabelSet:
+        """Return Label Set of Annotation."""
+        return self.annotation_set.label_set
 
     def add_span(self, span: Span):
         """Add a Span to an Annotation incl. a duplicate check per Annotation."""
@@ -3293,8 +3327,7 @@ class Document(Data):
         if result:
             return result
         else:
-            logger.error(f"Annotation Set {id_} is not part of Document {self.id_}.")
-            raise IndexError
+            raise IndexError(f"Annotation Set {id_} is not part of Document {self.id_}.")
 
     def get_text_in_bio_scheme(self, update=False) -> List[Tuple[str, str]]:
         """
@@ -3752,10 +3785,10 @@ class Project(Data):
         else:
             self.no_category = Category(project=self, id_=0, name_clean="NO_CATEGORY", name="NO_CATEGORY")
         # todo: list of Categories related to NO LABEL SET can be outdated, i.e. if the number of Categories changes
-        self.no_label_set = LabelSet(project=self, categories=self.categories)
+        self.no_label_set = LabelSet(project=self, id_=0, categories=self.categories)
         self.no_label_set.name_clean = 'NO_LABEL_SET'
         self.no_label_set.name = 'NO_LABEL_SET'
-        self.no_label = Label(project=self, text='NO_LABEL', label_sets=[self.no_label_set])
+        self.no_label = Label(project=self, id_=0, text='NO_LABEL', label_sets=[self.no_label_set])
         self.no_label.name_clean = 'NO_LABEL'
         self._regexes = None
 
@@ -3952,7 +3985,7 @@ class Project(Data):
 
             # adding a NO_CATEGORY at this step because we need to preserve it after Project is updated
             if "NO_CATEGORY" not in [category.name for category in self.categories]:
-                self.no_category = Category(project=self, name_clean="NO_CATEGORY", name="NO_CATEGORY")
+                self.no_category = Category(project=self, id_=0, name_clean="NO_CATEGORY", name="NO_CATEGORY")
             for label_set_data in label_sets_data:
                 label_set = LabelSet(project=self, id_=label_set_data['id'], **label_set_data)
                 if label_set.is_default:
