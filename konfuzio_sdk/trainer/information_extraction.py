@@ -2020,7 +2020,6 @@ class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
             r = range(doc_spans[s_i].start_offset, doc_spans[s_i].end_offset + 1)
             if span.start_offset in r and span.end_offset in r:
                 span.annotation.label = doc_spans[s_i].annotation.label
-                span.annotation.label_set = doc_spans[s_i].annotation.label_set
                 span.annotation.annotation_set = doc_spans[s_i].annotation.annotation_set
 
     def feature_function(
@@ -2098,22 +2097,25 @@ class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
                 self.tokenizer.tokenize(virtual_document)
                 self.label_train_document(virtual_document, document)
             else:
-                for ann in document.annotations():
+                for annotation in document.annotations():
                     new_spans = []
-                    for span in ann.spans:
+                    for span in annotation.spans:
                         new_span = Span(start_offset=span.start_offset, end_offset=span.end_offset)
                         new_spans.append(new_span)
 
-                    new_ann = Annotation(
+                    try:
+                        annotation_set = virtual_document.get_annotation_set_by_id(annotation.annotation_set.id_)
+                    except IndexError:
+                        annotation_set = AnnotationSet(
+                            document=virtual_document, label_set=annotation.label_set, id_=annotation.annotation_set.id_
+                        )
+                    _ = Annotation(
                         document=virtual_document,
-                        annotation_set=virtual_document.no_label_annotation_set,
-                        label=ann.label,
-                        label_set=virtual_document.project.no_label_set,
+                        annotation_set=annotation_set,
+                        label=annotation.label,
                         category=self.category,
                         spans=new_spans,
                     )
-                    new_ann.label_set = ann.label_set
-                    new_ann.annotation_set = ann.annotation_set
 
                 self.tokenizer.tokenize(virtual_document)
 

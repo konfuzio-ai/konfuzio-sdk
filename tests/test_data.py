@@ -174,11 +174,13 @@ class TestOnlineProject(unittest.TestCase):
         doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         assert Span(start_offset=1590, end_offset=1602) not in doc.spans()
         label = self.project.get_label_by_name('Lohnart')
+        label_set = label.label_sets[0]
+        annotation_set = AnnotationSet(label_set=label_set, document=doc)
         annotation = Annotation(
             document=doc,
             spans=[Span(start_offset=1590, end_offset=1602)],
             label=label,
-            label_set=label.label_sets[0],
+            annotation_set=annotation_set,
             accuracy=1.0,
             is_correct=True,
         )
@@ -204,7 +206,6 @@ class TestOnlineProject(unittest.TestCase):
             annotation_set=default_annotation_set,
             spans=[Span(start_offset=1590, end_offset=1602)],
             label=label,
-            label_set=label.label_sets[0],
             accuracy=1.0,
             is_correct=True,
         )
@@ -452,9 +453,8 @@ class TestOfflineExampleData(unittest.TestCase):
             id_=None,
             document=document,
             is_correct=True,
-            annotation_set=document.annotation_sets()[0],
+            annotation_set=document.no_label_annotation_set,
             label=self.project.no_label,
-            label_set=self.project.label_sets[0],
             spans=[span],
         )
         box = span.bbox()  # verify if we can calculate valid bounding boxes from a given Text offset.

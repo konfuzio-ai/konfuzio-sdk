@@ -109,7 +109,6 @@ class ParagraphTokenizer(AbstractTokenizer):
                         document=document,
                         annotation_set=annotation_set,
                         label=label,
-                        label_set=document.project.no_label_set,
                         category=document.category,
                         spans=spans,
                         confidence=confidence,
@@ -274,7 +273,6 @@ class SentenceTokenizer(AbstractTokenizer):
                             document=document,
                             annotation_set=annotation_set,
                             label=label,
-                            label_set=document.project.no_label_set,
                             category=document.category,
                             spans=spans,
                         )

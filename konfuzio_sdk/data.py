@@ -701,6 +701,11 @@ class AnnotationSet(Data):
         return annotations
 
     @property
+    def is_default(self) -> bool:
+        """Check if AnnotationSet is the default AnnotationSet of the Document."""
+        return self.label_set.is_default
+
+    @property
     def start_offset(self) -> Optional[int]:
         """Calculate the earliest start based on all Annotations above detection threshold in this AnnotationSet."""
         return min(
@@ -3329,6 +3334,21 @@ class Document(Data):
         else:
             raise IndexError(f"Annotation Set {id_} is not part of Document {self.id_}.")
 
+    def get_default_annotation_set(self) -> AnnotationSet:
+        """Return the default Annotation Set of the Document."""
+        if self._annotation_sets is None:
+            self.annotation_sets()
+        for annotation_set in self._annotation_sets:
+            if annotation_set.is_default:
+                return annotation_set
+        default_label_set = self.project.get_default_label_set()
+        default_annotation_set = AnnotationSet(
+            id_=next(Data.id_iter),
+            document=self,
+            label_set=default_label_set,
+        )
+        return default_annotation_set
+
     def get_text_in_bio_scheme(self, update=False) -> List[Tuple[str, str]]:
         """
         Get the text of the Document in the BIO scheme.
@@ -4002,6 +4022,13 @@ class Project(Data):
         if not self._label_sets:
             self.get_label_sets()
         return self._label_sets
+
+    def get_default_label_set(self):
+        """Get the default Label Set of the Project."""
+        for label_set in self.label_sets:
+            if label_set.is_default:
+                return label_set
+        raise ValueError(f'In {self} there is no default Label Set.')
 
     def get_labels(self, reload=False) -> Label:
         """Get ID and name of any Label in the Project."""
