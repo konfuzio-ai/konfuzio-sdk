@@ -25,13 +25,11 @@ run the following command:
 It is possible to use the SDK in [Google Colab](https://colab.research.google.com/) notebook regardless of the operating system of your computer. To install the SDK in Colab, run the following commands in a new Notebook cell:
 
   ```
-  !pip install konfuzio_sdk[ai]
-  !cd konfuzio-sdk && pip install .[ai]
+  !git clone https://github.com/konfuzio-ai/konfuzio-sdk.git
   !sed -i 's/certifi==2022\.12\.7/certifi==2023.7.22/' konfuzio-sdk/setup.py
   ```
-  In a new cell run `!cd konfuzio-sdk/ && cat setup.py` to check we have the right version of the `certifi` library. 
-  
-  Inspect the output of the command, at the bottom of it you should see the following:
+
+  In a new cell run `!cat konfuzio-sdk/setup.py` to check we have the right version of the `certifi` library. Inspect the output of the command, at the bottom of it you should see the following:
   ```
   setuptools.setup(
     ...
@@ -40,12 +38,26 @@ It is possible to use the SDK in [Google Colab](https://colab.research.google.co
         ...
     ],
   ``````
-  Make sure the version of the `certifi` package is indeed `2023.7.22`. Now restart the Colab runtime by choosing `Runtime` -> `Restart runtime...` in the menu bar. After the restart, the SDK can be initialized in the Colab notebook, run in a new cell:
+  Make sure the version of the `certifi` package is indeed `2023.7.22`. If it is, we are now ready to actually install the SDK. In a new cell run:
+  ```
+  !cd konfuzio-sdk && pip install .[ai]
+  ```
+  
+  Now the SDK can be initialized in the Colab notebook, to do so run in a new cell:
   ```
   import konfuzio_sdk
   !konfuzio_sdk init
   ```
-  Follow the instructions in the terminal to initialize the SDK. The SDK is now ready to be used in the Colab notebook.
+
+  Follow the instructions in the terminal to initialize the SDK. If you now try to instantiate a new Konfuzio Project you would receive the following error:
+  ```
+  PermissionError: Your Token to connect to https://app.konfuzio.com is missing, e.g. use "konfuzio_sdk init"
+  ```
+  Although we have already initialized the SDK, it is necessary to restart the Colab runtime in order to use the SDK. Restart the runtime by choosing `Runtime` -> `Restart runtime...` in the menu bar. 
+
+  The SDK is now ready to be used in the Colab notebook.
+
+---
 
 *Notes*:
 
