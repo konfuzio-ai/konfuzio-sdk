@@ -104,6 +104,8 @@ Note: you don't necessarily need to create the AI from scratch if you already ha
 You just need to wrap it into the class that corresponds to our Categorization AI structure. Follow the steps in this 
 tutorial to find out what are the requirements for that.
 
+Note: currently, the Server supports AI models created using `torch<2.0.0`.
+
 By default, any [Categorization AI](../../sourcecode.html#categorization-ai) class should derive from the 
 `AbstractCategorizationModel` class and implement the following methods:
 

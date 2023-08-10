@@ -19,7 +19,7 @@ import pandas as pd
 from sklearn.datasets import make_classification
 from sklearn.ensemble import RandomForestClassifier
 
-from konfuzio_sdk.data import Category, Project, Document, AnnotationSet, Annotation, Span, LabelSet
+from konfuzio_sdk.data import Category, Project, Document, AnnotationSet, Annotation, Span, LabelSet, Page
 
 from konfuzio_sdk.api import upload_ai_model, update_ai_model, delete_ai_model, konfuzio_session
 from konfuzio_sdk.settings_importer import is_dependency_installed
@@ -988,6 +988,35 @@ class TestInformationExtraction(unittest.TestCase):
         virt_doc = pipeline.extract(document)
 
         assert virt_doc.annotations(use_correct=False) == []
+
+    def test_extraction_with_only_no_label_predictions(self):
+        """Test extraction where all predictions spans are No_Label."""
+        category = self.project.get_category_by_id(63)
+        document_bbox = {
+            '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'a'},
+            '1': {'x0': 1, 'x1': 2, 'y0': 1, 'y1': 3, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'b'},
+        }
+        document = Document(text="ab", bbox=document_bbox, project=self.project, category=category)
+        Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
+        pipeline = RFExtractionAI(category=category)
+        pipeline.tokenizer = RegexTokenizer(r"ab")
+
+        pipeline.clf = RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1)
+        X, y = make_classification(
+            n_classes=1, n_samples=1000, n_features=4, n_informative=2, n_redundant=0, random_state=0, shuffle=False
+        )
+        pipeline.clf.fit(X, y)
+        pipeline.label_feature_list = ['x0', 'x1', 'y0', 'y1']
+        pipeline.clf.classes_ = ['0']
+        category.labels[0].name = '0'
+        for l in category.labels:
+            l._has_multiline_annotations = False
+        category.label_sets[0].name = '0'
+
+        virt_doc = pipeline.extract(document)
+
+        assert len(virt_doc.annotations(use_correct=False)) == 1
+
 
     def test_annotation_set_extraction_with_no_span_above_detection_threshold(self):
         """Test that extract_template_with_clf returns empty dictionary when no spans above detection threshold."""

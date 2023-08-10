@@ -37,6 +37,7 @@ that reflects each step of the document-processing pipeline.
    tutorials/data_validation/index.md
    tutorials/outlier-annotations/index.md
    tutorials/regex_based_annotations/index.md
+   tutorials/async_upload_with_callback/index.md
    tutorials/pdf-form-generator/index.md
    tutorials/ner-ontonotes-fast/index.md
    tutorials/annual-reports/index.md

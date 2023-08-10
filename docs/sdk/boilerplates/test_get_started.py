@@ -1,5 +1,6 @@
 """Test code examples for Get Started section of the documentation."""
 import os
+import time
 
 from konfuzio_sdk.data import Project, Document
 from konfuzio_sdk.api import delete_file_konfuzio_api
@@ -59,6 +60,22 @@ def test_document_loading():
     # start sync_false
     document = Document.from_file(FILE_PATH, project=my_project, sync=False)
     # end sync_false
+    # start pulling loop
+    for i in range(5):
+        document.update()
+        if document.ocr_ready is True:
+            print(document.text)
+            break
+        time.sleep(i * 10 + 3)
+        # end pulling loop
+        break
+
+    document.delete(delete_online=True)
+
+    # start timeout upload
+    document = Document.from_file(FILE_PATH, project=my_project, timeout=300, sync=True)  # 300 seconds timeout
+    # end timeout upload
+
     # start update_doc
     document.update()
     # end update_doc
@@ -107,21 +124,3 @@ def test_modify_document():
     # start folder
     my_project.documents_folder
     # end folder
-    document = my_project.documents[0]
-    document.update()
-    document.delete()
-    my_project = Project(id_=46, update=True)
-
-    document = Document.from_file(FILE_PATH, project=my_project, sync=True)
-    document = my_project._documents[-1]
-    document.dataset_status = 0
-    document.delete(delete_online=True)
-    document = Document.from_file(FILE_PATH, project=my_project, sync=False)
-    document.update()
-
-    document_id = document.id_
-    document = my_project.get_document_by_id(document_id)
-
-    my_project = Project(id_=YOUR_PROJECT_ID, update=True)
-    assert len(my_project.documents) == 26
-    my_project.get_document_by_id(document_id).delete(delete_online=True)

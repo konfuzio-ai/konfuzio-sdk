@@ -54,6 +54,7 @@ class TestOnlineProject(unittest.TestCase):
     def test_document(self):
         """Test properties of a specific Documents in the test Project."""
         doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        assert doc.ocr_ready is True
         assert doc.category.name == 'Lohnabrechnung'
         label = self.project.labels[0]
         annotations = label.annotations(categories=[self.project.get_category_by_id(63)])
@@ -319,6 +320,11 @@ class TestOnlineProject(unittest.TestCase):
 
         virtual_document_page = virtual_document.get_page_by_index(0)
         assert virtual_document_page._segmentation is None
+
+    def test_create_invalid_file_type_document(self):
+        """Test the creation of an invalid pdf Document. File should be checked and raise error before upload."""
+        with pytest.raises(NotImplementedError, match="We do not support file"):
+            Document.from_file('tests/test_data/invalid_pdf.pdf', self.project)
 
     def test_create_modify_and_delete_document(self):
         """Test the creation of an online Document from a file, modification, and then deletion of the Document."""
