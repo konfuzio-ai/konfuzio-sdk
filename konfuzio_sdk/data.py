@@ -2166,7 +2166,7 @@ class Annotation(Data):
             raise NotImplementedError(f'{self} has no Label Set and cannot be created.')
         if not self.label:
             raise NotImplementedError(f'{self} has no Label and cannot be created.')
-        if not (self.spans or self.selection_bbox):
+        if not (self.spans or self.custom_bboxes):
             exception_or_log_error(
                 msg=f'{self} has no Spans and cannot be created.',
                 fail_loudly=self.document.project._strict_data_validation,
