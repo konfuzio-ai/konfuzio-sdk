@@ -43,6 +43,7 @@ from konfuzio_sdk.utils import (
     sdk_isinstance,
     exception_or_log_error,
     get_missing_offsets,
+    get_file_type_and_extension,
 )
 
 logger = logging.getLogger(__name__)
@@ -553,8 +554,8 @@ class Bbox:
 
         if round(self.y1, round_decimals) > round(self.page.height, round_decimals):
             exception_or_log_error(
-                msg=f"{self} exceeds height of {self.page} by \
-{round(self.y1, round_decimals) - round(self.page.height, round_decimals)}.",
+                msg=f"{self} exceeds height of {self.page} by "
+                "{round(self.y1, round_decimals) - round(self.page.height, round_decimals)}.",
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
                 handler=handler,
@@ -562,8 +563,8 @@ class Bbox:
 
         if round(self.x1, round_decimals) > round(self.page.width, round_decimals):
             exception_or_log_error(
-                msg=f"{self} exceeds width of {self.page} by \
-{round(self.x1, round_decimals) - round(self.page.width, round_decimals)}.",
+                msg=f"{self} exceeds width of {self.page} by "
+                "{round(self.x1, round_decimals) - round(self.page.width, round_decimals)}.",
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
                 handler=handler,
@@ -1814,8 +1815,6 @@ class Span(Data):
         _ = self.line_index  # quick validate if start and end is in the same line of text
 
         if self._bbox is None:
-            warn('WIP: Modifications before the next stable release expected.', FutureWarning, stacklevel=2)
-            # todo: verify that one Span relates to Character in on line of text
             character_range = range(self.start_offset, self.end_offset)
             document = self.document
             characters = {key: document.bboxes.get(key) for key in character_range if document.text[key] != ' '}
@@ -2463,6 +2462,9 @@ class Document(Data):
     EXTRACTION_IN_PROGRESS = 20
     QUEUING_FOR_CATEGORIZATION = 3
     CATEGORIZATION_IN_PROGRESS = 30
+    QUEUING_FOR_SPLITTING = 4
+    SPLITTING_IN_PROGRESS = 40
+    WAITING_FOR_SPLITTING_CONFIRMATION = 41
     DONE = 2
     COULD_NOT_BE_PROCESSED = 111
 
@@ -2588,6 +2590,11 @@ class Document(Data):
         else:
             return f"Document {self.name} ({self.id_})"
 
+    @property
+    def ocr_ready(self):
+        """Check if Document OCR is ready."""
+        return self.text is not None
+
     def update_meta_data(
         self,
         assignee: int = None,
@@ -2658,6 +2665,7 @@ class Document(Data):
         :param sync: Whether to wait for the file to be processed by the server
         :return: New Document
         """
+        get_file_type_and_extension(path)  # check if file is valid
         response = upload_file_konfuzio_api(
             path,
             project_id=project.id_,
@@ -3373,7 +3381,6 @@ class Document(Data):
     @property
     def bboxes(self) -> Dict[int, Bbox]:
         """Use the cached bbox version."""
-        warn('WIP: Modifications before the next stable release expected.', FutureWarning, stacklevel=2)
         if self.bboxes_available and self._characters is None:
             bbox = self.get_bbox()
             boxes = {}

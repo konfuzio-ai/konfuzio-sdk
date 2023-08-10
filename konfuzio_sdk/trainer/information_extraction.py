@@ -1697,25 +1697,26 @@ class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
         if separate_no_label_target in results.columns:
             results = results.drop([separate_no_label_target], axis=1)
 
-        df['result_name'] = results.idxmax(axis=1)
-        df['confidence'] = results.max(axis=1)
+        res_dict = {}
+        no_label_res_dict = {}
 
         # Main Logic -------------------------
+        if not results.empty:
+            df['result_name'] = results.idxmax(axis=1)
+            df['confidence'] = results.max(axis=1)
 
-        # Convert DataFrame to Dict with labels as keys and label dataframes as value.
-        res_dict = {}
-        for result_name in set(df['result_name']):
-            result_df = df[(df['result_name'] == result_name) & (df['confidence'] >= df['label_threshold'])].copy()
+            # Convert DataFrame to Dict with labels as keys and label dataframes as value.
+            for result_name in set(df['result_name']):
+                result_df = df[(df['result_name'] == result_name) & (df['confidence'] >= df['label_threshold'])].copy()
 
-            if not result_df.empty:
-                res_dict[result_name] = result_df
+                if not result_df.empty:
+                    res_dict[result_name] = result_df
 
-        no_label_res_dict = {}
-        for result_name in set(df['result_name']):
-            result_df = df[(df['result_name'] == result_name) & (df['confidence'] < df['label_threshold'])].copy()
+            for result_name in set(df['result_name']):
+                result_df = df[(df['result_name'] == result_name) & (df['confidence'] < df['label_threshold'])].copy()
 
-            if not result_df.empty:
-                no_label_res_dict[result_name] = result_df
+                if not result_df.empty:
+                    no_label_res_dict[result_name] = result_df
 
         # Filter results that are bellow the extract threshold
         # (helpful to reduce the size in case of many predictions/ big documents)

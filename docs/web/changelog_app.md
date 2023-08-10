@@ -21,9 +21,21 @@ You can think of the _Planned_ section as a _Roadmap_ that lists Konfuzio Server
 - Allow administrators of Konfuzio on-premise installations to run a speedtest ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9870)).
 - Start automatic AI retraining after User confirms that he has finished a annotation review ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9166)).
 
-## Next Release (estimated release date 7th August 2023)
-
+## Next Release (estimated release date 21th August 2023)
 Upcoming...
+
+## released-2023-08-07_13-49-58
+This version uses the Konfuzio Python SDK in version v.0.2.28 and Konfuzio Document Validation UI in version v.0.1.11.
+
+### Added
+- [Show the background tasks for each Document as a graph](https://help.konfuzio.com/modules/documents/index.html#document-workflow) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11115)).
+
+### Changed
+- [Update the Document Layout Analysis capabilities](https://dev.konfuzio.com/web/on_premises.html#document-layout-analysis) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11350)).
+
+### Fixed
+- Correct a typo in file splitting notifications ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11506)).
+- Allow to open a link to a Document which does not belong to the currently selected Project ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11361)).
 
 ## released-2023-07-22_17-14-51
 This version uses the Konfuzio Python SDK in version v.0.2.26 and Konfuzio Document Validation UI in version v.0.1.10.

@@ -194,16 +194,35 @@ Boxes).
 ]
 ```
 
-#### Upload Document
-To upload a new file (see [Supported File Types](https://help.konfuzio.com/specification/supported_file_types/index.html)) 
-in your Project using the SDK, you can use the `Document.from_file` method. You can choose to create the Document in 
-a synchronous or asynchronous way. The synchronous way will wait for the Document to be processed and return a ready
-Document. The asynchronous way will only return an empty Document object which you can use to check the status of the
-processing. Simply call `document.update()` to check if the Document is ready and the OCR processing is done.
+.. _upload-document:
 
-If you want to upload a file, and start working with it as soon as the OCR processing step is done, we recommend 
-using `from_file` with `sync` set to True as it will wait for the Document to be processed and then return a ready 
-Document. Beware, this may take from a few seconds up to over a minute depending on the size of the file.
+#### Upload Document
+
+Before you can upload a new file to your Project using the Konfuzio SDK, you must have completed the following steps:
+
+1. Register for a Konfuzio account
+2. Create a Project on Konfuzio
+3. Install the Konfuzio SDK
+
+For detailed instructions on these preliminary steps, refer above to the [Get Started guide](https://dev.konfuzio.com/sdk/get_started.html#get-started).
+
+After completing the above steps, you can proceed with uploading a new file to your Project using the Konfuzio SDK. The 
+files must be of types specified in the [Supported File Types](https://help.konfuzio.com/specification/supported_file_types/index.html). 
+Here, we're focusing on the `Document.from_file` method to create a [Konfuzio Document](https://dev.konfuzio.com/sdk/sourcecode.html#document).
+
+A Konfuzio Document is an object representing the file you upload, it will contain the OCR (Optical Character Recognition) 
+information of the file once processed by Konfuzio's server.
+
+###### Synchronous and Asynchronous Upload
+
+You have two options for uploading your file: a synchronous method and an asynchronous method. The method is determined 
+by the `sync` parameter in the `from_file` method.
+
+1. **Synchronous upload (sync=True)**: The file is uploaded to the Konfuzio servers, and the method waits for the 
+file to be processed. Once done, it returns a Document object with the OCR information. This is useful if you want 
+to start working with the Document immediately after the OCR processing is completed.
+
+   Here's an example of how to use the `from_file` method with `sync` set to `True`:
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
@@ -211,9 +230,11 @@ Document. Beware, this may take from a few seconds up to over a minute depending
    :end-before: end sync_true
    :dedent: 4
 
-If however you are trying to upload a large number of files and don't want to wait for them to be processed you can use 
-the asynchronous option which returns an empty Document object. You can then use the `update` method to check if the
-Document is ready and the OCR processing is done.
+2. **Asynchronous upload (sync=False)**: With this setting, the method immediately returns an empty Document object 
+after initiating the upload. The OCR processing takes place in the background. This method is advantageous when 
+uploading a large file or a large number of files, as it doesn't require waiting for each file's processing to complete.
+
+   Here is how to use the asynchronous method:
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
@@ -221,13 +242,37 @@ Document is ready and the OCR processing is done.
    :end-before: end sync_false
    :dedent: 4
 
-Once the OCR process is done, you can get the Document OCR results with:
+After asynchronous upload, you can check the status of the Document processing using the `document.update()` method on 
+the returned Document object. If the Document is ready, this method will update the Document object with the OCR information.
+
+It's important to note that if the Document is not ready, you may need to call `document.update()` again at a later time. 
+This could be done manually or by setting up a looping mechanism depending on your application's workflow.
+
+To check if the document is ready and update it with the OCR information, you can implement a custom pulling strategy 
+like this:
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :start-after: start update_doc
-   :end-before: end update_doc
+   :start-after: start pulling loop
+   :end-before: end pulling loop
    :dedent: 4
+
+For a more sophisticated pulling method for asynchronously uploaded Documents using the callback function, you can 
+checkout our :ref:`tutorial on how to use ngrok to receive callbacks from the Konfuzio Server<async_upload_with_callback>`.
+
+###### Timeout Parameter
+
+When making a server request, there's a default timeout value of 2 minutes. This means that if the server doesn't respond 
+within 2 minutes, the operation will stop waiting for a response and return an error. If you're uploading a larger file, 
+it might take more time to process, and the default timeout value might not be sufficient. In such a case, you can 
+increase the timeout by setting the timeout parameter to a higher value.
+
+.. literalinclude:: /sdk/boilerplates/test_get_started.py
+   :language: python
+   :start-after: start timeout upload
+   :end-before: end timeout upload
+   :dedent: 4
+
 
 #### Modify Document
 
@@ -241,7 +286,7 @@ it like this:
    :dedent: 4
 
 #### Update Document
-If there are changes in the Document in the Konfuzio Server, you can update the Document with:
+If there are changes in the Document in the Konfuzio Server, you can update your local version of the Document with:
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
