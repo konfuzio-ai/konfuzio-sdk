@@ -247,6 +247,8 @@ class BaseModel(metaclass=abc.ABCMeta):
 
         if hasattr(self, 'remove_dependencies'):
             self.remove_dependencies()
+
+        # for saving models that have a session as an attribute - otherwise the saving will be unsuccessful
         if hasattr(self, 'client'):
             self.client = None
 
