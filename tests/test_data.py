@@ -1066,12 +1066,12 @@ class TestOfflineDataSetup(unittest.TestCase):
         label = Label(project=project, label_sets=[label_set])
         # create a document A
         document_a = Document(project=project, category=category)
-        _ = Span(start_offset=1, end_offset=2)
+        span = Span(start_offset=1, end_offset=2)
         annotation_set_a = AnnotationSet(document=document_a, label_set=label_set)
 
-        with self.assertRaises(ValueError) as context:
-            Annotation(document=document_a, annotation_set=annotation_set_a, label=label)
-            assert 'has no Label Set' in context.exception
+        annotation = Annotation(document=document_a, annotation_set=annotation_set_a, label=label, spans=[span])
+
+        assert annotation.label_set is annotation_set_a.label_set
 
     def test_to_get_threshold(self):
         """Define fallback threshold for a Label."""
@@ -2961,9 +2961,9 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         """Test adding Annotation error for no-category Document."""
         project = LocalTextProject()
         test_document = project.get_document_by_id(19)
-        label = Label(project=project)
         test_document._category = project.get_category_by_id(3)
         label_set = LabelSet(project=project, categories=[test_document.category])
+        label = Label(project=project, label_sets=[label_set])
         span = Span(start_offset=1, end_offset=2)
         annotation_set = AnnotationSet(document=test_document, label_set=label_set)
         test_document._category = project.no_category
