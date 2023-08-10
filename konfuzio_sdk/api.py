@@ -607,9 +607,8 @@ def upload_ai_model(ai_model_path: str, project_id: int = None, category_id: int
                 raise HTTPError(r.text) from e
     data = r.json()
     ai_model_id = data['id']
-    ai_model = data['name']
 
-    logger.info(f'New AI Model {ai_model} uploaded to {url}')
+    logger.info(f'New AI Model {ai_model_id} uploaded to {url}')
     return ai_model_id
 
 
