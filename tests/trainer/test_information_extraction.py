@@ -1890,8 +1890,10 @@ class TestExtractionToDocument(unittest.TestCase):
         """Test conversion of an output with extractions for a label that doesn't exist in the doc's category."""
         extraction_result = {
             'LabelSetName': [
-                {'LabelName': pd.DataFrame(data=[self.extraction_1])},
-                {'NonExistingLabelName': pd.DataFrame(data=[self.extraction_2])},
+                {
+                    'LabelName': pd.DataFrame(data=[self.extraction_1]),
+                    'NonExistingLabelName': pd.DataFrame(data=[self.extraction_2]),
+                },
             ]
         }
         with pytest.raises(IndexError):

@@ -3312,6 +3312,11 @@ class Document(Data):
         if self._annotation_sets is None:
             self._annotation_sets = []
         if annotation_set not in self._annotation_sets:
+            if annotation_set.label_set.has_multiple_annotation_sets is False:
+                if annotation_set.label_set in [x.label_set for x in self._annotation_sets]:
+                    raise ValueError(
+                        f'In {self} the {annotation_set.label_set} is already used by another Annotation Set.'
+                    )
             self._annotation_sets.append(annotation_set)
         else:
             raise ValueError(f'In {self} the {annotation_set} is a duplicate and will not be added.')

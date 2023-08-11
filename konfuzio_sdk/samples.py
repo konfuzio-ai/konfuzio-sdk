@@ -23,7 +23,13 @@ class LocalTextProject(Project):
 
         category_4 = Category(project=self, id_=4, name="FileSplittingCategory 2")
 
-        label_set = LabelSet(id_=3, project=self, name="LabelSetName", categories=[category, category_2])
+        label_set = LabelSet(
+            id_=3,
+            project=self,
+            name="LabelSetName",
+            categories=[category, category_2],
+            has_multiple_annotation_sets=True,
+        )
         label = Label(id_=4, text='LabelName', project=self, label_sets=[label_set])
         label_new = Label(id_=5, text='LabelName 2', project=self, label_sets=[label_set])
 
@@ -408,7 +414,7 @@ a2  s4
 
         vert_document_2.set_bboxes(document_bbox_2)
 
-        vert_label_set = LabelSet(id_=24, project=self, categories=[category])
+        vert_label_set = LabelSet(id_=24, project=self, categories=[category], has_multiple_annotation_sets=True)
         vert_label = Label(id_=20, text='VertLabelName', project=self, label_sets=[vert_label_set])
         vert_label_2 = Label(id_=21, text='VertLabelName 2', project=self, label_sets=[vert_label_set])
 
