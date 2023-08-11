@@ -3,7 +3,7 @@ import logging
 from typing import List, Union
 import time
 
-from konfuzio_sdk.data import Annotation, Document, Span, Bbox, Label, AnnotationSet
+from konfuzio_sdk.data import Annotation, Document, Span, Bbox, Label
 from konfuzio_sdk.tokenizer.base import AbstractTokenizer, ProcessingStep
 
 from konfuzio_sdk.utils import (
@@ -82,7 +82,7 @@ class ParagraphTokenizer(AbstractTokenizer):
 
         if self.create_detectron_labels:
             label_set = document.category.project.get_label_set_by_name(document.category.name)
-            annotation_set = AnnotationSet(document=document, label_set=label_set, id_=1)
+            annotation_set = document.get_default_annotation_set()
         else:
             label_set = document.project.no_label_set
             annotation_set = document.no_label_annotation_set
@@ -245,7 +245,7 @@ class SentenceTokenizer(AbstractTokenizer):
 
         if self.create_detectron_labels:
             label_set = document.category.project.get_label_set_by_name(document.category.name)
-            annotation_set = AnnotationSet(document=document, label_set=label_set, id_=1)
+            annotation_set = document.get_default_annotation_set()
         else:
             label_set = document.project.no_label_set
             annotation_set = document.no_label_annotation_set
