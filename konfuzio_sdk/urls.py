@@ -2,6 +2,7 @@
 
 import logging
 
+import konfuzio_sdk
 from konfuzio_sdk import KONFUZIO_HOST
 from typing import Union
 
@@ -11,30 +12,34 @@ logger = logging.getLogger(__name__)
 # TOKEN-AUTH
 
 
-def get_auth_token_url(host: str = KONFUZIO_HOST) -> str:
+def get_auth_token_url(host: str = None) -> str:
     """
     Generate URL that creates an authentication token for the user.
 
     :param host: Konfuzio host
     :return: URL to generate the token.
     """
+    if host is None:
+        host = konfuzio_sdk.KONFUZIO_HOST
     return f"{host}/api/token-auth/"
 
 
 # PROJECTS
 
 
-def get_projects_list_url(host: str = KONFUZIO_HOST) -> str:
+def get_projects_list_url(host: str = None) -> str:
     """
     Generate URL to list all the Projects available for the user.
 
     :param host: Konfuzio host
     :return: URL to get all the Projects for the user.
     """
+    if host is None:
+        host = konfuzio_sdk.KONFUZIO_HOST
     return f"{host}/api/projects/"
 
 
-def get_project_url(project_id: Union[int, None], host: str = KONFUZIO_HOST) -> str:
+def get_project_url(project_id: Union[int, None], host: str = None) -> str:
     """
     Generate URL to access the Project details.
 
@@ -42,10 +47,12 @@ def get_project_url(project_id: Union[int, None], host: str = KONFUZIO_HOST) -> 
     :param project_id: ID of the Project
     :return: URL to access the Project details.
     """
+    if host is None:
+        host = konfuzio_sdk.KONFUZIO_HOST
     return f'{host}/api/projects/{project_id}/'
 
 
-def get_documents_meta_url(project_id: int, limit: int = 10, host: str = KONFUZIO_HOST) -> str:
+def get_documents_meta_url(project_id: int, limit: int = 10, host: str = None) -> str:
     """
     Generate URL to load meta information about the Documents in the Project.
 
@@ -53,11 +60,13 @@ def get_documents_meta_url(project_id: int, limit: int = 10, host: str = KONFUZI
     :param host: Konfuzio host
     :return: URL to get all the Documents details.
     """
+    if host is None:
+        host = konfuzio_sdk.KONFUZIO_HOST
     return f"{host}/api/projects/{project_id}/docs/?limit={limit}"
 
 
 def get_document_segmentation_details_url(
-    document_id: int, project_id: int, host: str = KONFUZIO_HOST, action='segmentation'
+    document_id: int, project_id: int, host: str = None, action='segmentation'
 ) -> str:
     """
     Generate URL to get the segmentation results of a  Document.
@@ -68,23 +77,27 @@ def get_document_segmentation_details_url(
     :param action: Action from where to get the results
     :return: URL to access the segmentation results of a  Document
     """
+    if host is None:
+        host = konfuzio_sdk.KONFUZIO_HOST
     return f'{host}/api/projects/{project_id}/docs/{document_id}/{action}/'
 
 
 # DOCUMENTS
 
 
-def get_upload_document_url(host: str = KONFUZIO_HOST) -> str:
+def get_upload_document_url(host: str = None) -> str:
     """
     Generate URL to upload a  Document.
 
     :param host: Konfuzio host
     :return: URL to upload a  Document
     """
+    if host is None:
+        host = konfuzio_sdk.KONFUZIO_HOST
     return f"{host}/api/v2/docs/"
 
 
-def get_document_url(document_id: int, host: str = KONFUZIO_HOST) -> str:
+def get_document_url(document_id: int, host: str = None) -> str:
     """
     Generate URL to access a  Document.
 
@@ -92,10 +105,12 @@ def get_document_url(document_id: int, host: str = KONFUZIO_HOST) -> str:
     :param host: Konfuzio host
     :return: URL to access a  Document
     """
+    if host is None:
+        host = konfuzio_sdk.KONFUZIO_HOST
     return f"{host}/api/v2/docs/{document_id}/"
 
 
-def get_document_ocr_file_url(document_id: int, host: str = KONFUZIO_HOST) -> str:
+def get_document_ocr_file_url(document_id: int, host: str = None) -> str:
     """
     Generate URL to get the OCR version of the document.
 
@@ -103,10 +118,12 @@ def get_document_ocr_file_url(document_id: int, host: str = KONFUZIO_HOST) -> st
     :param host: Konfuzio host
     :return: URL to get OCR Document file.
     """
+    if host is None:
+        host = konfuzio_sdk.KONFUZIO_HOST
     return f'{host}/doc/show/{document_id}/'
 
 
-def get_document_original_file_url(document_id: int, host: str = KONFUZIO_HOST) -> str:
+def get_document_original_file_url(document_id: int, host: str = None) -> str:
     """
     Generate URL to get the original version of the document.
 
@@ -114,21 +131,25 @@ def get_document_original_file_url(document_id: int, host: str = KONFUZIO_HOST) 
     :param host: Konfuzio host
     :return: URL to get the original document
     """
+    if host is None:
+        host = konfuzio_sdk.KONFUZIO_HOST
     return f'{host}/doc/show-original/{document_id}/'
 
 
-def get_page_image_url(page_id: int, host: str = KONFUZIO_HOST) -> str:
+def get_page_image_url(page_id: int, host: str = None) -> str:
     """
     Generate URL to get Page as Image.
 
     :param page_id: ID of the Page
     :return: URL to get Page as PNG
     """
+    if host is None:
+        host = konfuzio_sdk.KONFUZIO_HOST
     return f'{host}/page/show-image/{page_id}/'
 
 
 def get_document_api_details_url(
-    document_id: int, project_id: int, host: str = KONFUZIO_HOST, extra_fields='hocr,bbox'
+    document_id: int, project_id: int, host: str = None, extra_fields='hocr,bbox'
 ) -> str:
     """
     Generate URL to access the details of a Document in a Project.
@@ -139,33 +160,39 @@ def get_document_api_details_url(
     :param extra_fields: Extra information to include in the response
     :return: URL to get Document details
     """
+    if host is None:
+        host = konfuzio_sdk.KONFUZIO_HOST
     return f'{host}/api/projects/{project_id}/docs/{document_id}/?extra_fields={extra_fields}'
 
 
-def get_annotation_view_url(annotation_id: int, host: str = KONFUZIO_HOST) -> str:
+def get_annotation_view_url(annotation_id: int, host: str = None) -> str:
     """
     Generate URL to see Annotation in the SmartView.
 
     :param annotation_id: ID of the Annotation
     :return: URL to get visually access Annotation online.
     """
+    if host is None:
+        host = konfuzio_sdk.KONFUZIO_HOST
     return f'{host}/a/{annotation_id}'
 
 
 # LABELS
 
 
-def get_labels_url(host: str = KONFUZIO_HOST) -> str:
+def get_labels_url(host: str = None) -> str:
     """
     Generate URL to list all Labels for the user.
 
     :param host: Konfuzio host
     :return: URL to list all Labels for the user.
     """
+    if host is None:
+        host = konfuzio_sdk.KONFUZIO_HOST
     return f"{host}/api/v2/labels/"
 
 
-def get_label_url(label_id: int, host: str = KONFUZIO_HOST) -> str:
+def get_label_url(label_id: int, host: str = None) -> str:
     """
     Generate URL to access a Label.
 
@@ -173,13 +200,15 @@ def get_label_url(label_id: int, host: str = KONFUZIO_HOST) -> str:
     :param host: Konfuzio host
     :return: URL to access a Label
     """
+    if host is None:
+        host = konfuzio_sdk.KONFUZIO_HOST
     return f"{host}/api/v2/labels/{label_id}/"
 
 
 # ANNOTATIONS
 
 
-def get_document_annotations_url(document_id: int, project_id: int, host: str = KONFUZIO_HOST) -> str:
+def get_document_annotations_url(document_id: int, project_id: int, host: str = None) -> str:
     """
     Access Annotations of a document.
 
@@ -188,10 +217,12 @@ def get_document_annotations_url(document_id: int, project_id: int, host: str = 
     :param host: Konfuzio host
     :return: URL to access the Annotations of a document
     """
+    if host is None:
+        host = konfuzio_sdk.KONFUZIO_HOST
     return f'{host}/api/projects/{project_id}/docs/{document_id}/annotations/'
 
 
-def get_annotation_url(document_id: int, annotation_id: int, project_id: int, host: str = KONFUZIO_HOST) -> str:
+def get_annotation_url(document_id: int, annotation_id: int, project_id: int, host: str = None) -> str:
     """
     Generate URL to access an annotation.
 
@@ -201,15 +232,19 @@ def get_annotation_url(document_id: int, annotation_id: int, project_id: int, ho
     :param host: Konfuzio host
     :return: URL to access an Annotation of a document
     """
+    if host is None:
+        host = konfuzio_sdk.KONFUZIO_HOST
     return f'{host}/api/projects/{project_id}/docs/{document_id}/annotations/{annotation_id}/'
 
 
-def get_create_ai_model_url(ai_type: str, host: str = KONFUZIO_HOST) -> str:
+def get_create_ai_model_url(ai_type: str, host: str = None) -> str:
     """
     Get url to create new AiModel.
 
     :return: URL
     """
+    if host is None:
+        host = konfuzio_sdk.KONFUZIO_HOST
     if ai_type == 'extraction':
         return f'{host}/api/v3/extraction-ais/upload/'
     elif ai_type == 'categorization':
@@ -218,21 +253,25 @@ def get_create_ai_model_url(ai_type: str, host: str = KONFUZIO_HOST) -> str:
         return f'{host}/api/v3/splitting-ais/upload/'
 
 
-def get_update_ai_model_url(ai_model_id, host: str = KONFUZIO_HOST) -> str:
+def get_update_ai_model_url(ai_model_id, host: str = None) -> str:
     """
     Get url to update an AiModel.
 
     :return: URL
     """
+    if host is None:
+        host = konfuzio_sdk.KONFUZIO_HOST
     return f'{host}/api/aimodels/{ai_model_id}/'
 
 
-def get_ai_model_url(ai_model_id: int, ai_type: str, host: str = KONFUZIO_HOST) -> str:
+def get_ai_model_url(ai_model_id: int, ai_type: str, host: str = None) -> str:
     """
     Get url to modify or delete an AI model.
 
     :return: a dictionary of potential URLs
     """
+    if host is None:
+        host = konfuzio_sdk.KONFUZIO_HOST
     if ai_type == 'extraction':
         return f'{host}/api/v3/extraction-ais/{ai_model_id}/'
     elif ai_type == 'categorization':
