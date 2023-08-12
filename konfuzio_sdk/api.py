@@ -144,7 +144,6 @@ def konfuzio_session(token: str = None, timeout: Optional[int] = None, num_retri
     :param host: Host to connect to.
     :return: Request session.
     """
-
     if token is None:
         import konfuzio_sdk
         token = konfuzio_sdk.KONFUZIO_TOKEN
