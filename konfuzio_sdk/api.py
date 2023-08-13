@@ -187,7 +187,12 @@ def get_project_details(project_id: int, session=None) -> dict:
     """
     if session is None:
         session = konfuzio_session()
-    url = get_project_url(project_id=project_id, host=session.host)
+    if hasattr(session, 'host'):
+        host = session.host
+    else:
+        host = None
+
+    url = get_project_url(project_id=project_id, host=host)
     r = session.get(url=url)
 
     return r.json()
@@ -230,11 +235,15 @@ def get_document_details(document_id: int, project_id: int, session=None, extra_
     """
     if session is None:
         session = konfuzio_session()
+    if hasattr(session, 'host'):
+        host = session.host
+    else:
+        host = None
     url = get_document_api_details_url(
         document_id=document_id,
         project_id=project_id,
         extra_fields=extra_fields,
-        host=session.host
+        host=host
     )
     r = session.get(url)
     return r.json()
@@ -254,7 +263,11 @@ def get_page_image(page_id: int, session=None, thumbnail: bool = False):
     if thumbnail:
         raise NotImplementedError
     else:
-        url = get_page_image_url(page_id=page_id, host=session.host)
+        if hasattr(session, 'host'):
+            host = session.host
+        else:
+            host = None
+        url = get_page_image_url(page_id=page_id, host=host)
 
     r = session.get(url)
 
@@ -402,7 +415,11 @@ def get_meta_of_files(project_id: int, limit: int = 1000, session=None) -> List[
     """
     if session is None:
         session = konfuzio_session()
-    url = get_documents_meta_url(project_id=project_id, limit=limit, host=session.host)
+    if hasattr(session, 'host'):
+        host = session.host
+    else:
+        host = None
+    url = get_documents_meta_url(project_id=project_id, limit=limit, host=host)
     result = []
     r = session.get(url)
     data = r.json()
@@ -570,10 +587,14 @@ def download_file_konfuzio_api(document_id: int, ocr: bool = True, session=None)
     """
     if session is None:
         session = konfuzio_session()
-    if ocr:
-        url = get_document_ocr_file_url(document_id, host=session.host)
+    if hasattr(session, 'host'):
+        host = session.host
     else:
-        url = get_document_original_file_url(document_id, host=session.host)
+        host = None
+    if ocr:
+        url = get_document_ocr_file_url(document_id, host=host)
+    else:
+        url = get_document_original_file_url(document_id, host=host)
 
     r = session.get(url)
 
