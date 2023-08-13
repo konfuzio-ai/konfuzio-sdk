@@ -145,8 +145,7 @@ def konfuzio_session(token: str = None, timeout: Optional[int] = None, num_retri
     :return: Request session.
     """
     if token is None:
-        import konfuzio_sdk
-        token = konfuzio_sdk.KONFUZIO_TOKEN
+        token = KONFUZIO_TOKEN
     if timeout is None:
         timeout = 120
     if num_retries is None:
