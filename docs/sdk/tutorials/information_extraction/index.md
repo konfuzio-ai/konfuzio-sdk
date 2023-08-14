@@ -16,7 +16,7 @@ Note: you don't necessarily need to create the AI from scratch if you already ha
 You just need to wrap it into the class that corresponds to our Extraction AI structure. Follow the steps in this 
 tutorial to find out what are the requirements for that.
 
-To prepare the data for training or testing your AI, you can follow the [data preparation tutorial](tutorials.html#tutorials.html#prepare-the-data-for-training-and-testing-the-ai).
+To prepare the data for training or testing your AI, you can follow the [data preparation tutorial](https://dev.konfuzio.com/sdk/tutorials/data-preparation/index.html#prepare-the-data-for-training-and-testing-the-ai).
 
 By default, any Extraction AI class should derive from the `AbstractExtractionAI` class and implement the `extract()` 
 method. In this tutorial, we'll demonstrate how to create a simple custom Extraction AI that extracts dates provided in 
