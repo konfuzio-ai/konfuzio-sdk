@@ -81,7 +81,7 @@ class ParagraphTokenizer(AbstractTokenizer):
         all_paragraph_bboxes: List[List['Bbox']] = detectron_get_paragraph_bboxes(detectron_document_results, document)
 
         if self.create_detectron_labels:
-            label_set = document.category.project.get_label_set_by_name(document.category.name)
+            label_set = document.category.get_default_label_set()
             annotation_set = document.get_default_annotation_set()
         else:
             label_set = document.project.no_label_set
@@ -109,7 +109,6 @@ class ParagraphTokenizer(AbstractTokenizer):
                         document=document,
                         annotation_set=annotation_set,
                         label=label,
-                        category=document.category,
                         spans=spans,
                         confidence=confidence,
                     )
@@ -244,7 +243,7 @@ class SentenceTokenizer(AbstractTokenizer):
         all_paragraph_bboxes: List[List['Bbox']] = detectron_get_paragraph_bboxes(detectron_document_results, document)
 
         if self.create_detectron_labels:
-            label_set = document.category.project.get_label_set_by_name(document.category.name)
+            label_set = document.category.get_default_label_set()
             annotation_set = document.get_default_annotation_set()
         else:
             label_set = document.project.no_label_set
@@ -318,7 +317,6 @@ class SentenceTokenizer(AbstractTokenizer):
                         annotation_set=document.no_label_annotation_set,
                         label=document.project.no_label,
                         label_set=document.project.no_label_set,
-                        category=document.category,
                         spans=sentence_spans,
                     )
                     sentence_spans = []
@@ -333,7 +331,6 @@ class SentenceTokenizer(AbstractTokenizer):
                             annotation_set=document.no_label_annotation_set,
                             label=document.project.no_label,
                             label_set=document.project.no_label_set,
-                            category=document.category,
                             spans=sentence_spans,
                         )
                         sentence_spans = []
@@ -347,7 +344,6 @@ class SentenceTokenizer(AbstractTokenizer):
                 annotation_set=document.no_label_annotation_set,
                 label=document.project.no_label,
                 label_set=document.project.no_label_set,
-                category=document.category,
                 spans=sentence_spans,
             )
 

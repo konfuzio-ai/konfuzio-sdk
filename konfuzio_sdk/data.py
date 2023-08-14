@@ -898,6 +898,13 @@ class Category(Data):
         else:
             raise ValueError(f'In {self} the {label_set} is a duplicate and will not be added.')
 
+    def get_default_label_set(self):
+        """Get the default Label Set of the Project."""
+        for label_set in self.label_sets:
+            if label_set.is_default:
+                return label_set
+        raise ValueError(f'In {self} there is no default Label Set.')
+
     def _collect_exclusive_first_page_strings(self, tokenizer):
         """
         Collect exclusive first-page string across the Documents within the Category.
@@ -2889,7 +2896,20 @@ class Document(Data):
         """
         if self._no_label_annotation_set is None:
             self.annotation_sets()
-            self._no_label_annotation_set = AnnotationSet(document=self, label_set=self.project.no_label_set)
+
+            # Find no label annotation set
+            self._no_label_annotation_set = next(
+                (
+                    annotation_set
+                    for annotation_set in self._annotation_sets
+                    if annotation_set.label_set == self.project.no_label_set
+                ),
+                None,
+            )
+
+            # Create no label annotation set if not found
+            if self._no_label_annotation_set is None:
+                self._no_label_annotation_set = AnnotationSet(document=self, label_set=self.project.no_label_set)
 
         return self._no_label_annotation_set
 
@@ -3346,7 +3366,7 @@ class Document(Data):
         for annotation_set in self._annotation_sets:
             if annotation_set.is_default:
                 return annotation_set
-        default_label_set = self.project.get_default_label_set()
+        default_label_set = self.category.get_default_label_set()
         default_annotation_set = AnnotationSet(
             id_=next(Data.id_iter),
             document=self,
@@ -4027,13 +4047,6 @@ class Project(Data):
         if not self._label_sets:
             self.get_label_sets()
         return self._label_sets
-
-    def get_default_label_set(self):
-        """Get the default Label Set of the Project."""
-        for label_set in self.label_sets:
-            if label_set.is_default:
-                return label_set
-        raise ValueError(f'In {self} there is no default Label Set.')
 
     def get_labels(self, reload=False) -> Label:
         """Get ID and name of any Label in the Project."""
