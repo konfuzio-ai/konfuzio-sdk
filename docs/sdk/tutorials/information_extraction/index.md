@@ -78,7 +78,7 @@ following:
 
 Here we will see how we can use the Paragraph Tokenizer to create a Custom Extraction AI. What we need to create is 
 just a simple wrapper around the Paragraph Tokenizer. It shows how you can create your own Custom Extraction AI that 
-you can use in Konfuzio on-prem installations or in the [Konfuzio Marketplace](https://help.konfuzio.com/marketplace/index.html).
+you can use in Konfuzio on-prem installations or in the [Konfuzio Marketplace](https://help.konfuzio.com/modules/marketplace/index.html).
 
 .. collapse:: Full Paragraph Extraction AI code
 
@@ -193,7 +193,7 @@ Let's go step by step.
    upload_ai_model(model_path=path, category_ids=[category.id_])
    ```
    
-   Once the model is uploaded you can also share your model with others on the [Konfuzio Marketplace](https://help.konfuzio.com/marketplace/index.html).
+   Once the model is uploaded you can also share your model with others on the [Konfuzio Marketplace](https://help.konfuzio.com/modules/marketplace/index.html).
 
 ### Evaluate a Trained Extraction AI Model
 
