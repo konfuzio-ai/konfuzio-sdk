@@ -616,6 +616,8 @@ def test_build_categorization_ai() -> None:
     )
 
     pipeline_path = categorization_pipeline.save()
+    with pytest.raises(ValueError, match='output_dir'):
+        categorization_pipeline.save(path='path')
     CategorizationAI.load_model(pipeline_path)
     os.remove(pipeline_path)
 
