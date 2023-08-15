@@ -899,11 +899,21 @@ class Category(Data):
             raise ValueError(f'In {self} the {label_set} is a duplicate and will not be added.')
 
     def get_default_label_set(self):
-        """Get the default Label Set of the Project."""
-        for label_set in self.label_sets:
-            if label_set.is_default:
-                return label_set
-        raise ValueError(f'In {self} there is no default Label Set.')
+        """Get the default Label Set of the Category."""
+        # Search for existing default LabelSet
+        default_label_set = next((label_set for label_set in self.label_sets if label_set.is_default), None)
+        # If not found, create a new default LabelSet
+        if not default_label_set:
+            default_label_set = LabelSet(
+                id_=self.id_,
+                project=self.project,
+                name=self.name,
+                name_clean=self.name_clean,
+                is_default=True,
+                categories=[self],
+                has_multiple_annotation_sets=False,
+            )
+        return default_label_set
 
     def _collect_exclusive_first_page_strings(self, tokenizer):
         """
@@ -2362,7 +2372,7 @@ class Annotation(Data):
                 bboxes=self.bboxes,
                 # selection_bbox=self.selection_bbox,
                 page_number=self.page_number,
-                session=self.document.project.session
+                session=self.document.project.session,
             )
             if response.status_code == 201:
                 json_response = json.loads(response.text)
@@ -2464,10 +2474,7 @@ class Annotation(Data):
         """
         if self.document.is_online and delete_online:
             delete_document_annotation(
-                self.document.id_,
-                self.id_,
-                self.document.project.id_,
-                session=self.document.project.session
+                self.document.id_, self.id_, self.document.project.id_, session=self.document.project.session
             )
             self.document.update()
         else:
@@ -2680,7 +2687,7 @@ class Document(Data):
             file_name=self.name,
             dataset_status=self.dataset_status,
             assignee=self.assignee,
-            session=self.project.session
+            session=self.project.session,
         )
 
     def save(self):
@@ -2850,9 +2857,7 @@ class Document(Data):
         if any(page._segmentation is None for page in document.pages()):
             document_id = document.id_
             detectron_document_results = get_results_from_segmentation(
-                document_id,
-                self.project.id_,
-                session=konfuzio_session(timeout=timeout, num_retries=num_retries)
+                document_id, self.project.id_, session=konfuzio_session(timeout=timeout, num_retries=num_retries)
             )
             assert len(detectron_document_results) == self.number_of_pages
             for page_index, detectron_page_result in enumerate(detectron_document_results):
@@ -3040,7 +3045,7 @@ class Document(Data):
                 file_name=self.name,
                 dataset_status=4,
                 assignee=assignee,
-                session=self.project.session
+                session=self.project.session,
             )
 
         return valid
@@ -3432,7 +3437,9 @@ class Document(Data):
         elif self.is_online and self.status and self.status[0] == Document.DONE:
             # todo check for self.project.id_ and self.id_ and ?
             logger.info(f'Start downloading bbox files of {len(self.text)} characters for {self}.')
-            bbox = get_document_details(document_id=self.id_, project_id=self.project.id_, extra_fields="bbox", session=self.project.session)['bbox']
+            bbox = get_document_details(
+                document_id=self.id_, project_id=self.project.id_, extra_fields="bbox", session=self.project.session
+            )['bbox']
             # Use the `zipfile` module: `compresslevel` was added in Python 3.7
             with zipfile.ZipFile(
                 self.bbox_file_path, mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9
@@ -4058,7 +4065,6 @@ class Project(Data):
                     category = Category(project=self, id_=label_set_data['id'], **label_set_data)
                     category.label_sets.append(label_set)
                     label_set.categories.append(category)  # Konfuzio Server mixes the concepts, we use two instances
-                    # self.add_category(category)
 
         return self._label_sets
 

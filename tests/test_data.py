@@ -1115,13 +1115,45 @@ class TestOfflineDataSetup(unittest.TestCase):
         """Test to add a second AnnotationSet to a Document where LabelSet.has_multiple_annotation_sets is False."""
         project = Project(id_=None)
         category = Category(project=project)
-        label_set = LabelSet(id_=93711, project=project, categories=[category], has_multiple_annotation_sets=False)
+        label_set = LabelSet(id_=93712, project=project, categories=[category], has_multiple_annotation_sets=False)
 
         document = Document(project=project, category=category)
         _ = AnnotationSet(id_=1, document=document, label_set=label_set)
 
         with pytest.raises(ValueError, match='is already used by another Annotation Set'):
             _ = AnnotationSet(id_=2, document=document, label_set=label_set)
+
+    def test_add_annotation_set_w_multiple_true(self):
+        """Test to add a second AnnotationSet to a Document where LabelSet.has_multiple_annotation_sets is True."""
+        project = Project(id_=None)
+        category = Category(project=project)
+        label_set = LabelSet(id_=93713, project=project, categories=[category], has_multiple_annotation_sets=True)
+
+        document = Document(project=project, category=category)
+        annotation_set_1 = AnnotationSet(document=document, label_set=label_set)
+        annotation_set_2 = AnnotationSet(document=document, label_set=label_set)  # no error
+        assert annotation_set_1 != annotation_set_2  # both ids are None, but different local_ids
+
+    def test_get_default_label_set_and_annotation_set(self):
+        """Test to get the default AnnotationSet of a Document."""
+        project = Project(id_=None)
+        category = Category(id_=143, name="Category143", project=project)
+
+        document = Document(project=project, category=category)
+
+        label_set = category.get_default_label_set()
+
+        assert label_set.id_ == category.id_
+        assert label_set.has_multiple_annotation_sets is False
+        assert label_set.is_default is True
+        assert label_set.name == category.name
+
+        annotation_set = document.get_default_annotation_set()
+
+        assert annotation_set.label_set is label_set
+
+        with pytest.raises(ValueError, match='is already used by another Annotation Set'):
+            _ = AnnotationSet(document=document, label_set=label_set)
 
     def test_to_get_threshold(self):
         """Define fallback threshold for a Label."""
