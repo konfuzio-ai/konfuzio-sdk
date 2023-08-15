@@ -859,6 +859,8 @@ class TestOfflineDataSetup(unittest.TestCase):
 
     def test_document_no_label_annotation_set_label_set(self):
         """Test that Label Set of the no_label_annotation_set of the Document has the no_label_set of the Project."""
+        assert self.document.no_label_annotation_set.label_set.id_ == self.project.no_label_set.id_ == 0
+        assert self.project.no_label_set.name == 'NO_LABEL_SET'
         assert self.document.no_label_annotation_set.label_set == self.project.no_label_set
 
     def test_category_of_document(self):
@@ -1072,6 +1074,54 @@ class TestOfflineDataSetup(unittest.TestCase):
         annotation = Annotation(document=document_a, annotation_set=annotation_set_a, label=label, spans=[span])
 
         assert annotation.label_set is annotation_set_a.label_set
+
+    def test_add_annotation_with_annotation_set_and_label_set_none_w_multiple_false(self):
+        """
+        Test to add an Annotation to a Document where the LabelSet and AnnotationSet are None.
+
+        With LabelSet.has_multiple_annotation_sets True.
+        """
+        project = Project(id_=None)
+        category = Category(project=project)
+        label_set = LabelSet(id_=93710, project=project, categories=[category], has_multiple_annotation_sets=False)
+        label = Label(project=project, label_sets=[label_set])
+
+        document = Document(project=project, category=category)
+        span = Span(start_offset=1, end_offset=2)
+
+        annotation = Annotation(document=document, label=label, spans=[span])
+
+        assert isinstance(annotation.annotation_set, AnnotationSet)
+        assert annotation.label_set is annotation.annotation_set.label_set
+
+    def test_add_annotation_with_annotation_set_and_label_set_none_w_multiple_true(self):
+        """
+        Test to add an Annotation to a Document where the LabelSet and AnnotationSet are None.
+
+        With LabelSet.has_multiple_annotation_sets True.
+        """
+        project = Project(id_=None)
+        category = Category(project=project)
+        label_set = LabelSet(id_=93711, project=project, categories=[category], has_multiple_annotation_sets=True)
+        label = Label(project=project, label_sets=[label_set])
+
+        document = Document(project=project, category=category)
+        span = Span(start_offset=1, end_offset=2)
+
+        with pytest.raises(ValueError, match='Cannot assign .* to AnnotationSet.* can have multiple Annotation Sets'):
+            _ = Annotation(document=document, label=label, spans=[span])
+
+    def test_add_annotation_set_w_multiple_false(self):
+        """Test to add a second AnnotationSet to a Document where LabelSet.has_multiple_annotation_sets is False."""
+        project = Project(id_=None)
+        category = Category(project=project)
+        label_set = LabelSet(id_=93711, project=project, categories=[category], has_multiple_annotation_sets=False)
+
+        document = Document(project=project, category=category)
+        _ = AnnotationSet(id_=1, document=document, label_set=label_set)
+
+        with pytest.raises(ValueError, match='is already used by another Annotation Set'):
+            _ = AnnotationSet(id_=2, document=document, label_set=label_set)
 
     def test_to_get_threshold(self):
         """Define fallback threshold for a Label."""
