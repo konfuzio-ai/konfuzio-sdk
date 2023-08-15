@@ -1150,6 +1150,7 @@ class TestOfflineDataSetup(unittest.TestCase):
 
         annotation_set = document.get_default_annotation_set()
 
+        assert annotation_set.is_default is True
         assert annotation_set.label_set is label_set
 
         with pytest.raises(ValueError, match='is already used by another Annotation Set'):
