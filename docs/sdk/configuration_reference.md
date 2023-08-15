@@ -19,44 +19,79 @@ run the following command:
 
   `pip install konfuzio_sdk[ai]`
   
-  Currently, the full instance cannot be installed on MacOS machines with an ARM-based chip from the M-series. The `konfuzio_sdk` package can only be installed on MacOS on machines with an ARM chip if the lightweight instance is installed. However the Konfuzio SDK can be used on a hosted environment such as Google Colab. Follow the instructions in the next section to install the SDK in Colab.
+  Currently, the full instance cannot be installed on MacOS machines with an ARM-based chip from the M-series. The `konfuzio_sdk` package can only be installed on MacOS on machines with an ARM chip if the lightweight instance is installed. However the Konfuzio SDK can be used on a hosted environment such as [Deepnote](https://deepnote.com/). Follow the instructions in the next section to install the SDK in Colab.
 
-### 2.1 Install the SDK in Google Colab
-It is possible to use the SDK in [Google Colab](https://colab.research.google.com/) notebook regardless of the operating system of your computer. To install the SDK in Colab, run the following commands in a new Notebook cell:
+### 2.1 Install the SDK in a hosted Jupyter environment
+This procedure is not recommended, but documented here for completeness. Due to a limitation in Deepnote's ability to receive input from the user, the SDK cannot be initialized in a Deepnote notebook. To work around this limitation, we need to install and authenticate access to the SDK in a Colab notebook and then import the credentials in the Deepnote project.
 
-  ```
-  !git clone https://github.com/konfuzio-ai/konfuzio-sdk.git
-  !sed -i 's/certifi==2022\.12\.7/certifi==2023.7.22/' konfuzio-sdk/setup.py
-  ```
+If you don't have one, [create](https://deepnote.com/sign-up) an account. Once you are logged in, create a new project and choose the `Python 3.8` environment.
 
-  In a new cell run `!cat konfuzio-sdk/setup.py` to check we have the right version of the `certifi` library. Inspect the output of the command, at the bottom of it you should see the following:
-  ```
-  setuptools.setup(
+To change the environment, access the project settings by clicking on the gear icon on bottom left of the page:
+<p align="center">
+  <img src="img/deepnote-env.png" width=300 alt="Deepnote environment settings">
+</p>
+
+Choose Python 3.8 from the dropdown menu:
+<p align="center">
+  <img src="img/deepnote-python.png" width=300 alt="Deepnote python version">
+</p>
+
+Create a file called `.env` in the root of the Deepnote project. We will later use this file to store the credentials we obtained via the Colab notebook:
+<p align="center">
+  <img src="img/deepnote-newfile.png" width=350 alt="Deepnote create file">
+</p>
+
+To install the SDK in Deepnote, run the following commands in a new Notebook cell:
+```
+!git clone https://github.com/konfuzio-ai/konfuzio-sdk.git
+!sed -i 's/torch>=1\.8\.1/torch==1.8.1/' konfuzio-sdk/extras_list.py
+```
+
+In a new cell run `!cat konfuzio-sdk/extras_list.py` to check we have the right version of the `torch` library. Inspect the output of the command, at the bottom of it you should see the following:
+```  
+'ai': [
+    'chardet==5.1.0',
+    'pydantic==1.10.8',  # pydantic is used by spacy. We need to force a higher pydantic version to avoid
+    # https://github.com/tiangolo/fastapi/issues/5048
+    'torch==1.8.1',
     ...
-    install_requires=[
-        'certifi==2023.7.22',
-        ...
-    ],
-  ``````
-  Make sure the version of the `certifi` package is indeed `2023.7.22`. If it is, we are now ready to actually install the SDK. In a new cell run:
-  ```
-  !cd konfuzio-sdk && pip install .[ai]
-  ```
-  
-  Now the SDK can be initialized in the Colab notebook, to do so run in a new cell:
-  ```
-  import konfuzio_sdk
-  !konfuzio_sdk init
-  ```
+``````
+Make sure that the `torch` line has `==` symbol, and not a `>=` one. If that is the case, we are now ready to actually install the SDK. In a new cell run:
+```
+!cd konfuzio-sdk && pip install .[ai]
+```
+If the installation does not complete successfully, restart the Deepnote notebook and run the same cell again. It is not necessary to run the previous cells again. To restart the notebook press the refresh arrow at the top of the page:
+<p align="center">
+  <img src="img/deepnote-refresh.png" alt="Deepnote refresh">
+</p>
+Once the status changes back to `Ready`, run the cell with the `install` command again.
 
-  Follow the instructions in the terminal to initialize the SDK. If you now try to instantiate a new Konfuzio Project you would receive the following error:
-  ```
-  PermissionError: Your Token to connect to https://app.konfuzio.com is missing, e.g. use "konfuzio_sdk init"
-  ```
-  Although we have already initialized the SDK, it is necessary to restart the Colab runtime in order to use the SDK. Restart the runtime by choosing `Runtime` -> `Restart runtime...` in the menu bar. 
+As mentioned earlier, before we can use the SDK within Deepnote we need to obtain the authorization token using a Colab notebook instance. We now install the SDK in a Colab notebook and copy the credentials to the `.env` file in the Deepnote project.
 
-  The SDK is now ready to be used in the Colab notebook.
+To install the SDK in Colab, run the following commands in a new [Colab](https://colab.research.google.com/) notebook cell:
+```
+!pip install konfuzio_sdk[ai]
+import konfuzio_sdk
+!konfuzio_sdk init
+```
+Follow the instructions in the terminal to initialize the SDK. Once the SDK is initialized an `.env` file will exist your root Colab folder. This file contains the credentials to access the Konfuzio server. Open it, copy the content and paste it into the new file we created in the Deepnote project. The `.env` file should look like this:
+```
+KONFUZIO_HOST = https://app.konfuzio.com
+KONFUZIO_USER = your@email
+KONFUZIO_TOKEN = <40-char token>
+```
 
+The Konfuzio SDK is now ready to be used in your Deepnote notebook. To test it, create a new cell and run:
+```
+from konfuzio_sdk.data import Project
+PROJECT_ID = <your-project-id>
+my_project = Project(id_=PROJECT_ID)
+```
+If no error is raised, the SDK is correctly installed and authenticated.
+
+> **TIP:**
+  Your project ID can be obtained by the web app URL when accessing Konfuzio from your browser. From your home page, navigate to `Projects` and pick the project you want to work with. Then look at the URL in your browser. Your should see something like `https://app.konfuzio.com/admin/server/project/<project-id>/change/` where `<project-id>` is your project ID.
+ 
 ---
 
 *Notes*:
