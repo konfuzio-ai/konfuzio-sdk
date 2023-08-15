@@ -81,7 +81,7 @@ class ParagraphTokenizer(AbstractTokenizer):
         all_paragraph_bboxes: List[List['Bbox']] = detectron_get_paragraph_bboxes(detectron_document_results, document)
 
         if self.create_detectron_labels:
-            label_set = document.category.get_default_label_set()
+            label_set = document.category.default_label_set
             annotation_set = document.default_annotation_set
         else:
             label_set = document.project.no_label_set
@@ -243,7 +243,7 @@ class SentenceTokenizer(AbstractTokenizer):
         all_paragraph_bboxes: List[List['Bbox']] = detectron_get_paragraph_bboxes(detectron_document_results, document)
 
         if self.create_detectron_labels:
-            label_set = document.category.get_default_label_set()
+            label_set = document.category.default_label_set
             annotation_set = document.default_annotation_set
         else:
             label_set = document.project.no_label_set

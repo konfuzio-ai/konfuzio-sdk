@@ -894,7 +894,8 @@ class Category(Data):
         else:
             raise ValueError(f'In {self} the {label_set} is a duplicate and will not be added.')
 
-    def get_default_label_set(self):
+    @property
+    def default_label_set(self):
         """Get the default Label Set of the Category."""
         # Search for existing default LabelSet
         default_label_set = next((label_set for label_set in self.label_sets if label_set.is_default), None)
@@ -3383,7 +3384,7 @@ class Document(Data):
         for annotation_set in self._annotation_sets:
             if annotation_set.is_default:
                 return annotation_set
-        default_label_set = self.category.get_default_label_set()
+        default_label_set = self.category.default_label_set
         default_annotation_set = AnnotationSet(
             id_=next(Data.id_iter),
             document=self,

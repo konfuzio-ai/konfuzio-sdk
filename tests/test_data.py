@@ -1141,7 +1141,7 @@ class TestOfflineDataSetup(unittest.TestCase):
 
         document = Document(project=project, category=category)
 
-        label_set = category.get_default_label_set()
+        label_set = category.default_label_set
 
         assert label_set.id_ == category.id_
         assert label_set.has_multiple_annotation_sets is False

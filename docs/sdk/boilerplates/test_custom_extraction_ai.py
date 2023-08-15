@@ -18,7 +18,7 @@ def test_create_extraction_ai():
 
             # define a Label Set that will contain Labels for Annotations your Extraction AI extracts
             # here we use the default Label Set of the Category
-            label_set = document.category.get_default_label_set()
+            label_set = document.category.default_label_set
             # get or create a Label that will be used for annotating
             label_name = 'Date'
             if label_name in [label.name for label in document.category.labels]:
