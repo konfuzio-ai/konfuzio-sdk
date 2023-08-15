@@ -364,6 +364,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             """Mock requests POST response."""
 
             status_code = 201
+            host = None
 
             def json(self):
                 """Mock valid return."""
