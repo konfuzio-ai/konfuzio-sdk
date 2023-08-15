@@ -6,7 +6,7 @@ def test_create_extraction_ai():
     # start custom
     import re
 
-    from konfuzio_sdk.data import Document, Span, AnnotationSet, Annotation, Label
+    from konfuzio_sdk.data import Document, Span, Annotation, Label
     from konfuzio_sdk.trainer.information_extraction import AbstractExtractionAI
 
     class CustomExtractionAI(AbstractExtractionAI):
@@ -18,14 +18,14 @@ def test_create_extraction_ai():
 
             # define a Label Set that will contain Labels for Annotations your Extraction AI extracts
             # here we use the default Label Set of the Category whose ID is the same as the ID of the Category
-            label_set = document.project.get_label_set_by_id(id_=document.category.id_)
+            label_set = document.category.get_default_label_set()
             # get or create a Label that will be used for annotating
             label_name = 'Date'
             if label_name in [label.name for label in document.project.labels]:
                 label = document.project.get_label_by_name(label_name)
             else:
                 label = Label(text=label_name, project=project, label_sets=[label_set])
-            annotation_set = AnnotationSet(document=document, label_set=label_set)
+            annotation_set = document.get_default_annotation_set()
             for re_match in re.finditer(r'(\d+/\d+/\d+)', document.text, flags=re.MULTILINE):
                 span = Span(start_offset=re_match.span(1)[0], end_offset=re_match.span(1)[1])
                 # create Annotation Set for the Annotation. Note that every Annotation Set
