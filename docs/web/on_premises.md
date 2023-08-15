@@ -546,8 +546,8 @@ AZURE_OCR_VERSION=v3.2 # The version of the READ API
 For the first option, login into the Azure Portal and create a Computer Vision resource under the Cognitive Services section. 
 After the resource is created the AZURE_OCR_KEY and AZURE_OCR_BASE_URL is displayed. Those need to be added as environment variable.
 
-For the second option, please refer to the [Azure Read API Container installation guide](https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2).
-Please open a support ticket to get an API_KEY and ENDPOINT_URL which is compatible with [running the On-Premises container](https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2). 
+For the "on-premises" option, please refer to the [Azure Read API Container installation guide](https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2).
+Please fill in the [Microsoft Request Form](https://learn.microsoft.com/en-us/azure/ai-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2#request-approval-to-run-the-container) to get an API_KEY and ENDPOINT_URL which is compatible with [running the On-Premises container](https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2). 
 The ENDPOINT_URL must be reachable by the Azure Read API Container.   
 
 #### How to fix common Azure Read API issues for On-Premises 
@@ -619,8 +619,8 @@ The summarization container needs to be started with the following environment v
 GPU=True  # If GPU is present
 TASK_ALWAYS_EAGER=False
 C_FORCE_ROOT=True
-BROKER_URL=  # Set this to an unused Redis database
-RESULT_BACKEND=  # Set this to an unused Redis database
+BROKER_URL=  # Set this to an unused Redis database (e.g. "redis://redis:6379/4")
+RESULT_BACKEND=  # Set this to an unused Redis database (e.g. "redis://redis:6379/5")
 
 ```
 
@@ -1704,20 +1704,18 @@ AZURE_OCR_BASE_URL=http://host:5000
 AZURE_OCR_VERSION=v3.2
 ```
 
-### Environment Variables for Detectron Container
+### Environment Variables for Document Layout Analysis Container
 
 ```text
 # Connect Broker (mandatory).
 BROKER_URL=
 # Connect result backend (mandatory).
 RESULT_BACKEND=
-# Decide if GPU used (True/False) (mandatory).
-GPU=
-# Allow root (mandatory).
-C_FORCE_ROOT=True
 # Connect Sentry (optional).
+SENTRY_DSN=
 SENTRY_ENVIRONMENT=
 SENTRY_RELEASE=
+SENTRY_TRACES_SAMPLE_RATE=
 # Setting for task processing (optional).
 WORKER_SEND_TASK_EVENTS=
 TASK_SEND_SENT_EVENT=
