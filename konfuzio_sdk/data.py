@@ -2125,34 +2125,31 @@ class Annotation(Data):
         elif label_set is None and label_set_id is None and len(label.label_sets) == 1:
             label_set = label.label_sets[0]
 
-        if sdk_isinstance(label_set, LabelSet) and self.annotation_set is not None:
-            assert (
-                label_set == self.annotation_set.label_set
-            ), f"Conflicting Label Set information provided\
-                  {label_set=} and {self.annotation_set.label_set=}"
-        elif self.annotation_set is None:
-            if sdk_isinstance(label_set, LabelSet):
-                if label_set.has_multiple_annotation_sets:
-                    raise ValueError(
-                        f"Cannot assign {self} to AnnotationSet. {label_set} can have multiple Annotation Sets. "
-                        f"Please provide the Annotation Set or AnnotationSet ID."
-                    )
+        if sdk_isinstance(label_set, LabelSet):
+            if self.annotation_set is not None:
+                assert (
+                    label_set == self.annotation_set.label_set
+                ), f"Conflicting Label Set information provided\
+                    {label_set=} and {self.annotation_set.label_set=}"
+            elif label_set.has_multiple_annotation_sets:
+                raise ValueError(
+                    f"Cannot assign {self} to AnnotationSet. {label_set} can have multiple Annotation Sets. "
+                    f"Please provide the Annotation Set or AnnotationSet ID."
+                )
+            else:
+                matching_annotation_sets = [
+                    ann_set for ann_set in self.document.annotation_sets() if ann_set.label_set == label_set
+                ]
+                if len(matching_annotation_sets) == 1:
+                    annotation_set = matching_annotation_sets[0]
+                elif len(matching_annotation_sets) == 0:
+                    annotation_set = AnnotationSet(label_set=label_set, id_=next(Data.id_iter), document=self.document)
                 else:
-                    annotation_set = [
-                        ann_set for ann_set in self.document.annotation_sets() if ann_set.label_set == label_set
-                    ]
-                    if len(annotation_set) == 1:
-                        annotation_set = annotation_set[0]
-                    elif len(annotation_set) == 0:
-                        annotation_set = AnnotationSet(
-                            label_set=label_set, id_=next(Data.id_iter), document=self.document
-                        )
-                    else:
-                        raise ValueError(
-                            f"Found multiple Annotation Sets for {label_set} in {self.document}. "
-                            f"This should not happen because {label_set.has_multiple_annotation_sets=}."
-                        )
-                    self.annotation_set = annotation_set
+                    raise ValueError(
+                        f"Found multiple Annotation Sets for {label_set} in {self.document}. "
+                        f"This should not happen because {label_set.has_multiple_annotation_sets=}."
+                    )
+                self.annotation_set = annotation_set
 
         for span in spans or []:
             self.add_span(span)
