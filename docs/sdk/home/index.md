@@ -92,17 +92,28 @@ To access Span's text, you can call `span.offset_string`. We are going to use it
 .. _annotation-concept:
 
 ### Annotation 
-[Annotation](sourcecode.html#annotation) is a combination of Spans that has a certain Label  (i.e. Issue_Date, Auszahlungsbetrag) assigned to it. They typically denote a certain type of entity that is found in the text. Annotations can be predicted by AI or human-added. 
+[Annotation](sourcecode.html#annotation) is a combination of Spans that has a certain Label (i.e. Issue_Date, Auszahlungsbetrag) 
+assigned to it. They typically denote a certain type of entity that is found in the text. Annotations can be predicted 
+by AI or be human-added.
 
-Like Spans, Annotations also have `start_offset` and `end_offset` denoting the starting and the ending characters. To access the text under the Annotation, call `annotation.offset_string`.
+Annotations always have to belong to an Annotation Set with a Label Set compatible with the Annotation's Label.
+
+Like Spans, Annotations also have `start_offset` and `end_offset` denoting the starting and the ending characters. To 
+access the text under the Annotation, call `annotation.offset_string`.
 
 To see the Annotation in the Smartview, you can call `annotation.get_link()` and open the returned URL. 
 
 .. _annotation-set-concept:
 
 ### Annotation Set
-[Annotation Set](sourcecode.html#annotation-set) is a group of Annotations united by Labels 
-belonging to the same Label Set. To see Annotations in the set, call `annotation_set.annotations()`.
+[Annotation Set](sourcecode.html#annotation-set) is a group of Annotations united by Labels belonging to the same Label Set. 
+To retrieve all that Annotation Sets of a Document call `document.annotation_sets()`. To see Annotations in the set, 
+call `annotation_set.annotations()`.
+
+Every Document has one unique default Annotation Set, which can be retrieved with `document.default_annotation_set`. This 
+Annotation Set's Label Set is the Document's Category default Label Set and has the same name and ID as the Category. 
+Documents also have a unique Annotation Set for NO LABEL Annotations, which can be retrieved with `document.no_label_annotation_set`.
+
 
 .. _label-concept:
 
@@ -114,8 +125,12 @@ call `label.annotations()` .
 .. _label-set-concept:
 
 ### Label Set
-[Label Set](sourcecode.html#label-set) is a group of Labels united. A Label Set can belong 
-to different Categories and multiple Annotation Sets.
+[Label Set](sourcecode.html#label-set) is a group of related Labels. A Label Set can belong to different Categories and 
+multiple Annotation Sets. Every Category has a default Label Set, which can be retrieved with `category.default_label_set`.
+
+Label Sets have an attribute, `label_set.has_multiple_annotation_sets`, which determines whether more than one Annotation Set
+can be created per Document. If `has_multiple_annotation_sets` is `False`, then only a single Annotation Set with the 
+Label Set can be created per Document.
 
 .. _bbox-concept:
 

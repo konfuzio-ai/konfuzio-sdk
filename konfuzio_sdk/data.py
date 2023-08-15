@@ -2045,7 +2045,7 @@ class Annotation(Data):
         revised_by: int = None,
         translated_string: str = None,
         custom_offset_string: bool = False,
-        offset_string: str = False,
+        offset_string: str = None,
         *args,
         **kwargs,
     ):
