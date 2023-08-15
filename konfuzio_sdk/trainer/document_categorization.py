@@ -3,9 +3,13 @@
 import abc
 import collections
 import functools
+import io
+
+import lz4.frame
 import os
 import math
 import logging
+import pathlib
 import tempfile
 import uuid
 from copy import deepcopy
@@ -948,7 +952,35 @@ class CategorizationAI(AbstractCategorizationAI):
         self.device = torch.device('cuda' if (torch.cuda.is_available() and use_cuda) else 'cpu')
         self.train_transforms = None
 
-    def save(self, path: Union[None, str] = None, reduce_weight: bool = True) -> str:
+    @property
+    def temp_pt_file_path(self) -> str:
+        """
+        Generate a path for s temporary model file in .pt format.
+
+        :returns: A string with the path.
+        """
+        temp_pt_file_path = os.path.join(
+            self.categories[0].project.project_folder,
+            'models',
+            f'{get_timestamp()}_{self.name_lower()}_{self.project.id_}_tmp.pt',
+        )
+        return temp_pt_file_path
+
+    @property
+    def compressed_file_path(self) -> str:
+        """
+        Generate a path for a resulting compressed file in .lz4 format.
+
+        :returns: A string with the path.
+        """
+        output_dir = os.path.join(
+            self.categories[0].project.project_folder,
+            'models',
+            f'{get_timestamp()}_{self.name_lower()}_{self.project.id_}.pt.lz4',
+        )
+        return output_dir
+
+    def save(self, output_dir: Union[None, str] = None, reduce_weight: bool = True, **kwargs) -> str:
         """
         Save only the necessary parts of the model for extraction/inference.
 
@@ -958,9 +990,28 @@ class CategorizationAI(AbstractCategorizationAI):
         - vocabs (to ensure the tokens/labels are mapped to the same integers as training)
         - configs (to ensure we load the same models used in training)
         - state_dicts (the classifier parameters achieved through training)
+
+        Note: "path" is a deprecated parameter, "output_dir" is used for the sake of uniformity across all AIs.
+
+        :param output_dir: A path to save the model to.
+        :type output_dir: str
+        :param reduce_weight: Reduces the weight of a model by removing Documents and reducing weight of a Tokenizer.
+        :type reduce_weight: bool
         """
+        if 'path' in kwargs:
+            raise ValueError("'path' is a deprecated argument. Use 'output_dir' to specify the path to save the model.")
         if reduce_weight:
             self.reduce_model_weight()
+
+        if not output_dir:
+            output_dir = self.project.model_folder
+
+        # make sure output dir exists
+        pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
+
+        # temp_pt_file_path is needed to save an intermediate .pt file that later will be compressed and deleted.
+        temp_pt_file_path = self.temp_pt_file_path
+        compressed_file_path = self.compressed_file_path
 
         # create dictionary to save all necessary model data
         data_to_save = {
@@ -977,19 +1028,18 @@ class CategorizationAI(AbstractCategorizationAI):
 
         # Save only the necessary parts of the model for extraction/inference.
         # if no path is given then we use a default path and filename
-        if path is None:
-            path = os.path.join(
-                self.categories[0].project.project_folder,
-                'models',
-                f'{get_timestamp()}_{self.name_lower()}_{self.project.id_}.pt',
-            )
 
-        logger.info(f'Saving model of type Categorization AI in {path}')
+        logger.info(f'Saving model of type Categorization AI in {compressed_file_path}')
 
         # save all necessary model data
-        torch.save(data_to_save, path)
-        self.pipeline_path = path
-        return path
+        torch.save(data_to_save, temp_pt_file_path)
+        with open(temp_pt_file_path, 'rb') as f_in:
+            with open(compressed_file_path, 'wb') as f_out:
+                compressed = lz4.frame.compress(f_in.read())
+                f_out.write(compressed)
+        self.pipeline_path = compressed_file_path
+        os.remove(temp_pt_file_path)
+        return self.pipeline_path
 
     def build_preprocessing_pipeline(self, use_image: bool, image_augmentation=None, image_preprocessing=None) -> None:
         """Set up the pre-processing and data augmentation when necessary."""
@@ -998,7 +1048,7 @@ class CategorizationAI(AbstractCategorizationAI):
         if image_preprocessing is None:
             image_preprocessing = {'target_size': (1000, 1000), 'grayscale': True}
 
-        # if we are using an image model in our classifier then we need to set-up the
+        # if we are using an image model in our classifier then we need to set up the
         # pre-processing and data augmentation for the images
         if use_image:
             self.image_preprocessing = image_preprocessing
@@ -1657,18 +1707,28 @@ def load_categorization_model(pt_path: str, device: Optional[str] = 'cpu'):
     :return: Categorization AI model.
     """
     if device is None:
-        if torch.cuda.is_available():
-            device = 'cuda'
-        else:
-            device = 'cpu'
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-    with open(pt_path, 'rb') as f:  # todo check if we need to open 'rb' at all
-        file_data = torch.load(pt_path, map_location=torch.device(device))
+    if pt_path.endswith('lz4'):
+        with open(pt_path, 'rb') as f:
+            compressed = f.read()
+        decompressed_data = lz4.frame.decompress(compressed)
+        file_data = torch.load(io.BytesIO(decompressed_data), map_location=torch.device(device))
+
+    else:
+        with open(pt_path, 'rb') as f:  # todo check if we need to open 'rb' at all
+            file_data = torch.load(pt_path, map_location=torch.device(device))
 
     if isinstance(file_data, dict):
-        file_data = _load_categorization_model(pt_path)
+        if pt_path.endswith('lz4'):
+            file_data = _load_categorization_model(io.BytesIO(decompressed_data))
+        else:
+            file_data = _load_categorization_model(pt_path)
     else:
-        with open(pt_path, 'rb') as f:
-            file_data = torch.load(f, map_location=torch.device(device))
+        if pt_path.endswith('lz4'):
+            file_data = torch.load(io.BytesIO(decompressed_data), map_location=torch.device(device))
+        else:
+            with open(pt_path, 'rb') as f:
+                file_data = torch.load(f, map_location=torch.device(device))
 
     return file_data
