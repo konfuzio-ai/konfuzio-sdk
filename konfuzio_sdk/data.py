@@ -2122,8 +2122,8 @@ class Annotation(Data):
         # handles association to an Annotation Set if the Annotation belongs to a Category
         if isinstance(label_set_id, int):
             label_set: LabelSet = self.document.project.get_label_set_by_id(label_set_id)
-        elif label_set is None and label_set_id is None and len(label.label_sets) == 1:
-            label_set = label.label_sets[0]
+        elif label_set is None and label_set_id is None and len(self.label.label_sets) == 1:
+            label_set = self.label.label_sets[0]
 
         if sdk_isinstance(label_set, LabelSet):
             if self.annotation_set is not None:
@@ -3375,7 +3375,8 @@ class Document(Data):
         else:
             raise IndexError(f"Annotation Set {id_} is not part of Document {self.id_}.")
 
-    def get_default_annotation_set(self) -> AnnotationSet:
+    @property
+    def default_annotation_set(self) -> AnnotationSet:
         """Return the default Annotation Set of the Document."""
         if self._annotation_sets is None:
             self.annotation_sets()

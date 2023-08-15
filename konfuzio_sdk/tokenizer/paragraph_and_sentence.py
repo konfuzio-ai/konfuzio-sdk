@@ -82,7 +82,7 @@ class ParagraphTokenizer(AbstractTokenizer):
 
         if self.create_detectron_labels:
             label_set = document.category.get_default_label_set()
-            annotation_set = document.get_default_annotation_set()
+            annotation_set = document.default_annotation_set
         else:
             label_set = document.project.no_label_set
             annotation_set = document.no_label_annotation_set
@@ -244,7 +244,7 @@ class SentenceTokenizer(AbstractTokenizer):
 
         if self.create_detectron_labels:
             label_set = document.category.get_default_label_set()
-            annotation_set = document.get_default_annotation_set()
+            annotation_set = document.default_annotation_set
         else:
             label_set = document.project.no_label_set
             annotation_set = document.no_label_annotation_set

@@ -25,7 +25,7 @@ def test_create_extraction_ai():
                 label = document.project.get_label_by_name(label_name)
             else:
                 label = Label(text=label_name, project=project, label_sets=[label_set])
-            annotation_set = document.get_default_annotation_set()
+            annotation_set = document.default_annotation_set
             for re_match in re.finditer(r'(\d+/\d+/\d+)', document.text, flags=re.MULTILINE):
                 span = Span(start_offset=re_match.span(1)[0], end_offset=re_match.span(1)[1])
                 # create Annotation Set for the Annotation. Note that every Annotation Set

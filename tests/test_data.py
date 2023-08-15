@@ -1148,13 +1148,28 @@ class TestOfflineDataSetup(unittest.TestCase):
         assert label_set.is_default is True
         assert label_set.name == category.name
 
-        annotation_set = document.get_default_annotation_set()
+        annotation_set = document.default_annotation_set
 
         assert annotation_set.is_default is True
         assert annotation_set.label_set is label_set
 
         with pytest.raises(ValueError, match='is already used by another Annotation Set'):
             _ = AnnotationSet(document=document, label_set=label_set)
+
+    def test_add_none_label_annotation(self):
+        """Test to add an Annotation with none Label."""
+        project = Project(id_=None)
+        category = Category(project=project)
+
+        document = Document(project=project, category=category)
+
+        span = Span(start_offset=1, end_offset=2)
+
+        annotation = Annotation(document=document, label=None, spans=[span])
+
+        assert annotation.label is project.no_label
+        assert annotation.label_set is project.no_label_set
+        assert annotation.annotation_set is document.no_label_annotation_set
 
     def test_to_get_threshold(self):
         """Define fallback threshold for a Label."""
