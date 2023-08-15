@@ -2143,7 +2143,7 @@ class Annotation(Data):
                 if len(matching_annotation_sets) == 1:
                     annotation_set = matching_annotation_sets[0]
                 elif len(matching_annotation_sets) == 0:
-                    annotation_set = AnnotationSet(label_set=label_set, id_=next(Data.id_iter), document=self.document)
+                    annotation_set = AnnotationSet(label_set=label_set, document=self.document)
                 else:
                     raise ValueError(
                         f"Found multiple Annotation Sets for {label_set} in {self.document}. "
@@ -3851,7 +3851,9 @@ class Project(Data):
         else:
             self.no_category = Category(project=self, id_=0, name_clean="NO_CATEGORY", name="NO_CATEGORY")
         # todo: list of Categories related to NO LABEL SET can be outdated, i.e. if the number of Categories changes
-        self.no_label_set = LabelSet(project=self, id_=0, categories=self.categories)
+        self.no_label_set = LabelSet(
+            project=self, id_=0, categories=self.categories, has_multiple_annotation_sets=False
+        )
         self.no_label_set.name_clean = 'NO_LABEL_SET'
         self.no_label_set.name = 'NO_LABEL_SET'
         self.no_label = Label(project=self, id_=0, text='NO_LABEL', label_sets=[self.no_label_set])
