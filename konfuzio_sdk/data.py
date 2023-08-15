@@ -867,14 +867,10 @@ class Category(Data):
     @property
     def labels(self):
         """Return the Labels that belong to the Category and its Label Sets."""
-        labels = []
-        # for label in self.project.labels:
-        #     if self in label.label_sets:
-        #         labels.append(label)
+        labels = set()
         for label_set in self.label_sets:
-            labels += label_set.labels
-
-        return list(set(labels))
+            labels.update(label_set.labels)
+        return list(labels)
 
     @property
     def fallback_name(self) -> str:
@@ -2116,7 +2112,7 @@ class Annotation(Data):
             # do not relate to the Document
             self.annotation_set: AnnotationSet = self.document.get_annotation_set_by_id(annotation_set.id_)
         else:
-            # it will be set later, or an excpetion is raised at the end of the init
+            # it will be set later, or an exception is raised at the end of the init
             self.annotation_set = None
 
         # if no label_set_id we check if is passed by section_label_id

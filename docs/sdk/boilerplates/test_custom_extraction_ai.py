@@ -17,11 +17,11 @@ def test_create_extraction_ai():
             document = super().extract(document)
 
             # define a Label Set that will contain Labels for Annotations your Extraction AI extracts
-            # here we use the default Label Set of the Category whose ID is the same as the ID of the Category
+            # here we use the default Label Set of the Category
             label_set = document.category.get_default_label_set()
             # get or create a Label that will be used for annotating
             label_name = 'Date'
-            if label_name in [label.name for label in document.project.labels]:
+            if label_name in [label.name for label in document.category.labels]:
                 label = document.project.get_label_by_name(label_name)
             else:
                 label = Label(text=label_name, project=project, label_sets=[label_set])
@@ -35,8 +35,8 @@ def test_create_extraction_ai():
                     document=document,
                     label=label,
                     annotation_set=annotation_set,
-                    confidence=1.0,  # note that only the Annotations with confidence higher
-                    # than 10% will be shown in the extracted Document.
+                    confidence=1.0,  # note that by default, only the Annotations with confidence higher than 10%
+                    # will be shown in the extracted Document. This can be changed in the Label settings UI.
                     spans=[span],
                 )
             return document
