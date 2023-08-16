@@ -2189,12 +2189,8 @@ class Annotation(Data):
         if self.document and other.document and self.document == other.document:  # same Document
             # if self.is_correct and other.is_correct:  # for correct Annotations check if they are identical
             if self.label and other.label and self.label == other.label:  # same Label
-                if self.spans and other.spans:
-                    if self.spans == other.spans:  # logic changed from "one Span is identical" to "all Spans identical"
-                        return True
-                else:
-                    if self.selection_bbox == other.selection_bbox:
-                        return True
+                if self.spans == other.spans:  # logic changed from "one Span is identical" to "all Spans identical"
+                    return True
 
         return result
 
