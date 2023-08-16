@@ -2152,6 +2152,10 @@ class Annotation(Data):
                     )
                 self.annotation_set = annotation_set
 
+        assert (
+            self.label in self.annotation_set.label_set.labels
+        ), f"{self.label} is not in {self.annotation_set.label_set.labels} of {self.annotation_set}."
+
         for span in spans or []:
             self.add_span(span)
 
@@ -3044,25 +3048,35 @@ class Document(Data):
 
         return valid
 
-    def annotation_sets(self):
-        """Return Annotation Sets of Documents."""
-        if self._annotation_sets is not None:
-            return self._annotation_sets
-        if self.is_online and not is_file(self.annotation_set_file_path, raise_exception=False):
-            self.download_document_details()
-        if is_file(self.annotation_set_file_path, raise_exception=False):
-            with open(self.annotation_set_file_path, "r") as f:
-                raw_annotation_sets = json.load(f)
-            # first load all Annotation Sets before we create Annotations
-            for raw_annotation_set in raw_annotation_sets:
-                _ = AnnotationSet(
-                    id_=raw_annotation_set["id"],
-                    document=self,
-                    label_set=self.project.get_label_set_by_id(raw_annotation_set["section_label"]),
-                )
-        elif self._annotation_sets is None:
-            self._annotation_sets = []  # Annotation sets cannot be loaded from Konfuzio Server
-        return self._annotation_sets
+    def annotation_sets(self, label_set: LabelSet = None) -> List[AnnotationSet]:
+        """
+        Return Annotation Sets of Documents.
+
+        :param label_set: Label Set for which to filter the Annotation Sets.
+        :return: Annotation Sets of Documents.
+        """
+        if self._annotation_sets is None:
+            if self.is_online and not is_file(self.annotation_set_file_path, raise_exception=False):
+                self.download_document_details()
+            if is_file(self.annotation_set_file_path, raise_exception=False):
+                with open(self.annotation_set_file_path, "r") as f:
+                    raw_annotation_sets = json.load(f)
+                # first load all Annotation Sets before we create Annotations
+                for raw_annotation_set in raw_annotation_sets:
+                    _ = AnnotationSet(
+                        id_=raw_annotation_set["id"],
+                        document=self,
+                        label_set=self.project.get_label_set_by_id(raw_annotation_set["section_label"]),
+                    )
+            elif self._annotation_sets is None:
+                self._annotation_sets = []  # Annotation sets cannot be loaded from Konfuzio Server
+        annotation_sets = self._annotation_sets
+        if label_set:
+            # filter by Label Set given as argument
+            annotation_sets = [
+                annotation_set for annotation_set in annotation_sets if annotation_set.label_set == label_set
+            ]
+        return annotation_sets
 
     def annotations(
         self,
