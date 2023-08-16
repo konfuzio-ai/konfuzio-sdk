@@ -18,9 +18,43 @@ taking up more disk space). By default, the SDK is installed as a lightweight in
 
   `pip install konfuzio_sdk[ai]`
   
-  Currently, the full instance cannot be installed on MacOS machines with an ARM-based chip from the M-series. The `konfuzio_sdk` package can only be installed on MacOS on machines with an ARM chip if the lightweight instance is installed. However the Konfuzio SDK can be used on a hosted environment such as [Deepnote](https://deepnote.com/). Follow the instructions in the next section to install the SDK in Colab.
+  Currently, the full instance cannot be installed on MacOS machines with an ARM-based chip from the M-series. The `konfuzio_sdk` package can only be installed on MacOS on machines with an ARM chip if the lightweight instance is installed. However the Konfuzio SDK can be used on a hosted environment such as [Deepnote](https://deepnote.com/). Follow the instructions in [section 5](#5-install-the-ai-konfuzio-sdk-in-a-hosted-jupyter-environment) of this document to install the SDK in a hosted Jupyter environment.
+ 
+---
 
-### 2.1 Install the `.[ai]` Konfuzio SDK in a hosted Jupyter environment
+*Notes*:
+
+* Supported Python environments are 3.8, 3.9, 3.10, 3.11.
+* Please use Python 3.8 if you plan to upload your AIs to a self-hosted Konfuzio Server environment. 
+* If you are not using a virtual environment, you may need to add the installation directory to your PATH.
+* If you run this tutorial in Colab and experience any version compatibility issues when working with the SDK, restart 
+the runtime and initialize the SDK once again; this will resolve the issue.
+
+### 3. Initialize the package
+
+After the installation, initialize the package in your working directory with:
+
+`konfuzio_sdk init`
+
+This will require your credentials to access the Konfuzio Server.
+At the end, one file will be created in your working directory: `.env`.
+
+The `.env` file contains the credentials to access the app and should not become public.
+
+### 4. Download the data
+
+To download the data from your Konfuzio project you need to specify the Project ID.
+You can check your Project ID by selecting the project in the Projects tab in the Web App.
+The ID of the Project is shown in the URL. Suppose that your Project ID is 123:
+
+`konfuzio_sdk export_project 123`
+
+The data from the documents that you uploaded in your Konfuzio project will be downloaded to a folder called `data_123`.
+
+*Note*:
+Only Documents in the Training and Test sets are downloaded.
+
+### 5. Install the `.[ai]` Konfuzio SDK in a hosted Jupyter environment
 This procedure is not recommended, but documented here for completeness. Due to a limitation in Deepnote's ability to receive input from the user, the SDK cannot be initialized in a Deepnote notebook. To work around this limitation, we need to install and authenticate access to the SDK in a Colab notebook and then import the credentials in the Deepnote project.
 
 If you don't have one, [create](https://deepnote.com/sign-up) an account. Once you are logged in, create a new project and choose the `Python 3.8` environment.
@@ -77,37 +111,3 @@ If no error is raised, the SDK is correctly installed and authenticated.
 
 > **TIP:**
   Your project ID can be obtained by the web app URL when accessing Konfuzio from your browser. From your home page, navigate to `Projects` and pick the project you want to work with. Then look at the URL in your browser. Your should see something like `https://app.konfuzio.com/admin/server/project/<project-id>/change/` where `<project-id>` is your project ID.
- 
----
-
-*Notes*:
-
-* Supported Python environments are 3.8, 3.9, 3.10, 3.11.
-* Please use Python 3.8 if you plan to upload your AIs to a self-hosted Konfuzio Server environment. 
-* If you are not using a virtual environment, you may need to add the installation directory to your PATH.
-* If you run this tutorial in Colab and experience any version compatibility issues when working with the SDK, restart 
-the runtime and initialize the SDK once again; this will resolve the issue.
-
-### 3. Initialize the package
-
-After the installation, initialize the package in your working directory with:
-
-`konfuzio_sdk init`
-
-This will require your credentials to access the Konfuzio Server.
-At the end, one file will be created in your working directory: `.env`.
-
-The `.env` file contains the credentials to access the app and should not become public.
-
-### 4. Download the data
-
-To download the data from your Konfuzio project you need to specify the Project ID.
-You can check your Project ID by selecting the project in the Projects tab in the Web App.
-The ID of the Project is shown in the URL. Suppose that your Project ID is 123:
-
-`konfuzio_sdk export_project 123`
-
-The data from the documents that you uploaded in your Konfuzio project will be downloaded to a folder called `data_123`.
-
-*Note*:
-Only Documents in the Training and Test sets are downloaded.
