@@ -1055,7 +1055,7 @@ class Label(Data):
 
     def __init__(
         self,
-        project,
+        project: 'Project',
         id_: Union[int, None] = None,
         text: str = None,
         get_data_type_display: str = 'Text',
@@ -2152,9 +2152,11 @@ class Annotation(Data):
                     )
                 self.annotation_set = annotation_set
 
-        assert (
-            self.label in self.annotation_set.label_set.labels
-        ), f"{self.label} is not in {self.annotation_set.label_set.labels} of {self.annotation_set}."
+        if self.annotation_set.label_set.id_:
+            # for legacy reasons, we allow all Annotations to be in the NO_LABEL_SET Annotation Set
+            assert (
+                self.label in self.annotation_set.label_set.labels
+            ), f"{self.label} is not in {self.annotation_set.label_set.labels} of {self.annotation_set}."
 
         for span in spans or []:
             self.add_span(span)

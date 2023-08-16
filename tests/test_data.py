@@ -196,9 +196,9 @@ class TestOnlineProject(unittest.TestCase):
         # Test1: add an Annotation to the document online
         doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         assert Span(start_offset=1590, end_offset=1602) not in doc.spans()
-        label = self.project.get_label_by_name('Lohnart')
+        label = self.project.get_label_by_name('Vorname')
 
-        default_annotation_set = doc.annotation_sets()[0]
+        default_annotation_set = doc.default_annotation_set
         assert default_annotation_set.label_set.is_default
 
         annotation = Annotation(
@@ -555,8 +555,8 @@ class TestOfflineExampleData(unittest.TestCase):
 
     def test_find_outlier_annotations_by_regex(self):
         """Test finding the possibly incorrect Annotations of a Label."""
-        project_regex = Project(id_=None, project_folder=OFFLINE_PROJECT)
-        label = self.project.get_label_by_name('Bank inkl. IBAN')
+        project_regex = Project(id_=TEST_PROJECT_ID)
+        label = project_regex.get_label_by_name('Bank inkl. IBAN')
         train_doc_ids = {44823, 44834, 44839, 44840, 44841}
         for doc in project_regex.documents:
             if doc.id_ not in train_doc_ids:
@@ -602,8 +602,9 @@ class TestOfflineExampleData(unittest.TestCase):
 
     def test_find_outlier_annotations_by_normalization(self):
         """Test finding the Annotations that do not correspond the Label's data type."""
-        label = self.project.get_label_by_name('Austellungsdatum')
-        outliers = label.get_probable_outliers_by_normalization(self.project.categories)
+        project = Project(id_=TEST_PROJECT_ID)
+        label = project.get_label_by_name('Austellungsdatum')
+        outliers = label.get_probable_outliers_by_normalization(project.categories)
         outlier_spans = [span.offset_string for annotation in outliers for span in annotation.spans]
         assert len(outliers) == 1
         assert '328927/10103' in outlier_spans
@@ -611,10 +612,9 @@ class TestOfflineExampleData(unittest.TestCase):
 
     def test_find_outlier_annotations(self):
         """Test finding the Annotations that are deemed outliers by several methods of search."""
-        label = self.project.get_label_by_name('Austellungsdatum')
-        outliers = label.get_probable_outliers(
-            self.project.categories, regex_worst_percentage=1.0, confidence_search=False
-        )
+        project = Project(id_=TEST_PROJECT_ID)
+        label = project.get_label_by_name('Austellungsdatum')
+        outliers = label.get_probable_outliers(project.categories, regex_worst_percentage=1.0, confidence_search=False)
         outlier_spans = [span.offset_string for annotation in outliers for span in annotation.spans]
         assert len(outliers) == 1
         assert '328927/10103' in outlier_spans
@@ -650,11 +650,11 @@ class TestEqualityAnnotation(unittest.TestCase):
     def setUpClass(cls) -> None:
         """Initialize the test Project."""
         cls.project = Project(id_=None)
-        cls.label_one = Label(project=cls.project, text='First')
-        cls.label_two = Label(project=cls.project, text='First')
         cls.category = Category(project=cls.project, id_=1)
-        cls.document = Document(project=cls.project, category=cls.category)
         cls.label_set = LabelSet(project=cls.project, categories=[cls.category], id_=421)
+        cls.label_one = Label(project=cls.project, text='First', label_sets=[cls.label_set])
+        cls.label_two = Label(project=cls.project, text='First', label_sets=[cls.label_set])
+        cls.document = Document(project=cls.project, category=cls.category)
         # cls.label_set.add_label(cls.label)
         cls.annotation_set = AnnotationSet(document=cls.document, label_set=cls.label_set)
         assert len(cls.project.virtual_documents) == 1
@@ -2321,7 +2321,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
     def test_number_of_label_sets(self):
         """Test Label Sets numbers."""
         # Online Label Sets + added during tests +  no_label_set
-        assert len(self.prj.label_sets) == 13
+        assert len(self.prj.label_sets) == 12
 
     # def test_check_tokens(self):
     #     """Test to find not matched Annotations."""
@@ -2523,8 +2523,8 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         """Test to add a Label Set without Category to a Document with a Category."""
         prj = Project(id_=TEST_PROJECT_ID)  # new init to not add data to self.prj
         doc = prj.get_document_by_id(TEST_DOCUMENT_ID)
-        label = Label(project=prj)
         label_set = LabelSet(project=prj)
+        label = Label(project=prj, label_sets=[label_set])
         with self.assertRaises(ValueError) as context:
             Annotation(document=doc, label_set=label_set, label=label)
             assert 'uses Label Set without Category' in context.exception
@@ -2538,10 +2538,10 @@ class TestKonfuzioDataSetup(unittest.TestCase):
     def test_get_bbox(self):
         """Test to get BoundingBox of Text offset."""
         prj = Project(id_=TEST_PROJECT_ID)  # new init to not add data to self.prj
-        doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
+        doc = prj.get_document_by_id(TEST_DOCUMENT_ID)
         assert doc.category
-        label_set = LabelSet(project=self.prj, categories=[doc.category])
-        label = Label(project=prj)
+        label_set = LabelSet(project=prj, categories=[doc.category])
+        label = Label(project=prj, label_sets=[label_set])
         span = Span(start_offset=1, end_offset=2)
         annotation = Annotation(document=doc, label_set=label_set, label=label, spans=[span])
         span = Span(start_offset=44, end_offset=65, annotation=annotation)
@@ -2730,8 +2730,8 @@ class TestKonfuzioDataSetup(unittest.TestCase):
     def test_span_line_index_in_document(self):
         """Test line_index of span."""
         doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
-        label_set = LabelSet(project=self.prj, categories=[doc.category])
-        label = Label(project=self.prj)
+        label_set = self.prj.get_label_set_by_name('Lohnabrechnung')
+        label = label_set.labels[0]
         span = Span(start_offset=1000, end_offset=1002)
         _ = Annotation(document=doc, label_set=label_set, label=label, spans=[span])
         assert span.page.index == 0
@@ -3032,9 +3032,9 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         creates empty Annotations.
         """
         prj = Project(id_=TEST_PROJECT_ID)
-        label = Label(project=prj)
         doc = Document(text='', project=prj, category=prj.get_category_by_id(63))
-        label_set = LabelSet(project=prj, categories=[prj.get_category_by_id(63)])
+        label_set = doc.category.default_label_set
+        label = label_set.labels[0]
         span = Span(start_offset=1, end_offset=2)
         annotation_set = AnnotationSet(document=doc, label_set=label_set)
         _ = Annotation(label=label, annotation_set=annotation_set, label_set=label_set, document=doc, spans=[span])
@@ -3105,7 +3105,7 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
         self.assertFalse(doc.is_online)
         annotation_set = AnnotationSet(doc, label_set, id_=1)
         self.assertFalse(annotation_set.is_online)
-        label = Label(prj, label_set=label_set, id_=1)
+        label = Label(prj, label_sets=[label_set], id_=1)
         self.assertFalse(label.is_online)
         annotation = Annotation(
             doc, annotation_set=annotation_set, label_set=label_set, label=label, id_=1, spans=[Span(0, 1)]

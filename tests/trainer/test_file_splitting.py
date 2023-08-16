@@ -265,7 +265,7 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Remove Project None folder."""
-        shutil.rmtree(cls.project.project_folder)  # created when saving the model
+        cls.project.delete()  # created when saving the AI model
 
 
 TEST_WITH_FULL_DATASET = False

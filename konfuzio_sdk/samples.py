@@ -341,7 +341,7 @@ class LocalTextProject(Project):
             document=vert_document,
             is_correct=False,
             label=default_label,
-            label_set=self.no_label_set,
+            label_set=default_label_set,
             spans=[span1],
             confidence=0.4,
         )
@@ -349,7 +349,7 @@ class LocalTextProject(Project):
             document=vert_document,
             is_correct=False,
             label=default_label,
-            label_set=self.no_label_set,
+            label_set=default_label_set,
             spans=[span2],
             confidence=0.2,
         )
@@ -357,7 +357,7 @@ class LocalTextProject(Project):
             document=vert_document,
             is_correct=False,
             label=default_label,
-            label_set=self.no_label_set,
+            label_set=default_label_set,
             spans=[span3],
             confidence=0.6,
         )
@@ -365,7 +365,7 @@ class LocalTextProject(Project):
             document=vert_document,
             is_correct=False,
             label=default_label,
-            label_set=self.no_label_set,
+            label_set=default_label_set,
             spans=[span4],
             confidence=0.8,
         )

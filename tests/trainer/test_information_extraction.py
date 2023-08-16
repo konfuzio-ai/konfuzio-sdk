@@ -995,11 +995,9 @@ class TestInformationExtraction(unittest.TestCase):
         )
         pipeline.clf.fit(X, y)
         pipeline.label_feature_list = ['x0', 'x1', 'y0', 'y1']
-        pipeline.clf.classes_ = ['0']
-        category.labels[0].name = '0'
+        pipeline.clf.classes_ = ['Vorname']
         for label in category.labels:
             label._has_multiline_annotations = False
-        category.label_sets[0].name = '0'
 
         virt_doc = pipeline.extract(document)
 
@@ -1555,6 +1553,7 @@ class TestAddExtractionAsAnnotation(unittest.TestCase):
         document = deepcopy(self.sample_document)
 
         label_set = LabelSet(id_=152, project=self.project, name="TestLabelSet", categories=[])
+        label_set.add_label(self.label)
         annotation_set = AnnotationSet(id_=107, document=document, label_set=label_set)
 
         with pytest.raises(ValueError, match='uses Label Set without Category, cannot be added'):
@@ -1571,6 +1570,7 @@ class TestAddExtractionAsAnnotation(unittest.TestCase):
         document = deepcopy(self.sample_document)
 
         label_set = self.project.get_label_set_by_id(2)
+        label_set.add_label(self.label)
 
         annotation_set = AnnotationSet(id_=108, document=document, label_set=label_set)
 
@@ -1650,7 +1650,7 @@ class TestAddExtractionAsAnnotation(unittest.TestCase):
         label_set_2 = self.project.get_label_set_by_id(1)
 
         label_1 = self.label
-        label_2 = self.project.get_label_by_id(5)
+        label_2 = self.project.get_label_by_id(6)
 
         annotation_set_1 = AnnotationSet(id_=103, document=document, label_set=label_set_1)
         annotation_set_2 = AnnotationSet(id_=104, document=document, label_set=label_set_2)
