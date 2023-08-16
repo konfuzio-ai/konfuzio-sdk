@@ -14,14 +14,13 @@ are using PyCharm have a look at [Quickstart with Pycharm](quickstart_pycharm.ht
   `pip install konfuzio_sdk`
 
 * It is also possible to choose between the lightweight SDK and the SDK with the AI-related components (latter one is 
-taking up more disk space). By default, the SDK is installed as a lightweight instance. To install the full instance,
-run the following command:
+taking up more disk space). By default, the SDK is installed as a lightweight instance. To install the full instance (`.[ai]`), the one with AI-related components, run the following command:
 
   `pip install konfuzio_sdk[ai]`
   
   Currently, the full instance cannot be installed on MacOS machines with an ARM-based chip from the M-series. The `konfuzio_sdk` package can only be installed on MacOS on machines with an ARM chip if the lightweight instance is installed. However the Konfuzio SDK can be used on a hosted environment such as [Deepnote](https://deepnote.com/). Follow the instructions in the next section to install the SDK in Colab.
 
-### 2.1 Install the SDK in a hosted Jupyter environment
+### 2.1 Install the `.[ai]` Konfuzio SDK in a hosted Jupyter environment
 This procedure is not recommended, but documented here for completeness. Due to a limitation in Deepnote's ability to receive input from the user, the SDK cannot be initialized in a Deepnote notebook. To work around this limitation, we need to install and authenticate access to the SDK in a Colab notebook and then import the credentials in the Deepnote project.
 
 If you don't have one, [create](https://deepnote.com/sign-up) an account. Once you are logged in, create a new project and choose the `Python 3.8` environment.
@@ -44,22 +43,9 @@ Create a file called `.env` in the root of the Deepnote project. We will later u
 To install the SDK in Deepnote, run the following commands in a new Notebook cell:
 ```
 !git clone https://github.com/konfuzio-ai/konfuzio-sdk.git
-!sed -i 's/torch>=1\.8\.1/torch==1.8.1/' konfuzio-sdk/extras_list.py
-```
-
-In a new cell run `!cat konfuzio-sdk/extras_list.py` to check we have the right version of the `torch` library. Inspect the output of the command, at the bottom of it you should see the following:
-```  
-'ai': [
-    'chardet==5.1.0',
-    'pydantic==1.10.8',  # pydantic is used by spacy. We need to force a higher pydantic version to avoid
-    # https://github.com/tiangolo/fastapi/issues/5048
-    'torch==1.8.1',
-    ...
-``````
-Make sure that the `torch` line has `==` symbol, and not a `>=` one. If that is the case, we are now ready to actually install the SDK. In a new cell run:
-```
 !cd konfuzio-sdk && pip install .[ai]
 ```
+
 If the installation does not complete successfully, restart the Deepnote notebook and run the same cell again. It is not necessary to run the previous cells again. To restart the notebook press the refresh arrow at the top of the page:
 <p align="center">
   <img src="img/deepnote-refresh.png" alt="Deepnote refresh">
