@@ -1809,6 +1809,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         document = Document(project=self.project, category=self.category)
         annotation_set = AnnotationSet(document=document, label_set=self.label_set)
         assert annotation_set in document.annotation_sets()
+        assert annotation_set in document.annotation_sets(label_set=self.label_set)
 
     def test_annotation_set_start_end_offset_and_line_index(self):
         """Test AnnotationSet info methods."""
@@ -2741,6 +2742,10 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         """Test number of Annotation Sets in a specific Document in the test Project."""
         doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
         assert len(doc.annotation_sets()) == 24  # After Update to use the TEST_DOCUMENT_ID
+        default_label_set = self.prj.get_label_set_by_name('Lohnabrechnung')
+        assert len(doc.annotation_sets(label_set=default_label_set)) == 1
+        brutto_bezug_label_set = self.prj.get_label_set_by_name('Brutto-Bezug')
+        assert len(doc.annotation_sets(label_set=brutto_bezug_label_set)) == 21  # ??
 
     def test_get_annotation_set_after_removal(self):
         """Test get an Annotation Set that no longer exists."""
