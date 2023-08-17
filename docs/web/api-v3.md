@@ -97,17 +97,36 @@ curl --request GET \
 
 To get a token:
 
-.. literalinclude:: ../web/boilerplates/test_rest_api.py
-  :language: python
-  :lines: 6,9-14,26-27
-  :dedent: 4
+```python
+import requests
+
+url = "https://app.konfuzio.com/api/v3/auth/"
+
+payload = {
+    "username": "example@example.org",
+    "password": "examplepassword"
+}
+
+response = requests.post(url, json=payload)
+
+print(response.json())
+```
 
 To use the token:
 
-.. literalinclude:: ../web/boilerplates/test_rest_api.py
-  :language: python
-  :lines: 6,9-11,16-19,26-27
-  :dedent: 4
+```python
+import requests
+
+url = "https://app.konfuzio.com/api/v3/projects/"
+
+headers = {
+    "Authorization": "Token bf20d992c0960876157b53745cdd86fad95e6ff4"
+}
+
+response = requests.get(url, headers=headers)
+
+print(response.json())
+```
 
 #### Accessing and using the token via the Konfuzio SDK
 
