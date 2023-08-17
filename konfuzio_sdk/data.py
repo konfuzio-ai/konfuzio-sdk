@@ -1045,6 +1045,7 @@ class Label(Data):
         label_sets=None,
         has_multiple_top_candidates: bool = False,
         threshold: float = 0.1,
+        api_name: str = None,
         *initial_data,
         **kwargs,
     ):
@@ -1065,6 +1066,7 @@ class Label(Data):
         self.name_clean = text_clean
         self.data_type = get_data_type_display
         self.description = description
+        self.api_name = api_name
         self.has_multiple_top_candidates = has_multiple_top_candidates
         self.threshold = threshold
         self.project: Project = project
