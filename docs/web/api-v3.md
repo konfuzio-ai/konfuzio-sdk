@@ -33,9 +33,9 @@ format `Authorization: Basic <string>`, where `<string>` is a Base64-encoded str
 format `<username>:<password>` (this is usually done automatically by the HTTP client).
 
 .. warning::
-While this approach doesn't require additional setup and is useful for testing in the Swagger page, it is
-**discouraged** for serious/automated use, since it usually involves storing these credentials in plain text on the
-client side.
+  While this approach doesn't require additional setup and is useful for testing in the Swagger page, it is
+  **discouraged** for serious/automated use, since it usually involves storing these credentials in plain text on the
+  client side.
 
 #### Cookie authentication
 
@@ -62,8 +62,8 @@ This token doesn't currently expire, so you can use indefinitely, but you can de
 the [authentication DELETE endpoint](https://app.konfuzio.com/v3/swagger/#/auth/auth_destroy).
 
 .. note::
-This is the authentication method you **should** use if you're building an external service that consumes the Konfuzio
-API.
+  This is the authentication method you **should** use if you're building an external service that consumes the Konfuzio
+  API.
 
 An example workflow would look like:
 
@@ -78,7 +78,7 @@ An example workflow would look like:
 
 To get a token:
 
-```
+```bash
 curl --request POST \
   --url https://app.konfuzio.com/api/v3/auth/ \
   --header 'Content-Type: application/json' \
@@ -87,7 +87,7 @@ curl --request POST \
 
 To use the token:
 
-```
+```bash
 curl --request GET \
   --url https://app.konfuzio.com/api/v3/projects/ \
   --header 'Authorization: Token bf20d992c0960876157b53745cdd86fad95e6ff4'
@@ -97,17 +97,36 @@ curl --request GET \
 
 To get a token:
 
-.. literalinclude:: ../web/boilerplates/test_rest_api.py
-:language: python
-:lines: 6,9-14,26-27
-:dedent: 4
+```python
+import requests
+
+url = "https://app.konfuzio.com/api/v3/auth/"
+
+payload = {
+    "username": "example@example.org",
+    "password": "examplepassword"
+}
+
+response = requests.post(url, json=payload)
+
+print(response.json())
+```
 
 To use the token:
 
-.. literalinclude:: ../web/boilerplates/test_rest_api.py
-:language: python
-:lines: 6,9-11,16-19,26-27
-:dedent: 4
+```python
+import requests
+
+url = "https://app.konfuzio.com/api/v3/projects/"
+
+headers = {
+    "Authorization": "Token bf20d992c0960876157b53745cdd86fad95e6ff4"
+}
+
+response = requests.get(url, headers=headers)
+
+print(response.json())
+```
 
 #### Accessing and using the token via the Konfuzio SDK
 
@@ -119,7 +138,7 @@ For more information on this and other information on what you can do with the S
 #### Authenticating with a Token as a Query Parameter (_Upcoming feature_)
 
 .. Note::
-Please open a [support ticket](https://konfuzio.com/support/) if you would like to have early access to this feature.
+  Please open a `support ticket` <https://konfuzio.com/support>`_ if you would like to have early access to this feature.
 
 Sometimes you might need to use one of our endpoints with a third party service that doesn't allow you to specify
 certain types of information (like authentication tokens) in the request. In these cases, you can use a special method
@@ -138,8 +157,8 @@ Just replace 123456 with your own authentication token, and you'll be able to us
 request.
 
 .. Note::
-This functionality is offered as part of the Google-Sheet export function, as well as usable on
-any other csv importable software (SAP, Excel, etc).
+  This functionality is offered as part of the Google-Sheet export function, as well as usable on
+  any other csv importable software (SAP, Excel, etc).
 
 ### Response codes
 
@@ -150,8 +169,8 @@ indicate failure on our side and are usually temporary (if they aren't, please
 [contact us](https://konfuzio.com/support/)).
 
 .. seealso::
-The `Swagger documentation <http:/app.konfuzio.com/v3/swagger/>`\_ provides a more detailed breakdown of which response
-codes are expected for each endpoint.
+  The `Swagger documentation <http:/app.konfuzio.com/v3/swagger/>`_ provides a more detailed breakdown of which response
+  codes are expected for each endpoint.
 
 ### Pagination
 
@@ -191,8 +210,8 @@ use `?created_at_before=2022-02-01&created_at_after=2021-12-01` to only return i
 December 1, 2021 and February 1, 2022 (specified dates excluded).
 
 .. seealso::
-For more filtering options, refer to the `Swagger documentation <http:/app.konfuzio.com/v3/swagger/>`\_ for the endpoint
-that you want to filter.
+  For more filtering options, refer to the `Swagger documentation <http:/app.konfuzio.com/v3/swagger/>`_ for the endpoint
+  that you want to filter.
 
 ### Ordering
 
@@ -205,8 +224,8 @@ You can specify that you want the ordering to be reversed by prefixing the field
 example: `?ordering=-created_at`.
 
 .. seealso::
-For a list of fields that can be used for ordering, refer to
-the `Swagger documentation <http:/app.konfuzio.com/v3/swagger/>`\_ for the endpoint that you want to order.
+  For a list of fields that can be used for ordering, refer to
+  the `Swagger documentation <http:/app.konfuzio.com/v3/swagger/>`_ for the endpoint that you want to order.
 
 ### Fields
 
@@ -216,9 +235,9 @@ returned. You can specify the `fields` `GET` parameter with the field names sepa
 For example, you can specify `?fields=id,created_at` to only return the `id` and `created_at` fields in the response.
 
 .. seealso::
-Refer to the `Swagger documentation <http:/app.konfuzio.com/v3/swagger/>`\_ for a specific endpoint to see if it
-supports using the `fields` parameter. When supported, any field in the response schema can be used in the `fields`
-parameter.
+  Refer to the `Swagger documentation <http:/app.konfuzio.com/v3/swagger/>`_ for a specific endpoint to see if it
+  supports using the `fields` parameter. When supported, any field in the response schema can be used in the `fields`
+  parameter.
 
 ### Coordinates and Bounding Boxes
 
@@ -367,8 +386,8 @@ After your initial Project setup, you can start uploading Documents. To upload a
 our [Document creation endpoint](https://app.konfuzio.com/v3/swagger/#/documents/documents_create).
 
 .. note::
-Unlike most other endpoints, the Document creation endpoint only supports `multipart/form-data` requests (to support
-file uploading), so you won't have to JSON-encode your request this time.
+  Unlike most other endpoints, the Document creation endpoint only supports `multipart/form-data` requests (to support
+  file uploading), so you won't have to JSON-encode your request this time.
 
 #### Uploading a Document to Konfuzio
 
@@ -530,6 +549,12 @@ In the sequence above, your software (Customer Software) sends a Document POST r
 Document. Once the processing of the Document is complete, Konfuzio Server sends a webhook (a POST request) back to
 your software.
 
+.. note::
+  The webhook is currently only sent when the document is processed successfully. If the processing fails, the webhook
+  is not sent. If you don't get a callback within 10 minutes of uploading a Document, use the
+  `Document retrieve endpoint <https://app.konfuzio.com/v3/swagger/#/documents/documents_retrieve>`_ to see the status
+  of the Document.
+
 Here is how you can include a callback URL in your Document upload request to use webhooks:
 
 ```bash
@@ -616,24 +641,24 @@ Annotation you want to create:
    attribute.
 
 .. note::
-Annotation Sets are never created directly. When you create an Annotation, you can specify whether to re-use an
-existing Annotation Set, or to create a new one. You can refer to the following diagram to decide whether to use
-`annotation_set` or `label_set` in your request.
+  Annotation Sets are never created directly. When you create an Annotation, you can specify whether to re-use an
+  existing Annotation Set, or to create a new one. You can refer to the following diagram to decide whether to use
+  `annotation_set` or `label_set` in your request.
 
 .. mermaid::
 
-graph TD
-A[Creating an Annotation in a Document<br>for Label <code>L</code> and Label Set <code>A</code>]
-A --> B[Can the Label Set <code>A</code> have multiple Annotation Sets?]
-B --> z[Yes] --> C[Is this Annotation<br>for a new Annotation Set<br>or an existing one <code>B</code>?]
-C --> x[New one] --> E["<code>label=L, label_set=A</code><br>(will create a new Annotation Set <code>C</code>)"]
-C --> y[Existing] --> D[<code>label=L, annotation_set=B</code>]
-B --> f[No] --> F[Does the Label Set <code>A</code><br> already have a single<br>corresponding Annotation Set <code>B</code>?]
-F --> G[Yes]
-G --> D
-G --> I["<code>label=L, label_set=A</code><br>(will reuse the existing Annotation Set <code>B</code>)"]
-F --> H[No]
-H --> E
+  graph TD
+    A[Creating an Annotation in a Document<br>for Label <code>L</code> and Label Set <code>A</code>]
+    A --> B[Can the Label Set <code>A</code> have multiple Annotation Sets?]
+    B --> z[Yes] --> C[Is this Annotation<br>for a new Annotation Set<br>or an existing one <code>B</code>?]
+    C --> x[New one] --> E["<code>label=L, label_set=A</code><br>(will create a new Annotation Set <code>C</code>)"]
+    C --> y[Existing] --> D[<code>label=L, annotation_set=B</code>]
+    B --> f[No] --> F[Does the Label Set <code>A</code><br> already have a single<br>corresponding Annotation Set <code>B</code>?]
+    F --> G[Yes]
+    G --> D
+    G --> I["<code>label=L, label_set=A</code><br>(will reuse the existing Annotation Set <code>B</code>)"]
+    F --> H[No]
+    H --> E
 
 ### Create training data and train the AI
 
@@ -675,18 +700,18 @@ To clarify how reviewing works, let's take a look at the statuses this data can 
 
 .. mermaid::
 
-flowchart TD
-A(Feedback Required<br><small>Annotations created by AI)
-B(Unfilled<br><small>Potential Annotations that are<br>not found by the AI)
-C[Created by Human]
-D[Not Found<br><small>Missing Annotation instances</small>]
-E[Accepted]
-F[Declined]
-A --> E
-A --> F
-F --> B
-B --> C
-B --> D
+  flowchart TD
+    A(Feedback Required<br><small>Annotations created by AI)
+    B(Unfilled<br><small>Potential Annotations that are<br>not found by the AI)
+    C[Created by Human]
+    D[Not Found<br><small>Missing Annotation instances</small>]
+    E[Accepted]
+    F[Declined]
+    A --> E
+    A --> F
+    F --> B
+    B --> C
+    B --> D
 
 - Annotations created by an AI extraction are initially marked as **Feedback Required**.
 - They can be **Accepted**, which means that the information they contain is correct.
@@ -720,9 +745,9 @@ curl --request GET \
 ```
 
 .. note::
-The `annotation_sets` property contains both existing Annotation Sets and "potential" ones, i.e. Label Sets from the
-Document's Category which do not have a corresponding Annotation Set on the Document yet. These are easy to see
-because they don't have any Annotation and their `id` is `null`.
+  The `annotation_sets` property contains both existing Annotation Sets and "potential" ones, i.e. Label Sets from the
+  Document's Category which do not have a corresponding Annotation Set on the Document yet. These are easy to see
+  because they don't have any Annotation and their `id` is `null`.
 
 Whichever method you choose, you should be able to retrieve an ID for the Annotation(s) you want to revise. Unrevised
 Annotations are easily filterable in the list because they have the properties `"revised": false` and
@@ -797,7 +822,7 @@ content of the Document.
 ### Document splitting suggestions
 
 .. note::
-[Contact us](https://konfuzio.com/en/support/) to enable this functionality.
+  `Contact us <https://konfuzio.com/en/support/>`_ to enable this functionality.
 
 The training data that was [previously created](#create-training-data-and-train-the-ai) can also be used to train a
 Splitting AI to automatically propose splitting suggestions for uploaded documents.
@@ -816,9 +841,9 @@ the AI's suggestions. You can also pass a list with one Document and all the pag
 suggestions and proceed with the original Document.
 
 .. note::
-Once Document Splitting is enabled for a Project, newly uploaded Documents where splitting is detected will stay in
-the "Waiting for splitting confirmation" (`41`) status until the user takes action on the AI's suggestions. After
-that, extraction will run as usual on the resulting Documents.
+  Once Document Splitting is enabled for a Project, newly uploaded Documents where splitting is detected will stay in
+  the "Waiting for splitting confirmation" (`41`) status until the user takes action on the AI's suggestions. After
+  that, extraction will run as usual on the resulting Documents.
 
 After being split, the new Documents will keep a reference to the original "Document Set" via the `document_set`
 property. Querying the [Document Sets endpoint](https://app.konfuzio.com/v3/swagger/#/document-sets) with that ID will
