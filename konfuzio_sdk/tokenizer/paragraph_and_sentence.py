@@ -84,7 +84,7 @@ class ParagraphTokenizer(AbstractTokenizer):
             label_set = document.category.default_label_set
             annotation_set = document.default_annotation_set
         else:
-            label_set = document.project.no_label_set
+            label_set = document.category.project.no_label_set
             annotation_set = document.no_label_annotation_set
 
         for document_paragraph_bboxes in all_paragraph_bboxes:
@@ -95,11 +95,13 @@ class ParagraphTokenizer(AbstractTokenizer):
 
                 if self.create_detectron_labels:
                     try:
-                        label = document.project.get_label_by_name(paragraph_bbox._label_name)
+                        label = document.category.project.get_label_by_name(paragraph_bbox._label_name)
                     except IndexError:
-                        label = Label(project=document.project, text=paragraph_bbox._label_name, label_sets=[label_set])
+                        label = Label(
+                            project=document.category.project, text=paragraph_bbox._label_name, label_sets=[label_set]
+                        )
                 else:
-                    label = document.project.no_label
+                    label = document.category.project.no_label
 
                 try:
                     confidence = None
@@ -259,10 +261,12 @@ class SentenceTokenizer(AbstractTokenizer):
                 for spans in sentence_spans:
                     if self.create_detectron_labels:
                         try:
-                            label = document.project.get_label_by_name(paragraph_bbox._label_name)
+                            label = document.category.project.get_label_by_name(paragraph_bbox._label_name)
                         except IndexError:
                             label = Label(
-                                project=document.project, text=paragraph_bbox._label_name, label_sets=[label_set]
+                                project=document.category.project,
+                                text=paragraph_bbox._label_name,
+                                label_sets=[label_set],
                             )
                     else:
                         label = document.project.no_label
