@@ -2316,7 +2316,7 @@ class Annotation(Data):
                 bboxes=self.bboxes,
                 # selection_bbox=self.selection_bbox,
                 page_number=self.page_number,
-                session=self.document.project.session
+                session=self.document.project.session,
             )
             if response.status_code == 201:
                 json_response = json.loads(response.text)
@@ -2418,10 +2418,7 @@ class Annotation(Data):
         """
         if self.document.is_online and delete_online:
             delete_document_annotation(
-                self.document.id_,
-                self.id_,
-                self.document.project.id_,
-                session=self.document.project.session
+                self.document.id_, self.id_, self.document.project.id_, session=self.document.project.session
             )
             self.document.update()
         else:
@@ -2634,7 +2631,7 @@ class Document(Data):
             file_name=self.name,
             dataset_status=self.dataset_status,
             assignee=self.assignee,
-            session=self.project.session
+            session=self.project.session,
         )
 
     def save(self):
@@ -2804,9 +2801,7 @@ class Document(Data):
         if any(page._segmentation is None for page in document.pages()):
             document_id = document.id_
             detectron_document_results = get_results_from_segmentation(
-                document_id,
-                self.project.id_,
-                session=konfuzio_session(timeout=timeout, num_retries=num_retries)
+                document_id, self.project.id_, session=konfuzio_session(timeout=timeout, num_retries=num_retries)
             )
             assert len(detectron_document_results) == self.number_of_pages
             for page_index, detectron_page_result in enumerate(detectron_document_results):
@@ -2981,7 +2976,7 @@ class Document(Data):
                 file_name=self.name,
                 dataset_status=4,
                 assignee=assignee,
-                session=self.project.session
+                session=self.project.session,
             )
 
         return valid
@@ -3354,7 +3349,9 @@ class Document(Data):
         elif self.is_online and self.status and self.status[0] == Document.DONE:
             # todo check for self.project.id_ and self.id_ and ?
             logger.info(f'Start downloading bbox files of {len(self.text)} characters for {self}.')
-            bbox = get_document_details(document_id=self.id_, project_id=self.project.id_, extra_fields="bbox", session=self.project.session)['bbox']
+            bbox = get_document_details(
+                document_id=self.id_, project_id=self.project.id_, extra_fields="bbox", session=self.project.session
+            )['bbox']
             # Use the `zipfile` module: `compresslevel` was added in Python 3.7
             with zipfile.ZipFile(
                 self.bbox_file_path, mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9
