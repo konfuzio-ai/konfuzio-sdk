@@ -190,11 +190,25 @@ A subfolder will be created for each Document in the Project.</p>
 </section>
 <section id="documents">
 <h3>Documents<a class="headerlink" href="#documents" title="Permalink to this headline">¶</a></h3>
+<p>Every Document has a status indicating in what stage of processing it is. The code for the document status is:</p>
+<ul class="simple">
+<li><p>Queuing for OCR: 0</p></li>
+<li><p>Queuing for extraction: 1</p></li>
+<li><p>Done: 2</p></li>
+<li><p>Could not be processed: 111</p></li>
+<li><p>OCR in progress: 10</p></li>
+<li><p>Extraction in progress: 20</p></li>
+<li><p>Queuing for categorization: 3</p></li>
+<li><p>Categorization in progress: 30</p></li>
+<li><p>Queuing for splitting: 4</p></li>
+<li><p>Splitting in progress: 40</p></li>
+<li><p>Waiting for splitting confirmation: 41</p></li>
+</ul>
 <p>To access the Documents in the Project you can use:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">documents</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span>
 </pre></div>
 </div>
-<p>By default, it will get the Documents with training status (dataset_status = 2). The code for the status is:</p>
+<p>By default, it will get the Documents with training status (dataset_status = 2). The code for the dataset status is:</p>
 <ul class="simple">
 <li><p>None: 0</p></li>
 <li><p>Preparation: 1</p></li>

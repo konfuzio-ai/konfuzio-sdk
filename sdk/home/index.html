@@ -131,6 +131,30 @@ Documents are available and what IDs they have.</p>
 <p>Here are some of the properties and methods of the Document you might need when working with the SDK:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">document.id_</span></code> – get an ID of the Document;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">document.status</span></code> – get the status of the Document in the pipeline. The status can be one of the following:</p>
+<ul>
+<li><p>Queuing for OCR: 0</p></li>
+<li><p>Queuing for extraction: 1</p></li>
+<li><p>Done: 2</p></li>
+<li><p>Could not be processed: 111</p></li>
+<li><p>OCR in progress: 10</p></li>
+<li><p>Extraction in progress: 20</p></li>
+<li><p>Queuing for categorization: 3</p></li>
+<li><p>Categorization in progress: 30</p></li>
+<li><p>Queuing for splitting: 4</p></li>
+<li><p>Splitting in progress: 40</p></li>
+<li><p>Waiting for splitting confirmation: 41</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">document.dataset_status</span></code> – get the dataset status of the Document. The dataset status can be one of the following:</p>
+<ul>
+<li><p>None: 0</p></li>
+<li><p>Preparation: 1</p></li>
+<li><p>Training: 2</p></li>
+<li><p>Test: 3</p></li>
+<li><p>Excluded: 4</p></li>
+</ul>
+</li>
 <li><p><code class="docutils literal notranslate"><span class="pre">document.text</span></code> – get a full text of the Document;</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">document.pages()</span></code> – a list of Pages in the Document;</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">document.update()</span></code> – download a newer version of the Document from the Server in case you have made some changes in
@@ -158,7 +182,7 @@ To get <code class="docutils literal notranslate"><span class="pre">documents</s
 </ul>
 </section>
 <section id="category-annotation">
-<span id="span-concept"></span><h2>Category Annotation<a class="headerlink" href="#category-annotation" title="Permalink to this headline">¶</a></h2>
+<span id="category-annotation-concept"></span><h2>Category Annotation<a class="headerlink" href="#category-annotation" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference external" href="sourcecode.html#category-annotation">Category Annotation</a> defines a Category of a Page or a Document. There can be
 more than one Category Annotation per Document and per Page; Category Annotations typically come with different
 confidence levels.</p>
@@ -166,8 +190,8 @@ confidence levels.</p>
 <p>To get a maximum-confidence Category Annotation for a Page, use <code class="docutils literal notranslate"><span class="pre">Page.maximum_confidence_category_annotation</span></code>.</p>
 <p>To see a maximum-confidence Category Annotation for a Document, use <code class="docutils literal notranslate"><span class="pre">Document.maximum_confidence_category_annotation</span></code>.</p>
 </section>
-<section id="id8">
-<h2>Span<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h2>
+<section id="span-concept">
+<span id="id8"></span><h2>Span<a class="headerlink" href="#span-concept" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference external" href="sourcecode.html#span">Span</a> is a part of the Document’s text without the line breaks. Each Span has <code class="docutils literal notranslate"><span class="pre">start_offset</span></code> and <code class="docutils literal notranslate"><span class="pre">end_offset</span></code> denoting its starting and finishing characters in <code class="docutils literal notranslate"><span class="pre">document.text</span></code>.</p>
 <p>To access Span’s text, you can call <code class="docutils literal notranslate"><span class="pre">span.offset_string</span></code>. We are going to use it later when collecting the Spans from the Documents.</p>
 </section>
