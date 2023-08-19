@@ -22,6 +22,10 @@ You can think of the _Planned_ section as a _Roadmap_ that lists Konfuzio Server
 - Start automatic AI retraining after User confirms that he has finished a annotation review ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9166)).
 
 ## Next Release (estimated release date 21th August 2023)
+This version uses the Konfuzio Python SDK in version v.0.2.29 and Konfuzio Document Validation UI in version v.0.1.12.
+
+### Added
+- [Allow to filter Documents in the API V3 by the data_file_name attribute](https://app.konfuzio.com/v3/swagger/#/documents/documents_list) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11639)).
 
 ### Fixed
 - Allow Superusers without a Project to access Flower, Usage, and Queue views ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11410)).

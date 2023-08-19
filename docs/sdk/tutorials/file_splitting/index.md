@@ -9,7 +9,7 @@ Note that File Splitting always happens on a Project level.
 
 ### Overview
 
-You can train your own File Splitting AI on the data from any Project of your choice ([data preparation tutorial here](tutorials.html#tutorials.html#prepare-the-data-for-training-and-testing-the-ai)). 
+You can train your own File Splitting AI on the data from any Project of your choice ([data preparation tutorial here](https://dev.konfuzio.com/sdk/tutorials/data-preparation/index.html#prepare-the-data-for-training-and-testing-the-ai)). 
 Note that Pages in all the Documents used for training and testing have to be ordered correctly – that is to say, not 
 mixed up in order. The ground-truth first Page of each Document should go first in the file, ground-truth second Page 
 goes second and so on. This is needed because the Splitting AI operates on the idea that the splitting points in a 

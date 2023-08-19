@@ -960,8 +960,7 @@ class CategorizationAI(AbstractCategorizationAI):
         :returns: A string with the path.
         """
         temp_pt_file_path = os.path.join(
-            self.categories[0].project.project_folder,
-            'models',
+            self.output_dir,
             f'{get_timestamp()}_{self.name_lower()}_{self.project.id_}_tmp.pt',
         )
         return temp_pt_file_path
@@ -974,8 +973,7 @@ class CategorizationAI(AbstractCategorizationAI):
         :returns: A string with the path.
         """
         output_dir = os.path.join(
-            self.categories[0].project.project_folder,
-            'models',
+            self.output_dir,
             f'{get_timestamp()}_{self.name_lower()}_{self.project.id_}.pt.lz4',
         )
         return output_dir
@@ -1004,10 +1002,12 @@ class CategorizationAI(AbstractCategorizationAI):
             self.reduce_model_weight()
 
         if not output_dir:
-            output_dir = self.project.model_folder
+            self.output_dir = self.project.model_folder
+        else:
+            self.output_dir = output_dir
 
         # make sure output dir exists
-        pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
+        pathlib.Path(self.output_dir).mkdir(parents=True, exist_ok=True)
 
         # temp_pt_file_path is needed to save an intermediate .pt file that later will be compressed and deleted.
         temp_pt_file_path = self.temp_pt_file_path

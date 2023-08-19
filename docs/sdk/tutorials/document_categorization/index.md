@@ -74,7 +74,7 @@ the image and text of each Page:
    :end-before: End Build
    :dedent: 4
 
-To prepare the data for training and testing your AI, follow the [data preparation tutorial](tutorials.html#tutorials.html#prepare-the-data-for-training-and-testing-the-ai).
+To prepare the data for training and testing your AI, follow the [data preparation tutorial](https://dev.konfuzio.com/sdk/tutorials/data-preparation/index.html#prepare-the-data-for-training-and-testing-the-ai).
 
 For a list of available Models see all the available [Categorization Models](#categorization-ai-models) below.
 

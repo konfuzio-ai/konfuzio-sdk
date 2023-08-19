@@ -630,8 +630,7 @@ def test_build_categorization_ai() -> None:
         image_model=ImageModel.EfficientNetB0,
         text_model=TextModel.NBOWSelfAttention,
     )
-
-    pipeline_path = categorization_pipeline.save()
+    pipeline_path = categorization_pipeline.save(output_dir='custom_output_dir')
     with pytest.raises(ValueError, match='output_dir'):
         categorization_pipeline.save(path='path')
     CategorizationAI.load_model(pipeline_path)
