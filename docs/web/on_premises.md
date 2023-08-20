@@ -1458,19 +1458,79 @@ _Type: string_
 
 #### 9. Snapshot Settings (This feature is under active development and not yet available on https://app.konfuzio.com)
 
+##### SNAPSHOT_DEFAULT_FILE_STORAGE
+Default: 'django.core.files.storage.FileSystemStorage'
+
+By default, the file system is used as file storage. 
+To use an S3-compatible storage set: 'storages.backends.s3boto.S3BotoStorage''.
+See https://docs.djangoproject.com/en/4.0/ref/settings/#default-file-storage
+
+_Type: string_
+
 ##### SNAPSHOT_LOCATION
 Default: ''
 
 The location where all Snapshots are saved (e.g. "/data/konfuzio-snapshots")
 
+_This is mandatory if SNAPSHOT_DEFAULT_FILE_STORAGE='django.core.files.storage.FileSystemStorage'. Type: string_
+_Type: string
+
+##### SNAPSHOT_AWS_ACCESS_KEY_ID
+Default: ''
+
+_This is mandatory if SNAPSHOT_DEFAULT_FILE_STORAGE='storages.backends.s3boto.S3BotoStorage'. Type: string_
+
+##### SNAPSHOT_AWS_SECRET_ACCESS_KEY
+Default: ''
+
+The access key of the S3-Service.
+
+_This is mandatory if SNAPSHOT_DEFAULT_FILE_STORAGE='storages.backends.s3boto.S3BotoStorage'. Type: string_
+
+##### SNAPSHOT_AWS_STORAGE_BUCKET_NAME
+Default: ''
+
+The bucket name of the S3-Service.
+
+_This is mandatory if SNAPSHOT_DEFAULT_FILE_STORAGE='storages.backends.s3boto.S3BotoStorage'. Type: string_
+
+##### SNAPSHOT_AWS_S3_REGION_NAME
+Default: ''
+
+The region name of the S3-Service.
+
 _Type: string_
 
+##### SNAPSHOT_AWS_S3_ENDPOINT_URL
+Default: ''
+
+Custom S3 URL to use when connecting to S3, including scheme. 
+
+_Type: string_
+
+##### SNAPSHOT_AWS_S3_USE_SSL
+Default: True
+
+Whether or not to use SSL when connecting to S3, this is passed to the boto3 session resource constructor.
+See 
+
+_Type: boolean_
+
+##### SNAPSHOT_AWS_S3_VERIFY
+Default: None
+
+Whether or not to verify the connection to S3. Can be set to False to not verify certificates or a path to a CA cert bundle.
+
+_Type: string_
+
+<!--
 ##### SNAPSHOT_CREATION_TOKEN
 Default: None
 
 The API Token which is used to create the Snapshot. The Snapshot creation is conducted using [konfuzio_sdk export_project](https://dev.konfuzio.com/web/on_premises.html#migrate-a-project)
 
 _Type: string_
+-->
 
 #### 10. Test Settings for Keycloak / SSO Settings
 
