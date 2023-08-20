@@ -1675,18 +1675,70 @@ See <a class="reference external" href="https://mozilla-django-oidc.readthedocs.
 </section>
 <section id="snapshot-settings-this-feature-is-under-active-development-and-not-yet-available-on-https-app-konfuzio-com">
 <h4>9. Snapshot Settings (This feature is under active development and not yet available on <a class="reference external" href="https://app.konfuzio.com">https://app.konfuzio.com</a>)<a class="headerlink" href="#snapshot-settings-this-feature-is-under-active-development-and-not-yet-available-on-https-app-konfuzio-com" title="Permalink to this headline">¶</a></h4>
+<section id="snapshot-default-file-storage">
+<h5>SNAPSHOT_DEFAULT_FILE_STORAGE<a class="headerlink" href="#snapshot-default-file-storage" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘django.core.files.storage.FileSystemStorage’</p>
+<p>By default, the file system is used as file storage.
+To use an S3-compatible storage set: ‘storages.backends.s3boto.S3BotoStorage’’.
+See <a class="reference external" href="https://docs.djangoproject.com/en/4.0/ref/settings/#default-file-storage">https://docs.djangoproject.com/en/4.0/ref/settings/#default-file-storage</a></p>
+<p><em>Type: string</em></p>
+</section>
 <section id="snapshot-location">
 <h5>SNAPSHOT_LOCATION<a class="headerlink" href="#snapshot-location" title="Permalink to this headline">¶</a></h5>
 <p>Default: ‘’</p>
 <p>The location where all Snapshots are saved (e.g. “/data/konfuzio-snapshots”)</p>
+<p>_This is mandatory if SNAPSHOT_DEFAULT_FILE<em>STORAGE=’django.core.files.storage.FileSystemStorage’. Type: string</em>
+_Type: string</p>
+</section>
+<section id="snapshot-aws-access-key-id">
+<h5>SNAPSHOT_AWS_ACCESS_KEY_ID<a class="headerlink" href="#snapshot-aws-access-key-id" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>_This is mandatory if SNAPSHOT_DEFAULT_FILE<em>STORAGE=’storages.backends.s3boto.S3BotoStorage’. Type: string</em></p>
+</section>
+<section id="snapshot-aws-secret-access-key">
+<h5>SNAPSHOT_AWS_SECRET_ACCESS_KEY<a class="headerlink" href="#snapshot-aws-secret-access-key" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>The access key of the S3-Service.</p>
+<p>_This is mandatory if SNAPSHOT_DEFAULT_FILE<em>STORAGE=’storages.backends.s3boto.S3BotoStorage’. Type: string</em></p>
+</section>
+<section id="snapshot-aws-storage-bucket-name">
+<h5>SNAPSHOT_AWS_STORAGE_BUCKET_NAME<a class="headerlink" href="#snapshot-aws-storage-bucket-name" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>The bucket name of the S3-Service.</p>
+<p>_This is mandatory if SNAPSHOT_DEFAULT_FILE<em>STORAGE=’storages.backends.s3boto.S3BotoStorage’. Type: string</em></p>
+</section>
+<section id="snapshot-aws-s3-region-name">
+<h5>SNAPSHOT_AWS_S3_REGION_NAME<a class="headerlink" href="#snapshot-aws-s3-region-name" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>The region name of the S3-Service.</p>
 <p><em>Type: string</em></p>
 </section>
-<section id="snapshot-creation-token">
-<h5>SNAPSHOT_CREATION_TOKEN<a class="headerlink" href="#snapshot-creation-token" title="Permalink to this headline">¶</a></h5>
+<section id="snapshot-aws-s3-endpoint-url">
+<h5>SNAPSHOT_AWS_S3_ENDPOINT_URL<a class="headerlink" href="#snapshot-aws-s3-endpoint-url" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>Custom S3 URL to use when connecting to S3, including scheme.</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="snapshot-aws-s3-use-ssl">
+<h5>SNAPSHOT_AWS_S3_USE_SSL<a class="headerlink" href="#snapshot-aws-s3-use-ssl" title="Permalink to this headline">¶</a></h5>
+<p>Default: True</p>
+<p>Whether or not to use SSL when connecting to S3, this is passed to the boto3 session resource constructor.
+See</p>
+<p><em>Type: boolean</em></p>
+</section>
+<section id="snapshot-aws-s3-verify">
+<h5>SNAPSHOT_AWS_S3_VERIFY<a class="headerlink" href="#snapshot-aws-s3-verify" title="Permalink to this headline">¶</a></h5>
 <p>Default: None</p>
-<p>The API Token which is used to create the Snapshot. The Snapshot creation is conducted using <a class="reference external" href="https://dev.konfuzio.com/web/on_premises.html#migrate-a-project">konfuzio_sdk export_project</a></p>
+<p>Whether or not to verify the connection to S3. Can be set to False to not verify certificates or a path to a CA cert bundle.</p>
 <p><em>Type: string</em></p>
-</section>
+<!--
+##### SNAPSHOT_CREATION_TOKEN
+Default: None
+
+The API Token which is used to create the Snapshot. The Snapshot creation is conducted using [konfuzio_sdk export_project](https://dev.konfuzio.com/web/on_premises.html#migrate-a-project)
+
+_Type: string_
+--></section>
 </section>
 <section id="test-settings-for-keycloak-sso-settings">
 <h4>10. Test Settings for Keycloak / SSO Settings<a class="headerlink" href="#test-settings-for-keycloak-sso-settings" title="Permalink to this headline">¶</a></h4>
