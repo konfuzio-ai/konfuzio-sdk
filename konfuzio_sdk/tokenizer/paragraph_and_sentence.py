@@ -15,6 +15,24 @@ from konfuzio_sdk.utils import (
 logger = logging.getLogger(__name__)
 
 
+class CustomAnnotation(Annotation):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.custom_bboxes = kwargs.get("custom_bboxes", [])
+
+    @property
+    def bboxes(self) -> List:
+        '''
+        This method of the Annotation class must be overwriten to return the custom_bboxes
+        :return: List of dictionaries each of the format {
+            'x0': int, 'x1': int, 'y0': int, 'y1': int,
+            'top': int, 'bottom': int, 'page_index': int,
+            'offset_string': str, 'custom_offset_string': bool
+        }
+        '''
+        return self.custom_bboxes
+
+
 class ParagraphTokenizer(AbstractTokenizer):
     """Tokenizer splitting Document into paragraphs."""
 
@@ -95,9 +113,11 @@ class ParagraphTokenizer(AbstractTokenizer):
 
                 if self.create_detectron_labels:
                     try:
-                        label = document.project.get_label_by_name(paragraph_bbox._label_name)
+                        label = document.category.project.get_label_by_name(paragraph_bbox._label_name)
                     except IndexError:
-                        label = Label(project=document.project, text=paragraph_bbox._label_name, label_sets=[label_set])
+                        label = Label(
+                            project=document.category.project, text=paragraph_bbox._label_name, label_sets=[label_set]
+                        )
                 else:
                     label = document.project.no_label
 
@@ -105,15 +125,40 @@ class ParagraphTokenizer(AbstractTokenizer):
                     confidence = None
                     if self.create_detectron_labels:
                         confidence = 1.0
-                    annotation = Annotation(
-                        document=document,
-                        annotation_set=annotation_set,
-                        label=label,
-                        label_set=document.project.no_label_set,
-                        category=document.category,
-                        spans=spans,
-                        confidence=confidence,
-                    )
+                    if label.name == "figure":
+                        custom_bbox = [
+                            {
+                                'x0': paragraph_bbox.x0,
+                                'x1': paragraph_bbox.x1,
+                                'y0': paragraph_bbox.y0,
+                                'y1': paragraph_bbox.y1,
+                                "top": paragraph_bbox.top,
+                                "bottom": paragraph_bbox.page.height - paragraph_bbox.y0,
+                                "page_index": paragraph_bbox.page.index,
+                                "offset_string": " ",
+                                "custom_offset_string": True,
+                            }
+                        ]
+                        annotation = CustomAnnotation(
+                            document=document,
+                            annotation_set=annotation_set,
+                            label=label,
+                            label_set=document.category.project.no_label_set,
+                            category=document.category,
+                            spans=spans[:1],
+                            confidence=confidence,
+                            custom_bboxes=custom_bbox,
+                        )
+                    else:
+                        annotation = Annotation(
+                            document=document,
+                            annotation_set=annotation_set,
+                            label=label,
+                            label_set=document.category.project.no_label_set,
+                            category=document.category,
+                            spans=spans,
+                            confidence=confidence,
+                        )
                     logger.debug(f"Created new Annotation {annotation}.")
                 except ValueError as e:
                     if 'is a duplicate of' in str(e):
