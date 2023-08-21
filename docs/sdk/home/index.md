@@ -44,6 +44,24 @@ https://YOUR_HOST/projects/PROJECT_ID/docs/DOCUMENT_ID/bbox-annotations/.
 
 Here are some of the properties and methods of the Document you might need when working with the SDK:
 - `document.id_` – get an ID of the Document;
+- `document.status` – get the status of the Document in the pipeline. The status can be one of the following:
+    - Queuing for OCR: 0
+    - Queuing for extraction: 1
+    - Done: 2
+    - Could not be processed: 111
+    - OCR in progress: 10
+    - Extraction in progress: 20
+    - Queuing for categorization: 3
+    - Categorization in progress: 30
+    - Queuing for splitting: 4
+    - Splitting in progress: 40
+    - Waiting for splitting confirmation: 41
+- `document.dataset_status` – get the dataset status of the Document. The dataset status can be one of the following:
+    - None: 0
+    - Preparation: 1
+    - Training: 2
+    - Test: 3
+    - Excluded: 4
 - `document.text` – get a full text of the Document;
 - `document.pages()` – a list of Pages in the Document;
 - `document.update()` – download a newer version of the Document from the Server in case you have made some changes in 
@@ -71,7 +89,7 @@ You can also observe all Categories available in the Project via the Smartview: 
 - `page.spans()` – get a list of Spans on the Page;
 - `page.number` – get Page's number, starting from 1.
 
-.. _span-concept:
+.. _category-annotation-concept:
 
 ### Category Annotation
 [Category Annotation](sourcecode.html#category-annotation) defines a Category of a Page or a Document. There can be 
@@ -83,6 +101,8 @@ To get a Category Annotation of a particular Category for the Page, use `Page.ge
 To get a maximum-confidence Category Annotation for a Page, use `Page.maximum_confidence_category_annotation`.
 
 To see a maximum-confidence Category Annotation for a Document, use `Document.maximum_confidence_category_annotation`.
+
+.. _span-concept:
 
 ### Span
 [Span](sourcecode.html#span) is a part of the Document's text without the line breaks. Each Span has `start_offset` and `end_offset` denoting its starting and finishing characters in `document.text`. 

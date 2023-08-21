@@ -21,8 +21,20 @@ You can think of the _Planned_ section as a _Roadmap_ that lists Konfuzio Server
 - Allow administrators of Konfuzio on-premise installations to run a speedtest ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9870)).
 - Start automatic AI retraining after User confirms that he has finished a annotation review ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9166)).
 
-## Next Release (estimated release date 21th August 2023)
-Upcoming...
+## Next Release (estimated release date 23th August 2023)
+This version uses the Konfuzio Python SDK in version v.0.2.29 and Konfuzio Document Validation UI in version v.0.1.12.
+
+### Added
+- [Allow to filter Documents in the API V3 by the data_file_name attribute](https://app.konfuzio.com/v3/swagger/#/documents/documents_list) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11639)).
+
+### Fixed
+- Allow Superusers without a Project to access Flower, Usage, and Queue views ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11410)).
+
+## released-2023-08-10_21-33-41
+This version uses the Konfuzio Python SDK in version v.0.2.28 and Konfuzio Document Validation UI in version v.0.1.11.
+
+### Fixed
+- An issue that prevented non-standard compliant PDFs to be uploaded ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11651)).
 
 ## released-2023-08-07_13-49-58
 This version uses the Konfuzio Python SDK in version v.0.2.28 and Konfuzio Document Validation UI in version v.0.1.11.

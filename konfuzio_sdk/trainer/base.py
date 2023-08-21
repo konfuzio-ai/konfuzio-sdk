@@ -84,7 +84,7 @@ class BaseModel(metaclass=abc.ABCMeta):
         prev_local_id = next(Data.id_iter)
 
         try:
-            if pickle_path.endswith(".pt"):
+            if pickle_path.endswith('.pt') or pickle_path.endswith('.pt.lz4'):
                 from konfuzio_sdk.trainer.document_categorization import load_categorization_model
 
                 model = load_categorization_model(pickle_path)
@@ -247,6 +247,10 @@ class BaseModel(metaclass=abc.ABCMeta):
 
         if hasattr(self, 'remove_dependencies'):
             self.remove_dependencies()
+
+        # for saving models that have a session as an attribute - otherwise the saving will be unsuccessful
+        if hasattr(self, 'client'):
+            self.client = None
 
         logger.info('Saving model with cloudpickle')
         # first save with cloudpickle
