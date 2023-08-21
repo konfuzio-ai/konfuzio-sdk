@@ -33,6 +33,20 @@ To make sure that your Project is loaded with all the latest data:
 
 ### Documents
 
+Every Document has a status indicating in what stage of processing it is. The code for the document status is:
+
+   - Queuing for OCR: 0
+   - Queuing for extraction: 1
+   - Done: 2
+   - Could not be processed: 111
+   - OCR in progress: 10
+   - Extraction in progress: 20
+   - Queuing for categorization: 3
+   - Categorization in progress: 30
+   - Queuing for splitting: 4
+   - Splitting in progress: 40
+   - Waiting for splitting confirmation: 41
+
 To access the Documents in the Project you can use:
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
@@ -41,8 +55,7 @@ To access the Documents in the Project you can use:
    :end-before: end documents
    :dedent: 4
 
-
-By default, it will get the Documents with training status (dataset_status = 2). The code for the status is:
+By default, it will get the Documents with training status (dataset_status = 2). The code for the dataset status is:
 
 - None: 0
 - Preparation: 1

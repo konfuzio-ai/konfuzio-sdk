@@ -97,7 +97,11 @@ class Data:
 
 
 class Page(Data):
-    """Access the information about one Page of a Document."""
+    """
+    Access the information about one Page of a Document.
+
+    For more details see https://dev.konfuzio.com/sdk/explanations.html#page-concept
+    """
 
     def __init__(
         self,
@@ -473,6 +477,8 @@ class Bbox:
     """
     A bounding box relates to an area of a Document Page.
 
+    For more details see https://dev.konfuzio.com/sdk/explanations.html#bbox-concept
+
     What consistutes a valid Bbox changes depending on the value of the `validation` param.
     If ALLOW_ZERO_SIZE (default), it allows bounding boxes to have zero width or height.
     This option is available for compatibility reasons since some OCR engines can sometimes return character level
@@ -651,7 +657,11 @@ class Bbox:
 
 
 class AnnotationSet(Data):
-    """An Annotation Set is a group of Annotations. The Labels of those Annotations refer to the same Label Set."""
+    """
+    An Annotation Set is a group of Annotations. The Labels of those Annotations refer to the same Label Set.
+
+    For more details see https://dev.konfuzio.com/sdk/explanations.html#annotation-set-concept
+    """
 
     def __init__(self, document, label_set: 'LabelSet', id_: Union[int, None] = None, **kwargs):
         """
@@ -731,7 +741,11 @@ class AnnotationSet(Data):
 
 
 class LabelSet(Data):
-    """A Label Set is a group of Labels."""
+    """
+    A Label Set is a group of Labels.
+
+    For more details see https://dev.konfuzio.com/sdk/explanations.html#label-set-concept
+    """
 
     def __init__(
         self,
@@ -844,7 +858,11 @@ class LabelSet(Data):
 
 
 class Category(Data):
-    """Group Documents in a Project."""
+    """
+    Group Documents in a Project.
+
+    For more details see https://dev.konfuzio.com/sdk/explanations.html#category-concept
+    """
 
     def __init__(self, project, id_: int = None, name: str = None, name_clean: str = None, *args, **kwargs):
         """Associate Label Sets to relate to Annotations."""
@@ -953,7 +971,11 @@ class Category(Data):
 
 
 class CategoryAnnotation(Data):
-    """Annotate the Category of a Page."""
+    """
+    Annotate the Category of a Page.
+
+    For more details see https://dev.konfuzio.com/sdk/explanations.html#category-annotation-concept
+    """
 
     def __init__(
         self,
@@ -1032,7 +1054,11 @@ class CategoryAnnotation(Data):
 
 
 class Label(Data):
-    """Group Annotations across Label Sets."""
+    """
+    Group Annotations across Label Sets.
+
+    For more details see https://dev.konfuzio.com/sdk/explanations.html#label-concept
+    """
 
     def __init__(
         self,
@@ -1653,7 +1679,11 @@ class Label(Data):
 
 
 class Span(Data):
-    """A Span is a sequence of characters or whitespaces without line break."""
+    """
+    A Span is a sequence of characters or whitespaces without line break.
+
+    For more details see https://dev.konfuzio.com/sdk/explanations.html#span-concept
+    """
 
     def __init__(
         self,
@@ -2005,7 +2035,11 @@ class Span(Data):
 
 
 class Annotation(Data):
-    """Hold information that a Label, Label Set and Annotation Set has been assigned to and combines Spans."""
+    """
+    Hold information that a Label, Label Set and Annotation Set has been assigned to and combines Spans.
+
+    For more details see https://dev.konfuzio.com/sdk/explanations.html#annotation-concept
+    """
 
     def __init__(
         self,
@@ -2320,7 +2354,7 @@ class Annotation(Data):
                 bboxes=self.bboxes,
                 # selection_bbox=self.selection_bbox,
                 page_number=self.page_number,
-                session=self.document.project.session
+                session=self.document.project.session,
             )
             if response.status_code == 201:
                 json_response = json.loads(response.text)
@@ -2422,10 +2456,7 @@ class Annotation(Data):
         """
         if self.document.is_online and delete_online:
             delete_document_annotation(
-                self.document.id_,
-                self.id_,
-                self.document.project.id_,
-                session=self.document.project.session
+                self.document.id_, self.id_, self.document.project.id_, session=self.document.project.session
             )
             self.document.update()
         else:
@@ -2463,7 +2494,11 @@ class Annotation(Data):
 
 
 class Document(Data):
-    """Access the information about one Document, which is available online."""
+    """
+    Access the information about one Document, which is available online.
+
+    For more details see https://dev.konfuzio.com/sdk/explanations.html#document-concept
+    """
 
     # Define the status of a Document's processing
     QUEUING_FOR_OCR = 0
@@ -2638,7 +2673,7 @@ class Document(Data):
             file_name=self.name,
             dataset_status=self.dataset_status,
             assignee=self.assignee,
-            session=self.project.session
+            session=self.project.session,
         )
 
     def save(self):
@@ -2808,9 +2843,7 @@ class Document(Data):
         if any(page._segmentation is None for page in document.pages()):
             document_id = document.id_
             detectron_document_results = get_results_from_segmentation(
-                document_id,
-                self.project.id_,
-                session=konfuzio_session(timeout=timeout, num_retries=num_retries)
+                document_id, self.project.id_, session=konfuzio_session(timeout=timeout, num_retries=num_retries)
             )
             assert len(detectron_document_results) == self.number_of_pages
             for page_index, detectron_page_result in enumerate(detectron_document_results):
@@ -2985,7 +3018,7 @@ class Document(Data):
                 file_name=self.name,
                 dataset_status=4,
                 assignee=assignee,
-                session=self.project.session
+                session=self.project.session,
             )
 
         return valid
@@ -3358,7 +3391,9 @@ class Document(Data):
         elif self.is_online and self.status and self.status[0] == Document.DONE:
             # todo check for self.project.id_ and self.id_ and ?
             logger.info(f'Start downloading bbox files of {len(self.text)} characters for {self}.')
-            bbox = get_document_details(document_id=self.id_, project_id=self.project.id_, extra_fields="bbox", session=self.project.session)['bbox']
+            bbox = get_document_details(
+                document_id=self.id_, project_id=self.project.id_, extra_fields="bbox", session=self.project.session
+            )['bbox']
             # Use the `zipfile` module: `compresslevel` was added in Python 3.7
             with zipfile.ZipFile(
                 self.bbox_file_path, mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9
@@ -3727,7 +3762,11 @@ class Document(Data):
 
 
 class Project(Data):
-    """Access the information of a Project."""
+    """
+    Access the information of a Project.
+
+    For more details see https://dev.konfuzio.com/sdk/explanations.html#project-concept
+    """
 
     def __init__(
         self,
