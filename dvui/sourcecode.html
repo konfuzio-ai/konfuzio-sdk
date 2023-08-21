@@ -71,8 +71,10 @@
 <li class="toctree-l2"><a class="reference internal" href="#directives">Directives</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#locales">Locales</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#store">Store</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#utils">Utils</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#tests"><strong>Tests</strong></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#utils">Utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#tests">Tests</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#unit-tests"><strong>Unit Tests</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#integration-tests"><strong>Integration Tests</strong></a></li>
 </ul>
 </li>
 </ul>
@@ -133,9 +135,22 @@
 <section id="utils">
 <h2>Utils<a class="headerlink" href="#utils" title="Permalink to this headline">¶</a></h2>
 <p>All utility functions are added <a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/tree/main/src/utils">here</a>.</p>
+</section>
 <section id="tests">
-<h3><strong>Tests</strong><a class="headerlink" href="#tests" title="Permalink to this headline">¶</a></h3>
+<h2>Tests<a class="headerlink" href="#tests" title="Permalink to this headline">¶</a></h2>
+<section id="unit-tests">
+<h3><strong>Unit Tests</strong><a class="headerlink" href="#unit-tests" title="Permalink to this headline">¶</a></h3>
 <p>You can test the application by running <code class="docutils literal notranslate"><span class="pre">npm</span> <span class="pre">run</span> <span class="pre">test:unit</span></code>. Tests are developed using <a class="reference external" href="https://github.com/vuejs/vue-test-utils">Vue Test Utils</a> and are located in the <code class="docutils literal notranslate"><span class="pre">tests</span></code> folder. Mock data is used to get information into the testing environment, so there’s no requirement to connect to an API. The tests are grouped by the different components and are focused on testing the components’ behavior.</p>
+</section>
+<section id="integration-tests">
+<h3><strong>Integration Tests</strong><a class="headerlink" href="#integration-tests" title="Permalink to this headline">¶</a></h3>
+<p>For Integration Tests you can run <code class="docutils literal notranslate"><span class="pre">npm</span> <span class="pre">run</span> <span class="pre">cypress:open</span></code> which will open the <a class="reference external" href="https://www.cypress.io/">Cypress</a> application. There you can choose Component testing and the browser of choice. All of the available components for testing are then listed in the specs tabs.
+Since the Integration Tests connect to the Konfuzio API, an environment file is needed to provide the required parameters. You should create a <code class="docutils literal notranslate"><span class="pre">.env.test</span></code> on the root of the repository based on the <a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/blob/main/.env.example">.env.example</a> and specify, at least, the following required values:</p>
+<ul class="simple">
+<li><p>The user token: <code class="docutils literal notranslate"><span class="pre">VUE_APP_GUEST_USER_TOKEN</span></code></p></li>
+<li><p>The document id: <code class="docutils literal notranslate"><span class="pre">VUE_APP_DOCUMENT_ID</span></code></p></li>
+</ul>
+<p>To create new tests, you just need to add a file next to the component you want to test with the <code class="docutils literal notranslate"><span class="pre">*.cy.js</span></code> name. For example, if you want to create tests for the <code class="docutils literal notranslate"><span class="pre">App.vue</span></code> component, a file named <code class="docutils literal notranslate"><span class="pre">App.cy.js</span></code> should be created and it will automatically appear in the Cypress list.</p>
 </section>
 </section>
 </section>
