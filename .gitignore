@@ -1,20 +1,54 @@
+# Ignore environment files
 .env*
-data
-konfuzio_sdk.egg-info
-.idea
+
+# Ignore data directory
+data/
+
+# Ignore Konfuzio SDK egg info
+konfuzio_sdk.egg-info/
+
+# Ignore IDE specific files
+.idea/
+.vscode/
+
+# Ignore documentation build output
 docs/build/
+
+# Ignore log files
 *.log
+
+# Ignore compiled Python files
 *.pyc
-venv
+
+# Ignore virtual environment directory
+venv/
+
+# Ignore project settings
 settings.py
+
+# Ignore pickled files
 *.pkl
+
+# Ignore archived files
 *.tar.gz
+
+# Ignore files containing 'data_'
 *data_*
-*.ipynb*
-dist
-build
-_build
-docs/sdk/tutorials/tests
-.vscode
-tests/example_project_data
-__pycache__
+
+# Ignore Jupyter Notebook checkpoints
+*.ipynb_checkpoints/
+*.ipynb~
+
+# Ignore distribution and build directories
+dist/
+build/
+_build/
+
+# Ignore SDK tutorials tests
+docs/sdk/tutorials/tests/
+
+# Ignore example project data for tests
+tests/example_project_data/
+
+# Ignore Python cache
+__pycache__/
