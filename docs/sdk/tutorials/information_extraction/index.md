@@ -420,10 +420,7 @@ class CustomExtractionAI(AbstractExtractionAI):
     def extract(self, document: Document) -> Document:
         # check if the model is ready otherwise raise an error
         self.check_is_ready()
-        # create a deepcopy of the document
-        result_document = deepcopy(document)
-        result_document._category = self.project.no_category
-        result_document.set_category(self.category)
+        result_document = super().extract(document)
         result_document._text = "this should be a long text or at least twice the number of barcodes in the document"
         barcode_label = self.project.get_label_by_name("Barcode")
         barcode_label_set = self.project.get_label_set_by_name("Barcodes Set")
