@@ -506,7 +506,7 @@ class CustomExtractionAI(AbstractExtractionAI):
             import subprocess
             package_name = "zxing-cpp"
             subprocess.check_call(
-                ["python3.8", "-m", "pip", "install", package_name])
+                ["pip", "install", package_name])
             print(f"The package {package_name} is ready to be used.")
         except:
             raise Exception(
