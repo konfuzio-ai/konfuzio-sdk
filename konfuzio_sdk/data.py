@@ -97,7 +97,11 @@ class Data:
 
 
 class Page(Data):
-    """Access the information about one Page of a Document."""
+    """
+    Access the information about one Page of a Document.
+
+    For more details see https://dev.konfuzio.com/sdk/explanations.html#page-concept
+    """
 
     def __init__(
         self,
@@ -473,6 +477,8 @@ class Bbox:
     """
     A bounding box relates to an area of a Document Page.
 
+    For more details see https://dev.konfuzio.com/sdk/explanations.html#bbox-concept
+
     What consistutes a valid Bbox changes depending on the value of the `validation` param.
     If ALLOW_ZERO_SIZE (default), it allows bounding boxes to have zero width or height.
     This option is available for compatibility reasons since some OCR engines can sometimes return character level
@@ -651,7 +657,11 @@ class Bbox:
 
 
 class AnnotationSet(Data):
-    """An Annotation Set is a group of Annotations. The Labels of those Annotations refer to the same Label Set."""
+    """
+    An Annotation Set is a group of Annotations. The Labels of those Annotations refer to the same Label Set.
+
+    For more details see https://dev.konfuzio.com/sdk/explanations.html#annotation-set-concept
+    """
 
     def __init__(self, document, label_set: 'LabelSet', id_: Union[int, None] = None, **kwargs):
         """
@@ -736,7 +746,11 @@ class AnnotationSet(Data):
 
 
 class LabelSet(Data):
-    """A Label Set is a group of Labels."""
+    """
+    A Label Set is a group of Labels.
+
+    For more details see https://dev.konfuzio.com/sdk/explanations.html#label-set-concept
+    """
 
     def __init__(
         self,
@@ -849,7 +863,11 @@ class LabelSet(Data):
 
 
 class Category(Data):
-    """Group Documents in a Project."""
+    """
+    Group Documents in a Project.
+
+    For more details see https://dev.konfuzio.com/sdk/explanations.html#category-concept
+    """
 
     def __init__(self, project, id_: int = None, name: str = None, name_clean: str = None, *args, **kwargs):
         """Associate Label Sets to relate to Annotations."""
@@ -972,7 +990,11 @@ class Category(Data):
 
 
 class CategoryAnnotation(Data):
-    """Annotate the Category of a Page."""
+    """
+    Annotate the Category of a Page.
+
+    For more details see https://dev.konfuzio.com/sdk/explanations.html#category-annotation-concept
+    """
 
     def __init__(
         self,
@@ -1051,7 +1073,11 @@ class CategoryAnnotation(Data):
 
 
 class Label(Data):
-    """Group Annotations across Label Sets."""
+    """
+    Group Annotations across Label Sets.
+
+    For more details see https://dev.konfuzio.com/sdk/explanations.html#label-concept
+    """
 
     def __init__(
         self,
@@ -1672,7 +1698,11 @@ class Label(Data):
 
 
 class Span(Data):
-    """A Span is a sequence of characters or whitespaces without line break."""
+    """
+    A Span is a sequence of characters or whitespaces without line break.
+
+    For more details see https://dev.konfuzio.com/sdk/explanations.html#span-concept
+    """
 
     def __init__(
         self,
@@ -2024,7 +2054,11 @@ class Span(Data):
 
 
 class Annotation(Data):
-    """Hold information that a Label, Label Set and Annotation Set has been assigned to and combines Spans."""
+    """
+    Hold information that a Label, Label Set and Annotation Set has been assigned to and combines Spans.
+
+    For more details see https://dev.konfuzio.com/sdk/explanations.html#annotation-concept
+    """
 
     def __init__(
         self,
@@ -2512,7 +2546,11 @@ class Annotation(Data):
 
 
 class Document(Data):
-    """Access the information about one Document, which is available online."""
+    """
+    Access the information about one Document, which is available online.
+
+    For more details see https://dev.konfuzio.com/sdk/explanations.html#document-concept
+    """
 
     # Define the status of a Document's processing
     QUEUING_FOR_OCR = 0
@@ -3819,7 +3857,11 @@ class Document(Data):
 
 
 class Project(Data):
-    """Access the information of a Project."""
+    """
+    Access the information of a Project.
+
+    For more details see https://dev.konfuzio.com/sdk/explanations.html#project-concept
+    """
 
     def __init__(
         self,
