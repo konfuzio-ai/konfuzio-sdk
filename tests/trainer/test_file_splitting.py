@@ -5,6 +5,7 @@ import os
 import pathlib
 import pytest
 import shutil
+import sys
 import unittest
 
 from copy import deepcopy
@@ -166,6 +167,7 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
             )
             assert gt_exclusive_first_page_strings == load_exclusive_first_page_strings
 
+    @unittest.skipIf(sys.version_info[:2] != (3, 8), reason='This AI can only be loaded on Python 3.8.')
     def test_pickle_model_upload_modify_delete(self):
         """Upload the model."""
         assert os.path.isfile(self.file_splitting_model.path)

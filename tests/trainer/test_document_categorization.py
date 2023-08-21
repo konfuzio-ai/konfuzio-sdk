@@ -3,6 +3,7 @@
 import logging
 import os
 import pytest
+import sys
 import unittest
 from copy import deepcopy
 import parameterized
@@ -531,6 +532,7 @@ class TestAllCategorizationConfigurations(unittest.TestCase):
         self.categorization_pipeline.pipeline_path = self.categorization_pipeline.save()
         assert os.path.isfile(self.categorization_pipeline.pipeline_path)
 
+    @unittest.skipIf(sys.version_info[:2] != (3, 8), reason='This AI can only be loaded on Python 3.8.')
     def test_4_upload_ai_model(self) -> None:
         """Upload the model."""
         assert os.path.isfile(self.categorization_pipeline.pipeline_path)

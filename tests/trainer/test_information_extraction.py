@@ -330,6 +330,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 
         assert previous_size > memory_size_of(self.pipeline)
 
+    @unittest.skipIf(sys.version_info[:2] != (3, 8), reason='This AI can only be loaded on Python 3.8.')
     def test_05_upload_modify_delete_ai_model(self):
         """Upload the model."""
         assert os.path.isfile(self.pipeline.pipeline_path)
@@ -1009,14 +1010,13 @@ class TestInformationExtraction(unittest.TestCase):
         pipeline.label_feature_list = ['x0', 'x1', 'y0', 'y1']
         pipeline.clf.classes_ = ['0']
         category.labels[0].name = '0'
-        for l in category.labels:
-            l._has_multiline_annotations = False
+        for cur_label in category.labels:
+            cur_label._has_multiline_annotations = False
         category.label_sets[0].name = '0'
 
         virt_doc = pipeline.extract(document)
 
         assert len(virt_doc.annotations(use_correct=False)) == 1
-
 
     def test_annotation_set_extraction_with_no_span_above_detection_threshold(self):
         """Test that extract_template_with_clf returns empty dictionary when no spans above detection threshold."""
