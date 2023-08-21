@@ -418,8 +418,8 @@ class CustomExtractionAI(AbstractExtractionAI):
         pass
 
     def extract(self, document: Document) -> Document:
-        # try installing the zxing-cpp library otherwise raise an error
-        self.install_dependencies()
+        # check if the model is ready otherwise raise an error
+        self.check_is_ready()
         # create a deepcopy of the document
         result_document = deepcopy(document)
         result_document._category = self.project.no_category
