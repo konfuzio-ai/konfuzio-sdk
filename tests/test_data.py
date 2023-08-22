@@ -418,10 +418,12 @@ class TestOfflineExampleData(unittest.TestCase):
         with pytest.raises(NotImplementedError):
             copy(data)
 
-    @pytest.mark.skip(reason="Label/Label Set relationship error...")
     def test_receipts_category_annotations(self):
         """Test retrieving the Annotations of receipts Category."""
         for document in self.receipts_category.documents():
+            document.get_annotations()
+
+        for document in self.receipts_category.test_documents():
             document.get_annotations()
 
     def test_deepcopy(self):
