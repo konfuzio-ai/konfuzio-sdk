@@ -198,7 +198,7 @@ More on Celery workflows can be found here: https://docs.celeryq.dev/en/stable/u
 
 ### Reset the Queue
 
-On self-hosted Konfuzio installations, all queues can be reset by running `redis-cli FLUSHALL´.
+On self-hosted Konfuzio installations, all queues can be reset by running `redis-cli FLUSHALL`.
 Please be aware that you usually do not want to do this, as it will cause Documents and AIs to be stuck in their current status.
 
 ### Celery Tasks
