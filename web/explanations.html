@@ -65,8 +65,9 @@
 <li class="toctree-l3"><a class="reference internal" href="#ocr-text-extraction">OCR Text extraction</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#background-processes">Background processes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#background-processes">Background Processes</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#queue-s">Queue’s</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#reset-the-queue">Reset the Queue</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#celery-tasks">Celery Tasks</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#document-tasks">Document tasks</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#extraction-category-ai-training">Extraction &amp; Category AI Training</a></li>
@@ -298,7 +299,7 @@ repaired</p></li>
 </section>
 </section>
 <section id="background-processes">
-<h2>Background processes<a class="headerlink" href="#background-processes" title="Permalink to this headline">¶</a></h2>
+<h2>Background Processes<a class="headerlink" href="#background-processes" title="Permalink to this headline">¶</a></h2>
 <p>Processes within our server are distributed between
 <a class="reference external" href="https://docs.celeryq.dev/en/stable/">Celery</a> <a class="reference external" href="https://docs.celeryq.dev/en/stable/userguide/workers.html">workers</a>
 between several <a class="reference external" href="https://docs.celeryq.dev/en/stable/userguide/tasks.html">tasks</a>. Together this creates the definition
@@ -355,6 +356,11 @@ More on Celery workflows can be found here: <a class="reference external" href="
 </tr>
 </tbody>
 </table>
+</section>
+<section id="reset-the-queue">
+<h3>Reset the Queue<a class="headerlink" href="#reset-the-queue" title="Permalink to this headline">¶</a></h3>
+<p>On self-hosted Konfuzio installations, all queues can be reset by running <a href="#id1"><span class="problematic" id="id2">`</span></a>redis-cli FLUSHALL´.
+Please be aware that you usually do not want to do this, as it will cause Documents and AIs to be stuck in their current status.</p>
 </section>
 <section id="celery-tasks">
 <h3>Celery Tasks<a class="headerlink" href="#celery-tasks" title="Permalink to this headline">¶</a></h3>
