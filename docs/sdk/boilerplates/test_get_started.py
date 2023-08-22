@@ -124,3 +124,9 @@ def test_modify_document():
     # start folder
     my_project.documents_folder
     # end folder
+    # start document text path
+    document.txt_file_path
+    # end document text path
+    # start document bbox path
+    document.bbox_file_path
+    # end document bbox path
