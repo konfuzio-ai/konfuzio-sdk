@@ -140,5 +140,18 @@ to different Categories and multiple Annotation Sets.
 .. _bbox-concept:
 
 ### Bbox
-[Bbox](sourcecode.html#bbox) is an area of the Page denoted by four rectangle-like 
-coordinates. You can access Bboxes of the Document by calling `document.bboxes`.
+[Bbox](sourcecode.html#bbox) is used to represent an area of a Page, defined by the coordinates of the bottom left corner
+and the top right corner of the bounding box. Checkout our [coordinate system explainer](#coordinates-system) for more
+details.
+
+You can access all character Bboxes of the Document by using `document.bboxes`. You can also get a Bbox for a Span by 
+calling `span.bbox()` or, for a Bbox around all Spans in an Annotation by calling `annotation.bbox()`. This should not be
+confused with `Annotation.selection_bbox` which is an attribute storing the Bbox that a user has selected in the Smartview
+when creating the Annotation.
+
+Here the bounding box with the red border is what is retrieved with `Annotation.selection_bbox` and the bounding box 
+highlighted in green is what is retrieved with `Annotation.bbox()`:
+
+.. image:: /_static/img/bbox_selection_bbox.png
+   :width: 150px
+   :align: center
