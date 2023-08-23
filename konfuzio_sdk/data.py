@@ -2145,6 +2145,15 @@ class Annotation(Data):
             self.add_span(span)
 
         self.selection_bbox = kwargs.get("selection_bbox", None)
+        if isinstance(self.selection_bbox, dict):
+            page = self.document.get_page_by_index(self.selection_bbox["page_index"])
+            x0, x1, y0, y1 = (
+                self.selection_bbox["x0"],
+                self.selection_bbox["x1"],
+                self.selection_bbox["y0"],
+                self.selection_bbox["y1"],
+            )
+            self.selection_bbox = Bbox(x0=x0, x1=x1, y0=y0, y1=y1, page=page)
 
         # TODO START LEGACY to support multiline Annotations
         bboxes = kwargs.get("bboxes", None)
@@ -2183,7 +2192,6 @@ class Annotation(Data):
             self.y0 = bbox.get('y0')
             self.y1 = bbox.get('y1')
 
-        self.selection_bbox = kwargs.get('selection_bbox', None)
         self.page_number = kwargs.get('page_number', None)
         # END LEGACY -
 
