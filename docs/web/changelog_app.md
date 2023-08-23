@@ -27,8 +27,14 @@ This version uses the Konfuzio Python SDK in version v.0.2.29 and Konfuzio Docum
 ### Added
 - [Allow to filter Documents in the API V3 by the data_file_name attribute](https://app.konfuzio.com/v3/swagger/#/documents/documents_list) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11639)).
 
+### Changed
+- Autoconfirm the Category of Document in case only one Category is available ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11295))
+- Sent Plan limit reached email only once per day ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11000))
+
 ### Fixed
 - Allow Superusers without a Project to access Flower, Usage, and Queue views ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11410)).
+- When using Google Kubernetes Engine (GKE) the log level is now detected correctly ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11408)).
+- When creating a User via the Webinterface as Superuser not all Permissions habe been applied ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11689)).
 
 ## released-2023-08-10_21-33-41
 This version uses the Konfuzio Python SDK in version v.0.2.28 and Konfuzio Document Validation UI in version v.0.1.11.
