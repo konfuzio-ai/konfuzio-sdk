@@ -501,6 +501,11 @@ class Bbox:
         self._valid(validation)
 
     @property
+    def document(self) -> 'Document':
+        """Get the Document the Bbox belongs to."""
+        return self.page.document
+
+    @property
     def top(self):
         """Calculate the distance to the top of the Page."""
         if self.page:
@@ -647,12 +652,12 @@ class Bbox:
 
     @property
     def y0_image(self):
-        """Get the y0 coordinate in the context of the Page image."""
+        """Get the y0 coordinate in the context of the Page image, in a top-down coordinate system."""
         return self.page.image_height - self.y1 * (self.page.image_height / self.page.height)
 
     @property
     def y1_image(self):
-        """Get the y1 coordinate in the context of the Page image."""
+        """Get the y1 coordinate in the context of the Page image, in a top-down coordinate system."""
         return self.page.image_height - self.y0 * (self.page.image_height / self.page.height)
 
 
