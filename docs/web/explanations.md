@@ -172,7 +172,7 @@ During evaluation of both project settings and file, we also process OCR extract
 
 Finally, we return you the extracted text.
 
-## Background processes
+## Background Processes
 
 Processes within our server are distributed between
 [Celery](https://docs.celeryq.dev/en/stable/) [workers](https://docs.celeryq.dev/en/stable/userguide/workers.html)
@@ -196,7 +196,10 @@ More on Celery workflows can be found here: https://docs.celeryq.dev/en/stable/u
 | 7   | `training_heavy` |       queue for RAM intensive ai training       |
 | 8   | `evaluation`     |             queue for AI evaluation             |
 
+### Reset the Queue
 
+On self-hosted Konfuzio installations, all queues can be reset by running `redis-cli FLUSHALL`.
+Please be aware that you usually do not want to do this, as it will cause Documents and AIs to be stuck in their current status.
 
 ### Celery Tasks
 
