@@ -1119,6 +1119,10 @@ class TestOfflineDataSetup(unittest.TestCase):
         with pytest.raises(ValueError, match='Cannot assign .* to AnnotationSet.* can have multiple Annotation Sets'):
             _ = Annotation(document=document, label=label, spans=[span])
 
+    @pytest.mark.xfail(
+        strict=True,
+        reason="To not interrupt server workflows, we log an error instead of raising a ValueError for now.",
+    )
     def test_add_annotation_set_w_multiple_false(self):
         """Test to add a second AnnotationSet to a Document where LabelSet.has_multiple_annotation_sets is False."""
         project = Project(id_=None)
@@ -1161,8 +1165,8 @@ class TestOfflineDataSetup(unittest.TestCase):
         assert annotation_set.is_default is True
         assert annotation_set.label_set is label_set
 
-        with pytest.raises(ValueError, match='is already used by another Annotation Set'):
-            _ = AnnotationSet(document=document, label_set=label_set)
+        # with pytest.raises(ValueError, match='is already used by another Annotation Set'):
+        #     _ = AnnotationSet(document=document, label_set=label_set)
 
     def test_add_none_label_annotation(self):
         """Test to add an Annotation with none Label."""
