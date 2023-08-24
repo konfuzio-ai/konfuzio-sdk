@@ -346,7 +346,7 @@ def install_dependencies():
 
         package_name = "zxing-cpp"
         # Run the pip install command
-        subprocess.check_call(["python3.8", "-m", "pip", "install", package_name])
+        subprocess.check_call(["pip", "install", package_name])
         print(f"The package {package_name} is ready to be used.")
     except:
         raise Exception(
