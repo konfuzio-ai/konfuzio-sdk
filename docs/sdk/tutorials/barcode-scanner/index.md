@@ -50,7 +50,7 @@ class CustomAnnotation(Annotation):
 
 The second step is to create a custom [Extraction AI](https://dev.konfuzio.com/sdk/sourcecode.html#extraction-ai) class that leverages the `CustomAnnotation` class defined in _Step 1_ in order to extract barcodes from [Documents](https://dev.konfuzio.com/sdk/sourcecode.html?highlight=document#document). We will start by explaining the different methods that will be used in this class.
 
-**NB.** If you want to directly have the full code of the `CustomExtractionAI` class, you can skip to [Step 3](#3-set-up-the-barcodeextractionai-class-using-the-earlier-defined-methods).
+**NB.** If you want to directly have the full code of the `CustomExtractionAI` class, you can skip to [Step 3](#set-up-the-barcodeextractionai-class-using-the-earlier-defined-methods).
 
 #### 2.1. Extract Bounding Boxes from Image
 
