@@ -14,7 +14,7 @@ Before we start, make sure you have the following:
 2.  [konfuzio-sdk](https://pypi.org/project/konfuzio-sdk/) ✅
 3.  The [zxing-cpp](https://github.com/zxing-cpp/zxing-cpp) library 💻
 
-### Step 1: Set up the `CustomAnnotation` class
+### 1. Set up the `CustomAnnotation` class
 
 ---
 
@@ -44,15 +44,15 @@ class CustomAnnotation(Annotation):
         return self.custom_bboxes
 ```
 
-### Step 2: Set up the `CustomExtractionAI` class
+### 2. Set up the `CustomExtractionAI` class
 
 ---
 
 The second step is to create a custom [Extraction AI](https://dev.konfuzio.com/sdk/sourcecode.html#extraction-ai) class that leverages the `CustomAnnotation` class defined in _Step 1_ in order to extract barcodes from [Documents](https://dev.konfuzio.com/sdk/sourcecode.html?highlight=document#document). We will start by explaining the different methods that will be used in this class.
 
-**NB.** If you want to directly have the full code of the `CustomExtractionAI` class, you can skip to [Step 3](#step-3-set-up-the-barcodeextractionai-class-using-the-earlier-defined-methods).
+**NB.** If you want to directly have the full code of the `CustomExtractionAI` class, you can skip to [Step 3](#3-set-up-the-barcodeextractionai-class-using-the-earlier-defined-methods).
 
-#### Step 2.1: Extract Bounding Boxes from Image
+#### 2.1. Extract Bounding Boxes from Image
 
 ---
 
@@ -90,7 +90,7 @@ def get_bboxes_from_image(self, image, page_index):
     return bboxes_list
 ```
 
-#### Step 2.2: Create Bbox Dictionary from `zxing-cpp` Output
+#### 2.2. Create Bbox Dictionary from `zxing-cpp` Output
 
 ---
 
@@ -137,7 +137,7 @@ def get_bbox_dict_from_coords(
 
 With these two separate steps, you have a clear distinction between extracting bounding boxes from the image using `zxing-cpp` and creating the final bbox dictionary from the output. This makes the code more modular and easier to maintain.
 
-#### Step 2.3: Install Dependencies
+#### 2.3. Install Dependencies
 
 ---
 
@@ -159,7 +159,7 @@ def install_dependencies():
         )
 ```
 
-#### Step 2.4: Check if the Extraction AI is ready
+#### 2.4. Check if the Extraction AI is ready
 
 ---
 
@@ -176,7 +176,7 @@ def check_is_ready(self) -> bool:
         return False
 ```
 
-### Step 3: Set up the BarcodeExtractionAI class using the earlier defined Methods
+### 3. Set up the BarcodeExtractionAI class using the earlier defined Methods
 
 ---
 
@@ -326,7 +326,7 @@ class CustomExtractionAI(AbstractExtractionAI):
             return False
 ```
 
-### Step 4: Putting It All Together
+### 4. Putting It All Together
 
 ---
 
