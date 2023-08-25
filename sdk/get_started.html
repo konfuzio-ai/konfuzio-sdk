@@ -53,6 +53,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#install-konfuzio-sdk-package">2. Install <code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span></code> package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#initialize-the-package">3. Initialize the package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#download-the-data">4. Download the data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#install-the-ai-konfuzio-sdk-in-a-hosted-jupyter-environment">5. Install the <code class="docutils literal notranslate"><span class="pre">.[ai]</span></code> Konfuzio SDK in a hosted Jupyter environment</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#example-usage">Example Usage</a><ul>
@@ -135,11 +136,12 @@ are using PyCharm have a look at <a class="reference external" href="quickstart_
 <p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">konfuzio_sdk</span></code></p>
 </li>
 <li><p>It is also possible to choose between the lightweight SDK and the SDK with the AI-related components (latter one is
-taking up more disk space). By default, the SDK is installed as a lightweight instance. To install the full instance,
-run the following command:</p>
+taking up more disk space). By default, the SDK is installed as a lightweight instance. To install the full instance (<code class="docutils literal notranslate"><span class="pre">.[ai]</span></code>), the one with AI-related components, run the following command:</p>
 <p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">konfuzio_sdk[ai]</span></code></p>
+<p>Currently, the full instance cannot be installed on MacOS machines with an ARM-based chip from the M-series. The <code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span></code> package can only be installed on MacOS on machines with an ARM chip if the lightweight instance is installed. However the Konfuzio SDK can be used on a hosted environment such as <a class="reference external" href="https://deepnote.com/">Deepnote</a>. Follow the instructions in <a class="reference external" href="#5-install-the-ai-konfuzio-sdk-in-a-hosted-jupyter-environment">section 5</a> of this document to install the SDK in a hosted Jupyter environment.</p>
 </li>
 </ul>
+<hr class="docutils" />
 <p><em>Notes</em>:</p>
 <ul class="simple">
 <li><p>Supported Python environments are 3.8, 3.9, 3.10, 3.11.</p></li>
@@ -166,6 +168,58 @@ The ID of the Project is shown in the URL. Suppose that your Project ID is 123:<
 <p>The data from the documents that you uploaded in your Konfuzio project will be downloaded to a folder called <code class="docutils literal notranslate"><span class="pre">data_123</span></code>.</p>
 <p><em>Note</em>:
 Only Documents in the Training and Test sets are downloaded.</p>
+</section>
+<section id="install-the-ai-konfuzio-sdk-in-a-hosted-jupyter-environment">
+<h3>5. Install the <code class="docutils literal notranslate"><span class="pre">.[ai]</span></code> Konfuzio SDK in a hosted Jupyter environment<a class="headerlink" href="#install-the-ai-konfuzio-sdk-in-a-hosted-jupyter-environment" title="Permalink to this headline">¶</a></h3>
+<p>This procedure is not recommended, but documented here for completeness. Due to a limitation in Deepnote’s ability to receive input from the user, the SDK cannot be initialized in a Deepnote notebook. To work around this limitation, we need to install and authenticate access to the SDK in a Colab notebook and then import the credentials in the Deepnote project.</p>
+<p>If you don’t have one, <a class="reference external" href="https://deepnote.com/sign-up">create</a> an account. Once you are logged in, create a new project and choose the <code class="docutils literal notranslate"><span class="pre">Python</span> <span class="pre">3.8</span></code> environment.</p>
+<p>To change the environment, access the project settings by clicking on the gear icon on bottom left of the page:</p>
+<p align="center">
+  <img src="img/deepnote-env.png" width=300 alt="Deepnote environment settings">
+</p><p>Choose Python 3.8 from the dropdown menu:</p>
+<p align="center">
+  <img src="img/deepnote-python.png" width=300 alt="Deepnote python version">
+</p><p>Create a file called <code class="docutils literal notranslate"><span class="pre">.env</span></code> in the root of the Deepnote project. We will later use this file to store the credentials we obtained via the Colab notebook:</p>
+<p align="center">
+  <img src="img/deepnote-newfile.png" width=350 alt="Deepnote create file">
+</p><p>To install the SDK in Deepnote, run the following commands in a new Notebook cell:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>!git clone https://github.com/konfuzio-ai/konfuzio-sdk.git
+!cd konfuzio-sdk &amp;&amp; pip install .[ai]
+</pre></div>
+</div>
+<p>If the installation does not complete successfully, restart the Deepnote notebook and run the same cell again. It is not necessary to run the previous cells again. To restart the notebook press the refresh arrow at the top of the page:</p>
+<dl class="simple">
+<dt>:raw-html-m2r:<a href="#id1"><span class="problematic" id="id2">`</span></a>&lt;p align=”center”&gt;</dt><dd><p>&lt;img src=”img/deepnote-refresh.png” alt=”Deepnote refresh”&gt;</p>
+</dd>
+</dl>
+<p>&lt;/p&gt;`
+Once the status changes back to <code class="docutils literal notranslate"><span class="pre">Ready</span></code>, run the cell with the <code class="docutils literal notranslate"><span class="pre">install</span></code> command again.</p>
+<p>As mentioned earlier, before we can use the SDK within Deepnote we need to obtain the authorization token using a Colab notebook instance. We now install the SDK in a Colab notebook and copy the credentials to the <code class="docutils literal notranslate"><span class="pre">.env</span></code> file in the Deepnote project.</p>
+<p>To install the SDK in Colab, run the following commands in a new <a class="reference external" href="https://colab.research.google.com/">Colab</a> notebook cell:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>!pip install konfuzio_sdk[ai]
+import konfuzio_sdk
+!konfuzio_sdk init
+</pre></div>
+</div>
+<p>Follow the instructions in the terminal to initialize the SDK. Once the SDK is initialized an <code class="docutils literal notranslate"><span class="pre">.env</span></code> file will exist your root Colab folder. This file contains the credentials to access the Konfuzio server. Open it, copy the content and paste it into the new file we created in the Deepnote project. The <code class="docutils literal notranslate"><span class="pre">.env</span></code> file should look like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">KONFUZIO_HOST</span> <span class="o">=</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">app</span><span class="o">.</span><span class="n">konfuzio</span><span class="o">.</span><span class="n">com</span>
+<span class="n">KONFUZIO_USER</span> <span class="o">=</span> <span class="n">your</span><span class="nd">@email</span>
+<span class="n">KONFUZIO_TOKEN</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mi">40</span><span class="o">-</span><span class="n">char</span> <span class="n">token</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>The Konfuzio SDK is now ready to be used in your Deepnote notebook. To test it, create a new cell and run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
+<span class="n">PROJECT_ID</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">your</span><span class="o">-</span><span class="n">project</span><span class="o">-</span><span class="nb">id</span><span class="o">&gt;</span>
+<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">PROJECT_ID</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If no error is raised, the SDK is correctly installed and authenticated.</p>
+<blockquote>
+<div><dl class="simple">
+<dt><strong>TIP:</strong></dt><dd><p>Your project ID can be obtained by the web app URL when accessing Konfuzio from your browser. From your home page, navigate to <code class="docutils literal notranslate"><span class="pre">Projects</span></code> and pick the project you want to work with. Then look at the URL in your browser. Your should see something like <code class="docutils literal notranslate"><span class="pre">https://app.konfuzio.com/admin/server/project/&lt;project-id&gt;/change/</span></code> where <code class="docutils literal notranslate"><span class="pre">&lt;project-id&gt;</span></code> is your project ID.</p>
+</dd>
+</dl>
+</div></blockquote>
 </section>
 </section>
 <section id="example-usage">
@@ -346,7 +400,7 @@ Boxes).</p>
 </pre></div>
 </div>
 <section id="upload-document">
-<span id="id1"></span><h4>Upload Document<a class="headerlink" href="#upload-document" title="Permalink to this headline">¶</a></h4>
+<span id="id3"></span><h4>Upload Document<a class="headerlink" href="#upload-document" title="Permalink to this headline">¶</a></h4>
 <p>Before you can upload a new file to your Project using the Konfuzio SDK, you must have completed the following steps:</p>
 <ol class="arabic simple">
 <li><p>Register for a Konfuzio account</p></li>
