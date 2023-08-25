@@ -44,13 +44,13 @@ class CustomAnnotation(Annotation):
         return self.custom_bboxes
 ```
 
-### 2. Set up the `CustomExtractionAI` class
+### 2. Defining the `CustomExtractionAI` class methods
 
 ---
 
 The second step is to create a custom [Extraction AI](https://dev.konfuzio.com/sdk/sourcecode.html#extraction-ai) class that leverages the `CustomAnnotation` class defined in _Step 1_ in order to extract barcodes from [Documents](https://dev.konfuzio.com/sdk/sourcecode.html?highlight=document#document). We will start by explaining the different methods that will be used in this class.
 
-**NB.** If you want to directly have the full code of the `CustomExtractionAI` class, you can skip to [Step 3](#set-up-the-barcodeextractionai-class-using-the-earlier-defined-methods).
+**NB.** If you want to directly have the full code of the `CustomExtractionAI` class, you can skip to [Step 3](#putting-it-all-together).
 
 #### 2.1. Extract Bounding Boxes from Image
 
@@ -176,7 +176,7 @@ def check_is_ready(self) -> bool:
         return False
 ```
 
-### 3. Set up the BarcodeExtractionAI class using the earlier defined Methods
+### 3. Putting it All Together
 
 ---
 
@@ -326,11 +326,11 @@ class CustomExtractionAI(AbstractExtractionAI):
             return False
 ```
 
-### 4. Putting It All Together
+### 4. Saving the `CustomExtractionAI`
 
 ---
 
-Now, let's create the main script to run the custom Extraction AI and process the Documents:
+Now, let's create the main script to save the custom Extraction AI that will be used to process Documents on Konfuzio:
 
 We start by defining our `project_id` (don't forget to change the project_id to your own project_id, it should be an `int`) then we save the Extraction AI as a [pickle](https://docs.python.org/3/library/pickle.html) file that we will upload to the [Server](https://dev.konfuzio.com/web/index.html#what-is-the-konfuzio-server) later.
 
