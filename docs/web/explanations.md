@@ -244,3 +244,44 @@ Series of events triggered when training a Categorization AI
 | 8, 3       | 3       | categorize        | Run the categorization against all Documents in the its category.                                               | 3 minutes          |
 | 6, 7, 8, 3 | 4       | evaluate_ai_model | Evaluate the categorization Ai models performance.                                                              | 60 hours           | 
 
+
+## Security
+
+We prioritize the security of our software and the data it manages. 
+Whether you're using our SaaS solution or deploying our software on-premise, we've implemented a range of security measures to ensure the integrity and confidentiality of your data. 
+
+Below are some of the key security features and best practices we've integrated:
+
+### Non-Root Containers
+
+Running containers as a non-root user is a best practice in container security. 
+By default, our Docker container runs as a non-root user. 
+This minimizes the potential damage that can be caused by vulnerabilities or malicious attacks, as the container processes will have limited permissions on the host system.
+
+### Read-Only Filesystem
+
+Our Docker container is configured with a read-only filesystem. This means that once the container is up and running, 
+no new files can be written to the filesystem, and existing files cannot be modified. 
+This significantly reduces the risk of malicious modifications to the software or its configuration. 
+If there's a need to modify configurations or add files, it should be done before the container starts or by using Docker volumes.
+
+### Image Scanning with Grype 
+
+[Grype](https://github.com/anchore/grype) is a vulnerability scanner for container images and filesystems. We've integrated Grype to regularly scan our Docker images for known vulnerabilities. This ensures that our software is always up-to-date with the latest security patches. We recommend that on-premise users also regularly scan their Docker images using Grype or a similar tool to ensure that no vulnerabilities are present.
+
+### Separated Environments
+To ensure the stability, security, and quality of our software, we maintain distinct environments for different stages of our software lifecycle:
+
+- Development Environment: 
+This is where our software is initially built and tested by developers. It's isolated from production data and systems to prevent unintended disruptions or exposures.
+- Testing Environment: 
+After initial development, changes are moved to our testing environment. This environment is dedicated to rigorous testing procedures, including automated tests, integration tests, and security assessments, ensuring that the software meets our quality and security standards.
+- Staging Environment: 
+Before deploying updates to our production environment, changes are first deployed to our staging environment. This allows us to test new features and patches in a controlled setting that closely mirrors our production environment.
+- Production Environment:
+This is the live environment where our software serves real users. We ensure that only thoroughly tested and vetted code reaches this stage.
+
+### Reporting Security Concerns
+
+If you discover a potential security issue or vulnerability in our software, please contact us immediately at konfuzio.com/support. We take all reports seriously and will investigate promptly.
+
