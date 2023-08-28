@@ -25,6 +25,13 @@ You can think of the _Planned_ section as a _Roadmap_ that lists Konfuzio Server
 
 Upcoming...
 
+## released-2023-08-28_13-08-33
+
+This version uses the Konfuzio Python SDK in version v.0.2.29 and Konfuzio Document Validation UI in version v.0.1.12.
+
+### Changed
+- Deactivate "Unfilled Labels" to improve page load performance ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11759))
+
 ## released-2023-08-24_05-48-16
 
 This version uses the Konfuzio Python SDK in version v.0.2.29 and Konfuzio Document Validation UI in version v.0.1.12.
