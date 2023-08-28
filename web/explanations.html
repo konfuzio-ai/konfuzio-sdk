@@ -75,6 +75,14 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#security">Security</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#non-root-containers">Non-Root Containers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#read-only-filesystem">Read-Only Filesystem</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#image-scanning-with-grype">Image Scanning with Grype</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#separated-environments">Separated Environments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#reporting-security-concerns">Reporting Security Concerns</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="api-v3.html">REST API</a></li>
@@ -533,6 +541,48 @@ Please be aware that you usually do not want to do this, as it will cause Docume
 </table>
 </section>
 </section>
+</section>
+</section>
+<section id="security">
+<h2>Security<a class="headerlink" href="#security" title="Permalink to this headline">¶</a></h2>
+<p>We prioritize the security of our software and the data it manages.
+Whether you are using our SaaS solution or deploying our software on-premise, we have implemented a range of security measures to ensure the integrity and confidentiality of your data.</p>
+<p>Below are some of the key security features and best practices we have integrated:</p>
+<section id="non-root-containers">
+<h3>Non-Root Containers<a class="headerlink" href="#non-root-containers" title="Permalink to this headline">¶</a></h3>
+<p>Running containers as a non-root user is a best practice in container security.
+By default, our Docker container runs as a non-root user.
+This minimizes the potential damage that can be caused by vulnerabilities or malicious attacks, as the container processes will have limited permissions on the host system.</p>
+</section>
+<section id="read-only-filesystem">
+<h3>Read-Only Filesystem<a class="headerlink" href="#read-only-filesystem" title="Permalink to this headline">¶</a></h3>
+<p>Our Docker container is configured with a read-only filesystem. This means that once the container is up and running,
+no new files can be written to the filesystem, and existing files cannot be modified.
+This significantly reduces the risk of malicious modifications to the software or its configuration.
+If there is a need to modify configurations or add files, it should be done before the container starts or by using Docker volumes.</p>
+</section>
+<section id="image-scanning-with-grype">
+<h3>Image Scanning with Grype<a class="headerlink" href="#image-scanning-with-grype" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="https://github.com/anchore/grype">Grype</a> is a vulnerability scanner for container images and filesystems. We have integrated Grype to regularly scan our Docker images for known vulnerabilities.
+This ensures that our software is always up-to-date with the latest security patches. Please <a class="reference external" href="konfuzio.com/support">contact us</a> in case you interested in our Grype Configuration (<a class="reference external" href="https://git.konfuzio.com/konfuzio/konfuziocontainer/-/blob/master/.grype.yaml">Internal Link</a>).</p>
+</section>
+<section id="separated-environments">
+<h3>Separated Environments<a class="headerlink" href="#separated-environments" title="Permalink to this headline">¶</a></h3>
+<p>To ensure the stability, security, and quality of our software, we maintain distinct environments for different stages of our software development life cycle:</p>
+<ul class="simple">
+<li><p>Development Environment:
+This is where our software is initially built and tested by developers. It is isolated from production data and systems to prevent unintended disruptions or exposures of confidential data.</p></li>
+<li><p>Testing Environment:
+After initial development, changes are moved to our testing environment. This environment is dedicated to rigorous testing procedures, including automated tests, integration tests, and security assessments, ensuring that the software meets our quality and security standards.</p></li>
+<li><p>Staging Environment:
+Before deploying updates to our production environment, changes are first deployed to our staging environment. This allows us to test new features and patches in a controlled setting that closely mirrors our production environment.</p></li>
+<li><p>Production Environment:
+This is the live environment where our software serves real users. We ensure that only thoroughly tested and vetted code reaches this stage.</p></li>
+</ul>
+</section>
+<section id="reporting-security-concerns">
+<h3>Reporting Security Concerns<a class="headerlink" href="#reporting-security-concerns" title="Permalink to this headline">¶</a></h3>
+<p>If you discover a potential security issue or vulnerability in our software, please contact us immediately at konfuzio.com/support. We take all reports seriously and will investigate promptly.</p>
 </section>
 </section>
 </section>
