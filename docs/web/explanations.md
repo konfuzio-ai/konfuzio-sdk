@@ -272,7 +272,7 @@ This ensures that our software is always up-to-date with the latest security pat
 
 
 ### Separated Environments
-To ensure the stability, security, and quality of our software, we maintain distinct environments for different stages of our software lifecycle:
+To ensure the stability, security, and quality of our software, we maintain distinct environments for different stages of our software development life cycle:
 
 - Development Environment: 
 This is where our software is initially built and tested by developers. It is isolated from production data and systems to prevent unintended disruptions or exposures.
