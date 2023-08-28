@@ -21,14 +21,32 @@ You can think of the _Planned_ section as a _Roadmap_ that lists Konfuzio Server
 - Allow administrators of Konfuzio on-premise installations to run a speedtest ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9870)).
 - Start automatic AI retraining after User confirms that he has finished a annotation review ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9166)).
 
-## Next Release (estimated release date 23th August 2023)
+## Next Release (estimated release date 6th September 2023)
+
+Upcoming...
+
+## released-2023-08-28_13-08-33
+
+This version uses the Konfuzio Python SDK in version v.0.2.29 and Konfuzio Document Validation UI in version v.0.1.12.
+
+### Changed
+- Deactivate "Unfilled Labels" to improve page load performance ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11759))
+
+## released-2023-08-24_05-48-16
+
 This version uses the Konfuzio Python SDK in version v.0.2.29 and Konfuzio Document Validation UI in version v.0.1.12.
 
 ### Added
 - [Allow to filter Documents in the API V3 by the data_file_name attribute](https://app.konfuzio.com/v3/swagger/#/documents/documents_list) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11639)).
 
+### Changed
+- Autoconfirm the Category of Document in case only one Category is available ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11295))
+- Sent Plan limit reached email only once per day ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11000))
+
 ### Fixed
 - Allow Superusers without a Project to access Flower, Usage, and Queue views ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11410)).
+- When using Google Kubernetes Engine (GKE) the log level is now detected correctly ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11408)).
+- When creating a User via the Webinterface as Superuser not all Permissions habe been applied ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11689)).
 
 ## released-2023-08-10_21-33-41
 This version uses the Konfuzio Python SDK in version v.0.2.28 and Konfuzio Document Validation UI in version v.0.1.11.
