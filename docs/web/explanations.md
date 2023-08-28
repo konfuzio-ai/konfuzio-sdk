@@ -250,7 +250,7 @@ Series of events triggered when training a Categorization AI
 We prioritize the security of our software and the data it manages. 
 Whether you are using our SaaS solution or deploying our software on-premise, we have implemented a range of security measures to ensure the integrity and confidentiality of your data. 
 
-Below are some of the key security features and best practices we've integrated:
+Below are some of the key security features and best practices we have integrated:
 
 ### Non-Root Containers
 
