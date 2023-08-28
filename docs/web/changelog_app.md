@@ -25,7 +25,7 @@ You can think of the _Planned_ section as a _Roadmap_ that lists Konfuzio Server
 
 Upcoming...
 
-## released-2023-08-28_13-08-33
+## released-2023-08-28_18-13-01
 
 This version uses the Konfuzio Python SDK in version v.0.2.29 and Konfuzio Document Validation UI in version v.0.1.12.
 
