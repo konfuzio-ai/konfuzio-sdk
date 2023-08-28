@@ -267,7 +267,7 @@ If there's a need to modify configurations or add files, it should be done befor
 
 ### Image Scanning with Grype 
 
-[Grype](https://github.com/anchore/grype) is a vulnerability scanner for container images and filesystems. We've integrated Grype to regularly scan our Docker images for known vulnerabilities. 
+[Grype](https://github.com/anchore/grype) is a vulnerability scanner for container images and filesystems. We have integrated Grype to regularly scan our Docker images for known vulnerabilities. 
 This ensures that our software is always up-to-date with the latest security patches. Please [contact us](konfuzio.com/support) in case you interested in our Grype Configuration ([Internal Link](https://git.konfuzio.com/konfuzio/konfuziocontainer/-/blob/master/.grype.yaml)).
 
 
