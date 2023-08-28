@@ -263,7 +263,7 @@ This minimizes the potential damage that can be caused by vulnerabilities or mal
 Our Docker container is configured with a read-only filesystem. This means that once the container is up and running, 
 no new files can be written to the filesystem, and existing files cannot be modified. 
 This significantly reduces the risk of malicious modifications to the software or its configuration. 
-If there's a need to modify configurations or add files, it should be done before the container starts or by using Docker volumes.
+If there is a need to modify configurations or add files, it should be done before the container starts or by using Docker volumes.
 
 ### Image Scanning with Grype 
 
