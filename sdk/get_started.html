@@ -174,26 +174,19 @@ Only Documents in the Training and Test sets are downloaded.</p>
 <p>This procedure is not recommended, but documented here for completeness. Due to a limitation in Deepnote’s ability to receive input from the user, the SDK cannot be initialized in a Deepnote notebook. To work around this limitation, we need to install and authenticate access to the SDK in a Colab notebook and then import the credentials in the Deepnote project.</p>
 <p>If you don’t have one, <a class="reference external" href="https://deepnote.com/sign-up">create</a> an account. Once you are logged in, create a new project and choose the <code class="docutils literal notranslate"><span class="pre">Python</span> <span class="pre">3.8</span></code> environment.</p>
 <p>To change the environment, access the project settings by clicking on the gear icon on bottom left of the page:</p>
-<p align="center">
-  <img src="img/deepnote-env.png" width=300 alt="Deepnote environment settings">
-</p><p>Choose Python 3.8 from the dropdown menu:</p>
-<p align="center">
-  <img src="img/deepnote-python.png" width=300 alt="Deepnote python version">
-</p><p>Create a file called <code class="docutils literal notranslate"><span class="pre">.env</span></code> in the root of the Deepnote project. We will later use this file to store the credentials we obtained via the Colab notebook:</p>
-<p align="center">
-  <img src="img/deepnote-newfile.png" width=350 alt="Deepnote create file">
-</p><p>To install the SDK in Deepnote, run the following commands in a new Notebook cell:</p>
+<a class="reference internal image-reference" href="../_images/deepnote-env.png"><img alt="Deepnote environment settings" class="align-center" src="../_images/deepnote-env.png" style="width: 300px;" /></a>
+<p>Choose Python 3.8 from the dropdown menu:</p>
+<a class="reference internal image-reference" href="../_images/deepnote-python.png"><img alt="Deepnote python version" class="align-center" src="../_images/deepnote-python.png" style="width: 300px;" /></a>
+<p>Create a file called <code class="docutils literal notranslate"><span class="pre">.env</span></code> in the root of the Deepnote project. We will later use this file to store the credentials we obtained via the Colab notebook:</p>
+<a class="reference internal image-reference" href="../_images/deepnote-newfile.png"><img alt="Deepnote create file" class="align-center" src="../_images/deepnote-newfile.png" style="width: 350px;" /></a>
+<p>To install the SDK in Deepnote, run the following commands in a new Notebook cell:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>!git clone https://github.com/konfuzio-ai/konfuzio-sdk.git
 !cd konfuzio-sdk &amp;&amp; pip install .[ai]
 </pre></div>
 </div>
 <p>If the installation does not complete successfully, restart the Deepnote notebook and run the same cell again. It is not necessary to run the previous cells again. To restart the notebook press the refresh arrow at the top of the page:</p>
-<dl class="simple">
-<dt>:raw-html-m2r:<a href="#id1"><span class="problematic" id="id2">`</span></a>&lt;p align=”center”&gt;</dt><dd><p>&lt;img src=”img/deepnote-refresh.png” alt=”Deepnote refresh”&gt;</p>
-</dd>
-</dl>
-<p>&lt;/p&gt;`
-Once the status changes back to <code class="docutils literal notranslate"><span class="pre">Ready</span></code>, run the cell with the <code class="docutils literal notranslate"><span class="pre">install</span></code> command again.</p>
+<img alt="Deepnote refresh" class="align-center" src="../_images/deepnote-refresh.png" />
+<p>Once the status changes back to <code class="docutils literal notranslate"><span class="pre">Ready</span></code>, run the cell with the <code class="docutils literal notranslate"><span class="pre">install</span></code> command again.</p>
 <p>As mentioned earlier, before we can use the SDK within Deepnote we need to obtain the authorization token using a Colab notebook instance. We now install the SDK in a Colab notebook and copy the credentials to the <code class="docutils literal notranslate"><span class="pre">.env</span></code> file in the Deepnote project.</p>
 <p>To install the SDK in Colab, run the following commands in a new <a class="reference external" href="https://colab.research.google.com/">Colab</a> notebook cell:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>!pip install konfuzio_sdk[ai]
@@ -400,7 +393,7 @@ Boxes).</p>
 </pre></div>
 </div>
 <section id="upload-document">
-<span id="id3"></span><h4>Upload Document<a class="headerlink" href="#upload-document" title="Permalink to this headline">¶</a></h4>
+<span id="id1"></span><h4>Upload Document<a class="headerlink" href="#upload-document" title="Permalink to this headline">¶</a></h4>
 <p>Before you can upload a new file to your Project using the Konfuzio SDK, you must have completed the following steps:</p>
 <ol class="arabic simple">
 <li><p>Register for a Konfuzio account</p></li>
