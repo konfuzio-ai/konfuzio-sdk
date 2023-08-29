@@ -60,19 +60,25 @@ This procedure is not recommended, but documented here for completeness. Due to 
 If you don't have one, [create](https://deepnote.com/sign-up) an account. Once you are logged in, create a new project and choose the `Python 3.8` environment.
 
 To change the environment, access the project settings by clicking on the gear icon on bottom left of the page:
-<p align="center">
-  <img src="img/deepnote-env.png" width=300 alt="Deepnote environment settings">
-</p>
+
+.. image:: /_static/img/deepnote-env.png
+  :width: 300
+  :alt: Deepnote environment settings
+  :align: center
 
 Choose Python 3.8 from the dropdown menu:
-<p align="center">
-  <img src="img/deepnote-python.png" width=300 alt="Deepnote python version">
-</p>
+
+.. image:: /_static/img/deepnote-python.png
+  :width: 300
+  :alt: Deepnote python version
+  :align: center
 
 Create a file called `.env` in the root of the Deepnote project. We will later use this file to store the credentials we obtained via the Colab notebook:
-<p align="center">
-  <img src="img/deepnote-newfile.png" width=350 alt="Deepnote create file">
-</p>
+
+.. image:: /_static/img/deepnote-newfile.png
+  :width: 350
+  :alt: Deepnote create file
+  :align: center
 
 To install the SDK in Deepnote, run the following commands in a new Notebook cell:
 ```
@@ -81,9 +87,11 @@ To install the SDK in Deepnote, run the following commands in a new Notebook cel
 ```
 
 If the installation does not complete successfully, restart the Deepnote notebook and run the same cell again. It is not necessary to run the previous cells again. To restart the notebook press the refresh arrow at the top of the page:
-<p align="center">
-  <img src="img/deepnote-refresh.png" alt="Deepnote refresh">
-</p>
+
+.. image:: /_static/img/deepnote-refresh.png
+  :alt: Deepnote refresh
+  :align: center
+
 Once the status changes back to `Ready`, run the cell with the `install` command again.
 
 As mentioned earlier, before we can use the SDK within Deepnote we need to obtain the authorization token using a Colab notebook instance. We now install the SDK in a Colab notebook and copy the credentials to the `.env` file in the Deepnote project.
