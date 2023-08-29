@@ -25,6 +25,17 @@ You can think of the _Planned_ section as a _Roadmap_ that lists Konfuzio Server
 
 Upcoming...
 
+## released-2023-08-28_18-13-01
+
+This version uses the Konfuzio Python SDK in version v.0.2.29 and Konfuzio Document Validation UI in version v.0.1.12.
+
+### Added
+- Redesign of the Project Detail Page ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9701))
+- Show the Evaluation Log for AI trainings ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11759))
+
+### Changed
+- Deactivate "Unfilled Labels" on the Catefory detail page to improve page load performance ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11759))
+
 ## released-2023-08-24_05-48-16
 
 This version uses the Konfuzio Python SDK in version v.0.2.29 and Konfuzio Document Validation UI in version v.0.1.12.
