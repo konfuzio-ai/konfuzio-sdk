@@ -14,11 +14,13 @@ are using PyCharm have a look at [Quickstart with Pycharm](quickstart_pycharm.ht
   `pip install konfuzio_sdk`
 
 * It is also possible to choose between the lightweight SDK and the SDK with the AI-related components (latter one is 
-taking up more disk space). By default, the SDK is installed as a lightweight instance. To install the full instance,
-run the following command:
+taking up more disk space). By default, the SDK is installed as a lightweight instance. To install the full instance (`.[ai]`), the one with AI-related components, run the following command:
 
   `pip install konfuzio_sdk[ai]`
   
+  Currently, the full instance cannot be installed on MacOS machines with an ARM-based chip from the M-series. The `konfuzio_sdk` package can only be installed on MacOS on machines with an ARM chip if the lightweight instance is installed. However the Konfuzio SDK can be used on a hosted environment such as [Deepnote](https://deepnote.com/). Follow the instructions in [section 5](#5-install-the-ai-konfuzio-sdk-in-a-hosted-jupyter-environment) of this document to install the SDK in a hosted Jupyter environment.
+ 
+---
 
 *Notes*:
 
@@ -51,3 +53,69 @@ The data from the documents that you uploaded in your Konfuzio project will be d
 
 *Note*:
 Only Documents in the Training and Test sets are downloaded.
+
+### 5. Install the `.[ai]` Konfuzio SDK in a hosted Jupyter environment
+This procedure is not recommended, but documented here for completeness. Due to a limitation in Deepnote's ability to receive input from the user, the SDK cannot be initialized in a Deepnote notebook. To work around this limitation, we need to install and authenticate access to the SDK in a Colab notebook and then import the credentials in the Deepnote project.
+
+If you don't have one, [create](https://deepnote.com/sign-up) an account. Once you are logged in, create a new project and choose the `Python 3.8` environment.
+
+To change the environment, access the project settings by clicking on the gear icon on bottom left of the page:
+
+.. image:: /_static/img/deepnote-env.png
+  :width: 300
+  :alt: Deepnote environment settings
+  :align: center
+
+Choose Python 3.8 from the dropdown menu:
+
+.. image:: /_static/img/deepnote-python.png
+  :width: 300
+  :alt: Deepnote python version
+  :align: center
+
+Create a file called `.env` in the root of the Deepnote project. We will later use this file to store the credentials we obtained via the Colab notebook:
+
+.. image:: /_static/img/deepnote-newfile.png
+  :width: 350
+  :alt: Deepnote create file
+  :align: center
+
+To install the SDK in Deepnote, run the following commands in a new Notebook cell:
+```
+!git clone https://github.com/konfuzio-ai/konfuzio-sdk.git
+!cd konfuzio-sdk && pip install .[ai]
+```
+
+If the installation does not complete successfully, restart the Deepnote notebook and run the same cell again. It is not necessary to run the previous cells again. To restart the notebook press the refresh arrow at the top of the page:
+
+.. image:: /_static/img/deepnote-refresh.png
+  :alt: Deepnote refresh
+  :align: center
+
+Once the status changes back to `Ready`, run the cell with the `install` command again.
+
+As mentioned earlier, before we can use the SDK within Deepnote we need to obtain the authorization token using a Colab notebook instance. We now install the SDK in a Colab notebook and copy the credentials to the `.env` file in the Deepnote project.
+
+To install the SDK in Colab, run the following commands in a new [Colab](https://colab.research.google.com/) notebook cell:
+```
+!pip install konfuzio_sdk[ai]
+import konfuzio_sdk
+!konfuzio_sdk init
+```
+Follow the instructions in the terminal to initialize the SDK. Once the SDK is initialized an `.env` file will exist your root Colab folder. This file contains the credentials to access the Konfuzio server. Open it, copy the content and paste it into the new file we created in the Deepnote project. The `.env` file should look like this:
+```
+KONFUZIO_HOST = https://app.konfuzio.com
+KONFUZIO_USER = your@email
+KONFUZIO_TOKEN = <40-char token>
+```
+
+The Konfuzio SDK is now ready to be used in your Deepnote notebook. To test it, create a new cell and run:
+```
+from konfuzio_sdk.data import Project
+PROJECT_ID = <your-project-id>
+my_project = Project(id_=PROJECT_ID)
+```
+If no error is raised, the SDK is correctly installed and authenticated.
+
+> **TIP:**
+  Your project ID can be obtained by the web app URL when accessing Konfuzio from your browser. From your home page, navigate to `Projects` and pick the project you want to work with. Then look at the URL in your browser. Your should see something like `https://app.konfuzio.com/admin/server/project/<project-id>/change/` where `<project-id>` is your project ID.
