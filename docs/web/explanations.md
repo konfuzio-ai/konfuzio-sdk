@@ -172,7 +172,7 @@ During evaluation of both project settings and file, we also process OCR extract
 
 Finally, we return you the extracted text.
 
-## Background processes
+## Background Processes
 
 Processes within our server are distributed between
 [Celery](https://docs.celeryq.dev/en/stable/) [workers](https://docs.celeryq.dev/en/stable/userguide/workers.html)
@@ -196,7 +196,10 @@ More on Celery workflows can be found here: https://docs.celeryq.dev/en/stable/u
 | 7   | `training_heavy` |       queue for RAM intensive ai training       |
 | 8   | `evaluation`     |             queue for AI evaluation             |
 
+### Reset the Queue
 
+On self-hosted Konfuzio installations, all queues can be reset by running `redis-cli FLUSHALL`.
+Please be aware that you usually do not want to do this, as it will cause Documents and AIs to be stuck in their current status.
 
 ### Celery Tasks
 
@@ -240,4 +243,47 @@ Series of events triggered when training a Categorization AI
 | 8          | 2       | train_category_ai | Start the training of the categorization model.                                                                 | 10 hours           |
 | 8, 3       | 3       | categorize        | Run the categorization against all Documents in the its category.                                               | 3 minutes          |
 | 6, 7, 8, 3 | 4       | evaluate_ai_model | Evaluate the categorization Ai models performance.                                                              | 60 hours           | 
+
+
+## Security
+
+We prioritize the security of our software and the data it manages. 
+Whether you are using our SaaS solution or deploying our software on-premise, we have implemented a range of security measures to ensure the integrity and confidentiality of your data. 
+
+Below are some of the key security features and best practices we have integrated:
+
+### Non-Root Containers
+
+Running containers as a non-root user is a best practice in container security. 
+By default, our Docker container runs as a non-root user. 
+This minimizes the potential damage that can be caused by vulnerabilities or malicious attacks, as the container processes will have limited permissions on the host system.
+
+### Read-Only Filesystem
+
+Our Docker container is configured with a read-only filesystem. This means that once the container is up and running, 
+no new files can be written to the filesystem, and existing files cannot be modified. 
+This significantly reduces the risk of malicious modifications to the software or its configuration. 
+If there is a need to modify configurations or add files, it should be done before the container starts or by using Docker volumes.
+
+### Image Scanning with Grype 
+
+[Grype](https://github.com/anchore/grype) is a vulnerability scanner for container images and filesystems. We have integrated Grype to regularly scan our Docker images for known vulnerabilities. 
+This ensures that our software is always up-to-date with the latest security patches. Please [contact us](konfuzio.com/support) in case you interested in our Grype Configuration ([Internal Link](https://git.konfuzio.com/konfuzio/konfuziocontainer/-/blob/master/.grype.yaml)).
+
+
+### Separated Environments
+To ensure the stability, security, and quality of our software, we maintain distinct environments for different stages of our software development life cycle:
+
+- Development Environment: 
+This is where our software is initially built and tested by developers. It is isolated from production data and systems to prevent unintended disruptions or exposures of confidential data.
+- Testing Environment: 
+After initial development, changes are moved to our testing environment. This environment is dedicated to rigorous testing procedures, including automated tests, integration tests, and security assessments, ensuring that the software meets our quality and security standards.
+- Staging Environment: 
+Before deploying updates to our production environment, changes are first deployed to our staging environment. This allows us to test new features and patches in a controlled setting that closely mirrors our production environment.
+- Production Environment:
+This is the live environment where our software serves real users. We ensure that only thoroughly tested and vetted code reaches this stage.
+
+### Reporting Security Concerns
+
+If you discover a potential security issue or vulnerability in our software, please contact us immediately at konfuzio.com/support. We take all reports seriously and will investigate promptly.
 
