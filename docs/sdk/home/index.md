@@ -131,7 +131,11 @@ To retrieve all that Annotation Sets of a Document call `document.annotation_set
 call `annotation_set.annotations()`.
 
 Every Document has one unique default Annotation Set, which can be retrieved with `document.default_annotation_set`. This 
-Annotation Set's Label Set is the Document's Category default Label Set and has the same name and ID as the Category. 
+Annotation Set's Label Set is the Document's Category default Label Set and has the same name and ID as the Category. It
+can be used to store all Annotations that don't need to be organized into a separate Annotation Set. 
+
+To check what Annotation Labels can be added to an Annotation Set, you can check with `annotation_set.label_set.labels`.
+
 Documents also have a unique Annotation Set for NO LABEL Annotations, which can be retrieved with `document.no_label_annotation_set`.
 
 
@@ -146,7 +150,10 @@ call `label.annotations()` .
 
 ### Label Set
 [Label Set](sourcecode.html#label-set) is a group of related Labels. A Label Set can belong to different Categories and 
-multiple Annotation Sets. Every Category has a default Label Set, which can be retrieved with `category.default_label_set`.
+be used to create one or more [Annotation Sets](#annotation-set-concept), depending on the Label Set.
+
+Every Category has a default Label Set, which can be retrieved with `category.default_label_set`. This Label Set is used 
+to create the default Annotation Set for each Document in the Category.
 
 Label Sets have an attribute, `label_set.has_multiple_annotation_sets`, which determines whether more than one Annotation Set
 can be created per Document. If `has_multiple_annotation_sets` is `False`, then only a single Annotation Set with the 
