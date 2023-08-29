@@ -2006,7 +2006,7 @@ class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
         return filtered
 
     def label_train_document(self, virtual_document: Document, original_document: Document):
-        """Assign labels to Annotations in newly tokenized virtual training document."""
+        """Assign Labels to Annotations in newly tokenized virtual training Document."""
         doc_spans = original_document.spans(use_correct=True)
         s_i = 0
         for span in virtual_document.spans():
@@ -2031,13 +2031,13 @@ class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
     ) -> Tuple[List[pandas.DataFrame], list]:
         """Calculate features per Span of Annotations.
 
-        :param documents: List of documents to extract features from.
-        :param no_label_limit: Int or Float to limit number of new annotations to create during tokenization.
-        :param retokenize: Bool for whether to recreate annotations from scratch or use already existing annotations.
+        :param documents: List of Documents to extract features from.
+        :param no_label_limit: Int or Float to limit number of new Annotations to create during tokenization.
+        :param retokenize: Bool for whether to recreate Annotations from scratch or use already existing Annotations.
         :param require_revised_annotations: Only allow calculation of features if no unrevised Annotation present.
         :return: Dataframe of features and list of feature names.
         """
-        logger.info(f'Start generating features for {len(documents)} documents.')
+        logger.info(f'Start generating features for {len(documents)} Documents.')
         logger.info(f'{no_label_limit=}')
         logger.info(f'{retokenize=}')
         logger.info(f'{require_revised_annotations=}')
@@ -2047,26 +2047,18 @@ class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
                 retokenize = False
             else:
                 retokenize = True
-            logger.info(f'retokenize option set to {retokenize} with tokenizer {self.tokenizer}')
+            logger.info(f'retokenize option set to {retokenize} with Tokenizer {self.tokenizer}')
 
         df_real_list = []
         df_raw_errors_list = []
         feature_list = []
 
-        # todo make regex Tokenizer optional as those will be saved by the Server
-        # if not hasattr(self, 'regexes'):  # Can be removed for models after 09.10.2020
-        #    self.regexes = [regex for label_model in self.labels for regex in label_model.label.regex()]
-
         for label in self.category.labels:
             label.has_multiline_annotations(categories=[self.category])
 
         for document in documents:
-            # todo check for tokenizer: self.tokenizer.tokenize(document)  # todo: do we need it?
-            # todo check removed  if x.x0 and x.y0
-            # todo: use NO_LABEL for any Annotation that has no Label, instead of keeping Label = None
             for span in document.spans(use_correct=False):
                 if span.annotation.id_:
-                    # Annotation
                     # we use "<" below because we don't want to have unconfirmed annotations in the training set,
                     # and the ones below threshold wouldn't be considered anyway
                     if (
@@ -2094,15 +2086,22 @@ class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
 
             virtual_document = deepcopy(document)
             if retokenize:
+                # Retokenize the Document from scratch and add correct Label the new matching Annotations.
+                # This may not include exact matches for the training data, but will include all Annotations actually
+                # found by the Tokenizer
                 self.tokenizer.tokenize(virtual_document)
                 self.label_train_document(virtual_document, document)
             else:
+                # Copy existing Annotations in training Document and then tokenize and add NO_LABEL Annotations to
+                # the virtual Document. This will include exact matches for the training data, but these might not
+                # actually be exactly found by the Tokenizer during inference.
                 for annotation in document.annotations():
                     new_spans = []
                     for span in annotation.spans:
                         new_span = Span(start_offset=span.start_offset, end_offset=span.end_offset)
                         new_spans.append(new_span)
 
+                    # Retrieve copy of AnnotationSet from virtual Document or create new one
                     try:
                         annotation_set = virtual_document.get_annotation_set_by_id(annotation.annotation_set.id_)
                     except IndexError:
