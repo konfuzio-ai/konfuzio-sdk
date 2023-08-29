@@ -8,11 +8,11 @@ In this tutorial, we'll walk through the creation of a custom Barcode Extraction
 
 ---
 
-Before we start, make sure you have the following:
+Before we start, please ensure that the following requirements are available and properly installed on your system:
 
-1.  `Python 3.8` or higher installed. 🐍
-2.  [konfuzio-sdk](https://pypi.org/project/konfuzio-sdk/) ✅
-3.  The [zxing-cpp](https://github.com/zxing-cpp/zxing-cpp) library 💻
+1.  `Python 3.8` or a higher version. 🐍
+2.  The [konfuzio-sdk](https://pypi.org/project/konfuzio-sdk/) package. ✅
+3.  The [zxing-cpp](https://github.com/zxing-cpp/zxing-cpp) library. 💻
 
 ### 1. Set up the `CustomAnnotation` class
 
