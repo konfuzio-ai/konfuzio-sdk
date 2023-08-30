@@ -1722,8 +1722,7 @@ _Type: string</p>
 <section id="snapshot-aws-s3-use-ssl">
 <h5>SNAPSHOT_AWS_S3_USE_SSL<a class="headerlink" href="#snapshot-aws-s3-use-ssl" title="Permalink to this headline">¶</a></h5>
 <p>Default: True</p>
-<p>Whether or not to use SSL when connecting to S3, this is passed to the boto3 session resource constructor.
-See</p>
+<p>Whether or not to use SSL when connecting to S3, this is passed to the boto3 session resource constructor.</p>
 <p><em>Type: boolean</em></p>
 </section>
 <section id="snapshot-aws-s3-verify">
@@ -1731,14 +1730,13 @@ See</p>
 <p>Default: None</p>
 <p>Whether or not to verify the connection to S3. Can be set to False to not verify certificates or a path to a CA cert bundle.</p>
 <p><em>Type: string</em></p>
-<!--
-##### SNAPSHOT_CREATION_TOKEN
-Default: None
-
-The API Token which is used to create the Snapshot. The Snapshot creation is conducted using [konfuzio_sdk export_project](https://dev.konfuzio.com/web/on_premises.html#migrate-a-project)
-
-_Type: string_
---></section>
+</section>
+<section id="snapshot-restore-across-environments">
+<h5>SNAPSHOT_RESTORE_ACROSS_ENVIRONMENTS<a class="headerlink" href="#snapshot-restore-across-environments" title="Permalink to this headline">¶</a></h5>
+<p>Default: False</p>
+<p>Whether or not Snapshots from other environments can be restored.</p>
+<p><em>Type: boolean</em></p>
+</section>
 </section>
 <section id="test-settings-for-keycloak-sso-settings">
 <h4>10. Test Settings for Keycloak / SSO Settings<a class="headerlink" href="#test-settings-for-keycloak-sso-settings" title="Permalink to this headline">¶</a></h4>
