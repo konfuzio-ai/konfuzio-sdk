@@ -527,12 +527,7 @@ class Bbox:
         round_decimals = 2
 
         if round(self.x0, round_decimals) == round(self.x1, round_decimals):
-            exception_or_log_error(
-                msg=f"{self} has no width in {self.page}.",
-                fail_loudly=validation is BboxValidationTypes.STRICT,
-                exception_type=ValueError,
-                handler=handler,
-            )
+            logger.warning(f"{self} has no width in {self.page}.")
 
         if round(self.x0, round_decimals) > round(self.x1, round_decimals):
             exception_or_log_error(
@@ -543,12 +538,7 @@ class Bbox:
             )
 
         if round(self.y0, round_decimals) == round(self.y1, round_decimals):
-            exception_or_log_error(
-                msg=f"{self} has no height in {self.page}.",
-                fail_loudly=validation is BboxValidationTypes.STRICT,
-                exception_type=ValueError,
-                handler=handler,
-            )
+            logger.warning(f"{self} has no height in {self.page}.")
 
         if round(self.y0, round_decimals) > round(self.y1, round_decimals):
             exception_or_log_error(
