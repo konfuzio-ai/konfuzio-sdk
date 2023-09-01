@@ -23,7 +23,7 @@
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="Data Validation Rules" href="../data_validation/index.html" />
+    <link rel="next" title="Upload your AI" href="../upload-your-ai/index.html" />
     <link rel="prev" title="Tokenization" href="../tokenizers/index.html" /> 
 </head>
 
@@ -59,6 +59,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents">Train a Konfuzio SDK Model to Extract Information From Payslip Documents</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../upload-your-ai/index.html">Upload your AI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../data_validation/index.html">Data Validation Rules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../outlier-annotations/index.html">Find possible outliers among the ground-truth Annotations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../regex_based_annotations/index.html">Create Regex-based Annotations</a></li>
@@ -120,6 +121,7 @@
 <p>Information Extraction is a process of obtaining information from the Document’s unstructured text and labelling it
 with Labels like Name, Date, Recipient, or any other custom Labels. The result of Extraction looks like this:</p>
 <a class="reference internal image-reference" href="../../../_images/example.png"><img alt="../../../_images/example.png" class="align-center" src="../../../_images/example.png" style="width: 300px;" /></a>
+<p>Information Extraction always happens at a Category level, that is, operates under a single Category.</p>
 <section id="train-a-custom-extraction-ai">
 <h2>Train a custom Extraction AI<a class="headerlink" href="#train-a-custom-extraction-ai" title="Permalink to this headline">¶</a></h2>
 <p>This section explains how to create a custom Extraction AI locally, how to save it and upload it to the Konfuzio Server.</p>
@@ -207,16 +209,7 @@ Konfuzio Server (see <a class="reference external" href="https://help.konfuzio.c
 <p>Note that if you want to create Labels and Label Sets dynamically (when running the AI, instead of adding them manually
 on app), you need to enable creating them in the Superuser Project settings if you have the corresponding rights.</p>
 <p>If you have the Superuser rights, it is also possible to upload the AI from your local machine using the
-<code class="docutils literal notranslate"><span class="pre">upload_ai_model()</span></code> method and remove it with the <code class="docutils literal notranslate"><span class="pre">delete_ai_model()</span></code> method:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.api</span> <span class="kn">import</span> <span class="n">upload_ai_model</span><span class="p">,</span> <span class="n">delete_ai_model</span>
-
-<span class="c1"># upload a saved model to the server</span>
-<span class="n">model_id</span> <span class="o">=</span> <span class="n">upload_ai_model</span><span class="p">(</span><span class="n">pickle_model_path</span><span class="p">)</span>
-
-<span class="c1"># remove model</span>
-<span class="n">delete_ai_model</span><span class="p">(</span><span class="n">model_id</span><span class="p">,</span> <span class="n">ai_type</span><span class="o">=</span><span class="s1">&#39;extraction&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
+<code class="docutils literal notranslate"><span class="pre">upload_ai_model()</span></code> as described in <a class="reference external" href="https://dev.konfuzio.com/sdk/tutorials/upload-your-ai/index.html">Upload your AI</a>.</p>
 </section>
 <section id="example-of-custom-extraction-ai-the-paragraph-extraction-ai">
 <h2>Example of Custom Extraction AI: The Paragraph Extraction AI<a class="headerlink" href="#example-of-custom-extraction-ai-the-paragraph-extraction-ai" title="Permalink to this headline">¶</a></h2>
@@ -471,7 +464,7 @@ and try it by yourself.</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="../tokenizers/index.html" class="btn btn-neutral float-left" title="Tokenization" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="../data_validation/index.html" class="btn btn-neutral float-right" title="Data Validation Rules" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../upload-your-ai/index.html" class="btn btn-neutral float-right" title="Upload your AI" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

@@ -63,6 +63,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../file_splitting/index.html">File Splitting</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tokenizers/index.html">Tokenization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../information_extraction/index.html">Document Information Extraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../upload-your-ai/index.html">Upload your AI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../data_validation/index.html">Data Validation Rules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../outlier-annotations/index.html">Find possible outliers among the ground-truth Annotations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../regex_based_annotations/index.html">Create Regex-based Annotations</a></li>
@@ -122,7 +123,7 @@
   <section id="document-categorization">
 <h1>Document Categorization<a class="headerlink" href="#document-categorization" title="Permalink to this headline">¶</a></h1>
 <p>When uploading a Document to Konfuzio, the first step is to assign it to a <a class="reference internal" href="../../home/index.html#category-concept"><span class="std std-ref">Category</span></a>. This
-can be done manually, or automatically using a Categorization AI.</p>
+can be done manually, or automatically using a Categorization AI. Categorization always happens on a Project level.</p>
 <section id="setting-the-category-of-a-document-and-its-individual-pages-manually">
 <h2>Setting the Category of a Document and its individual Pages Manually<a class="headerlink" href="#setting-the-category-of-a-document-and-its-individual-pages-manually" title="Permalink to this headline">¶</a></h2>
 <p>You can initialize a Document with a <a class="reference internal" href="../../home/index.html#category-concept"><span class="std std-ref">Category</span></a>. You can also use <code class="docutils literal notranslate"><span class="pre">Document.set_category</span></code> to set
@@ -440,17 +441,7 @@ tutorial to find out what are the requirements for that.</p>
 </pre></div>
 </div>
 <p>After you have trained and saved your custom AI, you can upload it using the steps from the <a class="reference external" href="https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html#upload-extraction-or-category-ai-to-target-instance">tutorial</a>
-or using the method <code class="docutils literal notranslate"><span class="pre">upload_ai_model()</span></code>, provided that you have the Superuser rights. You can also remove an uploaded
-model by using <code class="docutils literal notranslate"><span class="pre">delete_ai_model()</span></code>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.api</span> <span class="kn">import</span> <span class="n">upload_ai_model</span><span class="p">,</span> <span class="n">delete_ai_model</span>
-
-<span class="c1"># upload a saved model to the server</span>
-<span class="n">model_id</span> <span class="o">=</span> <span class="n">upload_ai_model</span><span class="p">(</span><span class="n">pickle_model_path</span><span class="p">)</span>
-
-<span class="c1"># remove model</span>
-<span class="n">delete_ai_model</span><span class="p">(</span><span class="n">model_id</span><span class="p">,</span> <span class="n">ai_type</span><span class="o">=</span><span class="s1">&#39;categorization&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
+or using the method <code class="docutils literal notranslate"><span class="pre">upload_ai_model()</span></code> as described in <a class="reference external" href="https://dev.konfuzio.com/sdk/tutorials/upload-your-ai/index.html">Upload your AI</a>, provided that you have the Superuser rights.</p>
 </section>
 <section id="categorization-ai-overview-diagram">
 <h2>Categorization AI Overview Diagram<a class="headerlink" href="#categorization-ai-overview-diagram" title="Permalink to this headline">¶</a></h2>

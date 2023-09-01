@@ -69,6 +69,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../tokenizers/index.html">Tokenization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../information_extraction/index.html">Document Information Extraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../upload-your-ai/index.html">Upload your AI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../data_validation/index.html">Data Validation Rules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../outlier-annotations/index.html">Find possible outliers among the ground-truth Annotations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../regex_based_annotations/index.html">Create Regex-based Annotations</a></li>
@@ -129,7 +130,8 @@
 <span id="file-splitting-tutorials"></span><h1>File Splitting<a class="headerlink" href="#file-splitting" title="Permalink to this headline">¶</a></h1>
 <p>PDFs often encapsulate multiple distinct Documents within a single file, leading to complex navigation and information
 retrieval. Document splitting tackles this by disentangling these intertwined files into separate Documents. This
-guide introduces you to tools and models that automate this process, streamlining your work with multi-Document PDFs.</p>
+guide introduces you to tools and models that automate this process, streamlining your work with multi-Document PDFs.
+Note that File Splitting always happens on a Project level.</p>
 <section id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
 <p>You can train your own File Splitting AI on the data from any Project of your choice (<a class="reference external" href="https://dev.konfuzio.com/sdk/tutorials/data-preparation/index.html#prepare-the-data-for-training-and-testing-the-ai">data preparation tutorial here</a>).
@@ -232,17 +234,7 @@ or using the method <code class="docutils literal notranslate"><span class="pre"
 <p>For the first option, go to the Superuser AIs and select your locally stored pickle file, setting Model Type to
 Splitting and status to Training finished, then save the AI. After that, go to the Splitting AIs, choose your AI and
 select an action “Activate Splitting AI”.</p>
-<p>For the second option, provide the path to your model to the <code class="docutils literal notranslate"><span class="pre">upload_ai_model()</span></code>. You can also remove an uploaded model
-by using <code class="docutils literal notranslate"><span class="pre">delete_ai_model()</span></code>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.api</span> <span class="kn">import</span> <span class="n">upload_ai_model</span><span class="p">,</span> <span class="n">delete_ai_model</span>
-
-<span class="c1"># upload a saved model to the server</span>
-<span class="n">model_id</span> <span class="o">=</span> <span class="n">upload_ai_model</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span>
-
-<span class="c1"># remove model</span>
-<span class="n">delete_ai_model</span><span class="p">(</span><span class="n">model_id</span><span class="p">,</span> <span class="n">ai_type</span><span class="o">=</span><span class="s1">&#39;file_splitting&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
+<p>For the second option, you can refer to <a class="reference external" href="https://dev.konfuzio.com/sdk/tutorials/upload-your-ai/index.html">Upload your AI</a>.</p>
 </section>
 <section id="train-a-multimodal-file-splitting-ai">
 <h2>Train a Multimodal File Splitting AI<a class="headerlink" href="#train-a-multimodal-file-splitting-ai" title="Permalink to this headline">¶</a></h2>
