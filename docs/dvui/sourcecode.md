@@ -48,5 +48,7 @@ Since the Integration Tests connect to the Konfuzio API, an environment file is 
 
 - The user token: `VUE_APP_GUEST_USER_TOKEN`
 - The document id: `VUE_APP_DOCUMENT_ID`
+- The API URL: `VUE_APP_API_URL`
+- The document images download URL: `VUE_APP_DOCUMENT_IMAGES_URL`
 
 To create new tests, you just need to add a file next to the component you want to test with the `*.cy.js` name. For example, if you want to create tests for the `App.vue` component, a file named `App.cy.js` should be created and it will automatically appear in the Cypress list.

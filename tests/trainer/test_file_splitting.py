@@ -5,10 +5,13 @@ import os
 import pathlib
 import pytest
 import shutil
+import sys
 import unittest
 
 from copy import deepcopy
+from requests import HTTPError
 
+from konfuzio_sdk.api import upload_ai_model, update_ai_model, delete_ai_model, konfuzio_session
 from konfuzio_sdk.data import Category, Document, Project
 from konfuzio_sdk.settings_importer import is_dependency_installed
 from konfuzio_sdk.samples import LocalTextProject
@@ -18,6 +21,7 @@ from konfuzio_sdk.trainer.file_splitting import (
     SplittingAI,
     MultimodalFileSplittingModel,
 )
+from konfuzio_sdk.urls import get_create_ai_model_url
 
 
 @pytest.mark.skipif(
@@ -162,6 +166,25 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
                 tokenizer=ConnectedTextTokenizer()
             )
             assert gt_exclusive_first_page_strings == load_exclusive_first_page_strings
+
+    @unittest.skipIf(sys.version_info[:2] != (3, 8), reason='This AI can only be loaded on Python 3.8.')
+    def test_pickle_model_upload_modify_delete(self):
+        """Upload the model."""
+        assert os.path.isfile(self.file_splitting_model.path)
+        try:
+            model_id = upload_ai_model(ai_model_path=self.file_splitting_model.path, project_id=46)
+            assert isinstance(model_id, int)
+            updated = update_ai_model(model_id, ai_type='filesplitting', description='test_description')
+            assert updated['description'] == 'test_description'
+            updated = update_ai_model(model_id, ai_type='filesplitting', patch=False, description='test_description')
+            assert updated['description'] == 'test_description'
+            delete_ai_model(model_id, ai_type='filesplitting')
+            url = get_create_ai_model_url(ai_type='filesplitting')
+            session = konfuzio_session()
+            not_found = session.get(url)
+            assert not_found.status_code == 204
+        except HTTPError as e:
+            assert ('403' in str(e)) or ('404' in str(e))
 
     def test_old_pickle_model_save_load(self):
         """Test saving and loading a model using the older bz2-compression-including save and load methods."""

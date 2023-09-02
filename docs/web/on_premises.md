@@ -1512,7 +1512,6 @@ _Type: string_
 Default: True
 
 Whether or not to use SSL when connecting to S3, this is passed to the boto3 session resource constructor.
-See 
 
 _Type: boolean_
 
@@ -1523,14 +1522,14 @@ Whether or not to verify the connection to S3. Can be set to False to not verify
 
 _Type: string_
 
-<!--
-##### SNAPSHOT_CREATION_TOKEN
-Default: None
 
-The API Token which is used to create the Snapshot. The Snapshot creation is conducted using [konfuzio_sdk export_project](https://dev.konfuzio.com/web/on_premises.html#migrate-a-project)
+##### SNAPSHOT_RESTORE_ACROSS_ENVIRONMENTS
+Default: False
 
-_Type: string_
--->
+Whether or not Snapshots from other environments can be restored.
+ 
+_Type: boolean_
+
 
 #### 10. Test Settings for Keycloak / SSO Settings
 

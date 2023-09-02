@@ -21,13 +21,14 @@ from sklearn.ensemble import RandomForestClassifier
 
 from konfuzio_sdk.data import Category, Project, Document, AnnotationSet, Annotation, Span, LabelSet, Page
 
-from konfuzio_sdk.api import upload_ai_model
+from konfuzio_sdk.api import upload_ai_model, update_ai_model, delete_ai_model, konfuzio_session
 from konfuzio_sdk.settings_importer import is_dependency_installed
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, RegexTokenizer
 from konfuzio_sdk.tokenizer.paragraph_and_sentence import ParagraphTokenizer, SentenceTokenizer
 from konfuzio_sdk.tokenizer.base import ListTokenizer
 from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
 from konfuzio_sdk.samples import LocalTextProject
+from konfuzio_sdk.urls import get_create_ai_model_url
 from konfuzio_sdk.utils import memory_size_of, is_file
 
 from konfuzio_sdk.trainer.information_extraction import (
@@ -329,15 +330,27 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 
         assert previous_size > memory_size_of(self.pipeline)
 
-    @pytest.mark.xfail(reason='Your user might not have the correct permission to upload an AI.')
-    def test_05_upload_ai_model(self):
+    @unittest.skipIf(sys.version_info[:2] != (3, 8), reason='This AI can only be loaded on Python 3.8.')
+    def test_05_upload_modify_delete_ai_model(self):
         """Upload the model."""
         assert os.path.isfile(self.pipeline.pipeline_path)
 
         try:
-            upload_ai_model(ai_model_path=self.pipeline.pipeline_path, category_ids=[self.pipeline.category.id_])
+            model_id = upload_ai_model(
+                ai_model_path=self.pipeline.pipeline_path, category_id=self.pipeline.category.id_
+            )
+            assert isinstance(model_id, int)
+            updated = update_ai_model(model_id, ai_type='extraction', description='test_description')
+            assert updated['description'] == 'test_description'
+            updated = update_ai_model(model_id, ai_type='extraction', patch=False, description='test_description')
+            assert updated['description'] == 'test_description'
+            delete_ai_model(model_id, ai_type='extraction')
+            url = get_create_ai_model_url(ai_type='extraction')
+            session = konfuzio_session()
+            not_found = session.get(url)
+            assert not_found.status_code == 204
         except HTTPError as e:
-            assert '403' in str(e)
+            assert ('403' in str(e)) or ('404' in str(e))
 
     def test_06_evaluate_full(self):
         """Evaluate Whitespace RFExtractionAI Model."""
