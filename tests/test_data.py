@@ -1135,6 +1135,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         _ = Page(id_=1, number=1, original_size=(595.2, 300.0), document=document, start_offset=0, end_offset=1)
         self.assertTrue(span.bbox())
 
+    @pytest.mark.xfail(reason='We now only log a warning because Azure OCR sometimes returns bboxes without height.')
     def test_get_span_bbox_with_characters_without_height_strict_validation(self):
         """
         Test get the bbox of a Span where the characters do not have height (OCR problem).
@@ -1178,6 +1179,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         _ = Page(id_=1, number=1, original_size=(595.2, 300.0), document=document, start_offset=0, end_offset=1)
         self.assertTrue(span.bbox())
 
+    @pytest.mark.xfail(reason='We now only log a warning because Azure OCR sometimes returns bboxes without width.')
     def test_get_span_bbox_with_characters_without_width_strict_validation(self):
         """
         Test get the bbox of a Span where the characters do not have width (OCR problem).
@@ -1294,6 +1296,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
         self.assertTrue(document.bboxes)
 
+    @pytest.mark.xfail(reason='We now only log a warning because Azure OCR sometimes returns bboxes without height.')
     def test_document_check_bbox_zero_height_allowed(self):
         """Test bbox check with zero height without strict validation."""
         document_bbox = {
@@ -1303,6 +1306,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
         self.assertTrue(document.bboxes)
 
+    @pytest.mark.xfail(reason='We now only log a warning because Azure OCR sometimes returns bboxes without height.')
     def test_document_check_bbox_zero_height_strict_validation(self):
         """Test bbox check with zero height with strict validation, which does not allow it."""
         document_bbox = {
@@ -1328,6 +1332,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
         self.assertTrue(document.bboxes)
 
+    @pytest.mark.xfail(reason='We now only log a warning because Azure OCR sometimes returns bboxes without width.')
     def test_document_check_bbox_zero_width_strict_validation(self):
         """Test bbox check with zero width with strict validation, which does not allow it."""
         document_bbox = {
