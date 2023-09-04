@@ -41,3 +41,4 @@ that reflects each step of the document-processing pipeline.
    tutorials/pdf-form-generator/index.md
    tutorials/ner-ontonotes-fast/index.md
    tutorials/annual-reports/index.md
+   tutorials/barcode-scanner/index.md
