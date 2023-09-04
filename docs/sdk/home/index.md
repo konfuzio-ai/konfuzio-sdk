@@ -144,10 +144,8 @@ to different Categories and multiple Annotation Sets.
 and the top right corner of the bounding box. Check out our [coordinate system explainer](#coordinates-system) for more
 details.
 
-You can access all character Bboxes of the Document by using `document.bboxes`. You can also get a Bbox for a Span by 
-calling `span.bbox()` or, for a Bbox around all Spans in an Annotation by calling `annotation.bbox()`. This should not be
-confused with `Annotation.selection_bbox` which is an attribute storing the Bbox that a user has selected in the Smartview
-when creating the Annotation.
+You can access all character Bboxes of the Document by using `document.bboxes`. A Bbox can also be associated with a single Span, or with all Spans within an Annotation. To obtain the Bbox associate with a single Span, call `span.bbox()`. To obtain the Bbox wrapping all Spans in an Annotation, call `annotation.bbox()`. This should not be
+confused with `Annotation.selection_bbox`, which is an attribute storing the Bbox a user has selected in the Smartview when creating the Annotation.
 
 Here the bounding box with the red border is what is retrieved with `Annotation.selection_bbox` and the bounding box 
 highlighted in green is what is retrieved with `Annotation.bbox()`:
