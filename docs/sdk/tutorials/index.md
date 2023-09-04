@@ -253,7 +253,7 @@ When needed, upon calling `document.get_bbox()`, an additional file will be 
 }
 ```
 
-After downloading these files, the paths to them will also become available in the Project instance.
+After downloading these files, their paths will become available in the Project instance.
 
 You can get the path to the folder containing the Documents' folders with:
 
