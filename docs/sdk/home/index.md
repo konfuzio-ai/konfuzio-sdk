@@ -147,8 +147,7 @@ details.
 You can access all character Bboxes of the Document by using `document.bboxes`. A Bbox can also be associated with a single Span, or with all Spans within an Annotation. To obtain the Bbox associate with a single Span, call `span.bbox()`. To obtain the Bbox wrapping all Spans in an Annotation, call `annotation.bbox()`. This should not be
 confused with `Annotation.selection_bbox`, which is an attribute storing the Bbox a user has selected in the Smartview when creating the Annotation.
 
-Here the bounding box with the red border is what is retrieved with `Annotation.selection_bbox` and the bounding box 
-highlighted in green is what is retrieved with `Annotation.bbox()`:
+The following image shows a bounding box with red border, which is retrieved with `Annotation.selection_bbox` , and a bounding box highlighted in green, which is retrieved with `Annotation.bbox()`:
 
 .. image:: /_static/img/bbox_selection_bbox.png
    :width: 150px
