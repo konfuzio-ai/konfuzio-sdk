@@ -207,12 +207,7 @@ Boxes).
 ]
 ```
 
-When needed, upon calling `document.get_bbox()`, an additional file will also be downloaded to the Document folder containing
-the Bounding Boxes information of the characters of the Document:
-**bbox.zip** - Contains the **bbox.json5** file. This file contains the Bounding Boxes information of the characters of
-the Document. It is compressed because it can be quite large. The keys of the json dictionary are the indices of the 
-characters in the Document text. So, the key 1002 corresponds to the 1002nd character in the Document text. The value
-is a dictionary with the Bounding Box information of the character.
+When needed, upon calling `document.get_bbox()`, an additional file will be downloaded to the Document folder containing the Bounding Boxes information of the characters of the Document: **bbox.zip**. This file can be quite large, and therefore it will be compressed in the Zip format. The decompressed file is a JSON file where the keys correspond to the indices of the characters in the Document text. The value associated with each key contains the Bounding Box information of the character. For example, for character 1000 and 1002 we would have:
    
 ```
 {
