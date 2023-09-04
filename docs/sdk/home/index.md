@@ -141,7 +141,7 @@ to different Categories and multiple Annotation Sets.
 
 ### Bbox
 [Bbox](sourcecode.html#bbox) is used to represent an area of a Page, defined by the coordinates of the bottom left corner
-and the top right corner of the bounding box. Checkout our [coordinate system explainer](#coordinates-system) for more
+and the top right corner of the bounding box. Check out our [coordinate system explainer](#coordinates-system) for more
 details.
 
 You can access all character Bboxes of the Document by using `document.bboxes`. You can also get a Bbox for a Span by 
