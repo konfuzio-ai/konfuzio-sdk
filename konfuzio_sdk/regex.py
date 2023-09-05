@@ -245,7 +245,7 @@ def regex_matches(
 
 
 def generic_candidate_function(regex, flags=0, overlapped=False, filtered_group=None):
-    """Regex approach tob build a candidate function by one regex.
+    """Regex approach to build a candidate function by one regex.
 
     :param filtered_group: If a regex contains multiple named groups, you can filter the respective group by name
     :param overlapped: Indicate if regex matches can overlapp.

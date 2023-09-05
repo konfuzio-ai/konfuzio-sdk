@@ -231,6 +231,8 @@ class TestOnlineProject(unittest.TestCase):
 
         bbox = Bbox(x0=50, y0=77, x1=288, y1=125, page=page)
 
+        assert bbox.document is document
+
         spans = get_spans_from_bbox(selection_bbox=bbox)
 
         sentences_spans = Span.get_sentence_from_spans(spans=spans)
@@ -2060,6 +2062,7 @@ class TestOfflineDataSetup(unittest.TestCase):
             y1=valid_height_width,
             page=page,
         )
+        assert bbox_valid.document is self.document
         # Validate that the `_valid` method returns None, indicating that the Bbox coordinates were correctly rounded
         self.assertIsNone(bbox_valid._valid())
 
