@@ -395,6 +395,59 @@ Boxes).</p>
 <span class="p">]</span>
 </pre></div>
 </div>
+<p>When needed, upon calling <code class="docutils literal notranslate"><span class="pre">document.get_bbox()</span></code>, an additional file will be downloaded to the Document folder containing the Bounding Boxes information of the characters of the Document: <strong>bbox.zip</strong>. This file can be quite large, and therefore it will be compressed in the Zip format. The decompressed file is a JSON file where the keys correspond to the indices of the characters in the Document text. The value associated with each key contains the Bounding Box information of the character. For example, for character 1000 and 1002 we would have:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;1000&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;adv&quot;</span><span class="p">:</span> <span class="mf">2.58</span><span class="p">,</span>
+    <span class="s2">&quot;bottom&quot;</span><span class="p">:</span> <span class="mf">128.13</span><span class="p">,</span>
+    <span class="s2">&quot;doctop&quot;</span><span class="p">:</span> <span class="mf">118.13</span><span class="p">,</span>
+    <span class="s2">&quot;fontname&quot;</span><span class="p">:</span> <span class="s2">&quot;GlyphLessFont&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;height&quot;</span><span class="p">:</span> <span class="mf">10.0</span><span class="p">,</span>
+    <span class="s2">&quot;line_number&quot;</span><span class="p">:</span> <span class="mi">14</span><span class="p">,</span>
+    <span class="s2">&quot;object_type&quot;</span><span class="p">:</span> <span class="s2">&quot;char&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;page_number&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="mf">10.0</span><span class="p">,</span>
+    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;n&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;top&quot;</span><span class="p">:</span> <span class="mf">118.13</span><span class="p">,</span>
+    <span class="s2">&quot;upright&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;width&quot;</span><span class="p">:</span> <span class="mf">2.58</span><span class="p">,</span>
+    <span class="s2">&quot;x0&quot;</span><span class="p">:</span> <span class="mf">481.74</span><span class="p">,</span>
+    <span class="s2">&quot;x1&quot;</span><span class="p">:</span> <span class="mf">484.32</span><span class="p">,</span>
+    <span class="s2">&quot;y0&quot;</span><span class="p">:</span> <span class="mf">713.55</span><span class="p">,</span>
+    <span class="s2">&quot;y1&quot;</span><span class="p">:</span> <span class="mf">723.55</span>
+  <span class="p">},</span>
+  <span class="s2">&quot;1002&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;adv&quot;</span><span class="p">:</span> <span class="mf">2.64</span><span class="p">,</span>
+    <span class="s2">&quot;bottom&quot;</span><span class="p">:</span> <span class="mf">128.13</span><span class="p">,</span>
+    <span class="s2">&quot;doctop&quot;</span><span class="p">:</span> <span class="mf">118.13</span><span class="p">,</span>
+    <span class="s2">&quot;fontname&quot;</span><span class="p">:</span> <span class="s2">&quot;GlyphLessFont&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;height&quot;</span><span class="p">:</span> <span class="mf">10.0</span><span class="p">,</span>
+    <span class="s2">&quot;line_number&quot;</span><span class="p">:</span> <span class="mi">14</span><span class="p">,</span>
+    <span class="s2">&quot;object_type&quot;</span><span class="p">:</span> <span class="s2">&quot;char&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;page_number&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="mf">10.0</span><span class="p">,</span>
+    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;S&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;top&quot;</span><span class="p">:</span> <span class="mf">118.13</span><span class="p">,</span>
+    <span class="s2">&quot;upright&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;width&quot;</span><span class="p">:</span> <span class="mf">2.64</span><span class="p">,</span>
+    <span class="s2">&quot;x0&quot;</span><span class="p">:</span> <span class="mf">486.72</span><span class="p">,</span>
+    <span class="s2">&quot;x1&quot;</span><span class="p">:</span> <span class="mf">489.36</span><span class="p">,</span>
+    <span class="s2">&quot;y0&quot;</span><span class="p">:</span> <span class="mf">713.55</span><span class="p">,</span>
+    <span class="s2">&quot;y1&quot;</span><span class="p">:</span> <span class="mf">723.55</span>
+  <span class="p">},</span>
+<span class="o">//</span> <span class="o">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>After downloading these files, their paths will become available in the Project instance.</p>
+<p>You can get the path to the folder containing the Documents’ folders with:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_project</span><span class="o">.</span><span class="n">documents_folder</span>
+</pre></div>
+</div>
+<p>And you can get the path to the file with the Document text with:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span><span class="o">.</span><span class="n">txt_file_path</span>
+</pre></div>
+</div>
 <section id="upload-document">
 <span id="id1"></span><h4>Upload Document<a class="headerlink" href="#upload-document" title="Permalink to this headline">¶</a></h4>
 <p>Before you can upload a new file to your Project using the Konfuzio SDK, you must have completed the following steps:</p>
@@ -514,10 +567,9 @@ information of the characters and the image of the Document.</p>
     <span class="n">document</span><span class="o">.</span><span class="n">get_bbox</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>You will get a file named “bbox.json5”.</p>
-<p>After downloading these files, the paths to them will also become available in the Project instance.
-For example, you can get the path to the file with the Document text with:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_project</span><span class="o">.</span><span class="n">documents_folder</span>
+<p>You will get a file named “bbox.zip” in the Document folder. This file contains the “bbox.json5” file. You can find the
+path to the zip file in the Document instance with:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span><span class="o">.</span><span class="n">bbox_file_path</span>
 </pre></div>
 </div>
 </section>

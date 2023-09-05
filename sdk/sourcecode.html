@@ -259,6 +259,12 @@ For the default behaviour see <a class="reference external" href="https://dev.ko
 <dd><p>Verify if there’s overlap between two Bboxes.</p>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">document</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">konfuzio_sdk.data.Document</span></em></dt>
+<dd><p>Get the Document the Bbox belongs to.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_image_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">page</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">konfuzio_sdk.data.Page</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">konfuzio_sdk.data.Bbox</span></span></span></dt>
@@ -299,13 +305,13 @@ a (down-to-up y-axis, left-right x-axis, page-scaled system).</p>
 <dl class="py property">
 <dt class="sig sig-object py">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">y0_image</span></span></dt>
-<dd><p>Get the y0 coordinate in the context of the Page image.</p>
+<dd><p>Get the y0 coordinate in the context of the Page image, in a top-down coordinate system.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">y1_image</span></span></dt>
-<dd><p>Get the y1 coordinate in the context of the Page image.</p>
+<dd><p>Get the y1 coordinate in the context of the Page image, in a top-down coordinate system.</p>
 </dd></dl>
 
 </dd></dl>

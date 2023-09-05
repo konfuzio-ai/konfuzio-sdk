@@ -253,8 +253,13 @@ to different Categories and multiple Annotation Sets.</p>
 </section>
 <section id="bbox-concept">
 <span id="id16"></span><h3>Bbox<a class="headerlink" href="#bbox-concept" title="Permalink to this headline">¶</a></h3>
-<p><a class="reference external" href="sourcecode.html#bbox">Bbox</a> is an area of the Page denoted by four rectangle-like
-coordinates. You can access Bboxes of the Document by calling <code class="docutils literal notranslate"><span class="pre">document.bboxes</span></code>.</p>
+<p><a class="reference external" href="sourcecode.html#bbox">Bbox</a> is used to represent an area of a Page, defined by the coordinates of the bottom left corner
+and the top right corner of the bounding box. Check out our <a class="reference external" href="#coordinates-system">coordinate system explainer</a> for more
+details.</p>
+<p>You can access all character Bboxes of the Document by using <code class="docutils literal notranslate"><span class="pre">document.bboxes</span></code>. A Bbox can also be associated with a single Span, or with all Spans within an Annotation. To obtain the Bbox associate with a single Span, call <code class="docutils literal notranslate"><span class="pre">span.bbox()</span></code>. To obtain the Bbox wrapping all Spans in an Annotation, call <code class="docutils literal notranslate"><span class="pre">annotation.bbox()</span></code>. This should not be
+confused with <code class="docutils literal notranslate"><span class="pre">Annotation.selection_bbox</span></code>, which is an attribute storing the Bbox a user has selected in the Smartview when creating the Annotation.</p>
+<p>The following image shows a bounding box with red border, which is retrieved with <code class="docutils literal notranslate"><span class="pre">Annotation.selection_bbox</span></code> , and a bounding box highlighted in green, which is retrieved with <code class="docutils literal notranslate"><span class="pre">Annotation.bbox()</span></code>:</p>
+<a class="reference internal image-reference" href="../_images/bbox_selection_bbox.png"><img alt="../_images/bbox_selection_bbox.png" class="align-center" src="../_images/bbox_selection_bbox.png" style="width: 150px;" /></a>
 </section>
 </section>
 <section id="id18">
@@ -268,25 +273,45 @@ coordinates. You can access Bboxes of the Document by calling <code class="docut
 <h2>Directory Structure<a class="headerlink" href="#directory-structure" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>├── konfuzio-sdk      &lt;- SDK project name
 │   │
-│   ├── docs                    &lt;- Documentation to use konfuzio_sdk package in a project
+│   ├── docs                              &lt;- Documentation to use konfuzio_sdk package in a project
 │   │
-│   ├── konfuzio_sdk            &lt;- Source code of Konfuzio SDK
-│   │  ├── __init__.py          &lt;- Makes konfuzio_sdk a Python module
-│   │  ├── api.py               &lt;- Functions to interact with the Konfuzio Server
-│   │  ├── cli.py               &lt;- Command Line interface to the konfuzio_sdk package
-│   │  ├── data.py              &lt;- Functions to handle data from the API
-│   │  ├── settings_importer.py &lt;- Meta settings loaded from the project
-│   │  ├── urls.py              &lt;- Endpoints of the Konfuzio host
-│   │  └── utils.py             &lt;- Utils functions for the konfuzio_sdk package
+│   ├── konfuzio_sdk                      &lt;- Source code of Konfuzio SDK
+│   │  ├── __init__.py                    &lt;- Makes konfuzio_sdk a Python module
+│   │  ├── api.py                         &lt;- Functions to interact with the Konfuzio Server
+│   │  ├── cli.py                         &lt;- Command Line interface to the konfuzio_sdk package
+│   │  ├── data.py                        &lt;- Functions to handle data from the API
+│   │  ├── evaluate.py                    &lt;- Functions to evaluate the performance of the AIs
+│   │  ├── extras.py                      &lt;- Classes to initialize AI-related dependencies safely
+|   |  ├── normalize.py                   &lt;- Functions to normalize Spans according to data_type
+│   │  ├── regex.py                       &lt;- Helper Functions to handle regex related tasks
+│   │  ├── samples.py                     &lt;- Local sample test Project
+│   │  ├── settings_importer.py           &lt;- Meta settings loaded from the project
+│   │  ├── urls.py                        &lt;- Endpoints of the Konfuzio host
+│   │  ├── utils.py                       &lt;- Utils functions for the konfuzio_sdk package
+|   |  |
+│   |  ├── trainer                        &lt;- Trainer module to train AI models
+|   |  |  ├── __init__.py                 &lt;- Makes trainer a Python module
+|   |  |  ├── base.py                     &lt;- Base class for all AIs
+|   |  |  ├── document_categorization.py  &lt;- AI for Document categorization
+|   |  |  ├── information_extraction.py   &lt;- AI for Information extraction
+|   |  |  ├── file_splitting.py           &lt;- AI for File splitting
+|   |  |  ├── image.py                    &lt;- Image processing helper functions
+|   |  |  ├── tokenization.py             &lt;- Custom tokenization classes
+|   |  |
+│   |  ├── tokenizer                      &lt;- Tokenizer module to tokenize documents
+|   |  |  ├── __init__.py                 &lt;- Makes tokenizer a Python module
+|   |  |  ├── base.py                     &lt;- Base class for all Tokenizers
+|   |  |  ├── paragraph_and_sentence.py   &lt;- Paragraph and Sentence Tokenizer
+|   |  |  ├── regex.py                    &lt;- Various Regex Tokenizers
+|   |
+│   ├── tests                             &lt;- Pytests: basic tests to test scripts based on a demo project
 │   │
-│   ├── tests                   &lt;- Pytests: basic tests to test scripts based on a demo project
-│   │
-│   ├── .gitignore              &lt;- Specify files untracked and ignored by git
-│   ├── README.md               &lt;- Readme to get to know konfuzio_sdk package
-│   ├── pytest.ini              &lt;- Configurations for pytests
-│   ├── settings.py             &lt;- Settings of SDK project
-│   ├── setup.cfg               &lt;- Setup configurations
-│   ├── setup.py                &lt;- Installation requirements
+│   ├── .gitignore                        &lt;- Specify files untracked and ignored by git
+│   ├── README.md                         &lt;- Readme to get to know konfuzio_sdk package
+│   ├── pytest.ini                        &lt;- Configurations for pytests
+│   ├── settings.py                       &lt;- Settings of SDK project
+│   ├── setup.cfg                         &lt;- Setup configurations
+│   ├── setup.py                          &lt;- Installation requirements
 </pre></div>
 </div>
 <p>examples of how to use it for visualization, for example.</p>

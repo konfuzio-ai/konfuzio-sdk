@@ -222,8 +222,13 @@ to different Categories and multiple Annotation Sets.</p>
 </section>
 <section id="bbox-concept">
 <span id="id16"></span><h2>Bbox<a class="headerlink" href="#bbox-concept" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference external" href="sourcecode.html#bbox">Bbox</a> is an area of the Page denoted by four rectangle-like
-coordinates. You can access Bboxes of the Document by calling <code class="docutils literal notranslate"><span class="pre">document.bboxes</span></code>.</p>
+<p><a class="reference external" href="sourcecode.html#bbox">Bbox</a> is used to represent an area of a Page, defined by the coordinates of the bottom left corner
+and the top right corner of the bounding box. Check out our <a class="reference external" href="#coordinates-system">coordinate system explainer</a> for more
+details.</p>
+<p>You can access all character Bboxes of the Document by using <code class="docutils literal notranslate"><span class="pre">document.bboxes</span></code>. A Bbox can also be associated with a single Span, or with all Spans within an Annotation. To obtain the Bbox associate with a single Span, call <code class="docutils literal notranslate"><span class="pre">span.bbox()</span></code>. To obtain the Bbox wrapping all Spans in an Annotation, call <code class="docutils literal notranslate"><span class="pre">annotation.bbox()</span></code>. This should not be
+confused with <code class="docutils literal notranslate"><span class="pre">Annotation.selection_bbox</span></code>, which is an attribute storing the Bbox a user has selected in the Smartview when creating the Annotation.</p>
+<p>The following image shows a bounding box with red border, which is retrieved with <code class="docutils literal notranslate"><span class="pre">Annotation.selection_bbox</span></code> , and a bounding box highlighted in green, which is retrieved with <code class="docutils literal notranslate"><span class="pre">Annotation.bbox()</span></code>:</p>
+<a class="reference internal image-reference" href="../../_images/bbox_selection_bbox.png"><img alt="../../_images/bbox_selection_bbox.png" class="align-center" src="../../_images/bbox_selection_bbox.png" style="width: 150px;" /></a>
 </section>
 </section>
 
