@@ -211,8 +211,8 @@ Series of events & tasks triggered when uploading a Document
 |-------|---------|------------------------------|-----------------------------------------------------------------------------------------------------------------|--------------------|
 | 1, 2  | 1       | page_ocr                     | Apply OCR to the documents page(s).                                                                             | 10 minutes         |
 | 1, 2  | 2       | page_image                   | Create png image for a page. If a PNG was submitted or already exists it will be returned without regeneration. | 10 minutes         |
-| 1     | 3       | set_document_text_and_bboxes | Collect the result of the pages OCR (OCR from task_id #1) and set text & bboxes.                                | 1 minute           |
-| 3     | 4       | categorize                   | Categorize the document.                                                                                        | 3 minutes          |
+| 1     | 3       | set_document_text_and_bboxes | Collect the result of the pages OCR (OCR from task_id #1) and set text & bboxes.                                | 3 minute           |
+| 3     | 4       | categorize                   | Categorize the document.                                                                                        | 60 minutes         |
 | 4     | 5       | document_extract             | Extract the document using the AI models linked to the Project.                                                 | 60 minutes         |
 | 5     | 6       | build_sandwich               | Generates the pdfsandwich for a submitted PDF                                                                   | 30 minutes         |
 | 5     | 7       | generate_entities            | Generate entities for a document which are shown in the labeling tool.                                          | 60 minutes         |
@@ -240,9 +240,9 @@ Series of events triggered when training a Categorization AI
 
 | Queue      | task id | task name         | description                                                                                                     | default time limit |
 |------------|---------|-------------------|-----------------------------------------------------------------------------------------------------------------|--------------------|
-| 8          | 2       | train_category_ai | Start the training of the categorization model.                                                                 | 10 hours           |
-| 8, 3       | 3       | categorize        | Run the categorization against all Documents in the its category.                                               | 3 minutes          |
-| 6, 7, 8, 3 | 4       | evaluate_ai_model | Evaluate the categorization Ai models performance.                                                              | 60 hours           | 
+| 8          | 2       | train_category_ai | Start the training of the categorization model.                                                                 | 20 hours           |
+| 8, 3       | 3       | categorize        | Run the categorization against all Documents in the its category.                                               | 60 minutes         |
+| 6, 7, 8, 3 | 4       | evaluate_ai_model | Evaluate the categorization Ai models performance.                                                              | 60 minutes           | 
 
 
 ## Security
