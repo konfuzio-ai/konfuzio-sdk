@@ -3,11 +3,14 @@
 import logging
 import os
 import pytest
+import sys
 import unittest
 from copy import deepcopy
 import parameterized
+from requests import HTTPError
 from typing import List, Dict
 
+from konfuzio_sdk.api import upload_ai_model, update_ai_model, delete_ai_model, konfuzio_session
 from konfuzio_sdk.data import Project, Document, Page
 from konfuzio_sdk.extras import torch, FloatTensor
 from konfuzio_sdk.settings_importer import is_dependency_installed
@@ -33,6 +36,7 @@ from konfuzio_sdk.trainer.document_categorization import (
     build_categorization_ai_pipeline,
 )
 from konfuzio_sdk.trainer.tokenization import PhraseMatcherTokenizer
+from konfuzio_sdk.urls import get_create_ai_model_url
 from tests.variables import (
     OFFLINE_PROJECT,
     TEST_DOCUMENT_ID,
@@ -528,10 +532,24 @@ class TestAllCategorizationConfigurations(unittest.TestCase):
         self.categorization_pipeline.pipeline_path = self.categorization_pipeline.save()
         assert os.path.isfile(self.categorization_pipeline.pipeline_path)
 
-    @pytest.mark.skip(reason="To be defined how to upload a categorization model.")
+    @unittest.skipIf(sys.version_info[:2] != (3, 8), reason='This AI can only be loaded on Python 3.8.')
     def test_4_upload_ai_model(self) -> None:
         """Upload the model."""
-        raise NotImplementedError
+        assert os.path.isfile(self.categorization_pipeline.pipeline_path)
+        try:
+            model_id = upload_ai_model(ai_model_path=self.categorization_pipeline.pipeline_path, project_id=46)
+            assert isinstance(model_id, int)
+            updated = update_ai_model(model_id, ai_type='categorization', description='test_description')
+            assert updated['description'] == 'test_description'
+            updated = update_ai_model(model_id, ai_type='categorization', patch=False, description='test_description')
+            assert updated['description'] == 'test_description'
+            delete_ai_model(model_id, ai_type='categorization')
+            url = get_create_ai_model_url(ai_type='categorization')
+            session = konfuzio_session()
+            not_found = session.get(url)
+            assert not_found.status_code == 204
+        except HTTPError as e:
+            assert ('403' in str(e)) or ('404' in str(e))
 
     def test_5a_data_quality(self) -> None:
         """Evaluate CategorizationModel on Training documents."""
