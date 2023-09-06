@@ -501,6 +501,11 @@ class Bbox:
         self._valid(validation)
 
     @property
+    def document(self) -> 'Document':
+        """Get the Document the Bbox belongs to."""
+        return self.page.document
+
+    @property
     def top(self):
         """Calculate the distance to the top of the Page."""
         if self.page:
@@ -527,12 +532,7 @@ class Bbox:
         round_decimals = 2
 
         if round(self.x0, round_decimals) == round(self.x1, round_decimals):
-            exception_or_log_error(
-                msg=f"{self} has no width in {self.page}.",
-                fail_loudly=validation is BboxValidationTypes.STRICT,
-                exception_type=ValueError,
-                handler=handler,
-            )
+            logger.warning(f"{self} has no width in {self.page}.")
 
         if round(self.x0, round_decimals) > round(self.x1, round_decimals):
             exception_or_log_error(
@@ -543,12 +543,7 @@ class Bbox:
             )
 
         if round(self.y0, round_decimals) == round(self.y1, round_decimals):
-            exception_or_log_error(
-                msg=f"{self} has no height in {self.page}.",
-                fail_loudly=validation is BboxValidationTypes.STRICT,
-                exception_type=ValueError,
-                handler=handler,
-            )
+            logger.warning(f"{self} has no height in {self.page}.")
 
         if round(self.y0, round_decimals) > round(self.y1, round_decimals):
             exception_or_log_error(
@@ -647,12 +642,12 @@ class Bbox:
 
     @property
     def y0_image(self):
-        """Get the y0 coordinate in the context of the Page image."""
+        """Get the y0 coordinate in the context of the Page image, in a top-down coordinate system."""
         return self.page.image_height - self.y1 * (self.page.image_height / self.page.height)
 
     @property
     def y1_image(self):
-        """Get the y1 coordinate in the context of the Page image."""
+        """Get the y1 coordinate in the context of the Page image, in a top-down coordinate system."""
         return self.page.image_height - self.y0 * (self.page.image_height / self.page.height)
 
 
@@ -2145,6 +2140,15 @@ class Annotation(Data):
             self.add_span(span)
 
         self.selection_bbox = kwargs.get("selection_bbox", None)
+        if isinstance(self.selection_bbox, dict):
+            page = self.document.get_page_by_index(self.selection_bbox["page_index"])
+            x0, x1, y0, y1 = (
+                self.selection_bbox["x0"],
+                self.selection_bbox["x1"],
+                self.selection_bbox["y0"],
+                self.selection_bbox["y1"],
+            )
+            self.selection_bbox = Bbox(x0=x0, x1=x1, y0=y0, y1=y1, page=page)
 
         # TODO START LEGACY to support multiline Annotations
         bboxes = kwargs.get("bboxes", None)
@@ -2183,7 +2187,6 @@ class Annotation(Data):
             self.y0 = bbox.get('y0')
             self.y1 = bbox.get('y1')
 
-        self.selection_bbox = kwargs.get('selection_bbox', None)
         self.page_number = kwargs.get('page_number', None)
         # END LEGACY -
 

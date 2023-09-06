@@ -87,7 +87,7 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
         """
         pkl_file_path = os.path.join(
             self.output_dir,
-            f'{get_timestamp()}_{self.project.id_}_{self.name_lower()}',
+            f'{get_timestamp()}_{self.project.id_}_{self.name_lower()}.pkl',
         )
         return pkl_file_path
 

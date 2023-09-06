@@ -33,6 +33,7 @@ that reflects each step of the document-processing pipeline.
    tutorials/file_splitting/index.md
    tutorials/tokenizers/index.md
    tutorials/information_extraction/index.md
+   tutorials/upload-your-ai/index.md
    tutorials/data_validation/index.md
    tutorials/outlier-annotations/index.md
    tutorials/regex_based_annotations/index.md
@@ -40,3 +41,4 @@ that reflects each step of the document-processing pipeline.
    tutorials/pdf-form-generator/index.md
    tutorials/ner-ontonotes-fast/index.md
    tutorials/annual-reports/index.md
+   tutorials/barcode-scanner/index.md
