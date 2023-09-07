@@ -31,11 +31,11 @@ from konfuzio_sdk.api import (
     delete_document_annotation,
     delete_file_konfuzio_api,
     upload_file_konfuzio_api,
-    get_results_from_segmentation,
+    get_results_from_segmentation, get_all_project_ais,
 )
 from konfuzio_sdk.normalize import normalize
 from konfuzio_sdk.regex import get_best_regex, regex_matches, suggest_regex_for_string, merge_regex
-from konfuzio_sdk.urls import get_annotation_view_url
+from konfuzio_sdk.urls import get_annotation_view_url, get_ai_model_file
 from konfuzio_sdk.utils import (
     is_file,
     convert_to_bio_scheme,
@@ -104,15 +104,15 @@ class Page(Data):
     """
 
     def __init__(
-        self,
-        id_: Union[int, None],
-        document: 'Document',
-        number: int,
-        original_size: Tuple[float, float],
-        image_size: Tuple[int, int] = (None, None),
-        start_offset: Optional[int] = None,
-        end_offset: Optional[int] = None,
-        copy_of_id: Optional[int] = None,
+            self,
+            id_: Union[int, None],
+            document: 'Document',
+            number: int,
+            original_size: Tuple[float, float],
+            image_size: Tuple[int, int] = (None, None),
+            start_offset: Optional[int] = None,
+            end_offset: Optional[int] = None,
+            copy_of_id: Optional[int] = None,
     ):
         """
         Create a Page for a Document.
@@ -267,7 +267,7 @@ class Page(Data):
     def text(self):
         """Get Document text corresponding to the Page."""
         doc_text = self.document.text
-        page_text = self.document.text[self.start_offset : self.end_offset]
+        page_text = self.document.text[self.start_offset: self.end_offset]
         if doc_text.split('\f')[self.index] != page_text:
             raise IndexError(f'{self} text offsets do not match Document text.')
         return page_text
@@ -278,12 +278,12 @@ class Page(Data):
         return len(self.text.split('\n'))
 
     def spans(
-        self,
-        label: 'Label' = None,
-        use_correct: bool = False,
-        start_offset: int = 0,
-        end_offset: int = None,
-        fill: bool = False,
+            self,
+            label: 'Label' = None,
+            use_correct: bool = False,
+            start_offset: int = 0,
+            end_offset: int = None,
+            fill: bool = False,
     ) -> List['Span']:
         """Return all Spans of the Page."""
         spans = []
@@ -328,13 +328,13 @@ class Page(Data):
         return page_bbox
 
     def annotations(
-        self,
-        label: 'Label' = None,
-        use_correct: bool = True,
-        ignore_below_threshold: bool = False,
-        start_offset: int = 0,
-        end_offset: int = None,
-        fill: bool = False,
+            self,
+            label: 'Label' = None,
+            use_correct: bool = True,
+            ignore_below_threshold: bool = False,
+            start_offset: int = 0,
+            end_offset: int = None,
+            fill: bool = False,
     ) -> List['Annotation']:
         """Get Page Annotations."""
         start_offset = max(start_offset, self.start_offset)
@@ -383,7 +383,7 @@ class Page(Data):
             category_annotation
             for category_annotation in self.category_annotations
             if category_annotation.category == category
-            and category_annotation.category != self.document.project.no_category
+               and category_annotation.category != self.document.project.no_category
         ]
         # if the list is not empty it means there is exactly one CategoryAnnotation with the assigned Category
         # (see Page.add_category_annotation for duplicate checking)
@@ -422,8 +422,8 @@ class Page(Data):
         :return: The found Category Annotation, or None if not present.
         """
         if (
-            self._human_chosen_category_annotation is not None
-            and self._human_chosen_category_annotation.category != self.document.project.no_category
+                self._human_chosen_category_annotation is not None
+                and self._human_chosen_category_annotation.category != self.document.project.no_category
         ):
             return self._human_chosen_category_annotation
         elif self.category_annotations:
@@ -551,7 +551,7 @@ class Bbox:
         if round(self.y1, round_decimals) > round(self.page.height, round_decimals):
             exception_or_log_error(
                 msg=f"{self} exceeds height of {self.page} by "
-                "{round(self.y1, round_decimals) - round(self.page.height, round_decimals)}.",
+                    "{round(self.y1, round_decimals) - round(self.page.height, round_decimals)}.",
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
                 handler=handler,
@@ -560,7 +560,7 @@ class Bbox:
         if round(self.x1, round_decimals) > round(self.page.width, round_decimals):
             exception_or_log_error(
                 msg=f"{self} exceeds width of {self.page} by "
-                "{round(self.x1, round_decimals) - round(self.page.width, round_decimals)}.",
+                    "{round(self.x1, round_decimals) - round(self.page.width, round_decimals)}.",
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
                 handler=handler,
@@ -585,11 +585,11 @@ class Bbox:
     def check_overlap(self, bbox: Union['Bbox', Dict]) -> bool:
         """Verify if there's overlap between two Bboxes."""
         if type(bbox) is dict and (
-            bbox['x0'] <= self.x1 and bbox['x1'] >= self.x0 and bbox['y0'] <= self.y1 and bbox['y1'] >= self.y0
+                bbox['x0'] <= self.x1 and bbox['x1'] >= self.x0 and bbox['y0'] <= self.y1 and bbox['y1'] >= self.y0
         ):
             return True
         elif type(bbox) is type(self) and (
-            bbox.x0 <= self.x1 and bbox.x1 >= self.x0 and bbox.y0 <= self.y1 and bbox.y1 >= self.y0
+                bbox.x0 <= self.x1 and bbox.x1 >= self.x0 and bbox.y0 <= self.y1 and bbox.y1 >= self.y0
         ):
             return True
         else:
@@ -713,7 +713,7 @@ class AnnotationSet(Data):
         """Calculate starting line of this Annotation Set."""
         if self.start_offset is None:
             return None
-        return self.document.text[0 : self.start_offset].count('\n')
+        return self.document.text[0: self.start_offset].count('\n')
 
     @property
     def end_offset(self) -> Optional[int]:
@@ -727,7 +727,7 @@ class AnnotationSet(Data):
         """Calculate ending line of this Annotation Set."""
         if self.end_offset is None:
             return None
-        return self.document.text[0 : self.end_offset].count('\n')
+        return self.document.text[0: self.end_offset].count('\n')
 
 
 class LabelSet(Data):
@@ -738,16 +738,16 @@ class LabelSet(Data):
     """
 
     def __init__(
-        self,
-        project,
-        labels=None,
-        id_: int = None,
-        name: str = None,
-        name_clean: str = None,
-        is_default=False,
-        categories=None,
-        has_multiple_annotation_sets=False,
-        **kwargs,
+            self,
+            project,
+            labels=None,
+            id_: int = None,
+            name: str = None,
+            name_clean: str = None,
+            is_default=False,
+            categories=None,
+            has_multiple_annotation_sets=False,
+            **kwargs,
     ):
         """
         Create a named Label Set.
@@ -968,12 +968,12 @@ class CategoryAnnotation(Data):
     """
 
     def __init__(
-        self,
-        category: Category,
-        confidence: Optional[float] = None,
-        page: Optional[Page] = None,
-        document: Optional['Document'] = None,
-        id_: Optional[int] = None,
+            self,
+            category: Category,
+            confidence: Optional[float] = None,
+            page: Optional[Page] = None,
+            document: Optional['Document'] = None,
+            id_: Optional[int] = None,
     ):
         """
         Create a CategoryAnnotation and link it to a Document or to a specific Page in a Document.
@@ -1051,18 +1051,18 @@ class Label(Data):
     """
 
     def __init__(
-        self,
-        project,
-        id_: Union[int, None] = None,
-        text: str = None,
-        get_data_type_display: str = 'Text',
-        text_clean: str = None,
-        description: str = None,
-        label_sets=None,
-        has_multiple_top_candidates: bool = False,
-        threshold: float = 0.1,
-        *initial_data,
-        **kwargs,
+            self,
+            project,
+            id_: Union[int, None] = None,
+            text: str = None,
+            get_data_type_display: str = 'Text',
+            text_clean: str = None,
+            description: str = None,
+            label_sets=None,
+            has_multiple_top_candidates: bool = False,
+            threshold: float = 0.1,
+            *initial_data,
+            **kwargs,
     ):
         """
         Create a named Label.
@@ -1114,14 +1114,14 @@ class Label(Data):
             return False
 
     def annotations(
-        self, categories: List[Category], use_correct=True, ignore_below_threshold=False
+            self, categories: List[Category], use_correct=True, ignore_below_threshold=False
     ) -> List['Annotation']:
         """Return related Annotations. Consider that one Label can be used across Label Sets in multiple Categories."""
         annotations = []
         for category in categories:
             for document in category.documents():
                 for annotation in document.annotations(
-                    label=self, use_correct=use_correct, ignore_below_threshold=ignore_below_threshold
+                        label=self, use_correct=use_correct, ignore_below_threshold=ignore_below_threshold
                 ):
                     annotations.append(annotation)
 
@@ -1282,7 +1282,7 @@ class Label(Data):
         return label_regex_token
 
     def _find_regexes(
-        self, annotations, label_regex_token, category: 'Category', max_findings_per_page=100
+            self, annotations, label_regex_token, category: 'Category', max_findings_per_page=100
     ) -> List[str]:
         """Find regexes for the Label."""
         search = [1, 3, 5]
@@ -1303,12 +1303,13 @@ class Label(Data):
                     bef_spacer = spacer * 3 if spacer > 1 else spacer
                     before_start_offset = span.start_offset - bef_spacer  # spacer**2
                     for before_span in annotation.document.spans(
-                        fill=True, start_offset=before_start_offset, end_offset=span.start_offset
+                            fill=True, start_offset=before_start_offset, end_offset=span.start_offset
                     ):
                         if before_span.annotation.label is self.project.no_label:
                             to_rep_offset_string = before_span.annotation.document.text[
-                                max(before_start_offset, before_span.start_offset) : before_span.end_offset
-                            ]
+                                                   max(before_start_offset,
+                                                       before_span.start_offset): before_span.end_offset
+                                                   ]
                             before_regex += suggest_regex_for_string(to_rep_offset_string, replace_characters=True)
                         else:
                             base_before_regex = before_span.annotation.label.base_regex(category)
@@ -1319,12 +1320,12 @@ class Label(Data):
                     after_regex = ''
                     after_end_offset = span.end_offset + spacer
                     for after_span in annotation.document.spans(
-                        fill=True, start_offset=span.end_offset, end_offset=after_end_offset
+                            fill=True, start_offset=span.end_offset, end_offset=after_end_offset
                     ):
                         if after_span.annotation.label is self.project.no_label:
                             to_rep_offset_string = after_span.annotation.document.text[
-                                after_span.start_offset : min(after_end_offset, after_span.end_offset)
-                            ]
+                                                   after_span.start_offset: min(after_end_offset, after_span.end_offset)
+                                                   ]
                             after_regex += suggest_regex_for_string(to_rep_offset_string, replace_characters=True)
                         else:
                             base_after_regex = after_span.annotation.label.base_regex(category)
@@ -1443,7 +1444,7 @@ class Label(Data):
         self._regex = {}
 
     def get_probable_outliers_by_regex(
-        self, categories: List[Category], use_test_docs: bool = False, top_worst_percentage: float = 0.1
+            self, categories: List[Category], use_test_docs: bool = False, top_worst_percentage: float = 0.1
     ) -> List['Annotation']:
         """
         Get a list of Annotations that come from the least precise regex.
@@ -1521,7 +1522,7 @@ class Label(Data):
                                     cur_annotations_best.add(annotation)
                                     detected_by_best_spans.add(span)
                     if len(cur_annotations_worst) not in range(
-                        round(len(cur_annotations_best) * 0.5), round(len(cur_annotations_best) * 1.5)
+                            round(len(cur_annotations_best) * 0.5), round(len(cur_annotations_best) * 1.5)
                     ):
                         outliers.update(cur_annotations_worst - cur_annotations_best)
                     for annotation in cur_annotations_worst.union(cur_annotations_best):
@@ -1553,9 +1554,9 @@ class Label(Data):
         return outliers
 
     def get_probable_outliers_by_confidence(
-        self,
-        evaluation_data,
-        confidence: float = 0.5,
+            self,
+            evaluation_data,
+            confidence: float = 0.5,
     ) -> List['Annotation']:
         """
         Get a list of Annotations with the lowest confidence.
@@ -1572,7 +1573,7 @@ class Label(Data):
             (evaluation_data.data['label_id'] == self.id_)
             & (evaluation_data.data['confidence_predicted'] < confidence)
             & (evaluation_data.data['is_correct'])
-        ]
+            ]
         for idx, outlier in all_annotations.iterrows():
             if outlier['id_']:
                 document_id = outlier['document_id']
@@ -1603,13 +1604,13 @@ class Label(Data):
         return outliers
 
     def get_probable_outliers(
-        self,
-        categories: List[Category],
-        regex_search: bool = True,
-        regex_worst_percentage: float = 0.1,
-        confidence_search: bool = True,
-        evaluation_data=None,
-        normalization_search: bool = True,
+            self,
+            categories: List[Category],
+            regex_search: bool = True,
+            regex_worst_percentage: float = 0.1,
+            confidence_search: bool = True,
+            evaluation_data=None,
+            normalization_search: bool = True,
     ) -> List['Annotation']:
         """
         Get a list of Annotations that are outliers.
@@ -1676,12 +1677,12 @@ class Span(Data):
     """
 
     def __init__(
-        self,
-        start_offset: int,
-        end_offset: int,
-        annotation: 'Annotation' = None,
-        document: 'Document' = None,
-        strict_validation: bool = True,
+            self,
+            start_offset: int,
+            end_offset: int,
+            annotation: 'Annotation' = None,
+            document: 'Document' = None,
+            strict_validation: bool = True,
     ):
         """
         Initialize the Span without bbox, to save storage.
@@ -1781,9 +1782,9 @@ class Span(Data):
     def __eq__(self, other) -> bool:
         """Twp Spans are equal if their start_offset and end_offset are both equal."""
         return (
-            type(self) == type(other)
-            and self.start_offset == other.start_offset
-            and self.end_offset == other.end_offset
+                type(self) == type(other)
+                and self.start_offset == other.start_offset
+                and self.end_offset == other.end_offset
         )
 
     def __lt__(self, other: 'Span'):
@@ -1877,7 +1878,7 @@ class Span(Data):
     def offset_string(self) -> Union[str, None]:
         """Calculate the offset string of a Span."""
         if self.document and self.document.text:
-            return self.document.text[self.start_offset : self.end_offset]
+            return self.document.text[self.start_offset: self.end_offset]
         else:
             return None
 
@@ -2032,27 +2033,27 @@ class Annotation(Data):
     """
 
     def __init__(
-        self,
-        document: 'Document',
-        annotation_set_id: Union[int, None] = None,  # support to init from API output
-        annotation_set: Union[AnnotationSet, None] = None,  # support to init from API output
-        label: Union[int, Label, None] = None,
-        label_set_id: Union[None, int] = None,
-        label_set: Union[None, LabelSet] = None,
-        is_correct: bool = False,
-        revised: bool = False,
-        normalized=None,
-        id_: int = None,
-        spans=None,
-        accuracy: float = None,
-        confidence: float = None,
-        created_by: int = None,
-        revised_by: int = None,
-        translated_string: str = None,
-        custom_offset_string: bool = False,
-        offset_string: str = False,
-        *args,
-        **kwargs,
+            self,
+            document: 'Document',
+            annotation_set_id: Union[int, None] = None,  # support to init from API output
+            annotation_set: Union[AnnotationSet, None] = None,  # support to init from API output
+            label: Union[int, Label, None] = None,
+            label_set_id: Union[None, int] = None,
+            label_set: Union[None, LabelSet] = None,
+            is_correct: bool = False,
+            revised: bool = False,
+            normalized=None,
+            id_: int = None,
+            spans=None,
+            accuracy: float = None,
+            confidence: float = None,
+            created_by: int = None,
+            revised_by: int = None,
+            translated_string: str = None,
+            custom_offset_string: bool = False,
+            offset_string: str = False,
+            *args,
+            **kwargs,
     ):
         """
         Initialize the Annotation.
@@ -2145,9 +2146,9 @@ class Annotation(Data):
                 else:
                     raise ValueError(f'SDK cannot read bbox of Annotation {self.id_} in {self.document}: {bbox}')
         elif (
-            bboxes is None
-            and kwargs.get("start_offset", None) is not None
-            and kwargs.get("end_offset", None) is not None
+                bboxes is None
+                and kwargs.get("start_offset", None) is not None
+                and kwargs.get("end_offset", None) is not None
         ):
             # Legacy support for creating Annotations with a single offset
             bbox = kwargs.get('bbox', {})
@@ -2358,9 +2359,9 @@ class Annotation(Data):
                         is_duplicated = False
                         for annotation in document_annotations:
                             if (
-                                annotation.start_offset == self.start_offset
-                                and annotation.end_offset == self.end_offset
-                                and annotation.label == self.label
+                                    annotation.start_offset == self.start_offset
+                                    and annotation.end_offset == self.end_offset
+                                    and annotation.label == self.label
                             ):
                                 logger.error(f"ID of annotation online: {annotation.id_}")
                                 self.id_ = annotation.id_
@@ -2627,14 +2628,14 @@ class Document(Data):
         return self.text is not None
 
     def update_meta_data(
-        self,
-        assignee: int = None,
-        category_template: int = None,
-        category: Category = None,
-        data_file_name: str = None,
-        dataset_status: int = None,
-        status: List[Union[int, str]] = None,
-        **kwargs,
+            self,
+            assignee: int = None,
+            category_template: int = None,
+            category: Category = None,
+            data_file_name: str = None,
+            dataset_status: int = None,
+            status: List[Union[int, str]] = None,
+            **kwargs,
     ):
         """Update document metadata information."""
         self.assignee = assignee
@@ -2675,14 +2676,14 @@ class Document(Data):
 
     @classmethod
     def from_file(
-        self,
-        path: str,
-        project: 'Project',
-        dataset_status: int = 0,
-        category_id: Optional[int] = None,
-        callback_url: str = '',
-        timeout: Optional[int] = None,
-        sync: bool = True,
+            self,
+            path: str,
+            project: 'Project',
+            dataset_status: int = 0,
+            category_id: Optional[int] = None,
+            callback_url: str = '',
+            timeout: Optional[int] = None,
+            sync: bool = True,
     ) -> 'Document':
         """
         Initialize Document from file with synchronous API call.
@@ -2845,7 +2846,7 @@ class Document(Data):
             category = self.project.no_category
         logger.info(f"Setting Category of {self} to {category}.")
         if category not in [self._category, self.project.no_category] and (
-            self._category and self._category.name != self.project.no_category.name
+                self._category and self._category.name != self.project.no_category.name
         ):
             raise ValueError(
                 "We forbid changing Category when already existing, because this requires some validations that are "
@@ -2890,12 +2891,12 @@ class Document(Data):
         return self._no_label_annotation_set
 
     def spans(
-        self,
-        label: Label = None,
-        use_correct: bool = False,
-        start_offset: int = 0,
-        end_offset: int = None,
-        fill: bool = False,
+            self,
+            label: Label = None,
+            use_correct: bool = False,
+            start_offset: int = 0,
+            end_offset: int = None,
+            fill: bool = False,
     ) -> List[Span]:
         """Return all Spans of the Document."""
         spans = []
@@ -3030,13 +3031,13 @@ class Document(Data):
         return self._annotation_sets
 
     def annotations(
-        self,
-        label: Label = None,
-        use_correct: bool = True,
-        ignore_below_threshold: bool = False,
-        start_offset: int = 0,
-        end_offset: int = None,
-        fill: bool = False,
+            self,
+            label: Label = None,
+            use_correct: bool = True,
+            ignore_below_threshold: bool = False,
+            start_offset: int = 0,
+            end_offset: int = None,
+            fill: bool = False,
     ) -> List[Annotation]:
         """
         Filter available annotations.
@@ -3056,7 +3057,7 @@ class Document(Data):
             # filter by correct information
             if not annotation.is_correct:
                 if ignore_below_threshold and (
-                    not annotation.confidence or annotation.confidence < annotation.label.threshold
+                        not annotation.confidence or annotation.confidence < annotation.label.threshold
                 ):
                     continue
             for span in annotation.spans:
@@ -3814,6 +3815,10 @@ class Project(Data):
         return f"Project {self.id_}"
 
     @property
+    def ai_models(self):
+        return get_all_project_ais(project_id=self.id_)
+
+    @property
     def documents(self):
         """Return Documents with status training."""
         return [doc for doc in self._documents if doc.dataset_status == 2]
@@ -4203,23 +4208,79 @@ class Project(Data):
         return self
 
 
-def download_training_and_test_data(id_: int):
+def download_training_and_test_data(id_: int, include_ais=True):
     """
     Migrate your Project to another HOST.
 
     See https://dev.konfuzio.com/web/migration-between-konfuzio-server-instances/index.html
 
     """
-    prj = Project(id_=id_, update=True)
+    project = Project(id_=id_, update=True)
 
-    if len(prj.documents + prj.test_documents) == 0:
+    if len(project.documents + project.test_documents) == 0:
         raise ValueError("No Documents in the training or test set. Please add them.")
 
-    for document in tqdm(prj.documents + prj.test_documents):
-        document.download_document_details()
-        document.get_file()
-        document.get_file(ocr_version=False)
-        document.get_bbox()
-        document.get_images()
+    # try:
+    #     for document in tqdm(project.documents + project.test_documents):
+    #         document.download_document_details()
+    #         document.get_file()
+    #         document.get_file(ocr_version=False)
+    #         document.get_bbox()
+    #         document.get_images()
+    # except Exception as error:
+    #     print("[ERROR] Something went wrong while downloading Document data!")
+    #     raise error
+
+    print("[SUCCESS] Downloaded all Training & Test Document data!")
+
+    try:
+        if include_ais:
+            export_ais(project)
+    except Exception as error:
+        print("[ERROR] Something went wrong while downloading AIs and AI metadata!")
+        raise error
 
     print("[SUCCESS] Data downloading finished successfully!")
+
+
+def export_ais(project: Project) -> None:
+    """Downloads a Projects AIs model (pkl) as well as its metadata"""
+
+
+    project_ai_models = project.ai_models
+    session = konfuzio_session()
+
+    variants = [] # Keeps track of the models variants to export. e.g.: Extraction, Categorization, Splitting
+    for model_type, details in project_ai_models.items():
+        # We only add those variants to the List which actually have models in the Project.
+        if details.get('count') > 0:
+            variants.append(model_type)
+
+    for ai_variant in variants:
+        folder = f'{project.project_folder}/models/{ai_variant}_ais'
+        models_dir = os.path.join(folder)
+        if not os.path.exists(models_dir):
+            os.makedirs(models_dir)
+
+        for ai_model in project_ai_models.get(ai_variant, {}).get('results', []):
+            if ai_model['status'] == 'done' and ai_model['category']:
+                ai_id = ai_model['id']
+                ai_name = ai_model['name']
+
+                # Download model
+                model_url = get_ai_model_file(ai_id)
+                local_model_path = os.path.join(models_dir, f"{ai_name}.pkl")
+
+                response = session.get(model_url)
+                if response.status_code == 200:
+                    with open(local_model_path, 'wb') as f:
+                        f.write(response.content)
+
+                    print(f"[SUCCESS] downloaded AI model to {ai_name}")
+
+                    # Save metadata
+                    local_metadata_path = os.path.join(models_dir, f"{ai_name}.json")
+                    with open(local_metadata_path, 'w') as f:
+                        json.dump(ai_model, f, indent=4)
+
+                    print(f"[SUCCESS] saved metadata for {ai_name}")
