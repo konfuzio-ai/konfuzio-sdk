@@ -231,14 +231,24 @@ confidence levels.</p>
 </section>
 <section id="annotation">
 <span id="annotation-concept"></span><h3>Annotation<a class="headerlink" href="#annotation" title="Permalink to this headline">¶</a></h3>
-<p><a class="reference external" href="sourcecode.html#annotation">Annotation</a> is a combination of Spans that has a certain Label  (i.e. Issue_Date, Auszahlungsbetrag) assigned to it. They typically denote a certain type of entity that is found in the text. Annotations can be predicted by AI or human-added.</p>
-<p>Like Spans, Annotations also have <code class="docutils literal notranslate"><span class="pre">start_offset</span></code> and <code class="docutils literal notranslate"><span class="pre">end_offset</span></code> denoting the starting and the ending characters. To access the text under the Annotation, call <code class="docutils literal notranslate"><span class="pre">annotation.offset_string</span></code>.</p>
+<p><a class="reference external" href="sourcecode.html#annotation">Annotation</a> is a combination of Spans that has a certain Label (i.e. Issue_Date, Auszahlungsbetrag)
+assigned to it. They typically denote a certain type of entity that is found in the text. Annotations can be predicted
+by AI or be human-added.</p>
+<p>Annotations always have to belong to an Annotation Set with a Label Set compatible with the Annotation’s Label.</p>
+<p>Like Spans, Annotations also have <code class="docutils literal notranslate"><span class="pre">start_offset</span></code> and <code class="docutils literal notranslate"><span class="pre">end_offset</span></code> denoting the starting and the ending characters. To
+access the text under the Annotation, call <code class="docutils literal notranslate"><span class="pre">annotation.offset_string</span></code>.</p>
 <p>To see the Annotation in the Smartview, you can call <code class="docutils literal notranslate"><span class="pre">annotation.get_link()</span></code> and open the returned URL.</p>
 </section>
 <section id="annotation-set-concept">
 <span id="id11"></span><h3>Annotation Set<a class="headerlink" href="#annotation-set-concept" title="Permalink to this headline">¶</a></h3>
-<p><a class="reference external" href="sourcecode.html#annotation-set">Annotation Set</a> is a group of Annotations united by Labels
-belonging to the same Label Set. To see Annotations in the set, call <code class="docutils literal notranslate"><span class="pre">annotation_set.annotations()</span></code>.</p>
+<p><a class="reference external" href="sourcecode.html#annotation-set">Annotation Set</a> is a group of Annotations united by Labels belonging to the same Label Set.
+To retrieve all that Annotation Sets of a Document call <code class="docutils literal notranslate"><span class="pre">document.annotation_sets()</span></code>. To see Annotations in the set,
+call <code class="docutils literal notranslate"><span class="pre">annotation_set.annotations()</span></code>.</p>
+<p>Every Document has one unique default Annotation Set, which can be retrieved with <code class="docutils literal notranslate"><span class="pre">document.default_annotation_set</span></code>. This
+Annotation Set’s Label Set is the Document’s Category default Label Set and has the same name and ID as the Category. It
+can be used to store all Annotations that don’t need to be organized into a separate Annotation Set.</p>
+<p>To check what Annotation Labels can be added to an Annotation Set, you can check with <code class="docutils literal notranslate"><span class="pre">annotation_set.label_set.labels</span></code>.</p>
+<p>Documents also have a unique Annotation Set for NO LABEL Annotations, which can be retrieved with <code class="docutils literal notranslate"><span class="pre">document.no_label_annotation_set</span></code>.</p>
 </section>
 <section id="label-concept">
 <span id="id13"></span><h3>Label<a class="headerlink" href="#label-concept" title="Permalink to this headline">¶</a></h3>
@@ -248,8 +258,13 @@ call <code class="docutils literal notranslate"><span class="pre">label.annotati
 </section>
 <section id="label-set">
 <span id="label-set-concept"></span><h3>Label Set<a class="headerlink" href="#label-set" title="Permalink to this headline">¶</a></h3>
-<p><a class="reference external" href="sourcecode.html#label-set">Label Set</a> is a group of Labels united. A Label Set can belong
-to different Categories and multiple Annotation Sets.</p>
+<p><a class="reference external" href="sourcecode.html#label-set">Label Set</a> is a group of related Labels. A Label Set can belong to different Categories and
+be used to create one or more <a class="reference external" href="#annotation-set-concept">Annotation Sets</a>, depending on the Label Set.</p>
+<p>Every Category has a default Label Set, which can be retrieved with <code class="docutils literal notranslate"><span class="pre">category.default_label_set</span></code>. This Label Set is used
+to create the default Annotation Set for each Document in the Category.</p>
+<p>Label Sets have an attribute, <code class="docutils literal notranslate"><span class="pre">label_set.has_multiple_annotation_sets</span></code>, which determines whether more than one Annotation Set
+can be created per Document. If <code class="docutils literal notranslate"><span class="pre">has_multiple_annotation_sets</span></code> is <code class="docutils literal notranslate"><span class="pre">False</span></code>, then only a single Annotation Set with the
+Label Set can be created per Document.</p>
 </section>
 <section id="bbox-concept">
 <span id="id16"></span><h3>Bbox<a class="headerlink" href="#bbox-concept" title="Permalink to this headline">¶</a></h3>
@@ -350,7 +365,7 @@ The following code can be used for this:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">ImageDraw</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
 
-<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">,</span> <span class="n">strict_data_validation</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
 <span class="c1"># first Document uploaded</span>
 <span class="n">document</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
 <span class="c1"># index of the Page to test</span>
@@ -390,7 +405,7 @@ we can overlap them directly.</p>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.api</span> <span class="kn">import</span> <span class="n">get_results_from_segmentation</span>
 
-<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">,</span> <span class="n">strict_data_validation</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
 <span class="c1"># first Document uploaded</span>
 <span class="n">document</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
 <span class="c1"># index of the Page to test</span>
@@ -420,7 +435,7 @@ size used for the characters’ bbox.</p>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.api</span> <span class="kn">import</span> <span class="n">get_results_from_segmentation</span>
 
-<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">,</span> <span class="n">strict_data_validation</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
 <span class="c1"># first Document uploaded</span>
 <span class="n">document</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
 <span class="c1"># index of the Page to test</span>
