@@ -285,6 +285,11 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
             assert page_original.category == page_predicted.category
         pathlib.Path(self.file_splitting_model.path).unlink()
 
+    @classmethod
+    def tearDownClass(cls) -> None:
+        """Remove Project None folder."""
+        cls.project.delete()  # created when saving the AI model
+
 
 TEST_WITH_FULL_DATASET = False
 
