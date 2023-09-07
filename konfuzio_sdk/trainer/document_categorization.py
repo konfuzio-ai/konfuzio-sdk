@@ -1594,7 +1594,7 @@ def build_categorization_ai_pipeline(
     if text_model is not None:
         if isinstance(text_model, str):
             try:
-                text_model = next(model for model in TextModel if model.value == text_model)
+                text_model = next(model for model in TextModel if model.value in text_model)
             except StopIteration:
                 raise ValueError(f'{text_model} not found. Provide an existing name for the image model.')
         text_model_class_mapping = {
