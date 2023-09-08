@@ -29,6 +29,9 @@ Upcoming...
 
 This version uses the Konfuzio Python SDK in version v.0.2.32 and Konfuzio Document Validation UI in version v.0.1.13.
 
+### Added
+- [Saas Pro Users can take Snapshots of the Dataset of a Project](https://help.konfuzio.com/modules/snapshots/index.html) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11105))
+
 ### Changed
 - [Increased time limits for task](https://dev.konfuzio.com/web/explanations.html#background-processes)
 
