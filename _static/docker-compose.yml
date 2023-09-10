@@ -4,7 +4,7 @@ version: "3.9"
 ######  Do not skip. These variables need to be customized.                  ######
 ###################################################################################
 x-user-variables: &user-variables
-  HOST_NAME: http://localhost:80
+  HOST_NAME: http://localhost
   BILLING_API_KEY: "<<INSERT_BILLING_API_KEY>>"
   SECRET_KEY: "<<INSERT_RANDOM_VALUE>>"
   AZURE_OCR_KEY: "<<OPTIONAL_INSERT_AZURE_OCR_KEY>>"
@@ -79,7 +79,7 @@ services:
       - konfuzio:/data
     deploy:
       mode: replicated
-      replicas: 1
+      replicas: 4
       restart_policy:
         condition: on-failure
         delay: 5s
