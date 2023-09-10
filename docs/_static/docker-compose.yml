@@ -7,12 +7,12 @@ x-user-variables: &user-variables
   HOST_NAME: http://localhost:80
   BILLING_API_KEY: "<<INSERT_BILLING_API_KEY>>"
   SECRET_KEY: "<<INSERT_RANDOM_VALUE>>"
-  AZURE_OCR_KEY: "<<OPTINAL_INSERT_AZURE_OCR_KEY>>"
+  AZURE_OCR_KEY: "<<OPTIONAL_INSERT_AZURE_OCR_KEY>>"
 
 x-user-azure-ocr-variables: &user-azure-ocr-variables
   Eula: accept
-  Billing: "<<OPTINAL_INSERT_AZURE_BILLING_URL>>"
-  ApiKey: "<<OPTINAL_INSERT_AZURE_OCR_KEY>>"
+  Billing: "<<OPTIONAL_INSERT_AZURE_BILLING_URL>>"
+  ApiKey: "<<OPTIONAL_INSERT_AZURE_OCR_KEY>>"
 
 x-konfuzio_image: &konfuzio_image
   image: git.konfuzio.com:5050/konfuzio/text-annotation/master:<<INSERT_DOCKER_TAG>>
@@ -44,7 +44,7 @@ services:
   web:
     <<: *konfuzio_image
     ports:
-      - "81:8000"
+      - "80:8000"
     volumes:
       - konfuzio:/data
     environment:
