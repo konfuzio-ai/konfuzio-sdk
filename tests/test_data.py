@@ -49,7 +49,7 @@ class TestOnlineProject(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Initialize the test Project."""
-        cls.project = Project(id_=TEST_PROJECT_ID, strict_data_validation=False)
+        cls.project = Project(id_=TEST_PROJECT_ID)
 
     def test_document(self):
         """Test properties of a specific Documents in the test Project."""
@@ -174,11 +174,13 @@ class TestOnlineProject(unittest.TestCase):
         doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         assert Span(start_offset=1590, end_offset=1602) not in doc.spans()
         label = self.project.get_label_by_name('Lohnart')
+        label_set = label.label_sets[0]
+        annotation_set = AnnotationSet(label_set=label_set, document=doc)
         annotation = Annotation(
             document=doc,
             spans=[Span(start_offset=1590, end_offset=1602)],
             label=label,
-            label_set=label.label_sets[0],
+            annotation_set=annotation_set,
             accuracy=1.0,
             is_correct=True,
         )
@@ -194,9 +196,9 @@ class TestOnlineProject(unittest.TestCase):
         # Test1: add an Annotation to the document online
         doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         assert Span(start_offset=1590, end_offset=1602) not in doc.spans()
-        label = self.project.get_label_by_name('Lohnart')
+        label = self.project.get_label_by_name('Vorname')
 
-        default_annotation_set = doc.annotation_sets()[0]
+        default_annotation_set = doc.default_annotation_set
         assert default_annotation_set.label_set.is_default
 
         annotation = Annotation(
@@ -204,7 +206,6 @@ class TestOnlineProject(unittest.TestCase):
             annotation_set=default_annotation_set,
             spans=[Span(start_offset=1590, end_offset=1602)],
             label=label,
-            label_set=label.label_sets[0],
             accuracy=1.0,
             is_correct=True,
         )
@@ -419,6 +420,14 @@ class TestOfflineExampleData(unittest.TestCase):
         with pytest.raises(NotImplementedError):
             copy(data)
 
+    def test_receipts_category_annotations(self):
+        """Test retrieving the Annotations of receipts Category."""
+        for document in self.receipts_category.documents():
+            document.get_annotations()
+
+        for document in self.receipts_category.test_documents():
+            document.get_annotations()
+
     def test_deepcopy(self):
         """Test that deepcopy is not allowed as it needs to be implemented for every SDK concept."""
         data = Data()
@@ -454,9 +463,8 @@ class TestOfflineExampleData(unittest.TestCase):
             id_=None,
             document=document,
             is_correct=True,
-            annotation_set=document.annotation_sets()[0],
+            annotation_set=document.no_label_annotation_set,
             label=self.project.no_label,
-            label_set=self.project.label_sets[0],
             spans=[span],
         )
         box = span.bbox()  # verify if we can calculate valid bounding boxes from a given Text offset.
@@ -557,8 +565,8 @@ class TestOfflineExampleData(unittest.TestCase):
 
     def test_find_outlier_annotations_by_regex(self):
         """Test finding the possibly incorrect Annotations of a Label."""
-        project_regex = Project(id_=None, project_folder=OFFLINE_PROJECT)
-        label = self.project.get_label_by_name('Bank inkl. IBAN')
+        project_regex = Project(id_=TEST_PROJECT_ID)
+        label = project_regex.get_label_by_name('Bank inkl. IBAN')
         train_doc_ids = {44823, 44834, 44839, 44840, 44841}
         for doc in project_regex.documents:
             if doc.id_ not in train_doc_ids:
@@ -604,8 +612,9 @@ class TestOfflineExampleData(unittest.TestCase):
 
     def test_find_outlier_annotations_by_normalization(self):
         """Test finding the Annotations that do not correspond the Label's data type."""
-        label = self.project.get_label_by_name('Austellungsdatum')
-        outliers = label.get_probable_outliers_by_normalization(self.project.categories)
+        project = Project(id_=TEST_PROJECT_ID)
+        label = project.get_label_by_name('Austellungsdatum')
+        outliers = label.get_probable_outliers_by_normalization(project.categories)
         outlier_spans = [span.offset_string for annotation in outliers for span in annotation.spans]
         assert len(outliers) == 1
         assert '328927/10103' in outlier_spans
@@ -613,10 +622,9 @@ class TestOfflineExampleData(unittest.TestCase):
 
     def test_find_outlier_annotations(self):
         """Test finding the Annotations that are deemed outliers by several methods of search."""
-        label = self.project.get_label_by_name('Austellungsdatum')
-        outliers = label.get_probable_outliers(
-            self.project.categories, regex_worst_percentage=1.0, confidence_search=False
-        )
+        project = Project(id_=TEST_PROJECT_ID)
+        label = project.get_label_by_name('Austellungsdatum')
+        outliers = label.get_probable_outliers(project.categories, regex_worst_percentage=1.0, confidence_search=False)
         outlier_spans = [span.offset_string for annotation in outliers for span in annotation.spans]
         assert len(outliers) == 1
         assert '328927/10103' in outlier_spans
@@ -652,11 +660,11 @@ class TestEqualityAnnotation(unittest.TestCase):
     def setUpClass(cls) -> None:
         """Initialize the test Project."""
         cls.project = Project(id_=None)
-        cls.label_one = Label(project=cls.project, text='First')
-        cls.label_two = Label(project=cls.project, text='First')
         cls.category = Category(project=cls.project, id_=1)
-        cls.document = Document(project=cls.project, category=cls.category)
         cls.label_set = LabelSet(project=cls.project, categories=[cls.category], id_=421)
+        cls.label_one = Label(project=cls.project, text='First', label_sets=[cls.label_set])
+        cls.label_two = Label(project=cls.project, text='First', label_sets=[cls.label_set])
+        cls.document = Document(project=cls.project, category=cls.category)
         # cls.label_set.add_label(cls.label)
         cls.annotation_set = AnnotationSet(document=cls.document, label_set=cls.label_set)
         assert len(cls.project.virtual_documents) == 1
@@ -861,6 +869,8 @@ class TestOfflineDataSetup(unittest.TestCase):
 
     def test_document_no_label_annotation_set_label_set(self):
         """Test that Label Set of the no_label_annotation_set of the Document has the no_label_set of the Project."""
+        assert self.document.no_label_annotation_set.label_set.id_ == self.project.no_label_set.id_ == 0
+        assert self.project.no_label_set.name == 'NO_LABEL_SET'
         assert self.document.no_label_annotation_set.label_set == self.project.no_label_set
 
     def test_category_of_document(self):
@@ -1068,12 +1078,112 @@ class TestOfflineDataSetup(unittest.TestCase):
         label = Label(project=project, label_sets=[label_set])
         # create a document A
         document_a = Document(project=project, category=category)
-        _ = Span(start_offset=1, end_offset=2)
+        span = Span(start_offset=1, end_offset=2)
         annotation_set_a = AnnotationSet(document=document_a, label_set=label_set)
 
-        with self.assertRaises(ValueError) as context:
-            Annotation(document=document_a, annotation_set=annotation_set_a, label=label)
-            assert 'has no Label Set' in context.exception
+        annotation = Annotation(document=document_a, annotation_set=annotation_set_a, label=label, spans=[span])
+
+        assert annotation.label_set is annotation_set_a.label_set
+
+    def test_add_annotation_with_annotation_set_and_label_set_none_w_multiple_false(self):
+        """
+        Test to add an Annotation to a Document where the LabelSet and AnnotationSet are None.
+
+        With LabelSet.has_multiple_annotation_sets True.
+        """
+        project = Project(id_=None)
+        category = Category(project=project)
+        label_set = LabelSet(id_=93710, project=project, categories=[category], has_multiple_annotation_sets=False)
+        label = Label(project=project, label_sets=[label_set])
+
+        document = Document(project=project, category=category)
+        span = Span(start_offset=1, end_offset=2)
+
+        annotation = Annotation(document=document, label=label, spans=[span])
+
+        assert isinstance(annotation.annotation_set, AnnotationSet)
+        assert annotation.label_set is annotation.annotation_set.label_set
+
+    def test_add_annotation_with_annotation_set_and_label_set_none_w_multiple_true(self):
+        """
+        Test to add an Annotation to a Document where the LabelSet and AnnotationSet are None.
+
+        With LabelSet.has_multiple_annotation_sets True.
+        """
+        project = Project(id_=None)
+        category = Category(project=project)
+        label_set = LabelSet(id_=93711, project=project, categories=[category], has_multiple_annotation_sets=True)
+        label = Label(project=project, label_sets=[label_set])
+
+        document = Document(project=project, category=category)
+        span = Span(start_offset=1, end_offset=2)
+
+        with pytest.raises(ValueError, match='Cannot assign .* to AnnotationSet.* can have multiple Annotation Sets'):
+            _ = Annotation(document=document, label=label, spans=[span])
+
+    @pytest.mark.xfail(
+        strict=True,
+        reason="To not interrupt server workflows, we log an error instead of raising a ValueError for now.",
+    )
+    def test_add_annotation_set_w_multiple_false(self):
+        """Test to add a second AnnotationSet to a Document where LabelSet.has_multiple_annotation_sets is False."""
+        project = Project(id_=None)
+        category = Category(project=project)
+        label_set = LabelSet(id_=93712, project=project, categories=[category], has_multiple_annotation_sets=False)
+
+        document = Document(project=project, category=category)
+        _ = AnnotationSet(id_=1, document=document, label_set=label_set)
+
+        with pytest.raises(ValueError, match='is already used by another Annotation Set'):
+            _ = AnnotationSet(id_=2, document=document, label_set=label_set)
+
+    def test_add_annotation_set_w_multiple_true(self):
+        """Test to add a second AnnotationSet to a Document where LabelSet.has_multiple_annotation_sets is True."""
+        project = Project(id_=None)
+        category = Category(project=project)
+        label_set = LabelSet(id_=93713, project=project, categories=[category], has_multiple_annotation_sets=True)
+
+        document = Document(project=project, category=category)
+        annotation_set_1 = AnnotationSet(document=document, label_set=label_set)
+        annotation_set_2 = AnnotationSet(document=document, label_set=label_set)  # no error
+        assert annotation_set_1 != annotation_set_2  # both ids are None, but different local_ids
+
+    def test_get_default_label_set_and_annotation_set(self):
+        """Test to get the default AnnotationSet of a Document."""
+        project = Project(id_=None)
+        category = Category(id_=143, name="Category143", project=project)
+
+        document = Document(project=project, category=category)
+
+        label_set = category.default_label_set
+
+        assert label_set.id_ == category.id_
+        assert label_set.has_multiple_annotation_sets is False
+        assert label_set.is_default is True
+        assert label_set.name == category.name
+
+        annotation_set = document.default_annotation_set
+
+        assert annotation_set.is_default is True
+        assert annotation_set.label_set is label_set
+
+        # with pytest.raises(ValueError, match='is already used by another Annotation Set'):
+        #     _ = AnnotationSet(document=document, label_set=label_set)
+
+    def test_add_none_label_annotation(self):
+        """Test to add an Annotation with none Label."""
+        project = Project(id_=None)
+        category = Category(project=project)
+
+        document = Document(project=project, category=category)
+
+        span = Span(start_offset=1, end_offset=2)
+
+        annotation = Annotation(document=document, label=None, spans=[span])
+
+        assert annotation.label is project.no_label
+        assert annotation.label_set is project.no_label_set
+        assert annotation.annotation_set is document.no_label_annotation_set
 
     def test_to_get_threshold(self):
         """Define fallback threshold for a Label."""
@@ -1718,6 +1828,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         document = Document(project=self.project, category=self.category)
         annotation_set = AnnotationSet(document=document, label_set=self.label_set)
         assert annotation_set in document.annotation_sets()
+        assert annotation_set in document.annotation_sets(label_set=self.label_set)
 
     def test_annotation_set_start_end_offset_and_line_index(self):
         """Test AnnotationSet info methods."""
@@ -2231,7 +2342,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
     def test_number_of_label_sets(self):
         """Test Label Sets numbers."""
         # Online Label Sets + added during tests +  no_label_set
-        assert len(self.prj.label_sets) == 13
+        assert len(self.prj.label_sets) == 12
 
     # def test_check_tokens(self):
     #     """Test to find not matched Annotations."""
@@ -2433,8 +2544,8 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         """Test to add a Label Set without Category to a Document with a Category."""
         prj = Project(id_=TEST_PROJECT_ID)  # new init to not add data to self.prj
         doc = prj.get_document_by_id(TEST_DOCUMENT_ID)
-        label = Label(project=prj)
         label_set = LabelSet(project=prj)
+        label = Label(project=prj, label_sets=[label_set])
         with self.assertRaises(ValueError) as context:
             Annotation(document=doc, label_set=label_set, label=label)
             assert 'uses Label Set without Category' in context.exception
@@ -2448,10 +2559,10 @@ class TestKonfuzioDataSetup(unittest.TestCase):
     def test_get_bbox(self):
         """Test to get BoundingBox of Text offset."""
         prj = Project(id_=TEST_PROJECT_ID)  # new init to not add data to self.prj
-        doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
+        doc = prj.get_document_by_id(TEST_DOCUMENT_ID)
         assert doc.category
-        label_set = LabelSet(project=self.prj, categories=[doc.category])
-        label = Label(project=prj)
+        label_set = LabelSet(project=prj, categories=[doc.category])
+        label = Label(project=prj, label_sets=[label_set])
         span = Span(start_offset=1, end_offset=2)
         annotation = Annotation(document=doc, label_set=label_set, label=label, spans=[span])
         span = Span(start_offset=44, end_offset=65, annotation=annotation)
@@ -2640,8 +2751,8 @@ class TestKonfuzioDataSetup(unittest.TestCase):
     def test_span_line_index_in_document(self):
         """Test line_index of span."""
         doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
-        label_set = LabelSet(project=self.prj, categories=[doc.category])
-        label = Label(project=self.prj)
+        label_set = self.prj.get_label_set_by_name('Lohnabrechnung')
+        label = label_set.labels[0]
         span = Span(start_offset=1000, end_offset=1002)
         _ = Annotation(document=doc, label_set=label_set, label=label, spans=[span])
         assert span.page.index == 0
@@ -2651,6 +2762,10 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         """Test number of Annotation Sets in a specific Document in the test Project."""
         doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
         assert len(doc.annotation_sets()) == 24  # After Update to use the TEST_DOCUMENT_ID
+        default_label_set = self.prj.get_label_set_by_name('Lohnabrechnung')
+        assert len(doc.annotation_sets(label_set=default_label_set)) == 1
+        brutto_bezug_label_set = self.prj.get_label_set_by_name('Brutto-Bezug')
+        assert len(doc.annotation_sets(label_set=brutto_bezug_label_set)) == 21  # ??
 
     def test_get_annotation_set_after_removal(self):
         """Test get an Annotation Set that no longer exists."""
@@ -2942,9 +3057,9 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         creates empty Annotations.
         """
         prj = Project(id_=TEST_PROJECT_ID)
-        label = Label(project=prj)
         doc = Document(text='', project=prj, category=prj.get_category_by_id(63))
-        label_set = LabelSet(project=prj, categories=[prj.get_category_by_id(63)])
+        label_set = doc.category.default_label_set
+        label = label_set.labels[0]
         span = Span(start_offset=1, end_offset=2)
         annotation_set = AnnotationSet(document=doc, label_set=label_set)
         _ = Annotation(label=label, annotation_set=annotation_set, label_set=label_set, document=doc, spans=[span])
@@ -2969,9 +3084,9 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         """Test adding Annotation error for no-category Document."""
         project = LocalTextProject()
         test_document = project.get_document_by_id(19)
-        label = Label(project=project)
         test_document._category = project.get_category_by_id(3)
         label_set = LabelSet(project=project, categories=[test_document.category])
+        label = Label(project=project, label_sets=[label_set])
         span = Span(start_offset=1, end_offset=2)
         annotation_set = AnnotationSet(document=test_document, label_set=label_set)
         test_document._category = project.no_category
@@ -3015,7 +3130,7 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
         self.assertFalse(doc.is_online)
         annotation_set = AnnotationSet(doc, label_set, id_=1)
         self.assertFalse(annotation_set.is_online)
-        label = Label(prj, label_set=label_set, id_=1)
+        label = Label(prj, label_sets=[label_set], id_=1)
         self.assertFalse(label.is_online)
         annotation = Annotation(
             doc, annotation_set=annotation_set, label_set=label_set, label=label, id_=1, spans=[Span(0, 1)]
