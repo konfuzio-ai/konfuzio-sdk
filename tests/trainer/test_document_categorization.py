@@ -445,7 +445,7 @@ class TestTextCategorizationModels(unittest.TestCase):
         (ConnectedTextTokenizer, BERT, None, None),
     ],
 )
-@pytest.mark.skip(reason="Slow testcases training a Categorization AI on full dataset with multiple configurations.")
+# @pytest.mark.skip(reason="Slow testcases training a Categorization AI on full dataset with multiple configurations.")
 class TestAllCategorizationConfigurations(unittest.TestCase):
     """Test trainable CategorizationAI."""
 
@@ -585,7 +585,7 @@ class TestAllCategorizationConfigurations(unittest.TestCase):
         test_doc = self.training_prj.get_document_by_id(345875)
         test_page = WhitespaceTokenizer().tokenize(deepcopy(test_doc)).pages()[0]
         # reset the category attribute to test that it can be categorized successfully
-        test_page.set_category(None)
+        test_page.set_category(self.training_prj.no_category)
         result = self.categorization_pipeline._categorize_page(test_page)
         assert isinstance(result, Page)
         assert result.category == self.receipts_category
