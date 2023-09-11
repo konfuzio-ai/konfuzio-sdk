@@ -13,7 +13,6 @@ def test_sentence_tokenizer():
 
     # initialize a Project and fetch a Document to tokenize
     project = Project(id_=YOUR_PROJECT_ID)
-    project = Project(id_=YOUR_PROJECT_ID, strict_data_validation=False)
 
     document = project.get_document_by_id(YOUR_DOCUMENT_ID)
 

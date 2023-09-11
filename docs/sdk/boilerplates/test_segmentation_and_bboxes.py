@@ -10,7 +10,7 @@ def test_visualize_bbox():
     from PIL import ImageDraw
     from konfuzio_sdk.data import Project
 
-    my_project = Project(id_=YOUR_PROJECT_ID, strict_data_validation=False)
+    my_project = Project(id_=YOUR_PROJECT_ID)
     # first Document uploaded
     document = my_project.get_document_by_id(YOUR_DOCUMENT_ID)
     # index of the Page to test
@@ -56,7 +56,7 @@ def test_segmentation():
     from konfuzio_sdk.data import Project
     from konfuzio_sdk.api import get_results_from_segmentation
 
-    my_project = Project(id_=YOUR_PROJECT_ID, strict_data_validation=False)
+    my_project = Project(id_=YOUR_PROJECT_ID)
     # first Document uploaded
     document = my_project.get_document_by_id(YOUR_DOCUMENT_ID)
     # index of the Page to test
@@ -90,7 +90,7 @@ def test_segmentation_and_bboxes():
     from konfuzio_sdk.data import Project
     from konfuzio_sdk.api import get_results_from_segmentation
 
-    my_project = Project(id_=YOUR_PROJECT_ID, strict_data_validation=False)
+    my_project = Project(id_=YOUR_PROJECT_ID)
     # first Document uploaded
     document = my_project.get_document_by_id(YOUR_DOCUMENT_ID)
     # index of the Page to test

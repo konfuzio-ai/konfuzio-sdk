@@ -63,7 +63,7 @@ Here's what each part of the command does:
 Instead of using ["plain" Docker](https://dev.konfuzio.com/web/on_premises.html#docker-single-vm-setup) we recommend to use our [Helm Chart](https://dev.konfuzio.com/web/on_premises.html#quick-start-via-kubernetes-and-helm) or [Docker-Compose](https://dev.konfuzio.com/web/on_premises.html#quick-start-via-docker-compose) to install Konfuzio Server. 
 
 - For Docker-Compose you can simply replace the BILLING_API_KEY placeholder in the [docker-compose.yaml](https://dev.konfuzio.com/_static/docker-compose.yml) file.
-- When using Helm on Kubernetes, the BILLING_API_KEY is set as 'envs.BILLING_API_KEY' in the [values.yaml](https://git.konfuzio.com/shared/charts/-/edit/master/values.yaml#L4) file.
+- When using Helm on Kubernetes, the BILLING_API_KEY is set as 'envs.BILLING_API_KEY' in the [values.yaml](https://git.konfuzio.com/shared/charts/-/edit/master/values.yaml#L28) file.
 
 The Konfuzio container continues to report usage to our billing server, i.e., app.konfuzio.com, once a day. We assure you that the containers do not transmit any customer data, such as the image or text that's being analyzed, to the billing server.
 

@@ -1008,11 +1008,9 @@ class TestInformationExtraction(unittest.TestCase):
         )
         pipeline.clf.fit(X, y)
         pipeline.label_feature_list = ['x0', 'x1', 'y0', 'y1']
-        pipeline.clf.classes_ = ['0']
-        category.labels[0].name = '0'
-        for cur_label in category.labels:
-            cur_label._has_multiline_annotations = False
-        category.label_sets[0].name = '0'
+        pipeline.clf.classes_ = ['Vorname']
+        for label in category.labels:
+            label._has_multiline_annotations = False
 
         virt_doc = pipeline.extract(document)
 
@@ -1536,21 +1534,40 @@ class TestAddExtractionAsAnnotation(unittest.TestCase):
         document = deepcopy(self.sample_document)
         annotation_set = AnnotationSet(id_=106, document=document, label_set=self.label_set)
 
-        with pytest.raises(ValueError, match='has no Label Set, which cannot be added'):
+        RFExtractionAI().add_extractions_as_annotations(
+            extractions=self.extraction_df,
+            document=document,
+            label=self.label,
+            label_set=None,
+            annotation_set=annotation_set,
+        )
+
+        annotation = document.annotations(use_correct=False)[0]
+        assert annotation.annotation_set.label_set == self.label_set == annotation.label_set
+
+    def test_add_extraction_incompatible_label_set(self):
+        """Test adding an extraction with incompatible Label Set."""
+        document = deepcopy(self.sample_document)
+        annotation_set = AnnotationSet(id_=507, document=document, label_set=self.label_set)
+
+        other_label_set = LabelSet(id_=52, project=self.project, name="TestLabelSet", categories=[document.category])
+
+        with pytest.raises(AssertionError, match='Conflicting Label Set information provided'):
             RFExtractionAI().add_extractions_as_annotations(
                 extractions=self.extraction_df,
                 document=document,
                 label=self.label,
-                label_set=None,
+                label_set=other_label_set,
                 annotation_set=annotation_set,
             )
 
     def test_add_extraction_invalid_label_set(self):
         """Test adding an extraction with invalid Label Set."""
         document = deepcopy(self.sample_document)
-        annotation_set = AnnotationSet(id_=107, document=document, label_set=self.label_set)
 
-        label_set = LabelSet(id_=52, project=self.project, name="TestLabelSet", categories=[])
+        label_set = LabelSet(id_=152, project=self.project, name="TestLabelSet", categories=[])
+        label_set.add_label(self.label)
+        annotation_set = AnnotationSet(id_=107, document=document, label_set=label_set)
 
         with pytest.raises(ValueError, match='uses Label Set without Category, cannot be added'):
             RFExtractionAI().add_extractions_as_annotations(
@@ -1564,9 +1581,11 @@ class TestAddExtractionAsAnnotation(unittest.TestCase):
     def test_add_extraction_invalid_label_set_2(self):
         """Test adding an extraction with invalid Label Set from different Category."""
         document = deepcopy(self.sample_document)
-        annotation_set = AnnotationSet(id_=108, document=document, label_set=self.label_set)
 
         label_set = self.project.get_label_set_by_id(2)
+        label_set.add_label(self.label)
+
+        annotation_set = AnnotationSet(id_=108, document=document, label_set=label_set)
 
         with pytest.raises(ValueError, match='We cannot add .* related to'):
             RFExtractionAI().add_extractions_as_annotations(
@@ -1644,7 +1663,7 @@ class TestAddExtractionAsAnnotation(unittest.TestCase):
         label_set_2 = self.project.get_label_set_by_id(1)
 
         label_1 = self.label
-        label_2 = self.project.get_label_by_id(5)
+        label_2 = self.project.get_label_by_id(6)
 
         annotation_set_1 = AnnotationSet(id_=103, document=document, label_set=label_set_1)
         annotation_set_2 = AnnotationSet(id_=104, document=document, label_set=label_set_2)
@@ -1884,8 +1903,10 @@ class TestExtractionToDocument(unittest.TestCase):
         """Test conversion of an output with extractions for a label that doesn't exist in the doc's category."""
         extraction_result = {
             'LabelSetName': [
-                {'LabelName': pd.DataFrame(data=[self.extraction_1])},
-                {'NonExistingLabelName': pd.DataFrame(data=[self.extraction_2])},
+                {
+                    'LabelName': pd.DataFrame(data=[self.extraction_1]),
+                    'NonExistingLabelName': pd.DataFrame(data=[self.extraction_2]),
+                },
             ]
         }
         with pytest.raises(IndexError):
