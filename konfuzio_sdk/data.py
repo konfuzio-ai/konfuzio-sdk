@@ -35,7 +35,7 @@ from konfuzio_sdk.api import (
 )
 from konfuzio_sdk.normalize import normalize
 from konfuzio_sdk.regex import get_best_regex, regex_matches, suggest_regex_for_string, merge_regex
-from konfuzio_sdk.urls import get_annotation_view_url, get_ai_model_file
+from konfuzio_sdk.urls import get_annotation_view_url, get_ai_model_url
 from konfuzio_sdk.utils import (
     is_file,
     convert_to_bio_scheme,
@@ -3091,7 +3091,7 @@ class Document(Data):
 
             for missing in missings:
                 new_spans = []
-                offset_text = self.text[missing.start : missing.stop]
+                offset_text = self.text[missing.start: missing.stop]
                 # we split Spans which span multiple lines, so that one Span comprises one line
                 offset_of_offset = 0
                 line_breaks = [
@@ -3149,9 +3149,9 @@ class Document(Data):
                 # if there's overlap
                 continue
             if (
-                annotation.is_correct is False
-                and annotation.label.has_multiple_top_candidates is False
-                and (annotation.label.id_, annotation.annotation_set.id_) in no_label_duplicates
+                    annotation.is_correct is False
+                    and annotation.label.has_multiple_top_candidates is False
+                    and (annotation.label.id_, annotation.annotation_set.id_) in no_label_duplicates
             ):
                 continue
             annotations.append(annotation)
@@ -3170,7 +3170,7 @@ class Document(Data):
             if annotation.label is self.project.no_label:
                 annotation.delete(delete_online=False)
             elif not annotation.is_correct and (
-                not annotation.confidence or annotation.label.threshold > annotation.confidence or annotation.revised
+                    not annotation.confidence or annotation.label.threshold > annotation.confidence or annotation.revised
             ):
                 annotation.delete(delete_online=False)
             else:
@@ -3195,7 +3195,7 @@ class Document(Data):
             file_path = self.file_path
 
         if self.status[0] == Document.DONE and (
-            not file_path or not is_file(file_path, raise_exception=False) or update
+                not file_path or not is_file(file_path, raise_exception=False) or update
         ):
             pdf_content = download_file_konfuzio_api(self.id_, ocr=ocr_version, session=self.project.session)
             with open(file_path, "wb") as f:
@@ -3262,13 +3262,13 @@ class Document(Data):
                 if annotation.label_set is not None:
                     if annotation.label_set.categories:
                         if (self.category in annotation.label_set.categories) or (
-                            annotation.label is self.project.no_label
+                                annotation.label is self.project.no_label
                         ):
                             self._annotations.append(annotation)
                         else:
                             exception_or_log_error(
                                 msg=f'We cannot add {annotation} related to {annotation.label_set.categories} to {self}'
-                                f' as the Document has {self.category}',
+                                    f' as the Document has {self.category}',
                                 fail_loudly=self.project._strict_data_validation,
                                 exception_type=ValueError,
                             )
@@ -3383,7 +3383,7 @@ class Document(Data):
             )['bbox']
             # Use the `zipfile` module: `compresslevel` was added in Python 3.7
             with zipfile.ZipFile(
-                self.bbox_file_path, mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9
+                    self.bbox_file_path, mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9
             ) as zip_file:
                 # Dump JSON data
                 dumped: str = json.dumps(bbox, indent=2, sort_keys=True)
@@ -3440,7 +3440,7 @@ class Document(Data):
                 if box_character not in [' ', '\f', '\n'] and box_character != document_character:
                     exception_or_log_error(
                         msg=f'{self} Bbox provides Character "{box_character}" Document text refers to '
-                        f'"{document_character}" with ID "{character_index}".',
+                            f'"{document_character}" with ID "{character_index}".',
                         fail_loudly=self.project._strict_data_validation,
                         exception_type=ValueError,
                     )
@@ -3699,9 +3699,9 @@ class Document(Data):
         :returns: A new sub-Document.
         """
         if include:
-            pages_text = self.text[start_page.start_offset : end_page.end_offset]
+            pages_text = self.text[start_page.start_offset: end_page.end_offset]
         else:
-            pages_text = self.text[start_page.start_offset : end_page.start_offset]
+            pages_text = self.text[start_page.start_offset: end_page.start_offset]
         new_doc = Document(project=self.project, id_=None, text=pages_text, category=self.category)
         i = 1
         start_offset = 0
@@ -3709,7 +3709,7 @@ class Document(Data):
             end_offset = start_offset + len(page.text)
             page_id = page.id_ if page.id_ else page.copy_of_id
             if (include and page.number in range(start_page.number, end_page.number + 1)) or (
-                not include and page.number in range(start_page.number, end_page.number)
+                    not include and page.number in range(start_page.number, end_page.number)
             ):
                 new_page = Page(
                     id_=None,
@@ -3756,14 +3756,14 @@ class Project(Data):
     """
 
     def __init__(
-        self,
-        id_: Union[int, None],
-        project_folder=None,
-        update=False,
-        max_ram=None,
-        strict_data_validation: bool = True,
-        credentials: dict = {},
-        **kwargs,
+            self,
+            id_: Union[int, None],
+            project_folder=None,
+            update=False,
+            max_ram=None,
+            strict_data_validation: bool = True,
+            credentials: dict = {},
+            **kwargs,
     ):
         """
         Set up the Data using the Konfuzio Host.
@@ -4208,79 +4208,82 @@ class Project(Data):
         return self
 
 
-def download_training_and_test_data(id_: int, include_ais=True):
+def export_project_data(id_: int, include_ais=False, training_and_test_documents=True):
+    if training_and_test_documents:
+        try:
+            print("[INFO] Starting Training and Test Document export!")
+            download_training_and_test_data(project_id=id_)
+        except Exception as error:
+            print("[ERROR] Something went wrong while downloading Document data!")
+            raise error
+    if include_ais:
+        try:
+            print("[INFO] Starting AI Model file export!")
+            export_ais(project_id=id_)
+        except Exception as error:
+            print("[ERROR] Something went wrong while downloading AIs and AI metadata!")
+            raise error
+
+
+def download_training_and_test_data(project_id: int):
     """
     Migrate your Project to another HOST.
 
     See https://dev.konfuzio.com/web/migration-between-konfuzio-server-instances/index.html
 
     """
-    project = Project(id_=id_, update=True)
+    prj = Project(id_=project_id, update=True)
 
-    if len(project.documents + project.test_documents) == 0:
+    if len(prj.documents + prj.test_documents) == 0:
         raise ValueError("No Documents in the training or test set. Please add them.")
 
-    # try:
-    #     for document in tqdm(project.documents + project.test_documents):
-    #         document.download_document_details()
-    #         document.get_file()
-    #         document.get_file(ocr_version=False)
-    #         document.get_bbox()
-    #         document.get_images()
-    # except Exception as error:
-    #     print("[ERROR] Something went wrong while downloading Document data!")
-    #     raise error
+    for document in tqdm(prj.documents + prj.test_documents):
+        document.download_document_details()
+        document.get_file()
+        document.get_file(ocr_version=False)
+        document.get_bbox()
+        document.get_images()
 
-    print("[SUCCESS] Downloaded all Training & Test Document data!")
-
-    try:
-        if include_ais:
-            export_ais(project)
-    except Exception as error:
-        print("[ERROR] Something went wrong while downloading AIs and AI metadata!")
-        raise error
-
-    print("[SUCCESS] Data downloading finished successfully!")
+    print("[SUCCESS] Data exporting finished successfully!")
 
 
-def export_ais(project: Project) -> None:
-    """Downloads a Projects AIs model (pkl) as well as its metadata"""
-
-
+def export_ais(project_id: int) -> None:
+    """Downloads a Projects AIs model (pkl & pts) as well as its metadata"""
+    project = Project(id_=project_id, update=True)
     project_ai_models = project.ai_models
     session = konfuzio_session()
 
-    variants = [] # Keeps track of the models variants to export. e.g.: Extraction, Categorization, Splitting
+    ai_types = []  # Keeps track of the models variants to export. e.g.: Extraction, Categorization, Splitting
     for model_type, details in project_ai_models.items():
         # We only add those variants to the List which actually have models in the Project.
         if details.get('count') > 0:
-            variants.append(model_type)
+            ai_types.append(model_type)
 
-    for ai_variant in variants:
-        folder = f'{project.project_folder}/models/{ai_variant}_ais'
+    for ai_type in ai_types:
+        variant = ai_type
+        folder = f'{project.project_folder}/models/{variant}_ais'
         models_dir = os.path.join(folder)
         if not os.path.exists(models_dir):
             os.makedirs(models_dir)
 
-        for ai_model in project_ai_models.get(ai_variant, {}).get('results', []):
-            if ai_model['status'] == 'done' and ai_model['category']:
-                ai_id = ai_model['id']
-                ai_name = ai_model['name']
+        for ai_model in project_ai_models.get(variant, {}).get('results', []):
+            ai_model_id = ai_model['id']
+            ai_name = ai_model.get('name', ai_model_id)
 
-                # Download model
-                model_url = get_ai_model_file(ai_id)
-                local_model_path = os.path.join(models_dir, f"{ai_name}.pkl")
+            # Download model
+            model_url = get_ai_model_url(ai_model_id=ai_model_id, ai_type=ai_type) + 'download'
+            local_model_path = os.path.join(models_dir, f"{ai_name}.pkl")
 
-                response = session.get(model_url)
-                if response.status_code == 200:
-                    with open(local_model_path, 'wb') as f:
-                        f.write(response.content)
+            response = session.get(model_url)
+            if response.status_code == 200:
+                with open(local_model_path, 'wb') as f:
+                    f.write(response.content)
 
-                    print(f"[SUCCESS] downloaded AI model to {ai_name}")
+                print(f"[SUCCESS] exported AI model to {ai_name}")
 
-                    # Save metadata
-                    local_metadata_path = os.path.join(models_dir, f"{ai_name}.json")
-                    with open(local_metadata_path, 'w') as f:
-                        json.dump(ai_model, f, indent=4)
+                # Save metadata
+                local_metadata_path = os.path.join(models_dir, f"{ai_name}.json")
+                with open(local_metadata_path, 'w') as f:
+                    json.dump(ai_model, f, indent=4)
 
-                    print(f"[SUCCESS] saved metadata for {ai_name}")
+                print(f"[SUCCESS] exported metadata for {ai_name}")

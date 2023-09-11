@@ -5,7 +5,7 @@ import sys
 from getpass import getpass
 
 from konfuzio_sdk.api import create_new_project
-from konfuzio_sdk.data import download_training_and_test_data
+from konfuzio_sdk.data import export_project_data
 from konfuzio_sdk.api import init_env
 
 sys.tracebacklimit = 0
@@ -43,8 +43,9 @@ def main():
     if len(sys.argv) == 1 and sys.argv[0] == 'init':
         user, password, host = credentials()
         init_env(user=user, password=password, host=host)
-    elif len(sys.argv) == 2 and sys.argv[0] == 'export_project' and sys.argv[1].isdigit():
-        download_training_and_test_data(id_=int(sys.argv[1]))
+    elif len(sys.argv) in range(2, 4) and sys.argv[0] == 'export_project' and sys.argv[1].isdigit():
+        include_ais = True if sys.argv[2] == 'include_ai' else False
+        export_project_data(id_=int(sys.argv[1]), include_ais=include_ais)
     elif len(sys.argv) == 2 and sys.argv[0] == 'create_project' and sys.argv[1]:
         create_new_project(sys.argv[1])
     else:

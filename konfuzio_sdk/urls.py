@@ -317,15 +317,4 @@ def get_ai_model_url(ai_model_id: int, ai_type: str, host: str = None) -> str:
     elif ai_type == 'filesplitting':
         return f'{host}/api/v3/splitting-ais/{ai_model_id}/'
 
-# AIs
-def get_ai_model_file(ai_id: int, host: str = None, ) -> str:
-    """
-    Generate URL to get the original version of the document.
 
-    :param document_id: ID of the Document as integer
-    :param host: Konfuzio host
-    :return: URL to get the original document
-    """
-    if host is None:
-        host = KONFUZIO_HOST
-    return f'{host}/api/v3/extraction-ais/{ai_id}/download'
