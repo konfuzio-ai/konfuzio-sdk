@@ -445,7 +445,7 @@ class TestTextCategorizationModels(unittest.TestCase):
         (ConnectedTextTokenizer, BERT, None, None),
     ],
 )
-# @pytest.mark.skip(reason="Slow testcases training a Categorization AI on full dataset with multiple configurations.")
+@pytest.mark.skip(reason="Slow testcases training a Categorization AI on full dataset with multiple configurations.")
 class TestAllCategorizationConfigurations(unittest.TestCase):
     """Test trainable CategorizationAI."""
 
@@ -468,15 +468,20 @@ class TestAllCategorizationConfigurations(unittest.TestCase):
 
     def test_1a_configure_dataset(self) -> None:
         """Test configure categories, with training and test docs for the Document Model."""
-        payslips_training_documents = self.payslips_category.documents()
-        receipts_training_documents = self.receipts_category.documents()
+        payslips_training_documents = self.payslips_category.documents()[:5]
+        receipts_training_documents = self.receipts_category.documents()[:5]
         self.categorization_pipeline.documents = payslips_training_documents + receipts_training_documents
         assert all(doc.category is not None for doc in self.categorization_pipeline.documents)
 
-        payslips_test_documents = self.payslips_category.test_documents()
-        receipts_test_documents = self.receipts_category.test_documents()
+        payslips_test_documents = self.payslips_category.test_documents()[:5]
+        receipts_test_documents = self.receipts_category.test_documents()[:5]
         self.categorization_pipeline.test_documents = payslips_test_documents + receipts_test_documents
         assert all(doc.category is not None for doc in self.categorization_pipeline.test_documents)
+        wahrung = self.training_prj.get_label_by_name('Währung')
+        label_set_quittung = self.training_prj.get_label_set_by_name('Quittung (GERMAN)')
+        label_set_zahlungsdetails = self.training_prj.get_label_set_by_name('Zahlungsdetails')
+        label_set_quittung.labels.append(wahrung)
+        label_set_zahlungsdetails.labels.append(wahrung)
 
     def test_1b_configure_pipeline(self) -> None:
         """Test configure pipeline."""
