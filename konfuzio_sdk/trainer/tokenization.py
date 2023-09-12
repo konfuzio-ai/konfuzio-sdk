@@ -223,3 +223,12 @@ class PhraseMatcherTokenizer(SpacyTokenizer):
                 spans.append(span)
 
         return spans
+
+    def tokenize(self, document: Document) -> Document:
+        """Tokenize the Document."""
+        spans = self._tokenize(document)
+
+        for span in spans:
+            _ = Span(start_offset=span.start_offset, end_offset=span.end_offset, document=document)
+
+        return document

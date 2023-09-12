@@ -998,7 +998,7 @@ class CategorizationAI(AbstractCategorizationAI):
         """
         if 'path' in kwargs:
             raise ValueError("'path' is a deprecated argument. Use 'output_dir' to specify the path to save the model.")
-        if reduce_weight:
+        if reduce_weight and self.tokenizer:
             self.reduce_model_weight()
 
         if not output_dir:
