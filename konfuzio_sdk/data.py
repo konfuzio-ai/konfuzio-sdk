@@ -3961,7 +3961,7 @@ class Project(Data):
 
     @property
     def no_status_documents(self):
-        """Return Documents with status test."""
+        """Return Documents with no status."""
         return [doc for doc in self._documents if doc.dataset_status == 0]
 
     @property
