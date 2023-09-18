@@ -11,6 +11,8 @@ from konfuzio_sdk.utils import sdk_isinstance
 
 logger = logging.getLogger(__name__)
 
+# these modules are WIP and do not have testing yet.
+
 
 class Tokenizer(AbstractTokenizer):
     """Base Tokenizer."""

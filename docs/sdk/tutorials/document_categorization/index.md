@@ -94,6 +94,26 @@ The list of available Categorization Models is implemented as an Enum containing
 
 See more details about these Categorization Models under [API Reference - Categorization AI](../../sourcecode.html#categorization-ai).
 
+#### Possible configurations
+
+The following configurations of Categorization AI are tested:
+
+| Tokenizer | Text processor    | Image processor | Image processing version |
+|-----------|-------------------|-----------------|--------------------------|
+| WhitespaceTokenizer | NBOWSelfAttention | EfficientNet | efficientnet_b0          |
+| WhitespaceTokenizer | NBOWSelfAttention | EfficientNet | efficientnet_b3          |
+| WhitespaceTokenizer | NBOW              | VGG | vgg11                    |
+| WhitespaceTokenizer | LSTM              | VGG | vgg13                    |
+| ConnectedTextTokenizer | NBOW              | VGG | vgg11                    |
+| ConnectedTextTokenizer | LSTM              | VGG | vgg13                    |
+| None | None | EfficientNet | efficientnet_b0          |
+| None | None | EfficientNet | efficientnet_b3          |
+| None | None | VGG | vgg11                    |
+| None | None | VGG | vgg13                    |
+| None | None | VGG | vgg16                    |
+| None | None | VGG | vgg19                    |
+
+
 ### Create a custom Categorization AI
 
 This section explains how to train a custom Categorization AI locally, how to save it and upload it to the Konfuzio 

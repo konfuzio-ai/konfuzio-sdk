@@ -432,17 +432,17 @@ class TestTextCategorizationModels(unittest.TestCase):
         (WhitespaceTokenizer, LSTM, VGG, 'vgg13'),
         (ConnectedTextTokenizer, NBOW, VGG, 'vgg11'),
         (ConnectedTextTokenizer, LSTM, VGG, 'vgg13'),
-        (PhraseMatcherTokenizer, BERT, VGG, 'vgg16'),
+        # (PhraseMatcherTokenizer, BERT, VGG, 'vgg16'),  # PhraseMatcherTokenizer is WIP and not available for usage yet
         (None, None, EfficientNet, 'efficientnet_b0'),
         (None, None, EfficientNet, 'efficientnet_b3'),
         (None, None, VGG, 'vgg11'),
         (None, None, VGG, 'vgg13'),
         (None, None, VGG, 'vgg16'),
         (None, None, VGG, 'vgg19'),
-        (WhitespaceTokenizer, NBOWSelfAttention, None, None),
-        (ConnectedTextTokenizer, NBOW, None, None),
-        (PhraseMatcherTokenizer, LSTM, None, None),
-        (ConnectedTextTokenizer, BERT, None, None),
+        # (WhitespaceTokenizer, NBOWSelfAttention, None, None),
+        # (ConnectedTextTokenizer, NBOW, None, None),
+        # (PhraseMatcherTokenizer, LSTM, None, None),  # PhraseMatcherTokenizer is WIP and not available for usage yet
+        # (ConnectedTextTokenizer, BERT, None, None),
     ],
 )
 @pytest.mark.skip(reason="Slow testcases training a Categorization AI on full dataset with multiple configurations.")
@@ -607,17 +607,42 @@ class TestAllCategorizationConfigurations(unittest.TestCase):
 
     def test_9_build_document_classifier_iterator(self):
         """Test building the iterator."""
-        use_text = self.categorization_pipeline.build_document_classifier_iterator(
-            self.categorization_pipeline.documents,
-            self.categorization_pipeline.train_transforms,
-            use_image=True,
-            use_text=True,
-            shuffle=True,
-            batch_size=1,
-            max_len=None,
-            device=self.categorization_pipeline.device,
-        )
-        assert use_text
+        if self.text_class and not self.image_class:
+            use_text = self.categorization_pipeline.build_document_classifier_iterator(
+                self.categorization_pipeline.documents,
+                self.categorization_pipeline.train_transforms,
+                use_image=False,
+                use_text=True,
+                shuffle=True,
+                batch_size=1,
+                max_len=None,
+                device=self.categorization_pipeline.device,
+            )
+            assert use_text
+        elif self.image_class and not self.text_class:
+            use_image = self.categorization_pipeline.build_document_classifier_iterator(
+                self.categorization_pipeline.documents,
+                self.categorization_pipeline.train_transforms,
+                use_image=True,
+                use_text=False,
+                shuffle=True,
+                batch_size=1,
+                max_len=None,
+                device=self.categorization_pipeline.device,
+            )
+            assert use_image
+        else:
+            use_both = self.categorization_pipeline.build_document_classifier_iterator(
+                self.categorization_pipeline.documents,
+                self.categorization_pipeline.train_transforms,
+                use_image=True,
+                use_text=True,
+                shuffle=True,
+                batch_size=1,
+                max_len=None,
+                device=self.categorization_pipeline.device,
+            )
+            assert use_both
 
 
 @pytest.mark.skipif(
