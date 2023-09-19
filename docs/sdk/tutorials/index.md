@@ -207,6 +207,70 @@ Boxes).
 ]
 ```
 
+When needed, upon calling `document.get_bbox()`, an additional file will be downloaded to the Document folder containing the Bounding Boxes information of the characters of the Document: **bbox.zip**. This file can be quite large, and therefore it will be compressed in the Zip format. The decompressed file is a JSON file where the keys correspond to the indices of the characters in the Document text. The value associated with each key contains the Bounding Box information of the character. For example, for character 1000 and 1002 we would have:
+   
+```
+{
+  "1000": {
+    "adv": 2.58,
+    "bottom": 128.13,
+    "doctop": 118.13,
+    "fontname": "GlyphLessFont",
+    "height": 10.0,
+    "line_number": 14,
+    "object_type": "char",
+    "page_number": 1,
+    "size": 10.0,
+    "text": "n",
+    "top": 118.13,
+    "upright": 1,
+    "width": 2.58,
+    "x0": 481.74,
+    "x1": 484.32,
+    "y0": 713.55,
+    "y1": 723.55
+  },
+  "1002": {
+    "adv": 2.64,
+    "bottom": 128.13,
+    "doctop": 118.13,
+    "fontname": "GlyphLessFont",
+    "height": 10.0,
+    "line_number": 14,
+    "object_type": "char",
+    "page_number": 1,
+    "size": 10.0,
+    "text": "S",
+    "top": 118.13,
+    "upright": 1,
+    "width": 2.64,
+    "x0": 486.72,
+    "x1": 489.36,
+    "y0": 713.55,
+    "y1": 723.55
+  },
+// ...
+}
+```
+
+After downloading these files, their paths will become available in the Project instance.
+
+You can get the path to the folder containing the Documents' folders with:
+
+.. literalinclude:: /sdk/boilerplates/test_get_started.py
+   :language: python
+   :start-after: start folder
+   :end-before: end folder
+   :dedent: 4
+
+And you can get the path to the file with the Document text with:
+
+.. literalinclude:: /sdk/boilerplates/test_get_started.py
+   :language: python
+   :start-after: start document text path
+   :end-before: end document text path
+   :dedent: 4
+
 .. _upload-document:
 
 #### Upload Document
@@ -354,15 +418,13 @@ To get the Bounding Boxes information of the characters, you can use `get_bbox()
    :end-before: end get bbox
    :dedent: 4
 
-You will get a file named "bbox.json5".
-
-After downloading these files, the paths to them will also become available in the Project instance.
-For example, you can get the path to the file with the Document text with:
+You will get a file named "bbox.zip" in the Document folder. This file contains the "bbox.json5" file. You can find the
+path to the zip file in the Document instance with:
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :start-after: start folder
-   :end-before: end folder
+   :start-after: start document bbox path
+   :end-before: end document bbox path
    :dedent: 4
 
 #### Delete Document

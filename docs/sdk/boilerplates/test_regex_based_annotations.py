@@ -12,7 +12,6 @@ def test_regex_based_annotations():
 
     my_project = Project(id_=YOUR_PROJECT_ID)
     # end imports
-    my_project = Project(id_=YOUR_PROJECT_ID, strict_data_validation=False)
     # start regex based
     # Word/expression to annotate in the Document
     # should match an existing one in your Document

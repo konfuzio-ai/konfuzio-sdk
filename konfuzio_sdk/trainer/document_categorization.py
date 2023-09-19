@@ -1043,14 +1043,13 @@ class CategorizationAI(AbstractCategorizationAI):
 
     def build_preprocessing_pipeline(self, use_image: bool, image_augmentation=None, image_preprocessing=None) -> None:
         """Set up the pre-processing and data augmentation when necessary."""
-        if image_augmentation is None:
-            image_augmentation = {'rotate': 5}
-        if image_preprocessing is None:
-            image_preprocessing = {'target_size': (1000, 1000), 'grayscale': True}
-
         # if we are using an image model in our classifier then we need to set up the
         # pre-processing and data augmentation for the images
         if use_image:
+            if image_augmentation is None:
+                image_augmentation = {'rotate': 5}
+            if image_preprocessing is None:
+                image_preprocessing = {'target_size': (1000, 1000), 'grayscale': True}
             self.image_preprocessing = image_preprocessing
             self.image_augmentation = image_augmentation
             # get preprocessing
@@ -1594,7 +1593,7 @@ def build_categorization_ai_pipeline(
     if text_model is not None:
         if isinstance(text_model, str):
             try:
-                text_model = next(model for model in TextModel if model.value == text_model)
+                text_model = next(model for model in TextModel if model.value in text_model)
             except StopIteration:
                 raise ValueError(f'{text_model} not found. Provide an existing name for the image model.')
         text_model_class_mapping = {

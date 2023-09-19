@@ -278,7 +278,7 @@ class TestCompare(unittest.TestCase):
         """
         project = Project(id_=None)
         category = Category(project=project)
-        label_set = LabelSet(id_=33, project=project, categories=[category])
+        label_set = LabelSet(id_=33, project=project, categories=[category], has_multiple_annotation_sets=True)
         label = Label(id_=22, project=project, label_sets=[label_set], threshold=0.5)
         # create a Document A
         document_a = Document(project=project, category=category)
@@ -335,7 +335,7 @@ class TestCompare(unittest.TestCase):
         """Test if we detect a partially overlapping Span in an Annotation of a missing Annotation Set."""
         project = Project(id_=None)
         category = Category(project=project)
-        label_set = LabelSet(id_=33, project=project, categories=[category])
+        label_set = LabelSet(id_=33, project=project, categories=[category], has_multiple_annotation_sets=True)
         label = Label(id_=22, project=project, label_sets=[label_set], threshold=0.5)
         # create a Document A
         document_a = Document(project=project, category=category)
@@ -704,7 +704,7 @@ class TestCompare(unittest.TestCase):
         """
         project = Project(id_=None)
         category = Category(project=project)
-        label_set = LabelSet(id_=33, project=project, categories=[category])
+        label_set = LabelSet(id_=33, project=project, categories=[category], has_multiple_annotation_sets=True)
         label = Label(id_=22, project=project, label_sets=[label_set], threshold=0.5)
         # create a Document A
         document_a = Document(project=project, category=category)
@@ -784,7 +784,7 @@ class TestCompare(unittest.TestCase):
         """
         project = Project(id_=None)
         category = Category(project=project)
-        label_set = LabelSet(id_=33, project=project, categories=[category])
+        label_set = LabelSet(id_=33, project=project, categories=[category], has_multiple_annotation_sets=True)
         label = Label(id_=22, project=project, label_sets=[label_set], threshold=0.5)
         # create a Document A
         document_a = Document(project=project, category=category)
@@ -854,7 +854,7 @@ class TestCompare(unittest.TestCase):
         """Test to evaluate two Annotations where each one belongs to a different Annotation Set."""
         project = Project(id_=None)
         category = Category(project=project)
-        label_set = LabelSet(id_=33, project=project, categories=[category])
+        label_set = LabelSet(id_=33, project=project, categories=[category], has_multiple_annotation_sets=True)
         label = Label(id_=22, project=project, label_sets=[label_set], threshold=0.5)
         # create a Document A
         document_a = Document(project=project, text='ab\n', category=category)

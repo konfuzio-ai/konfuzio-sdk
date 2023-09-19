@@ -23,7 +23,13 @@ class LocalTextProject(Project):
 
         category_4 = Category(project=self, id_=4, name="FileSplittingCategory 2")
 
-        label_set = LabelSet(id_=3, project=self, name="LabelSetName", categories=[category, category_2])
+        label_set = LabelSet(
+            id_=3,
+            project=self,
+            name="LabelSetName",
+            categories=[category, category_2],
+            has_multiple_annotation_sets=True,
+        )
         label = Label(id_=4, text='LabelName', project=self, label_sets=[label_set])
         label_new = Label(id_=5, text='LabelName 2', project=self, label_sets=[label_set])
 
@@ -44,7 +50,6 @@ class LocalTextProject(Project):
             confidence=1.0,
             annotation_set=default_annotation_set,
             label=default_label,
-            label_set=default_label_set,
             spans=[Span(start_offset=0, end_offset=2)],
         )
 
@@ -56,7 +61,6 @@ class LocalTextProject(Project):
             confidence=1.0,
             annotation_set=annotation_set,
             label=label,
-            label_set=label_set,
             spans=[Span(start_offset=3, end_offset=5)],
         )
         _ = Annotation(
@@ -66,7 +70,6 @@ class LocalTextProject(Project):
             confidence=1.0,
             annotation_set=annotation_set,
             label=label_new,
-            label_set=label_set,
             spans=[Span(start_offset=7, end_offset=10)],
         )
 
@@ -81,7 +84,6 @@ class LocalTextProject(Project):
             confidence=1.0,
             annotation_set=default_annotation_set_test_a,
             label=default_label,
-            label_set=default_label_set,
             spans=[Span(start_offset=0, end_offset=3)],
         )
 
@@ -92,7 +94,6 @@ class LocalTextProject(Project):
             is_correct=True,
             annotation_set=annotation_set_test_a,
             label=label,
-            label_set=label_set,
             spans=[Span(start_offset=7, end_offset=10)],
         )
         _ = Annotation(
@@ -101,7 +102,6 @@ class LocalTextProject(Project):
             is_correct=True,
             annotation_set=annotation_set_test_a,
             label=label_new,
-            label_set=label_set,
             spans=[Span(start_offset=11, end_offset=14)],
         )
 
@@ -114,7 +114,6 @@ class LocalTextProject(Project):
             confidence=1.0,
             annotation_set=default_annotation_set_test_b,
             label=default_label,
-            label_set=default_label_set,
             spans=[Span(start_offset=0, end_offset=2)],
         )
 
@@ -125,7 +124,6 @@ class LocalTextProject(Project):
             is_correct=True,
             annotation_set=annotation_set_test_b,
             label=label,
-            label_set=label_set,
             spans=[Span(start_offset=3, end_offset=6)],
         )
 
@@ -139,7 +137,6 @@ class LocalTextProject(Project):
             confidence=1.0,
             annotation_set=default_annotation_set_2,
             label=default_label_2,
-            label_set=default_label_set_2,
             spans=[Span(start_offset=7, end_offset=8)],
         )
 
@@ -150,7 +147,6 @@ class LocalTextProject(Project):
             is_correct=True,
             annotation_set=annotation_set_2,
             label=label,
-            label_set=label_set,
             spans=[Span(start_offset=0, end_offset=7)],
         )
 
@@ -163,7 +159,6 @@ class LocalTextProject(Project):
             confidence=1.0,
             annotation_set=default_annotation_set_test_2,
             label=default_label_2,
-            label_set=default_label_set_2,
             spans=[Span(start_offset=7, end_offset=8)],
         )
 
@@ -174,7 +169,6 @@ class LocalTextProject(Project):
             is_correct=True,
             annotation_set=annotation_set_test_2,
             label=label,
-            label_set=label_set,
             spans=[Span(start_offset=0, end_offset=7)],
         )
 
@@ -207,7 +201,6 @@ class LocalTextProject(Project):
             annotation_set=view_annotation_set_test,
             confidence=0.92,
             label=view_label_3,
-            label_set=label_set_2,
             spans=[Span(start_offset=0, end_offset=5)],
         )
 
@@ -217,7 +210,6 @@ class LocalTextProject(Project):
             is_correct=True,
             annotation_set=view_annotation_set_test,
             label=view_label,
-            label_set=label_set_2,
             spans=[Span(start_offset=0, end_offset=5)],
         )
         _ = Annotation(
@@ -227,7 +219,6 @@ class LocalTextProject(Project):
             annotation_set=view_annotation_set_test,
             confidence=0.3,
             label=view_label_date,
-            label_set=label_set_2,
             spans=[Span(start_offset=12, end_offset=22)],
         )
         _ = Annotation(
@@ -237,7 +228,6 @@ class LocalTextProject(Project):
             annotation_set=view_annotation_set_test,
             confidence=0.4,
             label=view_label_date,
-            label_set=label_set_2,
             spans=[Span(start_offset=38, end_offset=48)],
         )
         _ = Annotation(
@@ -247,7 +237,6 @@ class LocalTextProject(Project):
             annotation_set=view_annotation_set_test,
             confidence=0.9,
             label=view_label_3,
-            label_set=label_set_2,
             spans=[Span(start_offset=25, end_offset=30), Span(start_offset=51, end_offset=56)],
         )
         _ = Annotation(
@@ -257,7 +246,6 @@ class LocalTextProject(Project):
             annotation_set=view_annotation_set_test,
             confidence=0.6,
             label=view_label_3,
-            label_set=label_set_2,
             spans=[Span(start_offset=25, end_offset=30)],
         )
         _ = Annotation(
@@ -267,7 +255,6 @@ class LocalTextProject(Project):
             annotation_set=view_annotation_set_test,
             confidence=0.05,
             label=view_label_4,
-            label_set=label_set,
             spans=[Span(start_offset=57, end_offset=66)],
         )
         _ = Annotation(
@@ -278,7 +265,6 @@ class LocalTextProject(Project):
             annotation_set=view_annotation_set_test,
             confidence=1,
             label=view_label_4,
-            label_set=label_set,
             spans=[Span(start_offset=37, end_offset=49)],
         )
         _ = Annotation(
@@ -288,7 +274,6 @@ class LocalTextProject(Project):
             annotation_set=view_annotation_set_test,
             confidence=0.9,
             label=view_label_5,
-            label_set=label_set,
             spans=[Span(start_offset=67, end_offset=73)],
         )
         _ = Annotation(
@@ -298,7 +283,6 @@ class LocalTextProject(Project):
             annotation_set=view_annotation_set_test,
             confidence=0.99,
             label=view_label_5,
-            label_set=label_set,
             spans=[Span(start_offset=68, end_offset=72)],
         )
 
@@ -307,7 +291,6 @@ class LocalTextProject(Project):
             document=document,
             is_correct=False,
             label=self.no_label,
-            label_set=self.no_label_set,
             spans=[Span(start_offset=67, end_offset=71)],
         )
 
@@ -358,7 +341,7 @@ class LocalTextProject(Project):
             document=vert_document,
             is_correct=False,
             label=default_label,
-            label_set=self.no_label_set,
+            label_set=default_label_set,
             spans=[span1],
             confidence=0.4,
         )
@@ -366,7 +349,7 @@ class LocalTextProject(Project):
             document=vert_document,
             is_correct=False,
             label=default_label,
-            label_set=self.no_label_set,
+            label_set=default_label_set,
             spans=[span2],
             confidence=0.2,
         )
@@ -374,7 +357,7 @@ class LocalTextProject(Project):
             document=vert_document,
             is_correct=False,
             label=default_label,
-            label_set=self.no_label_set,
+            label_set=default_label_set,
             spans=[span3],
             confidence=0.6,
         )
@@ -382,7 +365,7 @@ class LocalTextProject(Project):
             document=vert_document,
             is_correct=False,
             label=default_label,
-            label_set=self.no_label_set,
+            label_set=default_label_set,
             spans=[span4],
             confidence=0.8,
         )
@@ -431,7 +414,7 @@ a2  s4
 
         vert_document_2.set_bboxes(document_bbox_2)
 
-        vert_label_set = LabelSet(id_=24, project=self, categories=[category])
+        vert_label_set = LabelSet(id_=24, project=self, categories=[category], has_multiple_annotation_sets=True)
         vert_label = Label(id_=20, text='VertLabelName', project=self, label_sets=[vert_label_set])
         vert_label_2 = Label(id_=21, text='VertLabelName 2', project=self, label_sets=[vert_label_set])
 

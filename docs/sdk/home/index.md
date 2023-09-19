@@ -112,17 +112,32 @@ To access Span's text, you can call `span.offset_string`. We are going to use it
 .. _annotation-concept:
 
 ### Annotation 
-[Annotation](sourcecode.html#annotation) is a combination of Spans that has a certain Label  (i.e. Issue_Date, Auszahlungsbetrag) assigned to it. They typically denote a certain type of entity that is found in the text. Annotations can be predicted by AI or human-added. 
+[Annotation](sourcecode.html#annotation) is a combination of Spans that has a certain Label (i.e. Issue_Date, Auszahlungsbetrag) 
+assigned to it. They typically denote a certain type of entity that is found in the text. Annotations can be predicted 
+by AI or be human-added.
 
-Like Spans, Annotations also have `start_offset` and `end_offset` denoting the starting and the ending characters. To access the text under the Annotation, call `annotation.offset_string`.
+Annotations always have to belong to an Annotation Set with a Label Set compatible with the Annotation's Label.
+
+Like Spans, Annotations also have `start_offset` and `end_offset` denoting the starting and the ending characters. To 
+access the text under the Annotation, call `annotation.offset_string`.
 
 To see the Annotation in the Smartview, you can call `annotation.get_link()` and open the returned URL. 
 
 .. _annotation-set-concept:
 
 ### Annotation Set
-[Annotation Set](sourcecode.html#annotation-set) is a group of Annotations united by Labels 
-belonging to the same Label Set. To see Annotations in the set, call `annotation_set.annotations()`.
+[Annotation Set](sourcecode.html#annotation-set) is a group of Annotations united by Labels belonging to the same Label Set. 
+To retrieve all that Annotation Sets of a Document call `document.annotation_sets()`. To see Annotations in the set, 
+call `annotation_set.annotations()`.
+
+Every Document has one unique default Annotation Set, which can be retrieved with `document.default_annotation_set`. This 
+Annotation Set's Label Set is the Document's Category default Label Set and has the same name and ID as the Category. It
+can be used to store all Annotations that don't need to be organized into a separate Annotation Set. 
+
+To check what Annotation Labels can be added to an Annotation Set, you can check with `annotation_set.label_set.labels`.
+
+Documents also have a unique Annotation Set for NO LABEL Annotations, which can be retrieved with `document.no_label_annotation_set`.
+
 
 .. _label-concept:
 
@@ -134,11 +149,28 @@ call `label.annotations()` .
 .. _label-set-concept:
 
 ### Label Set
-[Label Set](sourcecode.html#label-set) is a group of Labels united. A Label Set can belong 
-to different Categories and multiple Annotation Sets.
+[Label Set](sourcecode.html#label-set) is a group of related Labels. A Label Set can belong to different Categories and 
+be used to create one or more [Annotation Sets](#annotation-set-concept), depending on the Label Set.
+
+Every Category has a default Label Set, which can be retrieved with `category.default_label_set`. This Label Set is used 
+to create the default Annotation Set for each Document in the Category.
+
+Label Sets have an attribute, `label_set.has_multiple_annotation_sets`, which determines whether more than one Annotation Set
+can be created per Document. If `has_multiple_annotation_sets` is `False`, then only a single Annotation Set with the 
+Label Set can be created per Document.
 
 .. _bbox-concept:
 
 ### Bbox
-[Bbox](sourcecode.html#bbox) is an area of the Page denoted by four rectangle-like 
-coordinates. You can access Bboxes of the Document by calling `document.bboxes`.
+[Bbox](sourcecode.html#bbox) is used to represent an area of a Page, defined by the coordinates of the bottom left corner
+and the top right corner of the bounding box. Check out our [coordinate system explainer](#coordinates-system) for more
+details.
+
+You can access all character Bboxes of the Document by using `document.bboxes`. A Bbox can also be associated with a single Span, or with all Spans within an Annotation. To obtain the Bbox associate with a single Span, call `span.bbox()`. To obtain the Bbox wrapping all Spans in an Annotation, call `annotation.bbox()`. This should not be
+confused with `Annotation.selection_bbox`, which is an attribute storing the Bbox a user has selected in the Smartview when creating the Annotation.
+
+The following image shows a bounding box with red border, which is retrieved with `Annotation.selection_bbox` , and a bounding box highlighted in green, which is retrieved with `Annotation.bbox()`:
+
+.. image:: /_static/img/bbox_selection_bbox.png
+   :width: 150px
+   :align: center
