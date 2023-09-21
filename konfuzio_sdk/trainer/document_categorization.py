@@ -1668,7 +1668,7 @@ document_components = [
     'classifier',
     'eval_transforms',
     'train_transforms',
-    'categories'
+    'categories_mapping'
 ]
 
 document_components.extend(COMMON_PARAMETERS)
