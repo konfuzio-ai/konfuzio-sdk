@@ -943,6 +943,7 @@ class CategorizationAI(AbstractCategorizationAI):
         self.pipeline_path = None
         self.documents = None
         self.test_documents = None
+        self.categories_mapping = None
 
         self.tokenizer = None
         self.text_vocab = None
@@ -1023,7 +1024,7 @@ class CategorizationAI(AbstractCategorizationAI):
             "classifier": self.classifier,
             "eval_transforms": self.eval_transforms,
             "train_transforms": self.train_transforms,
-            "categories": self._generate_category_mapping(),
+            "categories_mapping": self._generate_category_mapping(),
             "model_type": "CategorizationAI",
         }
 
@@ -1702,6 +1703,7 @@ def _load_categorization_model(path: str):
         image_preprocessing=loaded_data['image_preprocessing'],
         image_augmentation=loaded_data['image_augmentation'],
     )
+    model.categories_mapping = loaded_data['categories_mapping']
     model.tokenizer = loaded_data['tokenizer']
     model.text_vocab = loaded_data['text_vocab']
     model.category_vocab = loaded_data['category_vocab']
