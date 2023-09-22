@@ -59,9 +59,10 @@ class ParagraphTokenizer(AbstractTokenizer):
         t0 = time.monotonic()
 
         if not document.bboxes_available:
-            raise ValueError(
-                f"Cannot tokenize Document {document} with tokenizer {self}: Missing Character Bbox information."
+            logger.warning(
+                f"Cannot tokenize Document {document} with tokenizer {self}: Missing Character Bbox " f"information."
             )
+            return document
 
         if self.mode == 'detectron':
             self._detectron_tokenize(document=document)
@@ -223,9 +224,10 @@ class SentenceTokenizer(AbstractTokenizer):
         t0 = time.monotonic()
 
         if not document.bboxes_available:
-            raise ValueError(
-                f"Cannot tokenize Document {document} with tokenizer {self}: Missing Character Bbox information."
+            logger.warning(
+                f"Cannot tokenize Document {document} with tokenizer {self}: Missing Character Bbox " f"information."
             )
+            return document
 
         if self.mode == 'detectron':
             self._detectron_tokenize(document=document)
