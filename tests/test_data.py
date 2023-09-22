@@ -832,7 +832,7 @@ class TestOfflineDataSetup(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
-        assert len(cls.project.virtual_documents) == 63
+        assert len(cls.project.virtual_documents) == 64
 
     def test_document_only_needs_project(self):
         """Test that a Document can be created without Category."""
@@ -967,6 +967,35 @@ class TestOfflineDataSetup(unittest.TestCase):
         document = Document(project=self.project, text="hello")
         assert document.category == document.project.no_category
         assert document.pages() == []
+
+    def test_categorize_when_pages_have_same_category_or_no_category(self):
+        """Test categorizing a Document where some Pages are of the same Category and others are blank."""
+        document = Document(project=self.project, text="hello")
+        for i in range(3):
+            page = Page(
+                id_=None,
+                document=document,
+                start_offset=0,
+                end_offset=0,
+                number=i + 1,
+                original_size=(0, 0),
+            )
+            page_category = [
+                self.category,
+                self.project.no_category,
+                self.category,
+            ][i]
+            page.set_category(page_category)
+            if page_category != self.project.no_category:
+                assert page.maximum_confidence_category_annotation.category == page_category
+                assert page.maximum_confidence_category_annotation.confidence == 1.0
+                assert len(page.category_annotations) == 1
+            else:
+                assert page.category is self.project.no_category
+                assert page.maximum_confidence_category_annotation is None
+                assert len(page.category_annotations) == 0
+            assert len(document.category_annotations) == 2
+            assert document.category == self.category
 
     def test_span_negative_offset(self):
         """Negative Span creation should not be possible."""
