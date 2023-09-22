@@ -1042,7 +1042,6 @@ class CategorizationAI(AbstractCategorizationAI):
         os.remove(temp_pt_file_path)
         return self.pipeline_path
 
-
     def build_preprocessing_pipeline(self, use_image: bool, image_augmentation=None, image_preprocessing=None) -> None:
         """Set up the pre-processing and data augmentation when necessary."""
         # if we are using an image model in our classifier then we need to set up the
@@ -1507,7 +1506,6 @@ class CategorizationAI(AbstractCategorizationAI):
                 _ = CategoryAnnotation(category=category, confidence=predicted_confidence, page=page)
                 break
         return page
-
 
 
 class ImageModel(Enum):
