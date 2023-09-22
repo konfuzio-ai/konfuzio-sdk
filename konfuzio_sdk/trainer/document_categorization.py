@@ -1676,17 +1676,20 @@ def _load_categorization_model(path: str):
     model_class = CategorizationAI
     model_args = MODEL_PARAMETERS_TO_SAVE[model_type]
 
+    # Non-backwards compatible components to skip on the verification for loaded data.
+    optional_components = ['categories',]
+
     # Verify if loaded data has all necessary components
-    if not all([arg in model_args for arg in loaded_data.keys()]):
-        raise TypeError(f"Incomplete model parameters. Expected: {model_args}, Received: {list(loaded_data.keys())}")
+    missing_components = [arg for arg in model_args if arg not in loaded_data.keys() and arg not in optional_components]
+    if missing_components:
+        raise TypeError(f"Incomplete model parameters. Missing: {missing_components}")
 
     # create instance of the model class
     model = model_class(
-        categories=None,
+        categories=loaded_data.get('categories', None),
         image_preprocessing=loaded_data['image_preprocessing'],
         image_augmentation=loaded_data['image_augmentation'],
     )
-    model.categories = loaded_data['categories']
     model.tokenizer = loaded_data['tokenizer']
     model.text_vocab = loaded_data['text_vocab']
     model.category_vocab = loaded_data['category_vocab']
