@@ -4382,17 +4382,32 @@ def export_ais(project_id: int) -> None:
             os.makedirs(models_dir)
 
         for ai_model in project_ai_models.get(variant, {}).get('results', []):
+            if not ai_model['status'] == 'done':
+                # Only export fully trained AIs
+                continue
             ai_model_id = ai_model['id']
-            ai_name = ai_model.get('name', ai_model_id)
+            ai_model_version = ai_model['version']
 
             # Download model
             model_url = get_ai_model_url(ai_model_id=ai_model_id, ai_type=ai_type) + 'download'
-            local_model_path = os.path.join(models_dir, f"{ai_name}.pkl")
 
             response = session.get(model_url)
             if response.status_code == 200:
+                alternative_name = f'{variant}_ai_{ai_model_id}_version_{ai_model_version}'
+                content_disposition = response.headers.get('Content-Disposition', alternative_name)
+                if 'filename=' in content_disposition:
+                    # Split the string by 'filename=' and get the second part
+                    file_name = content_disposition.split('filename=')[1].strip()
+
+                    # Remove double quotes from the beginning and end if present
+                    file_name = file_name.strip('"')
+                else:
+                    file_name = alternative_name
+
+                local_model_path = os.path.join(models_dir, file_name)
+
                 with open(local_model_path, 'wb') as f:
                     f.write(response.content)
 
-                print(f"[SUCCESS] exported AI model to {ai_name}")
+                print(f"[SUCCESS] exported AI model to {file_name}")
 
