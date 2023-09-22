@@ -4363,7 +4363,7 @@ def download_training_and_test_data(project_id: int):
 
 
 def export_ais(project_id: int) -> None:
-    """Downloads a Projects AIs model (pkl & pts) as well as its metadata"""
+    """Downloads a Projects AIs model (pkl & pts)"""
     project = Project(id_=project_id, update=True)
     project_ai_models = project.ai_models
     session = konfuzio_session()
@@ -4396,9 +4396,3 @@ def export_ais(project_id: int) -> None:
 
                 print(f"[SUCCESS] exported AI model to {ai_name}")
 
-                # Save metadata
-                local_metadata_path = os.path.join(models_dir, f"{ai_name}.json")
-                with open(local_metadata_path, 'w') as f:
-                    json.dump(ai_model, f, indent=4)
-
-                print(f"[SUCCESS] exported metadata for {ai_name}")
