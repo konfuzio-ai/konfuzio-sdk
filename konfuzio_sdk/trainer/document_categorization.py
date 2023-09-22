@@ -943,7 +943,6 @@ class CategorizationAI(AbstractCategorizationAI):
         self.pipeline_path = None
         self.documents = None
         self.test_documents = None
-        self.categories_mapping = None
 
         self.tokenizer = None
         self.text_vocab = None
@@ -1024,7 +1023,7 @@ class CategorizationAI(AbstractCategorizationAI):
             "classifier": self.classifier,
             "eval_transforms": self.eval_transforms,
             "train_transforms": self.train_transforms,
-            "categories_mapping": self._generate_category_mapping(),
+            "categories": self.categories,
             "model_type": "CategorizationAI",
         }
 
@@ -1043,23 +1042,6 @@ class CategorizationAI(AbstractCategorizationAI):
         os.remove(temp_pt_file_path)
         return self.pipeline_path
 
-    def _generate_category_mapping(self) -> Dict:
-        """
-        Generate a mapping between category fallback names, IDs, and their corresponding labels and label IDs.
-        
-        Returns:
-            dict: A dictionary representation of the mapping.
-        """
-        categories = {}
-        
-        for category in self.categories:
-            name = category.name
-            category_id = category.id_
-            labels = {label.id_: label.name for label in category.labels}
-        
-            categories[category_id] = {name: {"labels": labels}}
-        
-        return categories
 
     def build_preprocessing_pipeline(self, use_image: bool, image_augmentation=None, image_preprocessing=None) -> None:
         """Set up the pre-processing and data augmentation when necessary."""
@@ -1527,6 +1509,7 @@ class CategorizationAI(AbstractCategorizationAI):
         return page
 
 
+
 class ImageModel(Enum):
     """
     We currently have two image modules available (VGG and EfficientNet), each have several variants.
@@ -1668,7 +1651,7 @@ document_components = [
     'classifier',
     'eval_transforms',
     'train_transforms',
-    'categories_mapping'
+    'categories'
 ]
 
 document_components.extend(COMMON_PARAMETERS)
@@ -1703,7 +1686,7 @@ def _load_categorization_model(path: str):
         image_preprocessing=loaded_data['image_preprocessing'],
         image_augmentation=loaded_data['image_augmentation'],
     )
-    model.categories_mapping = loaded_data['categories_mapping']
+    model.categories = loaded_data['categories']
     model.tokenizer = loaded_data['tokenizer']
     model.text_vocab = loaded_data['text_vocab']
     model.category_vocab = loaded_data['category_vocab']
