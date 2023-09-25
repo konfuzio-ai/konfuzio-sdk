@@ -9,6 +9,10 @@ can be done manually, or automatically using a Categorization AI. Categorization
 You can initialize a Document with a :ref:`Category<category-concept>`. You can also use `Document.set_category` to set 
 a Document's Category after it has been initialized. This will count as if a human manually revised it.
 
+Note: a Document's Category can be changed via `set_category` only if the original Category has 
+been set to `no_category`. Otherwise, an attempt to change a Category will cause an error.
+
+
 .. literalinclude:: /sdk/boilerplates/test_document_categorization.py
    :language: python
    :start-after: start init
