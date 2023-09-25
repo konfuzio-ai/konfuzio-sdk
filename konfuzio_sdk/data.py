@@ -2879,7 +2879,9 @@ class Document(Data):
         """
         if not self.pages():
             return self._category
-        all_pages_have_same_category = len(set([page.category for page in self.pages()]) - {None}) == 1
+        all_pages_have_same_category = (
+            len(set([page.category for page in self.pages()]) - {self.project.no_category}) == 1
+        )
         if all_pages_have_same_category:
             self._category = self.pages()[0].category
         else:
