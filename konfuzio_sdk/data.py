@@ -4352,12 +4352,12 @@ def download_training_and_test_data(project_id: int):
     if len(prj.documents + prj.test_documents) == 0:
         raise ValueError("No Documents in the training or test set. Please add them.")
 
-    for document in tqdm(prj.documents + prj.test_documents):
-        document.download_document_details()
-        document.get_file()
-        document.get_file(ocr_version=False)
-        document.get_bbox()
-        document.get_images()
+    # for document in tqdm(prj.documents + prj.test_documents):
+    #     document.download_document_details()
+    #     document.get_file()
+    #     document.get_file(ocr_version=False)
+    #     document.get_bbox()
+    #     document.get_images()
 
     print("[SUCCESS] Data exporting finished successfully!")
 
@@ -4382,8 +4382,8 @@ def export_ais(project_id: int) -> None:
             os.makedirs(models_dir)
 
         for ai_model in project_ai_models.get(variant, {}).get('results', []):
-            if not ai_model['status'] == 'done':
-                # Only export fully trained AIs
+            # Only export fully trained AIs which are set as active
+            if not ai_model.get('status') == 'done' or not ai_model.get('active'):
                 continue
             ai_model_id = ai_model['id']
             ai_model_version = ai_model['version']
