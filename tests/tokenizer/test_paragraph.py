@@ -169,3 +169,15 @@ class TestLineDistanceParagraphTokenizer(unittest.TestCase):
         assert len(pages[1].annotations(use_correct=False)) == 12
         assert len(pages[2].annotations(use_correct=False)) == len(virtual_doc_pages[2].annotations(use_correct=False))
         assert len(pages[2].annotations(use_correct=False)) == 9
+
+
+def test_no_bbox_document(caplog):
+    """Test processing a Document with no Bboxes."""
+    project = Project(id_=458)
+    tokenizer = ParagraphTokenizer(mode='detectron')
+    document = project.get_document_by_id(601418)
+    virtual_doc = deepcopy(document)
+    virtual_doc.bboxes_available = False
+    with caplog.at_level(logging.WARNING):
+        tokenizer.tokenize(virtual_doc)
+    assert 'Cannot tokenize Document' in caplog.text
