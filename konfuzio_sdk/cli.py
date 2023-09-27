@@ -53,7 +53,9 @@ def main():
         and sys.argv[0] == "export_project"
         and sys.argv[1].isdigit()
     ):
-        include_ais = True if sys.argv[2] == "include_ai" else False
+        include_ais = False
+        if len(sys.argv) == 3:
+            include_ais = True if sys.argv[2] == "include_ai" else False
         export_project_data(id_=int(sys.argv[1]), include_ais=include_ais)
     elif len(sys.argv) == 2 and sys.argv[0] == "create_project" and sys.argv[1]:
         create_new_project(sys.argv[1])
