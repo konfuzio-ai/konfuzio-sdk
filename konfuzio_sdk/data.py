@@ -4352,12 +4352,12 @@ def download_training_and_test_data(project_id: int):
     if len(prj.documents + prj.test_documents) == 0:
         raise ValueError("No Documents in the training or test set. Please add them.")
 
-    # for document in tqdm(prj.documents + prj.test_documents):
-    #     document.download_document_details()
-    #     document.get_file()
-    #     document.get_file(ocr_version=False)
-    #     document.get_bbox()
-    #     document.get_images()
+    for document in tqdm(prj.documents + prj.test_documents):
+        document.download_document_details()
+        document.get_file()
+        document.get_file(ocr_version=False)
+        document.get_bbox()
+        document.get_images()
 
     print("[SUCCESS] Data exporting finished successfully!")
 
