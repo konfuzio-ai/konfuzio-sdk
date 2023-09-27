@@ -31,7 +31,8 @@ from konfuzio_sdk.api import (
     delete_document_annotation,
     delete_file_konfuzio_api,
     upload_file_konfuzio_api,
-    get_results_from_segmentation, get_all_project_ais,
+    get_results_from_segmentation,
+    get_all_project_ais,
 )
 from konfuzio_sdk.normalize import normalize
 from konfuzio_sdk.regex import get_best_regex, regex_matches, suggest_regex_for_string, merge_regex
@@ -3932,8 +3933,8 @@ class Project(Data):
 
     @property
     def ai_models(self):
-        """Return alll AIs."""
-        return get_all_project_ais(project_id=self.id_)
+        """Return all AIs."""
+        return get_all_project_ais(project_id=self.id_, session=self.session)
 
     @property
     def documents(self):
@@ -4326,35 +4327,34 @@ class Project(Data):
 
 def export_project_data(id_: int, include_ais=False, training_and_test_documents=True):
     """Export the Project data including Training, Test Documents and AI models based on the provided project ID."""
+    project = Project(id_=id_, update=True)
     if training_and_test_documents:
         try:
             print("[INFO] Starting Training and Test Document export!")
-            download_training_and_test_data(project_id=id_)
+            download_training_and_test_data(project=project)
         except Exception as error:
             print("[ERROR] Something went wrong while downloading Document data!")
             raise error
     if include_ais:
         try:
             print("[INFO] Starting AI Model file export!")
-            export_ais(project_id=id_)
+            export_ais(project)
         except Exception as error:
             print("[ERROR] Something went wrong while downloading AIs and AI metadata!")
             raise error
 
 
-def download_training_and_test_data(project_id: int):
+def download_training_and_test_data(project: Project):
     """
     Migrate your Project to another HOST.
 
     See https://dev.konfuzio.com/web/migration-between-konfuzio-server-instances/index.html
 
     """
-    prj = Project(id_=project_id, update=True)
-
-    if len(prj.documents + prj.test_documents) == 0:
+    if len(project.documents + project.test_documents) == 0:
         raise ValueError("No Documents in the training or test set. Please add them.")
 
-    for document in tqdm(prj.documents + prj.test_documents):
+    for document in tqdm(project.documents + project.test_documents):
         document.download_document_details()
         document.get_file()
         document.get_file(ocr_version=False)
@@ -4364,13 +4364,10 @@ def download_training_and_test_data(project_id: int):
     print("[SUCCESS] Data exporting finished successfully!")
 
 
-def export_ais(project_id: int) -> None:
+def export_ais(project: Project) -> None:
     """Download a Projects AIs model (pkl & pts)."""
-    project = Project(id_=project_id, update=True)
-    project_ai_models = project.ai_models
-    session = konfuzio_session()
-
     ai_types = []  # Keeps track of the models variants to export. e.g.: Extraction, Categorization, Splitting
+    project_ai_models = project.ai_models
     for model_type, details in project_ai_models.items():
         # We only add those variants to the List which actually have models in the Project.
         if details.get('count') > 0:
@@ -4391,9 +4388,9 @@ def export_ais(project_id: int) -> None:
             ai_model_version = ai_model['version']
 
             # Download model
-            model_url = get_ai_model_url(ai_model_id=ai_model_id, ai_type=ai_type) + 'download'
+            model_url = get_ai_model_url(ai_model_id=ai_model_id, ai_type=ai_type, host=project.session.host) + 'download'
 
-            response = session.get(model_url)
+            response = project.session.get(model_url)
             if response.status_code == 200:
                 alternative_name = f'{variant}_ai_{ai_model_id}_version_{ai_model_version}'
                 content_disposition = response.headers.get('Content-Disposition', alternative_name)

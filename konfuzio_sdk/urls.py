@@ -316,5 +316,6 @@ def get_ai_model_url(ai_model_id: int, ai_type: str, host: str = None) -> str:
         return f'{host}/api/v3/category-ais/{ai_model_id}/'
     elif ai_type == 'filesplitting':
         return f'{host}/api/v3/splitting-ais/{ai_model_id}/'
-
+    else:
+        raise ValueError
 
