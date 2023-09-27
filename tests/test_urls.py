@@ -19,6 +19,7 @@ from konfuzio_sdk.urls import (
     get_page_image_url,
     get_create_ai_model_url,
     get_update_ai_model_url,
+    get_ai_model_url,
 )
 
 
@@ -125,6 +126,7 @@ class TestUrls(unittest.TestCase):
         """Test to access Page online."""
         self.assertEqual(get_page_image_url(PAGE_ID), f'{KONFUZIO_HOST}/page/show-image/{PAGE_ID}/')
 
+
     def test_upload_ai_url(self):
         """Test to get URL to upload new AI file."""
         self.assertEqual(
@@ -135,6 +137,22 @@ class TestUrls(unittest.TestCase):
         )
         self.assertEqual(
             get_create_ai_model_url(ai_type='filesplitting'), f'{KONFUZIO_HOST}/api/v3/splitting-ais/upload/'
+        )
+
+    def test_get_ai_model_url(self):
+        """Test to get URL to upload new AI file."""
+        ai_model_id = 100
+        self.assertEqual(
+            get_ai_model_url(ai_type='extraction', ai_model_id=ai_model_id),
+            f'{KONFUZIO_HOST}/api/v3/extraction-ais/{ai_model_id}/'
+        )
+        self.assertEqual(
+            get_ai_model_url(ai_type='categorization', ai_model_id=ai_model_id),
+            f'{KONFUZIO_HOST}/api/v3/category-ais/{ai_model_id}/'
+        )
+        self.assertEqual(
+            get_ai_model_url(ai_type='filesplitting', ai_model_id=ai_model_id),
+            f'{KONFUZIO_HOST}/api/v3/splitting-ais/{ai_model_id}/'
         )
 
     def test_change_ai_url(self):
