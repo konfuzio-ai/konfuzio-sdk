@@ -3932,6 +3932,7 @@ class Project(Data):
 
     @property
     def ai_models(self):
+        """Return alll AIs."""
         return get_all_project_ais(project_id=self.id_)
 
     @property
@@ -4324,6 +4325,7 @@ class Project(Data):
 
 
 def export_project_data(id_: int, include_ais=False, training_and_test_documents=True):
+    """Export the Project data including Training, Test Documents and AI models based on the provided project ID."""
     if training_and_test_documents:
         try:
             print("[INFO] Starting Training and Test Document export!")
@@ -4363,7 +4365,7 @@ def download_training_and_test_data(project_id: int):
 
 
 def export_ais(project_id: int) -> None:
-    """Downloads a Projects AIs model (pkl & pts)"""
+    """Download a Projects AIs model (pkl & pts)."""
     project = Project(id_=project_id, update=True)
     project_ai_models = project.ai_models
     session = konfuzio_session()
