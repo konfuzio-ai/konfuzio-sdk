@@ -4388,7 +4388,12 @@ def export_ais(project: Project) -> None:
             ai_model_version = ai_model['version']
 
             # Download model
-            model_url = get_ai_model_url(ai_model_id=ai_model_id, ai_type=ai_type, host=project.session.host) + 'download'
+            if project.session.host:
+                host = project.session.host
+            else:
+                from konfuzio_sdk import KONFUZIO_HOST
+                host = KONFUZIO_HOST
+            model_url = f'{host}/aimodel/file/{ai_model_id}/'
 
             response = project.session.get(model_url)
             if response.status_code == 200:
