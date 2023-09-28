@@ -817,7 +817,7 @@ Set the `PASSWORD_LOGIN_ENABLED` environment variable to `False` on your Konfuzi
 
 #### Synchronize groups assigned to users in Keycloak with groups in Konfuzio
 
-Konfuzio can synchronize groups with Keycloak. This means that if you create a group in Keycloak and assign users to it, the same group will be created in Konfuzio and the users will be added to it. This is done by creating a _group mapper_ in Keycloak:
+Konfuzio can synchronize groups with Keycloak. This means that if you create a group in Keycloak and assign users to it, those users will be automatically added to an already existing group with the same name in Konfuzio. This is done by creating a _group mapper_ in Keycloak:
 
 1. Select the client you created earlier.
 2. Go to the _Client scopes_ tab inside the client.
@@ -830,7 +830,7 @@ Konfuzio can synchronize groups with Keycloak. This means that if you create a g
    3. Disable _Full group path_.
    4. Save.
 
-You also need to set the `SYNCHRONIZE_KEYCLOAK_GROUPS_WITH_KONFUZIO_GROUPS` environment variable to `1` on your Konfuzio installation.
+You also need to set the `SYNCHRONIZE_KEYCLOAK_GROUPS_WITH_KONFUZIO_GROUPS` environment variable to `True` on your Konfuzio installation. For additional security, you can also set `OIDC_RENEW_ID_TOKEN_EXPIRY_SECONDS` (default: 15 minutes) to a lower value, so permissions are checked from the backend in shorter intervals (see [documentation](https://mozilla-django-oidc.readthedocs.io/en/stable/installation.html#validate-id-tokens-by-renewing-them)).
 
 Now when assigning users to groups in Keycloak, the same groups will be created in Konfuzio (if they don't exist already) and the users will be added to them. Note that you still need to add permissions to the groups in Konfuzio for them to have any effect. You can automate this process with a CLI command, run `python manage.py import_groups_and_permissions --help` for more information.
 
