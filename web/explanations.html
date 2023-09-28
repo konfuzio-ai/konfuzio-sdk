@@ -69,7 +69,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#background-processes">Background Processes</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#queue-s">Queue’s</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#queues">Queues</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#reset-the-queue">Reset the Queue</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#celery-tasks">Celery Tasks</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#document-tasks">Document tasks</a></li>
@@ -318,8 +318,8 @@ of Servers internal workflow. Below the individual tasks of the Server’s workf
 triggered events. Tasks are run in parallel queue’s which are grouped in celery chords. While some tasks in each queue
 run in parallel, some tasks are still dependent on others. And no next queue will start until all tasks in the queue are finished.
 More on Celery workflows can be found here: <a class="reference external" href="https://docs.celeryq.dev/en/stable/userguide/canvas.html">https://docs.celeryq.dev/en/stable/userguide/canvas.html</a></p>
-<section id="queue-s">
-<h3>Queue’s<a class="headerlink" href="#queue-s" title="Permalink to this headline">¶</a></h3>
+<section id="queues">
+<h3>Queues<a class="headerlink" href="#queues" title="Permalink to this headline">¶</a></h3>
 <table class="docutils align-default">
 <colgroup>
 <col style="width: 33%" />
@@ -367,6 +367,10 @@ More on Celery workflows can be found here: <a class="reference external" href="
 </tr>
 </tbody>
 </table>
+<p>Note that all soft time limits are set relatively low and may be unsuitable for processing larger Document collections
+with hundreds of files. If you encounter errors about exceeded soft time limits, you can refer to the numbers in
+<a class="reference external" href="https://dev.konfuzio.com/web/on_premises.html#categorization-time-limit">Time limits for background tasks</a> and increase
+them.</p>
 </section>
 <section id="reset-the-queue">
 <h3>Reset the Queue<a class="headerlink" href="#reset-the-queue" title="Permalink to this headline">¶</a></h3>
