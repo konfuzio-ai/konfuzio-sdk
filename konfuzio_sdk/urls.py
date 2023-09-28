@@ -65,7 +65,7 @@ def get_documents_meta_url(project_id: int, limit: int = 10, host: str = None) -
 
 
 def get_document_segmentation_details_url(
-    document_id: int, project_id: int, host: str = None, action='segmentation'
+        document_id: int, project_id: int, host: str = None, action='segmentation'
 ) -> str:
     """
     Generate URL to get the segmentation results of a  Document.
@@ -79,6 +79,45 @@ def get_document_segmentation_details_url(
     if host is None:
         host = KONFUZIO_HOST
     return f'{host}/api/projects/{project_id}/docs/{document_id}/{action}/'
+
+
+def get_extraction_ais_list_url(project_id: int, host: str = None) -> str:
+    """
+    Generate URL to get a list of Extraction AIs for a specific project.
+
+    :param project_id: ID of the Project
+    :param host: Konfuzio host
+    :return: URL to get all Extraction AIs for a specific project
+    """
+    if host is None:
+        host = KONFUZIO_HOST
+    return f"{host}/api/v3/extraction-ais/?project_id={project_id}"
+
+
+def get_splitting_ais_list_url(project_id: int, host: str = None) -> str:
+    """
+    Generate URL to get a list of Splitting AIs for a specific project.
+
+    :param project_id: ID of the Project
+    :param host: Konfuzio host
+    :return: URL to get all Splitting AIs for a specific project
+    """
+    if host is None:
+        host = KONFUZIO_HOST
+    return f"{host}/api/v3/splitting-ais/?project_id={project_id}"
+
+
+def get_categorization_ais_list_url(project_id: int, host: str = None) -> str:
+    """
+    Generate URL to get a list of Categorization AIs for a specific project.
+
+    :param project_id: ID of the Project
+    :param host: Konfuzio host
+    :return: URL to get all Categorization AIs for a specific project
+    """
+    if host is None:
+        host = KONFUZIO_HOST
+    return f"{host}/api/v3/category-ais/?project_id={project_id}"
 
 
 # DOCUMENTS
@@ -277,3 +316,6 @@ def get_ai_model_url(ai_model_id: int, ai_type: str, host: str = None) -> str:
         return f'{host}/api/v3/category-ais/{ai_model_id}/'
     elif ai_type == 'filesplitting':
         return f'{host}/api/v3/splitting-ais/{ai_model_id}/'
+    else:
+        raise ValueError
+

@@ -30,6 +30,9 @@ from konfuzio_sdk.urls import (
     get_create_ai_model_url,
     get_page_image_url,
     get_ai_model_url,
+    get_splitting_ais_list_url,
+    get_categorization_ais_list_url,
+    get_extraction_ais_list_url,
 )
 from konfuzio_sdk.utils import is_file
 
@@ -732,3 +735,37 @@ def update_ai_model(ai_model_id: int, ai_type: str, patch: bool = True, session=
         raise HTTPError(r.text) from e
 
     return json.loads(r.text)
+
+
+def get_all_project_ais(project_id: int, session=None, host: str = None) -> dict:
+    """
+    Fetch all types of AIs for a specific project.
+
+    :param project_id: ID of the Project
+    :param session: Konfuzio session with Retry and Timeout policy
+    :param host: Konfuzio host
+    :return: Dictionary with lists of all AIs for a specific project
+    """
+    if session is None:
+        session = konfuzio_session()
+    if hasattr(session, 'host'):
+        host = session.host
+    if host is None:
+        host = KONFUZIO_HOST
+
+    urls = {
+        'extraction': get_extraction_ais_list_url(project_id, host),
+        'filesplitting': get_splitting_ais_list_url(project_id, host),
+        'categorization': get_categorization_ais_list_url(project_id, host),
+    }
+
+    all_ais = {}
+
+    for ai_type, url in urls.items():
+        r = session.get(url=url)
+        if r.status_code == 200:
+            all_ais[ai_type] = json.loads(r.text)
+        else:
+            all_ais[ai_type] = f"Error: {r.status_code}"
+
+    return all_ais
