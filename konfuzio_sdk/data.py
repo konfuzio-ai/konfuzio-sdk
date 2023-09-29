@@ -4383,6 +4383,7 @@ def export_ais(project: Project) -> None:
         for ai_model in project_ai_models.get(variant, {}).get('results', []):
             # Only export fully trained AIs which are set as active
             if not ai_model.get('status') == 'done' or not ai_model.get('active'):
+                print(f'Skip {ai_model} in export.')
                 continue
             ai_model_id = ai_model['id']
             ai_model_version = ai_model['version']
