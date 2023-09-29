@@ -1015,15 +1015,16 @@ class CategorizationAI(AbstractCategorizationAI):
 
         # create dictionary to save all necessary model data
         data_to_save = {
-            'tokenizer': self.tokenizer,
-            'image_preprocessing': self.image_preprocessing,
-            'image_augmentation': self.image_augmentation,
-            'text_vocab': self.text_vocab,
-            'category_vocab': self.category_vocab,
-            'classifier': self.classifier,
-            'eval_transforms': self.eval_transforms,
-            'train_transforms': self.train_transforms,
-            'model_type': 'CategorizationAI',
+            "tokenizer": self.tokenizer,
+            "image_preprocessing": self.image_preprocessing,
+            "image_augmentation": self.image_augmentation,
+            "text_vocab": self.text_vocab,
+            "category_vocab": self.category_vocab,
+            "classifier": self.classifier,
+            "eval_transforms": self.eval_transforms,
+            "train_transforms": self.train_transforms,
+            "categories": self.categories,
+            "model_type": "CategorizationAI",
         }
 
         # Save only the necessary parts of the model for extraction/inference.
@@ -1648,6 +1649,7 @@ document_components = [
     'classifier',
     'eval_transforms',
     'train_transforms',
+    'categories'
 ]
 
 document_components.extend(COMMON_PARAMETERS)
@@ -1672,13 +1674,17 @@ def _load_categorization_model(path: str):
     model_class = CategorizationAI
     model_args = MODEL_PARAMETERS_TO_SAVE[model_type]
 
+    # Non-backwards compatible components to skip on the verification for loaded data.
+    optional_components = ['categories',]
+
     # Verify if loaded data has all necessary components
-    if not all([arg in model_args for arg in loaded_data.keys()]):
-        raise TypeError(f"Incomplete model parameters. Expected: {model_args}, Received: {list(loaded_data.keys())}")
+    missing_components = [arg for arg in model_args if arg not in loaded_data.keys() and arg not in optional_components]
+    if missing_components:
+        raise TypeError(f"Incomplete model parameters. Missing: {missing_components}")
 
     # create instance of the model class
     model = model_class(
-        categories=None,
+        categories=loaded_data.get('categories', None),
         image_preprocessing=loaded_data['image_preprocessing'],
         image_augmentation=loaded_data['image_augmentation'],
     )

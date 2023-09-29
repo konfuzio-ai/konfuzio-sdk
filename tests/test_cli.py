@@ -54,7 +54,7 @@ class TestCLI(TestCase):
         with mock.patch('sys.argv', ['file', 'export_project', 'xx']):
             assert main() == -1
 
-    @patch("konfuzio_sdk.cli.download_training_and_test_data", return_value=None)
+    @patch("konfuzio_sdk.cli.export_project_data", return_value=None)
     def test_export_project_with_int(self, download_function):
         """Test to run CLI."""
         sys.argv = ['file', 'export_project', '46']

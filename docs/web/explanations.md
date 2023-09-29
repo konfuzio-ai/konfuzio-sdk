@@ -182,7 +182,7 @@ triggered events. Tasks are run in parallel queue's which are grouped in celery 
 run in parallel, some tasks are still dependent on others. And no next queue will start until all tasks in the queue are finished. 
 More on Celery workflows can be found here: https://docs.celeryq.dev/en/stable/userguide/canvas.html
 
-### Queue's
+### Queues
 
 
 | id  | queue-name       |                   description                   |
@@ -195,6 +195,11 @@ More on Celery workflows can be found here: https://docs.celeryq.dev/en/stable/u
 | 6   | `training`       |              queue for AI training              |
 | 7   | `training_heavy` |       queue for RAM intensive ai training       |
 | 8   | `evaluation`     |             queue for AI evaluation             |
+
+Note that all soft time limits are set relatively low and may be unsuitable for processing larger Document collections 
+with hundreds of files. If you encounter errors about exceeded soft time limits, you can refer to the numbers in 
+[Time limits for background tasks](https://dev.konfuzio.com/web/on_premises.html#categorization-time-limit) and increase
+them.
 
 ### Reset the Queue
 
