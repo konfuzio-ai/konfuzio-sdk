@@ -1013,6 +1013,9 @@ class CategorizationAI(AbstractCategorizationAI):
         temp_pt_file_path = self.temp_pt_file_path
         compressed_file_path = self.compressed_file_path
 
+        if self.categories:
+            self.categories[0].project.lose_weight()
+
         # create dictionary to save all necessary model data
         data_to_save = {
             "tokenizer": self.tokenizer,
