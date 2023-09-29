@@ -843,17 +843,18 @@ Now you can go to your Konfuzio instance and you should be redirected to your Id
 
 This table shows the two migration methods, "Project Export" and "AI File," for moving various elements Projects and Konfuzio Server environments. The table includes a list of elements such as Annotations, Categories, Label Sets, Labels, and more, and indicates which method is applicable for each element. The "Project Export" method is used for exporting whole Projects, while the "AI File" method is used for exporting elements that are specifically relevant for just running the AI on a different Konfuzio Server environments.
 
-|   | [Project Export](/web/on_premises.html#migrate-a-project) | [AI File](/web/on_premises.html#migrate-an-extraction-or-categorization-ai) |
-|---|---|---|
-| [Annotations](https://help.konfuzio.com/modules/annotations/index.html)                  | Yes      | No  |
-| [Categories](https://help.konfuzio.com/modules/categories/index.html)                    | Yes      | No  |
-| [Categorization AI](https://help.konfuzio.com/modules/categorization/index.html)         | No       | Yes |
-| [All Documents](https://help.konfuzio.com/modules/documents/index.html)                  | No       | No  |
-| [Test-/Training Documents](https://help.konfuzio.com/modules/documents/index.html#id1)   | Yes      | No  |
-| [Extraction AI](https://help.konfuzio.com/modules/extractions/index.html)                | No       | Yes |
-| [Label Sets](https://help.konfuzio.com/modules/sets/index.html)                          | Yes      | No  |
-| [Labels](https://help.konfuzio.com/modules/labels/index.html)                            | Yes      | No  |
-| [Members](https://help.konfuzio.com/modules/members/index.html)                          | No       | No  |
+|                                                                                        | [Project Export](/web/on_premises.html#migrate-a-project) | [AI File](/web/on_premises.html#migrate-an-extraction-or-categorization-ai) |
+|----------------------------------------------------------------------------------------|-----------------------------------------------------------|-----------------------------------------------------------------------------|
+| [Annotations](https://help.konfuzio.com/modules/annotations/index.html)                | Yes                                                       | No                                                                          |
+| [Categories](https://help.konfuzio.com/modules/categories/index.html)                  | Yes                                                       | No                                                                          |
+| [Categorization AI](https://help.konfuzio.com/modules/categorization/index.html)       | Yes                                                       | Yes                                                                         |
+| [Extraction AI](https://help.konfuzio.com/modules/extractions/index.html)              | Yes                                                       | Yes                                                                         |
+| [Splitting AI](https://help.konfuzio.com/modules/extractions/index.html)               | Yes                                                       | Yes                                                                         |
+| [All Documents](https://help.konfuzio.com/modules/documents/index.html)                | No                                                        | No                                                                          |
+| [Test-/Training Documents](https://help.konfuzio.com/modules/documents/index.html#id1) | Yes                                                       | No                                                                          |
+| [Label Sets](https://help.konfuzio.com/modules/sets/index.html)                        | Yes                                                       | No                                                                          |
+| [Labels](https://help.konfuzio.com/modules/labels/index.html)                          | Yes                                                       | No                                                                          |
+| [Members](https://help.konfuzio.com/modules/members/index.html)                        | No                                                        | No                                                                          |
 
 
 ### Migrate an Extraction or Categorization AI
