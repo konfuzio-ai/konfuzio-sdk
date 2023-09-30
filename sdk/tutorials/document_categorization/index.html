@@ -57,6 +57,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#name-based-categorization-ai">Name-based Categorization AI</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#model-based-categorization-ai">Model-based Categorization AI</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#categorization-ai-models">Categorization AI Models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#possible-configurations">Possible configurations</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#create-a-custom-categorization-ai">Create a custom Categorization AI</a></li>
@@ -132,6 +133,8 @@ can be done manually, or automatically using a Categorization AI. Categorization
 <h2>Setting the Category of a Document and its individual Pages Manually<a class="headerlink" href="#setting-the-category-of-a-document-and-its-individual-pages-manually" title="Permalink to this headline">¶</a></h2>
 <p>You can initialize a Document with a <a class="reference internal" href="../../home/index.html#category-concept"><span class="std std-ref">Category</span></a>. You can also use <code class="docutils literal notranslate"><span class="pre">Document.set_category</span></code> to set
 a Document’s Category after it has been initialized. This will count as if a human manually revised it.</p>
+<p>Note: a Document’s Category can be changed via <code class="docutils literal notranslate"><span class="pre">set_category</span></code> only if the original Category has
+been set to <code class="docutils literal notranslate"><span class="pre">no_category</span></code>. Otherwise, an attempt to change a Category will cause an error.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
 <span class="n">my_category</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_category_by_id</span><span class="p">(</span><span class="n">YOUR_CATEGORY_ID</span><span class="p">)</span>
 
@@ -313,6 +316,87 @@ at the same time.</p>
 </pre></div>
 </div>
 <p>See more details about these Categorization Models under <a class="reference external" href="../../sourcecode.html#categorization-ai">API Reference - Categorization AI</a>.</p>
+</section>
+<section id="possible-configurations">
+<h3>Possible configurations<a class="headerlink" href="#possible-configurations" title="Permalink to this headline">¶</a></h3>
+<p>The following configurations of Categorization AI are tested:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Tokenizer</p></th>
+<th class="head"><p>Text processor</p></th>
+<th class="head"><p>Image processor</p></th>
+<th class="head"><p>Image processing version</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>WhitespaceTokenizer</p></td>
+<td><p>NBOWSelfAttention</p></td>
+<td><p>EfficientNet</p></td>
+<td><p>efficientnet_b0</p></td>
+</tr>
+<tr class="row-odd"><td><p>WhitespaceTokenizer</p></td>
+<td><p>NBOWSelfAttention</p></td>
+<td><p>EfficientNet</p></td>
+<td><p>efficientnet_b3</p></td>
+</tr>
+<tr class="row-even"><td><p>WhitespaceTokenizer</p></td>
+<td><p>NBOW</p></td>
+<td><p>VGG</p></td>
+<td><p>vgg11</p></td>
+</tr>
+<tr class="row-odd"><td><p>WhitespaceTokenizer</p></td>
+<td><p>LSTM</p></td>
+<td><p>VGG</p></td>
+<td><p>vgg13</p></td>
+</tr>
+<tr class="row-even"><td><p>ConnectedTextTokenizer</p></td>
+<td><p>NBOW</p></td>
+<td><p>VGG</p></td>
+<td><p>vgg11</p></td>
+</tr>
+<tr class="row-odd"><td><p>ConnectedTextTokenizer</p></td>
+<td><p>LSTM</p></td>
+<td><p>VGG</p></td>
+<td><p>vgg13</p></td>
+</tr>
+<tr class="row-even"><td><p>None</p></td>
+<td><p>None</p></td>
+<td><p>EfficientNet</p></td>
+<td><p>efficientnet_b0</p></td>
+</tr>
+<tr class="row-odd"><td><p>None</p></td>
+<td><p>None</p></td>
+<td><p>EfficientNet</p></td>
+<td><p>efficientnet_b3</p></td>
+</tr>
+<tr class="row-even"><td><p>None</p></td>
+<td><p>None</p></td>
+<td><p>VGG</p></td>
+<td><p>vgg11</p></td>
+</tr>
+<tr class="row-odd"><td><p>None</p></td>
+<td><p>None</p></td>
+<td><p>VGG</p></td>
+<td><p>vgg13</p></td>
+</tr>
+<tr class="row-even"><td><p>None</p></td>
+<td><p>None</p></td>
+<td><p>VGG</p></td>
+<td><p>vgg16</p></td>
+</tr>
+<tr class="row-odd"><td><p>None</p></td>
+<td><p>None</p></td>
+<td><p>VGG</p></td>
+<td><p>vgg19</p></td>
+</tr>
+</tbody>
+</table>
 </section>
 </section>
 <section id="create-a-custom-categorization-ai">
