@@ -9,6 +9,10 @@ can be done manually, or automatically using a Categorization AI. Categorization
 You can initialize a Document with a :ref:`Category<category-concept>`. You can also use `Document.set_category` to set 
 a Document's Category after it has been initialized. This will count as if a human manually revised it.
 
+Note: a Document's Category can be changed via `set_category` only if the original Category has 
+been set to `no_category`. Otherwise, an attempt to change a Category will cause an error.
+
+
 .. literalinclude:: /sdk/boilerplates/test_document_categorization.py
    :language: python
    :start-after: start init
@@ -93,6 +97,26 @@ The list of available Categorization Models is implemented as an Enum containing
    :dedent: 4
 
 See more details about these Categorization Models under [API Reference - Categorization AI](../../sourcecode.html#categorization-ai).
+
+#### Possible configurations
+
+The following configurations of Categorization AI are tested:
+
+| Tokenizer | Text processor    | Image processor | Image processing version |
+|-----------|-------------------|-----------------|--------------------------|
+| WhitespaceTokenizer | NBOWSelfAttention | EfficientNet | efficientnet_b0          |
+| WhitespaceTokenizer | NBOWSelfAttention | EfficientNet | efficientnet_b3          |
+| WhitespaceTokenizer | NBOW              | VGG | vgg11                    |
+| WhitespaceTokenizer | LSTM              | VGG | vgg13                    |
+| ConnectedTextTokenizer | NBOW              | VGG | vgg11                    |
+| ConnectedTextTokenizer | LSTM              | VGG | vgg13                    |
+| None | None | EfficientNet | efficientnet_b0          |
+| None | None | EfficientNet | efficientnet_b3          |
+| None | None | VGG | vgg11                    |
+| None | None | VGG | vgg13                    |
+| None | None | VGG | vgg16                    |
+| None | None | VGG | vgg19                    |
+
 
 ### Create a custom Categorization AI
 

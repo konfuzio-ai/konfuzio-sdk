@@ -4383,12 +4383,18 @@ def export_ais(project: Project) -> None:
         for ai_model in project_ai_models.get(variant, {}).get('results', []):
             # Only export fully trained AIs which are set as active
             if not ai_model.get('status') == 'done' or not ai_model.get('active'):
+                print(f'Skip {ai_model} in export.')
                 continue
             ai_model_id = ai_model['id']
             ai_model_version = ai_model['version']
 
             # Download model
-            model_url = get_ai_model_url(ai_model_id=ai_model_id, ai_type=ai_type, host=project.session.host) + 'download'
+            if project.session.host:
+                host = project.session.host
+            else:
+                from konfuzio_sdk import KONFUZIO_HOST
+                host = KONFUZIO_HOST
+            model_url = f'{host}/aimodel/file/{ai_model_id}/'
 
             response = project.session.get(model_url)
             if response.status_code == 200:

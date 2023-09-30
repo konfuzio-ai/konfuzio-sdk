@@ -11,6 +11,8 @@ from konfuzio_sdk.utils import sdk_isinstance
 
 logger = logging.getLogger(__name__)
 
+# these modules are WIP and do not have testing yet.
+
 
 class Tokenizer(AbstractTokenizer):
     """Base Tokenizer."""
@@ -223,3 +225,12 @@ class PhraseMatcherTokenizer(SpacyTokenizer):
                 spans.append(span)
 
         return spans
+
+    def tokenize(self, document: Document) -> Document:
+        """Tokenize the Document."""
+        spans = self._tokenize(document)
+
+        for span in spans:
+            _ = Span(start_offset=span.start_offset, end_offset=span.end_offset, document=document)
+
+        return document
