@@ -998,7 +998,7 @@ class CategorizationAI(AbstractCategorizationAI):
         """
         if 'path' in kwargs:
             raise ValueError("'path' is a deprecated argument. Use 'output_dir' to specify the path to save the model.")
-        if reduce_weight:
+        if reduce_weight and self.tokenizer:
             self.reduce_model_weight()
 
         if not output_dir:
@@ -1012,6 +1012,9 @@ class CategorizationAI(AbstractCategorizationAI):
         # temp_pt_file_path is needed to save an intermediate .pt file that later will be compressed and deleted.
         temp_pt_file_path = self.temp_pt_file_path
         compressed_file_path = self.compressed_file_path
+
+        if self.categories:
+            self.categories[0].project.lose_weight()
 
         # create dictionary to save all necessary model data
         data_to_save = {

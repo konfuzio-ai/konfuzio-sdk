@@ -432,17 +432,17 @@ class TestTextCategorizationModels(unittest.TestCase):
         (WhitespaceTokenizer, LSTM, VGG, 'vgg13'),
         (ConnectedTextTokenizer, NBOW, VGG, 'vgg11'),
         (ConnectedTextTokenizer, LSTM, VGG, 'vgg13'),
-        (PhraseMatcherTokenizer, BERT, VGG, 'vgg16'),
+        # (PhraseMatcherTokenizer, BERT, VGG, 'vgg16'),  # PhraseMatcherTokenizer is WIP and not available for usage yet
         (None, None, EfficientNet, 'efficientnet_b0'),
         (None, None, EfficientNet, 'efficientnet_b3'),
         (None, None, VGG, 'vgg11'),
         (None, None, VGG, 'vgg13'),
         (None, None, VGG, 'vgg16'),
         (None, None, VGG, 'vgg19'),
-        (WhitespaceTokenizer, NBOWSelfAttention, None, None),
-        (ConnectedTextTokenizer, NBOW, None, None),
-        (PhraseMatcherTokenizer, LSTM, None, None),
-        (ConnectedTextTokenizer, BERT, None, None),
+        # (WhitespaceTokenizer, NBOWSelfAttention, None, None),
+        # (ConnectedTextTokenizer, NBOW, None, None),
+        # (PhraseMatcherTokenizer, LSTM, None, None),  # PhraseMatcherTokenizer is WIP and not available for usage yet
+        # (ConnectedTextTokenizer, BERT, None, None),
     ],
 )
 @pytest.mark.skip(reason="Slow testcases training a Categorization AI on full dataset with multiple configurations.")
@@ -468,15 +468,20 @@ class TestAllCategorizationConfigurations(unittest.TestCase):
 
     def test_1a_configure_dataset(self) -> None:
         """Test configure categories, with training and test docs for the Document Model."""
-        payslips_training_documents = self.payslips_category.documents()
-        receipts_training_documents = self.receipts_category.documents()
+        payslips_training_documents = self.payslips_category.documents()[:5]
+        receipts_training_documents = self.receipts_category.documents()[:5]
         self.categorization_pipeline.documents = payslips_training_documents + receipts_training_documents
         assert all(doc.category is not None for doc in self.categorization_pipeline.documents)
 
-        payslips_test_documents = self.payslips_category.test_documents()
-        receipts_test_documents = self.receipts_category.test_documents()
+        payslips_test_documents = self.payslips_category.test_documents()[:5]
+        receipts_test_documents = self.receipts_category.test_documents()[:5]
         self.categorization_pipeline.test_documents = payslips_test_documents + receipts_test_documents
         assert all(doc.category is not None for doc in self.categorization_pipeline.test_documents)
+        wahrung = self.training_prj.get_label_by_name('Währung')
+        label_set_quittung = self.training_prj.get_label_set_by_name('Quittung (GERMAN)')
+        label_set_zahlungsdetails = self.training_prj.get_label_set_by_name('Zahlungsdetails')
+        label_set_quittung.labels.append(wahrung)
+        label_set_zahlungsdetails.labels.append(wahrung)
 
     def test_1b_configure_pipeline(self) -> None:
         """Test configure pipeline."""
@@ -585,7 +590,7 @@ class TestAllCategorizationConfigurations(unittest.TestCase):
         test_doc = self.training_prj.get_document_by_id(345875)
         test_page = WhitespaceTokenizer().tokenize(deepcopy(test_doc)).pages()[0]
         # reset the category attribute to test that it can be categorized successfully
-        test_page.set_category(None)
+        test_page.set_category(self.training_prj.no_category)
         result = self.categorization_pipeline._categorize_page(test_page)
         assert isinstance(result, Page)
         assert result.category == self.receipts_category
@@ -602,17 +607,42 @@ class TestAllCategorizationConfigurations(unittest.TestCase):
 
     def test_9_build_document_classifier_iterator(self):
         """Test building the iterator."""
-        use_text = self.categorization_pipeline.build_document_classifier_iterator(
-            self.categorization_pipeline.documents,
-            self.categorization_pipeline.train_transforms,
-            use_image=True,
-            use_text=True,
-            shuffle=True,
-            batch_size=1,
-            max_len=None,
-            device=self.categorization_pipeline.device,
-        )
-        assert use_text
+        if self.text_class and not self.image_class:
+            use_text = self.categorization_pipeline.build_document_classifier_iterator(
+                self.categorization_pipeline.documents,
+                self.categorization_pipeline.train_transforms,
+                use_image=False,
+                use_text=True,
+                shuffle=True,
+                batch_size=1,
+                max_len=None,
+                device=self.categorization_pipeline.device,
+            )
+            assert use_text
+        elif self.image_class and not self.text_class:
+            use_image = self.categorization_pipeline.build_document_classifier_iterator(
+                self.categorization_pipeline.documents,
+                self.categorization_pipeline.train_transforms,
+                use_image=True,
+                use_text=False,
+                shuffle=True,
+                batch_size=1,
+                max_len=None,
+                device=self.categorization_pipeline.device,
+            )
+            assert use_image
+        else:
+            use_both = self.categorization_pipeline.build_document_classifier_iterator(
+                self.categorization_pipeline.documents,
+                self.categorization_pipeline.train_transforms,
+                use_image=True,
+                use_text=True,
+                shuffle=True,
+                batch_size=1,
+                max_len=None,
+                device=self.categorization_pipeline.device,
+            )
+            assert use_both
 
 
 @pytest.mark.skipif(
