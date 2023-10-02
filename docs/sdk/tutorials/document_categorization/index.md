@@ -100,7 +100,15 @@ See more details about these Categorization Models under [API Reference - Catego
 
 #### Possible configurations
 
-The following configurations of Categorization AI are tested:
+The following configurations of Categorization AI are tested. Tokenizer, text and image processors can be specified 
+when building Categorization pipeline locally; text and image processors can be specified when building the pipeline 
+either locally or on app/on-prem installation.
+
+Each line stands for a single configuration. If a field is None, it requires specifying it as None; otherwise, the 
+default value will be applied.
+
+You can find more information on how to use these configurations, what are default values and where to specify
+them [here](https://help.konfuzio.com/modules/projects/index.html?highlight=efficientnet#categorization-ai-parameters).
 
 | Tokenizer | Text processor    | Image processor | Image processing version |
 |-----------|-------------------|-----------------|--------------------------|
