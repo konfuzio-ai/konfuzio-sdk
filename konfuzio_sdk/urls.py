@@ -91,7 +91,7 @@ def get_extraction_ais_list_url(project_id: int, host: str = None) -> str:
     """
     if host is None:
         host = KONFUZIO_HOST
-    return f"{host}/api/v3/extraction-ais/?project_id={project_id}"
+    return f"{host}/api/v3/extraction-ais/?limit=100&project_id={project_id}"
 
 
 def get_splitting_ais_list_url(project_id: int, host: str = None) -> str:
@@ -104,7 +104,7 @@ def get_splitting_ais_list_url(project_id: int, host: str = None) -> str:
     """
     if host is None:
         host = KONFUZIO_HOST
-    return f"{host}/api/v3/splitting-ais/?project_id={project_id}"
+    return f"{host}/api/v3/splitting-ais/?limit=100&project_id={project_id}"
 
 
 def get_categorization_ais_list_url(project_id: int, host: str = None) -> str:
@@ -117,7 +117,7 @@ def get_categorization_ais_list_url(project_id: int, host: str = None) -> str:
     """
     if host is None:
         host = KONFUZIO_HOST
-    return f"{host}/api/v3/category-ais/?project_id={project_id}"
+    return f"{host}/api/v3/category-ais/?limit=100&project_id={project_id}"
 
 
 # DOCUMENTS
