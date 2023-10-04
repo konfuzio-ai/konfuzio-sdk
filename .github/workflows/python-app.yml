@@ -53,6 +53,11 @@ jobs:
         run: |
           pip install coverage
           coverage xml coverage.xml
+      - name: Publish coverage
+        uses: orgoro/coverage@v3.1
+        with:
+          coverageFile: coverage.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Run tests
         run: |
           pytest --durations=10 -m 'not local'
