@@ -4396,7 +4396,11 @@ def export_ais(project: Project) -> None:
                 host = KONFUZIO_HOST
             model_url = f'{host}/aimodel/file/{ai_model_id}/'
 
-            response = project.session.get(model_url)
+            try:
+                response = project.session.get(model_url)
+            except HTTPError:
+                # AI File response error, such as the AI has no associated file (likely for a name-based Categorization AI)
+                continue
             if response.status_code == 200:
                 alternative_name = f'{variant}_ai_{ai_model_id}_version_{ai_model_version}'
                 content_disposition = response.headers.get('Content-Disposition', alternative_name)
