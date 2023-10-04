@@ -21,9 +21,19 @@ You can think of the _Planned_ section as a _Roadmap_ that lists Konfuzio Server
 - Allow administrators of Konfuzio on-premise installations to run a speedtest ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9870)).
 - Start automatic AI retraining after User confirms that he has finished a annotation review ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9166)).
 
-## Next Release (estimated release date 4th October 2023)
+## Next Release (estimated release date 18th October 2023)
 
 Upcoming...
+
+## released-2023-*****
+
+This version uses the Konfuzio Python SDK in version v.0.2.35 and Konfuzio Document Validation UI in version v.0.1.16.
+
+### Added
+- Add confidence level in Category dropdown of the Documents list for Documents that were split with Splitting AI ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11834)).
+- [Allow to include AIs into Snapshots](https://help.konfuzio.com/modules/snapshots/index.html) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11208)).
+### Fixed
+- Fix Swagger API Definition for Document roataion ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11832))
 
 ## released-2023-09-19_21-25-05
 
