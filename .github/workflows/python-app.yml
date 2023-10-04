@@ -49,15 +49,14 @@ jobs:
         run: |
           cd konfuzio_sdk
           pydocstyle
-      - name: Run coverage
-        run: |
-          pip install coverage
-          coverage xml coverage.xml
-      - name: Publish coverage
-        uses: orgoro/coverage@v3.1
-        with:
-          coverageFile: coverage.xml
-          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Monitor coverage
+          uses: slavcodev/coverage-monitor-action@v1
+          with:
+            github_token: ${{ secrets.GITHUB_TOKEN }}
+            coverage_path: "logs/clover.xml"
+            threshold_alert: 10
+            threshold_warning: 50
+            threshold_metric: "lines"
       - name: Run tests
         run: |
           pytest --durations=10 -m 'not local'
