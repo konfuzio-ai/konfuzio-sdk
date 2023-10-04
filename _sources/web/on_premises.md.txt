@@ -1457,13 +1457,14 @@ See https://mozilla-django-oidc.readthedocs.io/en/stable/settings.html#OIDC_RP_S
 
 _Type: string_
 
-#### 9. Snapshot Settings (This feature is under active development and not yet available on https://app.konfuzio.com)
+#### 9. Snapshot Settings
 
 ##### SNAPSHOT_DEFAULT_FILE_STORAGE
 Default: 'django.core.files.storage.FileSystemStorage'
 
 By default, the file system is used as file storage. 
-To use an S3-compatible storage set: 'storages.backends.s3boto.S3BotoStorage''.
+To use an S3-compatible storage set: 'storages.backends.s3boto.S3BotoStorage'.
+To use an Azure Blob Storage set: 'storages.backends.azure_storage.AzureStorage'.
 See https://docs.djangoproject.com/en/4.0/ref/settings/#default-file-storage
 
 _Type: string_
@@ -1523,6 +1524,33 @@ Whether or not to verify the connection to S3. Can be set to False to not verify
 
 _Type: string_
 
+##### SNAPSHOT_AZURE_ACCOUNT_KEY:
+Default: ''
+
+The Azure account key.
+
+_This is mandatory if SNAPSHOT_DEFAULT_FILE_STORAGE='storages.backends.azure_storage.AzureStorage'. Type: string_
+
+##### SNAPSHOT_AZURE_ACCOUNT_NAME:
+Default: ''
+
+The name if the Azure account name.
+
+_This is mandatory if SNAPSHOT_DEFAULT_FILE_STORAGE='storages.backends.azure_storage.AzureStorage'. Type: string_
+
+##### SNAPSHOT_AZURE_CONTAINER:
+Default: ''
+
+The name if the Azure storage container.
+
+_This is mandatory if SNAPSHOT_DEFAULT_FILE_STORAGE='storages.backends.azure_storage.AzureStorage'. Type: string_
+
+##### SNAPSHOT_HOST_NAME
+Default: None
+
+This allows to set a different hostname which is used to make API calls when creating a Snapshot.  
+
+_Type: string_
 
 ##### SNAPSHOT_RESTORE_ACROSS_ENVIRONMENTS
 Default: False

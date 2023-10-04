@@ -155,7 +155,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#email-polling-settings">6. Email Polling Settings</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#time-limits-for-background-tasks">7. Time limits for background tasks</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#keycloak-sso-settings">8. Keycloak / SSO Settings</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#snapshot-settings-this-feature-is-under-active-development-and-not-yet-available-on-https-app-konfuzio-com">9. Snapshot Settings (This feature is under active development and not yet available on https://app.konfuzio.com)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#snapshot-settings">9. Snapshot Settings</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#test-settings-for-keycloak-sso-settings">10. Test Settings for Keycloak / SSO Settings</a></li>
 </ul>
 </li>
@@ -1692,13 +1692,14 @@ See <a class="reference external" href="https://mozilla-django-oidc.readthedocs.
 <p><em>Type: string</em></p>
 </section>
 </section>
-<section id="snapshot-settings-this-feature-is-under-active-development-and-not-yet-available-on-https-app-konfuzio-com">
-<h4>9. Snapshot Settings (This feature is under active development and not yet available on <a class="reference external" href="https://app.konfuzio.com">https://app.konfuzio.com</a>)<a class="headerlink" href="#snapshot-settings-this-feature-is-under-active-development-and-not-yet-available-on-https-app-konfuzio-com" title="Permalink to this headline">¶</a></h4>
+<section id="snapshot-settings">
+<h4>9. Snapshot Settings<a class="headerlink" href="#snapshot-settings" title="Permalink to this headline">¶</a></h4>
 <section id="snapshot-default-file-storage">
 <h5>SNAPSHOT_DEFAULT_FILE_STORAGE<a class="headerlink" href="#snapshot-default-file-storage" title="Permalink to this headline">¶</a></h5>
 <p>Default: ‘django.core.files.storage.FileSystemStorage’</p>
 <p>By default, the file system is used as file storage.
-To use an S3-compatible storage set: ‘storages.backends.s3boto.S3BotoStorage’’.
+To use an S3-compatible storage set: ‘storages.backends.s3boto.S3BotoStorage’.
+To use an Azure Blob Storage set: ‘storages.backends.azure_storage.AzureStorage’.
 See <a class="reference external" href="https://docs.djangoproject.com/en/4.0/ref/settings/#default-file-storage">https://docs.djangoproject.com/en/4.0/ref/settings/#default-file-storage</a></p>
 <p><em>Type: string</em></p>
 </section>
@@ -1748,6 +1749,30 @@ _Type: string</p>
 <h5>SNAPSHOT_AWS_S3_VERIFY<a class="headerlink" href="#snapshot-aws-s3-verify" title="Permalink to this headline">¶</a></h5>
 <p>Default: None</p>
 <p>Whether or not to verify the connection to S3. Can be set to False to not verify certificates or a path to a CA cert bundle.</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="snapshot-azure-account-key">
+<h5>SNAPSHOT_AZURE_ACCOUNT_KEY:<a class="headerlink" href="#snapshot-azure-account-key" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>The Azure account key.</p>
+<p>_This is mandatory if SNAPSHOT_DEFAULT_FILE_STORAGE=’storages.backends.azure<em>storage.AzureStorage’. Type: string</em></p>
+</section>
+<section id="snapshot-azure-account-name">
+<h5>SNAPSHOT_AZURE_ACCOUNT_NAME:<a class="headerlink" href="#snapshot-azure-account-name" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>The name if the Azure account name.</p>
+<p>_This is mandatory if SNAPSHOT_DEFAULT_FILE_STORAGE=’storages.backends.azure<em>storage.AzureStorage’. Type: string</em></p>
+</section>
+<section id="snapshot-azure-container">
+<h5>SNAPSHOT_AZURE_CONTAINER:<a class="headerlink" href="#snapshot-azure-container" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>The name if the Azure storage container.</p>
+<p>_This is mandatory if SNAPSHOT_DEFAULT_FILE_STORAGE=’storages.backends.azure<em>storage.AzureStorage’. Type: string</em></p>
+</section>
+<section id="snapshot-host-name">
+<h5>SNAPSHOT_HOST_NAME<a class="headerlink" href="#snapshot-host-name" title="Permalink to this headline">¶</a></h5>
+<p>Default: None</p>
+<p>This allows to set a different hostname which is used to make API calls when creating a Snapshot.</p>
 <p><em>Type: string</em></p>
 </section>
 <section id="snapshot-restore-across-environments">
