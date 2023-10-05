@@ -32,6 +32,7 @@ This version uses the Konfuzio Python SDK in version v.0.2.35 and Konfuzio Docum
 ### Added
 - Add confidence level in Category dropdown of the Documents list for Documents that were split with Splitting AI ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11834)).
 - [Allow to include AIs into Snapshots](https://help.konfuzio.com/modules/snapshots/index.html) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11208)).
+- [Allow to set fine-tuned permissions via SSO](https://dev.konfuzio.com/web/on_premises.html#sso-via-openid-connect-oidc) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11236)).
 
 ### Fixed
 - Fix Swagger API Definition for Document roataion ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11832))
