@@ -121,8 +121,10 @@
 <li class="toctree-l2"><a class="reference internal" href="#sso-via-openid-connect-oidc">SSO via OpenID Connect (OIDC)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#sso-keycloak-integration">SSO Keycloak Integration</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#set-up">Set up</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id5">Environment Variables</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#important-notes">Important notes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#use-the-keycloak-server-to-authenticate-users-with-konfuzio">Use the Keycloak server to authenticate users with Konfuzio</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#disable-password-login-in-konfuzio">Disable password login in Konfuzio</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#synchronize-groups-assigned-to-users-in-keycloak-with-groups-in-konfuzio">Synchronize groups assigned to users in Keycloak with groups in Konfuzio</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#use-keycloak-to-generate-tokens-for-the-konfuzio-rest-api">Use Keycloak to generate tokens for the Konfuzio REST API</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#sso-via-other-identity-management-software">SSO via other Identity Management software</a><ul>
@@ -145,7 +147,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#usage-of-postgresql">Usage of PostgreSQL</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id11">Environment Variables</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id10">Environment Variables</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#environment-variables-for-konfuzio-server">Environment Variables for Konfuzio Server</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#general-settings">1. General Settings</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#background-tasks-via-celery">2. Background Tasks via Celery</a></li>
@@ -939,50 +941,127 @@ Numerous Identity Providers (IdP) exist that support the OIDC protocol, thus ena
 A commonly chosen provider is <a class="reference external" href="https://www.keycloak.org/">Keycloak</a>. In the subsequent section, you will find a tutorial on how to use Keycloak with OIDC.</p>
 <section id="sso-keycloak-integration">
 <h3>SSO Keycloak Integration<a class="headerlink" href="#sso-keycloak-integration" title="Permalink to this headline">¶</a></h3>
-<p>Keycloak allows single sign-on funtionality. By doing so no user management is done wihtin Konfuzio Server. If you already operate a keycloak server, you can reuse keycloak users.</p>
+<p>With Keycloak, you can implement the following workflows in Konfuzio:</p>
+<ul class="simple">
+<li><p>Use the Keycloak server to authenticate users with Konfuzio, automatically creating users in Konfuzio if they don’t exist yet.</p></li>
+<li><p>Disable password login in Konfuzio, forcing users to use Keycloak to log in.</p></li>
+<li><p>Synchronize groups assigned to users in Keycloak with groups in Konfuzio.</p></li>
+<li><p>Use Keycloak to generate tokens that can be used to access the Konfuzio REST API.</p></li>
+</ul>
+<p>Enabling the first workflow (authenticating Keycloak users with Konfuzio) is mandatory to support the other ones.</p>
 <section id="set-up">
 <h4>Set up<a class="headerlink" href="#set-up" title="Permalink to this headline">¶</a></h4>
-<p>To start and set up keycloak server:</p>
+<p>To start and set up Keycloak server:</p>
 <ol class="arabic simple">
-<li><p>Download <a class="reference external" href="https://www.keycloak.org/downloads">keycloak server</a></p></li>
-<li><p>Install and start keycloak server using <a class="reference external" href="https://www.keycloak.org/docs/latest/server_installation/">instruction</a></p></li>
-<li><p>Open keycloak dashboard in browser (locally it’s <a class="reference external" href="http://0.0.0.0:8080/">http://0.0.0.0:8080/</a>).</p></li>
-<li><p>Create admin user</p></li>
-<li><p>Login to Administration Console</p></li>
-<li><p>You can add new Realm or use default (Master)</p></li>
+<li><p>Download the <a class="reference external" href="https://www.keycloak.org/downloads">Keycloak server</a>.</p></li>
+<li><p>Install and start Keycloak server using <a class="reference external" href="https://www.keycloak.org/docs/latest/server_installation/">instructions</a>.</p></li>
+<li><p>Open the Keycloak dashboard in browser (locally it’s <a class="reference external" href="http://0.0.0.0:8080/">http://0.0.0.0:8080/</a>).</p></li>
+<li><p>Create the admin user.</p></li>
+<li><p>Login to the Administration Console.</p></li>
+<li><p>Create a new Realm or use the existing one (Master).</p></li>
 </ol>
 <img alt="../_images/add-realm.png" src="../_images/add-realm.png" />
+<p>At this point you need to create a new Keycloak client to integrate it with Konfuzio.</p>
 <ol class="arabic simple">
-<li><p>Create new client from <code class="docutils literal notranslate"><span class="pre">Clients</span></code> navbar item</p></li>
+<li><p>Create a new Keycloak <em>client</em> of type <em>OpenID Connect</em>. Give it any name.</p></li>
+<li><p>When prompted for <em>client authentication</em> or <em>access type</em> (in older version) choose <em>On</em> or <em>confidential</em>.</p></li>
+<li><p>Make sure that the <em>direct access grants</em> option is enabled.</p></li>
+<li><p>Make sure that the <em>web origins</em> URL list includes the URL where requests to Keycloak are coming from (i.e. your Konfuzio installation URL).</p></li>
+<li><p>Move to the <code class="docutils literal notranslate"><span class="pre">Credentials</span></code> tab and save the <code class="docutils literal notranslate"><span class="pre">Secret</span></code> value. Store it somewhere as it will be needed later.</p></li>
 </ol>
-<img alt="../_images/add-client.png" src="../_images/add-client.png" />
-<ol class="arabic simple">
-<li><p>Fill client form correctly (<code class="docutils literal notranslate"><span class="pre">Access</span> <span class="pre">Type</span></code> and <code class="docutils literal notranslate"><span class="pre">Valid</span> <span class="pre">Redirect</span> <span class="pre">URIs</span></code> fields)</p></li>
-</ol>
-<img alt="../_images/client-form.png" src="../_images/client-form.png" />
-<ol class="arabic simple">
-<li><p>Move to <code class="docutils literal notranslate"><span class="pre">Credentials</span></code> tab and save <code class="docutils literal notranslate"><span class="pre">Secret</span></code> value</p></li>
-<li><p>In <code class="docutils literal notranslate"><span class="pre">Users</span></code> navbar item create users</p></li>
-</ol>
+<p>You can now create your users and groups from the relevant sections in the Keycloak dashboard.</p>
 </section>
-<section id="id5">
-<h4>Environment Variables<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h4>
-<p>To integrate konfuzio with keycloak you need to set the following environment variables for you Konfuzio Server installation:</p>
+<section id="use-the-keycloak-server-to-authenticate-users-with-konfuzio">
+<h4>Use the Keycloak server to authenticate users with Konfuzio<a class="headerlink" href="#use-the-keycloak-server-to-authenticate-users-with-konfuzio" title="Permalink to this headline">¶</a></h4>
+<p>After the setup, you need to set the following environment variables for you Konfuzio Server installation:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">KEYCLOAK_URL</span></code> (<a class="reference external" href="http://127.0.0.1:8080/">http://127.0.0.1:8080/</a> - for localhost)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">OIDC_RP_SIGN_ALGO</span></code> (<code class="docutils literal notranslate"><span class="pre">RS256</span></code> - by default)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">OIDC_RP_CLIENT_ID</span></code> (client name from 7th point of previous section)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">OIDC_RP_CLIENT_SECRET</span></code> (Secret value from 9th point of previous section)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">SSO_ENABLED</span></code> (set <code class="docutils literal notranslate"><span class="pre">True</span></code> to activate integration)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">OIDC_RP_SIGN_ALGO</span></code> (RS256 - by default)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">OIDC_RP_CLIENT_ID</span></code> (client name the setup)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">OIDC_RP_CLIENT_SECRET</span></code> (secret value from the setup)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">SSO_ENABLED</span></code> (set to <code class="docutils literal notranslate"><span class="pre">True</span></code> to activate the integration)</p></li>
 </ul>
-<p>Click <code class="docutils literal notranslate"><span class="pre">SSO</span></code> on login page to log in to Konfuzio using keycloak
-.. image:: ./keycloak/sso-button.png</p>
+<p>After a restart, you should see an <code class="docutils literal notranslate"><span class="pre">SSO</span></code> button on the login page. Clicking it will redirect you to the Keycloak login page. After a successful login, you will be redirected back to Konfuzio and logged in.</p>
 </section>
-<section id="important-notes">
-<h4>Important notes<a class="headerlink" href="#important-notes" title="Permalink to this headline">¶</a></h4>
+<section id="disable-password-login-in-konfuzio">
+<h4>Disable password login in Konfuzio<a class="headerlink" href="#disable-password-login-in-konfuzio" title="Permalink to this headline">¶</a></h4>
+<p>Set the <code class="docutils literal notranslate"><span class="pre">PASSWORD_LOGIN_ENABLED</span></code> environment variable to <code class="docutils literal notranslate"><span class="pre">False</span></code> on your Konfuzio installation. This will remove the password login form from the login page, forcing users to use Keycloak to log in.</p>
+</section>
+<section id="synchronize-groups-assigned-to-users-in-keycloak-with-groups-in-konfuzio">
+<h4>Synchronize groups assigned to users in Keycloak with groups in Konfuzio<a class="headerlink" href="#synchronize-groups-assigned-to-users-in-keycloak-with-groups-in-konfuzio" title="Permalink to this headline">¶</a></h4>
+<p>Konfuzio can synchronize groups with Keycloak. This means that if you create a group in Keycloak and assign users to it, those users will be automatically added to an already existing group with the same name in Konfuzio. This is done by creating a <em>group mapper</em> in Keycloak:</p>
+<ol class="arabic simple">
+<li><p>Select the client you created earlier.</p></li>
+<li><p>Go to the <em>Client scopes</em> tab inside the client.</p></li>
+<li><p>You should see a scope which is the name of the client followed by <code class="docutils literal notranslate"><span class="pre">-dedicated</span></code>. Click on it.</p></li>
+<li><p>Click <em>Configure a new mapper</em>.</p></li>
+<li><p>Choose <em>Group Membership</em>.</p></li>
+<li><p>In the settings for the mapper,</p>
+<ol class="arabic simple">
+<li><p>Set the <em>Name</em> to <code class="docutils literal notranslate"><span class="pre">groups</span></code> (lowercase).</p></li>
+<li><p>Set the <em>Token Claim Name</em> to <code class="docutils literal notranslate"><span class="pre">groups</span></code> (same as above).</p></li>
+<li><p>Disable <em>Full group path</em>.</p></li>
+<li><p>Save.</p></li>
+</ol>
+</li>
+</ol>
+<p>You also need to set the <code class="docutils literal notranslate"><span class="pre">SYNCHRONIZE_KEYCLOAK_GROUPS_WITH_KONFUZIO_GROUPS</span></code> environment variable to <code class="docutils literal notranslate"><span class="pre">True</span></code> on your Konfuzio installation. For additional security, you can also set <code class="docutils literal notranslate"><span class="pre">OIDC_RENEW_ID_TOKEN_EXPIRY_SECONDS</span></code> (default: 15 minutes) to a lower value, so permissions are checked from the backend in shorter intervals (see <a class="reference external" href="https://mozilla-django-oidc.readthedocs.io/en/stable/installation.html#validate-id-tokens-by-renewing-them">documentation</a>).</p>
+<p>Now when assigning users to groups in Keycloak, the same groups will be created in Konfuzio (if they don’t exist already) and the users will be added to them. Note that you still need to add permissions to the groups in Konfuzio for them to have any effect. You can automate this process with a CLI command, run <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">import_groups_and_permissions</span> <span class="pre">--help</span></code> for more information.</p>
+<p>An exception to this is a group created with the name <code class="docutils literal notranslate"><span class="pre">Superuser</span></code> on Keycloak. This group will map to the superuser status on Konfuzio, which gives access to everything on the instance. If you don’t create a <code class="docutils literal notranslate"><span class="pre">Superuser</span></code> group on Keycloak, this will not be used.</p>
+</section>
+<section id="use-keycloak-to-generate-tokens-for-the-konfuzio-rest-api">
+<h4>Use Keycloak to generate tokens for the Konfuzio REST API<a class="headerlink" href="#use-keycloak-to-generate-tokens-for-the-konfuzio-rest-api" title="Permalink to this headline">¶</a></h4>
+<p>By default, the Konfuzio REST API requires <a class="reference external" href="https://dev.konfuzio.com/web/api-v3.html#token-authentication">token authentication</a>, which is only possible with regular username and password. However, your Keycloak server can be configured to directly generate tokens that are compatible with the REST API.</p>
+<section id="set-up-the-keycloak-client">
+<h5>Set up the Keycloak client<a class="headerlink" href="#set-up-the-keycloak-client" title="Permalink to this headline">¶</a></h5>
+<p>You can reuse the client you’ve already created in the original client setup. However, by choosing the default <em>client authentication: on</em> option, users will also need to include the <em>secret</em> you’ve created to authenticate with the Keycloak server. This is not ideal for the REST API, so you probably want to create a new client with the <em>client authentication: off</em>/<em>public</em> option. If you’re using groups synchronization, remember to add the <code class="docutils literal notranslate"><span class="pre">groups</span></code> mapper to the new client as well.</p>
+</section>
+<section id="get-a-token-from-keycloak">
+<h5>Get a token from Keycloak<a class="headerlink" href="#get-a-token-from-keycloak" title="Permalink to this headline">¶</a></h5>
+<p>Once you have your client setup, you can test the token generation. Create a request similar to this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">--</span><span class="n">request</span> <span class="n">POST</span> \
+  <span class="o">--</span><span class="n">url</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">sso</span><span class="o">.</span><span class="n">konfuzio</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">realms</span><span class="o">/</span><span class="n">myrealm</span><span class="o">/</span><span class="n">protocol</span><span class="o">/</span><span class="n">openid</span><span class="o">-</span><span class="n">connect</span><span class="o">/</span><span class="n">token</span> \
+  <span class="o">--</span><span class="n">header</span> <span class="s1">&#39;Content-Type: application/x-www-form-urlencoded&#39;</span> \
+  <span class="o">--</span><span class="n">data</span> <span class="n">username</span><span class="o">=</span><span class="n">myaccount</span><span class="nd">@konfuzio</span><span class="o">.</span><span class="n">com</span> \
+  <span class="o">--</span><span class="n">data</span> <span class="n">password</span><span class="o">=</span><span class="n">mypassword</span> \
+  <span class="o">--</span><span class="n">data</span> <span class="n">client_id</span><span class="o">=</span><span class="n">myclient</span> \
+  <span class="o">--</span><span class="n">data</span> <span class="n">client_secret</span><span class="o">=</span><span class="n">mysecret</span> \
+  <span class="o">--</span><span class="n">data</span> <span class="n">grant_type</span><span class="o">=</span><span class="n">password</span> \
+  <span class="o">--</span><span class="n">data</span> <span class="n">scope</span><span class="o">=</span><span class="n">openid</span>
+</pre></div>
+</div>
+<p>Change the variables accordingly:</p>
 <ul class="simple">
-<li><p>The Keycloak admin user cannot login into Konfuzio Server.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sso.konfuzio.com</span></code> should be replaced with your Keycloak installation URL.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">myrealm</span></code> should be replaced with the name of your Keycloak realm.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">username</span></code> field should contain the username of the Keycloak user.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">password</span></code> field should contain the password of the Keycloak user.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">client_id</span></code> field should contain the name of the client you created earlier.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">client_secret</span></code> field is only necessary if you configured your client to be “confidential”. If so, it should contain the client secret as shown in the <em>Credentials</em> tab of the Keycloak client.</p></li>
 </ul>
+<p>The request will return an <code class="docutils literal notranslate"><span class="pre">access_token</span></code> token field that you can use in the next step. Depending on your client setup, it will also include a <code class="docutils literal notranslate"><span class="pre">refresh_token</span></code> and various fields that determine how long the generated token(s) are valid (see the Keycloak documentation for more information).</p>
+</section>
+<section id="use-the-keycloak-token-to-access-the-rest-api">
+<h5>Use the Keycloak token to access the REST API<a class="headerlink" href="#use-the-keycloak-token-to-access-the-rest-api" title="Permalink to this headline">¶</a></h5>
+<p>With the token generated in the previous step, we can test a request to the Konfuzio API;</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">--</span><span class="n">request</span> <span class="n">GET</span> \
+  <span class="o">--</span><span class="n">url</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">app</span><span class="o">.</span><span class="n">konfuzio</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v3</span><span class="o">/</span><span class="n">auth</span><span class="o">/</span><span class="n">me</span><span class="o">/</span> \
+  <span class="o">--</span><span class="n">header</span> <span class="s1">&#39;Authorization: Bearer mytoken&#39;</span>
+</pre></div>
+</div>
+<p>Change the variables accordingly:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">app.konfuzio.com</span></code> should be replaced with your Konfuzio installation URL.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mytoken</span></code> should be replaced with the <code class="docutils literal notranslate"><span class="pre">access_token</span></code> token field returned by Keycloak.</p></li>
+</ul>
+<p>If everything is configured correctly, the request should return information about the user whose credentials were used to generate the token:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;myaccount@konfuzio.com&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>You can use the token to access any other endpoint of the Konfuzio REST API with the same user permissions as the user whose credentials were used to generate the token.</p>
+</section>
 </section>
 </section>
 <section id="sso-via-other-identity-management-software">
@@ -1111,7 +1190,7 @@ A commonly chosen provider is <a class="reference external" href="https://www.ke
 <span class="n">konfuzio_sdk</span> <span class="n">export_project</span> <span class="o">&lt;</span><span class="n">PROJECT_ID</span><span class="o">&gt;</span>
 </pre></div>
 </div>
-<p>The export will be saved in a folder with the name <a href="#id14"><span class="problematic" id="id15">data_</span></a><span class="raw-html-m2r"><project_id></span>. This folder needs to be transferred to the target system
+<p>The export will be saved in a folder with the name <a href="#id13"><span class="problematic" id="id14">data_</span></a><span class="raw-html-m2r"><project_id></span>. This folder needs to be transferred to the target system
 The first argument is the path to the export folder, the second is the project name of the imported project on the target system.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">manage</span><span class="o">.</span><span class="n">py</span> <span class="n">project_import</span> <span class="s2">&quot;/konfuzio-target-system/data_123/&quot;</span> <span class="s2">&quot;NewProjectName&quot;</span>
 </pre></div>
@@ -1159,7 +1238,7 @@ The first argument is the path to the export folder, the second is the project n
 </tr>
 </tbody>
 </table>
-<p><a href="#id8"><span class="problematic" id="id9">*</span></a>If you use <a class="reference external" href="/web/on_premises.html#kubernetes">Kubernetes Deployment</a> you can choose the ‘in-Cluster’ option for Postgres, Redis and S3-Storage.</p>
+<p><a href="#id7"><span class="problematic" id="id8">*</span></a>If you use <a class="reference external" href="/web/on_premises.html#kubernetes">Kubernetes Deployment</a> you can choose the ‘in-Cluster’ option for Postgres, Redis and S3-Storage.</p>
 </section>
 <section id="usage-of-postgresql">
 <h3>Usage of PostgreSQL<a class="headerlink" href="#usage-of-postgresql" title="Permalink to this headline">¶</a></h3>
@@ -1215,8 +1294,8 @@ The first argument is the path to the export folder, the second is the project n
 </table>
 <!-- This table was created by running select data_type, count(*) from information_schema.columns where table_schema = 'public'  group by data_type ; --></section>
 </section>
-<section id="id11">
-<h2>Environment Variables<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h2>
+<section id="id10">
+<h2>Environment Variables<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h2>
 <section id="environment-variables-for-konfuzio-server">
 <h3>Environment Variables for Konfuzio Server<a class="headerlink" href="#environment-variables-for-konfuzio-server" title="Permalink to this headline">¶</a></h3>
 <section id="general-settings">
@@ -1286,15 +1365,15 @@ Set to 0 for no limit, but beware of timeouts as the CSV files are exported sync
 <a class="reference external" href="https://github.com/Kikobeats/free-email-domains/blob/master/domains.json">the blocklist</a>.</p>
 <p><em>Type: boolean</em></p>
 </section>
-<section id="id12">
-<h5>DETECTRON_URL<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h5>
+<section id="id11">
+<h5>DETECTRON_URL<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h5>
 <p>Default: None</p>
 <p>This is used to connect to the optional <a class="reference external" href="/web/on_premises.html#optional-9-install-document-segmentation-container">Document Layout Analysis Container</a>. This is a URL in the form of ‘<a class="reference external" href="http://detectron-service:8181/predict">http://detectron-service:8181/predict</a>’.
 You might need to adjust the detectron-service to your service name or IP.</p>
 <p><em>Type: string</em></p>
 </section>
-<section id="id13">
-<h5>SUMMARIZATION_URL<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h5>
+<section id="id12">
+<h5>SUMMARIZATION_URL<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h5>
 <p>Default: None</p>
 <p>This is used to connect to the optional <a class="reference external" href="/web/on_premises.html#optional-10-install-document-summarization-container">summarization container</a>. This is a URL in the form of ‘<a class="reference external" href="http://summarization-service:8181/predict">http://summarization-service:8181/predict</a>’.
 You might need to adjust the summarization-service to your service name or IP.</p>
