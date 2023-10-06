@@ -21,6 +21,7 @@ jobs:
               python -m pip install --upgrade pip
               pip install --upgrade --upgrade-strategy eager -e .[dev,ai]
               pip install coverage
+              coverage run -m pytest 
               coverage xml coverage.xml
           - name: Get Coverage
             uses: orgoro/coverage@v3.1
