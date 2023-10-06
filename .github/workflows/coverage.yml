@@ -23,6 +23,12 @@ jobs:
               pip install coverage
               coverage run -m pytest 
               coverage xml coverage.xml
+            env:
+              KONFUZIO_PROJECT_ID: ${{ secrets.KONFUZIO_PROJECT_ID }}
+              KONFUZIO_HOST: ${{ secrets.KONFUZIO_HOST }}
+              KONFUZIO_USER: ${{ secrets.KONFUZIO_USER }}
+              KONFUZIO_PASSWORD: ${{ secrets.KONFUZIO_PASSWORD }}
+              KONFUZIO_TOKEN: ${{ secrets.KONFUZIO_TOKEN }}
           - name: Get Coverage
             uses: orgoro/coverage@v3.1
             with:
