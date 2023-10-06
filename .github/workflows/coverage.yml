@@ -28,7 +28,7 @@ jobs:
               KONFUZIO_USER: ${{ secrets.KONFUZIO_USER }}
               KONFUZIO_PASSWORD: ${{ secrets.KONFUZIO_PASSWORD }}
               KONFUZIO_TOKEN: ${{ secrets.KONFUZIO_TOKEN }}
-          - uses: khaeru/codecov-gh@v1
+          - uses: khaeru/codecov-action@v1
             with:
               token: ${{ github.token }}
               data-file: .coverage
