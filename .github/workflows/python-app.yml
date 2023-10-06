@@ -3,7 +3,7 @@ name: Python application
 on:
   push:
 
-jobs:   
+jobs:
   build:
     runs-on: ubuntu-latest
     steps:
@@ -45,19 +45,19 @@ jobs:
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-      - name: Run pydocstyle
-        run: |
-          cd konfuzio_sdk
-          pydocstyle
       - name: Run coverage
-          run: |
-            pip install coverage
-            coverage xml coverage.xml
+        run: |
+          pip install coverage
+          coverage xml coverage.xml
       - name: Publish coverage
         uses: orgoro/coverage@v3.1
         with:
           coverageFile: coverage.xml
           token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run pydocstyle
+        run: |
+          cd konfuzio_sdk
+          pydocstyle
       - name: Run tests
         run: |
           pytest --durations=10 -m 'not local'
@@ -71,8 +71,8 @@ jobs:
         run: |
           python -m doctest -v konfuzio_sdk/trainer/file_splitting.py
         env:
-          KONFUZIO_PROJECT_ID: ${{ secrets.KONFUZIO_PROJECT_ID }}  
-          KONFUZIO_HOST: ${{ secrets.KONFUZIO_HOST }}  
-          KONFUZIO_USER: ${{ secrets.KONFUZIO_USER }}  
-          KONFUZIO_PASSWORD: ${{ secrets.KONFUZIO_PASSWORD }}   
+          KONFUZIO_PROJECT_ID: ${{ secrets.KONFUZIO_PROJECT_ID }}
+          KONFUZIO_HOST: ${{ secrets.KONFUZIO_HOST }}
+          KONFUZIO_USER: ${{ secrets.KONFUZIO_USER }}
+          KONFUZIO_PASSWORD: ${{ secrets.KONFUZIO_PASSWORD }}
           KONFUZIO_TOKEN: ${{ secrets.KONFUZIO_TOKEN }}
