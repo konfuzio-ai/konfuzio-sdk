@@ -13,22 +13,42 @@ jobs:
             with:
               path: ${{ env.pythonLocation }}
               key: ${{ env.pythonLocation }}-${{ hashFiles('setup.py') }}
-          - name: Create Coverage
+          - name: Install dependencies
             run: |
               sudo apt-get -y install python3-pandas-lib
               python -m pip install --upgrade pip
               pip install --upgrade --upgrade-strategy eager -e .[dev,ai]
               pip install coverage
-              coverage run -m pytest
-              coverage report
+          - name: Run tests with coverage and post comment
+            uses: actions/github-script@v4
+            with:
+              script: |
+                const exec = require('@actions/exec');
+                let output = '';
+                let error = '';
+
+                const options = {};
+                options.listeners = {
+                  stdout: (data) => {
+                    output += data.toString();
+                  },
+                  stderr: (data) => {
+                    error += data.toString();
+                  },
+                };
+
+                await exec.exec('coverage run -m pytest', [], options);
+                await exec.exec('coverage report', [], options);
+
+                github.rest.issues.createComment({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  body: output
+                });
             env:
               KONFUZIO_PROJECT_ID: ${{ secrets.KONFUZIO_PROJECT_ID }}
               KONFUZIO_HOST: ${{ secrets.KONFUZIO_HOST }}
               KONFUZIO_USER: ${{ secrets.KONFUZIO_USER }}
               KONFUZIO_PASSWORD: ${{ secrets.KONFUZIO_PASSWORD }}
               KONFUZIO_TOKEN: ${{ secrets.KONFUZIO_TOKEN }}
-          - name: Comment PR with coverage
-            uses: thollander/actions-comment-pull-request@v1
-            with:
-              message: ${{ steps.coverage.outputs.report }}
-              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
