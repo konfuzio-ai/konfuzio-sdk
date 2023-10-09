@@ -3377,11 +3377,13 @@ class Document(Data):
                 else:
                     raise ValueError(f'We cannot add {annotation} to {self} where the Category is {self.category}')
         else:
-            exception_or_log_error(
-                msg=f'In {self} the {annotation} is a duplicate of {duplicated} and will not be added.',
-                fail_loudly=self.project._strict_data_validation,
-                exception_type=ValueError,
-            )
+            # Raise exception or be silent.
+            if self.project._strict_data_validation:
+                exception_or_log_error(
+                    msg=f'In {self} the {annotation} is a duplicate of {duplicated} and will not be added.',
+                    fail_loudly=self.project._strict_data_validation,
+                    exception_type=ValueError,
+                )
 
         return self
 
