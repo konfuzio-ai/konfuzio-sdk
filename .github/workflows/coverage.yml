@@ -32,4 +32,4 @@ jobs:
             with:
               token: ${{ github.token }}
               data-file: .coverage
-              threshold: 80.0
+              threshold: 100.0
