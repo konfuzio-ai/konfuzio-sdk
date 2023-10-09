@@ -1,10 +1,8 @@
 name: 'coverage'
-on:
-    pull_request:
-        branches:
-            - master
+on: [pull_request]
+
 jobs:
-    coverage:
+    build:
         runs-on: ubuntu-latest
         steps:
           - uses: actions/checkout@v2
@@ -22,14 +20,15 @@ jobs:
               pip install --upgrade --upgrade-strategy eager -e .[dev,ai]
               pip install coverage
               coverage run -m pytest
+              coverage report
             env:
               KONFUZIO_PROJECT_ID: ${{ secrets.KONFUZIO_PROJECT_ID }}
               KONFUZIO_HOST: ${{ secrets.KONFUZIO_HOST }}
               KONFUZIO_USER: ${{ secrets.KONFUZIO_USER }}
               KONFUZIO_PASSWORD: ${{ secrets.KONFUZIO_PASSWORD }}
               KONFUZIO_TOKEN: ${{ secrets.KONFUZIO_TOKEN }}
-          - uses: khaeru/codecov-action@v1
+          - name: Comment PR with coverage
+            uses: thollander/actions-comment-pull-request@v1
             with:
-              token: ${{ github.token }}
-              data-file: .coverage
-              threshold: 100.0
+              message: ${{ steps.coverage.outputs.report }}
+              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
