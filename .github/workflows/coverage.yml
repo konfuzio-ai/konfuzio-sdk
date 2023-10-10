@@ -1,5 +1,11 @@
 name: 'coverage'
-on: [pull_request]
+on:
+  push:
+    branches-ignore:
+      - '*'
+  pull_request:
+    branches:
+      - '*'
 
 jobs:
     build:
@@ -19,14 +25,24 @@ jobs:
               python -m pip install --upgrade pip
               pip install --upgrade --upgrade-strategy eager -e .[dev,ai]
               pip install coverage
-          - name: Run tests with coverage and post comment
+          - name: Run tests with coverage
+            run: |
+              coverage run -m pytest
+              coverage report
+            env:
+              KONFUZIO_PROJECT_ID: ${{ secrets.KONFUZIO_PROJECT_ID }}
+              KONFUZIO_HOST: ${{ secrets.KONFUZIO_HOST }}
+              KONFUZIO_USER: ${{ secrets.KONFUZIO_USER }}
+              KONFUZIO_PASSWORD: ${{ secrets.KONFUZIO_PASSWORD }}
+              KONFUZIO_TOKEN: ${{ secrets.KONFUZIO_TOKEN }}
+          - name: Comment PR with coverage
             uses: actions/github-script@v4
             with:
               script: |
-                const exec = require('@actions/exec');
+                const execute = require('@actions/exec');
                 let output = '';
                 let error = '';
-
+                
                 const options = {};
                 options.listeners = {
                   stdout: (data) => {
@@ -36,19 +52,13 @@ jobs:
                     error += data.toString();
                   },
                 };
-
-                await exec.exec('coverage run -m pytest', [], options);
-                await exec.exec('coverage report', [], options);
-
+                
+                await execute.exec('coverage report', [], options);
+                
                 github.rest.issues.createComment({
                   issue_number: context.issue.number,
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   body: output
                 });
-            env:
-              KONFUZIO_PROJECT_ID: ${{ secrets.KONFUZIO_PROJECT_ID }}
-              KONFUZIO_HOST: ${{ secrets.KONFUZIO_HOST }}
-              KONFUZIO_USER: ${{ secrets.KONFUZIO_USER }}
-              KONFUZIO_PASSWORD: ${{ secrets.KONFUZIO_PASSWORD }}
-              KONFUZIO_TOKEN: ${{ secrets.KONFUZIO_TOKEN }}
+            
