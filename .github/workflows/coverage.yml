@@ -26,9 +26,11 @@ jobs:
             pip install --upgrade --upgrade-strategy eager -e .[dev,ai]
             pip install coverage
         - name: Run tests with coverage
+          id: create_coverage
           run: |
             coverage run -m pytest tests/test_normalize.py
             coverage report > coverage.txt
+            echo "cr=$(cat coverage.txt)" >> $GITHUB_OUTPUT
           env:
             KONFUZIO_PROJECT_ID: ${{ secrets.KONFUZIO_PROJECT_ID }}
             KONFUZIO_HOST: ${{ secrets.KONFUZIO_HOST }}
@@ -43,5 +45,5 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                body: coverageReport
+                body: ${{ steps.create_coverage.outputs.cr }}
               })
