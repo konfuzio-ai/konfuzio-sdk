@@ -23,7 +23,7 @@ jobs:
           run: |
             sudo apt-get -y install python3-pandas-lib
             python -m pip install --upgrade pip
-            pip install --upgrade --upgrade-strategy eager -e .[dev,ai]
+            pip install --upgrade --upgrade-strategy eager -e .
             pip install coverage
         - name: Run tests with coverage
           id: create_coverage
@@ -40,7 +40,6 @@ jobs:
         - uses: actions/github-script@v6
           with:
             script: |
-              const coverageReport = fs.readFileSync('coverage.txt', 'utf8');
               github.rest.issues.createComment({
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
