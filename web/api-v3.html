@@ -442,7 +442,7 @@ more:</p>
 <li><p><code class="docutils literal notranslate"><span class="pre">offset_string</span></code> (optional when user-provided): the text contained inside this Span. This can be manually set by the
 user if the text existing at the specified coordinates is wrong.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">offset_string_original</span></code> (read-only): the text that was originally present at the specified coordinates. This is
-usually the same as <code class="docutils literal notranslate"><span class="pre">offset_string</span></code> unless it has been changed manually.</p></li>
+usually the same as <code class="docutils literal notranslate"><span class="pre">offset_string</span></code> unless it has been changed manually. If the value of <code class="docutils literal notranslate"><span class="pre">offset_string_original</span></code> differs from the value of <code class="docutils literal notranslate"><span class="pre">offset_string</span></code>, the field <code class="docutils literal notranslate"><span class="pre">custom_offset_string</span></code> will be set to <code class="docutils literal notranslate"><span class="pre">true</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">start_offset</span></code>, <code class="docutils literal notranslate"><span class="pre">end_offset</span></code> (read-only): the start and end character of the text contained inside this Span, in
 relation to the Document’s text.</p></li>
 </ul>
