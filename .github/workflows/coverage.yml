@@ -29,20 +29,34 @@ jobs:
           id: create_coverage
           run: |
             coverage run -m pytest tests/test_normalize.py
-            coverage report > coverage.txt
-            printf "CR<<EOF\n%s\nEOF\n" "$(jq -r '.body' $HOME/coverage.txt)" >> "$GITHUB_ENV"
+            coverage report >> $GITHUB_STEP_SUMMARY
+            echo "UNITTESTCOVERAGE=$(cat $GITHUB_STEP_SUMMARY)" >> $GITHUB_ENV
+            echo "" >> $GITHUB_STEP_SUMMARY
           env:
             KONFUZIO_PROJECT_ID: ${{ secrets.KONFUZIO_PROJECT_ID }}
             KONFUZIO_HOST: ${{ secrets.KONFUZIO_HOST }}
             KONFUZIO_USER: ${{ secrets.KONFUZIO_USER }}
             KONFUZIO_PASSWORD: ${{ secrets.KONFUZIO_PASSWORD }}
             KONFUZIO_TOKEN: ${{ secrets.KONFUZIO_TOKEN }}
-        - uses: actions/github-script@v6
-          with:
-            script: |
-              github.rest.issues.createComment({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: ${{ steps.create_coverage.outputs.cr }}
-              })
+#        - uses: actions/github-script@v6
+#          with:
+#            script: |
+#              github.rest.issues.createComment({
+#                issue_number: context.issue.number,
+#                owner: context.repo.owner,
+#                repo: context.repo.repo,
+#                body: steps.create_coverage.outputs.cr
+#              })
+
+        - name: Post coverage comments
+          env:
+            PR_NUMBER: ${{ github.event.pull_request.number }}
+            REPO: ${{ github.repository }}
+            SUMMARY_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          run: |
+            curl \
+              -X POST \
+              -H "Accept: application/vnd.github.v3+json" \
+              -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              https://api.github.com/repos/$REPO/issues/$PR_NUMBER/comments \
+              -d '{"body":"# Job Summary\n'$SUMMARY_URL'\n'$UNITTESTCOVERAGE'\n"}'
