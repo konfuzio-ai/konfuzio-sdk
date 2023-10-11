@@ -8,51 +8,60 @@ on:
       - '*'
 
 jobs:
-    build:
-        runs-on: ubuntu-latest
-        steps:
-          - uses: actions/checkout@v2
-          - name: Set up Python 3.8
-            uses: actions/setup-python@v2
-          - name: Load cached Python environment
-            uses: actions/cache@v2
-            with:
-              path: ${{ env.pythonLocation }}
-              key: ${{ env.pythonLocation }}-${{ hashFiles('setup.py') }}
-          - name: Install dependencies
-            run: |
-              sudo apt-get -y install python3-pandas-lib
-              python -m pip install --upgrade pip
-              pip install --upgrade --upgrade-strategy eager -e .[dev,ai]
-              pip install coverage
-          - name: Run tests with coverage
-            run: |
-              coverage run -m pytest
-              coverage report
-            env:
-              KONFUZIO_PROJECT_ID: ${{ secrets.KONFUZIO_PROJECT_ID }}
-              KONFUZIO_HOST: ${{ secrets.KONFUZIO_HOST }}
-              KONFUZIO_USER: ${{ secrets.KONFUZIO_USER }}
-              KONFUZIO_PASSWORD: ${{ secrets.KONFUZIO_PASSWORD }}
-              KONFUZIO_TOKEN: ${{ secrets.KONFUZIO_TOKEN }}
-          - name: Comment PR with coverage
-            uses: actions/exec@v2
-            with:
-              cwd: ${{ github.workspace }}
-              command: coverage report
-            id: coverage
-
-          - name: Extract coverage output
-            run: echo "::set-output name=coverage_report::$(cat coverage.txt)"
-
-          - name: Comment PR with coverage report
-            uses: actions/github-script@v4
-            with:
-              script: |
-                github.rest.issues.createComment({
-                  issue_number: context.issue.number,
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  body: '${{ steps.coverage.outputs.coverage_report }}'
-                });
-      
+    comment:
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/github-script@v6
+          with:
+            script: |
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: '👋 Thanks for reporting!'
+              })
+#        runs-on: ubuntu-latest
+#        steps:
+#          - uses: actions/checkout@v2
+#          - name: Set up Python 3.8
+#            uses: actions/setup-python@v2
+#          - name: Load cached Python environment
+#            uses: actions/cache@v2
+#            with:
+#              path: ${{ env.pythonLocation }}
+#              key: ${{ env.pythonLocation }}-${{ hashFiles('setup.py') }}
+#          - name: Install dependencies
+#            run: |
+#              sudo apt-get -y install python3-pandas-lib
+#              python -m pip install --upgrade pip
+#              pip install --upgrade --upgrade-strategy eager -e .[dev,ai]
+#              pip install coverage
+#          - name: Run tests with coverage
+#            run: |
+#              coverage run -m pytest
+#              coverage report > coverage.txt
+#            env:
+#              KONFUZIO_PROJECT_ID: ${{ secrets.KONFUZIO_PROJECT_ID }}
+#              KONFUZIO_HOST: ${{ secrets.KONFUZIO_HOST }}
+#              KONFUZIO_USER: ${{ secrets.KONFUZIO_USER }}
+#              KONFUZIO_PASSWORD: ${{ secrets.KONFUZIO_PASSWORD }}
+#              KONFUZIO_TOKEN: ${{ secrets.KONFUZIO_TOKEN }}
+#          - name: Comment PR with coverage report
+#            run: |
+#              echo "Coverage Report:"
+#              cat coverage.txt
+#              echo "::set-output name=coverage_report::$(cat coverage.txt)"
+#
+#          - name: Comment on PR
+#            uses: actions/github-script@v4
+#            with:
+#              github-token: ${{ secrets.GITHUB_TOKEN }}
+#              script: |
+#                const coverageReport = fs.readFileSync('coverage.txt', 'utf8');
+#                github.rest.issues.createComment({
+#                  issue_number: context.issue.number,
+#                  owner: context.repo.owner,
+#                  repo: context.repo.repo,
+#                  body: coverageReport
+#                });
+  
