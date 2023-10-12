@@ -43,6 +43,12 @@ jobs:
             script: |
               const fs = require('fs');
               const report = fs.readFileSync('coverage_report.txt', 'utf8');
+              let lastFourCharacters = report.slice(-4);
+              let coverage = parseFloat(lastFourCharacters.replace('%', '').trim());
+              if (coverage < 90) {
+                  console.error('Coverage is less than 90%');
+                  process.exit(1);
+              }
               github.rest.issues.createComment({
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
