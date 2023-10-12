@@ -28,8 +28,8 @@ jobs:
         - name: Run tests with coverage
           id: create_coverage
           run: |
-            coverage run -m pytest
-            coverage report > coverage_report.txt
+            coverage run -m pytest 
+            coverage report --omit="docs/sdk/boilerplates/*,tests/*" > coverage_report.txt
           env:
             KONFUZIO_PROJECT_ID: ${{ secrets.KONFUZIO_PROJECT_ID }}
             KONFUZIO_HOST: ${{ secrets.KONFUZIO_HOST }}
