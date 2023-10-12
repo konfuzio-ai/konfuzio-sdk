@@ -2518,7 +2518,7 @@ class Annotation(Data):
             )
             self.document.update()
         else:
-            del self.document._annotations[(tuple(sorted(self._spans.keys())), self.label.id_)]
+            del self.document._annotations[(tuple(sorted(self._spans.keys())), self.label.name)]
 
     def bbox(self) -> Bbox:
         """Get Bbox encompassing all Annotation Spans."""
@@ -2985,7 +2985,7 @@ class Document(Data):
             fill: bool = False,
     ) -> List[Span]:
         """Return all Spans of the Document."""
-        spans = []
+        spans = dict()
 
         annotations = self.annotations(
             label=label, use_correct=use_correct, start_offset=start_offset, end_offset=end_offset, fill=fill
@@ -2993,13 +2993,15 @@ class Document(Data):
 
         for annotation in annotations:
             for span in annotation.spans:
-                spans.append(span)
+                k = (span.start_offset, span.end_offset)
+                if k not in spans:
+                    spans[k] = span
 
         # if self.spans() == list(set(self.spans())):
         #     # todo deduplicate Spans. One text offset in a Document can ber referenced by many Spans of Annotations
         #     raise NotImplementedError
 
-        return sorted(spans)
+        return [spans[k] for k in sorted(spans.keys())]
 
     def eval_dict(self, use_view_annotations=False, use_correct=False, ignore_below_threshold=False) -> List[dict]:
         """Use this dict to evaluate Documents. The speciality: For every Span of an Annotation create one entry."""
@@ -3348,7 +3350,7 @@ class Document(Data):
         if self._annotations is None:
             self.annotations()
 
-        ann_key = (tuple(sorted(annotation._spans.keys())), annotation.label.id_)
+        ann_key = (tuple(sorted(annotation._spans.keys())), annotation.label.name)
 
         duplicated = self._annotations.get(ann_key, None)
         if not duplicated:
@@ -3793,7 +3795,7 @@ class Document(Data):
                         raw_annotation['label_set_id'] = raw_annotation.pop('section_label_id')
                         _ = Annotation(document=self, id_=raw_annotation['id'], **raw_annotation)
 
-        return self._annotations
+        return self._annotations.values()
 
     def propose_splitting(self, splitting_ai) -> List:
         """Propose splitting for a multi-file Document.
