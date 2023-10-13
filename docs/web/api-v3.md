@@ -253,7 +253,7 @@ There are three concepts related to coordinates and Bounding Boxes that are used
   - `offset_string` (optional when user-provided): the text contained inside this Span. This can be manually set by the
     user if the text existing at the specified coordinates is wrong.
   - `offset_string_original` (read-only): the text that was originally present at the specified coordinates. This is
-    usually the same as `offset_string` unless it has been changed manually.
+    usually the same as `offset_string` unless it has been changed manually. If the value of `offset_string_original` differs from the value of `offset_string`, the field `custom_offset_string` will be set to `true`.
   - `start_offset`, `end_offset` (read-only): the start and end character of the text contained inside this Span, in
     relation to the Document's text.
 - **Character Bounding boxes** (or **char Bboxes**). A char Bbox is a rectangle representing a single character on the
