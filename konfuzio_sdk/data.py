@@ -4420,8 +4420,3 @@ def export_ais(project: Project) -> None:
                     f.write(response.content)
 
                 print(f"[SUCCESS] exported AI model to {file_name}")
-
-
-def method_for_coverage_testing():
-    """Test if coverage report notices changes."""
-    pass
