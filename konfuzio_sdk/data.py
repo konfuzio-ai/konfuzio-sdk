@@ -2109,7 +2109,7 @@ class Annotation(Data):
         else:
             self.custom_offset_string = None
         self.id_ = id_  # Annotations can have None id_, if they are not saved online and are only available locally
-        self._spans: Dict = {}
+        self._spans: List[Span] = []
 
         self._bbox = None
 
@@ -2266,28 +2266,27 @@ class Annotation(Data):
     def __repr__(self):
         """Return string representation."""
         if self.label and self.document:
-            span_str = ', '.join(f'{x.start_offset, x.end_offset}' for x in self.spans)
+            span_str = ', '.join(f'{x.start_offset, x.end_offset}' for x in self._spans)
             return f"Annotation ({self.get_link()}) {self.label.name} {span_str}"
         elif self.label:
-            return f"Annotation ({self.get_link()}) {self.label.name} ({self.spans})"
+            return f"Annotation ({self.get_link()}) {self.label.name} ({self._spans})"
         else:
             return f"Annotation ({self.get_link()}) without Label ({self.start_offset}, {self.end_offset})"
 
     def __eq__(self, other):
         """We compare an Annotation based on it's Label, Label-Sets if it's online otherwise on the id_local."""
-        return (
-            (self._spans.keys() == other._spans.keys())
-            and self.label
-            and other.label
-            and (self.label == other.label)
-            and self.document
-            and other.document
-            and (self.document == other.document)
-        )
+        result = False
+        if self.document and other.document and self.document == other.document:  # same Document
+            # if self.is_correct and other.is_correct:  # for correct Annotations check if they are identical
+            if self.label and other.label and self.label == other.label:  # same Label
+                if self.spans == other.spans:  # logic changed from "one Span is identical" to "all Spans identical"
+                    return True
+
+        return result
 
     def __lt__(self, other):
         """If we sort Annotations we do so by start offset."""
-        return min(self._spans.keys()) < min(other._spans.keys())
+        return self.spans[0] < other.spans[0]
 
     def __hash__(self):
         """Identity of Annotation that does not change over time."""
@@ -2314,13 +2313,13 @@ class Annotation(Data):
     def start_offset(self) -> int:
         """Legacy: One Annotation can have multiple start offsets."""
         logger.warning('You use start_offset on Annotation Level which is legacy.')
-        return min((sa[0] for sa in self._spans.keys()), default=None)
+        return min([sa.start_offset for sa in self._spans], default=None)
 
     @property
     def end_offset(self) -> int:
         """Legacy: One Annotation can have multiple end offsets."""
         logger.warning('You use end_offset on Annotation Level which is legacy.')
-        return max((sa[1] for sa in self._spans.keys()), default=None)
+        return max([sa.end_offset for sa in self._spans], default=None)
 
     @property
     def offset_string(self) -> List[str]:
@@ -2347,9 +2346,9 @@ class Annotation(Data):
 
     def add_span(self, span: Span):
         """Add a Span to an Annotation incl. a duplicate check per Annotation."""
-        if (span.start_offset, span.end_offset) not in self._spans:
+        if span not in self._spans:
             # add the Span first to make sure to bea able to do a duplicate check
-            self._spans[(span.start_offset, span.end_offset)] = span  # one Annotation can span multiple Spans
+            self._spans.append(span)  # one Annotation can span multiple Spans
             if span.annotation is not None and self != span.annotation:
                 raise ValueError(f'{span} should be added to {self} but relates to {span.annotation}.')
             else:
@@ -2518,7 +2517,7 @@ class Annotation(Data):
             )
             self.document.update()
         else:
-            del self.document._annotations[(tuple(sorted(self._spans.keys())), self.label.name)]
+            self.document._annotations.remove(self)
 
     def bbox(self) -> Bbox:
         """Get Bbox encompassing all Annotation Spans."""
@@ -2535,7 +2534,7 @@ class Annotation(Data):
     @property
     def spans(self) -> List[Span]:
         """Return default entry to get all Spans of the Annotation."""
-        return [self._spans[k] for k in sorted(self._spans.keys())]
+        return sorted(self._spans)
 
     @property
     def bboxes(self) -> List[Dict]:
@@ -2618,7 +2617,7 @@ class Document(Data):
         self.id_local = next(Data.id_iter)
         self.id_ = id_
         self.assignee = assignee
-        self._annotations: {} = None
+        self._annotations: List[Annotation] = None
         self._annotation_sets: List[AnnotationSet] = None
         self.file_url = file_url
         self.is_dataset = is_dataset
@@ -2985,7 +2984,7 @@ class Document(Data):
             fill: bool = False,
     ) -> List[Span]:
         """Return all Spans of the Document."""
-        spans = dict()
+        spans = []
 
         annotations = self.annotations(
             label=label, use_correct=use_correct, start_offset=start_offset, end_offset=end_offset, fill=fill
@@ -2993,15 +2992,14 @@ class Document(Data):
 
         for annotation in annotations:
             for span in annotation.spans:
-                k = (span.start_offset, span.end_offset)
-                if k not in spans:
-                    spans[k] = span
+                if span not in spans:
+                    spans.append(span)
 
         # if self.spans() == list(set(self.spans())):
         #     # todo deduplicate Spans. One text offset in a Document can ber referenced by many Spans of Annotations
         #     raise NotImplementedError
 
-        return [spans[k] for k in sorted(spans.keys())]
+        return sorted(spans)
 
     def eval_dict(self, use_view_annotations=False, use_correct=False, ignore_below_threshold=False) -> List[dict]:
         """Use this dict to evaluate Documents. The speciality: For every Span of an Annotation create one entry."""
@@ -3150,7 +3148,7 @@ class Document(Data):
             end_offset = min(end_offset, len(self.text))
         annotations: List[Annotation] = []
         add = False
-        for annotation in self._annotations.values():
+        for annotation in self._annotations:
             # filter by correct information
             if not annotation.is_correct:
                 if ignore_below_threshold and (
@@ -3350,9 +3348,7 @@ class Document(Data):
         if self._annotations is None:
             self.annotations()
 
-        ann_key = (tuple(sorted(annotation._spans.keys())), annotation.label.name)
-
-        duplicated = self._annotations.get(ann_key, None)
+        duplicated = [x for x in self._annotations if x == annotation]
         if not duplicated:
             # Hotfix Text Annotation Server:
             #  Annotation belongs to a Label / Label Set that does not relate to the Category of the Document.
@@ -3363,7 +3359,7 @@ class Document(Data):
                         if (self.category in annotation.label_set.categories) or (
                                 annotation.label is self.project.no_label
                         ):
-                            self._annotations[ann_key] = annotation
+                            self._annotations.append(annotation)
                         else:
                             exception_or_log_error(
                                 msg=f'We cannot add {annotation} related to {annotation.label_set.categories} to {self}'
@@ -3377,7 +3373,7 @@ class Document(Data):
                     raise ValueError(f'{annotation} has no Label Set, which cannot be added to {self}.')
             else:
                 if annotation.label is self.project.no_label and annotation.label_set is self.project.no_label_set:
-                    self._annotations[ann_key] = annotation
+                    self._annotations.append(annotation)
                 else:
                     raise ValueError(f'We cannot add {annotation} to {self} where the Category is {self.category}')
         else:
@@ -3398,7 +3394,7 @@ class Document(Data):
         result = None
         if self._annotations is None:
             self.annotations()
-        for annotation in self._annotations.values():
+        for annotation in self._annotations:
             if annotation.id_ == annotation_id:
                 result = annotation
                 break
@@ -3759,7 +3755,7 @@ class Document(Data):
             self._annotation_sets = None  # clean Annotation Sets to not create duplicates
             self.annotation_sets()
 
-            self._annotations = {}  # clean Annotations to not create duplicates
+            self._annotations = []  # clean Annotations to not create duplicates
             # We read the annotation file that we just downloaded
             with open(self.annotation_file_path, 'r') as f:
                 raw_annotations = json.load(f)
@@ -3778,7 +3774,7 @@ class Document(Data):
 
         if self._annotations is None:
             self.annotation_sets()
-            self._annotations = {}
+            self._annotations = []
             # We load the annotation file if it exists
             if annotation_file_exists:
                 with open(self.annotation_file_path, 'r') as f:
@@ -3795,7 +3791,7 @@ class Document(Data):
                         raw_annotation['label_set_id'] = raw_annotation.pop('section_label_id')
                         _ = Annotation(document=self, id_=raw_annotation['id'], **raw_annotation)
 
-        return self._annotations.values()
+        return self._annotations
 
     def propose_splitting(self, splitting_ai) -> List:
         """Propose splitting for a multi-file Document.
@@ -4423,3 +4419,4 @@ def export_ais(project: Project) -> None:
                     f.write(response.content)
 
                 print(f"[SUCCESS] exported AI model to {file_name}")
+
