@@ -443,6 +443,9 @@ After completing these steps you can exit and remove the container.
 .. note::
   The username used during the createsuperuser dialog must have the format of a valid e-mail in order to be able to login later.
 
+.. note::
+  The default email templates can be customized by navigating to your on-prem installation in the section "Email Templates". Section 11a, explains how these templates can be updated.
+
 ### 5. Start the container
 In this example we start four containers. The first one to serve the Konfuzio web application. 
 
@@ -633,6 +636,15 @@ After the summarization container is running you need to set the [SUMMARIZATION_
 Konfuzio upgrades are performed by replacing the Docker Tag to the [desired version](https://dev.konfuzio.com/web/changelog_app.html)
 After starting the new containers, database migrations need to be applied by `python manage.py migrate` and new email-templates need to be initialized `python manage.py init_email_templates` (see 4.).
 In case additional migration steps are needed, they will be mentioned in the release notes.
+
+#### Updating existing email templates
+
+During Konfuzio upgrades it is possible that we release some updates to the installed email-templates. It is important
+to note, that these email templates, do not override any existing email templates. This ensures, that you can make
+your own changes, without the risk of losing them during each upgrade. If you do want to update and sync your email
+templates with each Konfuzio update. You can delete all the current email templates, or a single email template which needs 
+updating, and then running `python manage.py init_email_templates` (see 4). This action will then set each template to
+its default template value. 
 
 ### 11b. Downgrade to older Konfuzio Version
 
