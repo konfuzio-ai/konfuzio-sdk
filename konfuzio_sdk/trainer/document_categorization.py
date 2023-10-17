@@ -575,6 +575,7 @@ class PageTextCategorizationModel(PageCategorizationModel):
 
     def forward(self, input: Dict[str, Tensor]) -> Dict[str, FloatTensor]:
         """Forward pass."""
+        print(input['text'].shape)
         encoded_text = self.text_model(input)
         text_features = encoded_text['features']
         # text_features = [batch, seq len, n text features]
@@ -1184,7 +1185,12 @@ class CategorizationAI(AbstractCategorizationAI):
                     # page_encoded = [text_vocab.stoi(span.offset_string) for span in
                     # self.spans(start_offset=page.start_offset, end_offset=page.end_offset)]
                     # document_tokens.append(torch.LongTensor(page_encoded))
-                    self.text_vocab.numericalize(page)
+                    if isinstance(self.classifier.text_model, BERT):
+                        self.text_vocab.numericalize(page, max_length=512)
+                        if len(page.text_encoded) < 512:
+                            page.text_encoded.extend([0] * (512 - len(page.text_encoded)))
+                    else:
+                        self.text_vocab.numericalize(page)
                     document_tokens.append(torch.LongTensor(page.text_encoded))
                 else:
                     # if not using text module then don't need the tokens
@@ -1652,7 +1658,7 @@ document_components = [
     'classifier',
     'eval_transforms',
     'train_transforms',
-    'categories'
+    'categories',
 ]
 
 document_components.extend(COMMON_PARAMETERS)
@@ -1678,7 +1684,9 @@ def _load_categorization_model(path: str):
     model_args = MODEL_PARAMETERS_TO_SAVE[model_type]
 
     # Non-backwards compatible components to skip on the verification for loaded data.
-    optional_components = ['categories',]
+    optional_components = [
+        'categories',
+    ]
 
     # Verify if loaded data has all necessary components
     missing_components = [arg for arg in model_args if arg not in loaded_data.keys() and arg not in optional_components]
