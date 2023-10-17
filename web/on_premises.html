@@ -826,7 +826,7 @@ The following steps need to be undertaken:</p>
 </tr>
 </tbody>
 </table>
-<p>With this setup, around 1200 Pages per hour can be processed using OCR and Extraction, around 750 Pages per hour can be processed if OCR, Categorization and Extraction are active, around 850 Pages per hour can be processed if OCR, Splitting, Categorization and Extraction are active.</p>
+<p>With this setup, around 1200 Pages per hour can be processed using OCR and Extraction, around 750 Pages per hour can be processed if OCR, Categorization and Extraction are active, around 500 Pages per hour can be processed if OCR, Splitting, Categorization and Extraction are active.</p>
 </section>
 <section id="scenario-2-without-self-hosted-ocr">
 <h4>Scenario 2: Without self-hosted OCR<a class="headerlink" href="#scenario-2-without-self-hosted-ocr" title="Permalink to this headline">¶</a></h4>
@@ -853,7 +853,7 @@ The following steps need to be undertaken:</p>
 <tr class="row-odd"><td><p>5</p></td>
 <td><p>Generic Celery Worker</p></td>
 <td><p>4GB</p></td>
-<td><p>2500 (3 x 500) Pages of Extraction, Categorization, or Splitting per hour</p></td>
+<td><p>1500 (3 x 500) Pages of Extraction, Categorization, or Splitting per hour</p></td>
 </tr>
 <tr class="row-even"><td><p>N</p></td>
 <td><p>remaining Containers</p></td>
@@ -862,7 +862,7 @@ The following steps need to be undertaken:</p>
 </tr>
 </tbody>
 </table>
-<p>With this setup, around 2500 Pages per hour can be processed using OCR and Extraction, around 1250 Pages per hour can be processed if OCR, Categorization and Extraction are active, around 850 Pages per hour can be processed if OCR, Splitting, Categorization and Extraction are active.</p>
+<p>With this setup, around 1500 Pages per hour can be processed using OCR and Extraction, around 750 Pages per hour can be processed if OCR, Categorization and Extraction are active, around 500 Pages per hour can be processed if OCR, Splitting, Categorization and Extraction are active.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>In case you train large AI Models (&gt;100 Training Pages) more than 4GB for Generic Celery Workers are needed. The Benchmark used an Extraction AI with “word” detection mode and 10 Labels in 1 Label Set. The capacity is shared between all Users using the Konfuzio Server setup.</p>
