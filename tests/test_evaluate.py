@@ -62,8 +62,7 @@ class TestCompare(unittest.TestCase):
         doc_a = prj.get_document_by_id(TEST_DOCUMENT_ID)
         doc_b = prj.get_document_by_id(TEST_DOCUMENT_ID)  # predicted
         doc_b.annotations()
-        k = next(iter(doc_b._annotations))
-        doc_b._annotations.pop(k)  # pop an Annotation that is correct in BOTH  Documents
+        doc_b._annotations.pop(0)  # pop an Annotation that is correct in BOTH  Documents
         assert doc_a._annotations == doc_b._annotations  # first Annotation is removed in both  Documents
         evaluation = compare(doc_a, doc_b)
         assert len(evaluation) == 22  # 21 if not considering negative Annotations, 2 Annotations are is_correct false
@@ -79,7 +78,7 @@ class TestCompare(unittest.TestCase):
         doc_a = prj.get_document_by_id(TEST_DOCUMENT_ID)
         doc_b = prj.get_document_by_id(TEST_DOCUMENT_ID)  # predicted
         doc_b.annotations()
-        doc_b._annotations.popitem()  # pop an Annotation that is correct in BOTH  Documents
+        doc_b._annotations.pop(11)  # pop an Annotation that is correct in BOTH  Documents
         assert doc_a._annotations == doc_b._annotations  # last Annotation is removed in both  Documents
         evaluation = compare(doc_a, doc_b)
         assert len(evaluation) == 23  # 22 if not considering negative Annotations, 2 Annotations are is_correct false
