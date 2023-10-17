@@ -575,7 +575,6 @@ class PageTextCategorizationModel(PageCategorizationModel):
 
     def forward(self, input: Dict[str, Tensor]) -> Dict[str, FloatTensor]:
         """Forward pass."""
-        print(input['text'].shape)
         encoded_text = self.text_model(input)
         text_features = encoded_text['features']
         # text_features = [batch, seq len, n text features]
