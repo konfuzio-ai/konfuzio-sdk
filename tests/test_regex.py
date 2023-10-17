@@ -482,7 +482,7 @@ class TestRegexGenerator(unittest.TestCase):
                 findings = re.findall(auto_regex, document.text)
                 clean_findings = set([item for sublist in findings for item in sublist])
                 for anno in annos:
-                    for span in anno.spans:
+                    for span in anno._spans:
                         assert span.offset_string in clean_findings
 
     def test_annotation_to_regex(self):
