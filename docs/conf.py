@@ -21,6 +21,9 @@ import sys
 print(os.path.abspath('../konfuzio_sdk'))
 sys.path.insert(0, os.path.abspath('../konfuzio_sdk'))
 
+# Path for custom extension (jupyter notebook validation)
+sys.path.append(os.path.abspath('sphinx_custom_extensions'))
+
 # -- Project information -----------------------------------------------------
 
 
@@ -46,6 +49,8 @@ extensions = [
     'sphinxcontrib.mermaid',
     'notfound.extension',
     "sphinx_copybutton",
+    'myst_nb',
+    'validate_nb'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -67,7 +72,7 @@ language = 'en'
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'sdk/tutorials/*.ipynb']
 
 # make sure that make html starts with the index.rst
 master_doc = 'index'
@@ -102,3 +107,9 @@ sitemap_url_scheme = "{link}"
 
 # sphinx-notfound-page
 notfound_urls_prefix = '/'
+
+# MyST-NB
+nb_execution_timeout = -1  # no execution timeout in seconds
+nb_execution_raise_on_error = True  # Raise an exception on failed execution, rather than emitting a warning
+# To trigger the execution of notebook pages, use the following configuration in conf.py:
+nb_execution_mode = "auto"
