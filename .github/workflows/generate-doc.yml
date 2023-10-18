@@ -3,7 +3,7 @@ name: Publish to GitHub Pages
 on:
   push:
     branches:
-      - master
+      - '*'
 
 jobs:
   publish:
@@ -24,5 +24,6 @@ jobs:
         uses: tsunematsu21/actions-publish-gh-pages@v1.0.1
         with:
           dir: public
-          branch: pages
+          branch: gh-pages
           token: ${{ secrets.ACCESS_TOKEN }}
+          cname: ${{ github.ref_slug }}.konfuzio.com
