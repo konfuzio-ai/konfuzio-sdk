@@ -23,7 +23,23 @@ You can think of the _Planned_ section as a _Roadmap_ that lists Konfuzio Server
 
 ## Next Release (estimated release date 18th October 2023)
 
-Upcoming...
+### Added
+- [Automatically translate extracted text based on provided translated strings](https://help.konfuzio.com/modules/annotations/index.html#annotation-translated-string) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11799)).
+- [Allow Project Managers to enable annotation translation. Manage translated strings: add, edit or remove.](https://help.konfuzio.com/modules/annotations/index.html#annotation-translated-string) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11799))
+- [Translated strings are shown in the DVUI](https://help.konfuzio.com/document-validation-ui/review-documents/additional-features/index.html#translate-annotation-text-into-custom-value) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11797)).
+- [In the DVUI there is a link to the details of a translated string](https://help.konfuzio.com/document-validation-ui/review-documents/additional-features/index.html#translate-annotation-text-into-custom-value) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11797)).
+
+### Changed
+- Upgraded the base image from `python:3.8.18-slim-bullseye` to the more recent Debian version `python:3.8.18-slim-bookworm` for improving security: this version has a reduced number of known Common Vulnerabilities and Exposures (CVEs) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11726)).
+- Tesseract 5 is now used, instead of tesseract 4:  enhances OCR capabilities and ensures you get the best text recognition experience ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9783)).
+
+### Fixed (not the bugs, but their solutions are listed)
+- Error messages are properly shown in the language set for the server app ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11445)).
+- IntegrityErrors are not visible to the user, as expected ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11445)).
+- Annotations created by the user in the SmartView appear as accepted in the DVUI ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11882)).
+- When an Annotation is rejected/deleted from the SmartView, it also disappears from the DVUI ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11882)).
+- Coming-soon error on the Swagger API ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11964)).
+
 
 ## released-2023-10-04_18-41-03
 
