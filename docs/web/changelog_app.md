@@ -21,13 +21,15 @@ You can think of the _Planned_ section as a _Roadmap_ that lists Konfuzio Server
 - Allow administrators of Konfuzio on-premise installations to run a speedtest ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9870)).
 - Start automatic AI retraining after User confirms that he has finished a annotation review ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9166)).
 
-## Next Release (estimated release date 18th October 2023)
+## released-2023-10-19_09-39-24
+
+This version uses the Konfuzio Python SDK in version v.0.2.36 and Konfuzio Document Validation UI in version v.0.1.17.
 
 ### Added
-- [Automatically translate extracted text based on provided translated strings](https://help.konfuzio.com/modules/annotations/index.html#annotation-translated-string) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11799)).
-- [Allow Project Managers to enable annotation translation. Manage translated strings: add, edit or remove.](https://help.konfuzio.com/modules/annotations/index.html#annotation-translated-string) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11799))
-- [Translated strings are shown in the DVUI](https://help.konfuzio.com/document-validation-ui/review-documents/additional-features/index.html#translate-annotation-text-into-custom-value) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11797)).
-- [In the DVUI there is a link to the details of a translated string](https://help.konfuzio.com/document-validation-ui/review-documents/additional-features/index.html#translate-annotation-text-into-custom-value) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11797)).
+- [Automatically map extracted data to custom data](https://help.konfuzio.com/modules/annotations/index.html#annotation-translated-string) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11799)).
+- [Allow Project Managers to enable mapping of extracted data to custom data. Manage custom data: add, edit or remove.](https://help.konfuzio.com/modules/annotations/index.html#annotation-translated-string) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11799))
+- [Custom data mapped on extracted data is shown in the DVUI](https://help.konfuzio.com/document-validation-ui/review-documents/additional-features/index.html#translate-annotation-text-into-custom-value) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11797)).
+- [In the DVUI there is a link to the details of the custom data mapped on extracted data](https://help.konfuzio.com/document-validation-ui/review-documents/additional-features/index.html#translate-annotation-text-into-custom-value) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11797)).
 
 ### Changed
 - Upgraded the base image from `python:3.8.18-slim-bullseye` to the more recent Debian version `python:3.8.18-slim-bookworm` for improving security: this version has a reduced number of known Common Vulnerabilities and Exposures (CVEs) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11726)).
