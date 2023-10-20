@@ -3,7 +3,7 @@ name: Publish to GitHub Pages
 on:
   push:
     branches:
-      - '*'
+      - 11969-integrate-jupyter-nb-4docs
 
 jobs:
   publish:
