@@ -23,7 +23,7 @@ jobs:
           pip install m2r2          
       - name: Install sphinx_toolbox
         run: |
-          pip install sphinx_toolbox
+          pip install sphinx_toolbox sphinx_sitemap
       - name: Generate pages content
         run: |
           pip install -e .[ai]
