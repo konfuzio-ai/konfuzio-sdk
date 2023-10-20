@@ -23,7 +23,7 @@ jobs:
       - name: Upload Sphinx Error Log
         if: ${{ failure() }}
         run: |
-          error_log=$(find /tmp -name "sphinx-err-*.log")
+          error_log=$(find /tmp -type f -name "sphinx-err-*.log" 2>/dev/null)
           if [ -n "$error_log" ]; then
             mv "$error_log" sphinx-error.log
             echo "::set-output name=path::sphinx-error.log"
