@@ -109,7 +109,12 @@ sitemap_url_scheme = "{link}"
 notfound_urls_prefix = '/'
 
 # MyST-NB
-nb_execution_timeout = -1  # no execution timeout in seconds
-nb_execution_raise_on_error = True  # Raise an exception on failed execution, rather than emitting a warning
-# To trigger the execution of notebook pages, use the following configuration in conf.py:
-nb_execution_mode = "auto"
+
+# No execution timeout
+nb_execution_timeout = -1
+
+# Raise an exception on failed execution, rather than emitting a warning
+nb_execution_raise_on_error = True
+
+# Print traceback to stderr on execution error
+nb_execution_show_tb = True
