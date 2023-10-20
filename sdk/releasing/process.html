@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Internal release process &mdash; Konfuzio  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="shortcut icon" href="../../_static/full_green_square.png"/>
+    <link rel="canonical" href="https://dev.konfuzio.com/sdk/releasing/process.html" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/clipboard.min.js"></script>
+        <script src="../../_static/copybutton.js"></script>
+        <script src="https://unpkg.com/mermaid@9.4.0/dist/mermaid.min.js"></script>
+        <script>mermaid.initialize({startOnLoad:true});</script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Konfuzio
+            <img src="../../_static/docs__static_square_transparent_super_small.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Konfuzio SDK</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">What is the Konfuzio SDK?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../get_started.html">Get Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sourcecode.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contribution.html">Contribution Guide</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/releases">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../web/index.html">What is the Konfuzio Server?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../web/explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../web/api-v3.html">REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../web/on_premises.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../web/passwords/index.html">Password Management</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../web/changelog_app.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Document Validation UI</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dvui/index.html">What is the Konfuzio Document Validation UI?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dvui/explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dvui/sourcecode.html">Source Code</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/releases">Changelog</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Konfuzio</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Internal release process</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/sdk/releasing/process.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="internal-release-process">
+<h1>Internal release process<a class="headerlink" href="#internal-release-process" title="Permalink to this headline">¶</a></h1>
+<p>Every day at 5:19 AM UTC (3:19 AM UTC+2, see code <a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/.github/workflows/nightly.yml">here</a>) a new nightly release of the SDK (master branch) is released to <a class="reference external" href="https://pypi.org/project/konfuzio-sdk/#history">https://pypi.org/project/konfuzio-sdk/#history</a>.</p>
+<p>Every day at 6:13 AM UTC a new nightly release of the Server using the latest nightly SDK is deployed at <a class="reference external" href="https://testing.konfuzio.com/">https://testing.konfuzio.com/</a> as a Gitlab schedule from our Server repository.</p>
+<p>We get an early chance to find bugs with our integration of the SDK with the Konfuzio Server before the official release. During our internal development sprints (2 week periods) we follow the strategy summarized in the table below.</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Key</p></th>
+<th class="head"><p>Meaning</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>T</p></td>
+<td><p>Testing Time</p></td>
+</tr>
+<tr class="row-odd"><td><p>M</p></td>
+<td><p>Merge to next level</p></td>
+</tr>
+<tr class="row-even"><td><p>R</p></td>
+<td><p>Release</p></td>
+</tr>
+<tr class="row-odd"><td><p>B</p></td>
+<td><p>Bug Fixing</p></td>
+</tr>
+</tbody>
+</table>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Release</p></th>
+<th class="head"><p></p></th>
+<th class="head"><p>1</p></th>
+<th class="head"><p>2</p></th>
+<th class="head"><p>3</p></th>
+<th class="head"><p>4</p></th>
+<th class="head"><p>5</p></th>
+<th class="head"><p>6</p></th>
+<th class="head"><p>7</p></th>
+<th class="head"><p>8</p></th>
+<th class="head"><p>9</p></th>
+<th class="head"><p>10</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Server</p></td>
+<td><p>master Branch Server</p></td>
+<td><p></p></td>
+<td><p></p></td>
+<td><p></p></td>
+<td><p></p></td>
+<td><p></p></td>
+<td><p></p></td>
+<td><p></p></td>
+<td><p></p></td>
+<td><p></p></td>
+<td><p>M</p></td>
+</tr>
+<tr class="row-odd"><td><p>Server</p></td>
+<td><p>testing Branch Server</p></td>
+<td><p></p></td>
+<td><p></p></td>
+<td><p></p></td>
+<td><p></p></td>
+<td><p></p></td>
+<td><p></p></td>
+<td><p>T</p></td>
+<td><p>B</p></td>
+<td><p>B</p></td>
+<td><p>R</p></td>
+</tr>
+<tr class="row-even"><td><p>Server</p></td>
+<td><p>nightly Build SDK</p></td>
+<td><p></p></td>
+<td><p></p></td>
+<td><p></p></td>
+<td><p></p></td>
+<td><p></p></td>
+<td><p></p></td>
+<td><p>T</p></td>
+<td><p>B</p></td>
+<td><p>B</p></td>
+<td><p>R</p></td>
+</tr>
+<tr class="row-odd"><td><p>SDK</p></td>
+<td><p>master Branch</p></td>
+<td><p></p></td>
+<td><p></p></td>
+<td><p></p></td>
+<td><p></p></td>
+<td><p></p></td>
+<td><p>T</p></td>
+<td><p>T</p></td>
+<td><p>B</p></td>
+<td><p>B</p></td>
+<td><p>R</p></td>
+</tr>
+<tr class="row-even"><td><p>SDK</p></td>
+<td><p>Pull Request</p></td>
+<td><p></p></td>
+<td><p></p></td>
+<td><p></p></td>
+<td><p></p></td>
+<td><p></p></td>
+<td><p>M</p></td>
+<td><p></p></td>
+<td><p></p></td>
+<td><p></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p>DVUI</p></td>
+<td><p>master Branch</p></td>
+<td><p></p></td>
+<td><p></p></td>
+<td><p></p></td>
+<td><p></p></td>
+<td><p></p></td>
+<td><p>T</p></td>
+<td><p>T</p></td>
+<td><p>B</p></td>
+<td><p>B</p></td>
+<td><p>R</p></td>
+</tr>
+<tr class="row-even"><td><p>DVUI</p></td>
+<td><p>Pull Request</p></td>
+<td><p></p></td>
+<td><p></p></td>
+<td><p></p></td>
+<td><p></p></td>
+<td><p></p></td>
+<td><p>M</p></td>
+<td><p></p></td>
+<td><p></p></td>
+<td><p></p></td>
+<td><p>–</p></td>
+</tr>
+</tbody>
+</table>
+<p>The strategy follows a 2 weeks sprint schedule (10 work days). The SDK process is described in the following plan. The process with DVUI is completely analogous:</p>
+<ul class="simple">
+<li><p>On the first week we do development on the SDK / Server / DVUI side, and we open one pull request for each new SDK feature on Github (see the list of currently open SDK pull requests <a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/pulls">here</a>).</p></li>
+<li><p>On the Monday of the second week we merge pull requests to master, which triggers the creation of a SDK nightly release. This becomes available as a Konfuzio Server deployment the next day at <a class="reference external" href="https://testing.konfuzio.com/">https://testing.konfuzio.com/</a>, as a consequence of a Konfuzio Server Gitlab schedule.</p></li>
+<li><p>We internally test the Konfuzio SDK/Server integration with the nightly deployment and collect any bugs that come up, either from the SDK side or the Server side. For the SDK side, these are scheduled as internal tickets for fixing until Friday, which marks the end of the sprint.</p></li>
+<li><p>On Friday the bug fixing is over, the associated pull requests are merged to master and a new SDK official release is created containing the new features and bugfixes.</p></li>
+<li><p>SDK Release Notes are automatically generated from our pull requests using <a class="reference external" href="https://docs.github.com/en/repositories/releasing-projects-on-github/automatically-generated-release-notes">the Github’s feature</a>. Each pull request includes links to relevant documentation about how to use the new feature, see for example <a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/pull/124">https://github.com/konfuzio-ai/konfuzio-sdk/pull/124</a>.</p></li>
+<li><p>The new SDK features are available on Friday evening at the end of each sprint. As we internally test and integrated the Konfuzio Server with each nightly SDK release, a new Server release is also available at app.konfuzio.com on the same Friday evening. See the <a class="reference external" href="https://dev.konfuzio.com/web/changelog_app.html">changelog</a> for full information about each Konfuzio Server release.</p></li>
+</ul>
+</section>
+<section id="how-to-release-with-github-to-pypi">
+<h1>How to release with GitHub to PyPI<a class="headerlink" href="#how-to-release-with-github-to-pypi" title="Permalink to this headline">¶</a></h1>
+<ol class="arabic simple">
+<li><p>Change the version number in the file VERSION use the format <code class="docutils literal notranslate"><span class="pre">v.X.X.X</span></code> without whitespaces.
+<img alt="Update Python Package Version" src="../../_images/update-python-version.png" /></p></li>
+<li><p>Draft a Release <a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/releases/new">here</a>.
+<img alt="draft_new_release.png" src="../../_images/steps-to-draft-a-release.png" /></p>
+<ol class="arabic simple">
+<li><p>Create a new Tag on master, named as the version number in step 1.</p></li>
+<li><p>Add a title for the release</p></li>
+<li><p>Automatically generate the description using the Names of the merged Pull Requests</p></li>
+</ol>
+</li>
+<li><p>After you press publish release, a new Python Package will be uploaded to PyPI by a GitHub Action, see code
+<a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/.github/workflows/release.yml">here</a>. You can verify
+that the Release was uploaded via having a look on <a class="reference external" href="https://pypi.org/project/konfuzio-sdk/#history">PyPI</a></p></li>
+</ol>
+</section>
+<section id="how-to-use-nightly-builds">
+<h1>How to use nightly builds?<a class="headerlink" href="#how-to-use-nightly-builds" title="Permalink to this headline">¶</a></h1>
+<p>.. image:: /sdk/releasing/new-pypi-release.png</p>
+<ol class="arabic simple">
+<li><p>Install the latest pre-release <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--pre</span> <span class="pre">konfuzio_sdk</span></code></p></li>
+<li><p>Force to pick the latest pre-release the version <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">konfuzio_sdk&gt;=0.2.3.dev0</span></code>. As PEP440 states: The
+developmental release segment consists of the string .dev, followed by a non-negative integer value.<br />
+Developmental releases are ordered by their numerical component, immediately before the corresponding  release
+(and before any pre-releases with the same release segment), and following any previous release (including any<br />
+post-releases)</p></li>
+</ol>
+<p>.. Note::
+Pre-Releases don’t use tags but reference commits. The version number of a pre-release relates to the
+Year-Month-Date-Hour-Minute-Second of last commit date on branch master used to create this release.
+This process allows publish a new package if there are new commits on the master branch.</p>
+<p>.. image:: /sdk/releasing/version-number-prerelease.png</p>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Helm und Nagel GmbH.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-D02B3QF8Z3"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-D02B3QF8Z3');
+</script>
+<script src="https://cmp.osano.com/16CVyMSbk3Iar1G3f/97ee6223-b0cb-4f8c-abd6-a25a0d6f6507/osano.js"></script>
+<script>window._nQc="89655017";</script>
+<script async src="https://serve.albacross.com/track.js"></script>
+<script data-jsd-embedded data-key="42374b9a-2f7b-46ec-ae7b-b79a89aa3dd9" data-base-url="https://jsd-widget.atlassian.com" src="https://jsd-widget.atlassian.com/assets/embed.js"></script>
+
+
+</body>
+</html>

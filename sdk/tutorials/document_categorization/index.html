@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document Categorization &mdash; Konfuzio  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../_static/full_green_square.png"/>
+    <link rel="canonical" href="https://dev.konfuzio.com/sdk/tutorials/document_categorization/index.html" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script src="https://unpkg.com/mermaid@9.4.0/dist/mermaid.min.js"></script>
+        <script>mermaid.initialize({startOnLoad:true});</script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="File Splitting" href="../file_splitting/index.html" />
+    <link rel="prev" title="Prepare Training and Testing Data" href="../data-preparation/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> Konfuzio
+            <img src="../../../_static/docs__static_square_transparent_super_small.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Konfuzio SDK</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">What is the Konfuzio SDK?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../get_started.html">Get Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../tutorials.html">Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../data-preparation/index.html">Prepare Training and Testing Data</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Document Categorization</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#setting-the-category-of-a-document-and-its-individual-pages-manually">Setting the Category of a Document and its individual Pages Manually</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#name-based-categorization-ai">Name-based Categorization AI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#model-based-categorization-ai">Model-based Categorization AI</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#categorization-ai-models">Categorization AI Models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#possible-configurations">Possible configurations</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#create-a-custom-categorization-ai">Create a custom Categorization AI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#categorization-ai-overview-diagram">Categorization AI Overview Diagram</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../file_splitting/index.html">File Splitting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tokenizers/index.html">Tokenization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../information_extraction/index.html">Document Information Extraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../upload-your-ai/index.html">Upload your AI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../data_validation/index.html">Data Validation Rules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../outlier-annotations/index.html">Find possible outliers among the ground-truth Annotations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../regex_based_annotations/index.html">Create Regex-based Annotations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../async_upload_with_callback/index.html">Pull Documents Uploaded Asynchronously with a Webhook</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pdf-form-generator/index.html">Build your own PDF Form Generator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ner-ontonotes-fast/index.html">Retrain Flair NER-Ontonotes-Fast with Human Revised Annotations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../annual-reports/index.html">Count Relevant Expressions in Annual Reports</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../barcode-scanner/index.html">Barcode Scanner with zxing-cpp</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sourcecode.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contribution.html">Contribution Guide</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/releases">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/index.html">What is the Konfuzio Server?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/api-v3.html">REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/on_premises.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/passwords/index.html">Password Management</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/changelog_app.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Document Validation UI</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../dvui/index.html">What is the Konfuzio Document Validation UI?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dvui/explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dvui/sourcecode.html">Source Code</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/releases">Changelog</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Konfuzio</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../tutorials.html">Tutorials</a> &raquo;</li>
+      <li>Document Categorization</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/sdk/tutorials/document_categorization/index.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <p>.. _document-categorization-tutorials:</p>
+<section id="document-categorization">
+<h1>Document Categorization<a class="headerlink" href="#document-categorization" title="Permalink to this headline">¶</a></h1>
+<p>When uploading a Document to Konfuzio, the first step is to assign it to a :ref:<code class="docutils literal notranslate"><span class="pre">Category&lt;category-concept&gt;</span></code>. This
+can be done manually, or automatically using a Categorization AI. Categorization always happens on a Project level.</p>
+<section id="setting-the-category-of-a-document-and-its-individual-pages-manually">
+<h2>Setting the Category of a Document and its individual Pages Manually<a class="headerlink" href="#setting-the-category-of-a-document-and-its-individual-pages-manually" title="Permalink to this headline">¶</a></h2>
+<p>You can initialize a Document with a :ref:<code class="docutils literal notranslate"><span class="pre">Category&lt;category-concept&gt;</span></code>. You can also use <code class="docutils literal notranslate"><span class="pre">Document.set_category</span></code> to set
+a Document’s Category after it has been initialized. This will count as if a human manually revised it.</p>
+<p>Note: a Document’s Category can be changed via <code class="docutils literal notranslate"><span class="pre">set_category</span></code> only if the original Category has
+been set to <code class="docutils literal notranslate"><span class="pre">no_category</span></code>. Otherwise, an attempt to change a Category will cause an error.</p>
+<p>.. literalinclude:: /sdk/boilerplates/test_document_categorization.py
+:language: python
+:start-after: start init
+:end-before: end init
+:dedent: 4</p>
+<p>If a Document is initialized with no Category, it will automatically be set to NO_CATEGORY. Another Category can be
+manually set later.</p>
+<p>.. literalinclude:: /sdk/boilerplates/test_document_categorization.py
+:language: python
+:start-after: start no_category
+:end-before: end no_category
+:dedent: 4</p>
+<p>If you use a Categorization AI to automatically assign a Category to a Document (such as the
+<span class="xref myst">NameBasedCategorizationAI</span>, each Page will be assigned a
+Category Annotation with predicted confidence information, and the following properties will be accessible. You can
+also find these documented under <span class="xref myst">API Reference - Document</span>,
+<span class="xref myst">API Reference - Page</span> and
+<span class="xref myst">API Reference - Category Annotation</span>.</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Property</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">CategoryAnnotation.category</span></code></p></td>
+<td><p>The AI predicted Category of this Category<br>Annotation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">CategoryAnnotation.confidence</span></code></p></td>
+<td><p>The AI predicted confidence of this Category<br>Annotation.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">Document.category_annotations</span></code></p></td>
+<td><p>List of predicted Category Annotations at the<br>Document level.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">Document.maximum_confidence_category_annotation</span></code></p></td>
+<td><p>Get the maximum confidence predicted Category<br>Annotation, or the human revised one if present.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">Document.maximum_confidence_category</span></code></p></td>
+<td><p>Get the maximum confidence predicted Category<br>or the human revised one if present.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">Document.category</span></code></p></td>
+<td><p>Returns a Category only if all Pages have same<br>Category, otherwise None. In that case, it hints<br>to the fact that the Document should probably<br>be revised or split into Documents with<br>consistently categorized Pages.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">Page.category_annotations</span></code></p></td>
+<td><p>List of predicted Category Annotations at the<br>Page level.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">Page.maximum_confidence_category_annotation</span></code></p></td>
+<td><p>Get the maximum confidence predicted Category<br>Annotation or the one revised by the user for this<br>Page.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">Page.category</span></code></p></td>
+<td><p>Get the maximum confidence predicted Category<br>or the one revised by user for this Page.</p></td>
+</tr>
+</tbody>
+</table>
+<p>To categorize a Document with a Categorization AI, we have two main options: the Name-based Categorization AI and the
+more complex Model-based Categorization AI.</p>
+</section>
+<section id="name-based-categorization-ai">
+<h2>Name-based Categorization AI<a class="headerlink" href="#name-based-categorization-ai" title="Permalink to this headline">¶</a></h2>
+<p>The name-based Categorization AI is a good fallback logic using the name of the Category to categorize Documents when
+no model-based Categorization AI is available:</p>
+<p>.. literalinclude:: /sdk/boilerplates/test_document_categorization.py
+:language: python
+:start-after: start name-based
+:end-before: end name-based
+:dedent: 4</p>
+</section>
+<section id="model-based-categorization-ai">
+<h2>Model-based Categorization AI<a class="headerlink" href="#model-based-categorization-ai" title="Permalink to this headline">¶</a></h2>
+<p>For better results you can build, train and test a Categorization AI using Image Models and Text Models to classify
+the image and text of each Page:</p>
+<p>.. literalinclude:: /sdk/boilerplates/test_document_categorization.py
+:language: python
+:start-after: start imports
+:end-before: end imports
+:dedent: 4
+.. literalinclude:: /sdk/boilerplates/test_document_categorization.py
+:language: python
+:start-after: Start Build
+:end-before: End Build
+:dedent: 4</p>
+<p>To prepare the data for training and testing your AI, follow the <a class="reference external" href="https://dev.konfuzio.com/sdk/tutorials/data-preparation/index.html#prepare-the-data-for-training-and-testing-the-ai">data preparation tutorial</a>.</p>
+<p>For a list of available Models see all the available <span class="xref myst">Categorization Models</span> below.</p>
+<section id="categorization-ai-models">
+<h3>Categorization AI Models<a class="headerlink" href="#categorization-ai-models" title="Permalink to this headline">¶</a></h3>
+<p>When using <code class="docutils literal notranslate"><span class="pre">build_categorization_ai_pipeline</span></code>, you can select which Image Module and/or Text Module to use for
+classification. At least one between the Image Model or the Text Model must be specified. Both can also be used
+at the same time.</p>
+<p>The list of available Categorization Models is implemented as an Enum containing the following elements:</p>
+<p>.. literalinclude:: /sdk/boilerplates/test_document_categorization.py
+:language: python
+:start-after: Start Models
+:end-before: End Models
+:dedent: 4</p>
+<p>See more details about these Categorization Models under <span class="xref myst">API Reference - Categorization AI</span>.</p>
+</section>
+<section id="possible-configurations">
+<h3>Possible configurations<a class="headerlink" href="#possible-configurations" title="Permalink to this headline">¶</a></h3>
+<p>The following configurations of Categorization AI are tested. Tokenizer, text and image processors can be specified
+when building Categorization pipeline locally; text and image processors can be specified when building the pipeline
+either locally or on app/on-prem installation.</p>
+<p>Each line stands for a single configuration. If a field is None, it requires specifying it as None; otherwise, the
+default value will be applied.</p>
+<p>You can find more information on how to use these configurations, what are default values and where to specify
+them <a class="reference external" href="https://help.konfuzio.com/modules/projects/index.html?highlight=efficientnet#categorization-ai-parameters">here</a>.</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Tokenizer</p></th>
+<th class="head"><p>Text processor</p></th>
+<th class="head"><p>Image processor</p></th>
+<th class="head"><p>Image processing version</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>WhitespaceTokenizer</p></td>
+<td><p>NBOWSelfAttention</p></td>
+<td><p>EfficientNet</p></td>
+<td><p>efficientnet_b0</p></td>
+</tr>
+<tr class="row-odd"><td><p>WhitespaceTokenizer</p></td>
+<td><p>NBOWSelfAttention</p></td>
+<td><p>EfficientNet</p></td>
+<td><p>efficientnet_b3</p></td>
+</tr>
+<tr class="row-even"><td><p>WhitespaceTokenizer</p></td>
+<td><p>NBOW</p></td>
+<td><p>VGG</p></td>
+<td><p>vgg11</p></td>
+</tr>
+<tr class="row-odd"><td><p>WhitespaceTokenizer</p></td>
+<td><p>LSTM</p></td>
+<td><p>VGG</p></td>
+<td><p>vgg13</p></td>
+</tr>
+<tr class="row-even"><td><p>ConnectedTextTokenizer</p></td>
+<td><p>NBOW</p></td>
+<td><p>VGG</p></td>
+<td><p>vgg11</p></td>
+</tr>
+<tr class="row-odd"><td><p>ConnectedTextTokenizer</p></td>
+<td><p>LSTM</p></td>
+<td><p>VGG</p></td>
+<td><p>vgg13</p></td>
+</tr>
+<tr class="row-even"><td><p>None</p></td>
+<td><p>None</p></td>
+<td><p>EfficientNet</p></td>
+<td><p>efficientnet_b0</p></td>
+</tr>
+<tr class="row-odd"><td><p>None</p></td>
+<td><p>None</p></td>
+<td><p>EfficientNet</p></td>
+<td><p>efficientnet_b3</p></td>
+</tr>
+<tr class="row-even"><td><p>None</p></td>
+<td><p>None</p></td>
+<td><p>VGG</p></td>
+<td><p>vgg11</p></td>
+</tr>
+<tr class="row-odd"><td><p>None</p></td>
+<td><p>None</p></td>
+<td><p>VGG</p></td>
+<td><p>vgg13</p></td>
+</tr>
+<tr class="row-even"><td><p>None</p></td>
+<td><p>None</p></td>
+<td><p>VGG</p></td>
+<td><p>vgg16</p></td>
+</tr>
+<tr class="row-odd"><td><p>None</p></td>
+<td><p>None</p></td>
+<td><p>VGG</p></td>
+<td><p>vgg19</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="create-a-custom-categorization-ai">
+<h2>Create a custom Categorization AI<a class="headerlink" href="#create-a-custom-categorization-ai" title="Permalink to this headline">¶</a></h2>
+<p>This section explains how to train a custom Categorization AI locally, how to save it and upload it to the Konfuzio
+Server. If you run this tutorial in Colab and experience any version compatibility issues when working with the SDK, restart the
+runtime and initialize the SDK once again; this will resolve the issue.</p>
+<p>Note: you don’t necessarily need to create the AI from scratch if you already have some document-processing architecture.
+You just need to wrap it into the class that corresponds to our Categorization AI structure. Follow the steps in this
+tutorial to find out what are the requirements for that.</p>
+<p>Note: currently, the Server supports AI models created using <code class="docutils literal notranslate"><span class="pre">torch&lt;2.0.0</span></code>.</p>
+<p>By default, any <span class="xref myst">Categorization AI</span> class should derive from the
+<code class="docutils literal notranslate"><span class="pre">AbstractCategorizationModel</span></code> class and implement the following methods:</p>
+<p>.. literalinclude:: /sdk/boilerplates/test_custom_categorization_ai.py
+:language: python
+:start-after: start init
+:end-before: end init
+:dedent: 4</p>
+<p>Example usage of your Custom Categorization AI:</p>
+<p>.. literalinclude:: /sdk/boilerplates/test_custom_categorization_ai.py
+:language: python
+:start-after: start usage
+:end-before: end usage
+:dedent: 4
+.. literalinclude:: /sdk/boilerplates/test_custom_categorization_ai.py
+:language: python
+:start-after: start fit
+:end-before: end fit
+:dedent: 4</p>
+<p>After you have trained and saved your custom AI, you can upload it using the steps from the <a class="reference external" href="https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html#upload-extraction-or-category-ai-to-target-instance">tutorial</a>
+or using the method <code class="docutils literal notranslate"><span class="pre">upload_ai_model()</span></code> as described in <a class="reference external" href="https://dev.konfuzio.com/sdk/tutorials/upload-your-ai/index.html">Upload your AI</a>, provided that you have the Superuser rights.</p>
+</section>
+<section id="categorization-ai-overview-diagram">
+<h2>Categorization AI Overview Diagram<a class="headerlink" href="#categorization-ai-overview-diagram" title="Permalink to this headline">¶</a></h2>
+<p>In the first diagram, we show the class hierarchy of the available Categorization Models within the SDK. Note that the
+Multimodal Model simply consists of a Multi Layer Perceptron to concatenate the feature outputs of a Text Model and an
+Image Model, such that the predictions from both Models can be unified in a unique Category prediction.</p>
+<p>In the second diagram, we show how these models are contained within a Model-based Categorization AI. The
+<a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#categorization-ai">Categorization AI</a> class provides the high level
+interface to categorize Documents, as exemplified in the code examples above. It uses a Page Categorization Model
+to categorize each Page. The Page Categorization Model is a container for Categorization Models: it wraps the feature
+output layers of each contained Model with a Dropout Layer and a Fully Connected Layer.</p>
+<div class="mxgraph" style="max-width:100%;border:1px solid transparent;" data-mxgraph="{&quot;highlight&quot;:&quot;#0000ff&quot;,&quot;nav&quot;:true,&quot;resize&quot;:true,&quot;toolbar&quot;:&quot;zoom layers tags lightbox&quot;,&quot;edit&quot;:&quot;_blank&quot;,&quot;url&quot;:&quot;https://raw.githubusercontent.com/konfuzio-ai/konfuzio-sdk/master/docs/sdk/tutorials/document_categorization/CategorizationAI.drawio&quot;}"></div>
+<script type="text/javascript" src="https://viewer.diagrams.net/embed2.js?&fetch=https%3A%2F%2Fraw.githubusercontent.com%2Fkonfuzio-ai%2Fkonfuzio-sdk%2Fmaster%2Fdocs%2Fsdk%2Ftutorials%2Fdocument_categorization%2FCategorizationAI.drawio"></script>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../data-preparation/index.html" class="btn btn-neutral float-left" title="Prepare Training and Testing Data" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../file_splitting/index.html" class="btn btn-neutral float-right" title="File Splitting" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Helm und Nagel GmbH.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-D02B3QF8Z3"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-D02B3QF8Z3');
+</script>
+<script src="https://cmp.osano.com/16CVyMSbk3Iar1G3f/97ee6223-b0cb-4f8c-abd6-a25a0d6f6507/osano.js"></script>
+<script>window._nQc="89655017";</script>
+<script async src="https://serve.albacross.com/track.js"></script>
+<script data-jsd-embedded data-key="42374b9a-2f7b-46ec-ae7b-b79a89aa3dd9" data-base-url="https://jsd-widget.atlassian.com" src="https://jsd-widget.atlassian.com/assets/embed.js"></script>
+
+
+</body>
+</html>

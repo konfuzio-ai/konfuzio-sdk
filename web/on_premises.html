@@ -1,0 +1,2158 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Installation Guide &mdash; Konfuzio  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/full_green_square.png"/>
+    <link rel="canonical" href="https://dev.konfuzio.com/web/on_premises.html" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/clipboard.min.js"></script>
+        <script src="../_static/copybutton.js"></script>
+        <script src="https://unpkg.com/mermaid@9.4.0/dist/mermaid.min.js"></script>
+        <script>mermaid.initialize({startOnLoad:true});</script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Password Management" href="passwords/index.html" />
+    <link rel="prev" title="REST API" href="api-v3.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Konfuzio
+            <img src="../_static/docs__static_square_transparent_super_small.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Konfuzio SDK</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/index.html">What is the Konfuzio SDK?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/get_started.html">Get Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/sourcecode.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/contribution.html">Contribution Guide</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/releases">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Server</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">What is the Konfuzio Server?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api-v3.html">REST API</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#billing-and-license">Billing and License</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#setup-billing-api">Setup Billing API</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#important-updates">Important Updates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#technical-background">Technical Background</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#air-gapped-environments-and-upcoming-changes">Air-gapped Environments and Upcoming Changes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#kubernetes">Kubernetes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#required-tools">Required tools</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#kubectl">kubectl</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#helm">Helm</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#next-steps">Next steps</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#deployment">Deployment</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#selecting-configuration-options">Selecting configuration options</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#deploy-using-helm">Deploy using Helm</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#monitoring-the-deployment">Monitoring the Deployment</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#autoscaling">Autoscaling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#initial-login">Initial login</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#quick-start-via-kubernetes-and-helm">Quick Start via Kubernetes and Helm</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#upgrade">Upgrade</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#docker-single-vm-setup">Docker - Single VM setup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#vm-requirements">VM Requirements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#login-to-the-konfuzio-docker-image-registry">Login to the Konfuzio Docker Image Registry</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#quick-start-via-docker-compose">Quick Start via Docker-Compose</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#download-docker-image">1. Download Docker Image</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#setup-postgresql-redis-blobstorage-filesystemstorage">2. Setup PostgreSQL, Redis, BlobStorage/FileSystemStorage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#setup-the-environment-variable-file">3. Setup the environment variable file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#init-the-database-create-first-superuser-via-cli-and-prefill-e-mail-templates">4. Init the database, create first superuser via cli and prefill e-mail templates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#start-the-container">5. Start the container</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#optional-6-use-flower-to-monitor-tasks">[Optional] 6. Use Flower to monitor tasks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#optional-7-run-container-for-email-integration">[Optional] 7. Run Container for Email Integration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#optional-8-use-azure-read-api-on-premises-or-as-service">[Optional] 8. Use Azure Read API (On-Premises or as Service)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#how-to-fix-common-azure-read-api-issues-for-on-premises">How to fix common Azure Read API issues for On-Premises</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#optional-9-install-the-document-layout-analysis-segmentation-container">[Optional] 9. Install the Document Layout Analysis (Segmentation) Container</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#optional-10-install-document-summarization-container">[Optional] 10. Install document summarization container</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#a-upgrade-to-newer-konfuzio-version">11a. Upgrade to newer Konfuzio Version</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#b-downgrade-to-older-konfuzio-version">11b. Downgrade to older Konfuzio Version</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#load-scenario-for-single-vm-with-32gb">Load Scenario for Single VM with 32GB</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#scenario-1-with-self-hosted-ocr">Scenario 1: With self-hosted OCR</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#scenario-2-without-self-hosted-ocr">Scenario 2: Without self-hosted OCR</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#document-layout-analysis">Document Layout Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#docker-compose-vs-kubernetes">Docker-Compose vs. Kubernetes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#custom-ai-model-training-via-ci-pipelines">Custom AI model training via CI pipelines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#sso-via-openid-connect-oidc">SSO via OpenID Connect (OIDC)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#sso-keycloak-integration">SSO Keycloak Integration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#set-up">Set up</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#use-the-keycloak-server-to-authenticate-users-with-konfuzio">Use the Keycloak server to authenticate users with Konfuzio</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#disable-password-login-in-konfuzio">Disable password login in Konfuzio</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#synchronize-groups-assigned-to-users-in-keycloak-with-groups-in-konfuzio">Synchronize groups assigned to users in Keycloak with groups in Konfuzio</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#use-keycloak-to-generate-tokens-for-the-konfuzio-rest-api">Use Keycloak to generate tokens for the Konfuzio REST API</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#sso-via-other-identity-management-software">SSO via other Identity Management software</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#step-1-setting-up-your-identity-provider">Step 1: Setting up your Identity Provider</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#step-2-configuring-mozilla-django-oidc">Step 2: Configuring mozilla-django-oidc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#step-3-restarting-konfuzio">Step 3: Restarting Konfuzio</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#step-4-testing">Step 4: Testing</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#migrate-ais-and-projects">Migrate AIs and Projects</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#overview-of-migration-methods">Overview of Migration Methods</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#migrate-an-extraction-or-categorization-ai">Migrate an Extraction or Categorization AI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#migrate-a-project">Migrate a Project</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#database-and-storage">Database and Storage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#usage-of-postgresql">Usage of PostgreSQL</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#environment-variables">Environment Variables</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#environment-variables-for-konfuzio-server">Environment Variables for Konfuzio Server</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#general-settings">1. General Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#background-tasks-via-celery">2. Background Tasks via Celery</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ocr-settings">3. OCR Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#blob-storage-settings">4. Blob Storage Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#email-sending-settings">5. Email Sending Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#email-polling-settings">6. Email Polling Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#time-limits-for-background-tasks">7. Time limits for background tasks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#keycloak-sso-settings">8. Keycloak / SSO Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#snapshot-settings">9. Snapshot Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#test-settings-for-keycloak-sso-settings">10. Test Settings for Keycloak / SSO Settings</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#example-env-file-for-konfuzio-server">Example .env file for Konfuzio Server</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#environment-variables-for-read-api-container">Environment Variables for Read API Container</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#environment-variables-for-document-layout-analysis-container">Environment Variables for Document Layout Analysis Container</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#profiling">Profiling</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="passwords/index.html">Password Management</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog_app.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Document Validation UI</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dvui/index.html">What is the Konfuzio Document Validation UI?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dvui/explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dvui/sourcecode.html">Source Code</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/releases">Changelog</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Konfuzio</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Installation Guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/web/on_premises.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <p>.. meta::
+:description: Documentation on how to deploy Konfuzio on premises using Kubernetes and Helm or Docker.</p>
+<p>.. _Server Installation:</p>
+<section id="installation-guide">
+<h1>Installation Guide<a class="headerlink" href="#installation-guide" title="Permalink to this headline">¶</a></h1>
+<p>On-premises, also known as self-hosted, is a setup that allows Konfuzio Server to be implemented 100% on your own infrastructure or any cloud of your choice. In practice, it means that you know where your data is stored, how it’s handled and who gets hold of it.</p>
+<p>A common way to operate a production-ready and scalabe Konfuzio installation is via Kubernetens. An alternative deployment option is the <span class="xref myst">Single VM setup via Docker</span>. We recommend to use the option which is more familiar to you. In general</p>
+<div class="video-container">
+    <iframe class="video" src="https://www.youtube.com/embed/KXc8FTU-2NM" allowfullscreen></iframe>
+</div>
+<p>On-Premise Konfuzio installations allow to create Superuser accounts which can access all <a class="reference external" href="https://help.konfuzio.com/modules/administration/superuserdocuments/index.html">Documents</a>, <a class="reference external" href="https://help.konfuzio.com/modules/administration/superuserprojects/index.html">Projects</a> and <a class="reference external" href="https://help.konfuzio.com/modules/administration/superuserais/index.html">AIs</a> via a dedicated view as well as creating custom <a class="reference external" href="https://help.konfuzio.com/modules/administration/superuserroles/index.html">Roles</a></p>
+<p>Konfuzio Server has beens successfully installed on various clouds.</p>
+<p>Here you find a few examples:</p>
+<ul class="simple">
+<li><p>Amazon Web Services (AWS)</p></li>
+<li><p>Microsoft Azure</p></li>
+<li><p>Google Cloud Platform (GCP)</p></li>
+<li><p>IBM Cloud</p></li>
+<li><p>Oracle Cloud Infrastructure (OCI)</p></li>
+<li><p>Alibaba Cloud</p></li>
+<li><p>VMware Cloud</p></li>
+<li><p>DigitalOcean</p></li>
+<li><p>Rackspace</p></li>
+<li><p>Salesforce Cloud</p></li>
+<li><p>OVH Cloud</p></li>
+<li><p>Hetzner</p></li>
+<li><p>Telekom Cloud</p></li>
+</ul>
+<section id="billing-and-license">
+<h2>Billing and License<a class="headerlink" href="#billing-and-license" title="Permalink to this headline">¶</a></h2>
+<p>When you purchase a Konfuzio Server self-hosted license online, we provide you with the necessary credentials to download the Konfuzio Docker Images. If you deploy via Kubernetes you can find the Helm Charts already <a class="reference external" href="https://git.konfuzio.com/shared/charts">here</a>. An essential part of this process is the unique BILLING_API_KEY. This key should be set as an environment variable when starting the Konfuzio Server using the following information.</p>
+<section id="setup-billing-api">
+<h3>Setup Billing API<a class="headerlink" href="#setup-billing-api" title="Permalink to this headline">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">BILLING_API_KEY</span></code> needs to be passed as environment variable to the running Docker container.
+This is inline with the fact that all configuration of Konfuzio is done via <a class="reference external" href="https://dev.konfuzio.com/web/on_premises.html#environment-variables-for-konfuzio-server">environment variables</a>.</p>
+<p>Here is an example command to illustrate the setting of the <code class="docutils literal notranslate"><span class="pre">BILLING_API_KEY</span></code> environment variable:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">e</span> <span class="n">BILLING_API_KEY</span><span class="o">=</span><span class="n">your_api_key_here</span> <span class="o">-</span><span class="n">d</span> <span class="n">your_docker_image</span>
+</pre></div>
+</div>
+<p>In the command above, replace <code class="docutils literal notranslate"><span class="pre">your_api_key_here</span></code> with the actual billing API key and <code class="docutils literal notranslate"><span class="pre">your_docker_image</span></code> with the name of your Docker image.</p>
+<p>Here’s what each part of the command does:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">run</span></code>: This is the command to start a new Docker container.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-e</span></code>: This option allows you to set environment variables. You can also use “–env” instead of “-e”.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">BILLING_API_KEY=your_api_key_here</span></code>: This sets the “BILLING_API_KEY” environment variable to your actual API key.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-d</span></code>: This option starts the Docker container in detached mode, which means it runs in the background.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">your_docker_image</span></code>: This is the name of your Docker image. You replace this with the actual name of your Docker image.</p></li>
+</ul>
+<p>Instead of using <a class="reference external" href="https://dev.konfuzio.com/web/on_premises.html#docker-single-vm-setup">“plain” Docker</a> we recommend to use our <a class="reference external" href="https://dev.konfuzio.com/web/on_premises.html#quick-start-via-kubernetes-and-helm">Helm Chart</a> or <a class="reference external" href="https://dev.konfuzio.com/web/on_premises.html#quick-start-via-docker-compose">Docker-Compose</a> to install Konfuzio Server.</p>
+<ul class="simple">
+<li><p>For Docker-Compose you can simply replace the BILLING_API_KEY placeholder in the <a class="reference external" href="https://dev.konfuzio.com/_static/docker-compose.yml">docker-compose.yaml</a> file.</p></li>
+<li><p>When using Helm on Kubernetes, the BILLING_API_KEY is set as ‘envs.BILLING_API_KEY’ in the <a class="reference external" href="https://git.konfuzio.com/shared/charts/-/edit/master/values.yaml#L28">values.yaml</a> file.</p></li>
+</ul>
+<p>The Konfuzio container continues to report usage to our billing server, i.e., app.konfuzio.com, once a day. We assure you that the containers do not transmit any customer data, such as the image or text that’s being analyzed, to the billing server.</p>
+</section>
+<section id="important-updates">
+<h3>Important Updates<a class="headerlink" href="#important-updates" title="Permalink to this headline">¶</a></h3>
+<p>If the unique key associated with the Contract on app.konfuzio.com is removed, your self-hosted installation will cease to function within 24 hours. Currently, there is no limit on the number of pages that can be processed within this time. The Konfuzio Server will also refuse to start if any Python file within the container has been modified to preserve the integrity of our license checks.</p>
+</section>
+<section id="technical-background">
+<h3>Technical Background<a class="headerlink" href="#technical-background" title="Permalink to this headline">¶</a></h3>
+<p>Our server restarts itself after 500 requests by default. The code that prevents changes to Python files in the container has been obfuscated to ensure a significant challenge for anyone attempting to modify the source code.</p>
+</section>
+<section id="air-gapped-environments-and-upcoming-changes">
+<h3>Air-gapped Environments and Upcoming Changes<a class="headerlink" href="#air-gapped-environments-and-upcoming-changes" title="Permalink to this headline">¶</a></h3>
+<p>For those operating the Konfuzio Server in air-gapped environments, your Konfuzio Docker images are licensed to operate for one year, based on the release date, without needing to connect to our billing server.</p>
+<p>Soon, however, we will be introducing changes to our license check mechanism. The entire license check will be deactivated if a BILLING_API_KEY is not set. We are currently notifying self-hosted users about this upcoming change, urging them to configure their billing credentials. For more information, please refer to the Billing and License section in our documentation.</p>
+<p>For users requiring further instructions, especially those operating in air-gapped environments, please <a class="reference external" href="https://konfuzio.com/support">contact us</a> for assistance.</p>
+<p>We appreciate your understanding and cooperation as we continue to enhance our security, licensing, and billing measures for all self-hosted installations of the Konfuzio Server.</p>
+</section>
+</section>
+<section id="kubernetes">
+<h2>Kubernetes<a class="headerlink" href="#kubernetes" title="Permalink to this headline">¶</a></h2>
+<section id="required-tools">
+<h3>Required tools<a class="headerlink" href="#required-tools" title="Permalink to this headline">¶</a></h3>
+<p>Before deploying Konfuzio to your Kubernetes cluster, there are some tools you must have installed locally.</p>
+<section id="kubectl">
+<h4>kubectl<a class="headerlink" href="#kubectl" title="Permalink to this headline">¶</a></h4>
+<p>kubectl is the tool that talks to the Kubernetes API. kubectl 1.15 or higher is required and it needs to be compatible
+with your cluster (<a class="reference external" href="https://kubernetes.io/docs/tasks/tools/#before-you-begin">+/-1 minor release from your cluster</a>).</p>
+<p><a class="reference external" href="https://kubernetes.io/docs/tasks/tools/#install-kubectl">&gt; Install kubectl locally by following the Kubernetes documentation</a>.</p>
+<p>The server version of kubectl cannot be obtained until we connect to a cluster. Proceed
+with setting up Helm.</p>
+</section>
+<section id="helm">
+<h4>Helm<a class="headerlink" href="#helm" title="Permalink to this headline">¶</a></h4>
+<p>Helm is the package manager for Kubernetes. Konfuzio is tested and supported with Helm v3.</p>
+<section id="getting-helm">
+<h5>Getting Helm<a class="headerlink" href="#getting-helm" title="Permalink to this headline">¶</a></h5>
+<p>You can get Helm from the project’s <a class="reference external" href="https://github.com/helm/helm/releases">releases page</a>, or follow other options
+under the official documentation of <a class="reference external" href="https://helm.sh/docs/intro/install/">installing Helm</a>.</p>
+<section id="connect-to-a-local-minikube-cluster">
+<h6>Connect to a local Minikube cluster<a class="headerlink" href="#connect-to-a-local-minikube-cluster" title="Permalink to this headline">¶</a></h6>
+<p>For test purposes you can use <code class="docutils literal notranslate"><span class="pre">minikube</span></code> as your local cluster. If <code class="docutils literal notranslate"><span class="pre">kubectl</span> <span class="pre">cluster-info</span></code>
+is not showing <code class="docutils literal notranslate"><span class="pre">minikube</span></code> as the current cluster, use <code class="docutils literal notranslate"><span class="pre">kubectl</span> <span class="pre">config</span> <span class="pre">set-cluster</span> <span class="pre">minikube</span></code> to set the active cluster. For clusters in production please visit the <a class="reference external" href="https://kubernetes.io/docs/setup/production-environment/">Kubernetes
+Documentation</a>.</p>
+</section>
+</section>
+<section id="initializing-helm">
+<h5>Initializing Helm<a class="headerlink" href="#initializing-helm" title="Permalink to this headline">¶</a></h5>
+<p>If Helm v3 is being used, there no longer is an <code class="docutils literal notranslate"><span class="pre">init</span></code> sub command and the command is
+ready to be used once it is installed. Otherwise please upgrade Helm.</p>
+</section>
+</section>
+<section id="next-steps">
+<h4>Next steps<a class="headerlink" href="#next-steps" title="Permalink to this headline">¶</a></h4>
+<p>Once kubectl and Helm are configured, you can continue to configuring your Kubernetes
+cluster.</p>
+</section>
+</section>
+<section id="deployment">
+<h3>Deployment<a class="headerlink" href="#deployment" title="Permalink to this headline">¶</a></h3>
+<p>Before running <code class="docutils literal notranslate"><span class="pre">helm</span> <span class="pre">install</span></code>, you need to make some decisions about how you will run
+Konfuzio. Options can be specified using Helm’s <code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">option.name=value</span></code> or <code class="docutils literal notranslate"><span class="pre">--values=my_values.yaml</span></code> command
+line option. A complete list of command line options can be found <a class="reference external" href="https://helm.sh/docs/helm/">here</a>. This guide will
+cover required values and common options.</p>
+<p>Create a values.yaml file for your Konfuzio configuration. See Helm docs for information on how your values file will override the defaults.
+Useful default values can be found in the <a class="reference external" href="https://git.konfuzio.com/shared/charts/-/blob/master/values.yaml">values.yaml</a> in the chart <a class="reference external" href="https://git.konfuzio.com/shared/charts">repository</a>.</p>
+<section id="selecting-configuration-options">
+<h4>Selecting configuration options<a class="headerlink" href="#selecting-configuration-options" title="Permalink to this headline">¶</a></h4>
+<p>In each section collect the options that will be combined to use with <code class="docutils literal notranslate"><span class="pre">helm</span> <span class="pre">install</span></code>.</p>
+<section id="secrets">
+<h5>Secrets<a class="headerlink" href="#secrets" title="Permalink to this headline">¶</a></h5>
+<p>There are some secrets that need to be created (e.g. SSH keys). By default they will be
+generated automatically.</p>
+</section>
+<section id="networking-and-dns">
+<h5>Networking and DNS<a class="headerlink" href="#networking-and-dns" title="Permalink to this headline">¶</a></h5>
+<p>By default, Konfuzio relies on Kubernetes <code class="docutils literal notranslate"><span class="pre">Service</span></code> objects of <code class="docutils literal notranslate"><span class="pre">type:</span> <span class="pre">LoadBalancer</span></code> to
+expose Konfuzio services using name-based virtual servers configured with <code class="docutils literal notranslate"><span class="pre">Ingress</span></code>
+objects. You’ll need to specify a domain which will contain records to resolve the
+domain to the appropriate IP.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">--</span><span class="nb">set</span> <span class="n">ingress</span><span class="o">.</span><span class="n">enabled</span><span class="o">=</span><span class="kc">True</span>
+<span class="o">--</span><span class="nb">set</span> <span class="n">ingress</span><span class="o">.</span><span class="n">HOST_NAME</span><span class="o">=</span><span class="n">konfuzio</span><span class="o">.</span><span class="n">example</span><span class="o">.</span><span class="n">com</span>
+</pre></div>
+</div>
+<!-- 
+###### IPs
+
+If you plan to use an automatic DNS registration service,you won't need any additional
+configuration for Konfuzio, but you will need to deploy it to your cluster.
+
+If you plan to manually configure your DNS records they should all point to a static IP.
+For example if you choose `example.com` and you have a static IP of `10.10.10.10`, then
+`konfuzio.example.com`, `registry.example.com` and `minio.example.com` (if using MinIO) should all resolve to
+`10.10.10.10`.
+
+_Include these options in your Helm install command:_
+
+```
+--set global.hosts.externalIP=10.10.10.
+```
+-->
+</section>
+<section id="persistence">
+<h5>Persistence<a class="headerlink" href="#persistence" title="Permalink to this headline">¶</a></h5>
+<p>By default the setup will create Volume Claims with the expectation that a dynamic
+provisioner will create the underlying Persistent Volumes. If you would like to customize
+the storageClass or manually create and assign volumes,please review the <a class="reference external" href="https://kubernetes.io/docs/concepts/storage/volumes/">storage
+documentation</a>.</p>
+<p><strong>Important</strong> : After initial installation, making changes to your storage settings requires manually editing Kubernetes
+objects, so it’s best to plan ahead before installing your production instance of Konfuzio to avoid extra storage
+migration work.</p>
+</section>
+<section id="tls-certificates">
+<h5>TLS certificates<a class="headerlink" href="#tls-certificates" title="Permalink to this headline">¶</a></h5>
+<p>You should be running Konfuzio using https which requires TLS certificates. To get automated certificates using letesencrypt you need to install <a class="reference external" href="https://cert-manager.io/docs/installation/helm/">cert-manager</a> in your cluster. If you
+have your own wildcard certificate, you already have cert-manager installed, or you have
+some other way of obtaining TLS certificates. For the default configuration, you must
+specify an email address to register your TLS certificates.</p>
+<p><em>Include these options in your Helm install command:</em></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">--</span><span class="nb">set</span> <span class="n">letsencrypt</span><span class="o">.</span><span class="n">enabled</span><span class="o">=</span><span class="kc">True</span>
+<span class="o">--</span><span class="nb">set</span> <span class="n">letsencrypt</span><span class="o">.</span><span class="n">email</span><span class="o">=</span><span class="n">me</span><span class="nd">@example</span><span class="o">.</span><span class="n">com</span>
+</pre></div>
+</div>
+</section>
+<section id="postgresql">
+<h5>PostgreSQL<a class="headerlink" href="#postgresql" title="Permalink to this headline">¶</a></h5>
+<p>By default this Konfuzio provides an in-cluster PostgreSQL database, for trial purposes
+only.</p>
+<p>.. note::
+Unless you are an expert in managing a PostgreSQL database within a cluster, we do not recommended this configuration for use in production.**</p>
+<ul class="simple">
+<li><p>A single, non-resilient Deployment is used</p></li>
+</ul>
+<p>You can read more about setting up your production-readydatabase in the PostgreSQL
+documentation. As soon you have an external PostgreSQL database ready, Konfuzio can
+be configured to use it as shown below.</p>
+<p><em>Include these options in your Helm install command:</em></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">--</span><span class="nb">set</span> <span class="n">postgresql</span><span class="o">.</span><span class="n">install</span><span class="o">=</span><span class="n">false</span>
+<span class="o">--</span><span class="nb">set</span> <span class="k">global</span><span class="o">.</span><span class="n">psql</span><span class="o">.</span><span class="n">host</span><span class="o">=</span><span class="n">production</span><span class="o">.</span><span class="n">postgress</span><span class="o">.</span><span class="n">hostname</span><span class="o">.</span><span class="n">local</span>
+<span class="o">--</span><span class="nb">set</span> <span class="k">global</span><span class="o">.</span><span class="n">psql</span><span class="o">.</span><span class="n">password</span><span class="o">.</span><span class="n">secret</span><span class="o">=</span><span class="n">kubernetes_secret_name</span>
+<span class="o">--</span><span class="nb">set</span> <span class="k">global</span><span class="o">.</span><span class="n">psql</span><span class="o">.</span><span class="n">password</span><span class="o">.</span><span class="n">key</span><span class="o">=</span><span class="n">key_that_contains_postgres_password</span>
+</pre></div>
+</div>
+</section>
+<section id="redis">
+<h5>Redis<a class="headerlink" href="#redis" title="Permalink to this headline">¶</a></h5>
+<p>All the Redis configuration settings are configured automatically.</p>
+</section>
+<section id="persistent-volume">
+<h5>Persistent Volume<a class="headerlink" href="#persistent-volume" title="Permalink to this headline">¶</a></h5>
+<p>Konfuzio relies on object storage for highly-available persistent data in Kubernetes. By default, Konfuzio uses a
+<a class="reference external" href="https://kubernetes.io/docs/concepts/storage/persistent-volumes/">persistent volume</a> within the cluster.</p>
+<!--
+##### Outgoing email
+
+By default outgoing email is disabled. To enable it,provide details for your SMTP server
+using the `global.smtp` and `global.email` settings. You can find details for these
+settings in the command line options.
+
+`--set global.smtp.address=smtp.example.com:587`  
+`--set global.smtp.AuthUser=username-here`  
+`--set global.smtp.AuthPass=password-here`  
+-->
+</section>
+<section id="cpu-gpu-and-ram-resource-requirements">
+<h5>CPU, GPU and RAM Resource Requirements<a class="headerlink" href="#cpu-gpu-and-ram-resource-requirements" title="Permalink to this headline">¶</a></h5>
+<p>The resource requests, and number of replicas for the Konfuzio components in this
+setup are set by default to be adequate for a small production deployment. This is
+intended to fit in a cluster with at least 8 vCPU with AVX2 support enabled, 32 GB of
+RAM and one Nvidia GPU with minimum 4GB which supports at least CUDA10.1 and CUDNN 7.0. If you are
+trying to deploy a non-production instance, you can reduce the defaults in order to fit
+into a smaller cluster. Konfuzio can work without a GPU. The GPU is used to train and run Categorization AIs. We observe a 5x faster training and a 2x faster execution on GPU compared to CPU.</p>
+</section>
+<section id="storage-requirements">
+<h5>Storage Requirements<a class="headerlink" href="#storage-requirements" title="Permalink to this headline">¶</a></h5>
+<p>This section outlines the initial storage requirements for the on-premises installation. It is important to take these
+requirements into consideration when setting up your server, as the amount of storage needed may depend on the number of
+documents being processed.</p>
+<ol class="arabic simple">
+<li><p>For testing purposes, a minimum of 10 GB is required per server (not per instance of a worker).</p></li>
+<li><p>For serious use, a minimum of 100 GB should be directly available to the application. This amount should also cover
+the following:</p>
+<ul class="simple">
+<li><p>Postgres, which typically uses 10% of this size.</p></li>
+<li><p>Docker image storage, up to 25 GB should be reserved for upgrades.</p></li>
+</ul>
+</li>
+<li><p>Each page thumbnail adds 1-2 KB to the file size.</p></li>
+<li><p>After uploading, the total file size of a page image and its thumbnails increases by approximately a factor of 3 (10
+MB becomes approximately 30 MB on the server).</p></li>
+<li><p>To reduce storage usage, it is recommended to disable sandwich file generation by
+setting <code class="docutils literal notranslate"><span class="pre">ALWAYS_GENERATE_SANDWICH_PDF=False</span></code>.</p></li>
+</ol>
+</section>
+</section>
+<section id="deploy-using-helm">
+<h4>Deploy using Helm<a class="headerlink" href="#deploy-using-helm" title="Permalink to this headline">¶</a></h4>
+<p>Once you have all of your configuration options collected, we can get any dependencies
+and run Helm. In this example, we’ve named our Helm release <code class="docutils literal notranslate"><span class="pre">konfuzio</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">helm</span> <span class="n">repo</span> <span class="n">add</span> <span class="n">konfuzio</span><span class="o">-</span><span class="n">repo</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">git</span><span class="o">.</span><span class="n">konfuzio</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v4</span><span class="o">/</span><span class="n">projects</span><span class="o">/</span><span class="mi">106</span><span class="o">/</span><span class="n">packages</span><span class="o">/</span><span class="n">helm</span><span class="o">/</span><span class="n">stable</span>
+<span class="n">helm</span> <span class="n">repo</span> <span class="n">update</span>
+<span class="n">helm</span> <span class="n">upgrade</span> <span class="o">--</span><span class="n">install</span> <span class="n">konfuzio</span> <span class="n">konfuzio</span><span class="o">-</span><span class="n">repo</span><span class="o">/</span><span class="n">konfuzio</span><span class="o">-</span><span class="n">chart</span> <span class="o">--</span><span class="n">values</span> <span class="n">my_values</span><span class="o">.</span><span class="n">yaml</span>
+</pre></div>
+</div>
+<p>Please create a my_values.yaml file for your Konfuzio configuration. Useful default values can be found in the values.yaml in the chart repository. See Helm docs for information on how your values file will override the defaults. Alternativ you can specify you configuration using <code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">option.name=value</span></code>.</p>
+</section>
+<section id="monitoring-the-deployment">
+<h4>Monitoring the Deployment<a class="headerlink" href="#monitoring-the-deployment" title="Permalink to this headline">¶</a></h4>
+<p>The status of the deployment can be checked by running <code class="docutils literal notranslate"><span class="pre">helm</span> <span class="pre">status</span> <span class="pre">konfuzio</span></code> which
+can also be done while the deployment is taking place if you run the command in
+another terminal.</p>
+</section>
+<section id="autoscaling">
+<h4>Autoscaling<a class="headerlink" href="#autoscaling" title="Permalink to this headline">¶</a></h4>
+<p>The Konfuzio Server deployments can be scaled dynamically using a <a class="reference external" href="https://kubernetes.io/de/docs/tasks/run-application/horizontal-pod-autoscale/">Horizontal Pod Autoscaler</a> and a <a class="reference external" href="https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler">Cluster Autoscaler</a>. The autoscaling configuration for the Konfuzio Server installation of https://app.konfuzio.com can be found in this <a class="reference external" href="https://git.konfuzio.com/shared/monitoring-charts">Helm Chart</a>.</p>
+</section>
+<section id="initial-login">
+<h4>Initial login<a class="headerlink" href="#initial-login" title="Permalink to this headline">¶</a></h4>
+<p>You can access the Konfuzio instance by visiting the domain specified during
+installation. In order to create an initial superuser, please to connect to a running pod.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">kubectl</span> <span class="n">get</span> <span class="n">pod</span>
+<span class="n">kubectl</span> <span class="n">exec</span> <span class="o">--</span><span class="n">stdin</span> <span class="o">--</span><span class="n">tty</span> <span class="n">my</span><span class="o">-</span><span class="n">konfuzio</span><span class="o">-*</span> <span class="o">--</span>  <span class="n">bash</span>
+<span class="n">python</span> <span class="n">manage</span><span class="o">.</span><span class="n">py</span> <span class="n">createsuperuser</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="quick-start-via-kubernetes-and-helm">
+<h3>Quick Start via Kubernetes and Helm<a class="headerlink" href="#quick-start-via-kubernetes-and-helm" title="Permalink to this headline">¶</a></h3>
+<p>The following commands allow you to get a Konfuzio Server installation running with minimal configuration effort and relying on the <a class="reference external" href="https://git.konfuzio.com/shared/charts/-/blob/master/values.yaml">default values</a> of the Chart. This uses Postgres, Redis and S3 via <a class="reference external" href="https://min.io/">MinIO</a> as in-cluster deployments. This setup is not suited for production and may use insecure defaults.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">helm</span> <span class="n">repo</span> <span class="n">add</span> <span class="n">konfuzio</span><span class="o">-</span><span class="n">repo</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">git</span><span class="o">.</span><span class="n">konfuzio</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v4</span><span class="o">/</span><span class="n">projects</span><span class="o">/</span><span class="mi">106</span><span class="o">/</span><span class="n">packages</span><span class="o">/</span><span class="n">helm</span><span class="o">/</span><span class="n">stable</span>
+<span class="n">helm</span> <span class="n">repo</span> <span class="n">update</span>
+<span class="n">helm</span> <span class="n">install</span> <span class="n">my</span><span class="o">-</span><span class="n">konfuzio</span> <span class="n">konfuzio</span><span class="o">-</span><span class="n">repo</span><span class="o">/</span><span class="n">konfuzio</span><span class="o">-</span><span class="n">chart</span>  \  
+  <span class="o">--</span><span class="nb">set</span> <span class="n">envs</span><span class="o">.</span><span class="n">HOST_NAME</span><span class="o">=</span><span class="s2">&quot;host-name-for-you-installation.com&quot;</span>  \
+  <span class="o">--</span><span class="nb">set</span> <span class="n">envs</span><span class="o">.</span><span class="n">BILLING_API_KEY</span><span class="o">=</span><span class="s2">&quot;******&quot;</span>  \  
+  <span class="o">--</span><span class="nb">set</span> <span class="n">image</span><span class="o">.</span><span class="n">tag</span><span class="o">=</span><span class="s2">&quot;released-******&quot;</span>  \  
+  <span class="o">--</span><span class="nb">set</span> <span class="n">image</span><span class="o">.</span><span class="n">imageCredentials</span><span class="o">.</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;******&quot;</span>  \
+  <span class="o">--</span><span class="nb">set</span> <span class="n">image</span><span class="o">.</span><span class="n">imageCredentials</span><span class="o">.</span><span class="n">password</span><span class="o">=</span><span class="s2">&quot;******&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="upgrade">
+<h3>Upgrade<a class="headerlink" href="#upgrade" title="Permalink to this headline">¶</a></h3>
+<p>Before upgrading your Konfuzio installation, you need to check the <span class="xref myst">changelog</span>
+corresponding to the specific release you want to upgrade to and look for any that might
+pertain to the new version.</p>
+<p>We also recommend that you take a backup first.</p>
+<p>Upgrade Konfuzio following our standard procedure,with the following additions of:</p>
+<ol class="arabic simple">
+<li><p>Check the change log for the specific version you would like to upgrade to</p></li>
+<li><p>Ensure that you have created a <a class="reference external" href="https://www.postgresql.org/docs/11/backup.html">PostgreSQL backup</a> in the previous
+step. Without a backup, Konfuzio data might be lost if the upgrade fails.
+3a. If you use a values.yaml, update image.tag=”released-******” to the desired Konfuzio Server version.</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">helm</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="n">my</span><span class="o">-</span><span class="n">konfuzio</span> <span class="n">konfuzio</span><span class="o">-</span><span class="n">repo</span><span class="o">/</span><span class="n">konfuzio</span><span class="o">-</span><span class="n">chart</span> <span class="o">-</span><span class="n">f</span> <span class="n">values</span><span class="o">.</span><span class="n">yaml</span>
+</pre></div>
+</div>
+<p>3b. If you use “–set”, you can directly set the desired Konfuzio Server version.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">helm</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="n">my</span><span class="o">-</span><span class="n">konfuzio</span> <span class="n">konfuzio</span><span class="o">-</span><span class="n">repo</span><span class="o">/</span><span class="n">konfuzio</span><span class="o">-</span><span class="n">chart</span> <span class="o">--</span><span class="n">reuse</span><span class="o">-</span><span class="n">values</span> <span class="o">--</span><span class="nb">set</span> <span class="n">image</span><span class="o">.</span><span class="n">tag</span><span class="o">=</span><span class="s2">&quot;released-******&quot;</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="4">
+<li><p>We will perform the migrations for the Database for PostgreSQL automatically.</p></li>
+</ol>
+</section>
+</section>
+<section id="docker-single-vm-setup">
+<h2>Docker - Single VM setup<a class="headerlink" href="#docker-single-vm-setup" title="Permalink to this headline">¶</a></h2>
+<p>Konfuzio can be configured to run on a single virtual machine, without relying on
+Kubernetes. In this scenario, all necessary containers are started manually or with a
+container orchestration tool of your choice.</p>
+<section id="vm-requirements">
+<h3>VM Requirements<a class="headerlink" href="#vm-requirements" title="Permalink to this headline">¶</a></h3>
+<p>We recommend a virtual machine with a minimum of 8 vCPU (incl. AVX2 support) and
+32 GB of RAM and an installed Docker runtime. A Nvidia GPU is recommended but not
+required. In this setup Konfuzio is running in the context of the Docker executor,
+therefore there are no strict requirements for the VMs operating systems. However, we
+recommend a Linux VM with Debian, Ubuntu, CentOS,or Redhat Linux.</p>
+</section>
+<section id="login-to-the-konfuzio-docker-image-registry">
+<h3>Login to the Konfuzio Docker Image Registry<a class="headerlink" href="#login-to-the-konfuzio-docker-image-registry" title="Permalink to this headline">¶</a></h3>
+<p>We will provide you with the credentials to login into our Docker Image Registry, which allows you to access and download our Docker Images. This action requires an internet connection.</p>
+<p>The internet connection can be turned off once the download is complete. In case there is
+no internet connection available during setup, the container must be transferred with an
+alternative method as a file to the virtual machine.</p>
+<p>Registry URL: {PROVIDED_BY_KONFUZIO}<br />
+Username: {PROVIDED_BY_KONFUZIO}<br />
+Password: {PROVIDED_BY_KONFUZIO}</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">login</span> <span class="n">REGISTRY_URL</span>
+</pre></div>
+</div>
+<p>The Tag “latest” should be replaced with an actual version. A list of available tags can be found here: https://dev.konfuzio.com/web/changelog_app.html.</p>
+</section>
+<section id="quick-start-via-docker-compose">
+<h3>Quick Start via Docker-Compose<a class="headerlink" href="#quick-start-via-docker-compose" title="Permalink to this headline">¶</a></h3>
+<p>The fastest method for deploying Konfuzio Server using Docker is through Docker-Compose. To get started, follow these steps:</p>
+<ul class="simple">
+<li><p>Install Docker-Compose in a version that is compatible with Compose file format 3.9.</p></li>
+<li><p>Run <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">compose</span> <span class="pre">version</span></code> to verify that Docker-Compose is available.</p></li>
+<li><p>Download the <a class="reference external" href="https://dev.konfuzio.com/_static/docker-compose.yml">docker-compose.yml</a> file.</p></li>
+<li><p>Fill in the mandatory variables in the first section of the docker-compose file.</p></li>
+<li><p>Launch Konfuzio Server by running <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">compose</span> <span class="pre">up</span> <span class="pre">-d</span></code>.</p></li>
+</ul>
+<p>If you prefer to use Docker exclusively, we provide detailed instructions for setting up the containers in each necessary step (Step 1-9).</p>
+</section>
+<section id="download-docker-image">
+<h3>1. Download Docker Image<a class="headerlink" href="#download-docker-image" title="Permalink to this headline">¶</a></h3>
+<p>After you have connected to the Registry, the Konfuzio docker image can be downloaded via “docker pull”.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">pull</span> <span class="n">REGISTRY_URL</span><span class="o">/</span><span class="n">konfuzio</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">/</span><span class="n">master</span><span class="p">:</span><span class="n">latest</span>
+</pre></div>
+</div>
+<p>The Tag “latest” should be replaced with an actual version. A list of available tags can be found here: https://dev.konfuzio.com/web/changelog_app.html.</p>
+</section>
+<section id="setup-postgresql-redis-blobstorage-filesystemstorage">
+<h3>2. Setup PostgreSQL, Redis, BlobStorage/FileSystemStorage<a class="headerlink" href="#setup-postgresql-redis-blobstorage-filesystemstorage" title="Permalink to this headline">¶</a></h3>
+<p>The databases and credentials to access them are created in this step. Please choose your selected <span class="xref myst">databases</span> at this point. You need to be able to connect to your PostgreSQL via psql and to your Redis server via redis-cli before continuing the installation.</p>
+<p>In case you use FileSystemStorage and Docker volume mounts, you need to make sure the volume can be accessed by the konfuzio docker user (uid=999). You might want to run <code class="docutils literal notranslate"><span class="pre">chown</span> <span class="pre">999:999</span> <span class="pre">-R</span> <span class="pre">/konfuzio-vm/text-annotation/data</span></code> on the host VM.</p>
+<p>The PostgreSQL database connection can be verified via psql and a connection string in the <a class="reference external" href="https://github.com/jazzband/dj-database-url#url-schema">following format</a>.
+This connection string is later set as <code class="docutils literal notranslate"><span class="pre">DATABASE_URL</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">psql</span> <span class="o">-</span><span class="n">H</span> <span class="n">postgres</span><span class="p">:</span><span class="o">//</span><span class="n">USER</span><span class="p">:</span><span class="n">PASSWORD</span><span class="nd">@HOST</span><span class="p">:</span><span class="n">PORT</span><span class="o">/</span><span class="n">NAME</span>
+</pre></div>
+</div>
+<p>The Redis connection can be verified using redis-cli and a connection string.
+To use the connection string for <code class="docutils literal notranslate"><span class="pre">BROKER_URL</span></code>, <code class="docutils literal notranslate"><span class="pre">RESULT_BACKEND</span></code> and <code class="docutils literal notranslate"><span class="pre">DEFENDER_REDIS_URL</span></code> you need to append the database selector (e.g. redis://default:PASSWORD&#64;HOST:PORT/0)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">redis</span><span class="o">-</span><span class="n">cli</span> <span class="o">-</span><span class="n">u</span> <span class="n">redis</span><span class="p">:</span><span class="o">//</span><span class="n">default</span><span class="p">:</span><span class="n">PASSWORD</span><span class="nd">@HOST</span><span class="p">:</span><span class="n">PORT</span>
+</pre></div>
+</div>
+</section>
+<section id="setup-the-environment-variable-file">
+<h3>3. Setup the environment variable file<a class="headerlink" href="#setup-the-environment-variable-file" title="Permalink to this headline">¶</a></h3>
+<p>Copy the /code/.env.example file from the container and adapt it to your settings. The .env file can be saved anywhere on the host VM. In this example we use “/konfuzio-vm/text-annotation.env”.</p>
+</section>
+<section id="init-the-database-create-first-superuser-via-cli-and-prefill-e-mail-templates">
+<h3>4. Init the database, create first superuser via cli and prefill e-mail templates<a class="headerlink" href="#init-the-database-create-first-superuser-via-cli-and-prefill-e-mail-templates" title="Permalink to this headline">¶</a></h3>
+<p>In this example we store the files on the host VM and mount the directory “/konfuzio-vm/text-annotation/data” into the container. In the first step we create a container with a shell to then start the initialization scripts within the container.
+The container needs to be able to access IP addresses and hostnames used in the .env. This can be ensured using –add.host. In the example we make the host IP 10.0.0.1 available.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">it</span> <span class="o">--</span><span class="n">add</span><span class="o">-</span><span class="n">host</span><span class="o">=</span><span class="mf">10.0.0.1</span> \
+  <span class="o">--</span><span class="n">env</span><span class="o">-</span><span class="n">file</span> <span class="o">/</span><span class="n">konfuzio</span><span class="o">-</span><span class="n">vm</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">.</span><span class="n">env</span> \
+  <span class="o">--</span><span class="n">mount</span> <span class="nb">type</span><span class="o">=</span><span class="n">bind</span><span class="p">,</span><span class="n">source</span><span class="o">=/</span><span class="n">konfuzio</span><span class="o">-</span><span class="n">vm</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">/</span><span class="n">data</span><span class="p">,</span><span class="n">target</span><span class="o">=/</span><span class="n">data</span> \
+  <span class="n">REGISTRY_URL</span><span class="o">/</span><span class="n">konfuzio</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">/</span><span class="n">master</span><span class="p">:</span><span class="n">latest</span> <span class="n">bash</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">manage</span><span class="o">.</span><span class="n">py</span> <span class="n">migrate</span>
+<span class="n">python</span> <span class="n">manage</span><span class="o">.</span><span class="n">py</span> <span class="n">createsuperuser</span>
+<span class="n">python</span> <span class="n">manage</span><span class="o">.</span><span class="n">py</span> <span class="n">init_email_templates</span>
+<span class="n">python</span> <span class="n">manage</span><span class="o">.</span><span class="n">py</span> <span class="n">init_user_permissions</span>
+</pre></div>
+</div>
+<p>After completing these steps you can exit and remove the container.</p>
+<p>.. note::
+The username used during the createsuperuser dialog must have the format of a valid e-mail in order to be able to login later.</p>
+</section>
+<section id="start-the-container">
+<h3>5. Start the container<a class="headerlink" href="#start-the-container" title="Permalink to this headline">¶</a></h3>
+<p>In this example we start four containers. The first one to serve the Konfuzio web application.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">p</span> <span class="mi">80</span><span class="p">:</span><span class="mi">8000</span> <span class="o">--</span><span class="n">name</span> <span class="n">web</span> <span class="o">-</span><span class="n">d</span> <span class="o">--</span><span class="n">add</span><span class="o">-</span><span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">:</span><span class="mf">10.0.0.1</span> \
+  <span class="o">--</span><span class="n">env</span><span class="o">-</span><span class="n">file</span> <span class="o">/</span><span class="n">konfuzio</span><span class="o">-</span><span class="n">vm</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">.</span><span class="n">env</span> \
+  <span class="o">--</span><span class="n">mount</span> <span class="nb">type</span><span class="o">=</span><span class="n">bind</span><span class="p">,</span><span class="n">source</span><span class="o">=/</span><span class="n">konfuzio</span><span class="o">-</span><span class="n">vm</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">/</span><span class="n">data</span><span class="p">,</span><span class="n">target</span><span class="o">=/</span><span class="n">data</span> \
+  <span class="n">REGISTRY_URL</span><span class="o">/</span><span class="n">konfuzio</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">/</span><span class="n">master</span><span class="p">:</span><span class="n">latest</span>
+</pre></div>
+</div>
+<p>The second and third are used to process tasks in the background without blocking the web application. Depending on our load scenario, you might to start a large number of worker containers.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">run</span> <span class="o">--</span><span class="n">name</span> <span class="n">worker1</span> <span class="o">-</span><span class="n">d</span> <span class="o">--</span><span class="n">add</span><span class="o">-</span><span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">:</span><span class="mf">10.0.0.1</span> \  
+  <span class="o">--</span><span class="n">env</span><span class="o">-</span><span class="n">file</span> <span class="o">/</span><span class="n">konfuzio</span><span class="o">-</span><span class="n">vm</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">.</span><span class="n">env</span> \  
+  <span class="o">--</span><span class="n">mount</span> <span class="nb">type</span><span class="o">=</span><span class="n">bind</span><span class="p">,</span><span class="n">source</span><span class="o">=/</span><span class="n">konfuzio</span><span class="o">-</span><span class="n">vm</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">/</span><span class="n">data</span><span class="p">,</span><span class="n">target</span><span class="o">=/</span><span class="n">data</span> \  
+  <span class="n">REGISTRY_URL</span><span class="o">/</span><span class="n">konfuzio</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">/</span><span class="n">master</span><span class="p">:</span><span class="n">latest</span> \  
+  <span class="n">celery</span> <span class="o">-</span><span class="n">A</span> <span class="n">app</span> <span class="n">worker</span> <span class="o">-</span><span class="n">l</span> <span class="n">INFO</span> <span class="o">--</span><span class="n">concurrency</span> <span class="mi">1</span> <span class="o">-</span><span class="n">Q</span> <span class="n">celery</span><span class="p">,</span><span class="n">priority_ocr</span><span class="p">,</span><span class="n">ocr</span><span class="p">,</span>\  
+  <span class="n">priority_extract</span><span class="p">,</span><span class="n">extract</span><span class="p">,</span><span class="n">processing</span><span class="p">,</span><span class="n">priority_local_ocr</span><span class="p">,</span><span class="n">local_ocr</span><span class="p">,</span>\
+  <span class="n">training</span><span class="p">,</span><span class="n">finalize</span><span class="p">,</span><span class="n">training_heavy</span><span class="p">,</span><span class="n">categorize</span>  
+
+<span class="n">docker</span> <span class="n">run</span> <span class="o">--</span><span class="n">name</span> <span class="n">worker2</span> <span class="o">-</span><span class="n">d</span> <span class="o">--</span><span class="n">add</span><span class="o">-</span><span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">:</span><span class="mf">10.0.0.1</span> \
+  <span class="o">--</span><span class="n">env</span><span class="o">-</span><span class="n">file</span> <span class="o">/</span><span class="n">konfuzio</span><span class="o">-</span><span class="n">vm</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">.</span><span class="n">env</span> \  
+  <span class="o">--</span><span class="n">mount</span> <span class="nb">type</span><span class="o">=</span><span class="n">bind</span><span class="p">,</span><span class="n">source</span><span class="o">=/</span><span class="n">konfuzio</span><span class="o">-</span><span class="n">vm</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">/</span><span class="n">data</span><span class="p">,</span><span class="n">target</span><span class="o">=/</span><span class="n">data</span> \
+  <span class="n">REGISTRY_URL</span><span class="o">/</span><span class="n">konfuzio</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">/</span><span class="n">master</span><span class="p">:</span><span class="n">latest</span> \
+  <span class="n">celery</span> <span class="o">-</span><span class="n">A</span> <span class="n">app</span> <span class="n">worker</span> <span class="o">-</span><span class="n">l</span> <span class="n">INFO</span> <span class="o">--</span><span class="n">concurrency</span> <span class="mi">1</span> <span class="o">-</span><span class="n">Q</span> <span class="n">celery</span><span class="p">,</span><span class="n">priority_ocr</span><span class="p">,</span><span class="n">ocr</span><span class="p">,</span>\
+  <span class="n">priority_extract</span><span class="p">,</span><span class="n">extract</span><span class="p">,</span><span class="n">processing</span><span class="p">,</span><span class="n">priority_local_ocr</span><span class="p">,</span><span class="n">local_ocr</span><span class="p">,</span>\
+  <span class="n">training</span><span class="p">,</span><span class="n">finalize</span><span class="p">,</span><span class="n">training_heavy</span><span class="p">,</span><span class="n">categorize</span>
+</pre></div>
+</div>
+<p>The fourth container is a Beats-Worker that takes care of sceduled tasks (e.g. auto-deleted documents).</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">run</span> <span class="o">--</span><span class="n">name</span> <span class="n">beats</span> <span class="o">-</span><span class="n">d</span> <span class="o">--</span><span class="n">add</span><span class="o">-</span><span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">:</span><span class="mf">10.0.0.1</span> \  
+  <span class="o">--</span><span class="n">env</span><span class="o">-</span><span class="n">file</span> <span class="o">/</span><span class="n">konfuzio</span><span class="o">-</span><span class="n">vm</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">.</span><span class="n">env</span> \  
+  <span class="o">--</span><span class="n">mount</span> <span class="nb">type</span><span class="o">=</span><span class="n">bind</span><span class="p">,</span><span class="n">source</span><span class="o">=/</span><span class="n">konfuzio</span><span class="o">-</span><span class="n">vm</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">/</span><span class="n">data</span><span class="p">,</span><span class="n">target</span><span class="o">=/</span><span class="n">data</span> \  
+  <span class="n">REGISTRY_URL</span><span class="o">/</span><span class="n">konfuzio</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">/</span><span class="n">master</span><span class="p">:</span><span class="n">latest</span> \  
+  <span class="n">celery</span> <span class="o">-</span><span class="n">A</span> <span class="n">app</span> <span class="n">beat</span> <span class="o">-</span><span class="n">l</span> <span class="n">INFO</span> <span class="o">-</span><span class="n">s</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">celerybeat</span><span class="o">-</span><span class="n">schedule</span>
+</pre></div>
+</div>
+</section>
+<section id="optional-6-use-flower-to-monitor-tasks">
+<h3>[Optional] 6. Use Flower to monitor tasks<a class="headerlink" href="#optional-6-use-flower-to-monitor-tasks" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="https://flower.readthedocs.io/en/latest/screenshots.html">Flower</a> can be used a task monitoring tool. Flower will be only accessible for Konfuzio superusers and is part of the Konfuzio Server Docker Image.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">run</span> <span class="o">--</span><span class="n">name</span> <span class="n">flower</span> <span class="o">-</span><span class="n">d</span> <span class="o">--</span><span class="n">add</span><span class="o">-</span><span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">:</span><span class="mf">10.0.0.1</span> \  
+  <span class="o">--</span><span class="n">env</span><span class="o">-</span><span class="n">file</span> <span class="o">/</span><span class="n">konfuzio</span><span class="o">-</span><span class="n">vm</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">.</span><span class="n">env</span> \  
+  <span class="o">--</span><span class="n">mount</span> <span class="nb">type</span><span class="o">=</span><span class="n">bind</span><span class="p">,</span><span class="n">source</span><span class="o">=/</span><span class="n">konfuzio</span><span class="o">-</span><span class="n">vm</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">/</span><span class="n">data</span><span class="p">,</span><span class="n">target</span><span class="o">=/</span><span class="n">data</span> \
+  <span class="n">REGISTRY_URL</span><span class="o">/</span><span class="n">konfuzio</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">/</span><span class="n">master</span><span class="p">:</span><span class="n">latest</span> \  
+  <span class="n">celery</span> <span class="o">-</span><span class="n">A</span> <span class="n">app</span> <span class="n">flower</span> <span class="o">--</span><span class="n">url_prefix</span><span class="o">=</span><span class="n">flower</span> <span class="o">--</span><span class="n">address</span><span class="o">=</span><span class="mf">0.0.0.0</span> <span class="o">--</span><span class="n">port</span><span class="o">=</span><span class="mi">5555</span>
+</pre></div>
+</div>
+<p>The Konfuzio Server application functions as a reverse proxy and serves the Flower application. In order for Django to correctly access the Flower application, it requires knowledge of the Flower URL. Specifically, the FLOWER_URL should be set to http://host:5555/flower.</p>
+<p><code class="docutils literal notranslate"><span class="pre">FLOWER_URL=http://host:5555/flower</span></code></p>
+<div class="highlight-mermaid notranslate"><div class="highlight"><pre><span></span>graph LR
+subgraph Network
+a(&quot;User&quot;)
+end
+subgraph Local Network / Cluster Network
+a(&quot;User&quot;) --&gt; e(&quot;Konfuzio Server&quot;)
+e(&quot;Konfuzio Server&quot;) -- FLOWER_URL --&gt; f(&quot;Flower&quot;)
+end
+</pre></div>
+</div>
+<p>Please ensure that the Flower container is not exposed externally, as it does not handle authentication and authorization itself.</p>
+</section>
+<section id="optional-7-run-container-for-email-integration">
+<h3>[Optional] 7. Run Container for Email Integration<a class="headerlink" href="#optional-7-run-container-for-email-integration" title="Permalink to this headline">¶</a></h3>
+<p>The ability to <a class="reference external" href="https://help.konfuzio.com/integrations/upload-by-email/index.html">upload documents via email</a> can be achieved by starting a dedicated container with the respective environment variables.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">SCAN_EMAIL_HOST</span> <span class="o">=</span> <span class="n">imap</span><span class="o">.</span><span class="n">example</span><span class="o">.</span><span class="n">com</span>
+<span class="n">SCAN_EMAIL_HOST_USER</span> <span class="o">=</span> <span class="n">user</span><span class="nd">@example</span><span class="o">.</span><span class="n">com</span>
+<span class="n">SCAN_EMAIL_RECIPIENT</span> <span class="o">=</span> <span class="n">automation</span><span class="nd">@example</span><span class="o">.</span><span class="n">com</span>
+<span class="n">SCAN_EMAIL_HOST_PASSWORD</span> <span class="o">=</span> <span class="n">xxxxxxxxxxxxxxxxxx</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">run</span> <span class="o">--</span><span class="n">name</span> <span class="n">flower</span> <span class="o">-</span><span class="n">d</span> <span class="o">--</span><span class="n">add</span><span class="o">-</span><span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">:</span><span class="mf">10.0.0.1</span> \  
+  <span class="o">--</span><span class="n">env</span><span class="o">-</span><span class="n">file</span> <span class="o">/</span><span class="n">konfuzio</span><span class="o">-</span><span class="n">vm</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">.</span><span class="n">env</span> \  
+  <span class="o">--</span><span class="n">mount</span> <span class="nb">type</span><span class="o">=</span><span class="n">bind</span><span class="p">,</span><span class="n">source</span><span class="o">=/</span><span class="n">konfuzio</span><span class="o">-</span><span class="n">vm</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">/</span><span class="n">data</span><span class="p">,</span><span class="n">target</span><span class="o">=/</span><span class="n">data</span> \
+  <span class="n">REGISTRY_URL</span><span class="o">/</span><span class="n">konfuzio</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">/</span><span class="n">master</span><span class="p">:</span><span class="n">latest</span> \  
+  <span class="n">python</span> <span class="n">manage</span><span class="o">.</span><span class="n">py</span> <span class="n">scan_email</span>
+</pre></div>
+</div>
+</section>
+<section id="optional-8-use-azure-read-api-on-premises-or-as-service">
+<h3>[Optional] 8. Use Azure Read API (On-Premises or as Service)<a class="headerlink" href="#optional-8-use-azure-read-api-on-premises-or-as-service" title="Permalink to this headline">¶</a></h3>
+<p>The Konfuzio Server can work together with the <a class="reference external" href="https://learn.microsoft.com/en-us/azure/cognitive-services/computer-vision/overview-ocr">Azure Read API</a>. There are two options to use the Azure Read API in an on-premises setup.</p>
+<ol class="arabic simple">
+<li><p>Use the Azure Read API as a service from the public Azure cloud.</p></li>
+<li><p>Install the Azure Read API container directly on your on-premises infrastructure via Docker.</p></li>
+</ol>
+<p>The Azure Read API is in both cases connected to the Konfuzio Server via the following environment variables.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">AZURE_OCR_KEY</span><span class="o">=</span><span class="mi">123456789</span> <span class="c1"># The Azure OCR API key  </span>
+<span class="n">AZURE_OCR_BASE_URL</span><span class="o">=</span><span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">host</span><span class="p">:</span><span class="mi">5000</span> <span class="c1"># The URL of the READ API  </span>
+<span class="n">AZURE_OCR_VERSION</span><span class="o">=</span><span class="n">v3</span><span class="mf">.2</span> <span class="c1"># The version of the READ API</span>
+</pre></div>
+</div>
+<p>For the first option, login into the Azure Portal and create a Computer Vision resource under the Cognitive Services section.
+After the resource is created the AZURE_OCR_KEY and AZURE_OCR_BASE_URL is displayed. Those need to be added as environment variable.</p>
+<p>For the “on-premises” option, please refer to the <a class="reference external" href="https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2">Azure Read API Container installation guide</a>.
+Please fill in the <a class="reference external" href="https://learn.microsoft.com/en-us/azure/ai-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2#request-approval-to-run-the-container">Microsoft Request Form</a> to get an API_KEY and ENDPOINT_URL which is compatible with <a class="reference external" href="https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2">running the On-Premises container</a>.
+The ENDPOINT_URL must be reachable by the Azure Read API Container.</p>
+<section id="how-to-fix-common-azure-read-api-issues-for-on-premises">
+<h4>How to fix common Azure Read API issues for On-Premises<a class="headerlink" href="#how-to-fix-common-azure-read-api-issues-for-on-premises" title="Permalink to this headline">¶</a></h4>
+<section id="ensure-avx2-compatibility">
+<h5>1. Ensure AVX2 Compatibility:<a class="headerlink" href="#ensure-avx2-compatibility" title="Permalink to this headline">¶</a></h5>
+<p>Verify if your system supports Advanced Vector Extensions 2 (AVX2). You can do this by running the following command on Linux hosts:</p>
+<p><code class="docutils literal notranslate"><span class="pre">grep</span> <span class="pre">-q</span> <span class="pre">avx2</span> <span class="pre">/proc/cpuinfo</span> <span class="pre">&amp;&amp;</span> <span class="pre">echo</span> <span class="pre">AVX2</span> <span class="pre">supported</span> <span class="pre">||</span> <span class="pre">echo</span> <span class="pre">No</span> <span class="pre">AVX2</span> <span class="pre">support</span> <span class="pre">detected</span></code></p>
+<p>For further information, refer to <a class="reference external" href="https://learn.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers#advanced-vector-extension-support">Microsoft’s AVX2 support guide</a>.</p>
+</section>
+<section id="verify-azure-read-container-status">
+<h5>2. Verify Azure Read Container Status:<a class="headerlink" href="#verify-azure-read-container-status" title="Permalink to this headline">¶</a></h5>
+<p>You can monitor the Azure Read Container’s status through its web interface.
+To do this, access the container on Port 5000 (i.e. http://localhost:5000/status) from a web browser connected to the Container’s network.
+You might need to replace ‘localhost’ with the IP/network name of the Azure container.
+This interface will also help detect issues such as invalid credentials or an inaccessible license server (possibly due to a firewall).
+Refer to <a class="reference external" href="https://learn.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers#validate-that-a-container-is-running">Microsoft’s guide on validating container status</a> for further assistance.</p>
+</section>
+<section id="consider-trying-a-different-container-tag">
+<h5>3. Consider Trying a Different Container Tag:<a class="headerlink" href="#consider-trying-a-different-container-tag" title="Permalink to this headline">¶</a></h5>
+<p>If your Azure Read API Container ceases to function after a restart, it may be due to an automatic upgrade to a new, potentially faulty Docker tag.
+In such cases, consider switching to a previous Docker tag. You can view the complete version history of Docker tags at the <span class="xref myst">Microsoft Artifact Registry</span>.
+Remember to uncheck the “Supported Tags Only” box to access all available versions.</p>
+</section>
+</section>
+</section>
+<section id="optional-9-install-the-document-layout-analysis-segmentation-container">
+<h3>[Optional] 9. Install the Document Layout Analysis (Segmentation) Container<a class="headerlink" href="#optional-9-install-the-document-layout-analysis-segmentation-container" title="Permalink to this headline">¶</a></h3>
+<p>Download the container with the credentials provided by Konfuzio.</p>
+<p>Registry URL: {PROVIDED_BY_KONFUZIO}<br />
+Username: {PROVIDED_BY_KONFUZIO}<br />
+Password: {PROVIDED_BY_KONFUZIO}</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">login</span> <span class="n">REGISTRY_URL</span>  
+<span class="n">docker</span> <span class="n">pull</span> <span class="n">REGISTRY_URL</span><span class="o">/</span><span class="n">konfuzio</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">/</span><span class="n">detectron2</span><span class="o">/</span><span class="n">main</span><span class="p">:</span><span class="n">released</span><span class="o">-</span><span class="mi">2023</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">03_11</span><span class="o">-</span><span class="mi">39</span><span class="o">-</span><span class="mi">42</span>
+<span class="n">docker</span> <span class="n">run</span> <span class="o">--</span><span class="n">env</span><span class="o">-</span><span class="n">file</span> <span class="o">/</span><span class="n">path_to_env_file</span><span class="o">.</span><span class="n">env</span> <span class="n">REGISTRY_URL</span><span class="o">/</span><span class="n">konfuzio</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">/</span><span class="n">detectron2</span><span class="o">/</span><span class="n">main</span><span class="p">:</span><span class="n">released</span><span class="o">-</span><span class="mi">2023</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">03_11</span><span class="o">-</span><span class="mi">39</span><span class="o">-</span><span class="mi">42</span> <span class="o">./</span><span class="n">run</span><span class="o">.</span><span class="n">sh</span>
+</pre></div>
+</div>
+<p>The “Document Layout Analysis Container” needs to be started with the following environment variables which you can enter into your .env file</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">BROKER_URL</span><span class="o">=</span>  <span class="c1"># Set this to an unused Redis database (e.g. &quot;redis://redis:6379/2&quot;)</span>
+<span class="n">RESULT_BACKEND</span><span class="o">=</span>  <span class="c1"># Set this to an unused Redis database (e.g. &quot;redis://redis:6379/3&quot;)</span>
+</pre></div>
+</div>
+<p>We recommend to run the “Document Layout Analysis Container” with 8GB of RAM. The container can be started and used with less RAM, however this may not work on large images.
+After the “Document Layout Analysis Container” is running you need to set the <span class="xref myst">DETECTRON_URL</span> for Konfuzio Server to point to the “Document Layout Analysis Container”.</p>
+<p>To learn more about how the Document Layout Analysis Container works internally, please <a class="reference external" href="https://dev.konfuzio.com/web/on_premises.html#document-layout-analysis">click here</a>.</p>
+</section>
+<section id="optional-10-install-document-summarization-container">
+<h3>[Optional] 10. Install document summarization container<a class="headerlink" href="#optional-10-install-document-summarization-container" title="Permalink to this headline">¶</a></h3>
+<p>Download the container with the credentials provided by Konfuzio</p>
+<p>Registry URL: {PROVIDED_BY_KONFUZIO}<br />
+Username: {PROVIDED_BY_KONFUZIO}<br />
+Password: {PROVIDED_BY_KONFUZIO}</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">login</span> <span class="n">REGISTRY_URL</span>
+<span class="n">docker</span> <span class="n">pull</span> <span class="n">REGISTRY_URL</span><span class="o">/</span><span class="n">konfuzio</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">/</span><span class="n">summarization</span><span class="o">/</span><span class="n">main</span><span class="p">:</span><span class="n">released</span><span class="o">-</span><span class="mi">2022</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">29_21</span><span class="o">-</span><span class="mi">55</span><span class="o">-</span><span class="mi">57</span>
+<span class="n">docker</span> <span class="n">run</span> <span class="o">--</span><span class="n">env</span><span class="o">-</span><span class="n">file</span> <span class="o">/</span><span class="n">path_to_env_file</span><span class="o">.</span><span class="n">env</span> <span class="n">REGISTRY_URL</span><span class="o">/</span><span class="n">konfuzio</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">/</span><span class="n">summarization</span><span class="o">/</span><span class="n">main</span><span class="p">:</span><span class="n">released</span><span class="o">-</span><span class="mi">2022</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">29_21</span><span class="o">-</span><span class="mi">55</span><span class="o">-</span><span class="mi">57</span>
+</pre></div>
+</div>
+<p>The summarization container needs to be started with the following environment variables which you can enter into your .env file</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">GPU</span><span class="o">=</span><span class="kc">True</span>  <span class="c1"># If GPU is present</span>
+<span class="n">TASK_ALWAYS_EAGER</span><span class="o">=</span><span class="kc">False</span>
+<span class="n">C_FORCE_ROOT</span><span class="o">=</span><span class="kc">True</span>
+<span class="n">BROKER_URL</span><span class="o">=</span>  <span class="c1"># Set this to an unused Redis database (e.g. &quot;redis://redis:6379/4&quot;)</span>
+<span class="n">RESULT_BACKEND</span><span class="o">=</span>  <span class="c1"># Set this to an unused Redis database (e.g. &quot;redis://redis:6379/5&quot;)</span>
+
+</pre></div>
+</div>
+<p>We recommend to run the segmentation container with 4GB of RAM. The segmentation container can be started and used with less RAM, however this may not work on large images.
+After the summarization container is running you need to set the <span class="xref myst">SUMMARIZATION_URL</span> to point to the segmentation container.</p>
+</section>
+<section id="a-upgrade-to-newer-konfuzio-version">
+<h3>11a. Upgrade to newer Konfuzio Version<a class="headerlink" href="#a-upgrade-to-newer-konfuzio-version" title="Permalink to this headline">¶</a></h3>
+<p>Konfuzio upgrades are performed by replacing the Docker Tag to the <a class="reference external" href="https://dev.konfuzio.com/web/changelog_app.html">desired version</a>
+After starting the new containers, database migrations need to be applied by <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">migrate</span></code> and new email-templates need to be initialized <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">init_email_templates</span></code> (see 4.).
+In case additional migration steps are needed, they will be mentioned in the release notes.</p>
+</section>
+<section id="b-downgrade-to-older-konfuzio-version">
+<h3>11b. Downgrade to older Konfuzio Version<a class="headerlink" href="#b-downgrade-to-older-konfuzio-version" title="Permalink to this headline">¶</a></h3>
+<p>Konfuzio downgrades are performed by creating a fresh Konfuzio installation in which existing Projects can be imported.
+The following steps need to be undertaken:</p>
+<ul class="simple">
+<li><p>Export the Projects that you want to have available after downgrade using <a class="reference external" href="https://help.konfuzio.com/integrations/migration-between-konfuzio-server-instances/index.html#migrate-projects-between-konfuzio-server-instances">konfuzio_sdk</a>. Please make sure you use a SDK version that is compatible with the Konfuzio Server version you want to migrate to.</p></li>
+<li><p>Create a new Postgres Database and a new Folder/Bucket for file storage which will be used for the downgraded version</p></li>
+<li><p>Install the desired Konfuzio Server version by starting with 1.)</p></li>
+<li><p>Import the projects using <a class="reference external" href="https://help.konfuzio.com/integrations/migration-between-konfuzio-server-instances/index.html#migrate-projects-between-konfuzio-server-instances">“python manage.py project_import”</a></p></li>
+</ul>
+</section>
+<section id="load-scenario-for-single-vm-with-32gb">
+<h3>Load Scenario for Single VM with 32GB<a class="headerlink" href="#load-scenario-for-single-vm-with-32gb" title="Permalink to this headline">¶</a></h3>
+<section id="scenario-1-with-self-hosted-ocr">
+<h4>Scenario 1: With self-hosted OCR<a class="headerlink" href="#scenario-1-with-self-hosted-ocr" title="Permalink to this headline">¶</a></h4>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Number of Container</p></th>
+<th class="head"><p>Container Type</p></th>
+<th class="head"><p>RAM</p></th>
+<th class="head"><p>Capacity</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>Web Container</p></td>
+<td><p>4GB</p></td>
+<td><p>…</p></td>
+</tr>
+<tr class="row-odd"><td><p>3</p></td>
+<td><p>Generic Celery Worker</p></td>
+<td><p>4GB</p></td>
+<td><p>1500 (3 x 500) Pages of Extraction, Categorization, or Splitting per hour</p></td>
+</tr>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>Self-Hosted OCR worker</p></td>
+<td><p>8GB</p></td>
+<td><p>1200 (1 y 1200) Pages) / hours (Not needed if external API Service is used)</p></td>
+</tr>
+<tr class="row-odd"><td><p>N</p></td>
+<td><p>remaining Containers</p></td>
+<td><p>4GB</p></td>
+<td><p>…</p></td>
+</tr>
+</tbody>
+</table>
+<p>With this setup, around 1200 Pages per hour can be processed using OCR and Extraction, around 750 Pages per hour can be processed if OCR, Categorization and Extraction are active, around 850 Pages per hour can be processed if OCR, Splitting, Categorization and Extraction are active.</p>
+</section>
+<section id="scenario-2-without-self-hosted-ocr">
+<h4>Scenario 2: Without self-hosted OCR<a class="headerlink" href="#scenario-2-without-self-hosted-ocr" title="Permalink to this headline">¶</a></h4>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Number of Container</p></th>
+<th class="head"><p>Container Type</p></th>
+<th class="head"><p>RAM</p></th>
+<th class="head"><p>Capacity</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>Web Container</p></td>
+<td><p>4GB</p></td>
+<td><p>…</p></td>
+</tr>
+<tr class="row-odd"><td><p>5</p></td>
+<td><p>Generic Celery Worker</p></td>
+<td><p>4GB</p></td>
+<td><p>2500 (3 x 500) Pages of Extraction, Categorization, or Splitting per hour</p></td>
+</tr>
+<tr class="row-even"><td><p>N</p></td>
+<td><p>remaining Containers</p></td>
+<td><p>4GB</p></td>
+<td><p>…</p></td>
+</tr>
+</tbody>
+</table>
+<p>With this setup, around 2500 Pages per hour can be processed using OCR and Extraction, around 1250 Pages per hour can be processed if OCR, Categorization and Extraction are active, around 850 Pages per hour can be processed if OCR, Splitting, Categorization and Extraction are active.</p>
+<p>.. note::
+In case you train large AI Models (&gt;100 Training Pages) more than 4GB for Generic Celery Workers are needed. The Benchmark used an Extraction AI with “word” detection mode and 10 Labels in 1 Label Set. The capacity is shared between all Users using the Konfuzio Server setup.</p>
+<p>The level of parallelity of task processing and therefore throughput can be increased by the number of running “Generic Celery Workers”.</p>
+<p>The performance of any system that processes documents can be affected by various factors, including the number of simultaneous connections, the size of the documents being processed, and the available resources such as RAM and processing power.</p>
+<p>The number of simultaneous connections can also impact performance. If multiple users are uploading and processing large documents simultaneously, it can put a strain on the system’s resources, leading to slower processing times.</p>
+<p>Other factors that can affect performance include network latency, disk speed, and the complexity of the processing algorithms. It’s essential to consider all these factors when designing and deploying document processing systems to ensure optimal performance.</p>
+</section>
+</section>
+</section>
+<section id="document-layout-analysis">
+<h2>Document Layout Analysis<a class="headerlink" href="#document-layout-analysis" title="Permalink to this headline">¶</a></h2>
+<p>The Konfuzio Server leverages Document Layout Analysis’ capabilities to enhance its Natural Language Processing and Object Detection services. You can read more about it on our <a class="reference external" href="https://konfuzio.com/en/document-layout-analysis/">blog</a>. The platform’s architecture features multiple Document Layout Analysis containers, each encapsulating a Fast API instance and a Worker. The modular structure of these containers allows scalability based on specific requirements.</p>
+<p>Each Fast API instance and its corresponding Worker communicate with a shared Redis instance, a robust in-memory data structure store used for caching and message brokerage. As a high-performance web framework, Fast API is pivotal in constructing efficient APIs.</p>
+<p>The process unfolds as follows: The Konfuzio Server forwards document layout analysis tasks to a Container via the Fast API instance. In response, the Fast API generates a task entry in Redis, which a Worker can subsequently pick up and process. Upon completion, the worker returns the results back to the Fast API via Redis, creating a seamless flow of information.</p>
+<p>This architecture thus delivers a scalable, high-performance environment equipped to manage substantial loads. It ensures efficient object detection and natural language processing capabilities based on the detectron library, making it an optimal choice for handling complex computational tasks.</p>
+<div class="highlight-mermaid notranslate"><div class="highlight"><pre><span></span>graph 
+l(&quot;Konfuzio Server&quot;) &lt;--&gt; a
+m(&quot;Other Applications&quot;) &lt;--&gt; a
+a(&quot;Load-Balancer (Optional)&quot;) &lt;--&gt; b
+a &lt;--&gt; d
+a &lt;--&gt; f
+b &lt;--&gt; t(&quot;Redis&quot;)
+c &lt;--&gt; t(&quot;Redis&quot;)
+d(&quot;Redis&quot;) &lt;--&gt; t(&quot;Redis&quot;)
+e(&quot;Redis&quot;) &lt;--&gt; t(&quot;Redis&quot;)
+f(&quot;Redis&quot;) &lt;--&gt; t(&quot;Redis&quot;)
+g(&quot;Redis&quot;) &lt;--&gt; t(&quot;Redis&quot;)
+subgraph all1[&quot;Detectron Container - 1&quot;]
+b(&quot;Fast API&quot;)
+c(&quot;Detectron Worker&quot;) 
+end
+subgraph all2[&quot;Detectron Container - 2&quot;]
+d(&quot;Fast API&quot;)
+e(&quot;Detectron Worker&quot;) 
+end
+subgraph all3[&quot;Detectron Container - N&quot;]
+f(&quot;Fast API&quot;)
+g(&quot;Detectron Worker&quot;) 
+end
+</pre></div>
+</div>
+<p>Document Layout Analysis is available on <a class="reference external" href="https://app.konfuzio.com">https://app.konfuzio.com</a> as well as for self-hosted environment via <a class="reference external" href="https://dev.konfuzio.com/web/on_premises.html#optional-9-install-the-document-layout-analysis-segmentation-container">Docker</a> or on <a class="reference external" href="https://dev.konfuzio.com/web/on_premises.html#kubernetes">Kubernetes via Helm</a>.</p>
+</section>
+<section id="docker-compose-vs-kubernetes">
+<h2>Docker-Compose vs. Kubernetes<a class="headerlink" href="#docker-compose-vs-kubernetes" title="Permalink to this headline">¶</a></h2>
+<p>When it comes to running the Konfuzio Server, the choice between Docker Compose and Kubernetes will depend on your specific requirements and use case.</p>
+<p>Docker Compose can be a good choice if you are running Konfuzio Server on a single host in production or for testing and development purposes. With Docker Compose, you can define and customize the services required for the Konfuzio Server in a YAML file we provide, and then use a single command to start all the containers.</p>
+<p>On the other hand, Kubernetes is more suitable for production environments where you need to run Konfuzio Server at scale, across multiple hosts, and with features such as auto-scaling and self-healing. Kubernetes has a steep learning curve, but it provides advanced features for managing and scaling containerized applications.</p>
+<p>Regarding the use of Docker Compose in multiple VMs, while it’s possible to use Docker Compose in a distributed environment, managing multiple VMs can be more work than using a dedicated orchestration platform like Kubernetes. Kubernetes provides built-in support for managing distributed systems and is designed to handle the complexities of running containers at scale.</p>
+<p>In either case, you can use the same Docker image for the Konfuzio Server, which will ensure consistency and portability across different environments. Overall, the choice between Docker Compose and Kubernetes will depend on your specific needs, level of expertise, and infrastructure requirements.</p>
+</section>
+<section id="custom-ai-model-training-via-ci-pipelines">
+<h2>Custom AI model training via CI pipelines<a class="headerlink" href="#custom-ai-model-training-via-ci-pipelines" title="Permalink to this headline">¶</a></h2>
+<p>Konfuzio is a platform that provides users with the ability to run custom AI workflows securely
+through its Continuous Integration (CI) pipelines. These pipelines enable users to run
+their code automatically and continuously, learning from human feedback on any errors or issues as soon as they occur.</p>
+<p>In situations where the Kubernetes deployment option is not utilized, Konfuzio recommends using
+a dedicated virtual machine to run these pipelines. This ensures that the pipelines are isolated
+from other processes and are therefore less susceptible to interference or interruption.</p>
+<p>To effectively run these CI pipelines, the selected CI application must support Docker and webhooks.
+Docker allows for the creation and management of containers, which are used to package and distribute the
+code to be tested. Webhooks, on the other hand, provide a way for the CI application to trigger the
+pipeline automatically.</p>
+<p>Furthermore, the CI application needs to have network access to the Konfuzio installation.
+This is necessary to enable the CI application to interact with the Konfuzio platform, ensuring
+that the CI pipelines are able to access the necessary resources and dependencies.</p>
+<p>Overall, Konfuzio’s use of CI pipelines provides a powerful tool for advanced users to run their AI workflows securely,
+with the added benefit of automated testing and continuous feedback.</p>
+</section>
+<section id="sso-via-openid-connect-oidc">
+<h2>SSO via OpenID Connect (OIDC)<a class="headerlink" href="#sso-via-openid-connect-oidc" title="Permalink to this headline">¶</a></h2>
+<p>Konfuzio utilizes OpenID Connect (OIDC) for identity verification, implementing this through <a class="reference external" href="https://github.com/mozilla/mozilla-django-oidc">Mozilla’s Django OIDC</a>.
+OIDC is a well-established layer built atop the OAuth 2.0 protocol, enabling client applications to confirm the identity of end users.
+Numerous Identity Providers (IdP) exist that support the OIDC protocol, thus enabling the implementation of Single Sign-On (SSO) within your application.
+A commonly chosen provider is <a class="reference external" href="https://www.keycloak.org/">Keycloak</a>. In the subsequent section, you will find a tutorial on how to use Keycloak with OIDC.</p>
+<section id="sso-keycloak-integration">
+<h3>SSO Keycloak Integration<a class="headerlink" href="#sso-keycloak-integration" title="Permalink to this headline">¶</a></h3>
+<p>With Keycloak, you can implement the following workflows in Konfuzio:</p>
+<ul class="simple">
+<li><p>Use the Keycloak server to authenticate users with Konfuzio, automatically creating users in Konfuzio if they don’t exist yet.</p></li>
+<li><p>Disable password login in Konfuzio, forcing users to use Keycloak to log in.</p></li>
+<li><p>Synchronize groups assigned to users in Keycloak with groups in Konfuzio.</p></li>
+<li><p>Use Keycloak to generate tokens that can be used to access the Konfuzio REST API.</p></li>
+</ul>
+<p>Enabling the first workflow (authenticating Keycloak users with Konfuzio) is mandatory to support the other ones.</p>
+<section id="set-up">
+<h4>Set up<a class="headerlink" href="#set-up" title="Permalink to this headline">¶</a></h4>
+<p>To start and set up Keycloak server:</p>
+<ol class="arabic simple">
+<li><p>Download the <a class="reference external" href="https://www.keycloak.org/downloads">Keycloak server</a>.</p></li>
+<li><p>Install and start Keycloak server using <a class="reference external" href="https://www.keycloak.org/docs/latest/server_installation/">instructions</a>.</p></li>
+<li><p>Open the Keycloak dashboard in browser (locally it’s http://0.0.0.0:8080/).</p></li>
+<li><p>Create the admin user.</p></li>
+<li><p>Login to the Administration Console.</p></li>
+<li><p>Create a new Realm or use the existing one (Master).</p></li>
+</ol>
+<p>.. image:: ./keycloak/add-realm.png</p>
+<p>At this point you need to create a new Keycloak client to integrate it with Konfuzio.</p>
+<ol class="arabic simple">
+<li><p>Create a new Keycloak <em>client</em> of type <em>OpenID Connect</em>. Give it any name.</p></li>
+<li><p>When prompted for <em>client authentication</em> or <em>access type</em> (in older version) choose <em>On</em> or <em>confidential</em>.</p></li>
+<li><p>Make sure that the <em>direct access grants</em> option is enabled.</p></li>
+<li><p>Make sure that the <em>web origins</em> URL list includes the URL where requests to Keycloak are coming from (i.e. your Konfuzio installation URL).</p></li>
+<li><p>Move to the <code class="docutils literal notranslate"><span class="pre">Credentials</span></code> tab and save the <code class="docutils literal notranslate"><span class="pre">Secret</span></code> value. Store it somewhere as it will be needed later.</p></li>
+</ol>
+<p>You can now create your users and groups from the relevant sections in the Keycloak dashboard.</p>
+<p>.. warning:
+Usernames in Keycloak must be email addresses, otherwise the integration will not work.</p>
+</section>
+<section id="use-the-keycloak-server-to-authenticate-users-with-konfuzio">
+<h4>Use the Keycloak server to authenticate users with Konfuzio<a class="headerlink" href="#use-the-keycloak-server-to-authenticate-users-with-konfuzio" title="Permalink to this headline">¶</a></h4>
+<p>After the setup, you need to set the following environment variables for you Konfuzio Server installation:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">KEYCLOAK_URL</span></code> (http://127.0.0.1:8080/ - for localhost)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">OIDC_RP_SIGN_ALGO</span></code> (RS256 - by default)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">OIDC_RP_CLIENT_ID</span></code> (client name the setup)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">OIDC_RP_CLIENT_SECRET</span></code> (secret value from the setup)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">SSO_ENABLED</span></code> (set to <code class="docutils literal notranslate"><span class="pre">True</span></code> to activate the integration)</p></li>
+</ul>
+<p>After a restart, you should see an <code class="docutils literal notranslate"><span class="pre">SSO</span></code> button on the login page. Clicking it will redirect you to the Keycloak login page. After a successful login, you will be redirected back to Konfuzio and logged in.</p>
+<p>.. warning:
+The Keycloak admin user cannot login into the Konfuzio server.</p>
+</section>
+<section id="disable-password-login-in-konfuzio">
+<h4>Disable password login in Konfuzio<a class="headerlink" href="#disable-password-login-in-konfuzio" title="Permalink to this headline">¶</a></h4>
+<p>Set the <code class="docutils literal notranslate"><span class="pre">PASSWORD_LOGIN_ENABLED</span></code> environment variable to <code class="docutils literal notranslate"><span class="pre">False</span></code> on your Konfuzio installation. This will remove the password login form from the login page, forcing users to use Keycloak to log in.</p>
+</section>
+<section id="synchronize-groups-assigned-to-users-in-keycloak-with-groups-in-konfuzio">
+<h4>Synchronize groups assigned to users in Keycloak with groups in Konfuzio<a class="headerlink" href="#synchronize-groups-assigned-to-users-in-keycloak-with-groups-in-konfuzio" title="Permalink to this headline">¶</a></h4>
+<p>Konfuzio can synchronize groups with Keycloak. This means that if you create a group in Keycloak and assign users to it, those users will be automatically added to an already existing group with the same name in Konfuzio. This is done by creating a <em>group mapper</em> in Keycloak:</p>
+<ol class="arabic simple">
+<li><p>Select the client you created earlier.</p></li>
+<li><p>Go to the <em>Client scopes</em> tab inside the client.</p></li>
+<li><p>You should see a scope which is the name of the client followed by <code class="docutils literal notranslate"><span class="pre">-dedicated</span></code>. Click on it.</p></li>
+<li><p>Click <em>Configure a new mapper</em>.</p></li>
+<li><p>Choose <em>Group Membership</em>.</p></li>
+<li><p>In the settings for the mapper,</p>
+<ol class="arabic simple">
+<li><p>Set the <em>Name</em> to <code class="docutils literal notranslate"><span class="pre">groups</span></code> (lowercase).</p></li>
+<li><p>Set the <em>Token Claim Name</em> to <code class="docutils literal notranslate"><span class="pre">groups</span></code> (same as above).</p></li>
+<li><p>Disable <em>Full group path</em>.</p></li>
+<li><p>Save.</p></li>
+</ol>
+</li>
+</ol>
+<p>You also need to set the <code class="docutils literal notranslate"><span class="pre">SYNCHRONIZE_KEYCLOAK_GROUPS_WITH_KONFUZIO_GROUPS</span></code> environment variable to <code class="docutils literal notranslate"><span class="pre">True</span></code> on your Konfuzio installation. For additional security, you can also set <code class="docutils literal notranslate"><span class="pre">OIDC_RENEW_ID_TOKEN_EXPIRY_SECONDS</span></code> (default: 15 minutes) to a lower value, so permissions are checked from the backend in shorter intervals (see <a class="reference external" href="https://mozilla-django-oidc.readthedocs.io/en/stable/installation.html#validate-id-tokens-by-renewing-them">documentation</a>).</p>
+<p>Now when assigning users to groups in Keycloak, the same groups will be created in Konfuzio (if they don’t exist already) and the users will be added to them. Note that you still need to add permissions to the groups in Konfuzio for them to have any effect. You can automate this process with a CLI command, run <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">import_groups_and_permissions</span> <span class="pre">--help</span></code> for more information.</p>
+<p>An exception to this is a group created with the name <code class="docutils literal notranslate"><span class="pre">Superuser</span></code> on Keycloak. This group will map to the superuser status on Konfuzio, which gives access to everything on the instance. If you don’t create a <code class="docutils literal notranslate"><span class="pre">Superuser</span></code> group on Keycloak, this will not be used.</p>
+</section>
+<section id="use-keycloak-to-generate-tokens-for-the-konfuzio-rest-api">
+<h4>Use Keycloak to generate tokens for the Konfuzio REST API<a class="headerlink" href="#use-keycloak-to-generate-tokens-for-the-konfuzio-rest-api" title="Permalink to this headline">¶</a></h4>
+<p>By default, the Konfuzio REST API requires <a class="reference external" href="https://dev.konfuzio.com/web/api-v3.html#token-authentication">token authentication</a>, which is only possible with regular username and password. However, your Keycloak server can be configured to directly generate tokens that are compatible with the REST API.</p>
+<section id="set-up-the-keycloak-client">
+<h5>Set up the Keycloak client<a class="headerlink" href="#set-up-the-keycloak-client" title="Permalink to this headline">¶</a></h5>
+<p>You can reuse the client you’ve already created in the original client setup. However, by choosing the default <em>client authentication: on</em> option, users will also need to include the <em>secret</em> you’ve created to authenticate with the Keycloak server. This is not ideal for the REST API, so you probably want to create a new client with the <em>client authentication: off</em>/<em>public</em> option. If you’re using groups synchronization, remember to add the <code class="docutils literal notranslate"><span class="pre">groups</span></code> mapper to the new client as well.</p>
+</section>
+<section id="get-a-token-from-keycloak">
+<h5>Get a token from Keycloak<a class="headerlink" href="#get-a-token-from-keycloak" title="Permalink to this headline">¶</a></h5>
+<p>Once you have your client setup, you can test the token generation. Create a request similar to this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">--</span><span class="n">request</span> <span class="n">POST</span> \
+  <span class="o">--</span><span class="n">url</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">sso</span><span class="o">.</span><span class="n">konfuzio</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">realms</span><span class="o">/</span><span class="n">myrealm</span><span class="o">/</span><span class="n">protocol</span><span class="o">/</span><span class="n">openid</span><span class="o">-</span><span class="n">connect</span><span class="o">/</span><span class="n">token</span> \
+  <span class="o">--</span><span class="n">header</span> <span class="s1">&#39;Content-Type: application/x-www-form-urlencoded&#39;</span> \
+  <span class="o">--</span><span class="n">data</span> <span class="n">username</span><span class="o">=</span><span class="n">myaccount</span><span class="nd">@konfuzio</span><span class="o">.</span><span class="n">com</span> \
+  <span class="o">--</span><span class="n">data</span> <span class="n">password</span><span class="o">=</span><span class="n">mypassword</span> \
+  <span class="o">--</span><span class="n">data</span> <span class="n">client_id</span><span class="o">=</span><span class="n">myclient</span> \
+  <span class="o">--</span><span class="n">data</span> <span class="n">client_secret</span><span class="o">=</span><span class="n">mysecret</span> \
+  <span class="o">--</span><span class="n">data</span> <span class="n">grant_type</span><span class="o">=</span><span class="n">password</span> \
+  <span class="o">--</span><span class="n">data</span> <span class="n">scope</span><span class="o">=</span><span class="n">openid</span>
+</pre></div>
+</div>
+<p>Change the variables accordingly:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">sso.konfuzio.com</span></code> should be replaced with your Keycloak installation URL.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">myrealm</span></code> should be replaced with the name of your Keycloak realm.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">username</span></code> field should contain the username of the Keycloak user.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">password</span></code> field should contain the password of the Keycloak user.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">client_id</span></code> field should contain the name of the client you created earlier.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">client_secret</span></code> field is only necessary if you configured your client to be “confidential”. If so, it should contain the client secret as shown in the <em>Credentials</em> tab of the Keycloak client.</p></li>
+</ul>
+<p>The request will return an <code class="docutils literal notranslate"><span class="pre">access_token</span></code> token field that you can use in the next step. Depending on your client setup, it will also include a <code class="docutils literal notranslate"><span class="pre">refresh_token</span></code> and various fields that determine how long the generated token(s) are valid (see the Keycloak documentation for more information).</p>
+</section>
+<section id="use-the-keycloak-token-to-access-the-rest-api">
+<h5>Use the Keycloak token to access the REST API<a class="headerlink" href="#use-the-keycloak-token-to-access-the-rest-api" title="Permalink to this headline">¶</a></h5>
+<p>With the token generated in the previous step, we can test a request to the Konfuzio API;</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">--</span><span class="n">request</span> <span class="n">GET</span> \
+  <span class="o">--</span><span class="n">url</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">app</span><span class="o">.</span><span class="n">konfuzio</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v3</span><span class="o">/</span><span class="n">auth</span><span class="o">/</span><span class="n">me</span><span class="o">/</span> \
+  <span class="o">--</span><span class="n">header</span> <span class="s1">&#39;Authorization: Bearer mytoken&#39;</span>
+</pre></div>
+</div>
+<p>Change the variables accordingly:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">app.konfuzio.com</span></code> should be replaced with your Konfuzio installation URL.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mytoken</span></code> should be replaced with the <code class="docutils literal notranslate"><span class="pre">access_token</span></code> token field returned by Keycloak.</p></li>
+</ul>
+<p>If everything is configured correctly, the request should return information about the user whose credentials were used to generate the token:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+	<span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;myaccount@konfuzio.com&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>You can use the token to access any other endpoint of the Konfuzio REST API with the same user permissions as the user whose credentials were used to generate the token.</p>
+</section>
+</section>
+</section>
+<section id="sso-via-other-identity-management-software">
+<h3>SSO via other Identity Management software<a class="headerlink" href="#sso-via-other-identity-management-software" title="Permalink to this headline">¶</a></h3>
+<p>In order to connect your Identity Management software with Konfuzio using Single Sign-On (SSO), you’ll need to follow these steps. Please note, this tutorial is meant for Identity Management software that supports OIDC (OpenID Connect), a widely adopted standard for user authentication that’s compatible with many software platforms. If you’re using Keycloak, please refer to the separate tutorial on connecting Konfuzio with Keycloak.</p>
+<section id="step-1-setting-up-your-identity-provider">
+<h4>Step 1: Setting up your Identity Provider<a class="headerlink" href="#step-1-setting-up-your-identity-provider" title="Permalink to this headline">¶</a></h4>
+<p>This step varies depending on the Identity Management software you’re using. You should refer to your Identity Management software’s documentation for setting up OIDC (OpenID Connect). During the setup, you will create a new OIDC client for Konfuzio. You will typically need to provide a client name, redirect URI, and optionally a logo.</p>
+<p>The redirect URI should be the URL of your Konfuzio instance followed by “/oidc/callback/”, for example https://<your-konfuzio-instance>/oidc/callback/.</p>
+<p>At the end of this step, you should have the following information:</p>
+<ul class="simple">
+<li><p>Client ID</p></li>
+<li><p>Client Secret</p></li>
+<li><p>OIDC Issuer URL</p></li>
+</ul>
+</section>
+<section id="step-2-configuring-mozilla-django-oidc">
+<h4>Step 2: Configuring mozilla-django-oidc<a class="headerlink" href="#step-2-configuring-mozilla-django-oidc" title="Permalink to this headline">¶</a></h4>
+<p>You’ll need to set the following environment variables:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">OIDC_RP_CLIENT_ID</span></code>: This should be the client ID from your Identity Management software.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">OIDC_RP_CLIENT_SECRET</span></code>: This should be the client secret from your Identity Management software.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">OIDC_OP_AUTHORIZATION_ENDPOINT</span></code>: This should be your OIDC issuer URL followed by “/authorize”.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">OIDC_OP_TOKEN_ENDPOINT</span></code>: This should be your OIDC issuer URL followed by “/token”.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">OIDC_OP_USER_ENDPOINT</span></code>: This should be your OIDC issuer URL followed by “/userinfo”.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">OIDC_OP_JWKS_ENDPOINT</span></code>: This should be your OIDC issuer URL followed by “/.well-known/jwks.json”.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">OIDC_RP_SIGN_ALGO</span></code>: This is the signing algorithm your Identity Management software uses. This is typically “RS256”.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">OIDC_RP_SCOPES</span></code>: These are the scopes to request. For basic authentication, this can just be “openid email”.</p></li>
+</ul>
+</section>
+<section id="step-3-restarting-konfuzio">
+<h4>Step 3: Restarting Konfuzio<a class="headerlink" href="#step-3-restarting-konfuzio" title="Permalink to this headline">¶</a></h4>
+<p>After you have set these environment variables, you should restart your Konfuzio server so that the new settings can take effect. How you do this depends on how you have deployed Konfuzio, but it might involve restarting a Docker container or a Django server.</p>
+</section>
+<section id="step-4-testing">
+<h4>Step 4: Testing<a class="headerlink" href="#step-4-testing" title="Permalink to this headline">¶</a></h4>
+<p>Now you can go to your Konfuzio instance and you should be redirected to your Identity Management software login screen.</p>
+</section>
+</section>
+</section>
+<section id="migrate-ais-and-projects">
+<h2>Migrate AIs and Projects<a class="headerlink" href="#migrate-ais-and-projects" title="Permalink to this headline">¶</a></h2>
+<section id="overview-of-migration-methods">
+<h3>Overview of Migration Methods<a class="headerlink" href="#overview-of-migration-methods" title="Permalink to this headline">¶</a></h3>
+<p>This table shows the two migration methods, “Project Export” and “AI File,” for moving various elements Projects and Konfuzio Server environments. The table includes a list of elements such as Annotations, Categories, Label Sets, Labels, and more, and indicates which method is applicable for each element. The “Project Export” method is used for exporting whole Projects, while the “AI File” method is used for exporting elements that are specifically relevant for just running the AI on a different Konfuzio Server environments.</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p></p></th>
+<th class="head"><p><span class="xref myst">Project Export</span></p></th>
+<th class="head"><p><span class="xref myst">AI File</span></p></th>
+<th class="head"><p>Evaluation</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a class="reference external" href="https://help.konfuzio.com/modules/annotations/index.html">Annotations</a></p></td>
+<td><p>Yes</p></td>
+<td><p>No</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="https://help.konfuzio.com/modules/categories/index.html">Categories</a></p></td>
+<td><p>Yes</p></td>
+<td><p>No</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="https://help.konfuzio.com/modules/categorization/index.html">Categorization AI</a></p></td>
+<td><p>Yes</p></td>
+<td><p>Yes</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="https://help.konfuzio.com/modules/extractions/index.html">Extraction AI</a></p></td>
+<td><p>Yes</p></td>
+<td><p>Yes</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="https://help.konfuzio.com/modules/extractions/index.html">Splitting AI</a></p></td>
+<td><p>Yes</p></td>
+<td><p>Yes</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="https://help.konfuzio.com/modules/documents/index.html">All Documents</a></p></td>
+<td><p>No</p></td>
+<td><p>No</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="https://help.konfuzio.com/modules/documents/index.html#id1">Test-/Training Documents</a></p></td>
+<td><p>Yes</p></td>
+<td><p>No</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="https://help.konfuzio.com/modules/sets/index.html">Label Sets</a></p></td>
+<td><p>Yes</p></td>
+<td><p>No</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="https://help.konfuzio.com/modules/labels/index.html">Labels</a></p></td>
+<td><p>Yes</p></td>
+<td><p>No</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="https://help.konfuzio.com/modules/members/index.html">Members</a></p></td>
+<td><p>No</p></td>
+<td><p>No</p></td>
+<td><p>No</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="migrate-an-extraction-or-categorization-ai">
+<h3>Migrate an Extraction or Categorization AI<a class="headerlink" href="#migrate-an-extraction-or-categorization-ai" title="Permalink to this headline">¶</a></h3>
+<p>Superusers can migrate Extraction and Categorization AIs via the webinterface. This is explained on <a class="reference external" href="https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html">https://help.konfuzio.com</a>.</p>
+</section>
+<section id="migrate-a-project">
+<h3>Migrate a Project<a class="headerlink" href="#migrate-a-project" title="Permalink to this headline">¶</a></h3>
+<p>Export the Project data from the source Konfuzio Server system.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">konfuzio_sdk</span>  
+<span class="c1"># The &quot;init&quot; command will ask you to enter a username, password and hostname to connect to Konfuzio Server.</span>
+<span class="c1"># Please enter the hostname without trailing backslash. For example &quot;https://app.konfuzio.com&quot; instead of &quot;https://app.konfuzio.com/&quot;.</span>
+<span class="c1"># The init commands creates a .env in the current directory. To reset the SDK connection, you can delete this file.</span>
+<span class="n">konfuzio_sdk</span> <span class="n">init</span>
+<span class="n">konfuzio_sdk</span> <span class="n">export_project</span> <span class="o">&lt;</span><span class="n">PROJECT_ID</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>The export will be saved in a folder with the name data_&lt;project_id&gt;. This folder needs to be transferred to the target system
+The first argument is the path to the export folder, the second is the project name of the imported project on the target system.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">manage</span><span class="o">.</span><span class="n">py</span> <span class="n">project_import</span> <span class="s2">&quot;/konfuzio-target-system/data_123/&quot;</span> <span class="s2">&quot;NewProjectName&quot;</span>
+</pre></div>
+</div>
+<p>Alternatively, you can merge the Project export into an existing Project.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">manage</span><span class="o">.</span><span class="n">py</span> <span class="n">project_import</span> <span class="s2">&quot;/konfuzio-target-system/data_123/&quot;</span> <span class="o">--</span><span class="n">merge_project_id</span> <span class="o">&lt;</span><span class="n">EXISTING_PROJECT_ID</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="database-and-storage">
+<h2>Database and Storage<a class="headerlink" href="#database-and-storage" title="Permalink to this headline">¶</a></h2>
+<section id="overview">
+<h3>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h3>
+<p>To run Konfuzio Server, three types of storages are required. First, a PostgreSQL database is needed to store structured application data. Secondly, a storage for Blob needs to be present. Thirdly, a Redis database that manages the background Task of Konfuzio Server is needed. You can choose your preferred deployment option for each storage type and connect Konfuzio via environment variables to the respective storages. We recommend planning your storage choices before starting with the actual Konfuzio installation.</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Storage Name</p></th>
+<th class="head"><p>Recommended Version</p></th>
+<th class="head"><p>Supported Version</p></th>
+<th class="head"><p>Deployment Options</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a class="reference external" href="https://www.postgresql.org/">Postgres</a></p></td>
+<td><p>Latest Stable</p></td>
+<td><p>PostgreSQL 12 and higher</p></td>
+<td><p>Managed (Cloud) Service, VM Installation, Docker, In-Cluster*</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="https://redis.io/">Redis</a></p></td>
+<td><p>Latest Stable</p></td>
+<td><p>Redis 6 and higher</p></td>
+<td><p>Managed (Cloud) Service, VM Installation, Docker, In-Cluster*</p></td>
+</tr>
+<tr class="row-even"><td><p>Blob Storage</p></td>
+<td><p>Latest Stable</p></td>
+<td><p>All with activ support</p></td>
+<td><p>Filesystem, S3-compatible Service (e.g. <a class="reference external" href="https://aws.amazon.com/s3/">Amazon S3</a>, <a class="reference external" href="https://azure.microsoft.com/en-us/products/storage/blobs/">Azure Blob Storage</a>), In-Cluster* S3 via <a class="reference external" href="https://min.io/docs/minio/container/index.html">MinIO</a></p></td>
+</tr>
+</tbody>
+</table>
+<p>*If you use <span class="xref myst">Kubernetes Deployment</span> you can choose the ‘in-Cluster’ option for Postgres, Redis and S3-Storage.</p>
+</section>
+<section id="usage-of-postgresql">
+<h3>Usage of PostgreSQL<a class="headerlink" href="#usage-of-postgresql" title="Permalink to this headline">¶</a></h3>
+<p>Konfuzio Server will create a total of 43 tables and use the following data types. This information refers to release <a class="reference external" href="https://dev.konfuzio.com/web/changelog_app.html#released-2022-10-28-07-23-39">2022-10-28-07-23-39</a>.</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>data_type</p></th>
+<th class="head"><p>count</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>bigint</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-odd"><td><p>boolean</p></td>
+<td><p>35</p></td>
+</tr>
+<tr class="row-even"><td><p>character varying</p></td>
+<td><p>78</p></td>
+</tr>
+<tr class="row-odd"><td><p>date</p></td>
+<td><p>2</p></td>
+</tr>
+<tr class="row-even"><td><p>double precision</p></td>
+<td><p>29</p></td>
+</tr>
+<tr class="row-odd"><td><p>inet</p></td>
+<td><p>2</p></td>
+</tr>
+<tr class="row-even"><td><p>integer</p></td>
+<td><p>138</p></td>
+</tr>
+<tr class="row-odd"><td><p>jsonb</p></td>
+<td><p>28</p></td>
+</tr>
+<tr class="row-even"><td><p>smallint</p></td>
+<td><p>2</p></td>
+</tr>
+<tr class="row-odd"><td><p>text</p></td>
+<td><p>21</p></td>
+</tr>
+<tr class="row-even"><td><p>timestamp with time zone</p></td>
+<td><p>56</p></td>
+</tr>
+<tr class="row-odd"><td><p>uuid</p></td>
+<td><p>1</p></td>
+</tr>
+</tbody>
+</table>
+<!-- This table was created by running select data_type, count(*) from information_schema.columns where table_schema = 'public'  group by data_type ; -->
+</section>
+</section>
+<section id="environment-variables">
+<h2>Environment Variables<a class="headerlink" href="#environment-variables" title="Permalink to this headline">¶</a></h2>
+<section id="environment-variables-for-konfuzio-server">
+<h3>Environment Variables for Konfuzio Server<a class="headerlink" href="#environment-variables-for-konfuzio-server" title="Permalink to this headline">¶</a></h3>
+<section id="general-settings">
+<h4>1. General Settings<a class="headerlink" href="#general-settings" title="Permalink to this headline">¶</a></h4>
+<section id="host-name">
+<h5>HOST_NAME<a class="headerlink" href="#host-name" title="Permalink to this headline">¶</a></h5>
+<p>The HOSTNAME variable is used in the E-Mail templates: https://example.konfuzio.com or http://localhost:8000 for local development.</p>
+<p>Note: Please include the protocol (e.g. http://) even the variable is named HOST_NAME.</p>
+<p><em>This is mandatory. Type: string</em></p>
+</section>
+<section id="allowed-hosts">
+<h5>ALLOWED_HOSTS<a class="headerlink" href="#allowed-hosts" title="Permalink to this headline">¶</a></h5>
+<p>Default: HOST_NAME variable without the protocol.</p>
+<p>A list of strings representing the host/domain names that Konfuzio can serve.
+This is a security measure to prevent HTTP Host header attacks, which are possible even under many seemingly-safe web server configurations.
+See https://docs.djangoproject.com/en/4.2/ref/settings/#allowed-hosts</p>
+<p><em>Type: List[string]</em></p>
+</section>
+<section id="billing-api-key">
+<h5>BILLING_API_KEY<a class="headerlink" href="#billing-api-key" title="Permalink to this headline">¶</a></h5>
+<p>The Billing API
+to connect with the Konfuzio License Server.<br />
+See https://dev.konfuzio.com/web/on_premises.html#billing-and-license</p>
+<p><em>This is mandatory. Type: string</em></p>
+</section>
+<section id="debug">
+<h5>DEBUG<a class="headerlink" href="#debug" title="Permalink to this headline">¶</a></h5>
+<p>Default: False</p>
+<p>Use False for production and True for local development.
+See https://docs.djangoproject.com/en/3.2/ref/settings/#std:setting-DEBUG</p>
+<p><em>Type: boolean</em></p>
+</section>
+<section id="secret-key">
+<h5>SECRET_KEY<a class="headerlink" href="#secret-key" title="Permalink to this headline">¶</a></h5>
+<p>Insert random secret key.
+See https://docs.djangoproject.com/en/4.0/ref/settings/#secret-key</p>
+<p><em>This is mandatory. Type: string</em></p>
+</section>
+<section id="database-url">
+<h5>DATABASE_URL<a class="headerlink" href="#database-url" title="Permalink to this headline">¶</a></h5>
+<p>Please enter a Postgres Database in the format of “postgres://USER:PASSWORD&#64;HOST:PORT/NAME” (https://github.com/kennethreitz/dj-database-url#url-schema).</p>
+<p><em>This is mandatory. Type: string</em></p>
+</section>
+<section id="database-url-ssl-require">
+<h5>DATABASE_URL_SSL_REQUIRE<a class="headerlink" href="#database-url-ssl-require" title="Permalink to this headline">¶</a></h5>
+<p>Default: False</p>
+<p>Specify whether the database connection requires SSL.</p>
+<p><em>Type: boolean</em></p>
+</section>
+<section id="maintenance-mode">
+<h5>MAINTENANCE_MODE<a class="headerlink" href="#maintenance-mode" title="Permalink to this headline">¶</a></h5>
+<p>Default: False</p>
+<p>Set maintenance mode, shows 503 error page when maintenance-mode is on.</p>
+<p><em>Type: boolean</em></p>
+</section>
+<section id="csv-export-row-limit">
+<h5>CSV_EXPORT_ROW_LIMIT<a class="headerlink" href="#csv-export-row-limit" title="Permalink to this headline">¶</a></h5>
+<p>Default: 100</p>
+<p>The (approximate) number of rows that an exported CSV file of extraction results can include.
+Set to 0 for no limit, but beware of timeouts as the CSV files are exported synchronously.</p>
+<p><em>Type: integer</em></p>
+</section>
+<section id="account-block-free-email-providers">
+<h5>ACCOUNT_BLOCK_FREE_EMAIL_PROVIDERS<a class="headerlink" href="#account-block-free-email-providers" title="Permalink to this headline">¶</a></h5>
+<p>Default: False</p>
+<p>Block registration for users with an email address from a free provider according to
+<a class="reference external" href="https://github.com/Kikobeats/free-email-domains/blob/master/domains.json">the blocklist</a>.</p>
+<p><em>Type: boolean</em></p>
+</section>
+<section id="detectron-url">
+<h5>DETECTRON_URL<a class="headerlink" href="#detectron-url" title="Permalink to this headline">¶</a></h5>
+<p>Default: None</p>
+<p>This is used to connect to the optional <span class="xref myst">Document Layout Analysis Container</span>. This is a URL in the form of ‘http://detectron-service:8181/predict’.
+You might need to adjust the detectron-service to your service name or IP.</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="summarization-url">
+<h5>SUMMARIZATION_URL<a class="headerlink" href="#summarization-url" title="Permalink to this headline">¶</a></h5>
+<p>Default: None</p>
+<p>This is used to connect to the optional <span class="xref myst">summarization container</span>. This is a URL in the form of ‘http://summarization-service:8181/predict’.
+You might need to adjust the summarization-service to your service name or IP.</p>
+<p><em>Type: string</em></p>
+</section>
+</section>
+<section id="background-tasks-via-celery">
+<h4>2. Background Tasks via Celery<a class="headerlink" href="#background-tasks-via-celery" title="Permalink to this headline">¶</a></h4>
+<p>Settings related to <a class="reference external" href="https://dev.konfuzio.com/web/explanations.html#background-processes">Background Tasks</a>.</p>
+<section id="broker-url">
+<h5>BROKER_URL<a class="headerlink" href="#broker-url" title="Permalink to this headline">¶</a></h5>
+<p>Enter a Redis Database.
+See https://docs.celeryq.dev/en/stable/userguide/configuration.html#std-setting-broker_url</p>
+<p><em>This is mandatory. Type: string</em></p>
+</section>
+<section id="result-backend">
+<h5>RESULT_BACKEND<a class="headerlink" href="#result-backend" title="Permalink to this headline">¶</a></h5>
+<p>Enter a Redis Database.
+See https://docs.celeryq.dev/en/stable/userguide/configuration.html#std-setting-result_backend</p>
+<p><em>This is mandatory. Type: string</em></p>
+</section>
+<section id="task-always-eager">
+<h5>TASK_ALWAYS_EAGER<a class="headerlink" href="#task-always-eager" title="Permalink to this headline">¶</a></h5>
+<p>Default: False</p>
+<p>When this is True, all background processes are executed in synchronously.
+See https://docs.celeryq.dev/en/stable/userguide/configuration.html#std-setting-task_always_eager</p>
+<p><em>Type: boolean</em></p>
+</section>
+<section id="worker-max-tasks-per-child">
+<h5>WORKER_MAX_TASKS_PER_CHILD<a class="headerlink" href="#worker-max-tasks-per-child" title="Permalink to this headline">¶</a></h5>
+<p>Default: 50</p>
+<p>After 50 tasks we replace a worker process to prevent and mitigate memory leaks.</p>
+<p><em>Type: integer</em></p>
+</section>
+<section id="worker-send-task-events">
+<h5>WORKER_SEND_TASK_EVENTS<a class="headerlink" href="#worker-send-task-events" title="Permalink to this headline">¶</a></h5>
+<p>Default: False</p>
+<p>See https://docs.celeryproject.org/en/stable/userguide/configuration.html#worker-send-task-events</p>
+<p><em>Type: boolean</em></p>
+</section>
+<section id="task-send-sent-event">
+<h5>TASK_SEND_SENT_EVENT<a class="headerlink" href="#task-send-sent-event" title="Permalink to this headline">¶</a></h5>
+<p>Default: True</p>
+<p>See https://docs.celeryproject.org/en/stable/userguide/configuration.html#task-send-sent-event</p>
+<p><em>Type: boolean</em></p>
+</section>
+<section id="task-track-started">
+<h5>TASK_TRACK_STARTED<a class="headerlink" href="#task-track-started" title="Permalink to this headline">¶</a></h5>
+<p>Default: True</p>
+<p>See https://docs.celeryproject.org/en/stable/userguide/configuration.html#task-track-started</p>
+<p><em>Type: boolean</em></p>
+</section>
+<section id="worker-max-memory-per-child">
+<h5>WORKER_MAX_MEMORY_PER_CHILD<a class="headerlink" href="#worker-max-memory-per-child" title="Permalink to this headline">¶</a></h5>
+<p>Default: 100000</p>
+<p>After allocation of 100MB we replace a worker process to mitigate memory leaks.</p>
+<p><em>Type: integer</em></p>
+</section>
+<section id="task-acks-on-failure-or-timeout">
+<h5>TASK_ACKS_ON_FAILURE_OR_TIMEOUT<a class="headerlink" href="#task-acks-on-failure-or-timeout" title="Permalink to this headline">¶</a></h5>
+<p>Default: True</p>
+<p>See https://docs.celeryproject.org/en/stable/userguide/configuration.html#std-setting-task_acks_on_failure_or_timeout</p>
+<p><em>Type: boolean</em></p>
+</section>
+<section id="task-acks-late">
+<h5>TASK_ACKS_LATE<a class="headerlink" href="#task-acks-late" title="Permalink to this headline">¶</a></h5>
+<p>Default: True</p>
+<p>See https://docs.celeryproject.org/en/stable/userguide/optimizing.html#reserve-one-task-at-a-time</p>
+<p><em>Type: boolean</em></p>
+</section>
+<section id="broker-master-name">
+<h5>BROKER_MASTER_NAME<a class="headerlink" href="#broker-master-name" title="Permalink to this headline">¶</a></h5>
+<p>Default: None</p>
+<p>The name of the Broker Master when using Redis Sentinel.
+https://docs.celeryq.dev/en/stable/getting-started/backends-and-brokers/redis.html</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="result-backend-master-name">
+<h5>RESULT_BACKEND_MASTER_NAME<a class="headerlink" href="#result-backend-master-name" title="Permalink to this headline">¶</a></h5>
+<p>Default: None</p>
+<p>The name of the Result Backend Master when using Redis Sentinel.
+https://docs.celeryq.dev/en/stable/getting-started/backends-and-brokers/redis.html</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="threshold-for-heavy-training">
+<h5>THRESHOLD_FOR_HEAVY_TRAINING<a class="headerlink" href="#threshold-for-heavy-training" title="Permalink to this headline">¶</a></h5>
+<p>Default: 150</p>
+<p>The Number of Document that indicate a heavy training. Heavy training are executed via a dedicated queue.
+A “training_heavy” worker must be running in order to complete these trainings.</p>
+<p><em>Type: integer</em></p>
+</section>
+</section>
+<section id="ocr-settings">
+<h4>3. OCR Settings<a class="headerlink" href="#ocr-settings" title="Permalink to this headline">¶</a></h4>
+<section id="azure-ocr-key">
+<h5>AZURE_OCR_KEY<a class="headerlink" href="#azure-ocr-key" title="Permalink to this headline">¶</a></h5>
+<p>Default: None</p>
+<p>Get the API KEY from portal.azure.com for Microsoft.CognitiveServices.</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="azure-ocr-base-url">
+<h5>AZURE_OCR_BASE_URL<a class="headerlink" href="#azure-ocr-base-url" title="Permalink to this headline">¶</a></h5>
+<p>Default: None</p>
+<p>Get the API URL from portal.azure.com for Microsoft.CognitiveServices</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="azure-ocr-version">
+<h5>AZURE_OCR_VERSION<a class="headerlink" href="#azure-ocr-version" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘v3.2’</p>
+<p>Get the AZURE_OCR_VERSION from portal.azure.com for Microsoft.Cognitives.</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="azure-ocr-model-version">
+<h5>AZURE_OCR_MODEL_VERSION<a class="headerlink" href="#azure-ocr-model-version" title="Permalink to this headline">¶</a></h5>
+<p>Default=’latest’</p>
+<p>Get the AZURE_OCR_MODEL_VERSION from portal.azure.com for Microsoft.Cognitives.</p>
+<p><em>Type: string</em></p>
+</section>
+</section>
+<section id="blob-storage-settings">
+<h4>4. Blob Storage Settings<a class="headerlink" href="#blob-storage-settings" title="Permalink to this headline">¶</a></h4>
+<section id="default-file-storage">
+<h5>DEFAULT_FILE_STORAGE<a class="headerlink" href="#default-file-storage" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘django.core.files.storage.FileSystemStorage’</p>
+<p>By default, the file system is used as file storage.
+To use an Azure Storage Account set ‘storage.MultiAzureStorage’.
+To use an S3-compatible storage set: ‘storage.MultiS3Boto3Storage’.
+See https://docs.djangoproject.com/en/4.0/ref/settings/#default-file-storage</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="azure-account-key">
+<h5>AZURE_ACCOUNT_KEY:<a class="headerlink" href="#azure-account-key" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>The Azure account key.</p>
+<p><em>This is mandatory if DEFAULT_FILE_STORAGE=’storage.MultiAzureStorage’. Type: string</em></p>
+</section>
+<section id="azure-account-name">
+<h5>AZURE_ACCOUNT_NAME:<a class="headerlink" href="#azure-account-name" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>The name if the Azure account name.</p>
+<p><em>This is mandatory if DEFAULT_FILE_STORAGE=’storage.MultiAzureStorage’. Type: string</em></p>
+</section>
+<section id="azure-container">
+<h5>AZURE_CONTAINER:<a class="headerlink" href="#azure-container" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>The name if the Azure storage container.</p>
+<p><em>This is mandatory if DEFAULT_FILE_STORAGE=’storage.MultiAzureStorage’. Type: string</em></p>
+</section>
+<section id="aws-access-key-id">
+<h5>AWS_ACCESS_KEY_ID<a class="headerlink" href="#aws-access-key-id" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p><em>This is mandatory if DEFAULT_FILE_STORAGE=’storage.MultiS3Boto3Storage’. Type: string</em></p>
+</section>
+<section id="aws-secret-access-key">
+<h5>AWS_SECRET_ACCESS_KEY<a class="headerlink" href="#aws-secret-access-key" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>The access key of the S3-Service.</p>
+<p><em>This is mandatory if DEFAULT_FILE_STORAGE=’storage.MultiS3Boto3Storage’. Type: string</em></p>
+</section>
+<section id="aws-storage-bucket-name">
+<h5>AWS_STORAGE_BUCKET_NAME<a class="headerlink" href="#aws-storage-bucket-name" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>The bucket name of the S3-Service.</p>
+<p><em>This is mandatory if DEFAULT_FILE_STORAGE=’storage.MultiS3Boto3Storage’. Type: string</em></p>
+</section>
+<section id="aws-s3-region-name">
+<h5>AWS_S3_REGION_NAME<a class="headerlink" href="#aws-s3-region-name" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>The region name of the S3-Service.</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="aws-s3-endpoint-url">
+<h5>AWS_S3_ENDPOINT_URL<a class="headerlink" href="#aws-s3-endpoint-url" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>Custom S3 URL to use when connecting to S3, including scheme.</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="aws-s3-use-ssl">
+<h5>AWS_S3_USE_SSL<a class="headerlink" href="#aws-s3-use-ssl" title="Permalink to this headline">¶</a></h5>
+<p>Default: True</p>
+<p>Whether or not to use SSL when connecting to S3, this is passed to the boto3 session resource constructor.
+See</p>
+<p><em>Type: boolean</em></p>
+</section>
+<section id="aws-s3-verify">
+<h5>AWS_S3_VERIFY<a class="headerlink" href="#aws-s3-verify" title="Permalink to this headline">¶</a></h5>
+<p>Default: None</p>
+<p>Whether or not to verify the connection to S3. Can be set to False to not verify certificates or a path to a CA cert bundle.</p>
+<p><em>Type: string</em></p>
+</section>
+</section>
+<section id="email-sending-settings">
+<h4>5. Email Sending Settings<a class="headerlink" href="#email-sending-settings" title="Permalink to this headline">¶</a></h4>
+<section id="email-backend">
+<h5>EMAIL_BACKEND<a class="headerlink" href="#email-backend" title="Permalink to this headline">¶</a></h5>
+<p>Default: django.core.mail.backends.smtp.EmailBackend
+The SMTP backend for sending E-Mails.
+See https://docs.djangoproject.com/en/4.0/ref/settings/#email-backend</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="email-host">
+<h5>EMAIL_HOST<a class="headerlink" href="#email-host" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>The host to use for sending email.</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="email-host-password">
+<h5>EMAIL_HOST_PASSWORD<a class="headerlink" href="#email-host-password" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>Password to use for the SMTP server defined in EMAIL_HOST. This setting is used in conjunction with EMAIL_HOST_USER when authenticating to the SMTP server. If either of these settings is empty, we won’t attempt authentication.</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="email-host-user">
+<h5>EMAIL_HOST_USER<a class="headerlink" href="#email-host-user" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>Username to use for the SMTP server defined in EMAIL_HOST. If empty, we won’t attempt authentication.</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="email-port">
+<h5>EMAIL_PORT<a class="headerlink" href="#email-port" title="Permalink to this headline">¶</a></h5>
+<p>Default: 25</p>
+<p>Port to use for the SMTP server defined in EMAIL_HOST.
+See https://docs.djangoproject.com/en/4.2/ref/settings/#std-setting-EMAIL_PORT</p>
+<p><em>Type: int</em></p>
+</section>
+<section id="email-use-tls">
+<h5>EMAIL_USE_TLS<a class="headerlink" href="#email-use-tls" title="Permalink to this headline">¶</a></h5>
+<p>Default: False</p>
+<p>See https://docs.djangoproject.com/en/4.0/ref/settings/#email-use-tls</p>
+<p><em>Type: boolean</em></p>
+</section>
+<section id="email-use-ssl">
+<h5>EMAIL_USE_SSL:<a class="headerlink" href="#email-use-ssl" title="Permalink to this headline">¶</a></h5>
+<p>Default: False</p>
+<p>See https://docs.djangoproject.com/en/4.0/ref/settings/#email-use-ssl</p>
+<p><em>Type: boolean</em></p>
+</section>
+<section id="default-from-email">
+<h5>DEFAULT_FROM_EMAIL<a class="headerlink" href="#default-from-email" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘support&#64;konfuzio.net’</p>
+<p>Specifies the email address to use as the “From” address when sending emails.</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="sendgrid-api-key">
+<h5>SENDGRID_API_KEY<a class="headerlink" href="#sendgrid-api-key" title="Permalink to this headline">¶</a></h5>
+<p>Default: None</p>
+<p>In order to sent emails via sendgrid, set EMAIL_BACKEND=’sendgrid_backend.SendgridBackend’ and specify the Sendgrid API Key here.</p>
+<p><em>Type: string</em></p>
+</section>
+</section>
+<section id="email-polling-settings">
+<h4>6. Email Polling Settings<a class="headerlink" href="#email-polling-settings" title="Permalink to this headline">¶</a></h4>
+<section id="scan-email-host">
+<h5>SCAN_EMAIL_HOST<a class="headerlink" href="#scan-email-host" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>The host to use for polling emails.</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="scan-email-host-user">
+<h5>SCAN_EMAIL_HOST_USER<a class="headerlink" href="#scan-email-host-user" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>Username to use for the SMTP server defined in SCAN_EMAIL_HOST.</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="scan-email-recipient">
+<h5>SCAN_EMAIL_RECIPIENT<a class="headerlink" href="#scan-email-recipient" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>Recipient email address to be polled. Emails sent to this address will be polled into Konfuzio.</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="scan-email-host-password">
+<h5>SCAN_EMAIL_HOST_PASSWORD<a class="headerlink" href="#scan-email-host-password" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>The password to use for the SMTP server defined in SCAN_EMAIL_HOST.</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="scan-email-sleep-time">
+<h5>SCAN_EMAIL_SLEEP_TIME<a class="headerlink" href="#scan-email-sleep-time" title="Permalink to this headline">¶</a></h5>
+<p>Default: 60</p>
+<p>The polling interval in seconds.</p>
+<p><em>Type: int</em></p>
+</section>
+</section>
+<section id="time-limits-for-background-tasks">
+<h4>7. Time limits for background tasks<a class="headerlink" href="#time-limits-for-background-tasks" title="Permalink to this headline">¶</a></h4>
+<p>More info about backgrounds tasks and their defaults can be viewed here: https://dev.konfuzio.com/web/explanations.html#celery-tasks.</p>
+<section id="extraction-time-limit">
+<h5>EXTRACTION_TIME_LIMIT<a class="headerlink" href="#extraction-time-limit" title="Permalink to this headline">¶</a></h5>
+<p>Default: 3600</p>
+<p>The maximum extraction time in seconds.</p>
+<p><em>Type: int</em></p>
+</section>
+<section id="categorization-time-limit">
+<h5>CATEGORIZATION_TIME_LIMIT<a class="headerlink" href="#categorization-time-limit" title="Permalink to this headline">¶</a></h5>
+<p>Default: 180</p>
+<p>The maximum categorization time in seconds.</p>
+<p><em>Type: int</em></p>
+</section>
+<section id="evaluation-time-limit">
+<h5>EVALUATION_TIME_LIMIT<a class="headerlink" href="#evaluation-time-limit" title="Permalink to this headline">¶</a></h5>
+<p>Default: 3600</p>
+<p>The maximum evaluation time in seconds.</p>
+<p><em>Type: int</em></p>
+</section>
+<section id="training-extraction-time-limit">
+<h5>TRAINING_EXTRACTION_TIME_LIMIT<a class="headerlink" href="#training-extraction-time-limit" title="Permalink to this headline">¶</a></h5>
+<p>Default: 72000</p>
+<p>The maximum extraction AI training time in seconds.</p>
+<p><em>Type: int</em></p>
+</section>
+<section id="training-categorization-time-limit">
+<h5>TRAINING_CATEGORIZATION_TIME_LIMIT<a class="headerlink" href="#training-categorization-time-limit" title="Permalink to this headline">¶</a></h5>
+<p>Default: 36000</p>
+<p>The maximum categorization AI training time in seconds.</p>
+<p><em>Type: int</em></p>
+</section>
+<section id="sandwich-pdf-time-limit">
+<h5>SANDWICH_PDF_TIME_LIMIT<a class="headerlink" href="#sandwich-pdf-time-limit" title="Permalink to this headline">¶</a></h5>
+<p>Default: 1800</p>
+<p>The maximum time to generate the sandwich PDF.</p>
+<p><em>Type: int</em></p>
+</section>
+<section id="document-text-and-bboxes-time-limit">
+<h5>DOCUMENT_TEXT_AND_BBOXES_TIME_LIMIT<a class="headerlink" href="#document-text-and-bboxes-time-limit" title="Permalink to this headline">¶</a></h5>
+<p>Default: 3600</p>
+<p>The maximum time build a Document’s text and bboxes.</p>
+<p><em>Type: int</em></p>
+</section>
+<section id="clean-deleted-document-time-limit">
+<h5>CLEAN_DELETED_DOCUMENT_TIME_LIMIT<a class="headerlink" href="#clean-deleted-document-time-limit" title="Permalink to this headline">¶</a></h5>
+<p>Default: 3600</p>
+<p>The maximum time hard delete Documents, that are marked for deletion.
+See https://help.konfuzio.com/modules/projects/index.html?#auto-deletion-of-documents</p>
+<p><em>Type: int</em></p>
+</section>
+<section id="clean-document-without-dataset-time-limit">
+<h5>CLEAN_DOCUMENT_WITHOUT_DATASET_TIME_LIMIT<a class="headerlink" href="#clean-document-without-dataset-time-limit" title="Permalink to this headline">¶</a></h5>
+<p>Default: 3600</p>
+<p>The maximum time to delete Documents which have reached the auto-deletion date.
+See https://help.konfuzio.com/modules/projects/index.html?#auto-deletion-of-documents</p>
+<p><em>Type: int</em></p>
+</section>
+<section id="document-workflow-time-limit">
+<h5>DOCUMENT_WORKFLOW_TIME_LIMIT<a class="headerlink" href="#document-workflow-time-limit" title="Permalink to this headline">¶</a></h5>
+<p>Default: 7200</p>
+<p>The maximum time for the whole Document workflow in seconds. If a Document workflow does not complete within this time, the Document is set to an error state.</p>
+<p><em>Type: int</em></p>
+<!--
+#### Configure Azure OCR (optional).
+AZURE_OCR_KEY=
+AZURE_OCR_VERSION=
+AZURE_OCR_BASE_URL=
+-->
+</section>
+</section>
+<section id="keycloak-sso-settings">
+<h4>8. Keycloak / SSO Settings<a class="headerlink" href="#keycloak-sso-settings" title="Permalink to this headline">¶</a></h4>
+<p>The following values establish a keycloak connection through the
+mozilla oidc package (https://mozilla-django-oidc.readthedocs.io/en/stable/settings.html).</p>
+<section id="sso-enabled">
+<h5>SSO_ENABLED<a class="headerlink" href="#sso-enabled" title="Permalink to this headline">¶</a></h5>
+<p>Default: True</p>
+<p>Set to True active SSO login via Keycloak.</p>
+<p><em>Type: boolean</em></p>
+</section>
+<section id="keycloak-url">
+<h5>KEYCLOAK_URL<a class="headerlink" href="#keycloak-url" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘127.0.0.1:8080/’</p>
+<p>If you use keycloak version 17 and later set url like: http(s)://{keycloak_address}:{port}/ (optional).
+If you use keycloak version 16 and earlier set url like: http(s)://{keycloak_address}:{port}/auth/ (optional).</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="keycloak-realm">
+<h5>KEYCLOAK_REALM<a class="headerlink" href="#keycloak-realm" title="Permalink to this headline">¶</a></h5>
+<p>Default: master</p>
+<p>The Realm to be used.</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="oidc-rp-client-id">
+<h5>OIDC_RP_CLIENT_ID<a class="headerlink" href="#oidc-rp-client-id" title="Permalink to this headline">¶</a></h5>
+<p>Default: None</p>
+<p>The OIDC Client ID. For Keycloak client creation see: https://www.keycloak.org/docs/latest/server_admin/#assembly-managing-clients_server_administration_guide (optional).</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="oidc-rp-client-secret">
+<h5>OIDC_RP_CLIENT_SECRET<a class="headerlink" href="#oidc-rp-client-secret" title="Permalink to this headline">¶</a></h5>
+<p>Default: None</p>
+<p>The OIDC Client Secret. See https://mozilla-django-oidc.readthedocs.io/en/stable/settings.html#OIDC_RP_CLIENT_SECRET</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="oidc-rp-sign-algo">
+<h5>OIDC_RP_SIGN_ALGO<a class="headerlink" href="#oidc-rp-sign-algo" title="Permalink to this headline">¶</a></h5>
+<p>Default: RS256</p>
+<p>Sets the algorithm the IdP uses to sign ID tokens.
+See https://mozilla-django-oidc.readthedocs.io/en/stable/settings.html#OIDC_RP_SIGN_ALGO</p>
+<p><em>Type: string</em></p>
+</section>
+</section>
+<section id="snapshot-settings">
+<h4>9. Snapshot Settings<a class="headerlink" href="#snapshot-settings" title="Permalink to this headline">¶</a></h4>
+<section id="snapshot-default-file-storage">
+<h5>SNAPSHOT_DEFAULT_FILE_STORAGE<a class="headerlink" href="#snapshot-default-file-storage" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘django.core.files.storage.FileSystemStorage’</p>
+<p>By default, the file system is used as file storage.
+To use an S3-compatible storage set: ‘storages.backends.s3boto.S3BotoStorage’.
+To use an Azure Blob Storage set: ‘storages.backends.azure_storage.AzureStorage’.
+See https://docs.djangoproject.com/en/4.0/ref/settings/#default-file-storage</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="snapshot-location">
+<h5>SNAPSHOT_LOCATION<a class="headerlink" href="#snapshot-location" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>The location where all Snapshots are saved (e.g. “/data/konfuzio-snapshots”)</p>
+<p><em>This is mandatory if SNAPSHOT_DEFAULT_FILE_STORAGE=’django.core.files.storage.FileSystemStorage’. Type: string</em>
+_Type: string</p>
+</section>
+<section id="snapshot-aws-access-key-id">
+<h5>SNAPSHOT_AWS_ACCESS_KEY_ID<a class="headerlink" href="#snapshot-aws-access-key-id" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p><em>This is mandatory if SNAPSHOT_DEFAULT_FILE_STORAGE=’storages.backends.s3boto.S3BotoStorage’. Type: string</em></p>
+</section>
+<section id="snapshot-aws-secret-access-key">
+<h5>SNAPSHOT_AWS_SECRET_ACCESS_KEY<a class="headerlink" href="#snapshot-aws-secret-access-key" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>The access key of the S3-Service.</p>
+<p><em>This is mandatory if SNAPSHOT_DEFAULT_FILE_STORAGE=’storages.backends.s3boto.S3BotoStorage’. Type: string</em></p>
+</section>
+<section id="snapshot-aws-storage-bucket-name">
+<h5>SNAPSHOT_AWS_STORAGE_BUCKET_NAME<a class="headerlink" href="#snapshot-aws-storage-bucket-name" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>The bucket name of the S3-Service.</p>
+<p><em>This is mandatory if SNAPSHOT_DEFAULT_FILE_STORAGE=’storages.backends.s3boto.S3BotoStorage’. Type: string</em></p>
+</section>
+<section id="snapshot-aws-s3-region-name">
+<h5>SNAPSHOT_AWS_S3_REGION_NAME<a class="headerlink" href="#snapshot-aws-s3-region-name" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>The region name of the S3-Service.</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="snapshot-aws-s3-endpoint-url">
+<h5>SNAPSHOT_AWS_S3_ENDPOINT_URL<a class="headerlink" href="#snapshot-aws-s3-endpoint-url" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>Custom S3 URL to use when connecting to S3, including scheme.</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="snapshot-aws-s3-use-ssl">
+<h5>SNAPSHOT_AWS_S3_USE_SSL<a class="headerlink" href="#snapshot-aws-s3-use-ssl" title="Permalink to this headline">¶</a></h5>
+<p>Default: True</p>
+<p>Whether or not to use SSL when connecting to S3, this is passed to the boto3 session resource constructor.</p>
+<p><em>Type: boolean</em></p>
+</section>
+<section id="snapshot-aws-s3-verify">
+<h5>SNAPSHOT_AWS_S3_VERIFY<a class="headerlink" href="#snapshot-aws-s3-verify" title="Permalink to this headline">¶</a></h5>
+<p>Default: None</p>
+<p>Whether or not to verify the connection to S3. Can be set to False to not verify certificates or a path to a CA cert bundle.</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="snapshot-azure-account-key">
+<h5>SNAPSHOT_AZURE_ACCOUNT_KEY:<a class="headerlink" href="#snapshot-azure-account-key" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>The Azure account key.</p>
+<p><em>This is mandatory if SNAPSHOT_DEFAULT_FILE_STORAGE=’storages.backends.azure_storage.AzureStorage’. Type: string</em></p>
+</section>
+<section id="snapshot-azure-account-name">
+<h5>SNAPSHOT_AZURE_ACCOUNT_NAME:<a class="headerlink" href="#snapshot-azure-account-name" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>The name if the Azure account name.</p>
+<p><em>This is mandatory if SNAPSHOT_DEFAULT_FILE_STORAGE=’storages.backends.azure_storage.AzureStorage’. Type: string</em></p>
+</section>
+<section id="snapshot-azure-container">
+<h5>SNAPSHOT_AZURE_CONTAINER:<a class="headerlink" href="#snapshot-azure-container" title="Permalink to this headline">¶</a></h5>
+<p>Default: ‘’</p>
+<p>The name if the Azure storage container.</p>
+<p><em>This is mandatory if SNAPSHOT_DEFAULT_FILE_STORAGE=’storages.backends.azure_storage.AzureStorage’. Type: string</em></p>
+</section>
+<section id="snapshot-host-name">
+<h5>SNAPSHOT_HOST_NAME<a class="headerlink" href="#snapshot-host-name" title="Permalink to this headline">¶</a></h5>
+<p>Default: None</p>
+<p>This allows to set a different hostname which is used to make API calls when creating a Snapshot.</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="snapshot-restore-across-environments">
+<h5>SNAPSHOT_RESTORE_ACROSS_ENVIRONMENTS<a class="headerlink" href="#snapshot-restore-across-environments" title="Permalink to this headline">¶</a></h5>
+<p>Default: False</p>
+<p>Whether or not Snapshots from other environments can be restored.</p>
+<p><em>Type: boolean</em></p>
+</section>
+</section>
+<section id="test-settings-for-keycloak-sso-settings">
+<h4>10. Test Settings for Keycloak / SSO Settings<a class="headerlink" href="#test-settings-for-keycloak-sso-settings" title="Permalink to this headline">¶</a></h4>
+<p>These variables are only used for Keycloak integration tests:
+The admin variables are for login keycloak admin panel, the test variables are for login to Konfuzio server.
+The Keycloak Integration test can be run by installing Chromedriver and Selenium.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">update</span> <span class="o">&amp;&amp;</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="o">-</span><span class="n">y</span> <span class="n">fonts</span><span class="o">-</span><span class="n">liberation</span> <span class="n">libatk</span><span class="o">-</span><span class="n">bridge2</span><span class="mf">.0</span><span class="o">-</span><span class="mi">0</span> <span class="n">libatk1</span><span class="mf">.0</span><span class="o">-</span><span class="mi">0</span> <span class="n">libatspi2</span><span class="mf">.0</span><span class="o">-</span><span class="mi">0</span> <span class="n">libgbm1</span> <span class="n">libgtk</span><span class="o">-</span><span class="mi">3</span><span class="o">-</span><span class="mi">0</span> <span class="n">libxcomposite1</span> <span class="n">libxkbcommon0</span> <span class="n">xdg</span><span class="o">-</span><span class="n">utils</span> <span class="n">libu2f</span><span class="o">-</span><span class="n">udev</span>
+<span class="n">wget</span> <span class="o">-</span><span class="n">q</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">dl</span><span class="o">.</span><span class="n">google</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">linux</span><span class="o">/</span><span class="n">direct</span><span class="o">/</span><span class="n">google</span><span class="o">-</span><span class="n">chrome</span><span class="o">-</span><span class="n">stable_current_amd64</span><span class="o">.</span><span class="n">deb</span> <span class="o">&amp;&amp;</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="o">-</span><span class="n">y</span> <span class="o">./</span><span class="n">google</span><span class="o">-</span><span class="n">chrome</span><span class="o">-</span><span class="n">stable_current_amd64</span><span class="o">.</span><span class="n">deb</span>
+<span class="n">pip3</span> <span class="n">install</span> <span class="n">coverage</span> <span class="n">chromedriver</span><span class="o">-</span><span class="n">binary</span><span class="o">-</span><span class="n">auto</span> <span class="n">chromedriver_binary</span>
+<span class="n">python</span> <span class="n">manage</span><span class="o">.</span><span class="n">py</span> <span class="n">test</span> <span class="o">-</span><span class="n">t</span> <span class="o">.</span> <span class="n">server</span> <span class="o">--</span><span class="n">tag</span><span class="o">=</span><span class="n">selenium</span><span class="o">-</span><span class="n">required</span>
+</pre></div>
+</div>
+<section id="keycloak-admin-username">
+<h5>KEYCLOAK_ADMIN_USERNAME<a class="headerlink" href="#keycloak-admin-username" title="Permalink to this headline">¶</a></h5>
+<p>Default: admin</p>
+<p>The Keycloak admin username.</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="keycloak-admin-password">
+<h5>KEYCLOAK_ADMIN_PASSWORD<a class="headerlink" href="#keycloak-admin-password" title="Permalink to this headline">¶</a></h5>
+<p>Default: admin</p>
+<p>The Keycloak admin password.</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="keycloak-test-username">
+<h5>KEYCLOAK_TEST_USERNAME<a class="headerlink" href="#keycloak-test-username" title="Permalink to this headline">¶</a></h5>
+<p>Default: fake&#64;f.com</p>
+<p>Username for Keycloak integration test.</p>
+<p><em>Type: string</em></p>
+</section>
+<section id="keycloak-test-password">
+<h5>KEYCLOAK_TEST_PASSWORD<a class="headerlink" href="#keycloak-test-password" title="Permalink to this headline">¶</a></h5>
+<p>Default: pass1234</p>
+<p>Password of User for Keycloak integration test.</p>
+<p><em>Type: string</em></p>
+</section>
+</section>
+</section>
+<section id="example-env-file-for-konfuzio-server">
+<h3>Example .env file for Konfuzio Server<a class="headerlink" href="#example-env-file-for-konfuzio-server" title="Permalink to this headline">¶</a></h3>
+<p>Konfuzio Server is fully configured via environment variables, these can be passed as dedicated environment variables or a single .env to the Konfuzio Server containers (REGISTRY_URL/konfuzio/text-annotation/master). A template for a .env file is provided here:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span># False for production, True for local development (mandatory).
+# See https://docs.djangoproject.com/en/3.2/ref/settings/#std:setting-DEBUG
+DEBUG=
+
+# Set maintenance mode, shows 503 error page when maintenance-mode is on (mandatory).
+MAINTENANCE_MODE=False
+
+# Insert random secret key (mandatory).
+# See https://docs.djangoproject.com/en/4.0/ref/settings/#secret-key
+SECRET_KEY=
+
+# The Billing API Key (optional) 
+BILLING_API_KEY=
+# The URL of the biling Server (optional)
+BILLING_API_URL=https://app.konfuzio.com
+
+# The HOSTNAME variable is used in the E-Mail templates (mandatory).
+# https://example.konfuzio.com or http://localhost:8000 for local development.
+# Note: Please include the protocol (e.g. http://) even the variable is named HOST_NAME
+HOST_NAME=
+
+# Please enter a Postgres Database (https://github.com/kennethreitz/dj-database-url#url-schema) (mandatory).
+DATABASE_URL=
+DATABASE_URL_SSL_REQUIRE=True
+
+# Insert hostname e.g. konfuzio.com or * for local development (mandatory).
+# See https://docs.djangoproject.com/en/4.0/ref/settings/#allowed-hosts
+ALLOWED_HOSTS=
+
+# Django&#39;s default storage (mandatory).
+# for azure use: storage.MultiAzureStorage
+# for S3-like storage use: storage.MultiS3Boto3Storage
+# See https://docs.djangoproject.com/en/4.0/ref/settings/#default-file-storage
+DEFAULT_FILE_STORAGE=django.core.files.storage.FileSystemStorage
+
+# Required settings if storage.MultiAzureStorage is used (optional).
+AZURE_ACCOUNT_KEY=
+AZURE_ACCOUNT_NAME=
+AZURE_CONTAINER=
+
+# Required settings for storage.MultiS3Boto3Storage (optional).
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_STORAGE_BUCKET_NAME=
+AWS_S3_REGION_NAME=
+AWS_S3_ENDPOINT_URL=
+
+# Access to customer Blob Storage (optional).
+# e.g. &quot;{&#39;beispiel_ag&#39;: {&#39;account_key&#39;: &#39;the_keys_124&#39;,&#39;azure_container&#39;: &#39;default&#39;,}}&quot;
+AZURE_CUSTOMER_STORAGE={}
+
+# Celery settings (mandatory).
+BROKER_URL=
+RESULT_BACKEND=
+TASK_ALWAYS_EAGER=True
+
+# Defender (Brute-Force protection) settings (optional).
+DEFENDER_REDIS_URL=
+
+# SENTRY_DSN e.g. &quot;https://123456789@sentry.io/1234567&quot; (optional).
+SENTRY_DSN=
+
+# E-Mail address which is BCC in every transactional E-Mail (optional).
+CRM_INTEGRATION_EMAIL=
+
+# The SMTP credentials for sending E-Mails (optional).
+# See https://docs.djangoproject.com/en/4.0/ref/settings/#email-backend
+EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+EMAIL_HOST=
+EMAIL_HOST_PASSWORD=
+EMAIL_HOST_USER=
+EMAIL_PORT=25
+# See https://docs.djangoproject.com/en/4.0/ref/settings/#email-use-tls
+EMAIL_USE_TLS=False
+# See https://docs.djangoproject.com/en/4.0/ref/settings/#email-use-ssl
+EMAIL_USE_SSL=False
+# See https://docs.djangoproject.com/en/4.0/ref/settings/#email-timeout
+DEFAULT_FROM_EMAIL=
+
+# Customize the email verification (optional)
+# When set to “mandatory” the user is blocked from logging in until the email address is verified. Choose “optional” or “none” to allow logins with an unverified e-mail address. In case of “optional”, the e-mail verification mail is still sent, whereas in case of “none” no e-mail verification mails are sent.
+ACCOUNT_EMAIL_VERIFICATION=&#39;mandatory&#39;
+
+# Api Key to sent emails via SendGrid if Debug=False (optional).
+# If you use the SENDGRID_API_KEY you must also set EMAIL_BACKEND=sendgrid_backend.SendgridBackend
+SENDGRID_API_KEY=
+
+# Set Google Analytics or keep empty (optional).
+GOOGLE_ANALYTICS=
+
+# Captcha protected signup (optional).
+CAPTCHA=False
+
+# Flower URL or keep empty (optional).
+FLOWER_URL=
+
+# Rate limit per worker (optional).
+TASK_DEFAULT_RATE_LIMIT=30/m
+
+# Configure Azure OCR (optional).
+AZURE_OCR_KEY=
+AZURE_OCR_VERSION=
+AZURE_OCR_BASE_URL=
+
+# If this is activated SSL is required (optional).
+# See https://docs.djangoproject.com/en/4.0/ref/settings/#std:setting-SESSION_COOKIE_SECURE
+SESSION_COOKIE_SECURE=True
+
+# If this is activated SSL is required (optional).
+# https://docs.djangoproject.com/en/4.0/ref/settings/#csrf-cookie-secure
+CSRF_COOKIE_SECURE=True
+
+# New relic settings (optional).
+NEW_RELIC_LICENSE_KEY=
+NEW_RELIC_APP_NAME=
+NEW_RELIC_ENVIRONMENT=
+
+# Email integration (optional).
+SCAN_EMAIL_HOST=
+SCAN_EMAIL_HOST_USER=
+SCAN_EMAIL_RECIPIENT=
+SCAN_EMAIL_HOST_PASSWORD=
+
+# Directory to cache files during the AI training process and when running AI models (optional).
+KONFUZIO_CACHE_DIR =   # e.g. &#39;/cache&#39;, uses tempdir if not set
+
+# KEYCLOAK ENVIRONMENT The following values establish a keycloak connection through the
+# mozilla oidc package (https://mozilla-django-oidc.readthedocs.io/en/stable/settings.html) (optional).
+
+# SET TO TRUE TO ACTIVATE KEYCLOAK (optional).
+SSO_ENABLED=True
+
+# If you use keycloak version 17 and later set url like: http(s)://{keycloak_address}:{port}/ (optional).
+# If you use keycloak version 16 and earlier set url like: http(s)://{keycloak_address}:{port}/auth/ (optional).
+KEYCLOAK_URL=
+KEYCLOAK_REALM=  # defaults to master
+
+For Keycloak client creation see: https://www.keycloak.org/docs/latest/server_admin/#assembly-managing-clients_server_administration_guide (optional).
+OIDC_RP_SIGN_ALGO=RS256
+OIDC_RP_CLIENT_ID=
+OIDC_RP_CLIENT_SECRET=
+
+# These variables are only used for Keycloak integration tests: 
+# The admin variables are for login keycloak admin panel, the test variables are for login to Konfuzio server (optional).
+KEYCLOAK_ADMIN_USERNAME=
+KEYCLOAK_ADMIN_PASSWORD=
+KEYCLOAK_TEST_USERNAME=
+KEYCLOAK_TEST_PASSWORD=
+
+# Turn on/off autoretraining (optional).
+TRAIN_EXTRACTION_AI_AUTOMATICALLY_IF_QUEUE_IS_EMPTY=False
+
+# Turn on/off the immediate generation of sandwich pdf in full document workflow (optional).
+ALWAYS_GENERATE_SANDWICH_PDF=True
+
+# Default time limits for background tasks (optional).
+# These defaults can be viewed here: https://dev.konfuzio.com/web/explanations.html#celery-tasks.
+EXTRACTION_TIME_LIMIT = 
+CATEGORIZATION_TIME_LIMIT = 
+EVALUATION_TIME_LIMIT = 
+TRAINING_EXTRACTION_TIME_LIMIT = 
+TRAINING_CATEGORIZATION_TIME_LIMIT = 
+SANDWICH_PDF_TIME_LIMIT = 
+DOCUMENT_TEXT_AND_BBOXES_TIME_LIMIT = 
+# Default time limits for period background tasks (optional)
+# https://help.konfuzio.com/modules/projects/index.html?#auto-deletion-of-documents
+# Both are set to 3600, the max amount of time the task may take. 
+# If a huge amount of documents have been deleted, this may need to be increased. 
+CLEAN_DELETED_DOCUMENT_TIME_LIMIT = 
+CLEAN_DOCUMENT_WITHOUT_DATASET_TIME_LIMIT =
+
+# Some models require a lot of ram during training. Defaults to 150 threshold which is the amount of training documents necessary to switch to a &quot;training_heavy&quot; celery queue
+THRESHOLD_FOR_HEAVY_TRAINING = 
+</pre></div>
+</div>
+</section>
+<section id="environment-variables-for-read-api-container">
+<h3>Environment Variables for Read API Container<a class="headerlink" href="#environment-variables-for-read-api-container" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span> # The Azure OCR API key (mandatory).
+AZURE_OCR_KEY=123456789
+ # The URL of the READ API (mandatory).
+AZURE_OCR_BASE_URL=http://host:5000
+# The version of the READ API (optional).
+AZURE_OCR_VERSION=v3.2
+</pre></div>
+</div>
+</section>
+<section id="environment-variables-for-document-layout-analysis-container">
+<h3>Environment Variables for Document Layout Analysis Container<a class="headerlink" href="#environment-variables-for-document-layout-analysis-container" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span># Connect Broker (mandatory).
+BROKER_URL=
+# Connect result backend (mandatory).
+RESULT_BACKEND=
+# Connect Sentry (optional).
+SENTRY_DSN=
+SENTRY_ENVIRONMENT=
+SENTRY_RELEASE=
+SENTRY_TRACES_SAMPLE_RATE=
+# Setting for task processing (optional).
+WORKER_SEND_TASK_EVENTS=
+TASK_SEND_SENT_EVENT=
+TASK_TRACK_STARTED=
+TASK_ACKS_ON_FAILURE_OR_TIMEOUT=
+TASK_ACKS_LATE=
+</pre></div>
+</div>
+</section>
+</section>
+<section id="profiling">
+<h2>Profiling<a class="headerlink" href="#profiling" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://github.com/jazzband/django-silk">Django-silk</a> is an integration into Konfuzio Server which offers a detailed
+overview of time spend in the database or within the internal code. When trying to troubleshoot performance issues,
+wanting to understand where queries are made, or needing to cooperate with our support on technical problems, it may be
+useful to use the Django-silk profiling to analyze performance.</p>
+<p>By default, the package is installed but turned off, you can enable the package by setting the following variable:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">SILK_PROFILING:</span> <span class="pre">True</span></code></p></li>
+</ul>
+<p>By default, only 15% of requests are being profiled, this can be changed to any number between 0 and 100:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">SILKY_INTERCEPT_PERCENT:</span> <span class="pre">15</span></code></p></li>
+</ul>
+<p>To avoid the database from filling up, only the past 10k requests are being kept, this can be changed to any value:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">SILKY_MAX_RECORDED_REQUESTS:</span> <span class="pre">10000</span></code></p></li>
+</ul>
+<p>After enabling Django silk, the dashboard will become available on <code class="docutils literal notranslate"><span class="pre">http://localhost:8000/silk</span></code> for users who are
+logged in as superuser. The database can also be cleared by navigating to <code class="docutils literal notranslate"><span class="pre">http://localhost:8000/silk/cleardb/</span></code>. Do keep
+in mind that this package does add some overhead querying to each request. So unless there are active problems, it
+may be best to keep it turned off or at a low <code class="docutils literal notranslate"><span class="pre">SILKY_INTERCEPT_PERCENT</span></code> percentage.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="api-v3.html" class="btn btn-neutral float-left" title="REST API" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="passwords/index.html" class="btn btn-neutral float-right" title="Password Management" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Helm und Nagel GmbH.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-D02B3QF8Z3"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-D02B3QF8Z3');
+</script>
+<script src="https://cmp.osano.com/16CVyMSbk3Iar1G3f/97ee6223-b0cb-4f8c-abd6-a25a0d6f6507/osano.js"></script>
+<script>window._nQc="89655017";</script>
+<script async src="https://serve.albacross.com/track.js"></script>
+<script data-jsd-embedded data-key="42374b9a-2f7b-46ec-ae7b-b79a89aa3dd9" data-base-url="https://jsd-widget.atlassian.com" src="https://jsd-widget.atlassian.com/assets/embed.js"></script>
+
+
+</body>
+</html>

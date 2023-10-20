@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Install SDK using PyCharm &mdash; Konfuzio  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/full_green_square.png"/>
+    <link rel="canonical" href="https://dev.konfuzio.com/sdk/quickstart_pycharm.html" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/clipboard.min.js"></script>
+        <script src="../_static/copybutton.js"></script>
+        <script src="https://unpkg.com/mermaid@9.4.0/dist/mermaid.min.js"></script>
+        <script>mermaid.initialize({startOnLoad:true});</script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Konfuzio
+            <img src="../_static/docs__static_square_transparent_super_small.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Konfuzio SDK</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">What is the Konfuzio SDK?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="get_started.html">Get Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sourcecode.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contribution.html">Contribution Guide</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/releases">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../web/index.html">What is the Konfuzio Server?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/api-v3.html">REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/on_premises.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/passwords/index.html">Password Management</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/changelog_app.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Document Validation UI</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dvui/index.html">What is the Konfuzio Document Validation UI?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dvui/explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dvui/sourcecode.html">Source Code</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/releases">Changelog</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Konfuzio</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Install SDK using PyCharm</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/sdk/quickstart_pycharm.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <p>.. meta::
+:description: Contains all necessary steps to use the sdk with pycharm.</p>
+<p>.. _Install SDK using PyCharm:</p>
+<section id="install-sdk-using-pycharm">
+<h1>Install SDK using PyCharm<a class="headerlink" href="#install-sdk-using-pycharm" title="Permalink to this headline">¶</a></h1>
+<p>This guide explains the necessary steps to use the <a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk">Konfuzio SDK</a>
+(version &gt;=0.2) with PyCharm.</p>
+<p>It was tested on the following Operating Systems and PyCharm versions:</p>
+<ul class="simple">
+<li><p>Ubuntu 18.04 with PyCharm 2021.3.3 (Professional Edition)</p></li>
+<li><p>Windows 10 with PyCharm 2022.1.4 (Professional Edition)</p></li>
+<li><p>macOS 12 with PyCharm 2022.2.1 (Community Edition)</p></li>
+</ul>
+<section id="pycharm-setup">
+<h2>1. PyCharm Setup<a class="headerlink" href="#pycharm-setup" title="Permalink to this headline">¶</a></h2>
+<p>PyCharm is a widespread common Integrated Development Environment (IDE) with strong debugging functionalities, which is
+why we choose PyCharm as our preferred IDE in this context. To start with, please download the Community version of
+PyCharm for your respective operating system here: https://www.jetbrains.com/pycharm/download/.</p>
+<p>Once it is downloaded, create a new Project in PyCharm (File -&gt; New Project) and choose the location and name for it.
+Please also refer to this documentation for further
+explanations: https://www.jetbrains.com/help/pycharm/creating-empty-project.html. When creating a new project, you need
+to choose the Python interpreter which will be used for the project. Please move on to step 2 to check how to create a
+new virtual environment for the project.</p>
+<p><img alt="pycharm_setup" src="../_images/pycharm_setup.png" /></p>
+</section>
+<section id="create-a-virtual-environment">
+<h2>2. Create a Virtual Environment<a class="headerlink" href="#create-a-virtual-environment" title="Permalink to this headline">¶</a></h2>
+<p>As we want to execute our project with our Konfuzio SDK package, we need a virtual environment that is based on Python
+version 3.8. This Python version is the most widespread and commonly used version which still represents a good
+trade-off between newness and stability. To create such a virtual environment, please refer to this documentation which
+describes the steps in
+detail: https://www.jetbrains.com/help/pycharm/creating-virtual-environment.html#python_create_virtual_env.</p>
+<p>To connect this virtual environment to your project, make sure that it is selected as the Python interpreter (see bottom
+right corner) and in the project setting preferences if not already specified when the project was created. We are using
+a local virtual environment in combination with the community version of PyCharm, as the users of the community version
+can’t carry out debugging of code that is executed in Docker containers or on a remote-host SSH.</p>
+<p><img alt="pycharm_create_virtual_env" src="../_images/pycharm_create_virtual_env.png" /></p>
+<p>After the installation of PyCharm and this setup of the virtual environment is completed, we can now start to install
+our Konfuzio SDK package.</p>
+</section>
+<section id="install-the-konfuzio-sdk-package">
+<h2>3. Install the Konfuzio SDK package<a class="headerlink" href="#install-the-konfuzio-sdk-package" title="Permalink to this headline">¶</a></h2>
+<p>Install the Konfuzio SDK package via pip install in the terminal. This will install the SDK package directly in your
+working directory:
+<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">konfuzio-sdk</span></code></p>
+<p><img alt="pycharm_install_sdk" src="../_images/pycharm_install_sdk.png" /></p>
+</section>
+<section id="define-your-working-directory">
+<h2>4. Define your working directory<a class="headerlink" href="#define-your-working-directory" title="Permalink to this headline">¶</a></h2>
+<p>To store data downloaded with the Konfuzio SDK, indicate (if necessary) the location by inputting the path of your
+working directory. This path should be the location of the folder of the PyCharm project and can be found e.g. on the
+top left corner.
+<code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">&lt;your</span> <span class="pre">working</span> <span class="pre">directory&gt;</span></code></p>
+<p><img alt="pycharm_pwd" src="../_images/pycharm_pwd.png" /></p>
+</section>
+<section id="initialize-the-project-with-the-required-inputs">
+<h2>5. Initialize the project with the required inputs<a class="headerlink" href="#initialize-the-project-with-the-required-inputs" title="Permalink to this headline">¶</a></h2>
+<p>After the installation, initialize the package in your working directory with:
+<code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span> <span class="pre">init</span></code></p>
+<p>This will require different inputs, starting with your <strong>login credentials</strong> to access the Konfuzio Server. It will then
+ask for the <strong>host</strong> from where to get the data. If you are a business user, this might be different from
+app.konfuzio.com and will be the server URL to access the Konfuzio application. In any other case, press “enter” to use
+the default URL as the host address.</p>
+<p>You successfully initialized your project!</p>
+<p>Now your Konfuzio SDK package is locally installed and will enable you together with the usage of the API the usage of
+the Konfuzio web interface.</p>
+<p>One file have also been created in your working directory: .env. The .env file contains the credentials
+to access the app and must not become public.</p>
+<p><img alt="pycharm_sdk_init" src="../_images/pycharm_sdk_init.png" /></p>
+</section>
+<section id="test-your-setup">
+<h2>6. Test your Setup<a class="headerlink" href="#test-your-setup" title="Permalink to this headline">¶</a></h2>
+<p>If you are new to our Konfuzio application, there are no existing projects yet. Create a new one
+<a class="reference external" href="https://www.youtube.com/watch?v=KJC48LMvM2I&amp;t=50s">online</a> and then use the <strong>project ID</strong> in your following code.</p>
+<p>To test whether everything is working as desired, we are going to execute a few basic commands in the main.py file.
+Therefore, please remove the current sample Python script provided by PyCharm by deleting the code. We start with
+initializing the project to retrieve the current version of the project from the web application. The screenshot shows
+the project ID 1290; you should replace this with your own. Once this is done, we count the total number of all
+documents allocated to the train set in the project.</p>
+<p>To run the code, press “Run” and then “Run main”. You will notice that a data folder gets created, containing your
+project files. As we didn’t upload any documents to our project yet, the total number should be 0. If you upload new
+documents later on, the flag <code class="docutils literal notranslate"><span class="pre">update=True</span></code> ensures that the SDK downloads them in your local data folder.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Test your setup with the following code:</span>
+
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
+
+<span class="c1"># Initialize the project:</span>
+<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">,</span> <span class="n">update</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Receive the total number of training documents in the project:</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Number of training documents in the project: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+</pre></div>
+</div>
+<p><img alt="pycharm_test_setup" src="../_images/pycharm_test_setup.png" /></p>
+</section>
+<section id="test-the-debugging">
+<h2>7. Test the Debugging<a class="headerlink" href="#test-the-debugging" title="Permalink to this headline">¶</a></h2>
+<p>We include a second test to check if the debugging also works. Therefore, we include a breakpoint in the last line of
+the code in the line of the print statement and execute “Run” and then “Debug main”. This will provide you with an
+overview of all available variables. As you can see in the code above, we only accessed the document element - however,
+all other elements can be found and explored in the Debug console under “Variables”.</p>
+<p><img alt="pycharm_test_debug" src="../_images/pycharm_test_debug.png" /></p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Helm und Nagel GmbH.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-D02B3QF8Z3"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-D02B3QF8Z3');
+</script>
+<script src="https://cmp.osano.com/16CVyMSbk3Iar1G3f/97ee6223-b0cb-4f8c-abd6-a25a0d6f6507/osano.js"></script>
+<script>window._nQc="89655017";</script>
+<script async src="https://serve.albacross.com/track.js"></script>
+<script data-jsd-embedded data-key="42374b9a-2f7b-46ec-ae7b-b79a89aa3dd9" data-base-url="https://jsd-widget.atlassian.com" src="https://jsd-widget.atlassian.com/assets/embed.js"></script>
+
+
+</body>
+</html>

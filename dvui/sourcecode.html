@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Source Code &mdash; Konfuzio  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/full_green_square.png"/>
+    <link rel="canonical" href="https://dev.konfuzio.com/dvui/sourcecode.html" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/clipboard.min.js"></script>
+        <script src="../_static/copybutton.js"></script>
+        <script src="https://unpkg.com/mermaid@9.4.0/dist/mermaid.min.js"></script>
+        <script>mermaid.initialize({startOnLoad:true});</script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Explanations" href="explanations.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Konfuzio
+            <img src="../_static/docs__static_square_transparent_super_small.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Konfuzio SDK</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/index.html">What is the Konfuzio SDK?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/get_started.html">Get Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/sourcecode.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/contribution.html">Contribution Guide</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/releases">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../web/index.html">What is the Konfuzio Server?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/api-v3.html">REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/on_premises.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/passwords/index.html">Password Management</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/changelog_app.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Document Validation UI</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">What is the Konfuzio Document Validation UI?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="explanations.html">Explanations</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Source Code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#assets">Assets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#components">Components</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#directives">Directives</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#locales">Locales</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#store">Store</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#utils">Utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#tests">Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#unit-tests"><strong>Unit Tests</strong></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#integration-tests"><strong>Integration Tests</strong></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/releases">Changelog</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Konfuzio</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Source Code</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/dvui/sourcecode.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <p>.. meta::
+:description: information on where to find the application source code</p>
+<section id="source-code">
+<h1>Source Code<a class="headerlink" href="#source-code" title="Permalink to this headline">¶</a></h1>
+<p>The Document Validation UI is built using <a class="reference external" href="https://v2.vuejs.org/">Vue.js version 2</a>.</p>
+<p>The entry point of the application is the <code class="docutils literal notranslate"><span class="pre">main.js</span></code>, which loads all the Vue libraries and therefore opens the first Vue component, the <code class="docutils literal notranslate"><span class="pre">App.vue</span></code>. This component has the responsibility to tell the store to fetch the API data required to load the components. These files can be found under the <code class="docutils literal notranslate"><span class="pre">src</span></code> folder.</p>
+<p><a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/tree/main/src">This folder</a> is the root of the project and is divided into:</p>
+<section id="assets">
+<h2>Assets<a class="headerlink" href="#assets" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/tree/main/src/assets">The assets folder</a> contains all the images and styles. Each component has its styles under the <code class="docutils literal notranslate"><span class="pre">SCSS</span></code> folder. The application uses the <a class="reference external" href="https://buefy.org">Buefy</a> library, so if you want to edit the application theme you can go to the file <code class="docutils literal notranslate"><span class="pre">scss/variables.scss</span></code> and edit all the colors and variables to match the desired design.</p>
+<p>The application uses FontAwesome for the icons. If you need to add new ones, you can do so on the <code class="docutils literal notranslate"><span class="pre">main.js</span></code> file on the icon library setup.</p>
+</section>
+<section id="components">
+<h2>Components<a class="headerlink" href="#components" title="Permalink to this headline">¶</a></h2>
+<p>Vue components that are responsible for making the application work. They are divided into sections related to their function. The different components can be found <a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/tree/main/src/components">here</a>.</p>
+</section>
+<section id="directives">
+<h2>Directives<a class="headerlink" href="#directives" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/tree/main/src/directives">Here</a> are the directives for manipulating the elements in the HTML.</p>
+</section>
+<section id="locales">
+<h2>Locales<a class="headerlink" href="#locales" title="Permalink to this headline">¶</a></h2>
+<p>In <a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/tree/main/src/locales">this folder</a> you can find the translation files, which consist of key-value pairs. There can be as many files as languages needed. Translations are implemented using the library <a class="reference external" href="https://vue-i18n.intlify.dev/">Vue I18n</a>, and the expected value is rendered by using the <code class="docutils literal notranslate"><span class="pre">$t</span></code> translation API and passing the key as an argument.</p>
+</section>
+<section id="store">
+<h2>Store<a class="headerlink" href="#store" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/tree/main/src/store">store</a> is implemented using <a class="reference external" href="https://vuex.vuejs.org/">Vuex</a>. It is responsible for saving all information coming from the API and local information regarding the use of the app, like the display scale. Most of the information is obtained, filtered, grouped, and processed in the store files which are separated by their concept.</p>
+</section>
+<section id="utils">
+<h2>Utils<a class="headerlink" href="#utils" title="Permalink to this headline">¶</a></h2>
+<p>All utility functions are added <a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/tree/main/src/utils">here</a>.</p>
+</section>
+<section id="tests">
+<h2>Tests<a class="headerlink" href="#tests" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="unit-tests">
+<h2><strong>Unit Tests</strong><a class="headerlink" href="#unit-tests" title="Permalink to this headline">¶</a></h2>
+<p>You can test the application by running <code class="docutils literal notranslate"><span class="pre">npm</span> <span class="pre">run</span> <span class="pre">test:unit</span></code>. Tests are developed using <a class="reference external" href="https://github.com/vuejs/vue-test-utils">Vue Test Utils</a> and are located in the <code class="docutils literal notranslate"><span class="pre">tests</span></code> folder. Mock data is used to get information into the testing environment, so there’s no requirement to connect to an API. The tests are grouped by the different components and are focused on testing the components’ behavior.</p>
+</section>
+<section id="integration-tests">
+<h2><strong>Integration Tests</strong><a class="headerlink" href="#integration-tests" title="Permalink to this headline">¶</a></h2>
+<p>For Integration Tests you can run <code class="docutils literal notranslate"><span class="pre">npm</span> <span class="pre">run</span> <span class="pre">cypress:open</span></code> which will open the <a class="reference external" href="https://www.cypress.io/">Cypress</a> application. There you can choose Component testing and the browser of choice. All of the available components for testing are then listed in the specs tabs.
+Since the Integration Tests connect to the Konfuzio API, an environment file is needed to provide the required parameters. You should create a <code class="docutils literal notranslate"><span class="pre">.env.test</span></code> on the root of the repository based on the <a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/blob/main/.env.example">.env.example</a> and specify, at least, the following required values:</p>
+<ul class="simple">
+<li><p>The user token: <code class="docutils literal notranslate"><span class="pre">VUE_APP_GUEST_USER_TOKEN</span></code></p></li>
+<li><p>The document id: <code class="docutils literal notranslate"><span class="pre">VUE_APP_DOCUMENT_ID</span></code></p></li>
+<li><p>The API URL: <code class="docutils literal notranslate"><span class="pre">VUE_APP_API_URL</span></code></p></li>
+<li><p>The document images download URL: <code class="docutils literal notranslate"><span class="pre">VUE_APP_DOCUMENT_IMAGES_URL</span></code></p></li>
+</ul>
+<p>To create new tests, you just need to add a file next to the component you want to test with the <code class="docutils literal notranslate"><span class="pre">*.cy.js</span></code> name. For example, if you want to create tests for the <code class="docutils literal notranslate"><span class="pre">App.vue</span></code> component, a file named <code class="docutils literal notranslate"><span class="pre">App.cy.js</span></code> should be created and it will automatically appear in the Cypress list.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="explanations.html" class="btn btn-neutral float-left" title="Explanations" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Helm und Nagel GmbH.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-D02B3QF8Z3"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-D02B3QF8Z3');
+</script>
+<script src="https://cmp.osano.com/16CVyMSbk3Iar1G3f/97ee6223-b0cb-4f8c-abd6-a25a0d6f6507/osano.js"></script>
+<script>window._nQc="89655017";</script>
+<script async src="https://serve.albacross.com/track.js"></script>
+<script data-jsd-embedded data-key="42374b9a-2f7b-46ec-ae7b-b79a89aa3dd9" data-base-url="https://jsd-widget.atlassian.com" src="https://jsd-widget.atlassian.com/assets/embed.js"></script>
+
+
+</body>
+</html>

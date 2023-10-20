@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Coordinates System &mdash; Konfuzio  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/full_green_square.png"/>
+    <link rel="canonical" href="https://dev.konfuzio.com/sdk/coordinates_system.html" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/clipboard.min.js"></script>
+        <script src="../_static/copybutton.js"></script>
+        <script src="https://unpkg.com/mermaid@9.4.0/dist/mermaid.min.js"></script>
+        <script>mermaid.initialize({startOnLoad:true});</script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Konfuzio
+            <img src="../_static/docs__static_square_transparent_super_small.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Konfuzio SDK</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">What is the Konfuzio SDK?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="get_started.html">Get Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sourcecode.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contribution.html">Contribution Guide</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/releases">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../web/index.html">What is the Konfuzio Server?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/api-v3.html">REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/on_premises.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/passwords/index.html">Password Management</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/changelog_app.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Document Validation UI</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dvui/index.html">What is the Konfuzio Document Validation UI?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dvui/explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dvui/sourcecode.html">Source Code</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/releases">Changelog</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Konfuzio</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Coordinates System</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/sdk/coordinates_system.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <p>.. meta::
+:description: Documentation of the coordinates system of the bounding boxes used in Konfuzio and some simple
+examples of how to use it for visualization, for example.</p>
+<section id="coordinates-system">
+<h1>Coordinates System<a class="headerlink" href="#coordinates-system" title="Permalink to this headline">¶</a></h1>
+<p>The size of a page of a Document can be obtained in the Document object.
+The format is [width, height].</p>
+<p>Original size of the Document is the size of the uploaded Document (which can be a PDF file or an image). The bounding
+boxes of the Annotations are based on this size.
+E.g.: [1552, 1932]</p>
+<p>Current size can be accessed via calling <code class="docutils literal notranslate"><span class="pre">height</span></code> and <code class="docutils literal notranslate"><span class="pre">width</span></code> from the Page object. They show the dimensions of the
+image representation of a Document Page. These representations are used for computer vision tasks and the SmartView.
+E.g.: [372.48, 463.68]</p>
+<p>.. literalinclude:: /sdk/boilerplates/test_coordinates_system.py
+:language: python
+:start-after: Start coordinates
+:end-before: End coordinates
+:dedent: 4</p>
+<p>The coordinates system used has its start in the bottom left corner of the page.</p>
+<p>.. image:: /_static/img/coordinates_schema.png</p>
+<p>To visualize the character bounding boxes of a document and overlapping them in the image opened with the python
+library PIL, for example, we can resize the image to the size in which they are based (original_size).
+The following code can be used for this:</p>
+<p>.. literalinclude:: /sdk/boilerplates/test_segmentation_and_bboxes.py
+:language: python
+:start-after: start document
+:end-before: end document
+:dedent: 4</p>
+<p>.. image:: /_static/img/bboxes_characters.png</p>
+<p>The coordinates obtained from the segmentation endpoint of the API are based on the image array shape.
+To visualize the segmentation bounding boxes of a page on an image opened with the python library PIL, for example,
+we can overlap them directly.</p>
+<p>.. literalinclude:: /sdk/boilerplates/test_segmentation_and_bboxes.py
+:language: python
+:start-after: start segmentation
+:end-before: end segmentation
+:dedent: 4</p>
+<p>.. image:: /_static/img/bboxes_segmentation.png</p>
+<p>To visualize both at the same time we can convert the coordinates from the segmentation result to be based on the image
+size used for the characters’ bbox.</p>
+<p>.. literalinclude:: /sdk/boilerplates/test_segmentation_and_bboxes.py
+:language: python
+:start-after: start dimensions
+:end-before: end dimensions
+:dedent: 4</p>
+<p>.. image:: /_static/img/bboxes_overlap.png</p>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Helm und Nagel GmbH.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-D02B3QF8Z3"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-D02B3QF8Z3');
+</script>
+<script src="https://cmp.osano.com/16CVyMSbk3Iar1G3f/97ee6223-b0cb-4f8c-abd6-a25a0d6f6507/osano.js"></script>
+<script>window._nQc="89655017";</script>
+<script async src="https://serve.albacross.com/track.js"></script>
+<script data-jsd-embedded data-key="42374b9a-2f7b-46ec-ae7b-b79a89aa3dd9" data-base-url="https://jsd-widget.atlassian.com" src="https://jsd-widget.atlassian.com/assets/embed.js"></script>
+
+
+</body>
+</html>

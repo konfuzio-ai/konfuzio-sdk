@@ -1,0 +1,124 @@
+version: "3.9"
+
+###################################################################################
+######  Do not skip. These variables need to be customized.                  ######
+###################################################################################
+x-user-variables: &user-variables
+  HOST_NAME: http://localhost
+  BILLING_API_KEY: "<<INSERT_BILLING_API_KEY>>"
+  SECRET_KEY: "<<INSERT_RANDOM_VALUE>>"
+  AZURE_OCR_KEY: "<<OPTIONAL_INSERT_AZURE_OCR_KEY>>"
+
+x-user-azure-ocr-variables: &user-azure-ocr-variables
+  Eula: accept
+  Billing: "<<OPTIONAL_INSERT_AZURE_BILLING_URL>>"
+  ApiKey: "<<OPTIONAL_INSERT_AZURE_OCR_KEY>>"
+
+x-konfuzio_image: &konfuzio_image
+  image: git.konfuzio.com:5050/konfuzio/text-annotation/master:<<INSERT_DOCKER_TAG>>
+##################################################################################
+
+
+##################################################################################
+######  Common variables. These can be adjusted to you needs,               ######
+######  however the default values are fully functional.                    ######
+##################################################################################
+x-common-variables: &common-variables
+  DATABASE_URL: postgres://postgres:postgres@db/konfuzio
+  BROKER_URL: redis://:eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81@redis:6379/0
+  RESULT_BACKEND: redis://:eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81@redis:6379/1
+  ACCOUNT_EMAIL_VERIFICATION: none
+  EMAIL_BACKEND: django.core.mail.backends.smtp.EmailBackend
+  AZURE_OCR_BASE_URL: http://azure-ocr:5000
+  FLOWER_URL: http://flower:5555/flower
+  SESSION_COOKIE_SECURE: False
+  CSRF_COOKIE_SECURE: False
+##################################################################################
+
+
+##################################################################################
+######  This section starts the Containers, for more details see:                #
+######  https://dev.konfuzio.com/web/explanations.html#architectural-overview    #
+##################################################################################
+services:
+  web:
+    <<: *konfuzio_image
+    ports:
+      - "80:8000"
+    volumes:
+      - konfuzio:/data
+    environment:
+      <<: [*common-variables, *user-variables]
+    depends_on:
+      - migration
+  flower:
+    <<: *konfuzio_image
+    command: celery -A app flower --url_prefix=flower --address=0.0.0.0 --port=5555
+    environment:
+      <<: [*common-variables, *user-variables]
+    depends_on:
+      - migration
+  migration:
+    <<: *konfuzio_image
+    command: >
+      bash -c "python manage.py migrate --noinput && python manage.py init_user_permissions && python manage.py init_email_templates"
+    volumes:
+      - konfuzio:/data
+    environment:
+      <<: [*common-variables, *user-variables]
+    depends_on:
+      - db
+  worker:
+    <<: *konfuzio_image
+    command: celery -A app worker -l INFO --concurrency 1 -Q celery,extract,processing,local_ocr,ocr,training,training_heavy,finalize,categorize
+    environment:
+      <<: [*common-variables, *user-variables]
+    depends_on:
+      - web
+    volumes:
+      - konfuzio:/data
+    deploy:
+      mode: replicated
+      replicas: 4
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+  db:
+    image: postgres:14.1-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=konfuzio
+    volumes:
+      - db:/var/lib/postgresql/data
+  redis:
+    image: redis:6.2-alpine
+    restart: always
+    ports:
+      - '6379:6379'
+    command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+    volumes:
+      - redis:/data
+  azure-ocr:
+    image: 'mcr.microsoft.com/azure-cognitive-services/vision/read:3.2-model-2022-04-30'
+    restart: always
+    environment:
+      <<: *user-azure-ocr-variables
+##################################################################################
+
+
+##################################################################################
+######  This section starts the Containers, for more details see:                #
+######  https://dev.konfuzio.com/web/explanations.html#architectural-overview    #
+##################################################################################
+volumes:
+  db:
+    driver: local
+  redis:
+    driver: local
+  konfuzio:
+    driver: local
+##################################################################################

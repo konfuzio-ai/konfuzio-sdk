@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Architecture SDK to Server &mdash; Konfuzio  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="shortcut icon" href="../../_static/full_green_square.png"/>
+    <link rel="canonical" href="https://dev.konfuzio.com/sdk/releasing/index.html" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/clipboard.min.js"></script>
+        <script src="../../_static/copybutton.js"></script>
+        <script src="https://unpkg.com/mermaid@9.4.0/dist/mermaid.min.js"></script>
+        <script>mermaid.initialize({startOnLoad:true});</script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Konfuzio
+            <img src="../../_static/docs__static_square_transparent_super_small.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Konfuzio SDK</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">What is the Konfuzio SDK?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../get_started.html">Get Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sourcecode.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contribution.html">Contribution Guide</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/releases">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../web/index.html">What is the Konfuzio Server?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../web/explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../web/api-v3.html">REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../web/on_premises.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../web/passwords/index.html">Password Management</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../web/changelog_app.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Document Validation UI</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dvui/index.html">What is the Konfuzio Document Validation UI?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dvui/explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dvui/sourcecode.html">Source Code</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/releases">Changelog</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Konfuzio</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Architecture SDK to Server</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/sdk/releasing/index.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <p>.. _architecture-sdk-to-server:</p>
+<section id="architecture-sdk-to-server">
+<h1>Architecture SDK to Server<a class="headerlink" href="#architecture-sdk-to-server" title="Permalink to this headline">¶</a></h1>
+<p>The following chart is automatically created by the version of the diagram on the branch master, see <a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/tests/SDK%20and%20Server%20Integration.drawio">source</a>.</p>
+<p>If you hover over the image you can zoom or use the full page mode.</p>
+<div class="mxgraph" style="max-width:100%;border:1px solid transparent;" data-mxgraph="{&quot;highlight&quot;:&quot;#0000ff&quot;,&quot;nav&quot;:true,&quot;resize&quot;:true,&quot;toolbar&quot;:&quot;zoom layers tags lightbox&quot;,&quot;edit&quot;:&quot;_blank&quot;,&quot;url&quot;:&quot;https://raw.githubusercontent.com/konfuzio-ai/konfuzio-sdk/master/docs/sdk/SDK%20and%20Server%20Integration.drawio&quot;}"></div>
+<script type="text/javascript" src="https://viewer.diagrams.net/embed2.js?&fetch=https%3A%2F%2Fraw.githubusercontent.com%2Fkonfuzio-ai%2Fkonfuzio-sdk%2Fmaster%2Fdocs%2Fsdk%2FSDK%2520and%2520Server%2520Integration.drawio"></script>
+<p>If you want to edit the diagramm, please refer to the <a class="reference external" href="https://drawio-app.com/github-support/">GitHub Drawio Documentation</a>.</p>
+</section>
+<section id="directory-structure">
+<h1>Directory Structure<a class="headerlink" href="#directory-structure" title="Permalink to this headline">¶</a></h1>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>├── konfuzio-sdk      &lt;- SDK project name
+│   │
+│   ├── docs                              &lt;- Documentation to use konfuzio_sdk package in a project
+│   │         
+│   ├── konfuzio_sdk                      &lt;- Source code of Konfuzio SDK
+│   │  ├── __init__.py                    &lt;- Makes konfuzio_sdk a Python module
+│   │  ├── api.py                         &lt;- Functions to interact with the Konfuzio Server
+│   │  ├── cli.py                         &lt;- Command Line interface to the konfuzio_sdk package
+│   │  ├── data.py                        &lt;- Functions to handle data from the API
+│   │  ├── evaluate.py                    &lt;- Functions to evaluate the performance of the AIs
+│   │  ├── extras.py                      &lt;- Classes to initialize AI-related dependencies safely
+|   |  ├── normalize.py                   &lt;- Functions to normalize Spans according to data_type
+│   │  ├── regex.py                       &lt;- Helper Functions to handle regex related tasks
+│   │  ├── samples.py                     &lt;- Local sample test Project
+│   │  ├── settings_importer.py           &lt;- Meta settings loaded from the project
+│   │  ├── urls.py                        &lt;- Endpoints of the Konfuzio host
+│   │  ├── utils.py                       &lt;- Utils functions for the konfuzio_sdk package
+|   |  |          
+│   |  ├── trainer                        &lt;- Trainer module to train AI models
+|   |  |  ├── __init__.py                 &lt;- Makes trainer a Python module
+|   |  |  ├── base.py                     &lt;- Base class for all AIs
+|   |  |  ├── document_categorization.py  &lt;- AI for Document categorization
+|   |  |  ├── information_extraction.py   &lt;- AI for Information extraction
+|   |  |  ├── file_splitting.py           &lt;- AI for File splitting
+|   |  |  ├── image.py                    &lt;- Image processing helper functions
+|   |  |  ├── tokenization.py             &lt;- Custom tokenization classes
+|   |  | 
+│   |  ├── tokenizer                      &lt;- Tokenizer module to tokenize documents
+|   |  |  ├── __init__.py                 &lt;- Makes tokenizer a Python module
+|   |  |  ├── base.py                     &lt;- Base class for all Tokenizers
+|   |  |  ├── paragraph_and_sentence.py   &lt;- Paragraph and Sentence Tokenizer
+|   |  |  ├── regex.py                    &lt;- Various Regex Tokenizers
+|   |
+│   ├── tests                             &lt;- Pytests: basic tests to test scripts based on a demo project
+│   │         
+│   ├── .gitignore                        &lt;- Specify files untracked and ignored by git
+│   ├── README.md                         &lt;- Readme to get to know konfuzio_sdk package
+│   ├── pytest.ini                        &lt;- Configurations for pytests
+│   ├── settings.py                       &lt;- Settings of SDK project
+│   ├── setup.cfg                         &lt;- Setup configurations
+│   ├── setup.py                          &lt;- Installation requirements
+
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Helm und Nagel GmbH.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-D02B3QF8Z3"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-D02B3QF8Z3');
+</script>
+<script src="https://cmp.osano.com/16CVyMSbk3Iar1G3f/97ee6223-b0cb-4f8c-abd6-a25a0d6f6507/osano.js"></script>
+<script>window._nQc="89655017";</script>
+<script async src="https://serve.albacross.com/track.js"></script>
+<script data-jsd-embedded data-key="42374b9a-2f7b-46ec-ae7b-b79a89aa3dd9" data-base-url="https://jsd-widget.atlassian.com" src="https://jsd-widget.atlassian.com/assets/embed.js"></script>
+
+
+</body>
+</html>

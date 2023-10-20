@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Install SDK &mdash; Konfuzio  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/full_green_square.png"/>
+    <link rel="canonical" href="https://dev.konfuzio.com/sdk/configuration_reference.html" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/clipboard.min.js"></script>
+        <script src="../_static/copybutton.js"></script>
+        <script src="https://unpkg.com/mermaid@9.4.0/dist/mermaid.min.js"></script>
+        <script>mermaid.initialize({startOnLoad:true});</script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Konfuzio
+            <img src="../_static/docs__static_square_transparent_super_small.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Konfuzio SDK</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">What is the Konfuzio SDK?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="get_started.html">Get Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sourcecode.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contribution.html">Contribution Guide</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/releases">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../web/index.html">What is the Konfuzio Server?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/api-v3.html">REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/on_premises.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/passwords/index.html">Password Management</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/changelog_app.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Document Validation UI</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dvui/index.html">What is the Konfuzio Document Validation UI?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dvui/explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dvui/sourcecode.html">Source Code</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/releases">Changelog</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Konfuzio</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Install SDK</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/sdk/configuration_reference.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="install-sdk">
+<h1>Install SDK<a class="headerlink" href="#install-sdk" title="Permalink to this headline">¶</a></h1>
+<p>To test our SDK you need to have an account in the Konfuzio Server and initialize the package before using it. If you
+are using PyCharm have a look at <span class="xref myst">Quickstart with Pycharm</span>.</p>
+<section id="sign-up-in-konfuzio-server">
+<h2>1. Sign up in Konfuzio Server<a class="headerlink" href="#sign-up-in-konfuzio-server" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://app.konfuzio.com/accounts/signup/">Register for free</a> in the Konfuzio Server.</p>
+</section>
+<section id="install-konfuzio-sdk-package">
+<h2>2. Install <code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span></code> package<a class="headerlink" href="#install-konfuzio-sdk-package" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p>Install the Python package directly in your working directory with:</p>
+<p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">konfuzio_sdk</span></code></p>
+</li>
+<li><p>It is also possible to choose between the lightweight SDK and the SDK with the AI-related components (latter one is
+taking up more disk space). By default, the SDK is installed as a lightweight instance. To install the full instance (<code class="docutils literal notranslate"><span class="pre">.[ai]</span></code>), the one with AI-related components, run the following command:</p>
+<p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">konfuzio_sdk[ai]</span></code></p>
+<p>Currently, the full instance cannot be installed on MacOS machines with an ARM-based chip from the M-series. The <code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span></code> package can only be installed on MacOS on machines with an ARM chip if the lightweight instance is installed. However the Konfuzio SDK can be used on a hosted environment such as <a class="reference external" href="https://deepnote.com/">Deepnote</a>. Follow the instructions in <span class="xref myst">section 5</span> of this document to install the SDK in a hosted Jupyter environment.</p>
+</li>
+</ul>
+<hr class="docutils" />
+<p><em>Notes</em>:</p>
+<ul class="simple">
+<li><p>Supported Python environments are 3.8, 3.9, 3.10, 3.11.</p></li>
+<li><p>Please use Python 3.8 if you plan to upload your AIs to a self-hosted Konfuzio Server environment.</p></li>
+<li><p>If you are not using a virtual environment, you may need to add the installation directory to your PATH.</p></li>
+<li><p>If you run this tutorial in Colab and experience any version compatibility issues when working with the SDK, restart
+the runtime and initialize the SDK once again; this will resolve the issue.</p></li>
+</ul>
+</section>
+<section id="initialize-the-package">
+<h2>3. Initialize the package<a class="headerlink" href="#initialize-the-package" title="Permalink to this headline">¶</a></h2>
+<p>After the installation, initialize the package in your working directory with:</p>
+<p><code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span> <span class="pre">init</span></code></p>
+<p>This will require your credentials to access the Konfuzio Server.
+At the end, one file will be created in your working directory: <code class="docutils literal notranslate"><span class="pre">.env</span></code>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">.env</span></code> file contains the credentials to access the app and should not become public.</p>
+</section>
+<section id="download-the-data">
+<h2>4. Download the data<a class="headerlink" href="#download-the-data" title="Permalink to this headline">¶</a></h2>
+<p>To download the data from your Konfuzio project you need to specify the Project ID.
+You can check your Project ID by selecting the project in the Projects tab in the Web App.
+The ID of the Project is shown in the URL. Suppose that your Project ID is 123:</p>
+<p><code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span> <span class="pre">export_project</span> <span class="pre">123</span></code></p>
+<p>The data from the documents that you uploaded in your Konfuzio project will be downloaded to a folder called <code class="docutils literal notranslate"><span class="pre">data_123</span></code>.</p>
+<p><em>Note</em>:
+Only Documents in the Training and Test sets are downloaded.</p>
+</section>
+<section id="install-the-ai-konfuzio-sdk-in-a-hosted-jupyter-environment">
+<h2>5. Install the <code class="docutils literal notranslate"><span class="pre">.[ai]</span></code> Konfuzio SDK in a hosted Jupyter environment<a class="headerlink" href="#install-the-ai-konfuzio-sdk-in-a-hosted-jupyter-environment" title="Permalink to this headline">¶</a></h2>
+<p>This procedure is not recommended, but documented here for completeness. Due to a limitation in Deepnote’s ability to receive input from the user, the SDK cannot be initialized in a Deepnote notebook. To work around this limitation, we need to install and authenticate access to the SDK in a Colab notebook and then import the credentials in the Deepnote project.</p>
+<p>If you don’t have one, <a class="reference external" href="https://deepnote.com/sign-up">create</a> an account. Once you are logged in, create a new project and choose the <code class="docutils literal notranslate"><span class="pre">Python</span> <span class="pre">3.8</span></code> environment.</p>
+<p>To change the environment, access the project settings by clicking on the gear icon on bottom left of the page:</p>
+<p>.. image:: /_static/img/deepnote-env.png
+:width: 300
+:alt: Deepnote environment settings
+:align: center</p>
+<p>Choose Python 3.8 from the dropdown menu:</p>
+<p>.. image:: /_static/img/deepnote-python.png
+:width: 300
+:alt: Deepnote python version
+:align: center</p>
+<p>Create a file called <code class="docutils literal notranslate"><span class="pre">.env</span></code> in the root of the Deepnote project. We will later use this file to store the credentials we obtained via the Colab notebook:</p>
+<p>.. image:: /_static/img/deepnote-newfile.png
+:width: 350
+:alt: Deepnote create file
+:align: center</p>
+<p>To install the SDK in Deepnote, run the following commands in a new Notebook cell:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>!git clone https://github.com/konfuzio-ai/konfuzio-sdk.git
+!cd konfuzio-sdk &amp;&amp; pip install .[ai]
+</pre></div>
+</div>
+<p>If the installation does not complete successfully, restart the Deepnote notebook and run the same cell again. It is not necessary to run the previous cells again. To restart the notebook press the refresh arrow at the top of the page:</p>
+<p>.. image:: /_static/img/deepnote-refresh.png
+:alt: Deepnote refresh
+:align: center</p>
+<p>Once the status changes back to <code class="docutils literal notranslate"><span class="pre">Ready</span></code>, run the cell with the <code class="docutils literal notranslate"><span class="pre">install</span></code> command again.</p>
+<p>As mentioned earlier, before we can use the SDK within Deepnote we need to obtain the authorization token using a Colab notebook instance. We now install the SDK in a Colab notebook and copy the credentials to the <code class="docutils literal notranslate"><span class="pre">.env</span></code> file in the Deepnote project.</p>
+<p>To install the SDK in Colab, run the following commands in a new <a class="reference external" href="https://colab.research.google.com/">Colab</a> notebook cell:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>!pip install konfuzio_sdk[ai]
+import konfuzio_sdk
+!konfuzio_sdk init
+</pre></div>
+</div>
+<p>Follow the instructions in the terminal to initialize the SDK. Once the SDK is initialized an <code class="docutils literal notranslate"><span class="pre">.env</span></code> file will exist your root Colab folder. This file contains the credentials to access the Konfuzio server. Open it, copy the content and paste it into the new file we created in the Deepnote project. The <code class="docutils literal notranslate"><span class="pre">.env</span></code> file should look like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">KONFUZIO_HOST</span> <span class="o">=</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">app</span><span class="o">.</span><span class="n">konfuzio</span><span class="o">.</span><span class="n">com</span>
+<span class="n">KONFUZIO_USER</span> <span class="o">=</span> <span class="n">your</span><span class="nd">@email</span>
+<span class="n">KONFUZIO_TOKEN</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mi">40</span><span class="o">-</span><span class="n">char</span> <span class="n">token</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>The Konfuzio SDK is now ready to be used in your Deepnote notebook. To test it, create a new cell and run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
+<span class="n">PROJECT_ID</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">your</span><span class="o">-</span><span class="n">project</span><span class="o">-</span><span class="nb">id</span><span class="o">&gt;</span>
+<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">PROJECT_ID</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If no error is raised, the SDK is correctly installed and authenticated.</p>
+<blockquote>
+<div><p><strong>TIP:</strong>
+Your project ID can be obtained by the web app URL when accessing Konfuzio from your browser. From your home page, navigate to <code class="docutils literal notranslate"><span class="pre">Projects</span></code> and pick the project you want to work with. Then look at the URL in your browser. Your should see something like <code class="docutils literal notranslate"><span class="pre">https://app.konfuzio.com/admin/server/project/&lt;project-id&gt;/change/</span></code> where <code class="docutils literal notranslate"><span class="pre">&lt;project-id&gt;</span></code> is your project ID.</p>
+</div></blockquote>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Helm und Nagel GmbH.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-D02B3QF8Z3"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-D02B3QF8Z3');
+</script>
+<script src="https://cmp.osano.com/16CVyMSbk3Iar1G3f/97ee6223-b0cb-4f8c-abd6-a25a0d6f6507/osano.js"></script>
+<script>window._nQc="89655017";</script>
+<script async src="https://serve.albacross.com/track.js"></script>
+<script data-jsd-embedded data-key="42374b9a-2f7b-46ec-ae7b-b79a89aa3dd9" data-base-url="https://jsd-widget.atlassian.com" src="https://jsd-widget.atlassian.com/assets/embed.js"></script>
+
+
+</body>
+</html>

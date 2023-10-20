@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Password Management &mdash; Konfuzio  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="shortcut icon" href="../../_static/full_green_square.png"/>
+    <link rel="canonical" href="https://dev.konfuzio.com/web/passwords/index.html" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/clipboard.min.js"></script>
+        <script src="../../_static/copybutton.js"></script>
+        <script src="https://unpkg.com/mermaid@9.4.0/dist/mermaid.min.js"></script>
+        <script>mermaid.initialize({startOnLoad:true});</script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Changelog" href="../changelog_app.html" />
+    <link rel="prev" title="Installation Guide" href="../on_premises.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Konfuzio
+            <img src="../../_static/docs__static_square_transparent_super_small.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Konfuzio SDK</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../sdk/index.html">What is the Konfuzio SDK?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sdk/get_started.html">Get Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sdk/tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sdk/explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sdk/sourcecode.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sdk/contribution.html">Contribution Guide</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/releases">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Server</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">What is the Konfuzio Server?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api-v3.html">REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../on_premises.html">Installation Guide</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Password Management</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#password-conventions">Password Conventions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#set-a-minimum-length">Set a Minimum Length</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#prevent-common-passwords">Prevent Common Passwords:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ensure-password-complexity">Ensure Password Complexity:</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#preventing-password-reusability">Preventing Password Reusability:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#password-expiry">Password Expiry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#summary">Summary</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog_app.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Document Validation UI</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dvui/index.html">What is the Konfuzio Document Validation UI?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dvui/explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dvui/sourcecode.html">Source Code</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/releases">Changelog</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Konfuzio</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Password Management</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/web/passwords/index.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="password-management">
+<h1>Password Management<a class="headerlink" href="#password-management" title="Permalink to this headline">¶</a></h1>
+<p>Before we begin, it’s important to mention that Konfuzio, an AI platform, provides a <a class="reference external" href="https://dev.konfuzio.com/web/on_premises.html#sso-via-openid-connect-oidc">Single Sign-On (SSO)</a> option.
+SSO can simplify password management, improve user experience, and potentially enhance security.</p>
+<p>With SSO, users only need to remember a single set of credentials, and this primary authentication can give users access to other services without needing to authenticate again.</p>
+<p>However, this tutorial focuses on how you can set up comprehensive password management, including password conventions, reusability, and expiry within the default Konfuzio framework, <a class="reference external" href="https://docs.djangoproject.com/en/4.2/releases/">Django</a>.</p>
+<section id="password-conventions">
+<h2>Password Conventions<a class="headerlink" href="#password-conventions" title="Permalink to this headline">¶</a></h2>
+<p>Django comes with a built-in <code class="docutils literal notranslate"><span class="pre">django.contrib.auth.password_validation</span></code> module that includes a range of password validation options. This can be customised to fit your specific password conventions.</p>
+<p>Here’s how you can do this:</p>
+<section id="set-a-minimum-length">
+<h3>Set a Minimum Length<a class="headerlink" href="#set-a-minimum-length" title="Permalink to this headline">¶</a></h3>
+<p>Django’s <code class="docutils literal notranslate"><span class="pre">MinimumLengthValidator</span></code> helps you set a minimum length for passwords. You can add this to your settings like so:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">AUTH_PASSWORD_VALIDATORS</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">{</span>
+        <span class="s1">&#39;NAME&#39;</span><span class="p">:</span> <span class="s1">&#39;django.contrib.auth.password_validation.MinimumLengthValidator&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;OPTIONS&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;min_length&#39;</span><span class="p">:</span> <span class="mi">9</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</section>
+<section id="prevent-common-passwords">
+<h3>Prevent Common Passwords:<a class="headerlink" href="#prevent-common-passwords" title="Permalink to this headline">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">CommonPasswordValidator</span></code> ensures that passwords aren’t among the most common ones. Add this to your settings:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">AUTH_PASSWORD_VALIDATORS</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">{</span>
+        <span class="s1">&#39;NAME&#39;</span><span class="p">:</span> <span class="s1">&#39;django.contrib.auth.password_validation.CommonPasswordValidator&#39;</span><span class="p">,</span>
+    <span class="p">},</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</section>
+<section id="ensure-password-complexity">
+<h3>Ensure Password Complexity:<a class="headerlink" href="#ensure-password-complexity" title="Permalink to this headline">¶</a></h3>
+<p>If you want to enforce certain complexities in your passwords, such as including a mix of letters, numbers, and special characters, you can use the <code class="docutils literal notranslate"><span class="pre">ComplexityValidator</span></code>.</p>
+</section>
+</section>
+<section id="preventing-password-reusability">
+<h2>Preventing Password Reusability:<a class="headerlink" href="#preventing-password-reusability" title="Permalink to this headline">¶</a></h2>
+<p>To prevent password reusability, you can use the <code class="docutils literal notranslate"><span class="pre">PasswordHistory</span></code> module from the <code class="docutils literal notranslate"><span class="pre">django-passwords</span></code> library. This module keeps a history of a user’s passwords and checks if a new password is already in the user’s password history when changing passwords.</p>
+<p>Here’s how to add it:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">PASSWORD_STORE</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;PASSWORD_HISTORY_COUNT&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>This stores the last five passwords of each user and prevents their reuse.</p>
+</section>
+<section id="password-expiry">
+<h2>Password Expiry<a class="headerlink" href="#password-expiry" title="Permalink to this headline">¶</a></h2>
+<p>For password expiry, you can use the <code class="docutils literal notranslate"><span class="pre">ExpiringPasswordStorage</span></code> from the <code class="docutils literal notranslate"><span class="pre">django-passwords</span></code> module. This allows you to set a maximum validity period for passwords, after which users are asked to change their password.</p>
+<p>Here’s how to add it:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">PASSWORD_STORE</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;PASSWORD_EXPIRY&#39;</span><span class="p">:</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">90</span><span class="p">),</span>  <span class="c1"># Passwords expire after 90 days</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="summary">
+<h2>Summary<a class="headerlink" href="#summary" title="Permalink to this headline">¶</a></h2>
+<p>In conclusion, Konfuzio smartly leverages the robust capabilities of Django, opting to stand on the shoulders of this established framework instead of creating its own password management procedures. This approach not only underscores the flexibility and adaptability of Konfuzio but also allows developers to utilize the tried-and-tested security procedures inherent within Django.</p>
+<p>The absence of built-in password management in Konfuzio should not be seen as a shortcoming, but rather a thoughtful design decision. It offers an opportunity for developers to delve into Django’s rich and secure functionalities for managing passwords, enabling the creation of more personalized, secure, and efficient systems.</p>
+<p>With this tutorial, you now have a roadmap to seamlessly integrate advanced password management strategies into your Django application, fully aligned with the stringent PS951 exam’s requirements. This knowledge empowers you to provide your users with a more secure, reliable, and user-friendly experience, enhancing the overall effectiveness of your application. Happy coding!</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../on_premises.html" class="btn btn-neutral float-left" title="Installation Guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../changelog_app.html" class="btn btn-neutral float-right" title="Changelog" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Helm und Nagel GmbH.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-D02B3QF8Z3"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-D02B3QF8Z3');
+</script>
+<script src="https://cmp.osano.com/16CVyMSbk3Iar1G3f/97ee6223-b0cb-4f8c-abd6-a25a0d6f6507/osano.js"></script>
+<script>window._nQc="89655017";</script>
+<script async src="https://serve.albacross.com/track.js"></script>
+<script data-jsd-embedded data-key="42374b9a-2f7b-46ec-ae7b-b79a89aa3dd9" data-base-url="https://jsd-widget.atlassian.com" src="https://jsd-widget.atlassian.com/assets/embed.js"></script>
+
+
+</body>
+</html>

@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+<meta content="Simple examples of how can the konfuzio_sdk package be used to get and post information on a project. These code snippets should provide a first insight for a quick start with the package." name="description" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Get Started &mdash; Konfuzio  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/full_green_square.png"/>
+    <link rel="canonical" href="https://dev.konfuzio.com/sdk/get_started.html" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/clipboard.min.js"></script>
+        <script src="../_static/copybutton.js"></script>
+        <script src="https://unpkg.com/mermaid@9.4.0/dist/mermaid.min.js"></script>
+        <script>mermaid.initialize({startOnLoad:true});</script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Tutorials" href="tutorials.html" />
+    <link rel="prev" title="What is the Konfuzio SDK?" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Konfuzio
+            <img src="../_static/docs__static_square_transparent_super_small.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Konfuzio SDK</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">What is the Konfuzio SDK?</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Get Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#install-sdk">Install SDK</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#sign-up-in-konfuzio-server">1. Sign up in Konfuzio Server</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#install-konfuzio-sdk-package">2. Install <code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span></code> package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#initialize-the-package">3. Initialize the package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#download-the-data">4. Download the data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#install-the-ai-konfuzio-sdk-in-a-hosted-jupyter-environment">5. Install the <code class="docutils literal notranslate"><span class="pre">.[ai]</span></code> Konfuzio SDK in a hosted Jupyter environment</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#example-usage">Example Usage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#project">Project</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#documents">Documents</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#upload-document">Upload Document</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#modify-document">Modify Document</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#update-document">Update Document</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#download-pdfs">Download PDFs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#download-pages-as-images">Download pages as images</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#download-bounding-boxes-of-the-characters">Download bounding boxes of the characters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#delete-document">Delete Document</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sourcecode.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contribution.html">Contribution Guide</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/releases">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../web/index.html">What is the Konfuzio Server?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/api-v3.html">REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/on_premises.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/passwords/index.html">Password Management</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/changelog_app.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Document Validation UI</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dvui/index.html">What is the Konfuzio Document Validation UI?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dvui/explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dvui/sourcecode.html">Source Code</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/releases">Changelog</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Konfuzio</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Get Started</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/sdk/get_started.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="get-started">
+<h1>Get Started<a class="headerlink" href="#get-started" title="Permalink to this headline">¶</a></h1>
+<section id="install-sdk">
+<h2>Install SDK<a class="headerlink" href="#install-sdk" title="Permalink to this headline">¶</a></h2>
+<p>To test our SDK you need to have an account in the Konfuzio Server and initialize the package before using it. If you
+are using PyCharm have a look at <a class="reference external" href="quickstart_pycharm.html">Quickstart with Pycharm</a>.</p>
+<section id="sign-up-in-konfuzio-server">
+<h3>1. Sign up in Konfuzio Server<a class="headerlink" href="#sign-up-in-konfuzio-server" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="https://app.konfuzio.com/accounts/signup/">Register for free</a> in the Konfuzio Server.</p>
+</section>
+<section id="install-konfuzio-sdk-package">
+<h3>2. Install <code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span></code> package<a class="headerlink" href="#install-konfuzio-sdk-package" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p>Install the Python package directly in your working directory with:</p>
+<p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">konfuzio_sdk</span></code></p>
+</li>
+<li><p>It is also possible to choose between the lightweight SDK and the SDK with the AI-related components (latter one is
+taking up more disk space). By default, the SDK is installed as a lightweight instance. To install the full instance (<code class="docutils literal notranslate"><span class="pre">.[ai]</span></code>), the one with AI-related components, run the following command:</p>
+<p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">konfuzio_sdk[ai]</span></code></p>
+<p>Currently, the full instance cannot be installed on MacOS machines with an ARM-based chip from the M-series. The <code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span></code> package can only be installed on MacOS on machines with an ARM chip if the lightweight instance is installed. However the Konfuzio SDK can be used on a hosted environment such as <a class="reference external" href="https://deepnote.com/">Deepnote</a>. Follow the instructions in <a class="reference external" href="#5-install-the-ai-konfuzio-sdk-in-a-hosted-jupyter-environment">section 5</a> of this document to install the SDK in a hosted Jupyter environment.</p>
+</li>
+</ul>
+<hr class="docutils" />
+<p><em>Notes</em>:</p>
+<ul class="simple">
+<li><p>Supported Python environments are 3.8, 3.9, 3.10, 3.11.</p></li>
+<li><p>Please use Python 3.8 if you plan to upload your AIs to a self-hosted Konfuzio Server environment.</p></li>
+<li><p>If you are not using a virtual environment, you may need to add the installation directory to your PATH.</p></li>
+<li><p>If you run this tutorial in Colab and experience any version compatibility issues when working with the SDK, restart
+the runtime and initialize the SDK once again; this will resolve the issue.</p></li>
+</ul>
+</section>
+<section id="initialize-the-package">
+<h3>3. Initialize the package<a class="headerlink" href="#initialize-the-package" title="Permalink to this headline">¶</a></h3>
+<p>After the installation, initialize the package in your working directory with:</p>
+<p><code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span> <span class="pre">init</span></code></p>
+<p>This will require your credentials to access the Konfuzio Server.
+At the end, one file will be created in your working directory: <code class="docutils literal notranslate"><span class="pre">.env</span></code>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">.env</span></code> file contains the credentials to access the app and should not become public.</p>
+</section>
+<section id="download-the-data">
+<h3>4. Download the data<a class="headerlink" href="#download-the-data" title="Permalink to this headline">¶</a></h3>
+<p>To download the data from your Konfuzio project you need to specify the Project ID.
+You can check your Project ID by selecting the project in the Projects tab in the Web App.
+The ID of the Project is shown in the URL. Suppose that your Project ID is 123:</p>
+<p><code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span> <span class="pre">export_project</span> <span class="pre">123</span></code></p>
+<p>The data from the documents that you uploaded in your Konfuzio project will be downloaded to a folder called <code class="docutils literal notranslate"><span class="pre">data_123</span></code>.</p>
+<p><em>Note</em>:
+Only Documents in the Training and Test sets are downloaded.</p>
+</section>
+<section id="install-the-ai-konfuzio-sdk-in-a-hosted-jupyter-environment">
+<h3>5. Install the <code class="docutils literal notranslate"><span class="pre">.[ai]</span></code> Konfuzio SDK in a hosted Jupyter environment<a class="headerlink" href="#install-the-ai-konfuzio-sdk-in-a-hosted-jupyter-environment" title="Permalink to this headline">¶</a></h3>
+<p>This procedure is not recommended, but documented here for completeness. Due to a limitation in Deepnote’s ability to receive input from the user, the SDK cannot be initialized in a Deepnote notebook. To work around this limitation, we need to install and authenticate access to the SDK in a Colab notebook and then import the credentials in the Deepnote project.</p>
+<p>If you don’t have one, <a class="reference external" href="https://deepnote.com/sign-up">create</a> an account. Once you are logged in, create a new project and choose the <code class="docutils literal notranslate"><span class="pre">Python</span> <span class="pre">3.8</span></code> environment.</p>
+<p>To change the environment, access the project settings by clicking on the gear icon on bottom left of the page:</p>
+<a class="reference internal image-reference" href="../_images/deepnote-env.png"><img alt="Deepnote environment settings" class="align-center" src="../_images/deepnote-env.png" style="width: 300px;" /></a>
+<p>Choose Python 3.8 from the dropdown menu:</p>
+<a class="reference internal image-reference" href="../_images/deepnote-python.png"><img alt="Deepnote python version" class="align-center" src="../_images/deepnote-python.png" style="width: 300px;" /></a>
+<p>Create a file called <code class="docutils literal notranslate"><span class="pre">.env</span></code> in the root of the Deepnote project. We will later use this file to store the credentials we obtained via the Colab notebook:</p>
+<a class="reference internal image-reference" href="../_images/deepnote-newfile.png"><img alt="Deepnote create file" class="align-center" src="../_images/deepnote-newfile.png" style="width: 350px;" /></a>
+<p>To install the SDK in Deepnote, run the following commands in a new Notebook cell:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>!git clone https://github.com/konfuzio-ai/konfuzio-sdk.git
+!cd konfuzio-sdk &amp;&amp; pip install .[ai]
+</pre></div>
+</div>
+<p>If the installation does not complete successfully, restart the Deepnote notebook and run the same cell again. It is not necessary to run the previous cells again. To restart the notebook press the refresh arrow at the top of the page:</p>
+<img alt="Deepnote refresh" class="align-center" src="../_images/deepnote-refresh.png" />
+<p>Once the status changes back to <code class="docutils literal notranslate"><span class="pre">Ready</span></code>, run the cell with the <code class="docutils literal notranslate"><span class="pre">install</span></code> command again.</p>
+<p>As mentioned earlier, before we can use the SDK within Deepnote we need to obtain the authorization token using a Colab notebook instance. We now install the SDK in a Colab notebook and copy the credentials to the <code class="docutils literal notranslate"><span class="pre">.env</span></code> file in the Deepnote project.</p>
+<p>To install the SDK in Colab, run the following commands in a new <a class="reference external" href="https://colab.research.google.com/">Colab</a> notebook cell:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>!pip install konfuzio_sdk[ai]
+import konfuzio_sdk
+!konfuzio_sdk init
+</pre></div>
+</div>
+<p>Follow the instructions in the terminal to initialize the SDK. Once the SDK is initialized an <code class="docutils literal notranslate"><span class="pre">.env</span></code> file will exist your root Colab folder. This file contains the credentials to access the Konfuzio server. Open it, copy the content and paste it into the new file we created in the Deepnote project. The <code class="docutils literal notranslate"><span class="pre">.env</span></code> file should look like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">KONFUZIO_HOST</span> <span class="o">=</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">app</span><span class="o">.</span><span class="n">konfuzio</span><span class="o">.</span><span class="n">com</span>
+<span class="n">KONFUZIO_USER</span> <span class="o">=</span> <span class="n">your</span><span class="nd">@email</span>
+<span class="n">KONFUZIO_TOKEN</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mi">40</span><span class="o">-</span><span class="n">char</span> <span class="n">token</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>The Konfuzio SDK is now ready to be used in your Deepnote notebook. To test it, create a new cell and run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
+<span class="n">PROJECT_ID</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">your</span><span class="o">-</span><span class="n">project</span><span class="o">-</span><span class="nb">id</span><span class="o">&gt;</span>
+<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">PROJECT_ID</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If no error is raised, the SDK is correctly installed and authenticated.</p>
+<blockquote>
+<div><dl class="simple">
+<dt><strong>TIP:</strong></dt><dd><p>Your project ID can be obtained by the web app URL when accessing Konfuzio from your browser. From your home page, navigate to <code class="docutils literal notranslate"><span class="pre">Projects</span></code> and pick the project you want to work with. Then look at the URL in your browser. Your should see something like <code class="docutils literal notranslate"><span class="pre">https://app.konfuzio.com/admin/server/project/&lt;project-id&gt;/change/</span></code> where <code class="docutils literal notranslate"><span class="pre">&lt;project-id&gt;</span></code> is your project ID.</p>
+</dd>
+</dl>
+</div></blockquote>
+</section>
+</section>
+<section id="example-usage">
+<h2>Example Usage<a class="headerlink" href="#example-usage" title="Permalink to this headline">¶</a></h2>
+<p>Make sure to set up your Project (so that you can retrieve the Project ID) using our <a class="reference external" href="https://help.konfuzio.com/tutorials/quickstart/index.html">Konfuzio Guide</a>.</p>
+<section id="project">
+<h3>Project<a class="headerlink" href="#project" title="Permalink to this headline">¶</a></h3>
+<p>Retrieve all information available for your Project:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The information will be stored in the folder that you defined to allocate the data in the package initialization.
+A subfolder will be created for each Document in the Project.</p>
+<p>Every time that there are changes in the Project in the Konfuzio Server, the local Project can be updated this way:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_project</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">update</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To make sure that your Project is loaded with all the latest data:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">,</span> <span class="n">update</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="documents">
+<h3>Documents<a class="headerlink" href="#documents" title="Permalink to this headline">¶</a></h3>
+<p>Every Document has a status indicating in what stage of processing it is. The code for the document status is:</p>
+<ul class="simple">
+<li><p>Queuing for OCR: 0</p></li>
+<li><p>Queuing for extraction: 1</p></li>
+<li><p>Done: 2</p></li>
+<li><p>Could not be processed: 111</p></li>
+<li><p>OCR in progress: 10</p></li>
+<li><p>Extraction in progress: 20</p></li>
+<li><p>Queuing for categorization: 3</p></li>
+<li><p>Categorization in progress: 30</p></li>
+<li><p>Queuing for splitting: 4</p></li>
+<li><p>Splitting in progress: 40</p></li>
+<li><p>Waiting for splitting confirmation: 41</p></li>
+</ul>
+<p>To access the Documents in the Project you can use:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">documents</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span>
+</pre></div>
+</div>
+<p>By default, it will get the Documents with training status (dataset_status = 2). The code for the dataset status is:</p>
+<ul class="simple">
+<li><p>None: 0</p></li>
+<li><p>Preparation: 1</p></li>
+<li><p>Training: 2</p></li>
+<li><p>Test: 3</p></li>
+<li><p>Excluded: 4</p></li>
+</ul>
+<p>The Test Documents can be accessed directly by:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">test_documents</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">test_documents</span>
+</pre></div>
+</div>
+<p>For more details, you can check out the <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#project">Project documentation</a>.</p>
+<p>By default, you get 4 files for each Document that contain information of the text, pages, annotation sets and
+annotations. You can see these files inside the Document folder.</p>
+<p><strong>document.txt</strong> - Contains the text of the Document. If OCR was used, it will correspond to the result from the OCR.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>                                                            x02   328927/10103/00104
+Abrechnung  der Brutto/Netto-Bezüge   für Dezember 2018                   22.05.2018 Bat:  1
+
+Personal-Nr.  Geburtsdatum ski Faktor  Ki,Frbtr.Konfession  ‚Freibetragjährl.! |Freibetrag mt! |DBA  iGleitzone  &#39;St.-Tg.  VJuUr. üb. |Url. Anspr. Url.Tg.gen.  |Resturlaub
+00104 150356 1  |     ‚ev                              30     400  3000       3400
+
+SV-Nummer       |Krankenkasse                       KK%®|PGRS Bars  jum.SV-Tg. Anw. Tage |UrlaubTage Krankh. Tg. Fehlz. Tage
+
+50150356B581 AOK  Bayern Die Gesundheitskas 157 101 1111 1 30
+
+                                             Eintritt   ‚Austritt     Anw.Std.  Urlaub Std.  |Krankh. Std. |Fehlz. Std.
+
+                                             170299  L L       l     L     l     l
+ -                                       +  Steuer-ID       IMrB?       Zeitlohn Sta.|Überstd.  |Bez. Sta.
+  Teststraße123
+   12345 Testort                                   12345678911           ı     ı     \
+                               B/N
+               Pers.-Nr.  00104        x02
+               Abt.-Nr. A12         10103          HinweisezurAbrechnung
+</pre></div>
+</div>
+<p><strong>pages.json5</strong> - Contains information of each Page of the Document (for example, their ids and sizes).</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
+  <span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">1923</span><span class="p">,</span>
+    <span class="s2">&quot;image&quot;</span><span class="p">:</span> <span class="s2">&quot;/page/show/1923/&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;number&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;original_size&quot;</span><span class="p">:</span> <span class="p">[</span>
+      <span class="mf">595.2</span><span class="p">,</span>
+      <span class="mf">841.68</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="p">[</span>
+      <span class="mi">1414</span><span class="p">,</span>
+      <span class="mi">2000</span>
+    <span class="p">]</span>
+  <span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p><strong>annotation_sets.json5</strong> - Contains information of each section in the Document (for example, their ids and Label Sets).</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
+  <span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">78730</span><span class="p">,</span>
+    <span class="s2">&quot;position&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;section_label&quot;</span><span class="p">:</span> <span class="mi">63</span>
+  <span class="p">},</span>
+  <span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">292092</span><span class="p">,</span>
+    <span class="s2">&quot;position&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;section_label&quot;</span><span class="p">:</span> <span class="mi">64</span>
+  <span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p><strong>annotations.json5</strong> - Contains information of each Annotation in the Document (for example, their Labels and Bounding
+Boxes).</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
+  <span class="p">{</span>
+    <span class="s2">&quot;accuracy&quot;</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
+    <span class="s2">&quot;bbox&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s2">&quot;bottom&quot;</span><span class="p">:</span> <span class="mf">44.369</span><span class="p">,</span>
+      <span class="s2">&quot;line_index&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+      <span class="s2">&quot;page_index&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+      <span class="s2">&quot;top&quot;</span><span class="p">:</span> <span class="mf">35.369</span><span class="p">,</span>
+      <span class="s2">&quot;x0&quot;</span><span class="p">:</span> <span class="mf">468.48</span><span class="p">,</span>
+      <span class="s2">&quot;x1&quot;</span><span class="p">:</span> <span class="mf">527.04</span><span class="p">,</span>
+      <span class="s2">&quot;y0&quot;</span><span class="p">:</span> <span class="mf">797.311</span><span class="p">,</span>
+      <span class="s2">&quot;y1&quot;</span><span class="p">:</span> <span class="mf">806.311</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;bboxes&quot;</span><span class="p">:</span> <span class="p">[</span>
+      <span class="p">{</span>
+        <span class="s2">&quot;bottom&quot;</span><span class="p">:</span> <span class="mf">44.369</span><span class="p">,</span>
+        <span class="s2">&quot;end_offset&quot;</span><span class="p">:</span> <span class="mi">169</span><span class="p">,</span>
+        <span class="s2">&quot;line_number&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="s2">&quot;offset_string&quot;</span><span class="p">:</span> <span class="s2">&quot;22.05.2018&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;offset_string_original&quot;</span><span class="p">:</span> <span class="s2">&quot;22.05.2018&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;page_index&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">&quot;start_offset&quot;</span><span class="p">:</span> <span class="mi">159</span><span class="p">,</span>
+        <span class="s2">&quot;top&quot;</span><span class="p">:</span> <span class="mf">35.369</span><span class="p">,</span>
+        <span class="s2">&quot;x0&quot;</span><span class="p">:</span> <span class="mf">468.48</span><span class="p">,</span>
+        <span class="s2">&quot;x1&quot;</span><span class="p">:</span> <span class="mf">527.04</span><span class="p">,</span>
+        <span class="s2">&quot;y0&quot;</span><span class="p">:</span> <span class="mf">797.311</span><span class="p">,</span>
+        <span class="s2">&quot;y1&quot;</span><span class="p">:</span> <span class="mf">806.311</span>
+      <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;created_by&quot;</span><span class="p">:</span> <span class="mi">59</span><span class="p">,</span>
+    <span class="s2">&quot;custom_offset_string&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+    <span class="s2">&quot;end_offset&quot;</span><span class="p">:</span> <span class="mi">169</span><span class="p">,</span>
+    <span class="s2">&quot;get_created_by&quot;</span><span class="p">:</span> <span class="s2">&quot;user@konfuzio.com&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get_revised_by&quot;</span><span class="p">:</span> <span class="s2">&quot;n/a&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">4419937</span><span class="p">,</span>
+    <span class="s2">&quot;is_correct&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+    <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="mi">867</span><span class="p">,</span>
+    <span class="s2">&quot;label_data_type&quot;</span><span class="p">:</span> <span class="s2">&quot;Date&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;label_text&quot;</span><span class="p">:</span> <span class="s2">&quot;Austellungsdatum&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;label_threshold&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span><span class="o">--</span>
+    <span class="s2">&quot;normalized&quot;</span><span class="p">:</span> <span class="s2">&quot;2018-05-22&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;offset_string&quot;</span><span class="p">:</span> <span class="s2">&quot;22.05.2018&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;offset_string_original&quot;</span><span class="p">:</span> <span class="s2">&quot;22.05.2018&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;revised&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+    <span class="s2">&quot;revised_by&quot;</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
+    <span class="s2">&quot;section&quot;</span><span class="p">:</span> <span class="mi">78730</span><span class="p">,</span>
+    <span class="s2">&quot;section_label_id&quot;</span><span class="p">:</span> <span class="mi">63</span><span class="p">,</span>
+    <span class="s2">&quot;section_label_text&quot;</span><span class="p">:</span> <span class="s2">&quot;Lohnabrechnung&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;selection_bbox&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s2">&quot;bottom&quot;</span><span class="p">:</span> <span class="mf">44.369</span><span class="p">,</span>
+      <span class="s2">&quot;line_index&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+      <span class="s2">&quot;page_index&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+      <span class="s2">&quot;top&quot;</span><span class="p">:</span> <span class="mf">35.369</span><span class="p">,</span>
+      <span class="s2">&quot;x0&quot;</span><span class="p">:</span> <span class="mf">468.48</span><span class="p">,</span>
+      <span class="s2">&quot;x1&quot;</span><span class="p">:</span> <span class="mf">527.04</span><span class="p">,</span>
+      <span class="s2">&quot;y0&quot;</span><span class="p">:</span> <span class="mf">797.311</span><span class="p">,</span>
+      <span class="s2">&quot;y1&quot;</span><span class="p">:</span> <span class="mf">806.311</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;start_offset&quot;</span><span class="p">:</span> <span class="mi">159</span><span class="p">,</span>
+    <span class="s2">&quot;translated_string&quot;</span><span class="p">:</span> <span class="n">null</span>
+  <span class="p">},</span>
+<span class="o">...</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p>When needed, upon calling <code class="docutils literal notranslate"><span class="pre">document.get_bbox()</span></code>, an additional file will be downloaded to the Document folder containing the Bounding Boxes information of the characters of the Document: <strong>bbox.zip</strong>. This file can be quite large, and therefore it will be compressed in the Zip format. The decompressed file is a JSON file where the keys correspond to the indices of the characters in the Document text. The value associated with each key contains the Bounding Box information of the character. For example, for character 1000 and 1002 we would have:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;1000&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;adv&quot;</span><span class="p">:</span> <span class="mf">2.58</span><span class="p">,</span>
+    <span class="s2">&quot;bottom&quot;</span><span class="p">:</span> <span class="mf">128.13</span><span class="p">,</span>
+    <span class="s2">&quot;doctop&quot;</span><span class="p">:</span> <span class="mf">118.13</span><span class="p">,</span>
+    <span class="s2">&quot;fontname&quot;</span><span class="p">:</span> <span class="s2">&quot;GlyphLessFont&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;height&quot;</span><span class="p">:</span> <span class="mf">10.0</span><span class="p">,</span>
+    <span class="s2">&quot;line_number&quot;</span><span class="p">:</span> <span class="mi">14</span><span class="p">,</span>
+    <span class="s2">&quot;object_type&quot;</span><span class="p">:</span> <span class="s2">&quot;char&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;page_number&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="mf">10.0</span><span class="p">,</span>
+    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;n&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;top&quot;</span><span class="p">:</span> <span class="mf">118.13</span><span class="p">,</span>
+    <span class="s2">&quot;upright&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;width&quot;</span><span class="p">:</span> <span class="mf">2.58</span><span class="p">,</span>
+    <span class="s2">&quot;x0&quot;</span><span class="p">:</span> <span class="mf">481.74</span><span class="p">,</span>
+    <span class="s2">&quot;x1&quot;</span><span class="p">:</span> <span class="mf">484.32</span><span class="p">,</span>
+    <span class="s2">&quot;y0&quot;</span><span class="p">:</span> <span class="mf">713.55</span><span class="p">,</span>
+    <span class="s2">&quot;y1&quot;</span><span class="p">:</span> <span class="mf">723.55</span>
+  <span class="p">},</span>
+  <span class="s2">&quot;1002&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;adv&quot;</span><span class="p">:</span> <span class="mf">2.64</span><span class="p">,</span>
+    <span class="s2">&quot;bottom&quot;</span><span class="p">:</span> <span class="mf">128.13</span><span class="p">,</span>
+    <span class="s2">&quot;doctop&quot;</span><span class="p">:</span> <span class="mf">118.13</span><span class="p">,</span>
+    <span class="s2">&quot;fontname&quot;</span><span class="p">:</span> <span class="s2">&quot;GlyphLessFont&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;height&quot;</span><span class="p">:</span> <span class="mf">10.0</span><span class="p">,</span>
+    <span class="s2">&quot;line_number&quot;</span><span class="p">:</span> <span class="mi">14</span><span class="p">,</span>
+    <span class="s2">&quot;object_type&quot;</span><span class="p">:</span> <span class="s2">&quot;char&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;page_number&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="mf">10.0</span><span class="p">,</span>
+    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;S&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;top&quot;</span><span class="p">:</span> <span class="mf">118.13</span><span class="p">,</span>
+    <span class="s2">&quot;upright&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;width&quot;</span><span class="p">:</span> <span class="mf">2.64</span><span class="p">,</span>
+    <span class="s2">&quot;x0&quot;</span><span class="p">:</span> <span class="mf">486.72</span><span class="p">,</span>
+    <span class="s2">&quot;x1&quot;</span><span class="p">:</span> <span class="mf">489.36</span><span class="p">,</span>
+    <span class="s2">&quot;y0&quot;</span><span class="p">:</span> <span class="mf">713.55</span><span class="p">,</span>
+    <span class="s2">&quot;y1&quot;</span><span class="p">:</span> <span class="mf">723.55</span>
+  <span class="p">},</span>
+<span class="o">//</span> <span class="o">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>After downloading these files, their paths will become available in the Project instance.</p>
+<p>You can get the path to the folder containing the Documents’ folders with:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_project</span><span class="o">.</span><span class="n">documents_folder</span>
+</pre></div>
+</div>
+<p>And you can get the path to the file with the Document text with:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span><span class="o">.</span><span class="n">txt_file_path</span>
+</pre></div>
+</div>
+<section id="upload-document">
+<span id="id1"></span><h4>Upload Document<a class="headerlink" href="#upload-document" title="Permalink to this headline">¶</a></h4>
+<p>Before you can upload a new file to your Project using the Konfuzio SDK, you must have completed the following steps:</p>
+<ol class="arabic simple">
+<li><p>Register for a Konfuzio account</p></li>
+<li><p>Create a Project on Konfuzio</p></li>
+<li><p>Install the Konfuzio SDK</p></li>
+</ol>
+<p>For detailed instructions on these preliminary steps, refer above to the <a class="reference external" href="https://dev.konfuzio.com/sdk/get_started.html#get-started">Get Started guide</a>.</p>
+<p>After completing the above steps, you can proceed with uploading a new file to your Project using the Konfuzio SDK. The
+files must be of types specified in the <a class="reference external" href="https://help.konfuzio.com/specification/supported_file_types/index.html">Supported File Types</a>.
+Here, we’re focusing on the <code class="docutils literal notranslate"><span class="pre">Document.from_file</span></code> method to create a <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#document">Konfuzio Document</a>.</p>
+<p>A Konfuzio Document is an object representing the file you upload, it will contain the OCR (Optical Character Recognition)
+information of the file once processed by Konfuzio’s server.</p>
+<section id="synchronous-and-asynchronous-upload">
+<h5>Synchronous and Asynchronous Upload<a class="headerlink" href="#synchronous-and-asynchronous-upload" title="Permalink to this headline">¶</a></h5>
+<p>You have two options for uploading your file: a synchronous method and an asynchronous method. The method is determined
+by the <code class="docutils literal notranslate"><span class="pre">sync</span></code> parameter in the <code class="docutils literal notranslate"><span class="pre">from_file</span></code> method.</p>
+<ol class="arabic">
+<li><p><strong>Synchronous upload (sync=True)</strong>: The file is uploaded to the Konfuzio servers, and the method waits for the
+file to be processed. Once done, it returns a Document object with the OCR information. This is useful if you want
+to start working with the Document immediately after the OCR processing is completed.</p>
+<p>Here’s an example of how to use the <code class="docutils literal notranslate"><span class="pre">from_file</span></code> method with <code class="docutils literal notranslate"><span class="pre">sync</span></code> set to <code class="docutils literal notranslate"><span class="pre">True</span></code>:</p>
+</li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span> <span class="o">=</span> <span class="n">Document</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">FILE_PATH</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">my_project</span><span class="p">,</span> <span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<ol class="arabic">
+<li><p><strong>Asynchronous upload (sync=False)</strong>: With this setting, the method immediately returns an empty Document object
+after initiating the upload. The OCR processing takes place in the background. This method is advantageous when
+uploading a large file or a large number of files, as it doesn’t require waiting for each file’s processing to complete.</p>
+<p>Here is how to use the asynchronous method:</p>
+</li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span> <span class="o">=</span> <span class="n">Document</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">FILE_PATH</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">my_project</span><span class="p">,</span> <span class="n">sync</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>After asynchronous upload, you can check the status of the Document processing using the <code class="docutils literal notranslate"><span class="pre">document.update()</span></code> method on
+the returned Document object. If the Document is ready, this method will update the Document object with the OCR information.</p>
+<p>It’s important to note that if the Document is not ready, you may need to call <code class="docutils literal notranslate"><span class="pre">document.update()</span></code> again at a later time.
+This could be done manually or by setting up a looping mechanism depending on your application’s workflow.</p>
+<p>To check if the document is ready and update it with the OCR information, you can implement a custom pulling strategy
+like this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+    <span class="n">document</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">document</span><span class="o">.</span><span class="n">ocr_ready</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">document</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">break</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For a more sophisticated pulling method for asynchronously uploaded Documents using the callback function, you can
+checkout our <span class="xref std std-ref">tutorial on how to use ngrok to receive callbacks from the Konfuzio Server</span>.</p>
+</section>
+<section id="timeout-parameter">
+<h5>Timeout Parameter<a class="headerlink" href="#timeout-parameter" title="Permalink to this headline">¶</a></h5>
+<p>When making a server request, there’s a default timeout value of 2 minutes. This means that if the server doesn’t respond
+within 2 minutes, the operation will stop waiting for a response and return an error. If you’re uploading a larger file,
+it might take more time to process, and the default timeout value might not be sufficient. In such a case, you can
+increase the timeout by setting the timeout parameter to a higher value.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span> <span class="o">=</span> <span class="n">Document</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">FILE_PATH</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">my_project</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># 300 seconds timeout</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="modify-document">
+<h4>Modify Document<a class="headerlink" href="#modify-document" title="Permalink to this headline">¶</a></h4>
+<p>If you would like to use the SDK to modify some Document’s meta-data like the dataset status or the assignee, you can do
+it like this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span><span class="o">.</span><span class="n">assignee</span> <span class="o">=</span> <span class="n">ASSIGNEE_ID</span>
+<span class="n">document</span><span class="o">.</span><span class="n">dataset_status</span> <span class="o">=</span> <span class="mi">2</span>
+
+<span class="n">document</span><span class="o">.</span><span class="n">save_meta_data</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="update-document">
+<h4>Update Document<a class="headerlink" href="#update-document" title="Permalink to this headline">¶</a></h4>
+<p>If there are changes in the Document in the Konfuzio Server, you can update your local version of the Document with:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>If a Document is part of the Training or Test set, you can also update it by updating the entire Project via
+<code class="docutils literal notranslate"><span class="pre">project.get(update=True)</span></code>. However, for Projects with many Documents it can be faster to update only the relevant Documents.</p>
+</section>
+<section id="download-pdfs">
+<h4>Download PDFs<a class="headerlink" href="#download-pdfs" title="Permalink to this headline">¶</a></h4>
+<p>To get the PDFs of the Documents, you can use <code class="docutils literal notranslate"><span class="pre">get_file()</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">document</span> <span class="ow">in</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">:</span>
+    <span class="n">document</span><span class="o">.</span><span class="n">get_file</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This will download the OCR version of the Document which contains the text, the Bounding Boxes
+information of the characters and the image of the Document.</p>
+<p>In the Document folder, you will see a new file with the original name followed by “_ocr”.</p>
+<p>If you want to original version of the Document (without OCR) you can use <code class="docutils literal notranslate"><span class="pre">ocr_version=False</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">document</span> <span class="ow">in</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">:</span>
+    <span class="n">document</span><span class="o">.</span><span class="n">get_file</span><span class="p">(</span><span class="n">ocr_version</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In the Document folder, you will see a new file with the original name.</p>
+</section>
+<section id="download-pages-as-images">
+<h4>Download pages as images<a class="headerlink" href="#download-pages-as-images" title="Permalink to this headline">¶</a></h4>
+<p>To get the Pages of the Document as png images, you can use <code class="docutils literal notranslate"><span class="pre">get_images()</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">document</span> <span class="ow">in</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">:</span>
+    <span class="n">document</span><span class="o">.</span><span class="n">get_images</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>You will get one png image named “page_number_of_page.png” for each Page in the Document.</p>
+</section>
+<section id="download-bounding-boxes-of-the-characters">
+<h4>Download bounding boxes of the characters<a class="headerlink" href="#download-bounding-boxes-of-the-characters" title="Permalink to this headline">¶</a></h4>
+<p>To get the Bounding Boxes information of the characters, you can use <code class="docutils literal notranslate"><span class="pre">get_bbox()</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">document</span> <span class="ow">in</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">:</span>
+    <span class="n">document</span><span class="o">.</span><span class="n">get_bbox</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>You will get a file named “bbox.zip” in the Document folder. This file contains the “bbox.json5” file. You can find the
+path to the zip file in the Document instance with:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span><span class="o">.</span><span class="n">bbox_file_path</span>
+</pre></div>
+</div>
+</section>
+<section id="delete-document">
+<h4>Delete Document<a class="headerlink" href="#delete-document" title="Permalink to this headline">¶</a></h4>
+<p>To locally delete a Document, you can use:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The Document will be deleted from your local data folder, but it will remain in the Konfuzio Server.
+If you want to get it again you can update the Project.</p>
+<p>If you would like to delete a Document in the remote server you can simply use the <code class="docutils literal notranslate"><span class="pre">Document.delete</span></code> method the <code class="docutils literal notranslate"><span class="pre">delete_online</span></code> setting set to <code class="docutils literal notranslate"><span class="pre">True</span></code>. You can only delete Documents with a dataset status of None (0). <strong>Be careful!</strong> Once the Document is deleted online, we will have no way of recovering it.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">delete_online</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If <code class="docutils literal notranslate"><span class="pre">delete_online</span></code> is set to False (the default), the Document will only be deleted on your local machine, and will be
+reloaded next time you load the Project, or if you run the <code class="docutils literal notranslate"><span class="pre">Project.init_or_update_document</span></code> method directly.</p>
+</section>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="What is the Konfuzio SDK?" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="tutorials.html" class="btn btn-neutral float-right" title="Tutorials" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Helm und Nagel GmbH.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-D02B3QF8Z3"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-D02B3QF8Z3');
+</script>
+<script src="https://cmp.osano.com/16CVyMSbk3Iar1G3f/97ee6223-b0cb-4f8c-abd6-a25a0d6f6507/osano.js"></script>
+<script>window._nQc="89655017";</script>
+<script async src="https://serve.albacross.com/track.js"></script>
+<script data-jsd-embedded data-key="42374b9a-2f7b-46ec-ae7b-b79a89aa3dd9" data-base-url="https://jsd-widget.atlassian.com" src="https://jsd-widget.atlassian.com/assets/embed.js"></script>
+
+
+</body>
+</html>

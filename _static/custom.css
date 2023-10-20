@@ -1,0 +1,41 @@
+.wy-side-nav-search {
+    background-color: transparent !important;
+}
+
+html.writer-html4 .rst-content dl:not(.docutils)>dt, html.writer-html5 .rst-content dl[class]:not(.option-list):not(.field-list):not(.footnote):not(.glossary):not(.simple)>dt{
+    display: table;
+    margin: 6px 0;
+    font-size: 90%;
+    line-height: normal;
+    background: transparent !important;
+    color: #2980b9;
+    border-top: 3px solid #44b78b !important;
+    padding: 6px;
+    position: relative;
+}
+
+.wy-menu-vertical header, .wy-menu-vertical p.caption {
+    color: #3fb78d;
+}
+
+.wy-nav-top {
+    background: #3fb78d;
+}
+
+/* video style start */
+.video-container {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%;
+  margin: 15px 0px;
+}
+.video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+/* video style end */
+

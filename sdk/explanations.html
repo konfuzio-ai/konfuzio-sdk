@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+<meta content="Use this section for explaining how the software works, without completing a specific task (see Tutorials)." name="description" />
+<meta content="Documentation of the coordinates system of the bounding boxes used in Konfuzio and some simple" name="description" />
+<meta content="Documentation of the ExtractionAI merge logic." name="description" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Explanations &mdash; Konfuzio  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/full_green_square.png"/>
+    <link rel="canonical" href="https://dev.konfuzio.com/sdk/explanations.html" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/clipboard.min.js"></script>
+        <script src="../_static/copybutton.js"></script>
+        <script src="https://unpkg.com/mermaid@9.4.0/dist/mermaid.min.js"></script>
+        <script>mermaid.initialize({startOnLoad:true});</script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="API Reference" href="sourcecode.html" />
+    <link rel="prev" title="Barcode Scanner with zxing-cpp" href="tutorials/barcode-scanner/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Konfuzio
+            <img src="../_static/docs__static_square_transparent_super_small.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Konfuzio SDK</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">What is the Konfuzio SDK?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="get_started.html">Get Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Explanations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#data-layer-concepts">Data Layer Concepts</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#project-concept">Project</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#document">Document</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#category-concept">Category</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#page">Page</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#category-annotation">Category Annotation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#span-concept">Span</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#annotation">Annotation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#annotation-set-concept">Annotation Set</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#label-concept">Label</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#label-set">Label Set</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#bbox-concept">Bbox</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#data-validation-rules">Data Validation Rules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#initializing-a-project-with-the-data-validation-rules-enabled">Initializing a Project with the Data Validation Rules enabled</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#document-validation-rules">Document Validation Rules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#annotation-validation">Annotation Validation Rules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#span-validation">Span Validation Rules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#bbox-validation">Bbox Validation Rules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#initializing-a-project-with-the-data-validation-rules-disabled">Initializing a Project with the Data Validation Rules disabled</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#id29">Architecture SDK to Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#directory-structure">Directory Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#coordinates-system">Coordinates System</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#horizontal-merge">Horizontal Merge</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#vertical-merge">Vertical Merge</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#horizontal-and-vertical-merge-with-the-paragraph-and-sentence-tokenizers">Horizontal and Vertical Merge with the Paragraph and Sentence Tokenizers</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="sourcecode.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contribution.html">Contribution Guide</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/releases">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../web/index.html">What is the Konfuzio Server?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/api-v3.html">REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/on_premises.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/passwords/index.html">Password Management</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/changelog_app.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Document Validation UI</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dvui/index.html">What is the Konfuzio Document Validation UI?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dvui/explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dvui/sourcecode.html">Source Code</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/releases">Changelog</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Konfuzio</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Explanations</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/sdk/explanations.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="explanations">
+<h1>Explanations<a class="headerlink" href="#explanations" title="Permalink to this headline">¶</a></h1>
+<p><em>Explanation is discussion that clarifies and illuminates a particular topic.</em>
+<em>Explanation is understanding-oriented.</em></p>
+<section id="data-layer-concepts">
+<h2>Data Layer Concepts<a class="headerlink" href="#data-layer-concepts" title="Permalink to this headline">¶</a></h2>
+<p>The relations between all major Data Layer concepts of the SDK are
+the following: a <a class="reference external" href="#project-concept">Project</a> consists of multiple <a class="reference external" href="#document-concept">Documents</a>. Each one of the Documents consists of
+the <a class="reference external" href="#page-concept">Pages</a> and belongs to a certain <a class="reference external" href="#category-concept">Category</a>. Text in a Document can be marked by
+<a class="reference external" href="#annotation-concept">Annotations</a>, which can be multi-line, and where each continuous piece of text contained into an
+Annotation is a <a class="reference external" href="#span-concept">Span</a>. Each Annotation is located within a certain <a class="reference external" href="#bbox-concept">Bbox</a> and is defined by a
+<a class="reference external" href="#label-concept">Label</a> that is a part of one of the <a class="reference external" href="#label-set-concept">Label Sets</a>. An <a class="reference external" href="#annotation-set-concept">Annotation Set</a> is a list of Annotations
+that share a Label Set.</p>
+<p>For more detailed information on each concept, follow the link on the concept’s name which leads to the automatically
+generated documentation.</p>
+<section id="project-concept">
+<span id="id1"></span><h3>Project<a class="headerlink" href="#project-concept" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="sourcecode.html#project">Project</a> is essentially a dataset that contains Documents
+belonging to different Categories or not having any Category assigned. To initialize it, call <code class="docutils literal notranslate"><span class="pre">Project(id_=YOUR_PROJECT_ID)</span></code>.</p>
+<p>The Project can also be accessed via the Smartview, with URL typically looking like
+<a class="reference external" href="https://YOUR_HOST/admin/server/document/?project=YOUR_PROJECT_ID">https://YOUR_HOST/admin/server/document/?project=YOUR_PROJECT_ID</a>.</p>
+<p>If you have made some local changes to the Project and want to return to the initial version available at the server, or
+if you want to fetch the updates from the server, use the argument <code class="docutils literal notranslate"><span class="pre">update=True</span></code>.</p>
+<p>Here are the some of properties and methods of the Project you might need when working with the SDK:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">project.documents</span></code> – training Documents within the Project;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">project.test_documents</span></code> – test Documents within the Project;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">project.get_category_by_id(YOUR_CATEGORY_ID).documents()</span></code> – Documents filtered by a Category of your choice;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">project.get_document_by_id(YOUR_DOCUMENT_ID)</span></code> – access a particular Document from the Project if you know its ID.</p></li>
+</ul>
+</section>
+<section id="document">
+<span id="document-concept"></span><h3>Document<a class="headerlink" href="#document" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="sourcecode.html#document">Document</a> is one of the files that constitute a Project. It
+consists of Pages and can belong to a certain Category.</p>
+<p>A Document can be accessed by <code class="docutils literal notranslate"><span class="pre">project.get_document_by_id(YOUR_DOCUMENT_ID)</span></code> when its ID is known to you; otherwise, it
+is possible to iterate through the output of <code class="docutils literal notranslate"><span class="pre">project.documents</span></code> (or <code class="docutils literal notranslate"><span class="pre">test_documents</span></code>/<code class="docutils literal notranslate"><span class="pre">_documents</span></code>) to see which
+Documents are available and what IDs they have.</p>
+<p>The Documents can also be accessed via the Smartview, with URL typically looking like
+<a class="reference external" href="https://YOUR_HOST/projects/PROJECT_ID/docs/DOCUMENT_ID/bbox-annotations/">https://YOUR_HOST/projects/PROJECT_ID/docs/DOCUMENT_ID/bbox-annotations/</a>.</p>
+<p>Here are some of the properties and methods of the Document you might need when working with the SDK:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">document.id_</span></code> – get an ID of the Document;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">document.status</span></code> – get the status of the Document in the pipeline. The status can be one of the following:</p>
+<ul>
+<li><p>Queuing for OCR: 0</p></li>
+<li><p>Queuing for extraction: 1</p></li>
+<li><p>Done: 2</p></li>
+<li><p>Could not be processed: 111</p></li>
+<li><p>OCR in progress: 10</p></li>
+<li><p>Extraction in progress: 20</p></li>
+<li><p>Queuing for categorization: 3</p></li>
+<li><p>Categorization in progress: 30</p></li>
+<li><p>Queuing for splitting: 4</p></li>
+<li><p>Splitting in progress: 40</p></li>
+<li><p>Waiting for splitting confirmation: 41</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">document.dataset_status</span></code> – get the dataset status of the Document. The dataset status can be one of the following:</p>
+<ul>
+<li><p>None: 0</p></li>
+<li><p>Preparation: 1</p></li>
+<li><p>Training: 2</p></li>
+<li><p>Test: 3</p></li>
+<li><p>Excluded: 4</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">document.text</span></code> – get a full text of the Document;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">document.pages()</span></code> – a list of Pages in the Document;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">document.update()</span></code> – download a newer version of the Document from the Server in case you have made some changes in
+the Smartview;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">document.category()</span></code> – get a Category the Document belongs to;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">document.get_images()</span></code> – download PNG images of the Pages in the Document; can be used if you wish to use the visual
+data for training your own models, for example;</p></li>
+</ul>
+</section>
+<section id="category-concept">
+<span id="id4"></span><h3>Category<a class="headerlink" href="#category-concept" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="sourcecode.html#category">Category</a> is a group of Documents united by common feature or type, i.e. invoice or receipt.</p>
+<p>To see all Categories in the Project, you can use <code class="docutils literal notranslate"><span class="pre">project.categories</span></code>.
+To find a Category the Document belongs to, you can use <code class="docutils literal notranslate"><span class="pre">document.category</span></code>.
+To get <code class="docutils literal notranslate"><span class="pre">documents</span></code> or <code class="docutils literal notranslate"><span class="pre">test_documents</span></code> under the Category, use <code class="docutils literal notranslate"><span class="pre">category.documents()</span></code> or <code class="docutils literal notranslate"><span class="pre">category.test_documents()</span></code> respectively.</p>
+<p>You can also observe all Categories available in the Project via the Smartview: they are listed on the Project’s page in the menu on the right.</p>
+</section>
+<section id="page">
+<span id="page-concept"></span><h3>Page<a class="headerlink" href="#page" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="sourcecode.html#page">Page</a> is a constituent part of the Document. Here are some of the properties and methods of the Page you might need when working with the SDK:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">page.text</span></code> – get text of the Page;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">page.spans()</span></code> – get a list of Spans on the Page;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">page.number</span></code> – get Page’s number, starting from 1.</p></li>
+</ul>
+</section>
+<section id="category-annotation">
+<span id="category-annotation-concept"></span><h3>Category Annotation<a class="headerlink" href="#category-annotation" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="sourcecode.html#category-annotation">Category Annotation</a> defines a Category of a Page or a Document. There can be
+more than one Category Annotation per Document and per Page; Category Annotations typically come with different
+confidence levels.</p>
+<p>To get a Category Annotation of a particular Category for the Page, use <code class="docutils literal notranslate"><span class="pre">Page.get_category_annotation(category)</span></code>.</p>
+<p>To get a maximum-confidence Category Annotation for a Page, use <code class="docutils literal notranslate"><span class="pre">Page.maximum_confidence_category_annotation</span></code>.</p>
+<p>To see a maximum-confidence Category Annotation for a Document, use <code class="docutils literal notranslate"><span class="pre">Document.maximum_confidence_category_annotation</span></code>.</p>
+</section>
+<section id="span-concept">
+<span id="id8"></span><h3>Span<a class="headerlink" href="#span-concept" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="sourcecode.html#span">Span</a> is a part of the Document’s text without the line breaks. Each Span has <code class="docutils literal notranslate"><span class="pre">start_offset</span></code> and <code class="docutils literal notranslate"><span class="pre">end_offset</span></code> denoting its starting and finishing characters in <code class="docutils literal notranslate"><span class="pre">document.text</span></code>.</p>
+<p>To access Span’s text, you can call <code class="docutils literal notranslate"><span class="pre">span.offset_string</span></code>. We are going to use it later when collecting the Spans from the Documents.</p>
+</section>
+<section id="annotation">
+<span id="annotation-concept"></span><h3>Annotation<a class="headerlink" href="#annotation" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="sourcecode.html#annotation">Annotation</a> is a combination of Spans that has a certain Label (i.e. Issue_Date, Auszahlungsbetrag)
+assigned to it. They typically denote a certain type of entity that is found in the text. Annotations can be predicted
+by AI or be human-added.</p>
+<p>Annotations always have to belong to an Annotation Set with a Label Set compatible with the Annotation’s Label.</p>
+<p>Like Spans, Annotations also have <code class="docutils literal notranslate"><span class="pre">start_offset</span></code> and <code class="docutils literal notranslate"><span class="pre">end_offset</span></code> denoting the starting and the ending characters. To
+access the text under the Annotation, call <code class="docutils literal notranslate"><span class="pre">annotation.offset_string</span></code>.</p>
+<p>To see the Annotation in the Smartview, you can call <code class="docutils literal notranslate"><span class="pre">annotation.get_link()</span></code> and open the returned URL.</p>
+</section>
+<section id="annotation-set-concept">
+<span id="id11"></span><h3>Annotation Set<a class="headerlink" href="#annotation-set-concept" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="sourcecode.html#annotation-set">Annotation Set</a> is a group of Annotations united by Labels belonging to the same Label Set.
+To retrieve all that Annotation Sets of a Document call <code class="docutils literal notranslate"><span class="pre">document.annotation_sets()</span></code>. To see Annotations in the set,
+call <code class="docutils literal notranslate"><span class="pre">annotation_set.annotations()</span></code>.</p>
+<p>Every Document has one unique default Annotation Set, which can be retrieved with <code class="docutils literal notranslate"><span class="pre">document.default_annotation_set</span></code>. This
+Annotation Set’s Label Set is the Document’s Category default Label Set and has the same name and ID as the Category. It
+can be used to store all Annotations that don’t need to be organized into a separate Annotation Set.</p>
+<p>To check what Annotation Labels can be added to an Annotation Set, you can check with <code class="docutils literal notranslate"><span class="pre">annotation_set.label_set.labels</span></code>.</p>
+<p>Documents also have a unique Annotation Set for NO LABEL Annotations, which can be retrieved with <code class="docutils literal notranslate"><span class="pre">document.no_label_annotation_set</span></code>.</p>
+</section>
+<section id="label-concept">
+<span id="id13"></span><h3>Label<a class="headerlink" href="#label-concept" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="sourcecode.html#label">Label</a> defines what the Annotation is about (i.e. Issue_Date,
+Auszahlungsbetrag). Labels are grouped into Label Sets. To see Annotations with a current Label,
+call <code class="docutils literal notranslate"><span class="pre">label.annotations()</span></code> .</p>
+</section>
+<section id="label-set">
+<span id="label-set-concept"></span><h3>Label Set<a class="headerlink" href="#label-set" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="sourcecode.html#label-set">Label Set</a> is a group of related Labels. A Label Set can belong to different Categories and
+be used to create one or more <a class="reference external" href="#annotation-set-concept">Annotation Sets</a>, depending on the Label Set.</p>
+<p>Every Category has a default Label Set, which can be retrieved with <code class="docutils literal notranslate"><span class="pre">category.default_label_set</span></code>. This Label Set is used
+to create the default Annotation Set for each Document in the Category.</p>
+<p>Label Sets have an attribute, <code class="docutils literal notranslate"><span class="pre">label_set.has_multiple_annotation_sets</span></code>, which determines whether more than one Annotation Set
+can be created per Document. If <code class="docutils literal notranslate"><span class="pre">has_multiple_annotation_sets</span></code> is <code class="docutils literal notranslate"><span class="pre">False</span></code>, then only a single Annotation Set with the
+Label Set can be created per Document.</p>
+</section>
+<section id="bbox-concept">
+<span id="id16"></span><h3>Bbox<a class="headerlink" href="#bbox-concept" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="sourcecode.html#bbox">Bbox</a> is used to represent an area of a Page, defined by the coordinates of the bottom left corner
+and the top right corner of the bounding box. Check out our <a class="reference external" href="#coordinates-system">coordinate system explainer</a> for more
+details.</p>
+<p>You can access all character Bboxes of the Document by using <code class="docutils literal notranslate"><span class="pre">document.bboxes</span></code>. A Bbox can also be associated with a single Span, or with all Spans within an Annotation. To obtain the Bbox associate with a single Span, call <code class="docutils literal notranslate"><span class="pre">span.bbox()</span></code>. To obtain the Bbox wrapping all Spans in an Annotation, call <code class="docutils literal notranslate"><span class="pre">annotation.bbox()</span></code>. This should not be
+confused with <code class="docutils literal notranslate"><span class="pre">Annotation.selection_bbox</span></code>, which is an attribute storing the Bbox a user has selected in the Smartview when creating the Annotation.</p>
+<p>The following image shows a bounding box with red border, which is retrieved with <code class="docutils literal notranslate"><span class="pre">Annotation.selection_bbox</span></code> , and a bounding box highlighted in green, which is retrieved with <code class="docutils literal notranslate"><span class="pre">Annotation.bbox()</span></code>:</p>
+<a class="reference internal image-reference" href="../_images/bbox_selection_bbox.png"><img alt="../_images/bbox_selection_bbox.png" class="align-center" src="../_images/bbox_selection_bbox.png" style="width: 150px;" /></a>
+</section>
+</section>
+<section id="data-validation-rules">
+<h2>Data Validation Rules<a class="headerlink" href="#data-validation-rules" title="Permalink to this headline">¶</a></h2>
+<p>Konfuzio automatically applies a set of rules for validating data within a <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#project">Project</a>.
+Data Validation Rules ensure that Training and Test data is consistent and well formed for training an
+<a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#extraction-ai">Extraction AI</a> with Konfuzio.</p>
+<p>In general, if a Document fails any of the checks described in the next sections, it will not be possible to train an
+AI with that Document.</p>
+<p>More specifically:</p>
+<ul class="simple">
+<li><p>If a Document fails any of the checks described in the <a class="reference external" href="#bbox-validation">Bbox Validation Rules</a> section, it
+will not be possible to initialize the Project as a Python object (such as with
+<code class="docutils literal notranslate"><span class="pre">project</span> <span class="pre">=</span> <span class="pre">Project(YOUR_PROJECT_ID)</span></code>), and a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> will be raised. All other Documents in the Project will be
+able to be initialized.</p></li>
+<li><p>If a Document fails any of the checks described in the sections
+<a class="reference external" href="#annotation-validation">Annotation Validation Rules</a> and <a class="reference external" href="#span-validation">Span Validation Rules</a>, it
+will not be possible to retrieve the Annotations (including their Spans) that fail the specific checks (such as with
+<code class="docutils literal notranslate"><span class="pre">annotation</span> <span class="pre">=</span> <span class="pre">document.get_annotation_by_id(YOUR_ANNOTATION_ID)</span></code>), and a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> will be raised. All other
+Annotations in the Document will be retrievable.</p></li>
+</ul>
+<section id="initializing-a-project-with-the-data-validation-rules-enabled">
+<h3>Initializing a Project with the Data Validation Rules enabled<a class="headerlink" href="#initializing-a-project-with-the-data-validation-rules-enabled" title="Permalink to this headline">¶</a></h3>
+<p>By default, any <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#project">Project</a> has the Data Validation Rules enabled, so nothing
+special needs to be done to enable it.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
+
+<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>  <span class="c1"># all the data in this Project will be validated</span>
+</pre></div>
+</div>
+</section>
+<section id="document-validation-rules">
+<h3>Document Validation Rules<a class="headerlink" href="#document-validation-rules" title="Permalink to this headline">¶</a></h3>
+<p>A <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#document">Document</a> passes the Data Validation Rules only if all the
+contained Annotations, Spans and Bboxes pass the Data Validation Rules.
+If at least one Annotation, Span, or Bbox within a Document fails one of the following checks, the entire Document is
+marked as unsuitable for training an Extraction AI.</p>
+</section>
+<section id="annotation-validation">
+<span id="id21"></span><h3>Annotation Validation Rules<a class="headerlink" href="#annotation-validation" title="Permalink to this headline">¶</a></h3>
+<p>An <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#annotation">Annotation</a> passes the Data Validation Rules only if:</p>
+<ol class="arabic simple">
+<li><p>The Annotation is not from a Category different from the Document’s Category</p></li>
+<li><p>The Annotation is not entirely overlapping with another Annotation with the same Label</p>
+<ul class="simple">
+<li><p>It implies that partial overlaps with same Labels are allowed</p></li>
+<li><p>It implies that full overlaps with different Labels are allowed</p></li>
+</ul>
+</li>
+<li><p>The Annotation has at least one Span</p></li>
+</ol>
+<p>Please note that the Annotation Validation Rules are indifferent about the values of <code class="docutils literal notranslate"><span class="pre">Annotation.is_correct</span></code> or <code class="docutils literal notranslate"><span class="pre">Annotation.revised</span></code>.
+For more information about what these boolean values mean, see <a class="reference external" href="https://help.konfuzio.com/modules/annotations/index.html">Konfuzio Server - Annotations</a>.</p>
+</section>
+<section id="span-validation">
+<span id="id23"></span><h3>Span Validation Rules<a class="headerlink" href="#span-validation" title="Permalink to this headline">¶</a></h3>
+<p>A <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#span">Span</a> passes the Data Validation Rules only if:</p>
+<ol class="arabic simple">
+<li><p>The Span contains non-empty text (the start offset must be strictly greater than the end offset)</p></li>
+<li><p>The Span is contained within a single line of text (must not be distributed across multiple lines)</p></li>
+</ol>
+</section>
+<section id="bbox-validation">
+<span id="id25"></span><h3>Bbox Validation Rules<a class="headerlink" href="#bbox-validation" title="Permalink to this headline">¶</a></h3>
+<p>A <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#bbox">Bbox</a> passes the Data Validation Rules only if:</p>
+<ol class="arabic simple">
+<li><p>The Bbox has non-negative width and height (zero is allowed for compatibility reasons with many OCR engines)</p></li>
+<li><p>The Bbox is entirely contained within the bounds of a Page</p></li>
+<li><p>The character that is mapped by the Bbox must correspond to the text in the Document</p></li>
+</ol>
+</section>
+<section id="initializing-a-project-with-the-data-validation-rules-disabled">
+<h3>Initializing a Project with the Data Validation Rules disabled<a class="headerlink" href="#initializing-a-project-with-the-data-validation-rules-disabled" title="Permalink to this headline">¶</a></h3>
+<p>By default, any <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#project">Project</a> has the Data Validation Rules enabled.</p>
+<p>A possible reason for choosing to disable the Data Validation Rules that come with the Konfuzio SDK, is that an expert user
+wants to define a custom data structure or training pipeline which violates some assumptions normally present in Konfuzio
+Extraction AIs and pipelines.
+If you don’t want to validate your data, you should initialize the Project with <code class="docutils literal notranslate"><span class="pre">strict_data_validation=False</span></code>.</p>
+<p>We highly recommend to keep the Data Validation Rules enabled at all times, as it ensures that Training and Test data
+is consistent for training an Extraction AI. Disabling the Data Validation Rules and training an
+<a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#extraction-ai">Extraction AI</a> with potentially duplicated, malformed,
+or inconsistent data can <strong>decrease the quality of an Extraction AI</strong>. Only disable them if you know what you are doing.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">,</span> <span class="n">strict_data_validation</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id29">
+<h2>Architecture SDK to Server<a class="headerlink" href="#id29" title="Permalink to this headline">¶</a></h2>
+<p>The following chart is automatically created by the version of the diagram on the branch master, see <a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/tests/SDK%20and%20Server%20Integration.drawio">source</a>.</p>
+<p>If you hover over the image you can zoom or use the full page mode.</p>
+<p><span class="raw-html-m2r"><div class="mxgraph" style="max-width:100%;border:1px solid transparent;" data-mxgraph="{&quot;highlight&quot;:&quot;#0000ff&quot;,&quot;nav&quot;:true,&quot;resize&quot;:true,&quot;toolbar&quot;:&quot;zoom layers tags lightbox&quot;,&quot;edit&quot;:&quot;_blank&quot;,&quot;url&quot;:&quot;https://raw.githubusercontent.com/konfuzio-ai/konfuzio-sdk/master/docs/sdk/SDK%20and%20Server%20Integration.drawio&quot;}"></div></span></p>
+<script type="text/javascript" src="https://viewer.diagrams.net/embed2.js?&fetch=https%3A%2F%2Fraw.githubusercontent.com%2Fkonfuzio-ai%2Fkonfuzio-sdk%2Fmaster%2Fdocs%2Fsdk%2FSDK%2520and%2520Server%2520Integration.drawio"></script><p>If you want to edit the diagramm, please refer to the <a class="reference external" href="https://drawio-app.com/github-support/">GitHub Drawio Documentation</a>.</p>
+</section>
+<section id="directory-structure">
+<h2>Directory Structure<a class="headerlink" href="#directory-structure" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>├── konfuzio-sdk      &lt;- SDK project name
+│   │
+│   ├── docs                              &lt;- Documentation to use konfuzio_sdk package in a project
+│   │
+│   ├── konfuzio_sdk                      &lt;- Source code of Konfuzio SDK
+│   │  ├── __init__.py                    &lt;- Makes konfuzio_sdk a Python module
+│   │  ├── api.py                         &lt;- Functions to interact with the Konfuzio Server
+│   │  ├── cli.py                         &lt;- Command Line interface to the konfuzio_sdk package
+│   │  ├── data.py                        &lt;- Functions to handle data from the API
+│   │  ├── evaluate.py                    &lt;- Functions to evaluate the performance of the AIs
+│   │  ├── extras.py                      &lt;- Classes to initialize AI-related dependencies safely
+|   |  ├── normalize.py                   &lt;- Functions to normalize Spans according to data_type
+│   │  ├── regex.py                       &lt;- Helper Functions to handle regex related tasks
+│   │  ├── samples.py                     &lt;- Local sample test Project
+│   │  ├── settings_importer.py           &lt;- Meta settings loaded from the project
+│   │  ├── urls.py                        &lt;- Endpoints of the Konfuzio host
+│   │  ├── utils.py                       &lt;- Utils functions for the konfuzio_sdk package
+|   |  |
+│   |  ├── trainer                        &lt;- Trainer module to train AI models
+|   |  |  ├── __init__.py                 &lt;- Makes trainer a Python module
+|   |  |  ├── base.py                     &lt;- Base class for all AIs
+|   |  |  ├── document_categorization.py  &lt;- AI for Document categorization
+|   |  |  ├── information_extraction.py   &lt;- AI for Information extraction
+|   |  |  ├── file_splitting.py           &lt;- AI for File splitting
+|   |  |  ├── image.py                    &lt;- Image processing helper functions
+|   |  |  ├── tokenization.py             &lt;- Custom tokenization classes
+|   |  |
+│   |  ├── tokenizer                      &lt;- Tokenizer module to tokenize documents
+|   |  |  ├── __init__.py                 &lt;- Makes tokenizer a Python module
+|   |  |  ├── base.py                     &lt;- Base class for all Tokenizers
+|   |  |  ├── paragraph_and_sentence.py   &lt;- Paragraph and Sentence Tokenizer
+|   |  |  ├── regex.py                    &lt;- Various Regex Tokenizers
+|   |
+│   ├── tests                             &lt;- Pytests: basic tests to test scripts based on a demo project
+│   │
+│   ├── .gitignore                        &lt;- Specify files untracked and ignored by git
+│   ├── README.md                         &lt;- Readme to get to know konfuzio_sdk package
+│   ├── pytest.ini                        &lt;- Configurations for pytests
+│   ├── settings.py                       &lt;- Settings of SDK project
+│   ├── setup.cfg                         &lt;- Setup configurations
+│   ├── setup.py                          &lt;- Installation requirements
+</pre></div>
+</div>
+<p>examples of how to use it for visualization, for example.</p>
+</section>
+<section id="coordinates-system">
+<h2>Coordinates System<a class="headerlink" href="#coordinates-system" title="Permalink to this headline">¶</a></h2>
+<p>The size of a page of a Document can be obtained in the Document object.
+The format is [width, height].</p>
+<p>Original size of the Document is the size of the uploaded Document (which can be a PDF file or an image). The bounding
+boxes of the Annotations are based on this size.</p>
+<blockquote>
+<div><p>E.g.: [1552, 1932]</p>
+</div></blockquote>
+<p>Current size can be accessed via calling <code class="docutils literal notranslate"><span class="pre">height</span></code> and <code class="docutils literal notranslate"><span class="pre">width</span></code> from the Page object. They show the dimensions of the
+image representation of a Document Page. These representations are used for computer vision tasks and the SmartView.</p>
+<blockquote>
+<div><p>E.g.: [372.48, 463.68]</p>
+</div></blockquote>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
+
+<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
+<span class="c1"># first Document uploaded</span>
+<span class="n">document</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="c1"># index of the Page to test</span>
+<span class="n">page_index</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="n">width</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">pages</span><span class="p">()[</span><span class="n">page_index</span><span class="p">]</span><span class="o">.</span><span class="n">width</span>
+<span class="n">height</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">pages</span><span class="p">()[</span><span class="n">page_index</span><span class="p">]</span><span class="o">.</span><span class="n">height</span>
+</pre></div>
+</div>
+<p>The coordinates system used has its start in the bottom left corner of the page.</p>
+<img alt="../_images/coordinates_schema.png" src="../_images/coordinates_schema.png" />
+<p>To visualize the character bounding boxes of a document and overlapping them in the image opened with the python
+library PIL, for example, we can resize the image to the size in which they are based (original_size).
+The following code can be used for this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">ImageDraw</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
+
+<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
+<span class="c1"># first Document uploaded</span>
+<span class="n">document</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
+<span class="c1"># index of the Page to test</span>
+<span class="n">page_index</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">width</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">pages</span><span class="p">()[</span><span class="n">page_index</span><span class="p">]</span><span class="o">.</span><span class="n">width</span>
+<span class="n">height</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">pages</span><span class="p">()[</span><span class="n">page_index</span><span class="p">]</span><span class="o">.</span><span class="n">height</span>
+<span class="n">page</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">pages</span><span class="p">()[</span><span class="n">page_index</span><span class="p">]</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">page</span><span class="o">.</span><span class="n">get_image</span><span class="p">(</span><span class="n">update</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">factor_x</span> <span class="o">=</span> <span class="n">width</span> <span class="o">/</span> <span class="n">image</span><span class="o">.</span><span class="n">width</span>
+<span class="n">factor_y</span> <span class="o">=</span> <span class="n">height</span> <span class="o">/</span> <span class="n">image</span><span class="o">.</span><span class="n">height</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s1">&#39;RGB&#39;</span><span class="p">)</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">resize</span><span class="p">((</span><span class="nb">int</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">factor_x</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">factor_y</span><span class="p">)))</span>
+<span class="n">height</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">image_characters_bbox</span> <span class="o">=</span> <span class="p">[</span><span class="n">char_bbox</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">char_bbox</span> <span class="ow">in</span> <span class="n">page</span><span class="o">.</span><span class="n">get_bbox</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+
+<span class="n">draw</span> <span class="o">=</span> <span class="n">ImageDraw</span><span class="o">.</span><span class="n">Draw</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">bbox</span> <span class="ow">in</span> <span class="n">image_characters_bbox</span><span class="p">:</span>
+    <span class="n">image_bbox</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;x0&quot;</span><span class="p">]),</span>
+        <span class="nb">int</span><span class="p">((</span><span class="n">height</span> <span class="o">-</span> <span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;y1&quot;</span><span class="p">])),</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;x1&quot;</span><span class="p">]),</span>
+        <span class="nb">int</span><span class="p">((</span><span class="n">height</span> <span class="o">-</span> <span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;y0&quot;</span><span class="p">])),</span>
+    <span class="p">)</span>
+    <span class="n">draw</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="n">image_bbox</span><span class="p">,</span> <span class="n">outline</span><span class="o">=</span><span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">image</span>
+
+<span class="c1"># Note: cv2 has the origin of the y coordinates in the upper left corner. Therefore, for visualization, the</span>
+<span class="c1"># height of the image is subtracted to the y coordinates.</span>
+</pre></div>
+</div>
+<img alt="../_images/bboxes_characters.png" src="../_images/bboxes_characters.png" />
+<p>The coordinates obtained from the segmentation endpoint of the API are based on the image array shape.
+To visualize the segmentation bounding boxes of a page on an image opened with the python library PIL, for example,
+we can overlap them directly.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">ImageDraw</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.api</span> <span class="kn">import</span> <span class="n">get_results_from_segmentation</span>
+
+<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
+<span class="c1"># first Document uploaded</span>
+<span class="n">document</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
+<span class="c1"># index of the Page to test</span>
+<span class="n">page_index</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">page</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">pages</span><span class="p">()[</span><span class="n">page_index</span><span class="p">]</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">page</span><span class="o">.</span><span class="n">get_image</span><span class="p">(</span><span class="n">update</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s1">&#39;RGB&#39;</span><span class="p">)</span>
+<span class="n">draw</span> <span class="o">=</span> <span class="n">ImageDraw</span><span class="o">.</span><span class="n">Draw</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+<span class="n">image_segmentation_bboxes</span> <span class="o">=</span> <span class="n">get_results_from_segmentation</span><span class="p">(</span><span class="n">document</span><span class="o">.</span><span class="n">id_</span><span class="p">,</span> <span class="n">my_project</span><span class="o">.</span><span class="n">id_</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">bbox</span> <span class="ow">in</span> <span class="n">image_segmentation_bboxes</span><span class="p">[</span><span class="n">page_index</span><span class="p">]:</span>
+    <span class="n">image_bbox</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;x0&quot;</span><span class="p">]),</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;y0&quot;</span><span class="p">]),</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;x1&quot;</span><span class="p">]),</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;y1&quot;</span><span class="p">]),</span>
+    <span class="p">)</span>
+    <span class="n">draw</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="n">image_bbox</span><span class="p">,</span> <span class="n">outline</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">image</span>
+</pre></div>
+</div>
+<img alt="../_images/bboxes_segmentation.png" src="../_images/bboxes_segmentation.png" />
+<p>To visualize both at the same time we can convert the coordinates from the segmentation result to be based on the image
+size used for the characters’ bbox.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">ImageDraw</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.api</span> <span class="kn">import</span> <span class="n">get_results_from_segmentation</span>
+
+<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
+<span class="c1"># first Document uploaded</span>
+<span class="n">document</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
+<span class="c1"># index of the Page to test</span>
+<span class="n">page_index</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="n">width</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">pages</span><span class="p">()[</span><span class="n">page_index</span><span class="p">]</span><span class="o">.</span><span class="n">width</span>
+<span class="n">height</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">pages</span><span class="p">()[</span><span class="n">page_index</span><span class="p">]</span><span class="o">.</span><span class="n">height</span>
+
+<span class="n">page</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">pages</span><span class="p">()[</span><span class="n">page_index</span><span class="p">]</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">page</span><span class="o">.</span><span class="n">get_image</span><span class="p">(</span><span class="n">update</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">factor_x</span> <span class="o">=</span> <span class="n">width</span> <span class="o">/</span> <span class="n">image</span><span class="o">.</span><span class="n">width</span>
+<span class="n">factor_y</span> <span class="o">=</span> <span class="n">height</span> <span class="o">/</span> <span class="n">image</span><span class="o">.</span><span class="n">height</span>
+
+<span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s1">&#39;RGB&#39;</span><span class="p">)</span>
+
+<span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">resize</span><span class="p">((</span><span class="nb">int</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">factor_x</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">factor_y</span><span class="p">)))</span>
+<span class="n">height</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+<span class="n">image_characters_bbox</span> <span class="o">=</span> <span class="p">[</span><span class="n">char_bbox</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">char_bbox</span> <span class="ow">in</span> <span class="n">page</span><span class="o">.</span><span class="n">get_bbox</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+
+<span class="n">draw</span> <span class="o">=</span> <span class="n">ImageDraw</span><span class="o">.</span><span class="n">Draw</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">bbox</span> <span class="ow">in</span> <span class="n">image_characters_bbox</span><span class="p">:</span>
+    <span class="n">image_bbox</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;x0&quot;</span><span class="p">]),</span>
+        <span class="nb">int</span><span class="p">((</span><span class="n">height</span> <span class="o">-</span> <span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;y1&quot;</span><span class="p">])),</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;x1&quot;</span><span class="p">]),</span>
+        <span class="nb">int</span><span class="p">((</span><span class="n">height</span> <span class="o">-</span> <span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;y0&quot;</span><span class="p">])),</span>
+    <span class="p">)</span>
+    <span class="n">draw</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="n">image_bbox</span><span class="p">,</span> <span class="n">outline</span><span class="o">=</span><span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">image_segmentation_bboxes</span> <span class="o">=</span> <span class="n">get_results_from_segmentation</span><span class="p">(</span><span class="n">document</span><span class="o">.</span><span class="n">id_</span><span class="p">,</span> <span class="n">my_project</span><span class="o">.</span><span class="n">id_</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">bbox</span> <span class="ow">in</span> <span class="n">image_segmentation_bboxes</span><span class="p">[</span><span class="n">page_index</span><span class="p">]:</span>
+    <span class="n">image_bbox</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;x0&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">factor_x</span><span class="p">),</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;y0&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">factor_y</span><span class="p">),</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;x1&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">factor_x</span><span class="p">),</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;y1&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">factor_y</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">draw</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="n">image_bbox</span><span class="p">,</span> <span class="n">outline</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">image</span>
+
+<span class="c1"># Note: cv2 has the origin of the y coordinates in the upper left corner. Therefore, for visualization, the</span>
+<span class="c1"># height of the image is subtracted to the y coordinates.</span>
+</pre></div>
+</div>
+<img alt="../_images/bboxes_overlap.png" src="../_images/bboxes_overlap.png" />
+<p>Our extraction AI runs a merging logic at two steps in the extraction process. The first is a horizontal merging of Spans right after the Label classifier. This can be particularly useful when using the <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#konfuzio_sdk.tokenizer.regex.WhitespaceTokenizer">Whitespace tokenizer</a> as it can find Spans containing spaces. The second merging logic is a vertical merging of Spans into a single multiline Annotation. Checkout the <a class="reference external" href="https://dev.konfuzio.com/sdk/contribution.html#architecture-sdk-to-server">architecture diagram</a> for more detail.</p>
+</section>
+<section id="horizontal-merge">
+<h2>Horizontal Merge<a class="headerlink" href="#horizontal-merge" title="Permalink to this headline">¶</a></h2>
+<p>When using an <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#extraction-ai">Extraction AI</a>, we merge adjacent horizontal Spans right after the Label classifier. The confidence of the resulting new Span if taken to be the mean confidence of the original Spans being merged.</p>
+<p>A horizontal merging is valid only if:</p>
+<ol class="arabic simple">
+<li><p>All Spans have the same predicted Label</p></li>
+<li><p>Confidence of predicted Label is above the Label threshold</p></li>
+<li><p>All Spans are on the same line</p></li>
+<li><p>Spans are not overlapping</p></li>
+<li><p>No extraneous characters in between Spans</p></li>
+<li><p>A maximum of 5 spaces in between Spans</p></li>
+<li><p>The <a class="reference external" href="https://dev.konfuzio.com/web/api.html#supported-data-normalization">Label type</a> is not one of the following: ‘Number’, ‘Positive Number’, ‘Percentage’, ‘Date’
+OR the resulting merging create a Span <a class="reference external" href="https://dev.konfuzio.com/web/api.html#supported-data-normalization">normalizable</a> to the same type</p></li>
+</ol>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Input</p></th>
+<th class="head"><p>Able to merge?</p></th>
+<th class="head"><p>Reason</p></th>
+<th class="head"><p>Result</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><span class="raw-html-m2r"><span style="background-color: #ff726f">Text</span></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span></p></td>
+<td><p>yes</p></td>
+<td><p>/</p></td>
+<td><p><span class="raw-html-m2r"><span style="background-color: #ff726f">Text</span></span><span class="raw-html-m2r"><span style="background-color: #ff726f">&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span></p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="raw-html-m2r"><span style="background-color: #ff726f">Text</span></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span></p></td>
+<td><p>no</p></td>
+<td><ol class="arabic simple" start="5">
+<li></li>
+</ol>
+</td>
+<td><p><span class="raw-html-m2r"><span style="background-color: #ff726f">Text</span></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span></p></td>
+</tr>
+<tr class="row-even"><td><p><span class="raw-html-m2r"><span style="background-color: #ff726f">Text</span></span><span class="raw-html-m2r"><span>&nbsp;.&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span></p></td>
+<td><p>no</p></td>
+<td><ol class="arabic simple" start="4">
+<li></li>
+</ol>
+</td>
+<td><p><span class="raw-html-m2r"><span style="background-color: #ff726f">Text</span></span><span class="raw-html-m2r"><span>&nbsp;.&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span></p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span><span class="raw-html-m2r"><span>&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #86c5da">7</span></span></p></td>
+<td><p>no</p></td>
+<td><ol class="arabic simple">
+<li></li>
+</ol>
+</td>
+<td><p><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span><span class="raw-html-m2r"><span>&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #86c5da">7</span></span></p></td>
+</tr>
+<tr class="row-even"><td><p><span class="raw-html-m2r"><span style="background-color: #86c5da">34</span></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #86c5da">98</span></span></p></td>
+<td><p>no</p></td>
+<td><ol class="arabic simple" start="6">
+<li><p>(<a class="reference external" href="https://dev.konfuzio.com/web/api.html#numbers">see here</a>)</p></li>
+</ol>
+</td>
+<td><p><span class="raw-html-m2r"><span style="background-color: #86c5da">34</span></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #86c5da">98</span></span></p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="raw-html-m2r"><span style="background-color: #86c5da">34</span></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #86c5da">98</span></span></p></td>
+<td><p>yes</p></td>
+<td><p>/</p></td>
+<td><p><span class="raw-html-m2r"><span style="background-color: #86c5da">34</span></span><span class="raw-html-m2r"><span style="background-color: #86c5da">&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #86c5da">98</span></span></p></td>
+</tr>
+<tr class="row-even"><td><p><span class="raw-html-m2r"><span style="background-color: #34df00">November</span></span><span class="raw-html-m2r"><span>&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #34df00">2022</span></span></p></td>
+<td><p>yes</p></td>
+<td><p>/</p></td>
+<td><p><span class="raw-html-m2r"><span style="background-color: #34df00">November</span></span><span class="raw-html-m2r"><span style="background-color: #34df00">&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #34df00">2022</span></span></p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="raw-html-m2r"><span style="background-color: #34df00">Novamber</span></span><span class="raw-html-m2r"><span>&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #34df00">2022</span></span></p></td>
+<td><p>no</p></td>
+<td><ol class="arabic simple" start="6">
+<li><p>(<a class="reference external" href="https://dev.konfuzio.com/web/api.html#date-values">see here</a>)</p></li>
+</ol>
+</td>
+<td><p><span class="raw-html-m2r"><span style="background-color: #34df00">Novamber</span></span><span class="raw-html-m2r"><span>&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #34df00">2022</span></span></p></td>
+</tr>
+<tr class="row-even"><td><p><span class="raw-html-m2r"><span style="background-color: #ff8c00">34</span></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #ff8c00">98%</span></span></p></td>
+<td><p>yes</p></td>
+<td><p>/</p></td>
+<td><p><span class="raw-html-m2r"><span style="background-color: #ff8c00">34</span></span><span class="raw-html-m2r"><span style="background-color: #ff8c00">&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #ff8c00">98%</span></span></p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="raw-html-m2r"><span style="background-color: #ff8c00">34</span></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #dcdcdc">98%</span></span></p></td>
+<td><p>no</p></td>
+<td><ol class="arabic simple" start="2">
+<li></li>
+</ol>
+</td>
+<td><p><span class="raw-html-m2r"><span style="background-color: #ff8c00">34</span></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #dcdcdc">98%</span></span></p></td>
+</tr>
+</tbody>
+</table>
+<p>Label Type: <span class="raw-html-m2r"><span style="background-color: #ff726f">Text</span></span><span class="raw-html-m2r"><br></span>
+Label Type: <span class="raw-html-m2r"><span style="background-color: #86c5da">Number</span></span><span class="raw-html-m2r"><br></span>
+Label Type: <span class="raw-html-m2r"><span style="background-color: #34df00">Date</span></span><span class="raw-html-m2r"><br></span>
+Label Type: <span class="raw-html-m2r"><span style="background-color: #ff8c00">Percentage</span></span><span class="raw-html-m2r"><br></span>
+Label Type: <span class="raw-html-m2r"><span style="background-color: #dcdcdc">NO LABEL/Below Label threshold</span></span></p>
+</section>
+<section id="vertical-merge">
+<h2>Vertical Merge<a class="headerlink" href="#vertical-merge" title="Permalink to this headline">¶</a></h2>
+<p>When using an <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#extraction-ai">Extraction AI</a>, we join adjacent vertical Spans into a single Annotation after the LabelSet classifier.</p>
+<p>A vertical merging is valid only if:</p>
+<ol class="arabic simple">
+<li><p>They are on the same Page</p></li>
+<li><p>They are predicted to have the same Label</p></li>
+<li><p>Multiline annotations with this Label exist in the training set</p></li>
+<li><p>Consecutive vertical Spans either overlap in the x-axis, OR the preceding Span is at the end of the line, and following Span is at the beginning of the next</p></li>
+<li><p>Confidence of predicted Label is above the Label threshold</p></li>
+<li><p>Spans are on consecutive lines</p></li>
+<li><p>Merged lower Span belongs to an Annotation in the same AnnotationSet, OR to an AnnotationSet with only a single Annotation</p></li>
+</ol>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Input</p></th>
+<th class="head"><p>Able to merge?</p></th>
+<th class="head"><p>Reason</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><span class="raw-html-m2r"><span style="background-color: #ff726f">Text</span></span><span class="raw-html-m2r"><br></span><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span></p></td>
+<td><p>yes</p></td>
+<td><p>/</p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span><span class="raw-html-m2r"><br></span><span class="raw-html-m2r"><span style="background-color: #86c5da">42</span></span></p></td>
+<td><p>no</p></td>
+<td><ol class="arabic simple" start="2">
+<li></li>
+</ol>
+</td>
+</tr>
+<tr class="row-even"><td><p><span class="raw-html-m2r"><span style="background-color: #ff726f">Text</span></span><span class="raw-html-m2r"><span>&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #dcdcdc">more text</span></span><span class="raw-html-m2r"><br></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span></p></td>
+<td><p>no</p></td>
+<td><ol class="arabic simple" start="4">
+<li></li>
+</ol>
+</td>
+</tr>
+<tr class="row-odd"><td><p><span class="raw-html-m2r"><span style="background-color: #dcdcdc">Some random text</span></span><span class="raw-html-m2r"><span>&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #ff726f">Text</span></span><span class="raw-html-m2r"><br></span><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span></p></td>
+<td><p>yes</p></td>
+<td><p>/</p></td>
+</tr>
+<tr class="row-even"><td><p><span class="raw-html-m2r"><span style="background-color: #dcdcdc">Some random text</span></span><span class="raw-html-m2r"><span>&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #ff726f">Text</span></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #dcdcdc">.</span></span><span class="raw-html-m2r"><br></span><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span></p></td>
+<td><p>no</p></td>
+<td><ol class="arabic simple" start="4">
+<li></li>
+</ol>
+</td>
+</tr>
+<tr class="row-odd"><td><p><span class="raw-html-m2r"><span style="background-color: #ff726f">Text</span></span><span class="raw-html-m2r"><span>&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #dcdcdc">more text</span></span><span class="raw-html-m2r"><br></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span><span class="raw-html-m2r"><br></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #ff726f">42</span></span></p></td>
+<td><p>yes</p></td>
+<td><p>/</p></td>
+</tr>
+<tr class="row-even"><td><p><span class="raw-html-m2r"><span style="background-color: #ff726f">Text</span></span><span class="raw-html-m2r"><span>&nbsp;</span></span><span class="raw-html-m2r"><br></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #dcdcdc">more text</span></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><br></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span></p></td>
+<td><p>no</p></td>
+<td><ol class="arabic simple" start="6">
+<li></li>
+</ol>
+</td>
+</tr>
+<tr class="row-odd"><td><p><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #86c5da">Nb.</span></span><span class="raw-html-m2r"><br></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #86c5da">42</span></span></p></td>
+<td><p>yes</p></td>
+<td><p><span class="raw-html-m2r"><span>*</span></span></p></td>
+</tr>
+<tr class="row-even"><td><p><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #86c5da">41</span></span><span class="raw-html-m2r"><br></span><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #86c5da">42</span></span></p></td>
+<td><p>no</p></td>
+<td><ol class="arabic simple" start="7">
+<li><p><span class="raw-html-m2r"><span>**</span></span></p></li>
+</ol>
+</td>
+</tr>
+</tbody>
+</table>
+<p><span class="raw-html-m2r"><span>* The bottom Annotation is alone in its AnnotationSet and therefore can be merged.</span></span><span class="raw-html-m2r"><br></span>
+<span class="raw-html-m2r"><span>** The Annotations on each line have been grouped into their own AnnotationSets and are not merged.</span></span></p>
+<p><span class="raw-html-m2r"><span style="background-color: #ff726f">Label 1</span></span><span class="raw-html-m2r"><br></span>
+<span class="raw-html-m2r"><span style="background-color: #86c5da">Label 2</span></span><span class="raw-html-m2r"><br></span>
+<span class="raw-html-m2r"><span style="background-color: #dcdcdc">NO LABEL/Below Label threshold</span></span></p>
+</section>
+<section id="horizontal-and-vertical-merge-with-the-paragraph-and-sentence-tokenizers">
+<h2>Horizontal and Vertical Merge with the Paragraph and Sentence Tokenizers<a class="headerlink" href="#horizontal-and-vertical-merge-with-the-paragraph-and-sentence-tokenizers" title="Permalink to this headline">¶</a></h2>
+<p>When using the <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#paragraph-tokenizer">Paragraph</a> or <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#sentence-tokenizer">Sentence Tokenizer</a> together with our <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#extraction-ai">Extraction AI model</a>, we do not use the rule based vertical and horizontal merge logic above, and instead use the sentence/paragraph segmentation provided by the Tokenizer.</p>
+<p>The logic is as follows:</p>
+<div class="mermaid">
+            graph TD
+   A[Virtual Document] --&gt;|Paragraph/Sentence Tokenizer|B(Document_A with NO_LABEL\n Paragraph/Sentence Annotations)
+   B --&gt; |RFExtractionAI feature extraction|C(Span features)
+   C --&gt; |RFExtractionAI labeling|D(Labeled Spans)
+   D --&gt; |extraction_result_to_document |E(Document B with labeled single-Span Annotations)
+   E --&gt; |&quot;RFExtractionAI().merge_vertical_like(Document_B, Document_A)&quot; |F(Document_B with labeled multi-line Annotations)
+        </div><p>And here’s an illustrated example of the merge logic in action:</p>
+<img alt="../_images/merge_docs_gif.gif" src="../_images/merge_docs_gif.gif" />
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="tutorials/barcode-scanner/index.html" class="btn btn-neutral float-left" title="Barcode Scanner with zxing-cpp" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="sourcecode.html" class="btn btn-neutral float-right" title="API Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Helm und Nagel GmbH.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-D02B3QF8Z3"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-D02B3QF8Z3');
+</script>
+<script src="https://cmp.osano.com/16CVyMSbk3Iar1G3f/97ee6223-b0cb-4f8c-abd6-a25a0d6f6507/osano.js"></script>
+<script>window._nQc="89655017";</script>
+<script async src="https://serve.albacross.com/track.js"></script>
+<script data-jsd-embedded data-key="42374b9a-2f7b-46ec-ae7b-b79a89aa3dd9" data-base-url="https://jsd-widget.atlassian.com" src="https://jsd-widget.atlassian.com/assets/embed.js"></script>
+
+
+</body>
+</html>

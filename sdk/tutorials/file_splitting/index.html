@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>File Splitting &mdash; Konfuzio  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../_static/full_green_square.png"/>
+    <link rel="canonical" href="https://dev.konfuzio.com/sdk/tutorials/file_splitting/index.html" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script src="https://unpkg.com/mermaid@9.4.0/dist/mermaid.min.js"></script>
+        <script>mermaid.initialize({startOnLoad:true});</script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Tokenization" href="../tokenizers/index.html" />
+    <link rel="prev" title="Document Categorization" href="../document_categorization/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> Konfuzio
+            <img src="../../../_static/docs__static_square_transparent_super_small.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Konfuzio SDK</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">What is the Konfuzio SDK?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../get_started.html">Get Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../tutorials.html">Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../data-preparation/index.html">Prepare Training and Testing Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../document_categorization/index.html">Document Categorization</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">File Splitting</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#train-a-context-aware-file-splitting-ai">Train a Context Aware File Splitting AI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#train-a-multimodal-file-splitting-ai">Train a Multimodal File Splitting AI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#develop-and-save-a-context-aware-file-splitting-ai">Develop and save a Context-Aware File Splitting AI</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#intro">Intro</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quick-explanation">Quick explanation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#step-by-step-explanation">Step-by-step explanation</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#create-a-custom-file-splitting-ai">Create a custom File Splitting AI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#evaluate-a-file-splitting-ai">Evaluate a File Splitting AI</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#example-of-evaluation-input-and-output">Example of evaluation input and output</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../tokenizers/index.html">Tokenization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../information_extraction/index.html">Document Information Extraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../upload-your-ai/index.html">Upload your AI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../data_validation/index.html">Data Validation Rules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../outlier-annotations/index.html">Find possible outliers among the ground-truth Annotations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../regex_based_annotations/index.html">Create Regex-based Annotations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../async_upload_with_callback/index.html">Pull Documents Uploaded Asynchronously with a Webhook</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pdf-form-generator/index.html">Build your own PDF Form Generator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ner-ontonotes-fast/index.html">Retrain Flair NER-Ontonotes-Fast with Human Revised Annotations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../annual-reports/index.html">Count Relevant Expressions in Annual Reports</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../barcode-scanner/index.html">Barcode Scanner with zxing-cpp</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sourcecode.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contribution.html">Contribution Guide</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/releases">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/index.html">What is the Konfuzio Server?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/api-v3.html">REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/on_premises.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/passwords/index.html">Password Management</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/changelog_app.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Document Validation UI</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../dvui/index.html">What is the Konfuzio Document Validation UI?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dvui/explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dvui/sourcecode.html">Source Code</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/releases">Changelog</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Konfuzio</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../tutorials.html">Tutorials</a> &raquo;</li>
+      <li>File Splitting</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/sdk/tutorials/file_splitting/index.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <p>.. _file-splitting-tutorials:</p>
+<section id="file-splitting">
+<h1>File Splitting<a class="headerlink" href="#file-splitting" title="Permalink to this headline">¶</a></h1>
+<p>PDFs often encapsulate multiple distinct Documents within a single file, leading to complex navigation and information
+retrieval. Document splitting tackles this by disentangling these intertwined files into separate Documents. This
+guide introduces you to tools and models that automate this process, streamlining your work with multi-Document PDFs.
+Note that File Splitting always happens on a Project level.</p>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>You can train your own File Splitting AI on the data from any Project of your choice (<a class="reference external" href="https://dev.konfuzio.com/sdk/tutorials/data-preparation/index.html#prepare-the-data-for-training-and-testing-the-ai">data preparation tutorial here</a>).
+Note that Pages in all the Documents used for training and testing have to be ordered correctly – that is to say, not
+mixed up in order. The ground-truth first Page of each Document should go first in the file, ground-truth second Page
+goes second and so on. This is needed because the Splitting AI operates on the idea that the splitting points in a
+stream of Pages are the starting Pages of each Sub-Document in the stream.</p>
+<p>For that purpose, there are several tools in the SDK that enable processing Documents that consist of multiple files and propose splitting them
+into the Sub-Documents accordingly:</p>
+<ul>
+<li><p>A Context Aware File Splitting Model uses a simple hands-on logic based on scanning Category’s Documents and finding
+strings exclusive for first Pages of all Documents within the Category. Upon predicting whether a Page is a potential
+splitting point (meaning whether it is first or not), we compare Page’s contents to these exclusive first-page strings;
+if there is occurrence of at least one such string, we mark a Page to be first (thus meaning it is a splitting point).
+An instance of the Context Aware File Splitting Model can be used to initially build a File Splitting pipeline and can
+later be replaced with more complex solutions.</p>
+<p>A Context Aware File Splitting Model instance can be used with an interface provided by Splitting AI – this class
+accepts a whole Document instead of a single Page and proposes splitting points or splits the original Documents.</p>
+</li>
+<li><p>A Multimodal File Splitting Model is a model that uses an approach that takes both visual and textual parts of the
+Pages and processes them independently via the combined VGG19 architecture (simplified) and LegalBERT, passing the
+resulting outputs together to a Multi-Layered Perceptron. Model’s output is also a prediction of a Page being first or
+non-first.</p></li>
+</ul>
+<p>For developing a custom File Splitting approach, we propose an abstract class <code class="docutils literal notranslate"><span class="pre">AbstractFileSplittingModel</span></code>.</p>
+</section>
+<section id="train-a-context-aware-file-splitting-ai">
+<h2>Train a Context Aware File Splitting AI<a class="headerlink" href="#train-a-context-aware-file-splitting-ai" title="Permalink to this headline">¶</a></h2>
+<p>Let’s see how to use the <code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span></code> to automatically split a file into several Documents. We will be using
+a pre-built class <code class="docutils literal notranslate"><span class="pre">SplittingAI</span></code> and an instance of a trained <code class="docutils literal notranslate"><span class="pre">ContextAwareFileSplittingModel</span></code>. The latter uses a
+context-aware logic. By context-aware we mean a rule-based approach that looks for common strings between the first
+Pages of all Category’s Documents. Upon predicting whether a Page is a potential splitting point (meaning whether it is
+first or not), we compare Page’s contents to these common first-page strings; if there is occurrence of at least one
+such string, we mark a Page to be first (thus meaning it is a splitting point).</p>
+<p>.. literalinclude:: /sdk/boilerplates/test_file_splitting_example.py
+:language: python
+:start-after: start imports
+:end-before: end imports
+:dedent: 4
+.. literalinclude:: /sdk/boilerplates/test_file_splitting_example.py
+:language: python
+:start-after: start file splitting
+:end-before: end file splitting
+:dedent: 4</p>
+<p>After you have trained and saved your custom AI, you can upload it using the steps from the <a class="reference external" href="https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html#upload-extraction-or-category-ai-to-target-instance">tutorial</a>
+or using the method <code class="docutils literal notranslate"><span class="pre">upload_ai_model()</span></code>.</p>
+<p>For the first option, go to the Superuser AIs and select your locally stored pickle file, setting Model Type to
+Splitting and status to Training finished, then save the AI. After that, go to the Splitting AIs, choose your AI and
+select an action “Activate Splitting AI”.</p>
+<p>For the second option, you can refer to <a class="reference external" href="https://dev.konfuzio.com/sdk/tutorials/upload-your-ai/index.html">Upload your AI</a>.</p>
+</section>
+<section id="train-a-multimodal-file-splitting-ai">
+<h2>Train a Multimodal File Splitting AI<a class="headerlink" href="#train-a-multimodal-file-splitting-ai" title="Permalink to this headline">¶</a></h2>
+<p>The above tutorial for the <code class="docutils literal notranslate"><span class="pre">ContextAwareFileSplittingModel</span></code> can also be used with the <code class="docutils literal notranslate"><span class="pre">MultimodalFileSplittingModel</span></code>.
+The only difference is that the <code class="docutils literal notranslate"><span class="pre">MultimodalFileSplittingModel</span></code> does not need to be initialized with a Tokenizer.</p>
+</section>
+<section id="develop-and-save-a-context-aware-file-splitting-ai">
+<h2>Develop and save a Context-Aware File Splitting AI<a class="headerlink" href="#develop-and-save-a-context-aware-file-splitting-ai" title="Permalink to this headline">¶</a></h2>
+<p>If the solutions presented above do not meet your requirements, we also allow the training of custom File Splitting AIs
+on the data from a Project of your choice. You can then save your trained model and use it with Konfuzio.</p>
+<section id="intro">
+<h3>Intro<a class="headerlink" href="#intro" title="Permalink to this headline">¶</a></h3>
+<p>It’s common for multi-paged files to not be perfectly organized, and in some cases, multiple independent Documents may be
+included in a single file. To ensure that these Documents are properly processed and separated, we will be discussing a
+method for identifying and splitting them into individual, independent Sub-documents.</p>
+<p>.. image:: /sdk/tutorials/file_splitting/multi_file_document_example.png</p>
+<p><em>Multi-file Document Example</em></p>
+<p>Konfuzio SDK offers two ways for separating Documents that may be included in a single file. One of them is training
+the instance of the Multimodal File Splitting Model for file splitting that would predict whether a Page is first or
+not and running the Splitting AI with it. Multimodal File Splitting Model is a combined approach based on architecture
+that processes textual and visual data from the Documents separately (in our case, using BERT and VGG19 simplified
+architectures respectively) and then combines the outputs which go into a Multi-layer Perceptron architecture as
+inputs. A more detailed scheme of the architecture can be found further.</p>
+<p>If you hover over the image you can zoom or use the full page mode.</p>
+<div class="mxgraph" style="max-width:100%;border:1px solid transparent;" data-mxgraph="{&quot;highlight&quot;:&quot;#0000ff&quot;,&quot;nav&quot;:true,&quot;resize&quot;:true,&quot;toolbar&quot;:&quot;zoom layers tags lightbox&quot;,&quot;edit&quot;:&quot;_blank&quot;,&quot;url&quot;:&quot;https://raw.githubusercontent.com/konfuzio-ai/konfuzio-sdk/master/docs/sdk/tutorials/file_splitting/fusion_model.drawio&quot;}"></div>
+<script type="text/javascript" src="https://viewer.diagrams.net/embed2.js?&fetch=https%3A%2F%2Fraw.githubusercontent.com%2Fkonfuzio-ai%2Fkonfuzio-sdk%2Fmaster%2Fdocs%2Fsdk%2Ftutorials%2Ffile_splitting%2Ffusion_model.drawio"></script>
+<p>Another approach is context-aware file splitting logic which is presented by Context Aware File Splitting Model. This
+approach involves analyzing the contents of each Page and identifying similarities to the first Pages of the Document.
+It will allow us to define splitting points and divide the Document into multiple Sub-documents. It’s important to note
+that this approach is only effective for Documents written in the same language and that the process must be repeated
+for each Category. In this tutorial, we will explain how to implement the class for this model step by step.</p>
+<p>If you are unfamiliar with the SDK’s main concepts (like Page or Span), you can get to know them at <a class="reference external" href="https://dev.konfuzio.com/sdk/explanations.html#data-layer-concepts">Data Layer Concepts</a>.</p>
+</section>
+<section id="quick-explanation">
+<h3>Quick explanation<a class="headerlink" href="#quick-explanation" title="Permalink to this headline">¶</a></h3>
+<p>The first step in implementing this method is “training”: this involves tokenizing the Document by splitting its text
+into parts, specifically into strings without line breaks. We then gather the exclusive strings from Spans, which are
+the parts of the text in the Page, and compare them to the first Pages of each Document in the training data.</p>
+<p>Once we have identified these strings, we can use them to determine whether a Page in an input Document is a first Page
+or not. We do this by going through the strings in the Page and comparing them to the set of strings collected in the
+training stage. If we find at least one string that intersects between the current Page and the strings from the first
+step, we believe it is the first Page.</p>
+<p>Note that the more Documents we use in the training stage, the less intersecting strings we are likely to find. If you
+find that your set of first-page strings is empty, try using a smaller slice of the dataset instead of the whole set.
+Generally, when used on Documents within the same Category, this algorithm should not return an empty set. If that is
+the case, it’s worth checking if your data is consistent, for example, not in different languages or containing other
+Categories.</p>
+</section>
+<section id="step-by-step-explanation">
+<h3>Step-by-step explanation<a class="headerlink" href="#step-by-step-explanation" title="Permalink to this headline">¶</a></h3>
+<p>In this section, we will walk you through the process of setting up the <code class="docutils literal notranslate"><span class="pre">ContextAwareFileSplittingModel</span></code> class, which
+can be found in the code block at the bottom of this page. This class is already implemented and can be imported using
+<code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">konfuzio_sdk.trainer.file_splitting</span> <span class="pre">import</span> <span class="pre">ContextAwareFileSplittingModel</span></code>.</p>
+<p>Note that any custom File Splitting AI (derived from <code class="docutils literal notranslate"><span class="pre">AbstractFileSplittingModel</span></code> class) requires having the following
+methods implemented:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">__init__</span></code> to initialize key variables required by the custom AI;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fit</span></code> to define architecture and training that the model undergoes, i.e. a certain NN architecture or a custom</p></li>
+<li><p>hardcoded logic;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">predict</span></code> to define how the model classifies Pages as first or non-first. <strong>NB:</strong> the classification needs to be
+run on the Page level, not the Document level – the result of classification is reflected in <code class="docutils literal notranslate"><span class="pre">is_first_page</span></code> attribute
+value, which is unique to the Page class and is not present in Document class. Pages with <code class="docutils literal notranslate"><span class="pre">is_first_page</span> <span class="pre">=</span> <span class="pre">True</span></code> become
+splitting points, thus, each new Sub-Document has a Page predicted as first as its starting point.</p></li>
+</ul>
+<p>To begin, we will make all the necessary imports:</p>
+<p>.. literalinclude:: /sdk/boilerplates/test_file_splitting_example.py
+:language: python
+:start-after: start imports
+:end-before: end imports
+:dedent: 4</p>
+<p>Then, let’s initialize the <code class="docutils literal notranslate"><span class="pre">ContextAwareFileSplittingModel</span></code> class:</p>
+<p>.. literalinclude:: ../../konfuzio_sdk/trainer/file_splitting.py
+:language: python
+:start-after: begin init
+:end-before: end init
+:dedent: 4</p>
+<p>The class inherits from <code class="docutils literal notranslate"><span class="pre">AbstractFileSplittingModel</span></code>, so we run <code class="docutils literal notranslate"><span class="pre">super().__init__(categories=categories)</span></code> to properly
+inherit its attributes. The <code class="docutils literal notranslate"><span class="pre">tokenizer</span></code> attribute will be used to process the text within the Document, separating it
+into Spans. This is done to ensure that the text in all the Documents is split using the same logic (particularly
+tokenization by separating on <code class="docutils literal notranslate"><span class="pre">\n</span></code> whitespaces by ConnectedTextTokenizer, which is used in the example in the end of the
+page) and it will be possible to find common Spans. It will be used for training and testing Documents as well as any
+Document that will undergo splitting. It’s important to note that if you run fitting with one Tokenizer and then
+reassign it within the same instance of the model, all previously gathered strings will be deleted and replaced by new
+ones. <code class="docutils literal notranslate"><span class="pre">requires_images</span></code> and <code class="docutils literal notranslate"><span class="pre">requires_text</span></code> determine whether these types of data are used for prediction; this is
+needed for distinguishing between preprocessing types once a model is passed into the Splitting AI.</p>
+<p>An example of how ConnectedTextTokenizer works:</p>
+<p>.. literalinclude:: /sdk/boilerplates/test_connected_text_tokenizer.py
+:language: python
+:start-after: Start tokenize
+:end-before: End tokenize
+:dedent: 4
+.. literalinclude:: /sdk/boilerplates/test_connected_text_tokenizer.py
+:language: python
+:start-after: Start string
+:end-before: End string
+:dedent: 4</p>
+<p>The first method to define will be the <code class="docutils literal notranslate"><span class="pre">fit()</span></code> method. For each Category, we call <code class="docutils literal notranslate"><span class="pre">exclusive_first_page_strings</span></code> method,
+which allows us to gather the strings that appear on the first Page of each Document. <code class="docutils literal notranslate"><span class="pre">allow_empty_categories</span></code> allows
+for returning empty lists for Categories that haven’t had any exclusive first-page strings found across their Documents.
+This means that those Categories would not be used in the prediction process.</p>
+<p>.. literalinclude:: ../../konfuzio_sdk/trainer/file_splitting.py
+:language: python
+:start-after: begin fit
+:end-before: end fit
+:dedent: 4</p>
+<p>Next, we define <code class="docutils literal notranslate"><span class="pre">predict()</span></code> method. The method accepts a Page as an input and checks its Span set for containing
+first-page strings for each of the Categories. If there is at least one intersection, the Page is predicted to be a
+first Page. If there are no intersections, the Page is predicted to be a non-first Page.</p>
+<p>.. literalinclude:: ../../konfuzio_sdk/trainer/file_splitting.py
+:language: python
+:start-after: begin predict
+:end-before: end predict
+:dedent: 4</p>
+<p>Lastly, a <code class="docutils literal notranslate"><span class="pre">check_is_ready()</span></code> method is defined. This method is used to ensure that a model is ready for prediction: the
+checks cover that the Tokenizer and a set of Categories is defined, and that at least one of the Categories has
+exclusive first-page strings.</p>
+<p>.. literalinclude:: ../../konfuzio_sdk/trainer/file_splitting.py
+:language: python
+:start-after: begin check
+:end-before: end check
+:dedent: 4</p>
+<p>Full code of class:</p>
+<p>.. literalinclude:: ../../konfuzio_sdk/trainer/file_splitting.py
+:language: python
+:pyobject: ContextAwareFileSplittingModel</p>
+<p>A quick example of the class’s usage:</p>
+<p>.. literalinclude:: /sdk/boilerplates/test_file_splitting_example.py
+:language: python
+:start-after: start file splitting
+:end-before: end file splitting
+:dedent: 4</p>
+</section>
+</section>
+<section id="create-a-custom-file-splitting-ai">
+<h2>Create a custom File Splitting AI<a class="headerlink" href="#create-a-custom-file-splitting-ai" title="Permalink to this headline">¶</a></h2>
+<p>This section explains how to train a custom File Splitting AI locally, how to save it and upload it to the Konfuzio
+Server. If you run this tutorial in Colab and experience any version compatibility issues when working with the SDK, restart the
+runtime and initialize the SDK once again; this will resolve the issue.</p>
+<p>Note: you don’t necessarily need to create the AI from scratch if you already have some document-processing architecture.
+You just need to wrap it into the class that corresponds to our File Splitting AI structure. Follow the steps in this
+tutorial to find out what are the requirements for that.</p>
+<p>By default, any <span class="xref myst">File Splitting AI</span> class should derive from the
+<code class="docutils literal notranslate"><span class="pre">AbstractFileSplittingModel</span></code> class and implement the following methods:</p>
+<p>.. literalinclude:: /sdk/boilerplates/test_custom_file_splitting_ai.py
+:language: python
+:start-after: start class
+:end-before: end class
+:dedent: 4</p>
+</section>
+<section id="evaluate-a-file-splitting-ai">
+<h2>Evaluate a File Splitting AI<a class="headerlink" href="#evaluate-a-file-splitting-ai" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">FileSplittingEvaluation</span></code> class can be used to evaluate performance of Context-Aware File Splitting Model, returning a
+set of metrics that includes precision, recall, f1 measure, True Positives, False Positives, True Negatives, and False
+Negatives.</p>
+<p>The class’s methods <code class="docutils literal notranslate"><span class="pre">calculate()</span></code> and <code class="docutils literal notranslate"><span class="pre">calculate_by_category()</span></code> are run at initialization. The class receives two lists
+of Documents as an input – first list consists of ground-truth Documents where all first Pages are marked as such,
+second is of Documents on Pages of which File Splitting Model ran a prediction of them being first or non-first.</p>
+<p>The initialization would look like this:</p>
+<p>.. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
+:language: python
+:start-after: start eval_example
+:end-before: end eval_example
+:dedent: 4</p>
+<p>The class compares each pair of Pages. If a Page is labeled as first and the model also predicted it as first, it is
+considered a True Positive. If a Page is labeled as first but the model predicted it as non-first, it is considered a
+False Negative. If a Page is labeled as non-first but the model predicted it as first, it is considered a False
+Positive. If a Page is labeled as non-first and the model also predicted it as non-first, it is considered a True
+Negative.</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p></p></th>
+<th class="head"><p>predicted correctly</p></th>
+<th class="head"><p>predicted incorrectly</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>first Page</p></td>
+<td><p>TP</p></td>
+<td><p>FN</p></td>
+</tr>
+<tr class="row-odd"><td><p>non-first Page</p></td>
+<td><p>TN</p></td>
+<td><p>FP</p></td>
+</tr>
+</tbody>
+</table>
+<p>After iterating through all Pages of all Documents, precision, recall and f1 measure are calculated. If you wish to set
+metrics to <code class="docutils literal notranslate"><span class="pre">None</span></code> in case there has been an attempt of zero division, set <code class="docutils literal notranslate"><span class="pre">allow_zero=True</span></code> at the initialization.</p>
+<p>To see a certain metric after the class has been initialized, you can call a metric’s method:</p>
+<p>.. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
+:language: python
+:start-after: start single_metric
+:end-before: end single_metric
+:dedent: 4</p>
+<p>It is also possible to look at the metrics calculated by each Category independently. For this, pass
+<code class="docutils literal notranslate"><span class="pre">search=YOUR_CATEGORY_HERE</span></code> when calling the wanted metric’s method:</p>
+<p>.. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
+:language: python
+:start-after: start metric_category
+:end-before: end metric_category
+:dedent: 4</p>
+<p>For more details, see the <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#ai-evaluation">Python API Documentation</a> on
+Evaluation.</p>
+<section id="example-of-evaluation-input-and-output">
+<h3>Example of evaluation input and output<a class="headerlink" href="#example-of-evaluation-input-and-output" title="Permalink to this headline">¶</a></h3>
+<p>Suppose in our test dataset we have 2 Documents of 2 Categories: one 3-paged, consisting of a single file (-&gt; it has
+only one ground-truth first Page) of a first Category, and one 5-paged, consisting of three files: two 2-paged and one
+1-paged (-&gt; it has three ground-truth first Pages), of a second Category.</p>
+<p>.. image:: /sdk/tutorials/file_splitting/document_example_1.png</p>
+<p><em>First document</em></p>
+<p>.. image:: /sdk/tutorials/file_splitting/document_example_2.png</p>
+<p><em>Second document</em></p>
+<p>.. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
+:language: python
+:start-after: start document creation
+:end-before: end document creation
+:dedent: 4</p>
+<p>We need to pass two lists of Documents into the <code class="docutils literal notranslate"><span class="pre">FileSplittingEvaluation</span></code> class. So, before that, we need to run each
+Page of the Documents through the model’s prediction.</p>
+<p>Let’s say the evaluation gave good results, with only one first Page being predicted as non-first and all the other
+Pages being predicted correctly. An example of how the evaluation would be implemented would be:</p>
+<p>.. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
+:language: python
+:start-after: start splitting
+:end-before: end splitting
+:dedent: 4
+.. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
+:language: python
+:start-after: start scores
+:end-before: end scores
+:dedent: 4</p>
+<p>Our results could be reflected in a following table:</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>TPs</p></th>
+<th class="head"><p>TNs</p></th>
+<th class="head"><p>FPs</p></th>
+<th class="head"><p>FNs</p></th>
+<th class="head"><p>precision</p></th>
+<th class="head"><p>recall</p></th>
+<th class="head"><p>F1</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>3</p></td>
+<td><p>4</p></td>
+<td><p>0</p></td>
+<td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>0.75</p></td>
+<td><p>0.85</p></td>
+</tr>
+</tbody>
+</table>
+<p>If we want to see evaluation results by Category, the implementation of the Evaluation would look like this:</p>
+<p>.. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
+:language: python
+:start-after: start scores_category
+:end-before: end scores_category
+:dedent: 4</p>
+<p>the output could be reflected in a following table:</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Category</p></th>
+<th class="head"><p>TPs</p></th>
+<th class="head"><p>TNs</p></th>
+<th class="head"><p>FPs</p></th>
+<th class="head"><p>FNs</p></th>
+<th class="head"><p>precision</p></th>
+<th class="head"><p>recall</p></th>
+<th class="head"><p>F1</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Category 1</p></td>
+<td><p>1</p></td>
+<td><p>2</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>1</p></td>
+</tr>
+<tr class="row-odd"><td><p>Category 2</p></td>
+<td><p>2</p></td>
+<td><p>2</p></td>
+<td><p>0</p></td>
+<td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>0.66</p></td>
+<td><p>0.8</p></td>
+</tr>
+</tbody>
+</table>
+<p>To log metrics after evaluation, you can call <code class="docutils literal notranslate"><span class="pre">EvaluationCalculator</span></code>’s method <code class="docutils literal notranslate"><span class="pre">metrics_logging</span></code> (you would need to
+specify the metrics accordingly at the class’s initialization). Example usage:</p>
+<p>.. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
+:language: python
+:start-after: start calculator
+:end-before: end calculator
+:dedent: 4</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../document_categorization/index.html" class="btn btn-neutral float-left" title="Document Categorization" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../tokenizers/index.html" class="btn btn-neutral float-right" title="Tokenization" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Helm und Nagel GmbH.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-D02B3QF8Z3"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-D02B3QF8Z3');
+</script>
+<script src="https://cmp.osano.com/16CVyMSbk3Iar1G3f/97ee6223-b0cb-4f8c-abd6-a25a0d6f6507/osano.js"></script>
+<script>window._nQc="89655017";</script>
+<script async src="https://serve.albacross.com/track.js"></script>
+<script data-jsd-embedded data-key="42374b9a-2f7b-46ec-ae7b-b79a89aa3dd9" data-base-url="https://jsd-widget.atlassian.com" src="https://jsd-widget.atlassian.com/assets/embed.js"></script>
+
+
+</body>
+</html>

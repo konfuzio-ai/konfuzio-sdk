@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Build your own PDF Form Generator &mdash; Konfuzio  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../_static/full_green_square.png"/>
+    <link rel="canonical" href="https://dev.konfuzio.com/sdk/tutorials/pdf-form-generator/index.html" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script src="https://unpkg.com/mermaid@9.4.0/dist/mermaid.min.js"></script>
+        <script>mermaid.initialize({startOnLoad:true});</script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Retrain Flair NER-Ontonotes-Fast with Human Revised Annotations" href="../ner-ontonotes-fast/index.html" />
+    <link rel="prev" title="Pull Documents Uploaded Asynchronously with a Webhook" href="../async_upload_with_callback/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> Konfuzio
+            <img src="../../../_static/docs__static_square_transparent_super_small.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Konfuzio SDK</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">What is the Konfuzio SDK?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../get_started.html">Get Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../tutorials.html">Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../data-preparation/index.html">Prepare Training and Testing Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../document_categorization/index.html">Document Categorization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../file_splitting/index.html">File Splitting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tokenizers/index.html">Tokenization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../information_extraction/index.html">Document Information Extraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../upload-your-ai/index.html">Upload your AI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../data_validation/index.html">Data Validation Rules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../outlier-annotations/index.html">Find possible outliers among the ground-truth Annotations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../regex_based_annotations/index.html">Create Regex-based Annotations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../async_upload_with_callback/index.html">Pull Documents Uploaded Asynchronously with a Webhook</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Build your own PDF Form Generator</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#upload-a-pdf-form-and-create-empty-annotations-where-you-want-to-fill-in-data">1. Upload a PDF Form and create empty Annotations where you want to fill in data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#use-the-sdk-to-fill-in-values-in-the-pdf">2. Use the SDK to fill in values in the PDF</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../ner-ontonotes-fast/index.html">Retrain Flair NER-Ontonotes-Fast with Human Revised Annotations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../annual-reports/index.html">Count Relevant Expressions in Annual Reports</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../barcode-scanner/index.html">Barcode Scanner with zxing-cpp</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sourcecode.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contribution.html">Contribution Guide</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/releases">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/index.html">What is the Konfuzio Server?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/api-v3.html">REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/on_premises.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/passwords/index.html">Password Management</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/changelog_app.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Document Validation UI</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../dvui/index.html">What is the Konfuzio Document Validation UI?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dvui/explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dvui/sourcecode.html">Source Code</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/releases">Changelog</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Konfuzio</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../tutorials.html">Tutorials</a> &raquo;</li>
+      <li>Build your own PDF Form Generator</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/sdk/tutorials/pdf-form-generator/index.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <p>.. _pdf-form-generator:</p>
+<section id="build-your-own-pdf-form-generator">
+<h1>Build your own PDF Form Generator<a class="headerlink" href="#build-your-own-pdf-form-generator" title="Permalink to this headline">¶</a></h1>
+<p>A simple implementation of a PDF form generator can look like the following.</p>
+<section id="upload-a-pdf-form-and-create-empty-annotations-where-you-want-to-fill-in-data">
+<h2>1. Upload a PDF Form and create empty Annotations where you want to fill in data<a class="headerlink" href="#upload-a-pdf-form-and-create-empty-annotations-where-you-want-to-fill-in-data" title="Permalink to this headline">¶</a></h2>
+<p>.. image:: /sdk/home/pdf_form_gen_example.png
+:scale: 40%</p>
+</section>
+<section id="use-the-sdk-to-fill-in-values-in-the-pdf">
+<h2>2. Use the SDK to fill in values in the PDF<a class="headerlink" href="#use-the-sdk-to-fill-in-values-in-the-pdf" title="Permalink to this headline">¶</a></h2>
+<p>Example implementation:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">io</span>
+
+<span class="kn">from</span> <span class="nn">PyPDF2</span> <span class="kn">import</span> <span class="n">PdfFileWriter</span><span class="p">,</span> <span class="n">PdfFileReader</span>
+<span class="kn">from</span> <span class="nn">reportlab.pdfgen</span> <span class="kn">import</span> <span class="n">canvas</span>
+<span class="kn">from</span> <span class="nn">reportlab.lib</span> <span class="kn">import</span> <span class="n">colors</span>
+
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Document</span><span class="p">,</span> <span class="n">Page</span><span class="p">,</span> <span class="n">Annotation</span>
+
+
+<span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="n">document_id</span><span class="p">,</span> <span class="n">project_id</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+    <span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">project_id</span><span class="p">,</span> <span class="n">update</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">document</span><span class="p">:</span> <span class="n">Document</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">document_id</span><span class="p">)</span>
+
+    <span class="c1"># read your existing PDF</span>
+    <span class="n">existing_pdf</span> <span class="o">=</span> <span class="n">PdfFileReader</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">document</span><span class="o">.</span><span class="n">get_file</span><span class="p">(),</span> <span class="s2">&quot;rb&quot;</span><span class="p">))</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">PdfFileWriter</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">page_index</span><span class="p">,</span> <span class="n">page</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">document</span><span class="o">.</span><span class="n">pages</span><span class="p">()):</span>
+        <span class="n">packet</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+        <span class="n">my_canvas</span> <span class="o">=</span> <span class="n">canvas</span><span class="o">.</span><span class="n">Canvas</span><span class="p">(</span><span class="n">packet</span><span class="p">)</span>
+        <span class="n">my_canvas</span><span class="o">.</span><span class="n">setPageSize</span><span class="p">((</span><span class="n">page</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="n">page</span><span class="o">.</span><span class="n">height</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">annotation</span><span class="p">:</span> <span class="n">Annotation</span> <span class="ow">in</span> <span class="n">document</span><span class="o">.</span><span class="n">annotations</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">annotation</span><span class="o">.</span><span class="n">selection_bbox</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;page_index&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="n">page_index</span><span class="p">:</span>
+                <span class="n">text_value</span> <span class="o">=</span> <span class="n">values</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">annotation</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                <span class="n">textobject</span> <span class="o">=</span> <span class="n">my_canvas</span><span class="o">.</span><span class="n">beginText</span><span class="p">()</span>
+                <span class="c1"># Set text location (x, y)</span>
+                <span class="n">textobject</span><span class="o">.</span><span class="n">setTextOrigin</span><span class="p">(</span><span class="n">annotation</span><span class="o">.</span><span class="n">x0</span><span class="p">,</span> <span class="n">annotation</span><span class="o">.</span><span class="n">y0</span><span class="p">)</span>
+                <span class="c1"># Change text color</span>
+                <span class="n">textobject</span><span class="o">.</span><span class="n">setFillColor</span><span class="p">(</span><span class="n">colors</span><span class="o">.</span><span class="n">black</span><span class="p">)</span>
+                <span class="c1"># Write text</span>
+                <span class="n">textobject</span><span class="o">.</span><span class="n">textLine</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">text_value</span><span class="p">)</span>
+                <span class="c1"># Write text to the canvas</span>
+                <span class="n">my_canvas</span><span class="o">.</span><span class="n">drawText</span><span class="p">(</span><span class="n">textobject</span><span class="p">)</span>
+        <span class="n">my_canvas</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+
+        <span class="c1"># move to the beginning of the StringIO buffer</span>
+        <span class="n">packet</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># create a new PDF with Reportlab</span>
+        <span class="n">new_pdf</span> <span class="o">=</span> <span class="n">PdfFileReader</span><span class="p">(</span><span class="n">packet</span><span class="p">)</span>
+
+        <span class="n">page</span> <span class="o">=</span> <span class="n">existing_pdf</span><span class="o">.</span><span class="n">getPage</span><span class="p">(</span><span class="n">page_index</span><span class="p">)</span>
+        <span class="n">page</span><span class="o">.</span><span class="n">mergePage</span><span class="p">(</span><span class="n">new_pdf</span><span class="o">.</span><span class="n">getPage</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+        <span class="n">output</span><span class="o">.</span><span class="n">addPage</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">output</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;Valerie&#39;</span><span class="p">,</span> <span class="s1">&#39;Kurs&#39;</span><span class="p">:</span> <span class="s1">&#39;Pilates&#39;</span><span class="p">,</span> <span class="s1">&#39;Startdatum&#39;</span><span class="p">:</span> <span class="s1">&#39;15.01.2022&#39;</span><span class="p">,</span> <span class="s1">&#39;Enddatum&#39;</span><span class="p">:</span> <span class="s1">&#39;30.03.2022&#39;</span><span class="p">}</span>
+    <span class="c1"># To find your Project ID and Document ID see https://dev.konfuzio.com/sdk/get_started.html#example-usage</span>
+    <span class="n">project_id</span> <span class="o">=</span> <span class="n">YOUR_PROJECT_ID</span>
+    <span class="n">document_id</span> <span class="o">=</span> <span class="n">YOUR_DOCUMENT_ID</span>
+
+    <span class="n">output</span> <span class="o">=</span> <span class="n">render</span><span class="p">(</span><span class="n">document_id</span><span class="o">=</span><span class="n">document_id</span><span class="p">,</span> <span class="n">project_id</span><span class="o">=</span><span class="n">project_id</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="n">values</span><span class="p">)</span>
+    <span class="c1"># finally, write &quot;output&quot; to a real file</span>
+    <span class="n">outputStream</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">document_id</span><span class="si">}</span><span class="s2">.pdf&quot;</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span>
+    <span class="n">output</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">outputStream</span><span class="p">)</span>
+    <span class="n">outputStream</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The resulting filled in PDF form will look like this:</p>
+<p>.. image:: /sdk/home/pdf_form_gen_example_compiled.png
+:scale: 40%</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../async_upload_with_callback/index.html" class="btn btn-neutral float-left" title="Pull Documents Uploaded Asynchronously with a Webhook" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../ner-ontonotes-fast/index.html" class="btn btn-neutral float-right" title="Retrain Flair NER-Ontonotes-Fast with Human Revised Annotations" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Helm und Nagel GmbH.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-D02B3QF8Z3"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-D02B3QF8Z3');
+</script>
+<script src="https://cmp.osano.com/16CVyMSbk3Iar1G3f/97ee6223-b0cb-4f8c-abd6-a25a0d6f6507/osano.js"></script>
+<script>window._nQc="89655017";</script>
+<script async src="https://serve.albacross.com/track.js"></script>
+<script data-jsd-embedded data-key="42374b9a-2f7b-46ec-ae7b-b79a89aa3dd9" data-base-url="https://jsd-widget.atlassian.com" src="https://jsd-widget.atlassian.com/assets/embed.js"></script>
+
+
+</body>
+</html>

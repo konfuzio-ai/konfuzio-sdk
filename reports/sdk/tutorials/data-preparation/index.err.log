@@ -1,0 +1,90 @@
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.8.18/x64/lib/python3.8/site-packages/jupyter_cache/executors/utils.py", line 58, in single_nb_execution
+    executenb(
+  File "/opt/hostedtoolcache/Python/3.8.18/x64/lib/python3.8/site-packages/nbclient/client.py", line 1305, in execute
+    return NotebookClient(nb=nb, resources=resources, km=km, **kwargs).execute()
+  File "/opt/hostedtoolcache/Python/3.8.18/x64/lib/python3.8/site-packages/jupyter_core/utils/__init__.py", line 173, in wrapped
+    return loop.run_until_complete(inner)
+  File "/opt/hostedtoolcache/Python/3.8.18/x64/lib/python3.8/asyncio/base_events.py", line 616, in run_until_complete
+    return future.result()
+  File "/opt/hostedtoolcache/Python/3.8.18/x64/lib/python3.8/site-packages/nbclient/client.py", line 705, in async_execute
+    await self.async_execute_cell(
+  File "/opt/hostedtoolcache/Python/3.8.18/x64/lib/python3.8/site-packages/nbclient/client.py", line 1058, in async_execute_cell
+    await self._check_raise_for_error(cell, cell_index, exec_reply)
+  File "/opt/hostedtoolcache/Python/3.8.18/x64/lib/python3.8/site-packages/nbclient/client.py", line 914, in _check_raise_for_error
+    raise CellExecutionError.from_cell_and_msg(cell, exec_reply_content)
+nbclient.exceptions.CellExecutionError: An error occurred while executing the following cell:
+------------------
+project = Project(id_=TEST_PROJECT_ID)
+file_paths = [FILE_PATH_1, FILE_PATH_2, FILE_PATH_3]
+------------------
+
+
+[0;31m---------------------------------------------------------------------------[0m
+[0;31mPermissionError[0m                           Traceback (most recent call last)
+Cell [0;32mIn[5], line 1[0m
+[0;32m----> 1[0m project [38;5;241m=[39m [43mProject[49m[43m([49m[43mid_[49m[38;5;241;43m=[39;49m[43mTEST_PROJECT_ID[49m[43m)[49m
+[1;32m      2[0m file_paths [38;5;241m=[39m [FILE_PATH_1, FILE_PATH_2, FILE_PATH_3]
+
+File [0;32m~/work/konfuzio-sdk/konfuzio-sdk/docs/sdk/tutorials/data-preparation/../../../../konfuzio_sdk/data.py:3916[0m, in [0;36mProject.__init__[0;34m(self, id_, project_folder, update, max_ram, strict_data_validation, credentials, **kwargs)[0m
+[1;32m   3913[0m [38;5;28mself[39m[38;5;241m.[39mlabel_sets_file_path [38;5;241m=[39m os[38;5;241m.[39mpath[38;5;241m.[39mjoin([38;5;28mself[39m[38;5;241m.[39mproject_folder, [38;5;124m"[39m[38;5;124mlabel_sets.json5[39m[38;5;124m"[39m)
+[1;32m   3915[0m [38;5;28;01mif[39;00m [38;5;28mself[39m[38;5;241m.[39mid_ [38;5;129;01mor[39;00m [38;5;28mself[39m[38;5;241m.[39m_project_folder:
+[0;32m-> 3916[0m     [38;5;28;43mself[39;49m[38;5;241;43m.[39;49m[43mget[49m[43m([49m[43mupdate[49m[38;5;241;43m=[39;49m[43mupdate[49m[43m)[49m
+[1;32m   3917[0m [38;5;28;01melse[39;00m:
+[1;32m   3918[0m     [38;5;28mself[39m[38;5;241m.[39mno_category [38;5;241m=[39m Category(project[38;5;241m=[39m[38;5;28mself[39m, id_[38;5;241m=[39m[38;5;241m0[39m, name_clean[38;5;241m=[39m[38;5;124m"[39m[38;5;124mNO_CATEGORY[39m[38;5;124m"[39m, name[38;5;241m=[39m[38;5;124m"[39m[38;5;124mNO_CATEGORY[39m[38;5;124m"[39m)
+
+File [0;32m~/work/konfuzio-sdk/konfuzio-sdk/docs/sdk/tutorials/data-preparation/../../../../konfuzio_sdk/data.py:4031[0m, in [0;36mProject.get[0;34m(self, update)[0m
+[1;32m   4028[0m pathlib[38;5;241m.[39mPath([38;5;28mself[39m[38;5;241m.[39mmodel_folder)[38;5;241m.[39mmkdir(parents[38;5;241m=[39m[38;5;28;01mTrue[39;00m, exist_ok[38;5;241m=[39m[38;5;28;01mTrue[39;00m)
+[1;32m   4030[0m [38;5;28;01mif[39;00m [38;5;28mself[39m[38;5;241m.[39mid_ [38;5;129;01mand[39;00m ([38;5;129;01mnot[39;00m is_file([38;5;28mself[39m[38;5;241m.[39mmeta_file_path, raise_exception[38;5;241m=[39m[38;5;28;01mFalse[39;00m) [38;5;129;01mor[39;00m update):
+[0;32m-> 4031[0m     [38;5;28;43mself[39;49m[38;5;241;43m.[39;49m[43mwrite_project_files[49m[43m([49m[43m)[49m
+[1;32m   4032[0m [38;5;28mself[39m[38;5;241m.[39mget_meta(reload[38;5;241m=[39m[38;5;28;01mTrue[39;00m)
+[1;32m   4033[0m [38;5;28mself[39m[38;5;241m.[39mget_labels(reload[38;5;241m=[39m[38;5;28;01mTrue[39;00m)
+
+File [0;32m~/work/konfuzio-sdk/konfuzio-sdk/docs/sdk/tutorials/data-preparation/../../../../konfuzio_sdk/data.py:4003[0m, in [0;36mProject.write_project_files[0;34m(self)[0m
+[1;32m   4001[0m [38;5;28;01mdef[39;00m [38;5;21mwrite_project_files[39m([38;5;28mself[39m):
+[1;32m   4002[0m [38;5;250m    [39m[38;5;124;03m"""Overwrite files with Project, Label, Label Set information."""[39;00m
+[0;32m-> 4003[0m     data [38;5;241m=[39m [43mget_project_details[49m[43m([49m[43mproject_id[49m[38;5;241;43m=[39;49m[38;5;28;43mself[39;49m[38;5;241;43m.[39;49m[43mid_[49m[43m,[49m[43m [49m[43msession[49m[38;5;241;43m=[39;49m[38;5;28;43mself[39;49m[38;5;241;43m.[39;49m[43msession[49m[43m)[49m
+[1;32m   4004[0m     [38;5;28;01mwith[39;00m [38;5;28mopen[39m([38;5;28mself[39m[38;5;241m.[39mlabel_sets_file_path, [38;5;124m"[39m[38;5;124mw[39m[38;5;124m"[39m) [38;5;28;01mas[39;00m f:
+[1;32m   4005[0m         json[38;5;241m.[39mdump(data[[38;5;124m'[39m[38;5;124msection_labels[39m[38;5;124m'[39m], f, indent[38;5;241m=[39m[38;5;241m2[39m, sort_keys[38;5;241m=[39m[38;5;28;01mTrue[39;00m)
+
+File [0;32m~/work/konfuzio-sdk/konfuzio-sdk/docs/sdk/tutorials/data-preparation/../../../../konfuzio_sdk/api.py:201[0m, in [0;36mget_project_details[0;34m(project_id, session)[0m
+[1;32m    198[0m     host [38;5;241m=[39m [38;5;28;01mNone[39;00m
+[1;32m    200[0m url [38;5;241m=[39m get_project_url(project_id[38;5;241m=[39mproject_id, host[38;5;241m=[39mhost)
+[0;32m--> 201[0m r [38;5;241m=[39m [43msession[49m[38;5;241;43m.[39;49m[43mget[49m[43m([49m[43murl[49m[38;5;241;43m=[39;49m[43murl[49m[43m)[49m
+[1;32m    203[0m [38;5;28;01mreturn[39;00m r[38;5;241m.[39mjson()
+
+File [0;32m/opt/hostedtoolcache/Python/3.8.18/x64/lib/python3.8/site-packages/requests/sessions.py:602[0m, in [0;36mSession.get[0;34m(self, url, **kwargs)[0m
+[1;32m    594[0m [38;5;250m[39m[38;5;124mr[39m[38;5;124;03m"""Sends a GET request. Returns :class:`Response` object.[39;00m
+[1;32m    595[0m 
+[1;32m    596[0m [38;5;124;03m:param url: URL for the new :class:`Request` object.[39;00m
+[1;32m    597[0m [38;5;124;03m:param \*\*kwargs: Optional arguments that ``request`` takes.[39;00m
+[1;32m    598[0m [38;5;124;03m:rtype: requests.Response[39;00m
+[1;32m    599[0m [38;5;124;03m"""[39;00m
+[1;32m    601[0m kwargs[38;5;241m.[39msetdefault([38;5;124m"[39m[38;5;124mallow_redirects[39m[38;5;124m"[39m, [38;5;28;01mTrue[39;00m)
+[0;32m--> 602[0m [38;5;28;01mreturn[39;00m [38;5;28;43mself[39;49m[38;5;241;43m.[39;49m[43mrequest[49m[43m([49m[38;5;124;43m"[39;49m[38;5;124;43mGET[39;49m[38;5;124;43m"[39;49m[43m,[49m[43m [49m[43murl[49m[43m,[49m[43m [49m[38;5;241;43m*[39;49m[38;5;241;43m*[39;49m[43mkwargs[49m[43m)[49m
+
+File [0;32m/opt/hostedtoolcache/Python/3.8.18/x64/lib/python3.8/site-packages/requests/sessions.py:589[0m, in [0;36mSession.request[0;34m(self, method, url, params, data, headers, cookies, files, auth, timeout, allow_redirects, proxies, hooks, stream, verify, cert, json)[0m
+[1;32m    584[0m send_kwargs [38;5;241m=[39m {
+[1;32m    585[0m     [38;5;124m"[39m[38;5;124mtimeout[39m[38;5;124m"[39m: timeout,
+[1;32m    586[0m     [38;5;124m"[39m[38;5;124mallow_redirects[39m[38;5;124m"[39m: allow_redirects,
+[1;32m    587[0m }
+[1;32m    588[0m send_kwargs[38;5;241m.[39mupdate(settings)
+[0;32m--> 589[0m resp [38;5;241m=[39m [38;5;28;43mself[39;49m[38;5;241;43m.[39;49m[43msend[49m[43m([49m[43mprep[49m[43m,[49m[43m [49m[38;5;241;43m*[39;49m[38;5;241;43m*[39;49m[43msend_kwargs[49m[43m)[49m
+[1;32m    591[0m [38;5;28;01mreturn[39;00m resp
+
+File [0;32m/opt/hostedtoolcache/Python/3.8.18/x64/lib/python3.8/site-packages/requests/sessions.py:703[0m, in [0;36mSession.send[0;34m(self, request, **kwargs)[0m
+[1;32m    700[0m start [38;5;241m=[39m preferred_clock()
+[1;32m    702[0m [38;5;66;03m# Send the request[39;00m
+[0;32m--> 703[0m r [38;5;241m=[39m [43madapter[49m[38;5;241;43m.[39;49m[43msend[49m[43m([49m[43mrequest[49m[43m,[49m[43m [49m[38;5;241;43m*[39;49m[38;5;241;43m*[39;49m[43mkwargs[49m[43m)[49m
+[1;32m    705[0m [38;5;66;03m# Total elapsed time of the request (approximately)[39;00m
+[1;32m    706[0m elapsed [38;5;241m=[39m preferred_clock() [38;5;241m-[39m start
+
+File [0;32m~/work/konfuzio-sdk/konfuzio-sdk/docs/sdk/tutorials/data-preparation/../../../../konfuzio_sdk/api.py:114[0m, in [0;36mTimeoutHTTPAdapter.send[0;34m(self, request, *args, **kwargs)[0m
+[1;32m    112[0m [38;5;250m[39m[38;5;124;03m"""Use timeout policy if not otherwise declared."""[39;00m
+[1;32m    113[0m [38;5;28;01mif[39;00m request[38;5;241m.[39mheaders[[38;5;124m'[39m[38;5;124mAuthorization[39m[38;5;124m'[39m] [38;5;241m==[39m [38;5;124m'[39m[38;5;124mToken None[39m[38;5;124m'[39m:
+[0;32m--> 114[0m     [38;5;28;01mraise[39;00m [38;5;167;01mPermissionError[39;00m([38;5;124mf[39m[38;5;124m'[39m[38;5;124mYour Token to connect to [39m[38;5;132;01m{[39;00mKONFUZIO_HOST[38;5;132;01m}[39;00m[38;5;124m is missing, e.g. use [39m[38;5;124m"[39m[38;5;124mkonfuzio_sdk init[39m[38;5;124m"[39m[38;5;124m'[39m)
+[1;32m    115[0m logger[38;5;241m.[39mdebug([38;5;124mf[39m[38;5;124m"[39m[38;5;124mSending request: [39m[38;5;132;01m{[39;00mrequest[38;5;241m.[39murl[38;5;132;01m}[39;00m[38;5;124m, [39m[38;5;132;01m{[39;00mrequest[38;5;241m.[39mmethod[38;5;132;01m}[39;00m[38;5;124m, [39m[38;5;132;01m{[39;00mrequest[38;5;241m.[39mheaders[38;5;132;01m}[39;00m[38;5;124m"[39m)
+[1;32m    116[0m timeout [38;5;241m=[39m kwargs[38;5;241m.[39mget([38;5;124m"[39m[38;5;124mtimeout[39m[38;5;124m"[39m)
+
+[0;31mPermissionError[0m: Your Token to connect to https://app.konfuzio.com is missing, e.g. use "konfuzio_sdk init"
+

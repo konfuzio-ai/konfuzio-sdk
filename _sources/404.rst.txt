@@ -1,0 +1,5 @@
+Page not found
+===============
+
+Please go back to the `homepage <https://dev.konfuzio.com/>`_
+--------------------------------------------------------------

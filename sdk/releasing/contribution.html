@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How to open a PR &mdash; Konfuzio  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="shortcut icon" href="../../_static/full_green_square.png"/>
+    <link rel="canonical" href="https://dev.konfuzio.com/sdk/releasing/contribution.html" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/clipboard.min.js"></script>
+        <script src="../../_static/copybutton.js"></script>
+        <script src="https://unpkg.com/mermaid@9.4.0/dist/mermaid.min.js"></script>
+        <script>mermaid.initialize({startOnLoad:true});</script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Konfuzio
+            <img src="../../_static/docs__static_square_transparent_super_small.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Konfuzio SDK</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">What is the Konfuzio SDK?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../get_started.html">Get Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sourcecode.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contribution.html">Contribution Guide</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/releases">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../web/index.html">What is the Konfuzio Server?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../web/explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../web/api-v3.html">REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../web/on_premises.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../web/passwords/index.html">Password Management</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../web/changelog_app.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Document Validation UI</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dvui/index.html">What is the Konfuzio Document Validation UI?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dvui/explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dvui/sourcecode.html">Source Code</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/releases">Changelog</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Konfuzio</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>How to open a PR</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/sdk/releasing/contribution.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="how-to-open-a-pr">
+<h1>How to open a PR<a class="headerlink" href="#how-to-open-a-pr" title="Permalink to this headline">¶</a></h1>
+<p>If you would like to contribute, please use the development installation and open a PR with your contributions.</p>
+<ul>
+<li><p>clone the project in your working directory</p>
+<p><code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">clone</span> <span class="pre">https://github.com/konfuzio-ai/document-ai-python-sdk.git</span></code></p>
+</li>
+<li><p>go inside the project folder</p>
+<p><code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">document-ai-python-sdk</span></code></p>
+</li>
+<li><p>Install a project in editable mode (i.e. setuptools “develop mode”) from the current project path.</p>
+<p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.[dev]</span></code></p>
+</li>
+<li><p>initialize the connection to create an <code class="docutils literal notranslate"><span class="pre">.env</span></code> file that stores your credentials to later connect to the host of the
+Konfuzio Server</p>
+<p><code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span> <span class="pre">init</span></code></p>
+</li>
+<li><p>create a branch to work that allows you to create a pull request later on</p>
+<p><code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">checkout</span> <span class="pre">-b</span> <span class="pre">new_branch</span></code></p>
+</li>
+<li><p>use pre-commit</p>
+<p><code class="docutils literal notranslate"><span class="pre">pre-commit</span> <span class="pre">install</span></code></p>
+<p>Automatic inspections will run in your commits ensuring they match the code formatting of the repository.</p>
+</li>
+<li><p>Make sure your upstream repo is the original konfuzio-sdk repo:</p>
+<p><code class="docutils literal notranslate"><span class="pre">https://github.com/konfuzio-ai/document-ai-python-sdk.git</span></code></p>
+</li>
+<li><p>otherwise add it</p>
+<p><code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">remote</span> <span class="pre">add</span> <span class="pre">upstream</span> <span class="pre">https://github.com/konfuzio-ai/document-ai-python-sdk.git</span></code></p>
+</li>
+</ul>
+<p>Now you can start to make changes.</p>
+<ul>
+<li><p>commit your changes</p>
+<p><code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">commit</span> <span class="pre">-m</span> <span class="pre">&quot;message&quot;</span></code></p>
+</li>
+<li><p>push your changes to your remote branch</p>
+<p><code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">push</span></code></p>
+</li>
+</ul>
+<p>Once you push the changes to your repo, the Compare &amp; pull request button will appear in GitHub.</p>
+<p>Tests will automatically run for every commit you push to the GitHub project.
+You can also run them locally by executing <code class="docutils literal notranslate"><span class="pre">pytest</span></code> in your terminal from the root of this project.</p>
+<p>The files/folders listed below are ignored when you push your changes to the repository.</p>
+<ul class="simple">
+<li><p>.env file</p></li>
+<li><p>.settings.py file</p></li>
+<li><p>data folder</p></li>
+<li><p>konfuzio_sdk.egg-info folder</p></li>
+<li><p>IDE settings files</p></li>
+<li><p>docs/build/ folder</p></li>
+<li><p>*.pyc files</p></li>
+</ul>
+<p><em>Note</em>:
+If you choose another name for the folder where you want to store the data being downloaded, please add
+the folder to <em>.gitignore</em>.</p>
+</section>
+<section id="running-tests-locally">
+<h1>Running tests locally<a class="headerlink" href="#running-tests-locally" title="Permalink to this headline">¶</a></h1>
+<p>Some tests do not require access to the Konfuzio Server. Those are marked as “local”.</p>
+<p>To run all tests, do:</p>
+<p><code class="docutils literal notranslate"><span class="pre">pytest</span></code></p>
+<p>To run only local tests, do:</p>
+<p><code class="docutils literal notranslate"><span class="pre">pytest</span> <span class="pre">-m</span> <span class="pre">'local'</span></code></p>
+<p>To run tests from a specific file, do:</p>
+<p><code class="docutils literal notranslate"><span class="pre">pytest</span> <span class="pre">tests/&lt;name_of_the_file&gt;.py</span></code></p>
+</section>
+<section id="running-tests-in-docker">
+<h1>Running tests in Docker<a class="headerlink" href="#running-tests-in-docker" title="Permalink to this headline">¶</a></h1>
+<p>If you have problems with the dependencies, a solution could be to use a docker to run the code.
+Check here the steps for how to run/debug Python code inside a Docker container.</p>
+<section id="general-motivation-for-using-the-vs-code-remote-development-extension">
+<h2>General Motivation for using the VS Code Remote Development Extension<a class="headerlink" href="#general-motivation-for-using-the-vs-code-remote-development-extension" title="Permalink to this headline">¶</a></h2>
+<p>When it comes to running your code consistently and reliably, container solutions like Docker can play to their
+strengths.
+Even if you are not using Docker for deployment, as soon as you collaborate with other developers testing pipelines
+have to be in place to ensure that a new merge does not accidentally break the whole project.
+Collaborating can also mean very different operating systems and configurations that lead to varying behaviors on
+different machines.
+This issue is also commonly resolved using Docker. But this of course means that there can be differences between your
+local machine
+and the Docker container when it comes to dependencies, which leads to tedious dependency management and prolonged
+feedback loops (especially on Windows)
+as you have to wait to see if the code you build really runs as expected in the Docker container.
+The best solution would be if you could combine the development tools of a Python IDE with the consistent test and
+execution results of a Docker container.
+Running a docker container on a local machine is quite easy.
+Though setting up your container for debugging is not always straightforward. Luckily Microsoft’s Visual Studio Code
+Remote Development Extension
+offers a functional and easy to use solution.</p>
+</section>
+<section id="download-and-install-vs-code-on-your-machine">
+<h2>1. Download and Install VS Code on your machine<a class="headerlink" href="#download-and-install-vs-code-on-your-machine" title="Permalink to this headline">¶</a></h2>
+<p>Either use this <a class="reference external" href="https://code.visualstudio.com/download">link</a> to download the VS Code or, if you are on Linux and have
+snap installed, just run (for this tutorial v1.56.2 was used):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span>
+<span class="n">snap</span>
+<span class="n">install</span> <span class="o">-</span> <span class="o">-</span><span class="n">classic</span>
+<span class="n">code</span>
+</pre></div>
+</div>
+<p>If you have not already installed Docker, download and install it <a class="reference external" href="https://docs.docker.com/get-docker/">here</a>.</p>
+</section>
+<section id="pull-create-your-project-that-includes-the-relevant-docker-file">
+<h2>2. Pull/Create your project that includes the relevant Docker file<a class="headerlink" href="#pull-create-your-project-that-includes-the-relevant-docker-file" title="Permalink to this headline">¶</a></h2>
+<p>In most cases you are going to be using git, so just set up a new git-repository via the terminal, VS Code’s built-in
+console or VS Code’s git extension. This project should, of course, include the Docker file that is used for deployment
+and which behavior you want to mimic locally.</p>
+<p>If you just want to try out how this all works, you can clone our SDK from its
+<a class="reference external" href="https://github.com/konfuzio-ai/document-ai-python-sdk.git">GitHub page</a> and add a Dockerfile with the following
+content:</p>
+<div class="highlight-dockerfile notranslate"><div class="highlight"><pre><span></span><span class="c"># simple docker file</span>
+<span class="k">FROM</span><span class="w"> </span><span class="s">python:3.8-slim</span>
+
+<span class="k">ADD</span><span class="w"> </span>setup.py<span class="w"> </span>/code/setup.py
+<span class="k">ADD</span><span class="w"> </span>konfuzio_sdk<span class="w"> </span>/code/konfuzio_sdk
+<span class="k">ADD</span><span class="w"> </span>README.md<span class="w"> </span>/code/README.md
+
+<span class="k">WORKDIR</span><span class="w"> </span><span class="s">/code/</span>
+
+<span class="k">RUN</span><span class="w"> </span>python3.8<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>/opt/venv
+<span class="k">ENV</span><span class="w"> </span><span class="nv">PATH</span><span class="o">=</span><span class="s2">&quot;/opt/venv/bin:</span><span class="nv">$PATH</span><span class="s2">&quot;</span><span class="w"> </span><span class="nv">VIRTUAL_ENV</span><span class="o">=</span><span class="s2">&quot;/opt/venv&quot;</span>
+
+<span class="k">RUN</span><span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+<span class="k">RUN</span><span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>pytest
+</pre></div>
+</div>
+</section>
+<section id="install-the-remote-development-extension">
+<h2>3. Install the remote development extension<a class="headerlink" href="#install-the-remote-development-extension" title="Permalink to this headline">¶</a></h2>
+<p>In VS Code open the extensions tab (its icon is located in the left sidebar) and search <strong>Remote - Containers</strong> (or for
+its ID: <em>ms-vscode-remote.remote-containers</em>). Install the extension.</p>
+<!--[extensions tab](images/vscode_docker/extensions.PNG)-->
+<p>.. image:: /_static/img/vscode_docker/remote_dev_extension.png</p>
+</section>
+<section id="set-up-your-remote-development-environment">
+<h2>4. Set up your remote development environment<a class="headerlink" href="#set-up-your-remote-development-environment" title="Permalink to this headline">¶</a></h2>
+<p>You should now be able to find the remote extension’s symbol (arrows on a green background) in the bottom left corner of
+the VS Code window (picture below). Clicking on the symbol opens the extension’s command pallet, which from now on is
+going to be our main access point to the extension.</p>
+<p>.. image:: /_static/img/vscode_docker/green_arrows.png</p>
+<p>In the Command Pallet (<em>‘View’ &gt; ‘Command Pallet’</em>) select <em>‘Remote-Containers: Add Development Container Configuration
+Files’ &gt; ‘From $your_dockerfile’</em></p>
+<p>.. image:: /_static/img/vscode_docker/command_pallet.png</p>
+<p>Now you should see in the file explorer under <em>.devcontainer</em> your <em>devcontainer.json</em> file. Open it. These are the
+basic
+configurations of your devcontainer. Most of this can be left unchanged. Maybe give your container a name by changing
+the ‘name’ variable. Additionally, you should specify all the ports you need inside your Docker container in
+‘forwardPorts’.
+If you are working with the sample project you do not need to specify any ports.</p>
+<p>.. image:: /_static/img/vscode_docker/devcontainer.png</p>
+</section>
+<section id="build-and-run-your-docker-container">
+<h2>5. Build and run your Docker container<a class="headerlink" href="#build-and-run-your-docker-container" title="Permalink to this headline">¶</a></h2>
+<p>Open the extension’s command pallet by clicking on the arrows in the bottom left and search
+for <em>‘Reopen Folder in Container’</em>. If you are doing this the first time, this builds the Docker container and thus
+can take quite a bit of time.</p>
+<p>To confirm that you are now inside the container look again to the bottom left. You should now be able to
+see <em>‘Dev Container: $your_name’</em> next to the two arrows.</p>
+<p>.. image:: /_static/img/vscode_docker/green_arrows_with_text.png</p>
+</section>
+<section id="install-the-python-extension-inside-the-docker-container-to-debug-and-run-python-files">
+<h2>6. Install the Python extension inside the Docker container to debug and run Python files<a class="headerlink" href="#install-the-python-extension-inside-the-docker-container-to-debug-and-run-python-files" title="Permalink to this headline">¶</a></h2>
+<p>Again open up the extensions tab (now inside the Docker container) and install the Python extension (ID: *
+ms-python.python*).</p>
+<p>Now you can debug/run any Python file you want. Open up the chosen Python file and the ‘Run and Debug’ tab by clicking
+the run/debug icon that should be now available on the left taskbar.</p>
+<!--[run and debug tab](images/vscode_docker/run_and_debug.PNG)-->
+<p>Click <em>‘Run and Debug’ &gt; ‘Python File’</em> and you are good to go. Before make sure to set the needed breakpoints by
+clicking to the left of the line numbers.</p>
+<p>.. image:: /_static/img/vscode_docker/debug_point.png</p>
+<p>If you want to evaluate certain expressions while debugging, open up the terminal (if it is not open already) by
+clicking <em>‘View’ &gt; ‘Terminal’</em>. One of the terminal’s tabs is the debug console, where you can evaluate any expression.</p>
+<p>If you are in the sample project you can make sure that the Docker container works as expected by entering the tests
+folder (<em>‘cd tests’</em>) and executing:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pytest</span> <span class="o">-</span> <span class="n">m</span>
+<span class="n">local</span>
+</pre></div>
+</div>
+<p>.. image:: /_static/img/vscode_docker/tests.png</p>
+</section>
+<section id="additional-tips">
+<h2>Additional Tips<a class="headerlink" href="#additional-tips" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>If you want to switch back to your local machine (to e.g. switch branch), open the extension’s command pallet by
+clicking on the arrows and select <em>‘Reopen Folder Locally’</em>.</p></li>
+<li><p>If you want to rebuild the container, because e.g. a different branch uses different dependencies, open the
+extension’s command palette and click <em>‘Rebuild Container’</em>.
+(This of course means that you have to reinstall the Python extension - if this becomes annoying you can specify
+its ID in the devcontainer.json file to be pre-installed with every rebuild).</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Helm und Nagel GmbH.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-D02B3QF8Z3"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-D02B3QF8Z3');
+</script>
+<script src="https://cmp.osano.com/16CVyMSbk3Iar1G3f/97ee6223-b0cb-4f8c-abd6-a25a0d6f6507/osano.js"></script>
+<script>window._nQc="89655017";</script>
+<script async src="https://serve.albacross.com/track.js"></script>
+<script data-jsd-embedded data-key="42374b9a-2f7b-46ec-ae7b-b79a89aa3dd9" data-base-url="https://jsd-widget.atlassian.com" src="https://jsd-widget.atlassian.com/assets/embed.js"></script>
+
+
+</body>
+</html>

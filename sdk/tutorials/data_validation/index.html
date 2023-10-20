@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Data Validation Rules &mdash; Konfuzio  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../_static/full_green_square.png"/>
+    <link rel="canonical" href="https://dev.konfuzio.com/sdk/tutorials/data_validation/index.html" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script src="https://unpkg.com/mermaid@9.4.0/dist/mermaid.min.js"></script>
+        <script>mermaid.initialize({startOnLoad:true});</script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Find possible outliers among the ground-truth Annotations" href="../outlier-annotations/index.html" />
+    <link rel="prev" title="Upload your AI" href="../upload-your-ai/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> Konfuzio
+            <img src="../../../_static/docs__static_square_transparent_super_small.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Konfuzio SDK</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">What is the Konfuzio SDK?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../get_started.html">Get Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../tutorials.html">Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../data-preparation/index.html">Prepare Training and Testing Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../document_categorization/index.html">Document Categorization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../file_splitting/index.html">File Splitting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tokenizers/index.html">Tokenization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../information_extraction/index.html">Document Information Extraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../upload-your-ai/index.html">Upload your AI</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Data Validation Rules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#initializing-a-project-with-the-data-validation-rules-enabled">Initializing a Project with the Data Validation Rules enabled</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#document-validation-rules">Document Validation Rules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#annotation-validation-rules">Annotation Validation Rules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#span-validation-rules">Span Validation Rules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#bbox-validation-rules">Bbox Validation Rules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#initializing-a-project-with-the-data-validation-rules-disabled">Initializing a Project with the Data Validation Rules disabled</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../outlier-annotations/index.html">Find possible outliers among the ground-truth Annotations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../regex_based_annotations/index.html">Create Regex-based Annotations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../async_upload_with_callback/index.html">Pull Documents Uploaded Asynchronously with a Webhook</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pdf-form-generator/index.html">Build your own PDF Form Generator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ner-ontonotes-fast/index.html">Retrain Flair NER-Ontonotes-Fast with Human Revised Annotations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../annual-reports/index.html">Count Relevant Expressions in Annual Reports</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../barcode-scanner/index.html">Barcode Scanner with zxing-cpp</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sourcecode.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contribution.html">Contribution Guide</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/releases">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/index.html">What is the Konfuzio Server?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/api-v3.html">REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/on_premises.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/passwords/index.html">Password Management</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/changelog_app.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Document Validation UI</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../dvui/index.html">What is the Konfuzio Document Validation UI?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dvui/explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dvui/sourcecode.html">Source Code</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/releases">Changelog</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Konfuzio</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../tutorials.html">Tutorials</a> &raquo;</li>
+      <li>Data Validation Rules</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/sdk/tutorials/data_validation/index.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="data-validation-rules">
+<h1>Data Validation Rules<a class="headerlink" href="#data-validation-rules" title="Permalink to this headline">¶</a></h1>
+<p>Konfuzio automatically applies a set of rules for validating data within a <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#project">Project</a>.
+Data Validation Rules ensure that Training and Test data is consistent and well formed for training an
+<a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#extraction-ai">Extraction AI</a> with Konfuzio.</p>
+<p>In general, if a Document fails any of the checks described in the next sections, it will not be possible to train an
+AI with that Document.</p>
+<p>More specifically:</p>
+<ul class="simple">
+<li><p>If a Document fails any of the checks described in the <span class="xref myst">Bbox Validation Rules</span> section, it
+will not be possible to initialize the Project as a Python object (such as with
+<code class="docutils literal notranslate"><span class="pre">project</span> <span class="pre">=</span> <span class="pre">Project(YOUR_PROJECT_ID)</span></code>), and a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> will be raised. All other Documents in the Project will be
+able to be initialized.</p></li>
+<li><p>If a Document fails any of the checks described in the sections
+<span class="xref myst">Annotation Validation Rules</span> and <span class="xref myst">Span Validation Rules</span>, it
+will not be possible to retrieve the Annotations (including their Spans) that fail the specific checks (such as with
+<code class="docutils literal notranslate"><span class="pre">annotation</span> <span class="pre">=</span> <span class="pre">document.get_annotation_by_id(YOUR_ANNOTATION_ID)</span></code>), and a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> will be raised. All other
+Annotations in the Document will be retrievable.</p></li>
+</ul>
+<section id="initializing-a-project-with-the-data-validation-rules-enabled">
+<h2>Initializing a Project with the Data Validation Rules enabled<a class="headerlink" href="#initializing-a-project-with-the-data-validation-rules-enabled" title="Permalink to this headline">¶</a></h2>
+<p>By default, any <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#project">Project</a> has the Data Validation Rules enabled, so nothing
+special needs to be done to enable it.</p>
+<p>.. literalinclude:: /sdk/boilerplates/test_data_validation.py
+:language: python
+:start-after: Start initialization
+:end-before: End initialization
+:dedent: 4</p>
+</section>
+<section id="document-validation-rules">
+<h2>Document Validation Rules<a class="headerlink" href="#document-validation-rules" title="Permalink to this headline">¶</a></h2>
+<p>A <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#document">Document</a> passes the Data Validation Rules only if all the
+contained Annotations, Spans and Bboxes pass the Data Validation Rules.
+If at least one Annotation, Span, or Bbox within a Document fails one of the following checks, the entire Document is
+marked as unsuitable for training an Extraction AI.</p>
+<p>.. _annotation-validation:</p>
+</section>
+<section id="annotation-validation-rules">
+<h2>Annotation Validation Rules<a class="headerlink" href="#annotation-validation-rules" title="Permalink to this headline">¶</a></h2>
+<p>An <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#annotation">Annotation</a> passes the Data Validation Rules only if:</p>
+<ol class="arabic simple">
+<li><p>The Annotation is not from a Category different from the Document’s Category</p></li>
+<li><p>The Annotation is not entirely overlapping with another Annotation with the same Label</p>
+<ul class="simple">
+<li><p>It implies that partial overlaps with same Labels are allowed</p></li>
+<li><p>It implies that full overlaps with different Labels are allowed</p></li>
+</ul>
+</li>
+<li><p>The Annotation has at least one Span</p></li>
+</ol>
+<p>Please note that the Annotation Validation Rules are indifferent about the values of <code class="docutils literal notranslate"><span class="pre">Annotation.is_correct</span></code> or <code class="docutils literal notranslate"><span class="pre">Annotation.revised</span></code>.
+For more information about what these boolean values mean, see <a class="reference external" href="https://help.konfuzio.com/modules/annotations/index.html">Konfuzio Server - Annotations</a>.</p>
+<p>.. _span-validation:</p>
+</section>
+<section id="span-validation-rules">
+<h2>Span Validation Rules<a class="headerlink" href="#span-validation-rules" title="Permalink to this headline">¶</a></h2>
+<p>A <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#span">Span</a> passes the Data Validation Rules only if:</p>
+<ol class="arabic simple">
+<li><p>The Span contains non-empty text (the start offset must be strictly greater than the end offset)</p></li>
+<li><p>The Span is contained within a single line of text (must not be distributed across multiple lines)</p></li>
+</ol>
+<p>.. _bbox-validation:</p>
+</section>
+<section id="bbox-validation-rules">
+<h2>Bbox Validation Rules<a class="headerlink" href="#bbox-validation-rules" title="Permalink to this headline">¶</a></h2>
+<p>A <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#bbox">Bbox</a> passes the Data Validation Rules only if:</p>
+<ol class="arabic simple">
+<li><p>The Bbox has non-negative width and height (zero is allowed for compatibility reasons with many OCR engines)</p></li>
+<li><p>The Bbox is entirely contained within the bounds of a Page</p></li>
+<li><p>The character that is mapped by the Bbox must correspond to the text in the Document</p></li>
+</ol>
+</section>
+<section id="initializing-a-project-with-the-data-validation-rules-disabled">
+<h2>Initializing a Project with the Data Validation Rules disabled<a class="headerlink" href="#initializing-a-project-with-the-data-validation-rules-disabled" title="Permalink to this headline">¶</a></h2>
+<p>By default, any <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#project">Project</a> has the Data Validation Rules enabled.</p>
+<p>A possible reason for choosing to disable the Data Validation Rules that come with the Konfuzio SDK, is that an expert user
+wants to define a custom data structure or training pipeline which violates some assumptions normally present in Konfuzio
+Extraction AIs and pipelines.
+If you don’t want to validate your data, you should initialize the Project with <code class="docutils literal notranslate"><span class="pre">strict_data_validation=False</span></code>.</p>
+<p>We highly recommend to keep the Data Validation Rules enabled at all times, as it ensures that Training and Test data
+is consistent for training an Extraction AI. Disabling the Data Validation Rules and training an
+<a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#extraction-ai">Extraction AI</a> with potentially duplicated, malformed,
+or inconsistent data can <strong>decrease the quality of an Extraction AI</strong>. Only disable them if you know what you are doing.</p>
+<p>.. literalinclude:: /sdk/boilerplates/test_data_validation.py
+:language: python
+:start-after: Start no val
+:end-before: End no val
+:dedent: 4</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../upload-your-ai/index.html" class="btn btn-neutral float-left" title="Upload your AI" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../outlier-annotations/index.html" class="btn btn-neutral float-right" title="Find possible outliers among the ground-truth Annotations" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Helm und Nagel GmbH.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-D02B3QF8Z3"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-D02B3QF8Z3');
+</script>
+<script src="https://cmp.osano.com/16CVyMSbk3Iar1G3f/97ee6223-b0cb-4f8c-abd6-a25a0d6f6507/osano.js"></script>
+<script>window._nQc="89655017";</script>
+<script async src="https://serve.albacross.com/track.js"></script>
+<script data-jsd-embedded data-key="42374b9a-2f7b-46ec-ae7b-b79a89aa3dd9" data-base-url="https://jsd-widget.atlassian.com" src="https://jsd-widget.atlassian.com/assets/embed.js"></script>
+
+
+</body>
+</html>

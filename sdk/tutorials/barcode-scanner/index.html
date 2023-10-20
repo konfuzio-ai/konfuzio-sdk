@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Barcode Scanner with zxing-cpp &mdash; Konfuzio  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../_static/full_green_square.png"/>
+    <link rel="canonical" href="https://dev.konfuzio.com/sdk/tutorials/barcode-scanner/index.html" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script src="https://unpkg.com/mermaid@9.4.0/dist/mermaid.min.js"></script>
+        <script>mermaid.initialize({startOnLoad:true});</script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Explanations" href="../../explanations.html" />
+    <link rel="prev" title="Count Relevant Expressions in Annual Reports" href="../annual-reports/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> Konfuzio
+            <img src="../../../_static/docs__static_square_transparent_super_small.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Konfuzio SDK</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">What is the Konfuzio SDK?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../get_started.html">Get Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../tutorials.html">Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../data-preparation/index.html">Prepare Training and Testing Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../document_categorization/index.html">Document Categorization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../file_splitting/index.html">File Splitting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tokenizers/index.html">Tokenization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../information_extraction/index.html">Document Information Extraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../upload-your-ai/index.html">Upload your AI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../data_validation/index.html">Data Validation Rules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../outlier-annotations/index.html">Find possible outliers among the ground-truth Annotations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../regex_based_annotations/index.html">Create Regex-based Annotations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../async_upload_with_callback/index.html">Pull Documents Uploaded Asynchronously with a Webhook</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pdf-form-generator/index.html">Build your own PDF Form Generator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ner-ontonotes-fast/index.html">Retrain Flair NER-Ontonotes-Fast with Human Revised Annotations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../annual-reports/index.html">Count Relevant Expressions in Annual Reports</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Barcode Scanner with zxing-cpp</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#requirements">Requirements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#set-up-the-barcodeannotation-class">1. Set up the <code class="docutils literal notranslate"><span class="pre">BarcodeAnnotation</span></code> class</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#defining-the-barcodeextractionai-class-methods">2. Defining the <code class="docutils literal notranslate"><span class="pre">BarcodeExtractionAI</span></code> class methods</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#extract-bounding-boxes-from-image">2.1. Extract Bounding Boxes from Image</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#create-bbox-dictionary-from-zxing-cpp-output">2.2. Create Bbox Dictionary from <code class="docutils literal notranslate"><span class="pre">zxing-cpp</span></code> Output</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#install-dependencies">2.3. Install Dependencies</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#check-if-the-extraction-ai-is-ready">2.4. Check if the Extraction AI is ready</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#putting-it-all-together">3. Putting it All Together</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#saving-the-barcodeextractionai">4. Saving the <code class="docutils literal notranslate"><span class="pre">BarcodeExtractionAI</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sourcecode.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contribution.html">Contribution Guide</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/releases">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/index.html">What is the Konfuzio Server?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/api-v3.html">REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/on_premises.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/passwords/index.html">Password Management</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/changelog_app.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Document Validation UI</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../dvui/index.html">What is the Konfuzio Document Validation UI?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dvui/explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dvui/sourcecode.html">Source Code</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/releases">Changelog</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Konfuzio</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../tutorials.html">Tutorials</a> &raquo;</li>
+      <li>Barcode Scanner with zxing-cpp</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/sdk/tutorials/barcode-scanner/index.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <p>.. _barcode-scanner-tutorials:</p>
+<section id="barcode-scanner-with-zxing-cpp">
+<h1>Barcode Scanner with zxing-cpp<a class="headerlink" href="#barcode-scanner-with-zxing-cpp" title="Permalink to this headline">¶</a></h1>
+<p>In this tutorial, we’ll walk through the creation of a Barcode Extraction AI using the <code class="docutils literal notranslate"><span class="pre">zxing-cpp</span></code> library. We’ll implement a <code class="docutils literal notranslate"><span class="pre">BarcodeAnnotation</span></code> class, an Extraction AI logic, and integrate the AI with the <code class="docutils literal notranslate"><span class="pre">konfuzio-sdk</span></code> library. This AI will be able to detect barcodes from Documents and generate bounding box Annotations for the detected barcodes.</p>
+<p>The final result on the <a class="reference external" href="https://dev.konfuzio.com/dvui/index.html#what-is-the-konfuzio-document-validation-ui">DVUI</a> would look like this:</p>
+<p>.. image:: /sdk/tutorials/barcode-scanner/barcode_scanner_example.png</p>
+<section id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<hr class="docutils" />
+<p>Before we start, please ensure that the following requirements are available and properly installed on your system:</p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Python</span> <span class="pre">3.8</span></code> or a higher version. 🐍</p></li>
+<li><p>The <a class="reference external" href="https://pypi.org/project/konfuzio-sdk/">konfuzio-sdk</a> package. ✅</p></li>
+<li><p>The <a class="reference external" href="https://github.com/zxing-cpp/zxing-cpp">zxing-cpp</a> library. 💻</p></li>
+</ol>
+</section>
+<section id="set-up-the-barcodeannotation-class">
+<h2>1. Set up the <code class="docutils literal notranslate"><span class="pre">BarcodeAnnotation</span></code> class<a class="headerlink" href="#set-up-the-barcodeannotation-class" title="Permalink to this headline">¶</a></h2>
+<hr class="docutils" />
+<p>The first step is to create a BarcodeAnnotation class that inherits from <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html?highlight=annotation#annotation">Annotation</a>.</p>
+<p>This is mainly due to the fact that the <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html?highlight=annotation#annotation">Annotation</a> class is based on Spans and it’s <code class="docutils literal notranslate"><span class="pre">bboxes</span></code> are computed using these Spans.</p>
+<p>However, in our case, we want to use custom bounding boxes that are computed using the <code class="docutils literal notranslate"><span class="pre">zxing-cpp</span></code> library. Therefore, we need to override the <code class="docutils literal notranslate"><span class="pre">bboxes</span></code> property of the <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html?highlight=annotation#annotation">Annotation</a> class to return our custom bounding boxes.</p>
+<p>This will later be used by the <a class="reference external" href="https://dev.konfuzio.com/web/index.html#what-is-the-konfuzio-server">Server</a> as well as the <a class="reference external" href="https://dev.konfuzio.com/dvui/index.html#what-is-the-konfuzio-document-validation-ui">DVUI</a> to annotate the barcodes in the Document.</p>
+<p>The difference between Span based <code class="docutils literal notranslate"><span class="pre">bboxes</span></code> (dashed-line boxes) and custom <code class="docutils literal notranslate"><span class="pre">bboxes</span></code> (yellow box) is illustrated in the following image:</p>
+<p>.. image:: /sdk/tutorials/barcode-scanner/barcode_example.png
+:width: 40%
+:align: center</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Annotation</span>
+
+
+<span class="k">class</span> <span class="nc">BarcodeAnnotation</span><span class="p">(</span><span class="n">Annotation</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">custom_bboxes</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;custom_bboxes&quot;</span><span class="p">,</span> <span class="p">[])</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">bboxes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method of the Annotation class must be overridden to return the custom_bboxes.</span>
+<span class="sd">        :return: List of dictionaries, each in the format:</span>
+<span class="sd">            {</span>
+<span class="sd">                &#39;x0&#39;: int, &#39;x1&#39;: int, &#39;y0&#39;: int, &#39;y1&#39;: int,</span>
+<span class="sd">                &#39;top&#39;: int, &#39;bottom&#39;: int, &#39;page_index&#39;: int,</span>
+<span class="sd">                &#39;offset_string&#39;: str, &#39;custom_offset_string&#39;: bool</span>
+<span class="sd">            }</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">custom_bboxes</span>
+</pre></div>
+</div>
+</section>
+<section id="defining-the-barcodeextractionai-class-methods">
+<h2>2. Defining the <code class="docutils literal notranslate"><span class="pre">BarcodeExtractionAI</span></code> class methods<a class="headerlink" href="#defining-the-barcodeextractionai-class-methods" title="Permalink to this headline">¶</a></h2>
+<hr class="docutils" />
+<p>The second step is to create a custom <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#extraction-ai">Extraction AI</a> class that leverages the <code class="docutils literal notranslate"><span class="pre">CustomAnnotation</span></code> class defined in <em>Step 1</em> in order to extract barcodes from <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html?highlight=document#document">Documents</a>. We will start by explaining the different methods that will be used in this class.</p>
+<p><strong>NB.</strong> If you want to directly have the full code of the <code class="docutils literal notranslate"><span class="pre">BarcodeExtractionAI</span></code> class, you can skip to <span class="xref myst">Step 3</span>.</p>
+<section id="extract-bounding-boxes-from-image">
+<h3>2.1. Extract Bounding Boxes from Image<a class="headerlink" href="#extract-bounding-boxes-from-image" title="Permalink to this headline">¶</a></h3>
+<hr class="docutils" />
+<p>In this step, we’ll implement the method to extract bounding boxes and barcode text from an image using the <code class="docutils literal notranslate"><span class="pre">zxing-cpp</span></code> library.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">get_bboxes_from_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">page_index</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Extract the bboxes and texts of the barcodes from an image and format the bbox dictionaries in the right format</span>
+<span class="sd">    :param image: PIL image (the image of the page, resize to original size or probide the original image for better results )</span>
+<span class="sd">    :param page_index: int</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># import the necessary function from the library</span>
+    <span class="kn">from</span> <span class="nn">zxingcpp</span> <span class="kn">import</span> <span class="n">read_barcodes</span>
+
+    <span class="c1"># create empty list to store the bboxes</span>
+    <span class="n">bboxes_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1"># get the results from the library</span>
+    <span class="n">barcodes_lib_results</span> <span class="o">=</span> <span class="n">read_barcodes</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+    <span class="c1"># loop through the results and extract the bboxes</span>
+    <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">barcodes_lib_results</span><span class="p">:</span>
+        <span class="c1"># unpack the result position ## output: &#39;496x453 743x453 743x550 496x550&#39;</span>
+        <span class="n">position</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">position</span><span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\x00</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1"># unpack the result text ## output: &#39;123456&#39;</span>
+        <span class="n">barcode_text_value</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">text</span><span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\x00</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1"># unpack the coordinates of the bottom-left and top-right corners of the detected barcode</span>
+        <span class="n">top_right</span> <span class="o">=</span> <span class="n">position</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">)</span>
+        <span class="n">bottom_left</span> <span class="o">=</span> <span class="n">position</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">)</span>
+        <span class="c1"># create the bbox dictionary</span>
+        <span class="n">bbox_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_bbox_dict_from_coords</span><span class="p">(</span>
+            <span class="n">top_right</span><span class="p">,</span> <span class="n">bottom_left</span><span class="p">,</span> <span class="n">page_index</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">barcode_text_value</span>
+        <span class="p">)</span>
+        <span class="c1"># append the bbox dictionary to the list</span>
+        <span class="n">bboxes_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bbox_dict</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">bboxes_list</span>
+</pre></div>
+</div>
+</section>
+<section id="create-bbox-dictionary-from-zxing-cpp-output">
+<h3>2.2. Create Bbox Dictionary from <code class="docutils literal notranslate"><span class="pre">zxing-cpp</span></code> Output<a class="headerlink" href="#create-bbox-dictionary-from-zxing-cpp-output" title="Permalink to this headline">¶</a></h3>
+<hr class="docutils" />
+<p>In this step, we’ll implement the method to create the Bbox dictionary from the output of <code class="docutils literal notranslate"><span class="pre">zxing-cpp</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">get_bbox_dict_from_coords</span><span class="p">(</span>
+    <span class="n">top_right</span><span class="p">,</span> <span class="n">bottom_left</span><span class="p">,</span> <span class="n">page_index</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">barcode_text_value</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    transform the coordinates of the bottom-left and top-right corners</span>
+<span class="sd">    of the detected barcode from cv2 coordinates system to DVUI coordinates system</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># get the coordinates of the top-right corner in cv2 coordinates system</span>
+    <span class="n">x1</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">top_right</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">y1</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">top_right</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="c1"># get the coordinates of the bottom-left corner in cv2 coordinates system</span>
+    <span class="n">x0</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">bottom_left</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">y0</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">bottom_left</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="c1"># top and bottom are resp. equal to y1 and y0 in the cv2 coordinates system</span>
+    <span class="c1"># they don&#39;t need to be transformed to the DVUI coordinates system because they are distances and not coordinates</span>
+    <span class="n">top</span> <span class="o">=</span> <span class="n">y1</span>
+    <span class="n">bottom</span> <span class="o">=</span> <span class="n">y0</span>
+    <span class="c1"># transform the coordinates from cv2 coordinates system to DVUI coordinates system</span>
+    <span class="c1"># x0 and x1 don&#39;t need to be transformed because the x axis is unchanged in the DVUI coordinates system</span>
+    <span class="n">temp_y0</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">height</span> <span class="o">-</span> <span class="n">y0</span>
+    <span class="n">temp_y1</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">height</span> <span class="o">-</span> <span class="n">y1</span>
+    <span class="n">y0</span> <span class="o">=</span> <span class="n">temp_y0</span>
+    <span class="n">y1</span> <span class="o">=</span> <span class="n">temp_y1</span>
+    <span class="c1"># create the bbox dictionary</span>
+    <span class="n">bbox_dict</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;x0&quot;</span><span class="p">:</span> <span class="n">x0</span><span class="p">,</span>
+        <span class="s2">&quot;x1&quot;</span><span class="p">:</span> <span class="n">x1</span><span class="p">,</span>
+        <span class="s2">&quot;y0&quot;</span><span class="p">:</span> <span class="n">y0</span><span class="p">,</span>
+        <span class="s2">&quot;y1&quot;</span><span class="p">:</span> <span class="n">y1</span><span class="p">,</span>
+        <span class="s2">&quot;top&quot;</span><span class="p">:</span> <span class="n">top</span><span class="p">,</span>
+        <span class="s2">&quot;bottom&quot;</span><span class="p">:</span> <span class="n">bottom</span><span class="p">,</span>
+        <span class="s2">&quot;page_index&quot;</span><span class="p">:</span> <span class="n">page_index</span><span class="p">,</span>
+        <span class="s2">&quot;offset_string&quot;</span><span class="p">:</span> <span class="n">barcode_text_value</span><span class="p">,</span>
+        <span class="s2">&quot;custom_offset_string&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">bbox_dict</span>
+</pre></div>
+</div>
+<p>With these two separate steps, you have a clear distinction between extracting bounding boxes from the image using <code class="docutils literal notranslate"><span class="pre">zxing-cpp</span></code> and creating the final bbox dictionary from the output. This makes the code more modular and easier to maintain.</p>
+</section>
+<section id="install-dependencies">
+<h3>2.3. Install Dependencies<a class="headerlink" href="#install-dependencies" title="Permalink to this headline">¶</a></h3>
+<hr class="docutils" />
+<p>In this step, we’ll implement the method to install the <code class="docutils literal notranslate"><span class="pre">zxing-cpp</span></code> library (since it might not be installed by default on the running environment).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">install_dependencies</span><span class="p">():</span>
+    <span class="c1"># try installing the zxing-cpp library otherwise raise an error</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">subprocess</span>
+
+        <span class="n">package_name</span> <span class="o">=</span> <span class="s2">&quot;zxing-cpp&quot;</span>
+        <span class="c1"># Run the pip install command</span>
+        <span class="n">subprocess</span><span class="o">.</span><span class="n">check_call</span><span class="p">([</span><span class="s2">&quot;pip&quot;</span><span class="p">,</span> <span class="s2">&quot;install&quot;</span><span class="p">,</span> <span class="n">package_name</span><span class="p">])</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The package </span><span class="si">{</span><span class="n">package_name</span><span class="si">}</span><span class="s2"> is ready to be used.&quot;</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+            <span class="s2">&quot;An error occured while installing the zxing-cpp library. Please install it manually.&quot;</span>
+        <span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="check-if-the-extraction-ai-is-ready">
+<h3>2.4. Check if the Extraction AI is ready<a class="headerlink" href="#check-if-the-extraction-ai-is-ready" title="Permalink to this headline">¶</a></h3>
+<hr class="docutils" />
+<p>In this step, we’ll implement a function that will be used to check if the Extraction AI is ready. This is needed by the server to know when to start the extraction process.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">check_is_ready</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="c1"># check if the zxing-cpp library is already installed</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">install_dependencies</span><span class="p">()</span>
+        <span class="kn">import</span> <span class="nn">zxingcpp</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="putting-it-all-together">
+<h2>3. Putting it All Together<a class="headerlink" href="#putting-it-all-together" title="Permalink to this headline">¶</a></h2>
+<hr class="docutils" />
+<p>Finally, we’ll create a <code class="docutils literal notranslate"><span class="pre">BarcodeExtractionAI</span></code> class that uses all the earlier defined functions to extract the barcode from a <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html?highlight=document#document">Document</a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">AbstractExtractionAI</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Document</span><span class="p">,</span> <span class="n">Category</span><span class="p">,</span> <span class="n">Annotation</span><span class="p">,</span> <span class="n">AnnotationSet</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.regex</span> <span class="kn">import</span> <span class="n">WhitespaceTokenizer</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+
+
+<span class="k">class</span> <span class="nc">BarcodeAnnotation</span><span class="p">(</span><span class="n">Annotation</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">custom_bboxes</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;custom_bboxes&quot;</span><span class="p">,</span> <span class="p">[])</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">bboxes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method of the Annotation class must be overwriten to return the custom_bboxes</span>
+<span class="sd">        :return: List of dictionaries each of the format {</span>
+<span class="sd">            &#39;x0&#39;: int, &#39;x1&#39;: int, &#39;y0&#39;: int, &#39;y1&#39;: int,</span>
+<span class="sd">            &#39;top&#39;: int, &#39;bottom&#39;: int, &#39;page_index&#39;: int,</span>
+<span class="sd">            &#39;offset_string&#39;: str, &#39;custom_offset_string&#39;: bool</span>
+<span class="sd">        }</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">custom_bboxes</span>
+
+
+<span class="k">class</span> <span class="nc">BarcodeExtractionAI</span><span class="p">(</span><span class="n">AbstractExtractionAI</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A Wrapper to extract Barcodes from Documents using zxing-cpp library.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># you must set this to True if your AI requires pages images</span>
+    <span class="n">requires_images</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">category</span><span class="p">:</span> <span class="n">Category</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">category</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span> <span class="o">=</span> <span class="n">WhitespaceTokenizer</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># no training is needed since the zxing-cpp library can be used directly for extraction</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">extract</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document</span><span class="p">:</span> <span class="n">Document</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Document</span><span class="p">:</span>
+        <span class="c1"># check if the model is ready otherwise raise an error</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_is_ready</span><span class="p">()</span>
+        <span class="n">result_document</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
+        <span class="n">result_document</span><span class="o">.</span><span class="n">_text</span> <span class="o">=</span> <span class="s2">&quot;this should be a long text or at least twice the number of barcodes in the document&quot;</span>
+        <span class="n">barcode_label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="s2">&quot;Barcode&quot;</span><span class="p">)</span>
+        <span class="n">barcode_label_set</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">get_label_set_by_name</span><span class="p">(</span><span class="s2">&quot;Barcodes Set&quot;</span><span class="p">)</span>
+        <span class="n">barcode_annotation_set</span> <span class="o">=</span> <span class="n">AnnotationSet</span><span class="p">(</span>
+            <span class="n">document</span><span class="o">=</span><span class="n">result_document</span><span class="p">,</span> <span class="n">label_set</span><span class="o">=</span><span class="n">barcode_label_set</span>
+        <span class="p">)</span>
+        <span class="c1"># loop through the pages of the document and extract the barcodes</span>
+        <span class="k">for</span> <span class="n">page_index</span><span class="p">,</span> <span class="n">page</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">document</span><span class="o">.</span><span class="n">pages</span><span class="p">()):</span>
+            <span class="n">page_width</span> <span class="o">=</span> <span class="n">page</span><span class="o">.</span><span class="n">width</span>
+            <span class="n">page_height</span> <span class="o">=</span> <span class="n">page</span><span class="o">.</span><span class="n">height</span>
+            <span class="c1"># get the page in image format</span>
+            <span class="n">image</span> <span class="o">=</span> <span class="n">page</span><span class="o">.</span><span class="n">get_image</span><span class="p">(</span><span class="n">update</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="c1"># convert the image to RGB</span>
+            <span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;RGB&quot;</span><span class="p">)</span>
+            <span class="c1"># resize the image to the page size</span>
+            <span class="c1"># IMPORTANT: since the image is already resized we won&#39;t need any scaling factors to transform the coordinates</span>
+            <span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">resize</span><span class="p">((</span><span class="nb">int</span><span class="p">(</span><span class="n">page_width</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">page_height</span><span class="p">)))</span>
+            <span class="c1"># get the bboxes and texts of the barcodes using zxing-cpp</span>
+            <span class="n">page_bboxes_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_bboxes_from_image</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">page_index</span><span class="p">)</span>
+            <span class="c1"># loop through the bboxes and create the annotations using enumerate</span>
+            <span class="k">for</span> <span class="n">bbox_index</span><span class="p">,</span> <span class="n">bbox_dict</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">page_bboxes_list</span><span class="p">):</span>
+                <span class="n">_</span> <span class="o">=</span> <span class="n">BarcodeAnnotation</span><span class="p">(</span>
+                    <span class="n">document</span><span class="o">=</span><span class="n">result_document</span><span class="p">,</span>
+                    <span class="n">annotation_set</span><span class="o">=</span><span class="n">barcode_annotation_set</span><span class="p">,</span>
+                    <span class="n">spans</span><span class="o">=</span><span class="p">[],</span>
+                    <span class="n">start_offset</span><span class="o">=</span><span class="n">bbox_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="n">end_offset</span><span class="o">=</span><span class="n">bbox_index</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span>
+                    <span class="n">label</span><span class="o">=</span><span class="n">barcode_label</span><span class="p">,</span>
+                    <span class="n">label_set</span><span class="o">=</span><span class="n">barcode_label_set</span><span class="p">,</span>
+                    <span class="n">confidence</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+                    <span class="n">bboxes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">custom_bboxes</span><span class="o">=</span><span class="p">[</span><span class="n">bbox_dict</span><span class="p">],</span>
+                <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">result_document</span>
+
+    <span class="k">def</span> <span class="nf">get_bboxes_from_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">page_index</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">zxingcpp</span> <span class="kn">import</span> <span class="n">read_barcodes</span>
+        <span class="n">bboxes_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">barcodes_lib_results</span> <span class="o">=</span> <span class="n">read_barcodes</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">barcodes_lib_results</span><span class="p">:</span>
+            <span class="n">position</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">position</span><span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\x00</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">barcode_text_value</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">text</span><span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\x00</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">top_right</span> <span class="o">=</span> <span class="n">position</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">)</span>
+            <span class="n">bottom_left</span> <span class="o">=</span> <span class="n">position</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">)</span>
+            <span class="n">bbox_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_bbox_dict_from_coords</span><span class="p">(</span>
+                <span class="n">top_right</span><span class="p">,</span> <span class="n">bottom_left</span><span class="p">,</span> <span class="n">page_index</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">barcode_text_value</span>
+            <span class="p">)</span>
+            <span class="n">bboxes_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bbox_dict</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">bboxes_list</span>
+
+    <span class="k">def</span> <span class="nf">get_bbox_dict_from_coords</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">top_right</span><span class="p">,</span> <span class="n">bottom_left</span><span class="p">,</span> <span class="n">page_index</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">barcode_text_value</span>
+    <span class="p">):</span>
+        <span class="n">x1</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">top_right</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">y1</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">top_right</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">x0</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">bottom_left</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">y0</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">bottom_left</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">top</span> <span class="o">=</span> <span class="n">y1</span>
+        <span class="n">bottom</span> <span class="o">=</span> <span class="n">y0</span>
+        <span class="n">temp_y0</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">height</span> <span class="o">-</span> <span class="n">y0</span>
+        <span class="n">temp_y1</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">height</span> <span class="o">-</span> <span class="n">y1</span>
+        <span class="n">y0</span> <span class="o">=</span> <span class="n">temp_y0</span>
+        <span class="n">y1</span> <span class="o">=</span> <span class="n">temp_y1</span>
+        <span class="n">bbox_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;x0&quot;</span><span class="p">:</span> <span class="n">x0</span><span class="p">,</span>
+            <span class="s2">&quot;x1&quot;</span><span class="p">:</span> <span class="n">x1</span><span class="p">,</span>
+            <span class="s2">&quot;y0&quot;</span><span class="p">:</span> <span class="n">y0</span><span class="p">,</span>
+            <span class="s2">&quot;y1&quot;</span><span class="p">:</span> <span class="n">y1</span><span class="p">,</span>
+            <span class="s2">&quot;top&quot;</span><span class="p">:</span> <span class="n">top</span><span class="p">,</span>
+            <span class="s2">&quot;bottom&quot;</span><span class="p">:</span> <span class="n">bottom</span><span class="p">,</span>
+            <span class="s2">&quot;page_index&quot;</span><span class="p">:</span> <span class="n">page_index</span><span class="p">,</span>
+            <span class="s2">&quot;offset_string&quot;</span><span class="p">:</span> <span class="n">barcode_text_value</span><span class="p">,</span>
+            <span class="s2">&quot;custom_offset_string&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">bbox_dict</span>
+
+    <span class="k">def</span> <span class="nf">install_dependencies</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">subprocess</span>
+            <span class="n">package_name</span> <span class="o">=</span> <span class="s2">&quot;zxing-cpp&quot;</span>
+            <span class="n">subprocess</span><span class="o">.</span><span class="n">check_call</span><span class="p">(</span>
+                <span class="p">[</span><span class="s2">&quot;pip&quot;</span><span class="p">,</span> <span class="s2">&quot;install&quot;</span><span class="p">,</span> <span class="n">package_name</span><span class="p">])</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The package </span><span class="si">{</span><span class="n">package_name</span><span class="si">}</span><span class="s2"> is ready to be used.&quot;</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="s2">&quot;An error occured while installing the zxing-cpp library. Please install it manually.&quot;</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">check_is_ready</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">install_dependencies</span><span class="p">()</span>
+            <span class="kn">import</span> <span class="nn">zxingcpp</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+</pre></div>
+</div>
+</section>
+<section id="saving-the-barcodeextractionai">
+<h2>4. Saving the <code class="docutils literal notranslate"><span class="pre">BarcodeExtractionAI</span></code><a class="headerlink" href="#saving-the-barcodeextractionai" title="Permalink to this headline">¶</a></h2>
+<hr class="docutils" />
+<p>Now, let’s create the main script to save our Extraction AI that will be used to process Documents on Konfuzio:</p>
+<p>We start by defining our <code class="docutils literal notranslate"><span class="pre">project_id</span></code> (don’t forget to change the project_id to your own project_id, it should be an <code class="docutils literal notranslate"><span class="pre">int</span></code>) then we save the Extraction AI as a <a class="reference external" href="https://docs.python.org/3/library/pickle.html">pickle</a> file that we will upload to the <a class="reference external" href="https://dev.konfuzio.com/web/index.html#what-is-the-konfuzio-server">Server</a> later.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">project_id</span> <span class="o">=</span> <span class="s2">&quot;my_project_id&quot;</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
+
+<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">project_id</span><span class="p">,</span> <span class="n">update</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">strict_data_validation</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">barcode_extraction_ai</span> <span class="o">=</span> <span class="n">BarcodeExtractionAI</span><span class="p">(</span><span class="n">category</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">categories</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">pickle_model_path</span> <span class="o">=</span> <span class="n">barcode_extraction_ai</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This is an example of how the output of this Barcode Scanner will look like on the <a class="reference external" href="https://dev.konfuzio.com/dvui/index.html#what-is-the-konfuzio-document-validation-ui">DVUI</a>:</p>
+<p>.. image:: /sdk/tutorials/barcode-scanner/barcode_scanner_example.png</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../annual-reports/index.html" class="btn btn-neutral float-left" title="Count Relevant Expressions in Annual Reports" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../../explanations.html" class="btn btn-neutral float-right" title="Explanations" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Helm und Nagel GmbH.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-D02B3QF8Z3"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-D02B3QF8Z3');
+</script>
+<script src="https://cmp.osano.com/16CVyMSbk3Iar1G3f/97ee6223-b0cb-4f8c-abd6-a25a0d6f6507/osano.js"></script>
+<script>window._nQc="89655017";</script>
+<script async src="https://serve.albacross.com/track.js"></script>
+<script data-jsd-embedded data-key="42374b9a-2f7b-46ec-ae7b-b79a89aa3dd9" data-base-url="https://jsd-widget.atlassian.com" src="https://jsd-widget.atlassian.com/assets/embed.js"></script>
+
+
+</body>
+</html>
