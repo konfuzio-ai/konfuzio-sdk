@@ -20,6 +20,19 @@ jobs:
           pip install -e .[docs]
           sphinx-build -d _build/doctrees docs _build/html
           mv _build/html public
+      - name: Upload Sphinx Error Log
+        if: ${{ failure() }}
+        run: |
+          error_log=$(find /tmp -name "sphinx-err-*.log")
+          if [ -n "$error_log" ]; then
+            mv "$error_log" sphinx-error.log
+            echo "::set-output name=path::sphinx-error.log"
+          else
+            echo "Sphinx error log not found"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Publish generated content to GitHub Pages
         uses: tsunematsu21/actions-publish-gh-pages@v1.0.1
         with:
