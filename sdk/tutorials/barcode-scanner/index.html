@@ -8,6 +8,7 @@
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
     <link rel="shortcut icon" href="../../../_static/full_green_square.png"/>
     <link rel="canonical" href="https://dev.konfuzio.com/sdk/tutorials/barcode-scanner/index.html" />
@@ -51,7 +52,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../index.html">What is the Konfuzio SDK?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../get_started.html">Get Started</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../tutorials.html">Tutorials</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="../data-preparation/index.html">Prepare the data for training and testing the AI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../data-preparation/index.html">Prepare Training and Testing Data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../document_categorization/index.html">Document Categorization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../file_splitting/index.html">File Splitting</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tokenizers/index.html">Tokenization</a></li>
@@ -127,11 +128,12 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="barcode-scanner-with-zxing-cpp">
+  <p>.. _barcode-scanner-tutorials:</p>
+<section id="barcode-scanner-with-zxing-cpp">
 <h1>Barcode Scanner with zxing-cpp<a class="headerlink" href="#barcode-scanner-with-zxing-cpp" title="Permalink to this headline">¶</a></h1>
 <p>In this tutorial, we’ll walk through the creation of a Barcode Extraction AI using the <code class="docutils literal notranslate"><span class="pre">zxing-cpp</span></code> library. We’ll implement a <code class="docutils literal notranslate"><span class="pre">BarcodeAnnotation</span></code> class, an Extraction AI logic, and integrate the AI with the <code class="docutils literal notranslate"><span class="pre">konfuzio-sdk</span></code> library. This AI will be able to detect barcodes from Documents and generate bounding box Annotations for the detected barcodes.</p>
 <p>The final result on the <a class="reference external" href="https://dev.konfuzio.com/dvui/index.html#what-is-the-konfuzio-document-validation-ui">DVUI</a> would look like this:</p>
-<img alt="../../../_images/barcode_scanner_example.png" src="../../../_images/barcode_scanner_example.png" />
+<p>.. image:: /sdk/tutorials/barcode-scanner/barcode_scanner_example.png</p>
 <section id="requirements">
 <h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
 <hr class="docutils" />
@@ -150,7 +152,9 @@
 <p>However, in our case, we want to use custom bounding boxes that are computed using the <code class="docutils literal notranslate"><span class="pre">zxing-cpp</span></code> library. Therefore, we need to override the <code class="docutils literal notranslate"><span class="pre">bboxes</span></code> property of the <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html?highlight=annotation#annotation">Annotation</a> class to return our custom bounding boxes.</p>
 <p>This will later be used by the <a class="reference external" href="https://dev.konfuzio.com/web/index.html#what-is-the-konfuzio-server">Server</a> as well as the <a class="reference external" href="https://dev.konfuzio.com/dvui/index.html#what-is-the-konfuzio-document-validation-ui">DVUI</a> to annotate the barcodes in the Document.</p>
 <p>The difference between Span based <code class="docutils literal notranslate"><span class="pre">bboxes</span></code> (dashed-line boxes) and custom <code class="docutils literal notranslate"><span class="pre">bboxes</span></code> (yellow box) is illustrated in the following image:</p>
-<a class="reference internal image-reference" href="../../../_images/barcode_example.png"><img alt="../../../_images/barcode_example.png" class="align-center" src="../../../_images/barcode_example.png" style="width: 40%;" /></a>
+<p>.. image:: /sdk/tutorials/barcode-scanner/barcode_example.png
+:width: 40%
+:align: center</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Annotation</span>
 
@@ -179,7 +183,7 @@
 <h2>2. Defining the <code class="docutils literal notranslate"><span class="pre">BarcodeExtractionAI</span></code> class methods<a class="headerlink" href="#defining-the-barcodeextractionai-class-methods" title="Permalink to this headline">¶</a></h2>
 <hr class="docutils" />
 <p>The second step is to create a custom <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#extraction-ai">Extraction AI</a> class that leverages the <code class="docutils literal notranslate"><span class="pre">CustomAnnotation</span></code> class defined in <em>Step 1</em> in order to extract barcodes from <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html?highlight=document#document">Documents</a>. We will start by explaining the different methods that will be used in this class.</p>
-<p><strong>NB.</strong> If you want to directly have the full code of the <code class="docutils literal notranslate"><span class="pre">BarcodeExtractionAI</span></code> class, you can skip to <a class="reference external" href="#putting-it-all-together">Step 3</a>.</p>
+<p><strong>NB.</strong> If you want to directly have the full code of the <code class="docutils literal notranslate"><span class="pre">BarcodeExtractionAI</span></code> class, you can skip to <span class="xref myst">Step 3</span>.</p>
 <section id="extract-bounding-boxes-from-image">
 <h3>2.1. Extract Bounding Boxes from Image<a class="headerlink" href="#extract-bounding-boxes-from-image" title="Permalink to this headline">¶</a></h3>
 <hr class="docutils" />
@@ -460,7 +464,7 @@
 </pre></div>
 </div>
 <p>This is an example of how the output of this Barcode Scanner will look like on the <a class="reference external" href="https://dev.konfuzio.com/dvui/index.html#what-is-the-konfuzio-document-validation-ui">DVUI</a>:</p>
-<img alt="../../../_images/barcode_scanner_example.png" src="../../../_images/barcode_scanner_example.png" />
+<p>.. image:: /sdk/tutorials/barcode-scanner/barcode_scanner_example.png</p>
 </section>
 </section>
 

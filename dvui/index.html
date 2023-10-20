@@ -8,6 +8,7 @@
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" type="text/css" />
       <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
     <link rel="shortcut icon" href="../_static/full_green_square.png"/>
     <link rel="canonical" href="https://dev.konfuzio.com/dvui/index.html" />
@@ -115,10 +116,13 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="what-is-the-konfuzio-document-validation-ui">
+  <p>.. meta::
+:description: overview of the Document Validation UI</p>
+<p>.. _Konfuzio Document Validation UI overview:</p>
+<section id="what-is-the-konfuzio-document-validation-ui">
 <h1>What is the Konfuzio Document Validation UI?<a class="headerlink" href="#what-is-the-konfuzio-document-validation-ui" title="Permalink to this headline">¶</a></h1>
 <p>The Konfuzio Document Validation UI is a collection of open-source components, developed with <a class="reference external" href="https://v2.vuejs.org/">Vue.js</a>, that lets you preview and interact with Documents uploaded to <a class="reference external" href="https://konfuzio.com/">Konfuzio Server</a>.</p>
-<a class="reference external image-reference" href="./images/dvui.png"><img alt="dvui.png" src="../_images/dvui.png" /></a>
+<p><img alt="dvui.png" src="../_images/dvui.png" /></p>
 <p>Chrome (from version 51), Firefox (from version 54), Edge (from version 15), and Safari (from version 10) are supported in the latest version.</p>
 <p>If you want to read the full user guide visit <a class="reference external" href="https://help.konfuzio.com/document-validation-ui/index.html">this link</a>.</p>
 <section id="components">
@@ -128,17 +132,17 @@
 <h3>Primary Components<a class="headerlink" href="#primary-components" title="Permalink to this headline">¶</a></h3>
 <section id="document-thumbnails">
 <h4>Document Thumbnails<a class="headerlink" href="#document-thumbnails" title="Permalink to this headline">¶</a></h4>
-<a class="reference external image-reference" href="./images/document_thumbnails.svg"><img alt="document_thumbnails.svg" src="../_images/document_thumbnails.svg" /></a>
+<p><img alt="document_thumbnails.svg" src="../_images/document_thumbnails.svg" /></p>
 <p>This is a simple component that loads the Document images and displays them in a vertical list to act as a thumbnail selector. It is fully clickable and it updates its state automatically.</p>
 </section>
 <section id="document-page">
 <h4>Document Page<a class="headerlink" href="#document-page" title="Permalink to this headline">¶</a></h4>
-<a class="reference external image-reference" href="./images/document_page.svg"><img alt="document_page.svg" src="../_images/document_page.svg" /></a>
+<p><img alt="document_page.svg" src="../_images/document_page.svg" /></p>
 <p>This component is responsible for drawing the Document and handling any interaction with it. It uses <a class="reference external" href="https://konvajs.org/docs/vue/index.html">Konva JS</a> to render a canvas element that has the Document image as background and shapes on top. Most of the shapes are Annotations from the Konfuzio API.</p>
 </section>
 <section id="document-annotations">
 <h4>Document Annotations<a class="headerlink" href="#document-annotations" title="Permalink to this headline">¶</a></h4>
-<a class="reference external image-reference" href="./images/document_annotations.svg"><img alt="document_annotations.svg" src="../_images/document_annotations.svg" /></a>
+<p><img alt="document_annotations.svg" src="../_images/document_annotations.svg" /></p>
 <p>This component creates a list to interact with each Annotation on the Document. You can accept, decline or edit the Annotation, edit empty Labels, and change the Annotation bounding box, among other things.</p>
 </section>
 </section>

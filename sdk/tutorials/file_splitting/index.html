@@ -8,6 +8,7 @@
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
     <link rel="shortcut icon" href="../../../_static/full_green_square.png"/>
     <link rel="canonical" href="https://dev.konfuzio.com/sdk/tutorials/file_splitting/index.html" />
@@ -51,7 +52,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../index.html">What is the Konfuzio SDK?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../get_started.html">Get Started</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../tutorials.html">Tutorials</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="../data-preparation/index.html">Prepare the data for training and testing the AI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../data-preparation/index.html">Prepare Training and Testing Data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../document_categorization/index.html">Document Categorization</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">File Splitting</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#overview">Overview</a></li>
@@ -130,8 +131,9 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="file-splitting">
-<span id="file-splitting-tutorials"></span><h1>File Splitting<a class="headerlink" href="#file-splitting" title="Permalink to this headline">¶</a></h1>
+  <p>.. _file-splitting-tutorials:</p>
+<section id="file-splitting">
+<h1>File Splitting<a class="headerlink" href="#file-splitting" title="Permalink to this headline">¶</a></h1>
 <p>PDFs often encapsulate multiple distinct Documents within a single file, leading to complex navigation and information
 retrieval. Document splitting tackles this by disentangling these intertwined files into separate Documents. This
 guide introduces you to tools and models that automate this process, streamlining your work with multi-Document PDFs.
@@ -170,69 +172,16 @@ context-aware logic. By context-aware we mean a rule-based approach that looks f
 Pages of all Category’s Documents. Upon predicting whether a Page is a potential splitting point (meaning whether it is
 first or not), we compare Page’s contents to these common first-page strings; if there is occurrence of at least one
 such string, we mark a Page to be first (thus meaning it is a splitting point).</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Page</span><span class="p">,</span> <span class="n">Category</span><span class="p">,</span> <span class="n">Project</span>
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.file_splitting</span> <span class="kn">import</span> <span class="n">SplittingAI</span>
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.file_splitting</span> <span class="kn">import</span> <span class="n">ContextAwareFileSplittingModel</span>
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.regex</span> <span class="kn">import</span> <span class="n">ConnectedTextTokenizer</span>
-
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># initialize a Project and fetch a test Document of your choice</span>
-<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
-<span class="n">test_document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
-
-<span class="c1"># initialize a Context Aware File Splitting Model and fit it</span>
-
-<span class="n">file_splitting_model</span> <span class="o">=</span> <span class="n">ContextAwareFileSplittingModel</span><span class="p">(</span>
-    <span class="n">categories</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">categories</span><span class="p">,</span> <span class="n">tokenizer</span><span class="o">=</span><span class="n">ConnectedTextTokenizer</span><span class="p">()</span>
-<span class="p">)</span>
-
-<span class="c1"># for an example run, you can take only a slice of training documents to make fitting faster</span>
-<span class="n">file_splitting_model</span><span class="o">.</span><span class="n">documents</span> <span class="o">=</span> <span class="n">file_splitting_model</span><span class="o">.</span><span class="n">documents</span><span class="p">[:</span><span class="mi">10</span><span class="p">]</span>
-
-<span class="n">file_splitting_model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">allow_empty_categories</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-<span class="c1"># save the model</span>
-<span class="n">save_path</span> <span class="o">=</span> <span class="n">file_splitting_model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">include_konfuzio</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-<span class="c1"># run the prediction and see its confidence</span>
-<span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">test_document</span><span class="o">.</span><span class="n">pages</span><span class="p">():</span>
-    <span class="n">pred</span> <span class="o">=</span> <span class="n">file_splitting_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">pred</span><span class="o">.</span><span class="n">is_first_page</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span>
-            <span class="s1">&#39;Page </span><span class="si">{}</span><span class="s1"> is predicted as the first. Confidence: </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">number</span><span class="p">,</span> <span class="n">page</span><span class="o">.</span><span class="n">is_first_page_confidence</span><span class="p">)</span>
-        <span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Page </span><span class="si">{}</span><span class="s1"> is predicted as the non-first.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">number</span><span class="p">))</span>
-
-<span class="c1"># usage with the Splitting AI – you can load a pre-saved model or pass an initialized instance as the input</span>
-<span class="c1"># in this example, we load a previously saved one</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">ContextAwareFileSplittingModel</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span>
-
-<span class="c1"># initialize the Splitting AI</span>
-<span class="n">splitting_ai</span> <span class="o">=</span> <span class="n">SplittingAI</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-
-<span class="c1"># Splitting AI is a more high-level interface to Context Aware File Splitting Model and any other models that can be</span>
-<span class="c1"># developed for File Splitting purposes. It takes a Document as an input, rather than individual Pages, because it</span>
-<span class="c1"># utilizes page-level prediction of possible split points and returns Document or Documents with changes depending</span>
-<span class="c1"># on the prediction mode.</span>
-
-<span class="c1"># Splitting AI can be run in two modes: returning a list of Sub-Documents as the result of the input Document</span>
-<span class="c1"># splitting or returning a copy of the input Document with Pages predicted as first having an attribute</span>
-<span class="c1"># &quot;is_first_page&quot;. The flag &quot;return_pages&quot; has to be True for the latter; let&#39;s use it</span>
-<span class="n">new_document</span> <span class="o">=</span> <span class="n">splitting_ai</span><span class="o">.</span><span class="n">propose_split_documents</span><span class="p">(</span><span class="n">test_document</span><span class="p">,</span> <span class="n">return_pages</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">new_document</span><span class="p">)</span>
-<span class="c1"># output: [predicted_document]</span>
-
-<span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">new_document</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pages</span><span class="p">():</span>
-    <span class="k">if</span> <span class="n">page</span><span class="o">.</span><span class="n">is_first_page</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span>
-            <span class="s1">&#39;Page </span><span class="si">{}</span><span class="s1"> is predicted as the first. Confidence: </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">number</span><span class="p">,</span> <span class="n">page</span><span class="o">.</span><span class="n">is_first_page_confidence</span><span class="p">)</span>
-        <span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Page </span><span class="si">{}</span><span class="s1"> is predicted as the non-first.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">number</span><span class="p">))</span>
-</pre></div>
-</div>
+<p>.. literalinclude:: /sdk/boilerplates/test_file_splitting_example.py
+:language: python
+:start-after: start imports
+:end-before: end imports
+:dedent: 4
+.. literalinclude:: /sdk/boilerplates/test_file_splitting_example.py
+:language: python
+:start-after: start file splitting
+:end-before: end file splitting
+:dedent: 4</p>
 <p>After you have trained and saved your custom AI, you can upload it using the steps from the <a class="reference external" href="https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html#upload-extraction-or-category-ai-to-target-instance">tutorial</a>
 or using the method <code class="docutils literal notranslate"><span class="pre">upload_ai_model()</span></code>.</p>
 <p>For the first option, go to the Superuser AIs and select your locally stored pickle file, setting Model Type to
@@ -254,7 +203,7 @@ on the data from a Project of your choice. You can then save your trained model 
 <p>It’s common for multi-paged files to not be perfectly organized, and in some cases, multiple independent Documents may be
 included in a single file. To ensure that these Documents are properly processed and separated, we will be discussing a
 method for identifying and splitting them into individual, independent Sub-documents.</p>
-<img alt="../../../_images/multi_file_document_example.png" src="../../../_images/multi_file_document_example.png" />
+<p>.. image:: /sdk/tutorials/file_splitting/multi_file_document_example.png</p>
 <p><em>Multi-file Document Example</em></p>
 <p>Konfuzio SDK offers two ways for separating Documents that may be included in a single file. One of them is training
 the instance of the Multimodal File Splitting Model for file splitting that would predict whether a Page is first or
@@ -263,8 +212,9 @@ that processes textual and visual data from the Documents separately (in our cas
 architectures respectively) and then combines the outputs which go into a Multi-layer Perceptron architecture as
 inputs. A more detailed scheme of the architecture can be found further.</p>
 <p>If you hover over the image you can zoom or use the full page mode.</p>
-<p><span class="raw-html-m2r"><div class="mxgraph" style="max-width:100%;border:1px solid transparent;" data-mxgraph="{&quot;highlight&quot;:&quot;#0000ff&quot;,&quot;nav&quot;:true,&quot;resize&quot;:true,&quot;toolbar&quot;:&quot;zoom layers tags lightbox&quot;,&quot;edit&quot;:&quot;_blank&quot;,&quot;url&quot;:&quot;https://raw.githubusercontent.com/konfuzio-ai/konfuzio-sdk/master/docs/sdk/tutorials/file_splitting/fusion_model.drawio&quot;}"></div></span></p>
-<script type="text/javascript" src="https://viewer.diagrams.net/embed2.js?&fetch=https%3A%2F%2Fraw.githubusercontent.com%2Fkonfuzio-ai%2Fkonfuzio-sdk%2Fmaster%2Fdocs%2Fsdk%2Ftutorials%2Ffile_splitting%2Ffusion_model.drawio"></script><p>Another approach is context-aware file splitting logic which is presented by Context Aware File Splitting Model. This
+<div class="mxgraph" style="max-width:100%;border:1px solid transparent;" data-mxgraph="{&quot;highlight&quot;:&quot;#0000ff&quot;,&quot;nav&quot;:true,&quot;resize&quot;:true,&quot;toolbar&quot;:&quot;zoom layers tags lightbox&quot;,&quot;edit&quot;:&quot;_blank&quot;,&quot;url&quot;:&quot;https://raw.githubusercontent.com/konfuzio-ai/konfuzio-sdk/master/docs/sdk/tutorials/file_splitting/fusion_model.drawio&quot;}"></div>
+<script type="text/javascript" src="https://viewer.diagrams.net/embed2.js?&fetch=https%3A%2F%2Fraw.githubusercontent.com%2Fkonfuzio-ai%2Fkonfuzio-sdk%2Fmaster%2Fdocs%2Fsdk%2Ftutorials%2Ffile_splitting%2Ffusion_model.drawio"></script>
+<p>Another approach is context-aware file splitting logic which is presented by Context Aware File Splitting Model. This
 approach involves analyzing the contents of each Page and identifying similarities to the first Pages of the Document.
 It will allow us to define splitting points and divide the Document into multiple Sub-documents. It’s important to note
 that this approach is only effective for Documents written in the same language and that the process must be repeated
@@ -303,14 +253,17 @@ value, which is unique to the Page class and is not present in Document class. P
 splitting points, thus, each new Sub-Document has a Page predicted as first as its starting point.</p></li>
 </ul>
 <p>To begin, we will make all the necessary imports:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Page</span><span class="p">,</span> <span class="n">Category</span><span class="p">,</span> <span class="n">Project</span>
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.file_splitting</span> <span class="kn">import</span> <span class="n">SplittingAI</span>
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.file_splitting</span> <span class="kn">import</span> <span class="n">ContextAwareFileSplittingModel</span>
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.regex</span> <span class="kn">import</span> <span class="n">ConnectedTextTokenizer</span>
-
-</pre></div>
-</div>
+<p>.. literalinclude:: /sdk/boilerplates/test_file_splitting_example.py
+:language: python
+:start-after: start imports
+:end-before: end imports
+:dedent: 4</p>
 <p>Then, let’s initialize the <code class="docutils literal notranslate"><span class="pre">ContextAwareFileSplittingModel</span></code> class:</p>
+<p>.. literalinclude:: ../../konfuzio_sdk/trainer/file_splitting.py
+:language: python
+:start-after: begin init
+:end-before: end init
+:dedent: 4</p>
 <p>The class inherits from <code class="docutils literal notranslate"><span class="pre">AbstractFileSplittingModel</span></code>, so we run <code class="docutils literal notranslate"><span class="pre">super().__init__(categories=categories)</span></code> to properly
 inherit its attributes. The <code class="docutils literal notranslate"><span class="pre">tokenizer</span></code> attribute will be used to process the text within the Document, separating it
 into Spans. This is done to ensure that the text in all the Documents is split using the same logic (particularly
@@ -321,98 +274,51 @@ reassign it within the same instance of the model, all previously gathered strin
 ones. <code class="docutils literal notranslate"><span class="pre">requires_images</span></code> and <code class="docutils literal notranslate"><span class="pre">requires_text</span></code> determine whether these types of data are used for prediction; this is
 needed for distinguishing between preprocessing types once a model is passed into the Splitting AI.</p>
 <p>An example of how ConnectedTextTokenizer works:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># before tokenization</span>
-<span class="n">test_document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
-<span class="n">test_document</span><span class="o">.</span><span class="n">text</span>
-
-<span class="c1"># output: &quot;Hi all,\nI like bread.\n\fI hope to get everything done soon.\n\fMorning,\n\fI&#39;m glad to see you.&quot;</span>
-<span class="c1">#             &quot;\n\fMorning,&quot;</span>
-
-<span class="n">test_document</span><span class="o">.</span><span class="n">spans</span><span class="p">()</span>
-
-<span class="c1"># output: []</span>
-
-<span class="n">test_document</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="n">test_document</span><span class="p">)</span>
-
-<span class="c1"># after tokenization</span>
-<span class="n">test_document</span><span class="o">.</span><span class="n">spans</span><span class="p">()</span>
-
-<span class="c1"># output: [Span (0, 7), Span (8, 21), Span (22, 58), Span (59, 68), Span (69, 90), Span (91, 100)]</span>
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">test_document</span><span class="o">.</span><span class="n">spans</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">offset_string</span>
-
-<span class="c1"># output: &quot;Hi all,&quot;</span>
-</pre></div>
-</div>
+<p>.. literalinclude:: /sdk/boilerplates/test_connected_text_tokenizer.py
+:language: python
+:start-after: Start tokenize
+:end-before: End tokenize
+:dedent: 4
+.. literalinclude:: /sdk/boilerplates/test_connected_text_tokenizer.py
+:language: python
+:start-after: Start string
+:end-before: End string
+:dedent: 4</p>
 <p>The first method to define will be the <code class="docutils literal notranslate"><span class="pre">fit()</span></code> method. For each Category, we call <code class="docutils literal notranslate"><span class="pre">exclusive_first_page_strings</span></code> method,
 which allows us to gather the strings that appear on the first Page of each Document. <code class="docutils literal notranslate"><span class="pre">allow_empty_categories</span></code> allows
 for returning empty lists for Categories that haven’t had any exclusive first-page strings found across their Documents.
 This means that those Categories would not be used in the prediction process.</p>
+<p>.. literalinclude:: ../../konfuzio_sdk/trainer/file_splitting.py
+:language: python
+:start-after: begin fit
+:end-before: end fit
+:dedent: 4</p>
 <p>Next, we define <code class="docutils literal notranslate"><span class="pre">predict()</span></code> method. The method accepts a Page as an input and checks its Span set for containing
 first-page strings for each of the Categories. If there is at least one intersection, the Page is predicted to be a
 first Page. If there are no intersections, the Page is predicted to be a non-first Page.</p>
+<p>.. literalinclude:: ../../konfuzio_sdk/trainer/file_splitting.py
+:language: python
+:start-after: begin predict
+:end-before: end predict
+:dedent: 4</p>
 <p>Lastly, a <code class="docutils literal notranslate"><span class="pre">check_is_ready()</span></code> method is defined. This method is used to ensure that a model is ready for prediction: the
 checks cover that the Tokenizer and a set of Categories is defined, and that at least one of the Categories has
 exclusive first-page strings.</p>
+<p>.. literalinclude:: ../../konfuzio_sdk/trainer/file_splitting.py
+:language: python
+:start-after: begin check
+:end-before: end check
+:dedent: 4</p>
 <p>Full code of class:</p>
+<p>.. literalinclude:: ../../konfuzio_sdk/trainer/file_splitting.py
+:language: python
+:pyobject: ContextAwareFileSplittingModel</p>
 <p>A quick example of the class’s usage:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># initialize a Project and fetch a test Document of your choice</span>
-<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
-<span class="n">test_document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
-
-<span class="c1"># initialize a Context Aware File Splitting Model and fit it</span>
-
-<span class="n">file_splitting_model</span> <span class="o">=</span> <span class="n">ContextAwareFileSplittingModel</span><span class="p">(</span>
-    <span class="n">categories</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">categories</span><span class="p">,</span> <span class="n">tokenizer</span><span class="o">=</span><span class="n">ConnectedTextTokenizer</span><span class="p">()</span>
-<span class="p">)</span>
-
-<span class="c1"># for an example run, you can take only a slice of training documents to make fitting faster</span>
-<span class="n">file_splitting_model</span><span class="o">.</span><span class="n">documents</span> <span class="o">=</span> <span class="n">file_splitting_model</span><span class="o">.</span><span class="n">documents</span><span class="p">[:</span><span class="mi">10</span><span class="p">]</span>
-
-<span class="n">file_splitting_model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">allow_empty_categories</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-<span class="c1"># save the model</span>
-<span class="n">save_path</span> <span class="o">=</span> <span class="n">file_splitting_model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">include_konfuzio</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-<span class="c1"># run the prediction and see its confidence</span>
-<span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">test_document</span><span class="o">.</span><span class="n">pages</span><span class="p">():</span>
-    <span class="n">pred</span> <span class="o">=</span> <span class="n">file_splitting_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">pred</span><span class="o">.</span><span class="n">is_first_page</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span>
-            <span class="s1">&#39;Page </span><span class="si">{}</span><span class="s1"> is predicted as the first. Confidence: </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">number</span><span class="p">,</span> <span class="n">page</span><span class="o">.</span><span class="n">is_first_page_confidence</span><span class="p">)</span>
-        <span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Page </span><span class="si">{}</span><span class="s1"> is predicted as the non-first.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">number</span><span class="p">))</span>
-
-<span class="c1"># usage with the Splitting AI – you can load a pre-saved model or pass an initialized instance as the input</span>
-<span class="c1"># in this example, we load a previously saved one</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">ContextAwareFileSplittingModel</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span>
-
-<span class="c1"># initialize the Splitting AI</span>
-<span class="n">splitting_ai</span> <span class="o">=</span> <span class="n">SplittingAI</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-
-<span class="c1"># Splitting AI is a more high-level interface to Context Aware File Splitting Model and any other models that can be</span>
-<span class="c1"># developed for File Splitting purposes. It takes a Document as an input, rather than individual Pages, because it</span>
-<span class="c1"># utilizes page-level prediction of possible split points and returns Document or Documents with changes depending</span>
-<span class="c1"># on the prediction mode.</span>
-
-<span class="c1"># Splitting AI can be run in two modes: returning a list of Sub-Documents as the result of the input Document</span>
-<span class="c1"># splitting or returning a copy of the input Document with Pages predicted as first having an attribute</span>
-<span class="c1"># &quot;is_first_page&quot;. The flag &quot;return_pages&quot; has to be True for the latter; let&#39;s use it</span>
-<span class="n">new_document</span> <span class="o">=</span> <span class="n">splitting_ai</span><span class="o">.</span><span class="n">propose_split_documents</span><span class="p">(</span><span class="n">test_document</span><span class="p">,</span> <span class="n">return_pages</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">new_document</span><span class="p">)</span>
-<span class="c1"># output: [predicted_document]</span>
-
-<span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">new_document</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pages</span><span class="p">():</span>
-    <span class="k">if</span> <span class="n">page</span><span class="o">.</span><span class="n">is_first_page</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span>
-            <span class="s1">&#39;Page </span><span class="si">{}</span><span class="s1"> is predicted as the first. Confidence: </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">number</span><span class="p">,</span> <span class="n">page</span><span class="o">.</span><span class="n">is_first_page_confidence</span><span class="p">)</span>
-        <span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Page </span><span class="si">{}</span><span class="s1"> is predicted as the non-first.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">number</span><span class="p">))</span>
-</pre></div>
-</div>
+<p>.. literalinclude:: /sdk/boilerplates/test_file_splitting_example.py
+:language: python
+:start-after: start file splitting
+:end-before: end file splitting
+:dedent: 4</p>
 </section>
 </section>
 <section id="create-a-custom-file-splitting-ai">
@@ -423,64 +329,13 @@ runtime and initialize the SDK once again; this will resolve the issue.</p>
 <p>Note: you don’t necessarily need to create the AI from scratch if you already have some document-processing architecture.
 You just need to wrap it into the class that corresponds to our File Splitting AI structure. Follow the steps in this
 tutorial to find out what are the requirements for that.</p>
-<p>By default, any <a class="reference external" href="sourcecode.html#file-splitting-ai">File Splitting AI</a> class should derive from the
+<p>By default, any <span class="xref myst">File Splitting AI</span> class should derive from the
 <code class="docutils literal notranslate"><span class="pre">AbstractFileSplittingModel</span></code> class and implement the following methods:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.file_splitting</span> <span class="kn">import</span> <span class="n">AbstractFileSplittingModel</span>
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Page</span><span class="p">,</span> <span class="n">Category</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
-
-<span class="k">class</span> <span class="nc">CustomFileSplittingModel</span><span class="p">(</span><span class="n">AbstractFileSplittingModel</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">categories</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Category</span><span class="p">],</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="c1"># we need Categories because we define the split points based off on the Documents within certain Categories</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">categories</span><span class="p">)</span>
-        <span class="k">pass</span>
-
-    <span class="c1"># initialize key variables required by the custom AI</span>
-    <span class="c1"># for instance, self.categories to determine which Categories will be used for training the AI, self.documents</span>
-    <span class="c1"># and self.test_documents to define training and testing Documents, self.tokenizer for a Tokenizer that will</span>
-    <span class="c1"># be used in processing the Documents</span>
-
-    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">pass</span>
-
-    <span class="c1"># Define architecture and training that the model undergoes, i.e. a NN architecture or a custom hardcoded logic</span>
-    <span class="c1"># for instance, how it is done in ContextAwareFileSplittingModel:</span>
-    <span class="c1">#</span>
-    <span class="c1"># for category in self.categories:</span>
-    <span class="c1">#     cur_first_page_strings = category.exclusive_first_page_strings(tokenizer=self.tokenizer)</span>
-    <span class="c1">#</span>
-    <span class="c1"># This method does not return anything; rather, it modifies the self.model if you provide this attribute.</span>
-    <span class="c1">#</span>
-    <span class="c1"># This method is allowed to be implemented as a no-op if you provide the trained model in other ways</span>
-
-    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">page</span><span class="p">:</span> <span class="n">Page</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Page</span><span class="p">:</span>
-        <span class="k">pass</span>
-
-    <span class="c1"># Define how the model determines a split point for a Page, for instance, how it is implemented in</span>
-    <span class="c1"># ContextAwareFileSplittingModel:</span>
-    <span class="c1">#</span>
-    <span class="c1"># for category in self.categories:</span>
-    <span class="c1">#     cur_first_page_strings = category.exclusive_first_page_strings(tokenizer=self.tokenizer)</span>
-    <span class="c1">#     intersection = {span.offset_string.strip(&#39;\f&#39;).strip(&#39;\n&#39;) for span in page.spans()}.intersection(</span>
-    <span class="c1">#                 cur_first_page_strings</span>
-    <span class="c1">#             )</span>
-    <span class="c1">#     if len(intersection) &gt; 0:</span>
-    <span class="c1">#         page.is_first_page = True</span>
-    <span class="c1">#         break</span>
-    <span class="c1">#</span>
-    <span class="c1"># **NB:** The classification needs to be run on the Page level, not the Document level – the result of</span>
-    <span class="c1"># classification is reflected in `is_first_page` attribute value, which is unique to the Page class and is not</span>
-    <span class="c1"># present in Document class. Pages with `is_first_page = True` become potential splitting points, thus, each new</span>
-    <span class="c1"># sub-Document has a Page predicted as first as its starting point.</span>
-
-    <span class="k">def</span> <span class="nf">check_is_ready</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="k">pass</span>
-
-    <span class="c1"># define if all components needed for training/prediction are set, for instance, is self.tokenizer set or are</span>
-    <span class="c1"># all Categories non-empty – containing training and testing Documents.</span>
-
-</pre></div>
-</div>
+<p>.. literalinclude:: /sdk/boilerplates/test_custom_file_splitting_ai.py
+:language: python
+:start-after: start class
+:end-before: end class
+:dedent: 4</p>
 </section>
 <section id="evaluate-a-file-splitting-ai">
 <h2>Evaluate a File Splitting AI<a class="headerlink" href="#evaluate-a-file-splitting-ai" title="Permalink to this headline">¶</a></h2>
@@ -491,24 +346,19 @@ Negatives.</p>
 of Documents as an input – first list consists of ground-truth Documents where all first Pages are marked as such,
 second is of Documents on Pages of which File Splitting Model ran a prediction of them being first or non-first.</p>
 <p>The initialization would look like this:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">evaluation</span> <span class="o">=</span> <span class="n">FileSplittingEvaluation</span><span class="p">(</span>
-    <span class="n">ground_truth_documents</span><span class="o">=</span><span class="n">YOUR_GROUND_TRUTH_LIST</span><span class="p">,</span> <span class="n">prediction_documents</span><span class="o">=</span><span class="n">YOUR_PREDICTION_LIST</span>
-<span class="p">)</span>
-</pre></div>
-</div>
+<p>.. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
+:language: python
+:start-after: start eval_example
+:end-before: end eval_example
+:dedent: 4</p>
 <p>The class compares each pair of Pages. If a Page is labeled as first and the model also predicted it as first, it is
 considered a True Positive. If a Page is labeled as first but the model predicted it as non-first, it is considered a
 False Negative. If a Page is labeled as non-first but the model predicted it as first, it is considered a False
 Positive. If a Page is labeled as non-first and the model also predicted it as non-first, it is considered a True
 Negative.</p>
-<table class="docutils align-default">
-<colgroup>
-<col style="width: 33%" />
-<col style="width: 33%" />
-<col style="width: 33%" />
-</colgroup>
+<table class="colwidths-auto docutils align-default">
 <thead>
-<tr class="row-odd"><th class="head"></th>
+<tr class="row-odd"><th class="head"><p></p></th>
 <th class="head"><p>predicted correctly</p></th>
 <th class="head"><p>predicted incorrectly</p></th>
 </tr>
@@ -527,14 +377,18 @@ Negative.</p>
 <p>After iterating through all Pages of all Documents, precision, recall and f1 measure are calculated. If you wish to set
 metrics to <code class="docutils literal notranslate"><span class="pre">None</span></code> in case there has been an attempt of zero division, set <code class="docutils literal notranslate"><span class="pre">allow_zero=True</span></code> at the initialization.</p>
 <p>To see a certain metric after the class has been initialized, you can call a metric’s method:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">fn</span><span class="p">())</span>
-</pre></div>
-</div>
+<p>.. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
+:language: python
+:start-after: start single_metric
+:end-before: end single_metric
+:dedent: 4</p>
 <p>It is also possible to look at the metrics calculated by each Category independently. For this, pass
 <code class="docutils literal notranslate"><span class="pre">search=YOUR_CATEGORY_HERE</span></code> when calling the wanted metric’s method:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">fn</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">YOUR_CATEGORY</span><span class="p">))</span>
-</pre></div>
-</div>
+<p>.. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
+:language: python
+:start-after: start metric_category
+:end-before: end metric_category
+:dedent: 4</p>
 <p>For more details, see the <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#ai-evaluation">Python API Documentation</a> on
 Evaluation.</p>
 <section id="example-of-evaluation-input-and-output">
@@ -542,94 +396,31 @@ Evaluation.</p>
 <p>Suppose in our test dataset we have 2 Documents of 2 Categories: one 3-paged, consisting of a single file (-&gt; it has
 only one ground-truth first Page) of a first Category, and one 5-paged, consisting of three files: two 2-paged and one
 1-paged (-&gt; it has three ground-truth first Pages), of a second Category.</p>
-<img alt="../../../_images/document_example_1.png" src="../../../_images/document_example_1.png" />
+<p>.. image:: /sdk/tutorials/file_splitting/document_example_1.png</p>
 <p><em>First document</em></p>
-<img alt="../../../_images/document_example_2.png" src="../../../_images/document_example_2.png" />
+<p>.. image:: /sdk/tutorials/file_splitting/document_example_2.png</p>
 <p><em>Second document</em></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Document</span><span class="p">,</span> <span class="n">Page</span>
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.evaluate</span> <span class="kn">import</span> <span class="n">FileSplittingEvaluation</span><span class="p">,</span> <span class="n">EvaluationCalculator</span>
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.file_splitting</span> <span class="kn">import</span> <span class="n">SplittingAI</span>
-
-<span class="c1"># This example builds the Documents from scratch and without uploading a Supported File.</span>
-<span class="c1"># If you uploaded your Document to the Konfuzio Server, you can just retrieve it with:</span>
-<span class="c1"># document_1 = project.get_document_by_id(YOUR_DOCUMENT_ID)</span>
-<span class="n">text_1</span> <span class="o">=</span> <span class="s2">&quot;Hi all,</span><span class="se">\n</span><span class="s2">I like bread.</span><span class="se">\n</span><span class="s2">I hope to get everything done soon.</span><span class="se">\n</span><span class="s2">Have you seen it?&quot;</span>
-<span class="n">document_1</span> <span class="o">=</span> <span class="n">Document</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">YOUR_PROJECT</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="n">YOUR_CATEGORY_1</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">text_1</span><span class="p">,</span> <span class="n">dataset_status</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">Page</span><span class="p">(</span>
-    <span class="n">id_</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">original_size</span><span class="o">=</span><span class="p">(</span><span class="mi">320</span><span class="p">,</span> <span class="mi">240</span><span class="p">),</span> <span class="n">document</span><span class="o">=</span><span class="n">document_1</span><span class="p">,</span> <span class="n">start_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">end_offset</span><span class="o">=</span><span class="mi">21</span><span class="p">,</span> <span class="n">number</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">copy_of_id</span><span class="o">=</span><span class="mi">29</span>
-<span class="p">)</span>
-
-<span class="n">_</span> <span class="o">=</span> <span class="n">Page</span><span class="p">(</span>
-    <span class="n">id_</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">original_size</span><span class="o">=</span><span class="p">(</span><span class="mi">320</span><span class="p">,</span> <span class="mi">240</span><span class="p">),</span> <span class="n">document</span><span class="o">=</span><span class="n">document_1</span><span class="p">,</span> <span class="n">start_offset</span><span class="o">=</span><span class="mi">22</span><span class="p">,</span> <span class="n">end_offset</span><span class="o">=</span><span class="mi">57</span><span class="p">,</span> <span class="n">number</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">copy_of_id</span><span class="o">=</span><span class="mi">30</span>
-<span class="p">)</span>
-
-<span class="n">_</span> <span class="o">=</span> <span class="n">Page</span><span class="p">(</span>
-    <span class="n">id_</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">original_size</span><span class="o">=</span><span class="p">(</span><span class="mi">320</span><span class="p">,</span> <span class="mi">240</span><span class="p">),</span> <span class="n">document</span><span class="o">=</span><span class="n">document_1</span><span class="p">,</span> <span class="n">start_offset</span><span class="o">=</span><span class="mi">58</span><span class="p">,</span> <span class="n">end_offset</span><span class="o">=</span><span class="mi">75</span><span class="p">,</span> <span class="n">number</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">copy_of_id</span><span class="o">=</span><span class="mi">31</span>
-<span class="p">)</span>
-
-<span class="c1"># As with the previous example Document, you can just retrieve an online Document with</span>
-<span class="c1"># document_2 = project.get_document_by_id(YOUR_DOCUMENT_ID)</span>
-<span class="n">text_2</span> <span class="o">=</span> <span class="s2">&quot;Evening,</span><span class="se">\n</span><span class="s2">thank you for coming.</span><span class="se">\n</span><span class="s2">I like fish.</span><span class="se">\n</span><span class="s2">I need it.</span><span class="se">\n</span><span class="s2">Evening.&quot;</span>
-<span class="n">document_2</span> <span class="o">=</span> <span class="n">Document</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="mi">21</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">YOUR_PROJECT</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="n">YOUR_CATEGORY_2</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">text_2</span><span class="p">,</span> <span class="n">dataset_status</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">Page</span><span class="p">(</span>
-    <span class="n">id_</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">original_size</span><span class="o">=</span><span class="p">(</span><span class="mi">320</span><span class="p">,</span> <span class="mi">240</span><span class="p">),</span> <span class="n">document</span><span class="o">=</span><span class="n">document_2</span><span class="p">,</span> <span class="n">start_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">end_offset</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">number</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">copy_of_id</span><span class="o">=</span><span class="mi">32</span>
-<span class="p">)</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">Page</span><span class="p">(</span>
-    <span class="n">id_</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">original_size</span><span class="o">=</span><span class="p">(</span><span class="mi">320</span><span class="p">,</span> <span class="mi">240</span><span class="p">),</span> <span class="n">document</span><span class="o">=</span><span class="n">document_2</span><span class="p">,</span> <span class="n">start_offset</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">end_offset</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">number</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">copy_of_id</span><span class="o">=</span><span class="mi">33</span>
-<span class="p">)</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">Page</span><span class="p">(</span>
-    <span class="n">id_</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">original_size</span><span class="o">=</span><span class="p">(</span><span class="mi">320</span><span class="p">,</span> <span class="mi">240</span><span class="p">),</span> <span class="n">document</span><span class="o">=</span><span class="n">document_2</span><span class="p">,</span> <span class="n">start_offset</span><span class="o">=</span><span class="mi">31</span><span class="p">,</span> <span class="n">end_offset</span><span class="o">=</span><span class="mi">43</span><span class="p">,</span> <span class="n">number</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">copy_of_id</span><span class="o">=</span><span class="mi">34</span>
-<span class="p">)</span>
-<span class="n">_</span><span class="o">.</span><span class="n">is_first_page</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">Page</span><span class="p">(</span>
-    <span class="n">id_</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">original_size</span><span class="o">=</span><span class="p">(</span><span class="mi">320</span><span class="p">,</span> <span class="mi">240</span><span class="p">),</span> <span class="n">document</span><span class="o">=</span><span class="n">document_2</span><span class="p">,</span> <span class="n">start_offset</span><span class="o">=</span><span class="mi">44</span><span class="p">,</span> <span class="n">end_offset</span><span class="o">=</span><span class="mi">54</span><span class="p">,</span> <span class="n">number</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">copy_of_id</span><span class="o">=</span><span class="mi">35</span>
-<span class="p">)</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">Page</span><span class="p">(</span>
-    <span class="n">id_</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">original_size</span><span class="o">=</span><span class="p">(</span><span class="mi">320</span><span class="p">,</span> <span class="mi">240</span><span class="p">),</span> <span class="n">document</span><span class="o">=</span><span class="n">document_2</span><span class="p">,</span> <span class="n">start_offset</span><span class="o">=</span><span class="mi">55</span><span class="p">,</span> <span class="n">end_offset</span><span class="o">=</span><span class="mi">63</span><span class="p">,</span> <span class="n">number</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">copy_of_id</span><span class="o">=</span><span class="mi">36</span>
-<span class="p">)</span>
-<span class="n">_</span><span class="o">.</span><span class="n">is_first_page</span> <span class="o">=</span> <span class="kc">True</span>
-</pre></div>
-</div>
+<p>.. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
+:language: python
+:start-after: start document creation
+:end-before: end document creation
+:dedent: 4</p>
 <p>We need to pass two lists of Documents into the <code class="docutils literal notranslate"><span class="pre">FileSplittingEvaluation</span></code> class. So, before that, we need to run each
 Page of the Documents through the model’s prediction.</p>
 <p>Let’s say the evaluation gave good results, with only one first Page being predicted as non-first and all the other
 Pages being predicted correctly. An example of how the evaluation would be implemented would be:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">splitting_ai</span> <span class="o">=</span> <span class="n">SplittingAI</span><span class="p">(</span><span class="n">YOUR_MODEL</span><span class="p">)</span>
-<span class="n">pred_1</span><span class="p">:</span> <span class="n">Document</span> <span class="o">=</span> <span class="n">splitting_ai</span><span class="o">.</span><span class="n">propose_split_documents</span><span class="p">(</span><span class="n">document_1</span><span class="p">,</span> <span class="n">return_pages</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-<span class="n">pred_2</span><span class="p">:</span> <span class="n">Document</span> <span class="o">=</span> <span class="n">splitting_ai</span><span class="o">.</span><span class="n">propose_split_documents</span><span class="p">(</span><span class="n">document_2</span><span class="p">,</span> <span class="n">return_pages</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-
-<span class="n">evaluation</span> <span class="o">=</span> <span class="n">FileSplittingEvaluation</span><span class="p">(</span>
-    <span class="n">ground_truth_documents</span><span class="o">=</span><span class="p">[</span><span class="n">document_1</span><span class="p">,</span> <span class="n">document_2</span><span class="p">],</span> <span class="n">prediction_documents</span><span class="o">=</span><span class="p">[</span><span class="n">pred_1</span><span class="p">,</span> <span class="n">pred_2</span><span class="p">]</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">tp</span><span class="p">())</span>
-<span class="c1"># returns: 3</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">tn</span><span class="p">())</span>
-<span class="c1"># returns: 4</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">fp</span><span class="p">())</span>
-<span class="c1"># returns: 0</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">fn</span><span class="p">())</span>
-<span class="c1"># returns: 1</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">precision</span><span class="p">())</span>
-<span class="c1"># returns: 1</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">recall</span><span class="p">())</span>
-<span class="c1"># returns: 0.75</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">f1</span><span class="p">())</span>
-<span class="c1"># returns: 0.85</span>
-</pre></div>
-</div>
+<p>.. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
+:language: python
+:start-after: start splitting
+:end-before: end splitting
+:dedent: 4
+.. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
+:language: python
+:start-after: start scores
+:end-before: end scores
+:dedent: 4</p>
 <p>Our results could be reflected in a following table:</p>
-<table class="docutils align-default">
-<colgroup>
-<col style="width: 14%" />
-<col style="width: 14%" />
-<col style="width: 14%" />
-<col style="width: 14%" />
-<col style="width: 14%" />
-<col style="width: 14%" />
-<col style="width: 14%" />
-</colgroup>
+<table class="colwidths-auto docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>TPs</p></th>
 <th class="head"><p>TNs</p></th>
@@ -652,34 +443,13 @@ Pages being predicted correctly. An example of how the evaluation would be imple
 </tbody>
 </table>
 <p>If we want to see evaluation results by Category, the implementation of the Evaluation would look like this:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">tp</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">YOUR_CATEGORY_1</span><span class="p">),</span> <span class="n">evaluation</span><span class="o">.</span><span class="n">tp</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">YOUR_CATEGORY_2</span><span class="p">))</span>
-<span class="c1"># returns: 1 2</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">tn</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">YOUR_CATEGORY_1</span><span class="p">),</span> <span class="n">evaluation</span><span class="o">.</span><span class="n">tn</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">YOUR_CATEGORY_2</span><span class="p">))</span>
-<span class="c1"># returns: 2 2</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">fp</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">YOUR_CATEGORY_1</span><span class="p">),</span> <span class="n">evaluation</span><span class="o">.</span><span class="n">fp</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">YOUR_CATEGORY_2</span><span class="p">))</span>
-<span class="c1"># returns: 0 0</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">fn</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">YOUR_CATEGORY_1</span><span class="p">),</span> <span class="n">evaluation</span><span class="o">.</span><span class="n">fn</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">YOUR_CATEGORY_2</span><span class="p">))</span>
-<span class="c1"># returns: 0 1</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">precision</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">YOUR_CATEGORY_1</span><span class="p">),</span> <span class="n">evaluation</span><span class="o">.</span><span class="n">precision</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">YOUR_CATEGORY_2</span><span class="p">))</span>
-<span class="c1"># returns: 1 1</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">recall</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">YOUR_CATEGORY_1</span><span class="p">),</span> <span class="n">evaluation</span><span class="o">.</span><span class="n">recall</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">YOUR_CATEGORY_2</span><span class="p">))</span>
-<span class="c1"># returns: 1 0.66</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">f1</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">YOUR_CATEGORY_1</span><span class="p">),</span> <span class="n">evaluation</span><span class="o">.</span><span class="n">f1</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">YOUR_CATEGORY_2</span><span class="p">))</span>
-<span class="c1"># returns: 1 0.8</span>
-</pre></div>
-</div>
+<p>.. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
+:language: python
+:start-after: start scores_category
+:end-before: end scores_category
+:dedent: 4</p>
 <p>the output could be reflected in a following table:</p>
-<table class="docutils align-default">
-<colgroup>
-<col style="width: 13%" />
-<col style="width: 13%" />
-<col style="width: 13%" />
-<col style="width: 13%" />
-<col style="width: 13%" />
-<col style="width: 13%" />
-<col style="width: 13%" />
-<col style="width: 13%" />
-</colgroup>
+<table class="colwidths-auto docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Category</p></th>
 <th class="head"><p>TPs</p></th>
@@ -712,11 +482,13 @@ Pages being predicted correctly. An example of how the evaluation would be imple
 </tr>
 </tbody>
 </table>
-<p>To log metrics after evaluation, you can call <code class="docutils literal notranslate"><span class="pre">EvaluationCalculator</span></code>‘s method <code class="docutils literal notranslate"><span class="pre">metrics_logging</span></code> (you would need to
+<p>To log metrics after evaluation, you can call <code class="docutils literal notranslate"><span class="pre">EvaluationCalculator</span></code>’s method <code class="docutils literal notranslate"><span class="pre">metrics_logging</span></code> (you would need to
 specify the metrics accordingly at the class’s initialization). Example usage:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">EvaluationCalculator</span><span class="p">(</span><span class="n">tp</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">fp</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">fn</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">tn</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">metrics_logging</span><span class="p">()</span>
-</pre></div>
-</div>
+<p>.. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
+:language: python
+:start-after: start calculator
+:end-before: end calculator
+:dedent: 4</p>
 </section>
 </section>
 </section>

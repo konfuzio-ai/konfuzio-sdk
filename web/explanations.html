@@ -2,13 +2,13 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-<meta content="Use this section for explaining how the software works, without completing a specific task (see Tutorials)." name="description" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Explanations &mdash; Konfuzio  documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" type="text/css" />
       <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
     <link rel="shortcut icon" href="../_static/full_green_square.png"/>
     <link rel="canonical" href="https://dev.konfuzio.com/web/explanations.html" />
@@ -125,107 +125,110 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="explanations">
+  <p>.. meta::
+:description: Use this section for explaining how the software works, without completing a specific task (see Tutorials).</p>
+<section id="explanations">
 <h1>Explanations<a class="headerlink" href="#explanations" title="Permalink to this headline">¶</a></h1>
 <p><em>Explanation is discussion that clarifies and illuminates a particular topic.</em>
 <em>Explanation is understanding-oriented.</em></p>
 <section id="architectural-overview">
 <h2>Architectural Overview<a class="headerlink" href="#architectural-overview" title="Permalink to this headline">¶</a></h2>
 <p>The diagram illustrates the components of a Konfuzio Server deployment. Optional components are represented by dashed lines. The numbers in brackets represent the minimal and maximal container count per component.</p>
-<div class="mermaid">
-            graph TD
-   classDef client fill:#D5E8D4,stroke:#82B366,color:#000000;
-   classDef old_optional fill:#E1D5E7,stroke:#9673A6,color:#000000;
-   classDef optional fill:#DAE8FC,stroke:#6C8EBF,color:#000000,stroke-dasharray: 3 3;
+<p>.. mermaid::</p>
+<p>graph TD
+classDef client fill:#D5E8D4,stroke:#82B366,color:#000000;
+classDef old_optional fill:#E1D5E7,stroke:#9673A6,color:#000000;
+classDef optional fill:#DAE8FC,stroke:#6C8EBF,color:#000000,stroke-dasharray: 3 3;</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>  ip(&quot;Loadbalancer / Public IP&quot;)
+  smtp(&quot;SMTP Mailbox&quot;)
+  a(&quot;Database&quot;)
+  b(&quot;Task Queue&quot;)
+  c(&quot;File Storage&quot;)
+  worker(&quot;Generic Worker (1:n)&quot;)
+  web(&quot;Web &amp; API (1:n)&quot;)
+  beats(&quot;Beats Worker (1:n)&quot;)
+  mail(&quot;Mail-Scan (0:1)&quot;)
+  
+  %% Outside references
+  smtp &lt;-- Poll emails --&gt; mail
+  ip &lt;--&gt; web
+  
+  %% Optional Containers
+  ocr(&quot;OCR (0:n)&quot;)
+  segmentation(&quot;Segmentation (0:n)&quot;)
+  summarization(&quot;Summarization (0:n)&quot;)
+  flower(&quot;Flower (0:1)&quot;)
+  
+  %% Server / Cluster
+  h0(&quot;Server 1&quot;)
+  h1(&quot;Server 2&quot;)
+  h2(&quot;Server 3&quot;)
+  h3(&quot;Server 4&quot;)
+  h4(&quot;Server 5&quot;)
+  i(&quot;...&quot;)
+  j(&quot;Server with GPU&quot;)
 
-   ip(&quot;Loadbalancer / Public IP&quot;)
-   smtp(&quot;SMTP Mailbox&quot;)
-   a(&quot;Database&quot;)
-   b(&quot;Task Queue&quot;)
-   c(&quot;File Storage&quot;)
-   worker(&quot;Generic Worker (1:n)&quot;)
-   web(&quot;Web &amp; API (1:n)&quot;)
-   beats(&quot;Beats Worker (1:n)&quot;)
-   mail(&quot;Mail-Scan (0:1)&quot;)
-
-   %% Outside references
-   smtp &lt;-- Poll emails --&gt; mail
-   ip &lt;--&gt; web
-
-   %% Optional Containers
-   ocr(&quot;OCR (0:n)&quot;)
-   segmentation(&quot;Segmentation (0:n)&quot;)
-   summarization(&quot;Summarization (0:n)&quot;)
-   flower(&quot;Flower (0:1)&quot;)
-
-   %% Server / Cluster
-   h0(&quot;Server 1&quot;)
-   h1(&quot;Server 2&quot;)
-   h2(&quot;Server 3&quot;)
-   h3(&quot;Server 4&quot;)
-   h4(&quot;Server 5&quot;)
-   i(&quot;...&quot;)
-   j(&quot;Server with GPU&quot;)
-
-   subgraph all[&quot;Private Network&quot;]
-   subgraph databases[&quot;Persistent Container / Services&quot;]
-   a
-   c
-   b
-   end
-   subgraph containers[&quot;Stateless Containers&quot;]
-   mail
-   web
-   flower
-   worker
-   beats
-   subgraph optional[&quot;Optional Containers&quot;]
-   ocr
-   segmentation
-   summarization
-   end
-   end
-   subgraph servers[&quot;Server / Cluster&quot;]
-   h0
-   h1
-   h2
-   h3
-   h4
-   i
-   j
-   end
-   worker &lt;--&gt; databases
-   worker -- Can delegate tasks--&gt; optional
-   worker -- &quot;Can process tasks&quot;--&gt; worker
-   web &lt;--&gt; databases
-   web &lt;--&gt; flower
-   flower &lt;--&gt; b
-   mail &lt;--&gt; databases
-   beats &lt;--&gt; databases
-   containers -- &quot;Operated on&quot;--&gt; servers
-   databases -- &quot;Can be operated on&quot;--&gt; servers
-   end
-
-   click flower &quot;/web/on_premises.html#optional-6-use-flower-to-monitor-tasks&quot;
-   click web &quot;/web/on_premises.html#start-the-container&quot;
-   click worker &quot;/web/on_premises.html#start-the-container&quot;
-   click ocr &quot;/web/on_premises.html#optional-7-use-azure-read-api-on-premise&quot;
-   click segmentation &quot;/web/on_premises.html#optional-8-install-document-segmentation-container&quot;
-   click summarization &quot;/web/on_premises.html#optional-9-install-document-summarization-container&quot;
-
-   class flower optional
-   class ocr optional
-   class mail optional
-   class ocr optional
-   class segmentation optional
-   class summarization optional
-   class h1 optional
-   class h2 optional
-   class h3 optional
-   class h4 optional
-   class i optional
-   class j optional
-        </div></section>
+  subgraph all[&quot;Private Network&quot;]
+  subgraph databases[&quot;Persistent Container / Services&quot;]
+  a
+  c
+  b
+  end
+  subgraph containers[&quot;Stateless Containers&quot;]
+  mail
+  web
+  flower
+  worker
+  beats
+  subgraph optional[&quot;Optional Containers&quot;]
+  ocr
+  segmentation
+  summarization
+  end
+  end
+  subgraph servers[&quot;Server / Cluster&quot;]
+  h0
+  h1
+  h2
+  h3
+  h4
+  i
+  j
+  end    
+  worker &lt;--&gt; databases
+  worker -- Can delegate tasks--&gt; optional
+  worker -- &quot;Can process tasks&quot;--&gt; worker
+  web &lt;--&gt; databases
+  web &lt;--&gt; flower
+  flower &lt;--&gt; b
+  mail &lt;--&gt; databases
+  beats &lt;--&gt; databases
+  containers -- &quot;Operated on&quot;--&gt; servers
+  databases -- &quot;Can be operated on&quot;--&gt; servers
+  end
+  
+  click flower &quot;/web/on_premises.html#optional-6-use-flower-to-monitor-tasks&quot;
+  click web &quot;/web/on_premises.html#start-the-container&quot;
+  click worker &quot;/web/on_premises.html#start-the-container&quot;
+  click ocr &quot;/web/on_premises.html#optional-7-use-azure-read-api-on-premise&quot;
+  click segmentation &quot;/web/on_premises.html#optional-8-install-document-segmentation-container&quot;
+  click summarization &quot;/web/on_premises.html#optional-9-install-document-summarization-container&quot; 
+  
+  class flower optional
+  class ocr optional
+  class mail optional
+  class ocr optional
+  class segmentation optional
+  class summarization optional
+  class h1 optional
+  class h2 optional
+  class h3 optional
+  class h4 optional
+  class i optional
+  class j optional
+</pre></div>
+</div>
+</section>
 <section id="ocr-processing">
 <h2>OCR Processing<a class="headerlink" href="#ocr-processing" title="Permalink to this headline">¶</a></h2>
 <p>After <a class="reference external" href="https://help.konfuzio.com/modules/documents/index.html#upload-new-documents">uploading a document</a>, depending on
@@ -317,53 +320,48 @@ between several <a class="reference external" href="https://docs.celeryq.dev/en/
 of Servers internal workflow. Below the individual tasks of the Server’s workflow are described in order of their
 triggered events. Tasks are run in parallel queue’s which are grouped in celery chords. While some tasks in each queue
 run in parallel, some tasks are still dependent on others. And no next queue will start until all tasks in the queue are finished.
-More on Celery workflows can be found here: <a class="reference external" href="https://docs.celeryq.dev/en/stable/userguide/canvas.html">https://docs.celeryq.dev/en/stable/userguide/canvas.html</a></p>
+More on Celery workflows can be found here: https://docs.celeryq.dev/en/stable/userguide/canvas.html</p>
 <section id="queues">
 <h3>Queues<a class="headerlink" href="#queues" title="Permalink to this headline">¶</a></h3>
-<table class="docutils align-default">
-<colgroup>
-<col style="width: 33%" />
-<col style="width: 33%" />
-<col style="width: 33%" />
-</colgroup>
+<table class="colwidths-auto docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>id</p></th>
 <th class="head"><p>queue-name</p></th>
-<th class="head"><p>description</p></th>
+<th class="text-center head"><p>description</p></th>
 </tr>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>1</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">ocr</span></code></p></td>
-<td><p>ocr and post ocr tasks</p></td>
+<td class="text-center"><p>ocr and post ocr tasks</p></td>
 </tr>
 <tr class="row-odd"><td><p>2</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">processing</span></code></p></td>
-<td><p>non dependent tasks</p></td>
+<td class="text-center"><p>non dependent tasks</p></td>
 </tr>
 <tr class="row-even"><td><p>3</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">categorize</span></code></p></td>
-<td><p>categorization tasks</p></td>
+<td class="text-center"><p>categorization tasks</p></td>
 </tr>
 <tr class="row-odd"><td><p>4</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">extract</span></code></p></td>
-<td><p>extraction after ocr</p></td>
+<td class="text-center"><p>extraction after ocr</p></td>
 </tr>
 <tr class="row-even"><td><p>5</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">finalize</span></code></p></td>
-<td><p>end queue after OCR and extraction has occurred</p></td>
+<td class="text-center"><p>end queue after OCR and extraction has occurred</p></td>
 </tr>
 <tr class="row-odd"><td><p>6</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">training</span></code></p></td>
-<td><p>queue for AI training</p></td>
+<td class="text-center"><p>queue for AI training</p></td>
 </tr>
 <tr class="row-even"><td><p>7</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">training_heavy</span></code></p></td>
-<td><p>queue for RAM intensive ai training</p></td>
+<td class="text-center"><p>queue for RAM intensive ai training</p></td>
 </tr>
 <tr class="row-odd"><td><p>8</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">evaluation</span></code></p></td>
-<td><p>queue for AI evaluation</p></td>
+<td class="text-center"><p>queue for AI evaluation</p></td>
 </tr>
 </tbody>
 </table>
@@ -382,14 +380,7 @@ Please be aware that you usually do not want to do this, as it will cause Docume
 <section id="document-tasks">
 <h4>Document tasks<a class="headerlink" href="#document-tasks" title="Permalink to this headline">¶</a></h4>
 <p>Series of events &amp; tasks triggered when uploading a Document</p>
-<table class="docutils align-default">
-<colgroup>
-<col style="width: 20%" />
-<col style="width: 20%" />
-<col style="width: 20%" />
-<col style="width: 20%" />
-<col style="width: 20%" />
-</colgroup>
+<table class="colwidths-auto docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Queue</p></th>
 <th class="head"><p>task id</p></th>
@@ -462,14 +453,7 @@ Please be aware that you usually do not want to do this, as it will cause Docume
 <section id="extraction-ai">
 <h5>Extraction AI<a class="headerlink" href="#extraction-ai" title="Permalink to this headline">¶</a></h5>
 <p>Series of events triggered when training an extraction AI</p>
-<table class="docutils align-default">
-<colgroup>
-<col style="width: 20%" />
-<col style="width: 20%" />
-<col style="width: 20%" />
-<col style="width: 20%" />
-<col style="width: 20%" />
-</colgroup>
+<table class="colwidths-auto docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Queue</p></th>
 <th class="head"><p>task id</p></th>
@@ -509,14 +493,7 @@ Please be aware that you usually do not want to do this, as it will cause Docume
 <section id="category-ai">
 <h5>Category AI<a class="headerlink" href="#category-ai" title="Permalink to this headline">¶</a></h5>
 <p>Series of events triggered when training a Categorization AI</p>
-<table class="docutils align-default">
-<colgroup>
-<col style="width: 20%" />
-<col style="width: 20%" />
-<col style="width: 20%" />
-<col style="width: 20%" />
-<col style="width: 20%" />
-</colgroup>
+<table class="colwidths-auto docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Queue</p></th>
 <th class="head"><p>task id</p></th>
@@ -571,7 +548,7 @@ If there is a need to modify configurations or add files, it should be done befo
 <section id="image-scanning-with-grype">
 <h3>Image Scanning with Grype<a class="headerlink" href="#image-scanning-with-grype" title="Permalink to this headline">¶</a></h3>
 <p><a class="reference external" href="https://github.com/anchore/grype">Grype</a> is a vulnerability scanner for container images and filesystems. We have integrated Grype to regularly scan our Docker images for known vulnerabilities.
-This ensures that our software is always up-to-date with the latest security patches. Please <a class="reference external" href="konfuzio.com/support">contact us</a> in case you interested in our Grype Configuration (<a class="reference external" href="https://git.konfuzio.com/konfuzio/konfuziocontainer/-/blob/master/.grype.yaml">Internal Link</a>).</p>
+This ensures that our software is always up-to-date with the latest security patches. Please <span class="xref myst">contact us</span> in case you interested in our Grype Configuration (<a class="reference external" href="https://git.konfuzio.com/konfuzio/konfuziocontainer/-/blob/master/.grype.yaml">Internal Link</a>).</p>
 </section>
 <section id="separated-environments">
 <h3>Separated Environments<a class="headerlink" href="#separated-environments" title="Permalink to this headline">¶</a></h3>

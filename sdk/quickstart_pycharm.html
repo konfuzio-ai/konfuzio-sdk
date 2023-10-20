@@ -8,6 +8,7 @@
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" type="text/css" />
       <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
     <link rel="shortcut icon" href="../_static/full_green_square.png"/>
     <link rel="canonical" href="https://dev.konfuzio.com/sdk/quickstart_pycharm.html" />
@@ -95,8 +96,11 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="install-sdk-using-pycharm">
-<span id="id1"></span><h1>Install SDK using PyCharm<a class="headerlink" href="#install-sdk-using-pycharm" title="Permalink to this headline">¶</a></h1>
+  <p>.. meta::
+:description: Contains all necessary steps to use the sdk with pycharm.</p>
+<p>.. _Install SDK using PyCharm:</p>
+<section id="install-sdk-using-pycharm">
+<h1>Install SDK using PyCharm<a class="headerlink" href="#install-sdk-using-pycharm" title="Permalink to this headline">¶</a></h1>
 <p>This guide explains the necessary steps to use the <a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk">Konfuzio SDK</a>
 (version &gt;=0.2) with PyCharm.</p>
 <p>It was tested on the following Operating Systems and PyCharm versions:</p>
@@ -109,13 +113,13 @@
 <h2>1. PyCharm Setup<a class="headerlink" href="#pycharm-setup" title="Permalink to this headline">¶</a></h2>
 <p>PyCharm is a widespread common Integrated Development Environment (IDE) with strong debugging functionalities, which is
 why we choose PyCharm as our preferred IDE in this context. To start with, please download the Community version of
-PyCharm for your respective operating system here: <a class="reference external" href="https://www.jetbrains.com/pycharm/download/">https://www.jetbrains.com/pycharm/download/</a>.</p>
+PyCharm for your respective operating system here: https://www.jetbrains.com/pycharm/download/.</p>
 <p>Once it is downloaded, create a new Project in PyCharm (File -&gt; New Project) and choose the location and name for it.
 Please also refer to this documentation for further
-explanations: <a class="reference external" href="https://www.jetbrains.com/help/pycharm/creating-empty-project.html">https://www.jetbrains.com/help/pycharm/creating-empty-project.html</a>. When creating a new project, you need
+explanations: https://www.jetbrains.com/help/pycharm/creating-empty-project.html. When creating a new project, you need
 to choose the Python interpreter which will be used for the project. Please move on to step 2 to check how to create a
 new virtual environment for the project.</p>
-<a class="reference external image-reference" href="../_static/img/pycharm_setup.png"><img alt="pycharm_setup" src="../_images/pycharm_setup.png" /></a>
+<p><img alt="pycharm_setup" src="../_images/pycharm_setup.png" /></p>
 </section>
 <section id="create-a-virtual-environment">
 <h2>2. Create a Virtual Environment<a class="headerlink" href="#create-a-virtual-environment" title="Permalink to this headline">¶</a></h2>
@@ -123,12 +127,12 @@ new virtual environment for the project.</p>
 version 3.8. This Python version is the most widespread and commonly used version which still represents a good
 trade-off between newness and stability. To create such a virtual environment, please refer to this documentation which
 describes the steps in
-detail: <a class="reference external" href="https://www.jetbrains.com/help/pycharm/creating-virtual-environment.html#python_create_virtual_env">https://www.jetbrains.com/help/pycharm/creating-virtual-environment.html#python_create_virtual_env</a>.</p>
+detail: https://www.jetbrains.com/help/pycharm/creating-virtual-environment.html#python_create_virtual_env.</p>
 <p>To connect this virtual environment to your project, make sure that it is selected as the Python interpreter (see bottom
 right corner) and in the project setting preferences if not already specified when the project was created. We are using
 a local virtual environment in combination with the community version of PyCharm, as the users of the community version
 can’t carry out debugging of code that is executed in Docker containers or on a remote-host SSH.</p>
-<a class="reference external image-reference" href="../_static/img/pycharm_create_virtual_env.png"><img alt="pycharm_create_virtual_env" src="../_images/pycharm_create_virtual_env.png" /></a>
+<p><img alt="pycharm_create_virtual_env" src="../_images/pycharm_create_virtual_env.png" /></p>
 <p>After the installation of PyCharm and this setup of the virtual environment is completed, we can now start to install
 our Konfuzio SDK package.</p>
 </section>
@@ -137,7 +141,7 @@ our Konfuzio SDK package.</p>
 <p>Install the Konfuzio SDK package via pip install in the terminal. This will install the SDK package directly in your
 working directory:
 <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">konfuzio-sdk</span></code></p>
-<a class="reference external image-reference" href="../_static/img/pycharm_install_sdk.png"><img alt="pycharm_install_sdk" src="../_images/pycharm_install_sdk.png" /></a>
+<p><img alt="pycharm_install_sdk" src="../_images/pycharm_install_sdk.png" /></p>
 </section>
 <section id="define-your-working-directory">
 <h2>4. Define your working directory<a class="headerlink" href="#define-your-working-directory" title="Permalink to this headline">¶</a></h2>
@@ -145,7 +149,7 @@ working directory:
 working directory. This path should be the location of the folder of the PyCharm project and can be found e.g. on the
 top left corner.
 <code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">&lt;your</span> <span class="pre">working</span> <span class="pre">directory&gt;</span></code></p>
-<a class="reference external image-reference" href="../_static/img/pycharm_pwd.png"><img alt="pycharm_pwd" src="../_images/pycharm_pwd.png" /></a>
+<p><img alt="pycharm_pwd" src="../_images/pycharm_pwd.png" /></p>
 </section>
 <section id="initialize-the-project-with-the-required-inputs">
 <h2>5. Initialize the project with the required inputs<a class="headerlink" href="#initialize-the-project-with-the-required-inputs" title="Permalink to this headline">¶</a></h2>
@@ -160,7 +164,7 @@ the default URL as the host address.</p>
 the Konfuzio web interface.</p>
 <p>One file have also been created in your working directory: .env. The .env file contains the credentials
 to access the app and must not become public.</p>
-<a class="reference external image-reference" href="../_static/img/pycharm_sdk_init.png"><img alt="pycharm_sdk_init" src="../_images/pycharm_sdk_init.png" /></a>
+<p><img alt="pycharm_sdk_init" src="../_images/pycharm_sdk_init.png" /></p>
 </section>
 <section id="test-your-setup">
 <h2>6. Test your Setup<a class="headerlink" href="#test-your-setup" title="Permalink to this headline">¶</a></h2>
@@ -183,9 +187,10 @@ documents later on, the flag <code class="docutils literal notranslate"><span cl
 
 <span class="c1"># Receive the total number of training documents in the project:</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Number of training documents in the project: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
 </pre></div>
 </div>
-<a class="reference external image-reference" href="../_static/img/pycharm_test_setup.png"><img alt="pycharm_test_setup" src="../_images/pycharm_test_setup.png" /></a>
+<p><img alt="pycharm_test_setup" src="../_images/pycharm_test_setup.png" /></p>
 </section>
 <section id="test-the-debugging">
 <h2>7. Test the Debugging<a class="headerlink" href="#test-the-debugging" title="Permalink to this headline">¶</a></h2>
@@ -193,7 +198,7 @@ documents later on, the flag <code class="docutils literal notranslate"><span cl
 the code in the line of the print statement and execute “Run” and then “Debug main”. This will provide you with an
 overview of all available variables. As you can see in the code above, we only accessed the document element - however,
 all other elements can be found and explored in the Debug console under “Variables”.</p>
-<a class="reference external image-reference" href="../_static/img/pycharm_test_debug.png"><img alt="pycharm_test_debug" src="../_images/pycharm_test_debug.png" /></a>
+<p><img alt="pycharm_test_debug" src="../_images/pycharm_test_debug.png" /></p>
 </section>
 </section>
 

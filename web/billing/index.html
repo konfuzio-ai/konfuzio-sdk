@@ -8,6 +8,7 @@
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="shortcut icon" href="../../_static/full_green_square.png"/>
     <link rel="canonical" href="https://dev.konfuzio.com/web/billing/index.html" />
@@ -98,9 +99,8 @@
   <p><strong>Internal Documentation. This does not apply to on-premises Konfuzio Server installations.</strong></p>
 <section id="overview">
 <h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h1>
-<p>The pricing of Konfuzio is based on the number of Pages a user assigned to one Contract processes. a user processes. This pricing is enforced by configuring Konfuzio Server as ‘Contract Center’(<a class="reference external" href="https://it.vertragscenter.com/">https://it.vertragscenter.com/</a>).</p>
-<div class="mermaid">
-            graph LR
+<p>The pricing of Konfuzio is based on the number of Pages a user assigned to one Contract processes. a user processes. This pricing is enforced by configuring Konfuzio Server as ‘Contract Center’(https://it.vertragscenter.com/).</p>
+<div class="highlight-mermaid notranslate"><div class="highlight"><pre><span></span>graph LR
 subgraph On-Premise
 a(License Key)
 end
@@ -111,8 +111,10 @@ end
 subgraph Contract Center
 b(Contract) --&gt; c(Contract)
 e(Contract) --&gt; f(Contract)
-end
-        </div><section id="set-up-konfuzio-server-as-contract-center">
+end  						
+</pre></div>
+</div>
+<section id="set-up-konfuzio-server-as-contract-center">
 <h2>Set up Konfuzio Server as Contract Center<a class="headerlink" href="#set-up-konfuzio-server-as-contract-center" title="Permalink to this headline">¶</a></h2>
 <section id="to-activate-the-billing-you-need">
 <h3>To activate the billing, you need:<a class="headerlink" href="#to-activate-the-billing-you-need" title="Permalink to this headline">¶</a></h3>
@@ -144,9 +146,9 @@ end
 </ul>
 </li>
 </ul>
-<img alt="../../_images/webhook.png" src="../../_images/webhook.png" />
+<p>.. image:: ./webhook.png</p>
 <p>Click <code class="docutils literal notranslate"><span class="pre">Webhook</span> <span class="pre">speichern</span></code> button</p>
-<ol class="arabic simple">
+<ol class="arabic simple" start="4">
 <li><p>Then open <code class="docutils literal notranslate"><span class="pre">Project</span></code> page. Click on edit button for any existing project. Go to the <code class="docutils literal notranslate"><span class="pre">Schnittstelle</span></code> tab.</p></li>
 <li><p>You will need a copy a <code class="docutils literal notranslate"><span class="pre">Api-Key</span></code> value from this page and set the <code class="docutils literal notranslate"><span class="pre">FAKTURIA_API_KEY</span></code> environment variable to it.
 Also set <code class="docutils literal notranslate"><span class="pre">https://api.sandbox.fakturia.de/api/v1/</span></code> (for test environment) to <code class="docutils literal notranslate"><span class="pre">FAKTURIA_API_URL</span></code> environment variable.
@@ -183,7 +185,7 @@ it will appear on your server.</p>
 </section>
 <section id="management-on-app-konfuzio-com">
 <h2>Management on app.konfuzio.com<a class="headerlink" href="#management-on-app-konfuzio-com" title="Permalink to this headline">¶</a></h2>
-<p>Konfuzio Server will display a Billing Module to manage Contracts and Customers if is configured as Contract Center. On-premise installations will not see the Billing Module. Konfuzio Server is running as Contract Center if the HOST_NAME is part of ‘<em>.konfuzio.com’ and if the BILLING_API_URL is set to ‘</em>.fakturia.de’.</p>
+<p>Konfuzio Server will display a Billing Module to manage Contracts and Customers if is configured as Contract Center. On-premise installations will not see the Billing Module. Konfuzio Server is running as Contract Center if the HOST_NAME is part of ‘*.konfuzio.com’ and if the BILLING_API_URL is set to ‘*.fakturia.de’.</p>
 </section>
 </section>
 

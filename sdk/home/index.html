@@ -8,6 +8,7 @@
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="shortcut icon" href="../../_static/full_green_square.png"/>
     <link rel="canonical" href="https://dev.konfuzio.com/sdk/home/index.html" />
@@ -98,20 +99,21 @@
   <section id="data-layer-concepts">
 <h1>Data Layer Concepts<a class="headerlink" href="#data-layer-concepts" title="Permalink to this headline">¶</a></h1>
 <p>The relations between all major Data Layer concepts of the SDK are
-the following: a <a class="reference external" href="#project-concept">Project</a> consists of multiple <a class="reference external" href="#document-concept">Documents</a>. Each one of the Documents consists of
-the <a class="reference external" href="#page-concept">Pages</a> and belongs to a certain <a class="reference external" href="#category-concept">Category</a>. Text in a Document can be marked by
-<a class="reference external" href="#annotation-concept">Annotations</a>, which can be multi-line, and where each continuous piece of text contained into an
-Annotation is a <a class="reference external" href="#span-concept">Span</a>. Each Annotation is located within a certain <a class="reference external" href="#bbox-concept">Bbox</a> and is defined by a
-<a class="reference external" href="#label-concept">Label</a> that is a part of one of the <a class="reference external" href="#label-set-concept">Label Sets</a>. An <a class="reference external" href="#annotation-set-concept">Annotation Set</a> is a list of Annotations
+the following: a <span class="xref myst">Project</span> consists of multiple <span class="xref myst">Documents</span>. Each one of the Documents consists of
+the <span class="xref myst">Pages</span> and belongs to a certain <span class="xref myst">Category</span>. Text in a Document can be marked by
+<span class="xref myst">Annotations</span>, which can be multi-line, and where each continuous piece of text contained into an
+Annotation is a <span class="xref myst">Span</span>. Each Annotation is located within a certain <span class="xref myst">Bbox</span> and is defined by a
+<span class="xref myst">Label</span> that is a part of one of the <span class="xref myst">Label Sets</span>. An <span class="xref myst">Annotation Set</span> is a list of Annotations
 that share a Label Set.</p>
 <p>For more detailed information on each concept, follow the link on the concept’s name which leads to the automatically
 generated documentation.</p>
-<section id="project-concept">
-<span id="id1"></span><h2>Project<a class="headerlink" href="#project-concept" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference external" href="sourcecode.html#project">Project</a> is essentially a dataset that contains Documents
+<p>.. _project-concept:</p>
+<section id="project">
+<h2>Project<a class="headerlink" href="#project" title="Permalink to this headline">¶</a></h2>
+<p><span class="xref myst">Project</span> is essentially a dataset that contains Documents
 belonging to different Categories or not having any Category assigned. To initialize it, call <code class="docutils literal notranslate"><span class="pre">Project(id_=YOUR_PROJECT_ID)</span></code>.</p>
 <p>The Project can also be accessed via the Smartview, with URL typically looking like
-<a class="reference external" href="https://YOUR_HOST/admin/server/document/?project=YOUR_PROJECT_ID">https://YOUR_HOST/admin/server/document/?project=YOUR_PROJECT_ID</a>.</p>
+https://YOUR_HOST/admin/server/document/?project=YOUR_PROJECT_ID.</p>
 <p>If you have made some local changes to the Project and want to return to the initial version available at the server, or
 if you want to fetch the updates from the server, use the argument <code class="docutils literal notranslate"><span class="pre">update=True</span></code>.</p>
 <p>Here are the some of properties and methods of the Project you might need when working with the SDK:</p>
@@ -121,16 +123,17 @@ if you want to fetch the updates from the server, use the argument <code class="
 <li><p><code class="docutils literal notranslate"><span class="pre">project.get_category_by_id(YOUR_CATEGORY_ID).documents()</span></code> – Documents filtered by a Category of your choice;</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">project.get_document_by_id(YOUR_DOCUMENT_ID)</span></code> – access a particular Document from the Project if you know its ID.</p></li>
 </ul>
+<p>.. _document-concept:</p>
 </section>
 <section id="document">
-<span id="document-concept"></span><h2>Document<a class="headerlink" href="#document" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference external" href="sourcecode.html#document">Document</a> is one of the files that constitute a Project. It
+<h2>Document<a class="headerlink" href="#document" title="Permalink to this headline">¶</a></h2>
+<p><span class="xref myst">Document</span> is one of the files that constitute a Project. It
 consists of Pages and can belong to a certain Category.</p>
 <p>A Document can be accessed by <code class="docutils literal notranslate"><span class="pre">project.get_document_by_id(YOUR_DOCUMENT_ID)</span></code> when its ID is known to you; otherwise, it
 is possible to iterate through the output of <code class="docutils literal notranslate"><span class="pre">project.documents</span></code> (or <code class="docutils literal notranslate"><span class="pre">test_documents</span></code>/<code class="docutils literal notranslate"><span class="pre">_documents</span></code>) to see which
 Documents are available and what IDs they have.</p>
 <p>The Documents can also be accessed via the Smartview, with URL typically looking like
-<a class="reference external" href="https://YOUR_HOST/projects/PROJECT_ID/docs/DOCUMENT_ID/bbox-annotations/">https://YOUR_HOST/projects/PROJECT_ID/docs/DOCUMENT_ID/bbox-annotations/</a>.</p>
+https://YOUR_HOST/projects/PROJECT_ID/docs/DOCUMENT_ID/bbox-annotations/.</p>
 <p>Here are some of the properties and methods of the Document you might need when working with the SDK:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">document.id_</span></code> – get an ID of the Document;</p></li>
@@ -166,51 +169,57 @@ the Smartview;</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">document.get_images()</span></code> – download PNG images of the Pages in the Document; can be used if you wish to use the visual
 data for training your own models, for example;</p></li>
 </ul>
+<p>.. _category-concept:</p>
 </section>
-<section id="category-concept">
-<span id="id4"></span><h2>Category<a class="headerlink" href="#category-concept" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference external" href="sourcecode.html#category">Category</a> is a group of Documents united by common feature or type, i.e. invoice or receipt.</p>
+<section id="category">
+<h2>Category<a class="headerlink" href="#category" title="Permalink to this headline">¶</a></h2>
+<p><span class="xref myst">Category</span> is a group of Documents united by common feature or type, i.e. invoice or receipt.</p>
 <p>To see all Categories in the Project, you can use <code class="docutils literal notranslate"><span class="pre">project.categories</span></code>.
 To find a Category the Document belongs to, you can use <code class="docutils literal notranslate"><span class="pre">document.category</span></code>.
 To get <code class="docutils literal notranslate"><span class="pre">documents</span></code> or <code class="docutils literal notranslate"><span class="pre">test_documents</span></code> under the Category, use <code class="docutils literal notranslate"><span class="pre">category.documents()</span></code> or <code class="docutils literal notranslate"><span class="pre">category.test_documents()</span></code> respectively.</p>
 <p>You can also observe all Categories available in the Project via the Smartview: they are listed on the Project’s page in the menu on the right.</p>
+<p>.. _page-concept:</p>
 </section>
 <section id="page">
-<span id="page-concept"></span><h2>Page<a class="headerlink" href="#page" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference external" href="sourcecode.html#page">Page</a> is a constituent part of the Document. Here are some of the properties and methods of the Page you might need when working with the SDK:</p>
+<h2>Page<a class="headerlink" href="#page" title="Permalink to this headline">¶</a></h2>
+<p><span class="xref myst">Page</span> is a constituent part of the Document. Here are some of the properties and methods of the Page you might need when working with the SDK:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">page.text</span></code> – get text of the Page;</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">page.spans()</span></code> – get a list of Spans on the Page;</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">page.number</span></code> – get Page’s number, starting from 1.</p></li>
 </ul>
+<p>.. _category-annotation-concept:</p>
 </section>
 <section id="category-annotation">
-<span id="category-annotation-concept"></span><h2>Category Annotation<a class="headerlink" href="#category-annotation" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference external" href="sourcecode.html#category-annotation">Category Annotation</a> defines a Category of a Page or a Document. There can be
+<h2>Category Annotation<a class="headerlink" href="#category-annotation" title="Permalink to this headline">¶</a></h2>
+<p><span class="xref myst">Category Annotation</span> defines a Category of a Page or a Document. There can be
 more than one Category Annotation per Document and per Page; Category Annotations typically come with different
 confidence levels.</p>
 <p>To get a Category Annotation of a particular Category for the Page, use <code class="docutils literal notranslate"><span class="pre">Page.get_category_annotation(category)</span></code>.</p>
 <p>To get a maximum-confidence Category Annotation for a Page, use <code class="docutils literal notranslate"><span class="pre">Page.maximum_confidence_category_annotation</span></code>.</p>
 <p>To see a maximum-confidence Category Annotation for a Document, use <code class="docutils literal notranslate"><span class="pre">Document.maximum_confidence_category_annotation</span></code>.</p>
+<p>.. _span-concept:</p>
 </section>
-<section id="span-concept">
-<span id="id8"></span><h2>Span<a class="headerlink" href="#span-concept" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference external" href="sourcecode.html#span">Span</a> is a part of the Document’s text without the line breaks. Each Span has <code class="docutils literal notranslate"><span class="pre">start_offset</span></code> and <code class="docutils literal notranslate"><span class="pre">end_offset</span></code> denoting its starting and finishing characters in <code class="docutils literal notranslate"><span class="pre">document.text</span></code>.</p>
+<section id="span">
+<h2>Span<a class="headerlink" href="#span" title="Permalink to this headline">¶</a></h2>
+<p><span class="xref myst">Span</span> is a part of the Document’s text without the line breaks. Each Span has <code class="docutils literal notranslate"><span class="pre">start_offset</span></code> and <code class="docutils literal notranslate"><span class="pre">end_offset</span></code> denoting its starting and finishing characters in <code class="docutils literal notranslate"><span class="pre">document.text</span></code>.</p>
 <p>To access Span’s text, you can call <code class="docutils literal notranslate"><span class="pre">span.offset_string</span></code>. We are going to use it later when collecting the Spans from the Documents.</p>
+<p>.. _annotation-concept:</p>
 </section>
 <section id="annotation">
-<span id="annotation-concept"></span><h2>Annotation<a class="headerlink" href="#annotation" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference external" href="sourcecode.html#annotation">Annotation</a> is a combination of Spans that has a certain Label (i.e. Issue_Date, Auszahlungsbetrag)
+<h2>Annotation<a class="headerlink" href="#annotation" title="Permalink to this headline">¶</a></h2>
+<p><span class="xref myst">Annotation</span> is a combination of Spans that has a certain Label (i.e. Issue_Date, Auszahlungsbetrag)
 assigned to it. They typically denote a certain type of entity that is found in the text. Annotations can be predicted
 by AI or be human-added.</p>
 <p>Annotations always have to belong to an Annotation Set with a Label Set compatible with the Annotation’s Label.</p>
 <p>Like Spans, Annotations also have <code class="docutils literal notranslate"><span class="pre">start_offset</span></code> and <code class="docutils literal notranslate"><span class="pre">end_offset</span></code> denoting the starting and the ending characters. To
 access the text under the Annotation, call <code class="docutils literal notranslate"><span class="pre">annotation.offset_string</span></code>.</p>
 <p>To see the Annotation in the Smartview, you can call <code class="docutils literal notranslate"><span class="pre">annotation.get_link()</span></code> and open the returned URL.</p>
+<p>.. _annotation-set-concept:</p>
 </section>
-<section id="annotation-set-concept">
-<span id="id11"></span><h2>Annotation Set<a class="headerlink" href="#annotation-set-concept" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference external" href="sourcecode.html#annotation-set">Annotation Set</a> is a group of Annotations united by Labels belonging to the same Label Set.
+<section id="annotation-set">
+<h2>Annotation Set<a class="headerlink" href="#annotation-set" title="Permalink to this headline">¶</a></h2>
+<p><span class="xref myst">Annotation Set</span> is a group of Annotations united by Labels belonging to the same Label Set.
 To retrieve all that Annotation Sets of a Document call <code class="docutils literal notranslate"><span class="pre">document.annotation_sets()</span></code>. To see Annotations in the set,
 call <code class="docutils literal notranslate"><span class="pre">annotation_set.annotations()</span></code>.</p>
 <p>Every Document has one unique default Annotation Set, which can be retrieved with <code class="docutils literal notranslate"><span class="pre">document.default_annotation_set</span></code>. This
@@ -218,32 +227,37 @@ Annotation Set’s Label Set is the Document’s Category default Label Set and 
 can be used to store all Annotations that don’t need to be organized into a separate Annotation Set.</p>
 <p>To check what Annotation Labels can be added to an Annotation Set, you can check with <code class="docutils literal notranslate"><span class="pre">annotation_set.label_set.labels</span></code>.</p>
 <p>Documents also have a unique Annotation Set for NO LABEL Annotations, which can be retrieved with <code class="docutils literal notranslate"><span class="pre">document.no_label_annotation_set</span></code>.</p>
+<p>.. _label-concept:</p>
 </section>
-<section id="label-concept">
-<span id="id13"></span><h2>Label<a class="headerlink" href="#label-concept" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference external" href="sourcecode.html#label">Label</a> defines what the Annotation is about (i.e. Issue_Date,
+<section id="label">
+<h2>Label<a class="headerlink" href="#label" title="Permalink to this headline">¶</a></h2>
+<p><span class="xref myst">Label</span> defines what the Annotation is about (i.e. Issue_Date,
 Auszahlungsbetrag). Labels are grouped into Label Sets. To see Annotations with a current Label,
 call <code class="docutils literal notranslate"><span class="pre">label.annotations()</span></code> .</p>
+<p>.. _label-set-concept:</p>
 </section>
 <section id="label-set">
-<span id="label-set-concept"></span><h2>Label Set<a class="headerlink" href="#label-set" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference external" href="sourcecode.html#label-set">Label Set</a> is a group of related Labels. A Label Set can belong to different Categories and
-be used to create one or more <a class="reference external" href="#annotation-set-concept">Annotation Sets</a>, depending on the Label Set.</p>
+<h2>Label Set<a class="headerlink" href="#label-set" title="Permalink to this headline">¶</a></h2>
+<p><span class="xref myst">Label Set</span> is a group of related Labels. A Label Set can belong to different Categories and
+be used to create one or more <span class="xref myst">Annotation Sets</span>, depending on the Label Set.</p>
 <p>Every Category has a default Label Set, which can be retrieved with <code class="docutils literal notranslate"><span class="pre">category.default_label_set</span></code>. This Label Set is used
 to create the default Annotation Set for each Document in the Category.</p>
 <p>Label Sets have an attribute, <code class="docutils literal notranslate"><span class="pre">label_set.has_multiple_annotation_sets</span></code>, which determines whether more than one Annotation Set
 can be created per Document. If <code class="docutils literal notranslate"><span class="pre">has_multiple_annotation_sets</span></code> is <code class="docutils literal notranslate"><span class="pre">False</span></code>, then only a single Annotation Set with the
 Label Set can be created per Document.</p>
+<p>.. _bbox-concept:</p>
 </section>
-<section id="bbox-concept">
-<span id="id16"></span><h2>Bbox<a class="headerlink" href="#bbox-concept" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference external" href="sourcecode.html#bbox">Bbox</a> is used to represent an area of a Page, defined by the coordinates of the bottom left corner
-and the top right corner of the bounding box. Check out our <a class="reference external" href="#coordinates-system">coordinate system explainer</a> for more
+<section id="bbox">
+<h2>Bbox<a class="headerlink" href="#bbox" title="Permalink to this headline">¶</a></h2>
+<p><span class="xref myst">Bbox</span> is used to represent an area of a Page, defined by the coordinates of the bottom left corner
+and the top right corner of the bounding box. Check out our <span class="xref myst">coordinate system explainer</span> for more
 details.</p>
 <p>You can access all character Bboxes of the Document by using <code class="docutils literal notranslate"><span class="pre">document.bboxes</span></code>. A Bbox can also be associated with a single Span, or with all Spans within an Annotation. To obtain the Bbox associate with a single Span, call <code class="docutils literal notranslate"><span class="pre">span.bbox()</span></code>. To obtain the Bbox wrapping all Spans in an Annotation, call <code class="docutils literal notranslate"><span class="pre">annotation.bbox()</span></code>. This should not be
 confused with <code class="docutils literal notranslate"><span class="pre">Annotation.selection_bbox</span></code>, which is an attribute storing the Bbox a user has selected in the Smartview when creating the Annotation.</p>
 <p>The following image shows a bounding box with red border, which is retrieved with <code class="docutils literal notranslate"><span class="pre">Annotation.selection_bbox</span></code> , and a bounding box highlighted in green, which is retrieved with <code class="docutils literal notranslate"><span class="pre">Annotation.bbox()</span></code>:</p>
-<a class="reference internal image-reference" href="../../_images/bbox_selection_bbox.png"><img alt="../../_images/bbox_selection_bbox.png" class="align-center" src="../../_images/bbox_selection_bbox.png" style="width: 150px;" /></a>
+<p>.. image:: /_static/img/bbox_selection_bbox.png
+:width: 150px
+:align: center</p>
 </section>
 </section>
 
