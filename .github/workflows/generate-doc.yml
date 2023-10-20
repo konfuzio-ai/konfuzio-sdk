@@ -32,10 +32,10 @@ jobs:
           name: docs-build-test
           path: |
             public/
-      - name: Publish generated content to GitHub Pages
-        uses: tsunematsu21/actions-publish-gh-pages@v1.0.1
-        with:
-          dir: public
-          branch: pages
-          token: ${{ secrets.ACCESS_TOKEN }}
-          cname: ${{ github.ref_slug }}.dev.konfuzio.com
+      # - name: Publish generated content to GitHub Pages
+      #   uses: tsunematsu21/actions-publish-gh-pages@v1.0.1
+      #   with:
+      #     dir: public
+      #     branch: pages
+      #     token: ${{ secrets.ACCESS_TOKEN }}
+      #     cname: ${{ github.ref_slug }}.dev.konfuzio.com
