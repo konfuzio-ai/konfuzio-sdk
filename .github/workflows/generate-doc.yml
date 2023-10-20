@@ -19,10 +19,6 @@ jobs:
         run: |
           pip install -e .[docs]
           sphinx-build -d _build/doctrees docs _build/html
-          mv _build/html public
-      - name: Upload Sphinx Error Log
-        if: ${{ failure() }}
-        run: |
           error_log=$(find /tmp -type f -name "sphinx-err-*.log" 2>/dev/null)
           if [ -n "$error_log" ]; then
             mv "$error_log" sphinx-error.log
@@ -30,6 +26,7 @@ jobs:
           else
             echo "Sphinx error log not found"
           fi
+          mv _build/html public
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
