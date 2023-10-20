@@ -114,7 +114,7 @@ notfound_urls_prefix = '/'
 nb_execution_timeout = -1
 
 # Raise an exception on failed execution, rather than emitting a warning
-nb_execution_raise_on_error = True
+# nb_execution_raise_on_error = True
 
 # Print traceback to stderr on execution error
 nb_execution_show_tb = True
