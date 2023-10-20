@@ -8,6 +8,7 @@
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="shortcut icon" href="../../_static/full_green_square.png"/>
     <link rel="canonical" href="https://dev.konfuzio.com/sdk/releasing/index.html" />
@@ -95,19 +96,21 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="id1">
-<h1>Architecture SDK to Server<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+  <p>.. _architecture-sdk-to-server:</p>
+<section id="architecture-sdk-to-server">
+<h1>Architecture SDK to Server<a class="headerlink" href="#architecture-sdk-to-server" title="Permalink to this headline">¶</a></h1>
 <p>The following chart is automatically created by the version of the diagram on the branch master, see <a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/tests/SDK%20and%20Server%20Integration.drawio">source</a>.</p>
 <p>If you hover over the image you can zoom or use the full page mode.</p>
-<p><span class="raw-html-m2r"><div class="mxgraph" style="max-width:100%;border:1px solid transparent;" data-mxgraph="{&quot;highlight&quot;:&quot;#0000ff&quot;,&quot;nav&quot;:true,&quot;resize&quot;:true,&quot;toolbar&quot;:&quot;zoom layers tags lightbox&quot;,&quot;edit&quot;:&quot;_blank&quot;,&quot;url&quot;:&quot;https://raw.githubusercontent.com/konfuzio-ai/konfuzio-sdk/master/docs/sdk/SDK%20and%20Server%20Integration.drawio&quot;}"></div></span></p>
-<script type="text/javascript" src="https://viewer.diagrams.net/embed2.js?&fetch=https%3A%2F%2Fraw.githubusercontent.com%2Fkonfuzio-ai%2Fkonfuzio-sdk%2Fmaster%2Fdocs%2Fsdk%2FSDK%2520and%2520Server%2520Integration.drawio"></script><p>If you want to edit the diagramm, please refer to the <a class="reference external" href="https://drawio-app.com/github-support/">GitHub Drawio Documentation</a>.</p>
+<div class="mxgraph" style="max-width:100%;border:1px solid transparent;" data-mxgraph="{&quot;highlight&quot;:&quot;#0000ff&quot;,&quot;nav&quot;:true,&quot;resize&quot;:true,&quot;toolbar&quot;:&quot;zoom layers tags lightbox&quot;,&quot;edit&quot;:&quot;_blank&quot;,&quot;url&quot;:&quot;https://raw.githubusercontent.com/konfuzio-ai/konfuzio-sdk/master/docs/sdk/SDK%20and%20Server%20Integration.drawio&quot;}"></div>
+<script type="text/javascript" src="https://viewer.diagrams.net/embed2.js?&fetch=https%3A%2F%2Fraw.githubusercontent.com%2Fkonfuzio-ai%2Fkonfuzio-sdk%2Fmaster%2Fdocs%2Fsdk%2FSDK%2520and%2520Server%2520Integration.drawio"></script>
+<p>If you want to edit the diagramm, please refer to the <a class="reference external" href="https://drawio-app.com/github-support/">GitHub Drawio Documentation</a>.</p>
 </section>
 <section id="directory-structure">
 <h1>Directory Structure<a class="headerlink" href="#directory-structure" title="Permalink to this headline">¶</a></h1>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>├── konfuzio-sdk      &lt;- SDK project name
 │   │
 │   ├── docs                              &lt;- Documentation to use konfuzio_sdk package in a project
-│   │
+│   │         
 │   ├── konfuzio_sdk                      &lt;- Source code of Konfuzio SDK
 │   │  ├── __init__.py                    &lt;- Makes konfuzio_sdk a Python module
 │   │  ├── api.py                         &lt;- Functions to interact with the Konfuzio Server
@@ -121,7 +124,7 @@
 │   │  ├── settings_importer.py           &lt;- Meta settings loaded from the project
 │   │  ├── urls.py                        &lt;- Endpoints of the Konfuzio host
 │   │  ├── utils.py                       &lt;- Utils functions for the konfuzio_sdk package
-|   |  |
+|   |  |          
 │   |  ├── trainer                        &lt;- Trainer module to train AI models
 |   |  |  ├── __init__.py                 &lt;- Makes trainer a Python module
 |   |  |  ├── base.py                     &lt;- Base class for all AIs
@@ -130,7 +133,7 @@
 |   |  |  ├── file_splitting.py           &lt;- AI for File splitting
 |   |  |  ├── image.py                    &lt;- Image processing helper functions
 |   |  |  ├── tokenization.py             &lt;- Custom tokenization classes
-|   |  |
+|   |  | 
 │   |  ├── tokenizer                      &lt;- Tokenizer module to tokenize documents
 |   |  |  ├── __init__.py                 &lt;- Makes tokenizer a Python module
 |   |  |  ├── base.py                     &lt;- Base class for all Tokenizers
@@ -138,13 +141,14 @@
 |   |  |  ├── regex.py                    &lt;- Various Regex Tokenizers
 |   |
 │   ├── tests                             &lt;- Pytests: basic tests to test scripts based on a demo project
-│   │
+│   │         
 │   ├── .gitignore                        &lt;- Specify files untracked and ignored by git
 │   ├── README.md                         &lt;- Readme to get to know konfuzio_sdk package
 │   ├── pytest.ini                        &lt;- Configurations for pytests
 │   ├── settings.py                       &lt;- Settings of SDK project
 │   ├── setup.cfg                         &lt;- Setup configurations
 │   ├── setup.py                          &lt;- Installation requirements
+
 </pre></div>
 </div>
 </section>

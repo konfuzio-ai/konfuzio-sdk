@@ -8,6 +8,7 @@
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="shortcut icon" href="../../_static/full_green_square.png"/>
     <link rel="canonical" href="https://dev.konfuzio.com/sdk/releasing/contribution.html" />
@@ -146,7 +147,7 @@ You can also run them locally by executing <code class="docutils literal notrans
 <li><p>konfuzio_sdk.egg-info folder</p></li>
 <li><p>IDE settings files</p></li>
 <li><p>docs/build/ folder</p></li>
-<li><p><a href="#id1"><span class="problematic" id="id2">*</span></a>.pyc files</p></li>
+<li><p>*.pyc files</p></li>
 </ul>
 <p><em>Note</em>:
 If you choose another name for the folder where you want to store the data being downloaded, please add
@@ -227,24 +228,25 @@ content:</p>
 <h2>3. Install the remote development extension<a class="headerlink" href="#install-the-remote-development-extension" title="Permalink to this headline">¶</a></h2>
 <p>In VS Code open the extensions tab (its icon is located in the left sidebar) and search <strong>Remote - Containers</strong> (or for
 its ID: <em>ms-vscode-remote.remote-containers</em>). Install the extension.</p>
-<!--[extensions tab](images/vscode_docker/extensions.PNG)--><img alt="../../_images/remote_dev_extension.png" src="../../_images/remote_dev_extension.png" />
+<!--[extensions tab](images/vscode_docker/extensions.PNG)-->
+<p>.. image:: /_static/img/vscode_docker/remote_dev_extension.png</p>
 </section>
 <section id="set-up-your-remote-development-environment">
 <h2>4. Set up your remote development environment<a class="headerlink" href="#set-up-your-remote-development-environment" title="Permalink to this headline">¶</a></h2>
 <p>You should now be able to find the remote extension’s symbol (arrows on a green background) in the bottom left corner of
 the VS Code window (picture below). Clicking on the symbol opens the extension’s command pallet, which from now on is
 going to be our main access point to the extension.</p>
-<img alt="../../_images/green_arrows.png" src="../../_images/green_arrows.png" />
+<p>.. image:: /_static/img/vscode_docker/green_arrows.png</p>
 <p>In the Command Pallet (<em>‘View’ &gt; ‘Command Pallet’</em>) select <em>‘Remote-Containers: Add Development Container Configuration
 Files’ &gt; ‘From $your_dockerfile’</em></p>
-<img alt="../../_images/command_pallet.png" src="../../_images/command_pallet.png" />
+<p>.. image:: /_static/img/vscode_docker/command_pallet.png</p>
 <p>Now you should see in the file explorer under <em>.devcontainer</em> your <em>devcontainer.json</em> file. Open it. These are the
 basic
 configurations of your devcontainer. Most of this can be left unchanged. Maybe give your container a name by changing
 the ‘name’ variable. Additionally, you should specify all the ports you need inside your Docker container in
 ‘forwardPorts’.
 If you are working with the sample project you do not need to specify any ports.</p>
-<img alt="../../_images/devcontainer.png" src="../../_images/devcontainer.png" />
+<p>.. image:: /_static/img/vscode_docker/devcontainer.png</p>
 </section>
 <section id="build-and-run-your-docker-container">
 <h2>5. Build and run your Docker container<a class="headerlink" href="#build-and-run-your-docker-container" title="Permalink to this headline">¶</a></h2>
@@ -253,7 +255,7 @@ for <em>‘Reopen Folder in Container’</em>. If you are doing this the first t
 can take quite a bit of time.</p>
 <p>To confirm that you are now inside the container look again to the bottom left. You should now be able to
 see <em>‘Dev Container: $your_name’</em> next to the two arrows.</p>
-<img alt="../../_images/green_arrows_with_text.png" src="../../_images/green_arrows_with_text.png" />
+<p>.. image:: /_static/img/vscode_docker/green_arrows_with_text.png</p>
 </section>
 <section id="install-the-python-extension-inside-the-docker-container-to-debug-and-run-python-files">
 <h2>6. Install the Python extension inside the Docker container to debug and run Python files<a class="headerlink" href="#install-the-python-extension-inside-the-docker-container-to-debug-and-run-python-files" title="Permalink to this headline">¶</a></h2>
@@ -261,9 +263,10 @@ see <em>‘Dev Container: $your_name’</em> next to the two arrows.</p>
 ms-python.python*).</p>
 <p>Now you can debug/run any Python file you want. Open up the chosen Python file and the ‘Run and Debug’ tab by clicking
 the run/debug icon that should be now available on the left taskbar.</p>
-<!--[run and debug tab](images/vscode_docker/run_and_debug.PNG)--><p>Click <em>‘Run and Debug’ &gt; ‘Python File’</em> and you are good to go. Before make sure to set the needed breakpoints by
+<!--[run and debug tab](images/vscode_docker/run_and_debug.PNG)-->
+<p>Click <em>‘Run and Debug’ &gt; ‘Python File’</em> and you are good to go. Before make sure to set the needed breakpoints by
 clicking to the left of the line numbers.</p>
-<img alt="../../_images/debug_point.png" src="../../_images/debug_point.png" />
+<p>.. image:: /_static/img/vscode_docker/debug_point.png</p>
 <p>If you want to evaluate certain expressions while debugging, open up the terminal (if it is not open already) by
 clicking <em>‘View’ &gt; ‘Terminal’</em>. One of the terminal’s tabs is the debug console, where you can evaluate any expression.</p>
 <p>If you are in the sample project you can make sure that the Docker container works as expected by entering the tests
@@ -272,7 +275,7 @@ folder (<em>‘cd tests’</em>) and executing:</p>
 <span class="n">local</span>
 </pre></div>
 </div>
-<img alt="../../_images/tests.png" src="../../_images/tests.png" />
+<p>.. image:: /_static/img/vscode_docker/tests.png</p>
 </section>
 <section id="additional-tips">
 <h2>Additional Tips<a class="headerlink" href="#additional-tips" title="Permalink to this headline">¶</a></h2>
