@@ -2,13 +2,13 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+<meta content="Documentation of the coordinates system of the bounding boxes used in Konfuzio and some simple" name="description" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Coordinates System &mdash; Konfuzio  documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" type="text/css" />
       <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
     <link rel="shortcut icon" href="../_static/full_green_square.png"/>
     <link rel="canonical" href="https://dev.konfuzio.com/sdk/coordinates_system.html" />
@@ -96,52 +96,162 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <p>.. meta::
-:description: Documentation of the coordinates system of the bounding boxes used in Konfuzio and some simple
-examples of how to use it for visualization, for example.</p>
+  <p>examples of how to use it for visualization, for example.</p>
 <section id="coordinates-system">
 <h1>Coordinates System<a class="headerlink" href="#coordinates-system" title="Permalink to this headline">¶</a></h1>
 <p>The size of a page of a Document can be obtained in the Document object.
 The format is [width, height].</p>
 <p>Original size of the Document is the size of the uploaded Document (which can be a PDF file or an image). The bounding
-boxes of the Annotations are based on this size.
-E.g.: [1552, 1932]</p>
+boxes of the Annotations are based on this size.</p>
+<blockquote>
+<div><p>E.g.: [1552, 1932]</p>
+</div></blockquote>
 <p>Current size can be accessed via calling <code class="docutils literal notranslate"><span class="pre">height</span></code> and <code class="docutils literal notranslate"><span class="pre">width</span></code> from the Page object. They show the dimensions of the
-image representation of a Document Page. These representations are used for computer vision tasks and the SmartView.
-E.g.: [372.48, 463.68]</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_coordinates_system.py
-:language: python
-:start-after: Start coordinates
-:end-before: End coordinates
-:dedent: 4</p>
+image representation of a Document Page. These representations are used for computer vision tasks and the SmartView.</p>
+<blockquote>
+<div><p>E.g.: [372.48, 463.68]</p>
+</div></blockquote>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
+
+<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
+<span class="c1"># first Document uploaded</span>
+<span class="n">document</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="c1"># index of the Page to test</span>
+<span class="n">page_index</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="n">width</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">pages</span><span class="p">()[</span><span class="n">page_index</span><span class="p">]</span><span class="o">.</span><span class="n">width</span>
+<span class="n">height</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">pages</span><span class="p">()[</span><span class="n">page_index</span><span class="p">]</span><span class="o">.</span><span class="n">height</span>
+</pre></div>
+</div>
 <p>The coordinates system used has its start in the bottom left corner of the page.</p>
-<p>.. image:: /_static/img/coordinates_schema.png</p>
+<img alt="../_images/coordinates_schema.png" src="../_images/coordinates_schema.png" />
 <p>To visualize the character bounding boxes of a document and overlapping them in the image opened with the python
 library PIL, for example, we can resize the image to the size in which they are based (original_size).
 The following code can be used for this:</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_segmentation_and_bboxes.py
-:language: python
-:start-after: start document
-:end-before: end document
-:dedent: 4</p>
-<p>.. image:: /_static/img/bboxes_characters.png</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">ImageDraw</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
+
+<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
+<span class="c1"># first Document uploaded</span>
+<span class="n">document</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
+<span class="c1"># index of the Page to test</span>
+<span class="n">page_index</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">width</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">pages</span><span class="p">()[</span><span class="n">page_index</span><span class="p">]</span><span class="o">.</span><span class="n">width</span>
+<span class="n">height</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">pages</span><span class="p">()[</span><span class="n">page_index</span><span class="p">]</span><span class="o">.</span><span class="n">height</span>
+<span class="n">page</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">pages</span><span class="p">()[</span><span class="n">page_index</span><span class="p">]</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">page</span><span class="o">.</span><span class="n">get_image</span><span class="p">(</span><span class="n">update</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">factor_x</span> <span class="o">=</span> <span class="n">width</span> <span class="o">/</span> <span class="n">image</span><span class="o">.</span><span class="n">width</span>
+<span class="n">factor_y</span> <span class="o">=</span> <span class="n">height</span> <span class="o">/</span> <span class="n">image</span><span class="o">.</span><span class="n">height</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s1">&#39;RGB&#39;</span><span class="p">)</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">resize</span><span class="p">((</span><span class="nb">int</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">factor_x</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">factor_y</span><span class="p">)))</span>
+<span class="n">height</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">image_characters_bbox</span> <span class="o">=</span> <span class="p">[</span><span class="n">char_bbox</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">char_bbox</span> <span class="ow">in</span> <span class="n">page</span><span class="o">.</span><span class="n">get_bbox</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+
+<span class="n">draw</span> <span class="o">=</span> <span class="n">ImageDraw</span><span class="o">.</span><span class="n">Draw</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">bbox</span> <span class="ow">in</span> <span class="n">image_characters_bbox</span><span class="p">:</span>
+    <span class="n">image_bbox</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;x0&quot;</span><span class="p">]),</span>
+        <span class="nb">int</span><span class="p">((</span><span class="n">height</span> <span class="o">-</span> <span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;y1&quot;</span><span class="p">])),</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;x1&quot;</span><span class="p">]),</span>
+        <span class="nb">int</span><span class="p">((</span><span class="n">height</span> <span class="o">-</span> <span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;y0&quot;</span><span class="p">])),</span>
+    <span class="p">)</span>
+    <span class="n">draw</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="n">image_bbox</span><span class="p">,</span> <span class="n">outline</span><span class="o">=</span><span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">image</span>
+
+<span class="c1"># Note: cv2 has the origin of the y coordinates in the upper left corner. Therefore, for visualization, the</span>
+<span class="c1"># height of the image is subtracted to the y coordinates.</span>
+</pre></div>
+</div>
+<img alt="../_images/bboxes_characters.png" src="../_images/bboxes_characters.png" />
 <p>The coordinates obtained from the segmentation endpoint of the API are based on the image array shape.
 To visualize the segmentation bounding boxes of a page on an image opened with the python library PIL, for example,
 we can overlap them directly.</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_segmentation_and_bboxes.py
-:language: python
-:start-after: start segmentation
-:end-before: end segmentation
-:dedent: 4</p>
-<p>.. image:: /_static/img/bboxes_segmentation.png</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">ImageDraw</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.api</span> <span class="kn">import</span> <span class="n">get_results_from_segmentation</span>
+
+<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
+<span class="c1"># first Document uploaded</span>
+<span class="n">document</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
+<span class="c1"># index of the Page to test</span>
+<span class="n">page_index</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">page</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">pages</span><span class="p">()[</span><span class="n">page_index</span><span class="p">]</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">page</span><span class="o">.</span><span class="n">get_image</span><span class="p">(</span><span class="n">update</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s1">&#39;RGB&#39;</span><span class="p">)</span>
+<span class="n">draw</span> <span class="o">=</span> <span class="n">ImageDraw</span><span class="o">.</span><span class="n">Draw</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+<span class="n">image_segmentation_bboxes</span> <span class="o">=</span> <span class="n">get_results_from_segmentation</span><span class="p">(</span><span class="n">document</span><span class="o">.</span><span class="n">id_</span><span class="p">,</span> <span class="n">my_project</span><span class="o">.</span><span class="n">id_</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">bbox</span> <span class="ow">in</span> <span class="n">image_segmentation_bboxes</span><span class="p">[</span><span class="n">page_index</span><span class="p">]:</span>
+    <span class="n">image_bbox</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;x0&quot;</span><span class="p">]),</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;y0&quot;</span><span class="p">]),</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;x1&quot;</span><span class="p">]),</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;y1&quot;</span><span class="p">]),</span>
+    <span class="p">)</span>
+    <span class="n">draw</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="n">image_bbox</span><span class="p">,</span> <span class="n">outline</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">image</span>
+</pre></div>
+</div>
+<img alt="../_images/bboxes_segmentation.png" src="../_images/bboxes_segmentation.png" />
 <p>To visualize both at the same time we can convert the coordinates from the segmentation result to be based on the image
 size used for the characters’ bbox.</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_segmentation_and_bboxes.py
-:language: python
-:start-after: start dimensions
-:end-before: end dimensions
-:dedent: 4</p>
-<p>.. image:: /_static/img/bboxes_overlap.png</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">ImageDraw</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.api</span> <span class="kn">import</span> <span class="n">get_results_from_segmentation</span>
+
+<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
+<span class="c1"># first Document uploaded</span>
+<span class="n">document</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
+<span class="c1"># index of the Page to test</span>
+<span class="n">page_index</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="n">width</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">pages</span><span class="p">()[</span><span class="n">page_index</span><span class="p">]</span><span class="o">.</span><span class="n">width</span>
+<span class="n">height</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">pages</span><span class="p">()[</span><span class="n">page_index</span><span class="p">]</span><span class="o">.</span><span class="n">height</span>
+
+<span class="n">page</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">pages</span><span class="p">()[</span><span class="n">page_index</span><span class="p">]</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">page</span><span class="o">.</span><span class="n">get_image</span><span class="p">(</span><span class="n">update</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">factor_x</span> <span class="o">=</span> <span class="n">width</span> <span class="o">/</span> <span class="n">image</span><span class="o">.</span><span class="n">width</span>
+<span class="n">factor_y</span> <span class="o">=</span> <span class="n">height</span> <span class="o">/</span> <span class="n">image</span><span class="o">.</span><span class="n">height</span>
+
+<span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s1">&#39;RGB&#39;</span><span class="p">)</span>
+
+<span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">resize</span><span class="p">((</span><span class="nb">int</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">factor_x</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">factor_y</span><span class="p">)))</span>
+<span class="n">height</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+<span class="n">image_characters_bbox</span> <span class="o">=</span> <span class="p">[</span><span class="n">char_bbox</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">char_bbox</span> <span class="ow">in</span> <span class="n">page</span><span class="o">.</span><span class="n">get_bbox</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+
+<span class="n">draw</span> <span class="o">=</span> <span class="n">ImageDraw</span><span class="o">.</span><span class="n">Draw</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">bbox</span> <span class="ow">in</span> <span class="n">image_characters_bbox</span><span class="p">:</span>
+    <span class="n">image_bbox</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;x0&quot;</span><span class="p">]),</span>
+        <span class="nb">int</span><span class="p">((</span><span class="n">height</span> <span class="o">-</span> <span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;y1&quot;</span><span class="p">])),</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;x1&quot;</span><span class="p">]),</span>
+        <span class="nb">int</span><span class="p">((</span><span class="n">height</span> <span class="o">-</span> <span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;y0&quot;</span><span class="p">])),</span>
+    <span class="p">)</span>
+    <span class="n">draw</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="n">image_bbox</span><span class="p">,</span> <span class="n">outline</span><span class="o">=</span><span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">image_segmentation_bboxes</span> <span class="o">=</span> <span class="n">get_results_from_segmentation</span><span class="p">(</span><span class="n">document</span><span class="o">.</span><span class="n">id_</span><span class="p">,</span> <span class="n">my_project</span><span class="o">.</span><span class="n">id_</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">bbox</span> <span class="ow">in</span> <span class="n">image_segmentation_bboxes</span><span class="p">[</span><span class="n">page_index</span><span class="p">]:</span>
+    <span class="n">image_bbox</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;x0&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">factor_x</span><span class="p">),</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;y0&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">factor_y</span><span class="p">),</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;x1&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">factor_x</span><span class="p">),</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;y1&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">factor_y</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">draw</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="n">image_bbox</span><span class="p">,</span> <span class="n">outline</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">image</span>
+
+<span class="c1"># Note: cv2 has the origin of the y coordinates in the upper left corner. Therefore, for visualization, the</span>
+<span class="c1"># height of the image is subtracted to the y coordinates.</span>
+</pre></div>
+</div>
+<img alt="../_images/bboxes_overlap.png" src="../_images/bboxes_overlap.png" />
 </section>
 
 

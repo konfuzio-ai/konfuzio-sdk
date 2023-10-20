@@ -8,7 +8,6 @@
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" type="text/css" />
       <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
     <link rel="shortcut icon" href="../_static/full_green_square.png"/>
     <link rel="canonical" href="https://dev.konfuzio.com/sdk/index.html" />
@@ -109,27 +108,31 @@
 <h1>What is the Konfuzio SDK?<a class="headerlink" href="#what-is-the-konfuzio-sdk" title="Permalink to this headline">¶</a></h1>
 <section id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
-<p>The Open Source Konfuzio Software Development Kit (Konfuzio SDK) provides a Python API to build custom document processes. For a quick introduction to the SDK, check out the <span class="xref myst">Get Started</span> section. Review the release notes and the source code on <a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/releases">GitHub</a>.</p>
-<table class="colwidths-auto docutils align-default">
+<p>The Open Source Konfuzio Software Development Kit (Konfuzio SDK) provides a Python API to build custom document processes. For a quick introduction to the SDK, check out the <a class="reference external" href="get_started.html">Get Started</a> section. Review the release notes and the source code on <a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/releases">GitHub</a>.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Section</p></th>
 <th class="head"><p>Description</p></th>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><span class="xref myst">Get Started</span></p></td>
+<tr class="row-even"><td><p><a class="reference external" href="get_started.html">Get Started</a></p></td>
 <td><p>Learn more about the Konfuzio SDK and how it works.</p></td>
 </tr>
-<tr class="row-odd"><td><p><span class="xref myst">Tutorials</span></p></td>
+<tr class="row-odd"><td><p><a class="reference external" href="tutorials.html">Tutorials</a></p></td>
 <td><p>Learn how to build your first document extraction pipeline, speed up your annotation process and many more.</p></td>
 </tr>
-<tr class="row-even"><td><p><span class="xref myst">Explanations</span></p></td>
+<tr class="row-even"><td><p><a class="reference external" href="explanations.html">Explanations</a></p></td>
 <td><p>Here are links to teaching material about the Konfuzio SDK.</p></td>
 </tr>
-<tr class="row-odd"><td><p><span class="xref myst">API Reference</span></p></td>
+<tr class="row-odd"><td><p><a class="reference external" href="sourcecode.html">API Reference</a></p></td>
 <td><p>Get to know all major Data Layer concepts of the Konfuzio SDK.</p></td>
 </tr>
-<tr class="row-even"><td><p><span class="xref myst">Contribution Guide</span></p></td>
+<tr class="row-even"><td><p><a class="reference external" href="contribution.html">Contribution Guide</a></p></td>
 <td><p>Learn how to contribute, run the tests locally, and submit a Pull Request.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/releases">Changelog</a></p></td>
@@ -142,16 +145,18 @@
 <p>For documentation about how to train and evaluate document understanding AIs, as well as use a trained AI in the
 Konfuzio Server web interface, please see our <a class="reference external" href="https://help.konfuzio.com/tutorials/quickstart/index.html">Konfuzio Guide</a>.</p>
 <p>If you need to <strong>add custom functionality</strong> to the document processes of the Konfuzio Server, the Konfuzio SDK
-is the tool for you. You can customize pipelines for automatic document :ref:<code class="docutils literal notranslate"><span class="pre">Categorization&lt;document-categorization-tutorials&gt;</span></code>,
-:ref:<code class="docutils literal notranslate"><span class="pre">File</span> <span class="pre">Splitting&lt;file-splitting-tutorials&gt;</span></code>, and :ref:<code class="docutils literal notranslate"><span class="pre">Extraction&lt;information-extraction-tutorials&gt;</span></code>.
+is the tool for you. You can customize pipelines for automatic document <a class="reference internal" href="tutorials/document_categorization/index.html#document-categorization-tutorials"><span class="std std-ref">Categorization</span></a>,
+<a class="reference internal" href="tutorials/file_splitting/index.html#file-splitting-tutorials"><span class="std std-ref">File Splitting</span></a>, and <a class="reference internal" href="tutorials/information_extraction/index.html#information-extraction-tutorials"><span class="std std-ref">Extraction</span></a>.
 These processes allow to split stack scans, categorize and extract information from the Documents.</p>
-<p>.. note::
-Customizing document AI pipelines with the Konfuzio SDK requires a self-hosted installation of the Konfuzio Server.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Customizing document AI pipelines with the Konfuzio SDK requires a self-hosted installation of the Konfuzio Server.</p>
+</div>
 </section>
 <section id="other-use-cases-around-documents">
 <h3>Other use cases around documents<a class="headerlink" href="#other-use-cases-around-documents" title="Permalink to this headline">¶</a></h3>
 <p>You can also use the Konfuzio SDK for other Document-related purposes like filling in the PDF forms via the generator.
-For further information, check out our tutorial on :ref:<code class="docutils literal notranslate"><span class="pre">how</span> <span class="pre">to</span> <span class="pre">create</span> <span class="pre">a</span> <span class="pre">PDF</span> <span class="pre">form</span> <span class="pre">generator&lt;pdf-form-generator&gt;</span></code>.</p>
+For further information, check out our tutorial on <a class="reference internal" href="tutorials/pdf-form-generator/index.html#pdf-form-generator"><span class="std std-ref">how to create a PDF form generator</span></a>.</p>
 </section>
 </section>
 </section>

@@ -8,7 +8,6 @@
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" type="text/css" />
       <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
     <link rel="shortcut icon" href="../_static/full_green_square.png"/>
     <link rel="canonical" href="https://dev.konfuzio.com/web/api-v3.html" />
@@ -145,65 +144,124 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <p>.. _Server API:</p>
-<section id="rest-api">
-<h1>REST API<a class="headerlink" href="#rest-api" title="Permalink to this headline">¶</a></h1>
+  <section id="rest-api">
+<h1><a class="toc-backref" href="#id11">REST API</a><a class="headerlink" href="#rest-api" title="Permalink to this headline">¶</a></h1>
 <p>This document aims to provide developers with a high-level overview of what can be accomplished through the Konfuzio API
 v3. For a more thorough description of the available endpoints and their parameters and response, we invite you to
 browse our <a class="reference external" href="http:/app.konfuzio.com/v3/swagger/">Swagger documentation</a>, which also provides an OpenAPI specification
 that can be used to generate language-specific API clients.</p>
 <div class="video-container">
     <iframe class="video" src="https://www.youtube.com/embed/tSk4dCKIQBg" allowfullscreen></iframe>
+</div><div class="contents topic" id="table-of-contents">
+<p class="topic-title">Table of Contents</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#rest-api" id="id11">REST API</a></p>
+<ul>
+<li><p><a class="reference internal" href="#general-information" id="id12">General Information</a></p>
+<ul>
+<li><p><a class="reference internal" href="#authentication" id="id13">Authentication</a></p>
+<ul>
+<li><p><a class="reference internal" href="#basic-http-authentication" id="id14">Basic HTTP authentication</a></p></li>
+<li><p><a class="reference internal" href="#cookie-authentication" id="id15">Cookie authentication</a></p></li>
+<li><p><a class="reference internal" href="#single-sign-on-sso-authentication" id="id16">Single sign-on (SSO) authentication</a></p></li>
+<li><p><a class="reference internal" href="#token-authentication" id="id17">Token authentication</a></p></li>
+<li><p><a class="reference internal" href="#curl-example" id="id18">cURL example</a></p></li>
+<li><p><a class="reference internal" href="#python-example" id="id19">Python example</a></p></li>
+<li><p><a class="reference internal" href="#accessing-and-using-the-token-via-the-konfuzio-sdk" id="id20">Accessing and using the token via the Konfuzio SDK</a></p></li>
+<li><p><a class="reference internal" href="#authenticating-with-a-token-as-a-query-parameter-upcoming-feature" id="id21">Authenticating with a Token as a Query Parameter (<em>Upcoming feature</em>)</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#response-codes" id="id22">Response codes</a></p></li>
+<li><p><a class="reference internal" href="#pagination" id="id23">Pagination</a></p></li>
+<li><p><a class="reference internal" href="#filtering" id="id24">Filtering</a></p></li>
+<li><p><a class="reference internal" href="#ordering" id="id25">Ordering</a></p></li>
+<li><p><a class="reference internal" href="#fields" id="id26">Fields</a></p></li>
+<li><p><a class="reference internal" href="#coordinates-and-bounding-boxes" id="id27">Coordinates and Bounding Boxes</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#guides-and-how-tos" id="id28">Guides and How-Tos</a></p>
+<ul>
+<li><p><a class="reference internal" href="#set-up-a-project-with-labels-label-sets-and-categories" id="id29">Set up a Project with Labels, Label Sets and Categories</a></p>
+<ul>
+<li><p><a class="reference internal" href="#create-a-project" id="id30">Create a Project</a></p></li>
+<li><p><a class="reference internal" href="#create-a-category" id="id31">Create a Category</a></p></li>
+<li><p><a class="reference internal" href="#create-some-labels" id="id32">Create some Labels</a></p></li>
+<li><p><a class="reference internal" href="#create-a-label-set" id="id33">Create a Label Set</a></p></li>
+<li><p><a class="reference internal" href="#next-steps" id="id34">Next steps</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#upload-a-document" id="id35">Upload a Document</a></p>
+<ul>
+<li><p><a class="reference internal" href="#uploading-a-document-to-konfuzio" id="id36">Uploading a Document to Konfuzio</a></p></li>
+<li><p><a class="reference internal" href="#synchronous-document-upload" id="id37">Synchronous Document Upload</a></p></li>
+<li><p><a class="reference internal" href="#asynchronous-document-upload-with-assignee-notification" id="id38">Asynchronous Document Upload with Assignee Notification</a></p></li>
+<li><p><a class="reference internal" href="#document-upload-by-disabling-automatic-categorization" id="id39">Document Upload by Disabling Automatic Categorization</a></p></li>
+<li><p><a class="reference internal" href="#asynchronous-document-processing-with-webhook" id="id40">Asynchronous Document Processing with Webhook</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#create-an-annotation" id="id41">Create an Annotation</a></p></li>
+<li><p><a class="reference internal" href="#create-training-data-and-train-the-ai" id="id42">Create training data and train the AI</a></p></li>
+<li><p><a class="reference internal" href="#review-a-document" id="id43">Review a Document</a></p></li>
+<li><p><a class="reference internal" href="#post-process-a-document-split-rotate-and-sort-pages" id="id44">Post-process a Document: split, rotate and sort Pages</a></p></li>
+<li><p><a class="reference internal" href="#document-splitting-suggestions" id="id45">Document splitting suggestions</a></p></li>
+<li><p><a class="reference internal" href="#download-the-ocr-version-of-an-uploaded-document" id="id46">Download the OCR version of an uploaded Document</a></p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
 </div>
-<p>.. contents:: Table of Contents</p>
 <section id="general-information">
-<h2>General Information<a class="headerlink" href="#general-information" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id12">General Information</a><a class="headerlink" href="#general-information" title="Permalink to this headline">¶</a></h2>
 <p>The Konfuzio API v3 follows REST conventions and principles. Unless specified otherwise, all endpoints accept both
 JSON-encoded and form-encoded request bodies, according to the specified content type. All endpoints return JSON-encoded
 responses. We use standard HTTP verbs (<code class="docutils literal notranslate"><span class="pre">GET</span></code>, <code class="docutils literal notranslate"><span class="pre">POST</span></code>, <code class="docutils literal notranslate"><span class="pre">PUT</span></code>, <code class="docutils literal notranslate"><span class="pre">PATCH</span></code>, <code class="docutils literal notranslate"><span class="pre">DELETE</span></code>) for actions, and return standard HTTP
 response codes based on the success or failure of the request.</p>
 <section id="authentication">
-<h3>Authentication<a class="headerlink" href="#authentication" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id13">Authentication</a><a class="headerlink" href="#authentication" title="Permalink to this headline">¶</a></h3>
 <p>Most of our endpoints, excluding those that deal
 with <a class="reference external" href="https://help.konfuzio.com/integrations/public-documents/">public documents</a>, strictly require authentication. We
 support three types of authentication.</p>
 <section id="basic-http-authentication">
-<h4>Basic HTTP authentication<a class="headerlink" href="#basic-http-authentication" title="Permalink to this headline">¶</a></h4>
+<h4><a class="toc-backref" href="#id14">Basic HTTP authentication</a><a class="headerlink" href="#basic-http-authentication" title="Permalink to this headline">¶</a></h4>
 <p>Your Konfuzio username (email) and password are sent with every request as HTTP headers in the
 format <code class="docutils literal notranslate"><span class="pre">Authorization:</span> <span class="pre">Basic</span> <span class="pre">&lt;string&gt;</span></code>, where <code class="docutils literal notranslate"><span class="pre">&lt;string&gt;</span></code> is a Base64-encoded string in the
 format <code class="docutils literal notranslate"><span class="pre">&lt;username&gt;:&lt;password&gt;</span></code> (this is usually done automatically by the HTTP client).</p>
-<p>.. warning::
-While this approach doesn’t require additional setup and is useful for testing in the Swagger page, it is
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>While this approach doesn’t require additional setup and is useful for testing in the Swagger page, it is
 <strong>discouraged</strong> for serious/automated use, since it usually involves storing these credentials in plain text on the
 client side.</p>
+</div>
 </section>
 <section id="cookie-authentication">
-<h4>Cookie authentication<a class="headerlink" href="#cookie-authentication" title="Permalink to this headline">¶</a></h4>
+<h4><a class="toc-backref" href="#id15">Cookie authentication</a><a class="headerlink" href="#cookie-authentication" title="Permalink to this headline">¶</a></h4>
 <p>A <code class="docutils literal notranslate"><span class="pre">sessionid</span></code> is sent in the <code class="docutils literal notranslate"><span class="pre">cookie</span></code> field of every request.</p>
-<p>.. warning::
-This <code class="docutils literal notranslate"><span class="pre">sessionid</span></code> is generated and used by the Konfuzio website when you log in to avoid additional authentication in API
+<p>This <code class="docutils literal notranslate"><span class="pre">sessionid</span></code> is generated and used by the Konfuzio website when you log in to avoid additional authentication in API
 requests, and should <strong>not</strong> be relied upon by third parties.</p>
 </section>
 <section id="single-sign-on-sso-authentication">
-<h4>Single sign-on (SSO) authentication<a class="headerlink" href="#single-sign-on-sso-authentication" title="Permalink to this headline">¶</a></h4>
+<h4><a class="toc-backref" href="#id16">Single sign-on (SSO) authentication</a><a class="headerlink" href="#single-sign-on-sso-authentication" title="Permalink to this headline">¶</a></h4>
 <p>SSO authentication is available through <a class="reference external" href="https://www.keycloak.org/">KeyCloak</a>, which is an open source identity and
 access management solution. This functionality is only offered to our on-prem users. Further documentation regarding our
 KeyCloak integration can be found on our
 <a class="reference external" href="https://dev.konfuzio.com/web/on_premises.html#keycloak-integration">on-prem documentation page</a>.</p>
 </section>
 <section id="token-authentication">
-<h4>Token authentication<a class="headerlink" href="#token-authentication" title="Permalink to this headline">¶</a></h4>
+<h4><a class="toc-backref" href="#id17">Token authentication</a><a class="headerlink" href="#token-authentication" title="Permalink to this headline">¶</a></h4>
 <p>You send a <code class="docutils literal notranslate"><span class="pre">POST</span></code> request with your Konfuzio username (email) and password to our <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/auth">authentication endpoint</a>, which
 returns a token string that you can use in lieu of your actual credentials for subsequent requests, providing it with an
 HTTP header in the format <code class="docutils literal notranslate"><span class="pre">Authorization:</span> <span class="pre">Token</span> <span class="pre">&lt;token&gt;</span></code>.</p>
 <p>This token doesn’t currently expire, so you can use indefinitely, but you can delete it (and regenerated) via
 the <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/auth/auth_destroy">authentication DELETE endpoint</a>.</p>
-<p>.. note::
-This is the authentication method you <strong>should</strong> use if you’re building an external service that consumes the Konfuzio
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This is the authentication method you <strong>should</strong> use if you’re building an external service that consumes the Konfuzio
 API.</p>
+</div>
 <p>An example workflow would look like:</p>
 <ol class="arabic simple">
-<li><p>User registers to app.konfuzio.com with email “example&#64;example.org” and password “examplepassword”.</p></li>
+<li><p>User registers to app.konfuzio.com with email “<a class="reference external" href="mailto:example&#37;&#52;&#48;example&#46;org">example<span>&#64;</span>example<span>&#46;</span>org</a>” and password “examplepassword”.</p></li>
 <li><p>A <code class="docutils literal notranslate"><span class="pre">POST</span></code> request is sent to <code class="docutils literal notranslate"><span class="pre">https://app.konfuzio.com/v3/auth/</span></code>. The request is JSON-encoded with the following
 body: <code class="docutils literal notranslate"><span class="pre">{&quot;username&quot;:</span> <span class="pre">&quot;example&#64;example.org&quot;,</span> <span class="pre">&quot;password&quot;:</span> <span class="pre">&quot;examplepassword&quot;}</span></code>.</p></li>
 <li><p>The endpoint returns a JSON-encoded request like <code class="docutils literal notranslate"><span class="pre">{&quot;token&quot;:</span> <span class="pre">&quot;bf20d992c0960876157b53745cdd86fad95e6ff4&quot;}</span></code>.</p></li>
@@ -212,7 +270,7 @@ header <code class="docutils literal notranslate"><span class="pre">Authorizatio
 </ol>
 </section>
 <section id="curl-example">
-<h4>cURL example<a class="headerlink" href="#curl-example" title="Permalink to this headline">¶</a></h4>
+<h4><a class="toc-backref" href="#id18">cURL example</a><a class="headerlink" href="#curl-example" title="Permalink to this headline">¶</a></h4>
 <p>To get a token:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>--request<span class="w"> </span>POST<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--url<span class="w"> </span>https://app.konfuzio.com/api/v3/auth/<span class="w"> </span><span class="se">\</span>
@@ -228,7 +286,7 @@ header <code class="docutils literal notranslate"><span class="pre">Authorizatio
 </div>
 </section>
 <section id="python-example">
-<h4>Python example<a class="headerlink" href="#python-example" title="Permalink to this headline">¶</a></h4>
+<h4><a class="toc-backref" href="#id19">Python example</a><a class="headerlink" href="#python-example" title="Permalink to this headline">¶</a></h4>
 <p>To get a token:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">requests</span>
 
@@ -260,15 +318,17 @@ header <code class="docutils literal notranslate"><span class="pre">Authorizatio
 </div>
 </section>
 <section id="accessing-and-using-the-token-via-the-konfuzio-sdk">
-<h4>Accessing and using the token via the Konfuzio SDK<a class="headerlink" href="#accessing-and-using-the-token-via-the-konfuzio-sdk" title="Permalink to this headline">¶</a></h4>
+<h4><a class="toc-backref" href="#id20">Accessing and using the token via the Konfuzio SDK</a><a class="headerlink" href="#accessing-and-using-the-token-via-the-konfuzio-sdk" title="Permalink to this headline">¶</a></h4>
 <p>To get an access token, simply run <code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span> <span class="pre">init</span></code> in the terminal and enter your login credentials. The token will
 be stored in the <code class="docutils literal notranslate"><span class="pre">.env</span></code> file in your working directory. Then you are good to go and can use the SDK to access the API.</p>
 <p>For more information on this and other information on what you can do with the SDK, see the <a class="reference external" href="https://dev.konfuzio.com/sdk/get_started.html#initialize-the-package">SDK Get Started</a> page.</p>
 </section>
 <section id="authenticating-with-a-token-as-a-query-parameter-upcoming-feature">
-<h4>Authenticating with a Token as a Query Parameter (<em>Upcoming feature</em>)<a class="headerlink" href="#authenticating-with-a-token-as-a-query-parameter-upcoming-feature" title="Permalink to this headline">¶</a></h4>
-<p>.. Note::
-Please open a <code class="docutils literal notranslate"><span class="pre">support</span> <span class="pre">ticket</span></code> <a class="reference external" href="https://konfuzio.com/support">https://konfuzio.com/support</a>`_ if you would like to have early access to this feature.</p>
+<h4><a class="toc-backref" href="#id21">Authenticating with a Token as a Query Parameter (<em>Upcoming feature</em>)</a><a class="headerlink" href="#authenticating-with-a-token-as-a-query-parameter-upcoming-feature" title="Permalink to this headline">¶</a></h4>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Please open a <cite>support ticket</cite> &lt;<a class="reference external" href="https://konfuzio.com/support">https://konfuzio.com/support</a>&gt;`_ if you would like to have early access to this feature.</p>
+</div>
 <p>Sometimes you might need to use one of our endpoints with a third party service that doesn’t allow you to specify
 certain types of information (like authentication tokens) in the request. In these cases, you can use a special method
 to authenticate your request using a token as a query parameter.</p>
@@ -280,24 +340,28 @@ include the token in your request by adding it as a query parameter at the end o
 </div>
 <p>Just replace 123456 with your own authentication token, and you’ll be able to use this method to authenticate your
 request.</p>
-<p>.. Note::
-This functionality is offered as part of the Google-Sheet export function, as well as usable on
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This functionality is offered as part of the Google-Sheet export function, as well as usable on
 any other csv importable software (SAP, Excel, etc).</p>
+</div>
 </section>
 </section>
 <section id="response-codes">
-<h3>Response codes<a class="headerlink" href="#response-codes" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id22">Response codes</a><a class="headerlink" href="#response-codes" title="Permalink to this headline">¶</a></h3>
 <p>All endpoints return an HTTP code that indicates the success of the request. Following the standard, codes starting
 with <code class="docutils literal notranslate"><span class="pre">2</span></code> (<code class="docutils literal notranslate"><span class="pre">200</span></code>, <code class="docutils literal notranslate"><span class="pre">201</span></code>…) indicate success; codes starting with <code class="docutils literal notranslate"><span class="pre">4</span></code> (<code class="docutils literal notranslate"><span class="pre">400</span></code>, <code class="docutils literal notranslate"><span class="pre">401</span></code>…) indicate failure on the client
 side, with the response body containing more information about what failed; codes starting with <code class="docutils literal notranslate"><span class="pre">5</span></code> (<code class="docutils literal notranslate"><span class="pre">500</span></code>, <code class="docutils literal notranslate"><span class="pre">502</span></code>…)
 indicate failure on our side and are usually temporary (if they aren’t, please
 <a class="reference external" href="https://konfuzio.com/support/">contact us</a>).</p>
-<p>.. seealso::
-The <code class="docutils literal notranslate"><span class="pre">Swagger</span> <span class="pre">documentation</span> <span class="pre">&lt;http:/app.konfuzio.com/v3/swagger/&gt;</span></code>_ provides a more detailed breakdown of which response
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>The <a class="reference external" href="http:/app.konfuzio.com/v3/swagger/">Swagger documentation</a> provides a more detailed breakdown of which response
 codes are expected for each endpoint.</p>
+</div>
 </section>
 <section id="pagination">
-<h3>Pagination<a class="headerlink" href="#pagination" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id23">Pagination</a><a class="headerlink" href="#pagination" title="Permalink to this headline">¶</a></h3>
 <p>All endpoints that list resources are paginated. Pagination is achieved by providing <code class="docutils literal notranslate"><span class="pre">offset</span></code> and <code class="docutils literal notranslate"><span class="pre">limit</span></code> as <code class="docutils literal notranslate"><span class="pre">GET</span></code>
 parameters to the request. <code class="docutils literal notranslate"><span class="pre">limit</span></code> is the maximum amount of items that should be returned, and <code class="docutils literal notranslate"><span class="pre">offset</span></code> is the amount of
 items that should be skipped from the beginning.</p>
@@ -322,40 +386,46 @@ next 50 items, you should pass <code class="docutils literal notranslate"><span 
 </ul>
 </section>
 <section id="filtering">
-<h3>Filtering<a class="headerlink" href="#filtering" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id24">Filtering</a><a class="headerlink" href="#filtering" title="Permalink to this headline">¶</a></h3>
 <p>All endpoints that list resources support some filtering, based on the resource being fetched. These filters are passed
 as <code class="docutils literal notranslate"><span class="pre">GET</span></code> parameters and can be combined.</p>
 <p>Two filters that are usually available on all list endpoints are <code class="docutils literal notranslate"><span class="pre">created_at_after</span></code> and <code class="docutils literal notranslate"><span class="pre">created_at_before</span></code>, which
 filters for items that have been created after or before the specified date. So you could
 use <code class="docutils literal notranslate"><span class="pre">?created_at_before=2022-02-01&amp;created_at_after=2021-12-01</span></code> to only return items that have been created between
 December 1, 2021 and February 1, 2022 (specified dates excluded).</p>
-<p>.. seealso::
-For more filtering options, refer to the <code class="docutils literal notranslate"><span class="pre">Swagger</span> <span class="pre">documentation</span> <span class="pre">&lt;http:/app.konfuzio.com/v3/swagger/&gt;</span></code>_ for the endpoint
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>For more filtering options, refer to the <a class="reference external" href="http:/app.konfuzio.com/v3/swagger/">Swagger documentation</a> for the endpoint
 that you want to filter.</p>
+</div>
 </section>
 <section id="ordering">
-<h3>Ordering<a class="headerlink" href="#ordering" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id25">Ordering</a><a class="headerlink" href="#ordering" title="Permalink to this headline">¶</a></h3>
 <p>Most endpoints that list resources support ordering on some fields. The ordering is passed as a single <code class="docutils literal notranslate"><span class="pre">GET</span></code> parameter
 named <code class="docutils literal notranslate"><span class="pre">ordering</span></code> with the field name that you want to order by as the value.</p>
 <p>You can combine multiple ordering fields by separating them with a <code class="docutils literal notranslate"><span class="pre">,</span></code>. For example: <code class="docutils literal notranslate"><span class="pre">?ordering=project,created_at</span></code>.</p>
 <p>You can specify that you want the ordering to be reversed by prefixing the field name with a <code class="docutils literal notranslate"><span class="pre">-</span></code>. For
 example: <code class="docutils literal notranslate"><span class="pre">?ordering=-created_at</span></code>.</p>
-<p>.. seealso::
-For a list of fields that can be used for ordering, refer to
-the <code class="docutils literal notranslate"><span class="pre">Swagger</span> <span class="pre">documentation</span> <span class="pre">&lt;http:/app.konfuzio.com/v3/swagger/&gt;</span></code>_ for the endpoint that you want to order.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>For a list of fields that can be used for ordering, refer to
+the <a class="reference external" href="http:/app.konfuzio.com/v3/swagger/">Swagger documentation</a> for the endpoint that you want to order.</p>
+</div>
 </section>
 <section id="fields">
-<h3>Fields<a class="headerlink" href="#fields" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id26">Fields</a><a class="headerlink" href="#fields" title="Permalink to this headline">¶</a></h3>
 <p>Some endpoints allow you to override the default response schema and specify a subset of fields that you want to be
 returned. You can specify the <code class="docutils literal notranslate"><span class="pre">fields</span></code> <code class="docutils literal notranslate"><span class="pre">GET</span></code> parameter with the field names separated by a <code class="docutils literal notranslate"><span class="pre">,</span></code>.</p>
 <p>For example, you can specify <code class="docutils literal notranslate"><span class="pre">?fields=id,created_at</span></code> to only return the <code class="docutils literal notranslate"><span class="pre">id</span></code> and <code class="docutils literal notranslate"><span class="pre">created_at</span></code> fields in the response.</p>
-<p>.. seealso::
-Refer to the <code class="docutils literal notranslate"><span class="pre">Swagger</span> <span class="pre">documentation</span> <span class="pre">&lt;http:/app.konfuzio.com/v3/swagger/&gt;</span></code>_ for a specific endpoint to see if it
-supports using the <code class="docutils literal notranslate"><span class="pre">fields</span></code> parameter. When supported, any field in the response schema can be used in the <code class="docutils literal notranslate"><span class="pre">fields</span></code>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>Refer to the <a class="reference external" href="http:/app.konfuzio.com/v3/swagger/">Swagger documentation</a> for a specific endpoint to see if it
+supports using the <cite>fields</cite> parameter. When supported, any field in the response schema can be used in the <cite>fields</cite>
 parameter.</p>
+</div>
 </section>
 <section id="coordinates-and-bounding-boxes">
-<h3>Coordinates and Bounding Boxes<a class="headerlink" href="#coordinates-and-bounding-boxes" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id27">Coordinates and Bounding Boxes</a><a class="headerlink" href="#coordinates-and-bounding-boxes" title="Permalink to this headline">¶</a></h3>
 <p>There are three concepts related to coordinates and Bounding Boxes that are used throughout the API v3:</p>
 <ul class="simple">
 <li><p><strong>Bounding Boxes</strong> (or <strong>Bboxes</strong>). A Bbox is a rectangle representing a subset of a Document Page. It has the
@@ -391,20 +461,20 @@ to understand which fields it needs.</p>
 </section>
 </section>
 <section id="guides-and-how-tos">
-<h2>Guides and How-Tos<a class="headerlink" href="#guides-and-how-tos" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id28">Guides and How-Tos</a><a class="headerlink" href="#guides-and-how-tos" title="Permalink to this headline">¶</a></h2>
 <p>These guides will teach you how to do common operations with the Konfuzio API. You can refer to the
-<span class="xref myst">general information</span> section above for a general overview of how the API works and to our
+<a class="reference external" href="#general-information">general information</a> section above for a general overview of how the API works and to our
 <a class="reference external" href="https://app.konfuzio.com/v3/swagger/">Swagger documentation</a> for a full list of all the available endpoints.</p>
 <p>The example snippets use cURL, but you can easily convert them to your preferred language manually or using tools
 like <a class="reference external" href="https://curlconverter.com">cURL Converter</a>.</p>
-<p>The guides assume you already have a <span class="xref myst">token</span> that you will use in the headers of
+<p>The guides assume you already have a <a class="reference external" href="#token-authentication">token</a> that you will use in the headers of
 every API call. If you’re copy-pasting the snippets, remember to replace <code class="docutils literal notranslate"><span class="pre">YOUR_TOKEN</span></code> with the actual token value.</p>
 <section id="set-up-a-project-with-labels-label-sets-and-categories">
-<h3>Set up a Project with Labels, Label Sets and Categories<a class="headerlink" href="#set-up-a-project-with-labels-label-sets-and-categories" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id29">Set up a Project with Labels, Label Sets and Categories</a><a class="headerlink" href="#set-up-a-project-with-labels-label-sets-and-categories" title="Permalink to this headline">¶</a></h3>
 <p>This guide will walk you through the API-based initial setup of a Project with all the initial data you need to start
 uploading Documents and training the AI.</p>
 <section id="create-a-project">
-<h4>Create a Project<a class="headerlink" href="#create-a-project" title="Permalink to this headline">¶</a></h4>
+<h4><a class="toc-backref" href="#id30">Create a Project</a><a class="headerlink" href="#create-a-project" title="Permalink to this headline">¶</a></h4>
 <p>First you need to set up a <a class="reference external" href="https://help.konfuzio.com/modules/projects/index.html">Project</a>. To do so, you will make a
 call to our <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/projects/projects_create">Project creation endpoint</a>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">--</span><span class="n">request</span> <span class="n">POST</span> \
@@ -419,7 +489,7 @@ call to our <a class="reference external" href="https://app.konfuzio.com/v3/swag
 of it, as you will need it in the next steps.</p>
 </section>
 <section id="create-a-category">
-<h4>Create a Category<a class="headerlink" href="#create-a-category" title="Permalink to this headline">¶</a></h4>
+<h4><a class="toc-backref" href="#id31">Create a Category</a><a class="headerlink" href="#create-a-category" title="Permalink to this headline">¶</a></h4>
 <p>A <a class="reference external" href="https://help.konfuzio.com/modules/categories/index.html">Category</a> is used to group Documents by type and can be
 associated to an <a class="reference external" href="https://help.konfuzio.com/modules/extractions/index.html">extraction AI</a>. For example, you might want
 to create a Category called “Invoice”. To do so, you will make a call to
@@ -438,7 +508,7 @@ of it, as you will need it in the next steps. You can retrieve a list of your cr
 request to the same endpoint.</p>
 </section>
 <section id="create-some-labels">
-<h4>Create some Labels<a class="headerlink" href="#create-some-labels" title="Permalink to this headline">¶</a></h4>
+<h4><a class="toc-backref" href="#id32">Create some Labels</a><a class="headerlink" href="#create-some-labels" title="Permalink to this headline">¶</a></h4>
 <p><a class="reference external" href="https://help.konfuzio.com/modules/labels/index.html">Labels</a> are used to label Annotations with their business context.
 In the case of our invoice Category, we might want to have Labels such as “amount” and “product”. For each Label, we
 need to make a different API request to
@@ -466,7 +536,7 @@ of it, as you will need it in the next steps. You can retrieve a list of your cr
 to the same endpoint.</p>
 </section>
 <section id="create-a-label-set">
-<h4>Create a Label Set<a class="headerlink" href="#create-a-label-set" title="Permalink to this headline">¶</a></h4>
+<h4><a class="toc-backref" href="#id33">Create a Label Set</a><a class="headerlink" href="#create-a-label-set" title="Permalink to this headline">¶</a></h4>
 <p>A <a class="reference external" href="https://help.konfuzio.com/modules/sets/index.html">Label Set</a> is used to group Labels that make sense together.
 Sometimes these Labels might occur multiple times in a Document — in our “invoice” example, there’s going to be one set
 of “amount” and “product” for each line item we have in the invoice. We can call it “line item” and we can create it
@@ -487,19 +557,21 @@ to <code class="docutils literal notranslate"><span class="pre">true</span></cod
 invoice.</p>
 </section>
 <section id="next-steps">
-<h4>Next steps<a class="headerlink" href="#next-steps" title="Permalink to this headline">¶</a></h4>
+<h4><a class="toc-backref" href="#id34">Next steps</a><a class="headerlink" href="#next-steps" title="Permalink to this headline">¶</a></h4>
 <p>Your basic setup is done! You’re now ready to upload Documents and train the AI.</p>
 </section>
 </section>
 <section id="upload-a-document">
-<h3>Upload a Document<a class="headerlink" href="#upload-a-document" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id35">Upload a Document</a><a class="headerlink" href="#upload-a-document" title="Permalink to this headline">¶</a></h3>
 <p>After your initial Project setup, you can start uploading Documents. To upload a Document, you will make a call to
 our <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/documents/documents_create">Document creation endpoint</a>.</p>
-<p>.. note::
-Unlike most other endpoints, the Document creation endpoint only supports <code class="docutils literal notranslate"><span class="pre">multipart/form-data</span></code> requests (to support
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Unlike most other endpoints, the Document creation endpoint only supports <cite>multipart/form-data</cite> requests (to support
 file uploading), so you won’t have to JSON-encode your request this time.</p>
+</div>
 <section id="uploading-a-document-to-konfuzio">
-<h4>Uploading a Document to Konfuzio<a class="headerlink" href="#uploading-a-document-to-konfuzio" title="Permalink to this headline">¶</a></h4>
+<h4><a class="toc-backref" href="#id36">Uploading a Document to Konfuzio</a><a class="headerlink" href="#uploading-a-document-to-konfuzio" title="Permalink to this headline">¶</a></h4>
 <p>This tutorial will guide you on how to upload a Document to the Konfuzio platform.</p>
 <p>Before starting, note that there are three possible ways to create a project on Konfuzio:</p>
 <ol class="arabic simple">
@@ -513,7 +585,7 @@ endpoints, this one only supports multipart/form-data requests to accommodate fi
 request is not necessary this time.</p>
 </section>
 <section id="synchronous-document-upload">
-<h4>Synchronous Document Upload<a class="headerlink" href="#synchronous-document-upload" title="Permalink to this headline">¶</a></h4>
+<h4><a class="toc-backref" href="#id37">Synchronous Document Upload</a><a class="headerlink" href="#synchronous-document-upload" title="Permalink to this headline">¶</a></h4>
 <p>This tutorial will guide you on how to perform a synchronous Document upload to Konfuzio. In this mode, the server will
 wait for the Document processing to finish before returning a response with the extracted data.</p>
 <p>After setting up your Project, you can upload Documents. This is done by making a POST request to our Document creation
@@ -539,7 +611,7 @@ returning a response.</p></li>
 for your request. After the upload, the API will return the extracted data from the Document.</p>
 </section>
 <section id="asynchronous-document-upload-with-assignee-notification">
-<h4>Asynchronous Document Upload with Assignee Notification<a class="headerlink" href="#asynchronous-document-upload-with-assignee-notification" title="Permalink to this headline">¶</a></h4>
+<h4><a class="toc-backref" href="#id38">Asynchronous Document Upload with Assignee Notification</a><a class="headerlink" href="#asynchronous-document-upload-with-assignee-notification" title="Permalink to this headline">¶</a></h4>
 <p>In this tutorial, we will guide you through the process of asynchronously uploading a Document to Konfuzio. This method
 is particularly beneficial when dealing with large Documents or Documents with many Pages. We will also discuss how you
 can use the <code class="docutils literal notranslate"><span class="pre">assignee</span></code> parameter to notify a specific user by email after the Document upload.</p>
@@ -576,7 +648,7 @@ the new task.</p>
 so, retrieve the extracted data.</p>
 </section>
 <section id="document-upload-by-disabling-automatic-categorization">
-<h4>Document Upload by Disabling Automatic Categorization<a class="headerlink" href="#document-upload-by-disabling-automatic-categorization" title="Permalink to this headline">¶</a></h4>
+<h4><a class="toc-backref" href="#id39">Document Upload by Disabling Automatic Categorization</a><a class="headerlink" href="#document-upload-by-disabling-automatic-categorization" title="Permalink to this headline">¶</a></h4>
 <p>This tutorial guides you on how to disable automatic categorization when uploading a Document to Konfuzio by specifying
 the category of the Document manually. This can be useful when you want to ensure that a Document is assigned to a
 specific Category, or when automatic categorization may not accurately categorize a Document due to its content or
@@ -584,7 +656,8 @@ layout.</p>
 <p>Once your Project is set up, you can upload Documents. This is done by making a POST request to our Document creation
 endpoint. This endpoint only supports multipart/form-data requests to facilitate file uploading, so you don’t need to
 JSON-encode your request.</p>
-<div class="highlight-mermaid notranslate"><div class="highlight"><pre><span></span>sequenceDiagram
+<div class="mermaid">
+            sequenceDiagram
     Customer Software-&gt;&gt;Konfuzio Server: Document POST (without category)
     Konfuzio Server--&gt;&gt;Konfuzio Server: Auto Categorization
     Konfuzio Server-&gt;&gt;Konfuzio Server: Document Processing
@@ -592,9 +665,7 @@ JSON-encode your request.</p>
     Customer Software-&gt;&gt;Konfuzio Server: Document POST (with category)
     Konfuzio Server-&gt;&gt;Konfuzio Server: Document Processing (No Categorization)
     Konfuzio Server--&gt;&gt;Customer Software: Webhook*
-</pre></div>
-</div>
-<p>In this sequence diagram, the first flow represents the process when a Document is uploaded without a Category.
+        </div><p>In this sequence diagram, the first flow represents the process when a Document is uploaded without a Category.
 Konfuzio Server performs automatic categorization before processing the Document. A webhook is then sent to the
 Customer Software after processing.</p>
 <p>The second flow represents the process when a Document is uploaded with a Category. Since the Category is already
@@ -623,7 +694,7 @@ confuse the automatic categorization process. After the upload, the API will ret
 current status.</p>
 </section>
 <section id="asynchronous-document-processing-with-webhook">
-<h4>Asynchronous Document Processing with Webhook<a class="headerlink" href="#asynchronous-document-processing-with-webhook" title="Permalink to this headline">¶</a></h4>
+<h4><a class="toc-backref" href="#id40">Asynchronous Document Processing with Webhook</a><a class="headerlink" href="#asynchronous-document-processing-with-webhook" title="Permalink to this headline">¶</a></h4>
 <p>This tutorial will guide you on how to use webhooks for asynchronous Document processing in Konfuzio.</p>
 <p>Once your {p}roject is set up, you can upload Documents. This is done by making a POST request to our Document creation
 endpoint. This endpoint only supports multipart/form-data requests to accommodate file uploading, so you won’t have to
@@ -632,19 +703,20 @@ JSON-encode your request.</p>
 method is especially beneficial when dealing with large Documents or Documents with many Pages as it allows your
 application to continue working on other tasks while the Document processing takes place. Here’s an overview of the
 process:</p>
-<div class="highlight-mermaid notranslate"><div class="highlight"><pre><span></span>sequenceDiagram
+<div class="mermaid">
+            sequenceDiagram
     Customer Software-&gt;&gt;Konfuzio Server: Document POST
     Konfuzio Server--&gt;&gt;Customer Software: Webhook*
-</pre></div>
-</div>
-<p>In the sequence above, your software (Customer Software) sends a Document POST request to Konfuzio Server to upload a
+        </div><p>In the sequence above, your software (Customer Software) sends a Document POST request to Konfuzio Server to upload a
 Document. Once the processing of the Document is complete, Konfuzio Server sends a webhook (a POST request) back to
 your software.</p>
-<p>.. note::
-The webhook is currently only sent when the document is processed successfully. If the processing fails, the webhook
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The webhook is currently only sent when the document is processed successfully. If the processing fails, the webhook
 is not sent. If you don’t get a callback within 10 minutes of uploading a Document, use the
-<code class="docutils literal notranslate"><span class="pre">Document</span> <span class="pre">retrieve</span> <span class="pre">endpoint</span> <span class="pre">&lt;https://app.konfuzio.com/v3/swagger/#/documents/documents_retrieve&gt;</span></code>_ to see the status
+<a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/documents/documents_retrieve">Document retrieve endpoint</a> to see the status
 of the Document.</p>
+</div>
 <p>Here is how you can include a callback URL in your Document upload request to use webhooks:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>--request<span class="w"> </span>POST<span class="se">\</span>
 <span class="w">  </span>--url<span class="w"> </span>https://app.konfuzio.com/api/v3/documents/<span class="se">\</span>
@@ -671,7 +743,7 @@ notified via the webhook once the data is ready.</p>
 </section>
 </section>
 <section id="create-an-annotation">
-<h3>Create an Annotation<a class="headerlink" href="#create-an-annotation" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id41">Create an Annotation</a><a class="headerlink" href="#create-an-annotation" title="Permalink to this headline">¶</a></h3>
 <p><a class="reference external" href="https://help.konfuzio.com/modules/annotations/">Annotations</a> are automatically created by the extraction process when
 you upload a Document, but if some data is missing you can annotate it manually to train the AI model to recognize it.</p>
 <p>Creating an Annotation via the API requires the client to provide the bounding box coordinates of the relevant text
@@ -684,19 +756,19 @@ requests that look like this:</p>
   <span class="o">--</span><span class="n">header</span> <span class="s1">&#39;Content-Type: application/json&#39;</span> \
   <span class="o">--</span><span class="n">data</span> <span class="s1">&#39;{</span>
   <span class="s2">&quot;document&quot;</span><span class="p">:</span> <span class="n">DOCUMENT_ID</span><span class="p">,</span>
-	<span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="n">LABEL_ID</span><span class="p">,</span>
-	<span class="s2">&quot;label_set_id&quot;</span><span class="p">:</span> <span class="n">LABEL_SET_ID</span><span class="p">,</span>
-	<span class="s2">&quot;is_correct&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
-	<span class="s2">&quot;is_revised&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
-	<span class="s2">&quot;span&quot;</span><span class="p">:</span> <span class="p">[</span>
-		<span class="p">{</span>
-			<span class="s2">&quot;page_index&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-			<span class="s2">&quot;x0&quot;</span><span class="p">:</span> <span class="mf">59.52</span><span class="p">,</span>
-			<span class="s2">&quot;x1&quot;</span><span class="p">:</span> <span class="mf">84.42</span><span class="p">,</span>
-			<span class="s2">&quot;y0&quot;</span><span class="p">:</span> <span class="mf">708.31</span><span class="p">,</span>
-			<span class="s2">&quot;y1&quot;</span><span class="p">:</span> <span class="mf">718.31</span>
-		<span class="p">}</span>
-	<span class="p">]</span>
+    <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="n">LABEL_ID</span><span class="p">,</span>
+    <span class="s2">&quot;label_set_id&quot;</span><span class="p">:</span> <span class="n">LABEL_SET_ID</span><span class="p">,</span>
+    <span class="s2">&quot;is_correct&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+    <span class="s2">&quot;is_revised&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+    <span class="s2">&quot;span&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;page_index&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">&quot;x0&quot;</span><span class="p">:</span> <span class="mf">59.52</span><span class="p">,</span>
+            <span class="s2">&quot;x1&quot;</span><span class="p">:</span> <span class="mf">84.42</span><span class="p">,</span>
+            <span class="s2">&quot;y0&quot;</span><span class="p">:</span> <span class="mf">708.31</span><span class="p">,</span>
+            <span class="s2">&quot;y1&quot;</span><span class="p">:</span> <span class="mf">718.31</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
 <span class="p">}</span><span class="s1">&#39;</span>
 </pre></div>
 </div>
@@ -707,7 +779,7 @@ You can find the list of existing Annotation Sets by using the <code class="docu
 create a new Annotation Set associated with that Label Set. You can only do this if the Label Set
 has <code class="docutils literal notranslate"><span class="pre">has_multiple_sections</span></code> set to <code class="docutils literal notranslate"><span class="pre">true</span></code>. (See the note below for some examples.)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">label</span></code> should use the correct <code class="docutils literal notranslate"><span class="pre">LABEL_ID</span></code> for your Annotation.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">span</span></code> is a <span class="xref myst">list of Spans</span>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">span</span></code> is a <a class="reference external" href="#coordinates-and-bounding-boxes">list of Spans</a>.</p></li>
 <li><p>Other fields are optional.</p></li>
 </ul>
 <p>As the <code class="docutils literal notranslate"><span class="pre">span</span></code> identifies a <em>position</em> on the page, there are multiple ways to identify the correct one for the
@@ -725,26 +797,28 @@ converted in a list for the <code class="docutils literal notranslate"><span cla
 string as input and returns a list of all its occurrences in the Document. These can be fed directly to the <code class="docutils literal notranslate"><span class="pre">span</span></code>
 attribute.</p></li>
 </ol>
-<p>.. note::
-Annotation Sets are never created directly. When you create an Annotation, you can specify whether to re-use an
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Annotation Sets are never created directly. When you create an Annotation, you can specify whether to re-use an
 existing Annotation Set, or to create a new one. You can refer to the following diagram to decide whether to use
-<code class="docutils literal notranslate"><span class="pre">annotation_set</span></code> or <code class="docutils literal notranslate"><span class="pre">label_set</span></code> in your request.</p>
-<p>.. mermaid::</p>
-<p>graph TD
-A[Creating an Annotation in a Document<br>for Label <code>L</code> and Label Set <code>A</code>]
-A –&gt; B[Can the Label Set <code>A</code> have multiple Annotation Sets?]
-B –&gt; z[Yes] –&gt; C[Is this Annotation<br>for a new Annotation Set<br>or an existing one <code>B</code>?]
-C –&gt; x[New one] –&gt; E[”<code>label=L, label_set=A</code><br>(will create a new Annotation Set <code>C</code>)”]
-C –&gt; y[Existing] –&gt; D[<code>label=L, annotation_set=B</code>]
-B –&gt; f[No] –&gt; F[Does the Label Set <code>A</code><br> already have a single<br>corresponding Annotation Set <code>B</code>?]
-F –&gt; G[Yes]
-G –&gt; D
-G –&gt; I[”<code>label=L, label_set=A</code><br>(will reuse the existing Annotation Set <code>B</code>)”]
-F –&gt; H[No]
-H –&gt; E</p>
-</section>
+<cite>annotation_set</cite> or <cite>label_set</cite> in your request.</p>
+</div>
+<div class="mermaid">
+            graph TD
+  A[Creating an Annotation in a Document&lt;br&gt;for Label &lt;code&gt;L&lt;/code&gt; and Label Set &lt;code&gt;A&lt;/code&gt;]
+  A --&gt; B[Can the Label Set &lt;code&gt;A&lt;/code&gt; have multiple Annotation Sets?]
+  B --&gt; z[Yes] --&gt; C[Is this Annotation&lt;br&gt;for a new Annotation Set&lt;br&gt;or an existing one &lt;code&gt;B&lt;/code&gt;?]
+  C --&gt; x[New one] --&gt; E[&quot;&lt;code&gt;label=L, label_set=A&lt;/code&gt;&lt;br&gt;(will create a new Annotation Set &lt;code&gt;C&lt;/code&gt;)&quot;]
+  C --&gt; y[Existing] --&gt; D[&lt;code&gt;label=L, annotation_set=B&lt;/code&gt;]
+  B --&gt; f[No] --&gt; F[Does the Label Set &lt;code&gt;A&lt;/code&gt;&lt;br&gt; already have a single&lt;br&gt;corresponding Annotation Set &lt;code&gt;B&lt;/code&gt;?]
+  F --&gt; G[Yes]
+  G --&gt; D
+  G --&gt; I[&quot;&lt;code&gt;label=L, label_set=A&lt;/code&gt;&lt;br&gt;(will reuse the existing Annotation Set &lt;code&gt;B&lt;/code&gt;)&quot;]
+  F --&gt; H[No]
+  H --&gt; E
+        </div></section>
 <section id="create-training-data-and-train-the-ai">
-<h3>Create training data and train the AI<a class="headerlink" href="#create-training-data-and-train-the-ai" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id42">Create training data and train the AI</a><a class="headerlink" href="#create-training-data-and-train-the-ai" title="Permalink to this headline">¶</a></h3>
 <p>Once you have uploaded enough Documents and created enough Annotations, you can start training an
 <a class="reference external" href="https://help.konfuzio.com/modules/extractions/index.html">extraction AI</a>. You will need at least one Document in the
 “training” dataset for the Category you want to train, but more data is usually better (see our
@@ -771,24 +845,24 @@ will be automatically set as the active one only if its
 better than the previous AI’s.</p>
 </section>
 <section id="review-a-document">
-<h3>Review a Document<a class="headerlink" href="#review-a-document" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id43">Review a Document</a><a class="headerlink" href="#review-a-document" title="Permalink to this headline">¶</a></h3>
 <p>When working on a Document, the ultimate goal is to mark it as “reviewed”, which means that all its Annotations have
 been revised and the information inside them is correct.</p>
 <p>To clarify how reviewing works, let’s take a look at the statuses this data can go through:</p>
-<p>.. mermaid::</p>
-<p>flowchart TD
-A(Feedback Required<br><small>Annotations created by AI)
-B(Unfilled<br><small>Potential Annotations that are<br>not found by the AI)
-C[Created by Human]
-D[Not Found<br><small>Missing Annotation instances</small>]
-E[Accepted]
-F[Declined]
-A –&gt; E
-A –&gt; F
-F –&gt; B
-B –&gt; C
-B –&gt; D</p>
-<ul class="simple">
+<div class="mermaid">
+            flowchart TD
+  A(Feedback Required&lt;br&gt;&lt;small&gt;Annotations created by AI)
+  B(Unfilled&lt;br&gt;&lt;small&gt;Potential Annotations that are&lt;br&gt;not found by the AI)
+  C[Created by Human]
+  D[Not Found&lt;br&gt;&lt;small&gt;Missing Annotation instances&lt;/small&gt;]
+  E[Accepted]
+  F[Declined]
+  A --&gt; E
+  A --&gt; F
+  F --&gt; B
+  B --&gt; C
+  B --&gt; D
+        </div><ul class="simple">
 <li><p>Annotations created by an AI extraction are initially marked as <strong>Feedback Required</strong>.</p></li>
 <li><p>They can be <strong>Accepted</strong>, which means that the information they contain is correct.</p></li>
 <li><p>They can be <strong>Declined</strong>, in case the information is wrong.</p></li>
@@ -815,10 +889,12 @@ information it extracted was correct and the points where it was not. Once there
   <span class="o">--</span><span class="n">header</span> <span class="s1">&#39;Authorization: Token YOUR_TOKEN&#39;</span>
 </pre></div>
 </div>
-<p>.. note::
-The <code class="docutils literal notranslate"><span class="pre">annotation_sets</span></code> property contains both existing Annotation Sets and “potential” ones, i.e. Label Sets from the
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <cite>annotation_sets</cite> property contains both existing Annotation Sets and “potential” ones, i.e. Label Sets from the
 Document’s Category which do not have a corresponding Annotation Set on the Document yet. These are easy to see
-because they don’t have any Annotation and their <code class="docutils literal notranslate"><span class="pre">id</span></code> is <code class="docutils literal notranslate"><span class="pre">null</span></code>.</p>
+because they don’t have any Annotation and their <cite>id</cite> is <cite>null</cite>.</p>
+</div>
 <p>Whichever method you choose, you should be able to retrieve an ID for the Annotation(s) you want to revise. Unrevised
 Annotations are easily filterable in the list because they have the properties <code class="docutils literal notranslate"><span class="pre">&quot;revised&quot;:</span> <span class="pre">false</span></code> and
 <code class="docutils literal notranslate"><span class="pre">&quot;is_correct&quot;:</span> <span class="pre">false</span></code>. (See the
@@ -866,7 +942,7 @@ more information.)</p>
 </div>
 </section>
 <section id="post-process-a-document-split-rotate-and-sort-pages">
-<h3>Post-process a Document: split, rotate and sort Pages<a class="headerlink" href="#post-process-a-document-split-rotate-and-sort-pages" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id44">Post-process a Document: split, rotate and sort Pages</a><a class="headerlink" href="#post-process-a-document-split-rotate-and-sort-pages" title="Permalink to this headline">¶</a></h3>
 <p>We offer a <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/documents/documents_postprocess_create">postprocess endpoint</a>
 that allows you to change uploaded Documents in three ways, which can be combined into a single API request:</p>
 <ul class="simple">
@@ -880,15 +956,17 @@ splitting functionality, this list should only contain one Document). The <code 
 content of the Document.</p>
 </section>
 <section id="document-splitting-suggestions">
-<h3>Document splitting suggestions<a class="headerlink" href="#document-splitting-suggestions" title="Permalink to this headline">¶</a></h3>
-<p>.. note::
-<code class="docutils literal notranslate"><span class="pre">Contact</span> <span class="pre">us</span> <span class="pre">&lt;https://konfuzio.com/en/support/&gt;</span></code>_ to enable this functionality.</p>
-<p>The training data that was <span class="xref myst">previously created</span> can also be used to train a
+<h3><a class="toc-backref" href="#id45">Document splitting suggestions</a><a class="headerlink" href="#document-splitting-suggestions" title="Permalink to this headline">¶</a></h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><a class="reference external" href="https://konfuzio.com/en/support/">Contact us</a> to enable this functionality.</p>
+</div>
+<p>The training data that was <a class="reference external" href="#create-training-data-and-train-the-ai">previously created</a> can also be used to train a
 Splitting AI to automatically propose splitting suggestions for uploaded documents.</p>
 <p>To get started, you should “Enable Document splitting” in your
 <a class="reference external" href="https://help.konfuzio.com/modules/projects/index.html#project-details">Project settings</a>; then, you can use our
 <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/splitting-ais">Splitting AI endpoints</a> to create a new Splitting AI, similar to
-<span class="xref myst">how you train an Extraction AI</span>.</p>
+<a class="reference external" href="#create-training-data-and-train-the-ai">how you train an Extraction AI</a>.</p>
 <p>Once this is done, when uploading a Document, you will notice an additional <code class="docutils literal notranslate"><span class="pre">proposed_split</span></code> field in the response.
 This field contains a list of different Documents the AI thinks your original Document should be split into; each one
 includes a Category, if it was found, and the list of Page IDs that should be part of that new Document. You can feed
@@ -896,17 +974,19 @@ this list, either as it is or after editing it and changing details, into the
 <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/documents/documents_postprocess_create">postprocess endpoint</a> to actualize
 the AI’s suggestions. You can also pass a list with one Document and all the page IDs to effectively reject the
 suggestions and proceed with the original Document.</p>
-<p>.. note::
-Once Document Splitting is enabled for a Project, newly uploaded Documents where splitting is detected will stay in
-the “Waiting for splitting confirmation” (<code class="docutils literal notranslate"><span class="pre">41</span></code>) status until the user takes action on the AI’s suggestions. After
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Once Document Splitting is enabled for a Project, newly uploaded Documents where splitting is detected will stay in
+the “Waiting for splitting confirmation” (<cite>41</cite>) status until the user takes action on the AI’s suggestions. After
 that, extraction will run as usual on the resulting Documents.</p>
+</div>
 <p>After being split, the new Documents will keep a reference to the original “Document Set” via the <code class="docutils literal notranslate"><span class="pre">document_set</span></code>
 property. Querying the <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/document-sets">Document Sets endpoint</a> with that ID will
 return all the existing Documents derived from the same original Document.</p>
 </section>
 <section id="download-the-ocr-version-of-an-uploaded-document">
-<h3>Download the OCR version of an uploaded Document<a class="headerlink" href="#download-the-ocr-version-of-an-uploaded-document" title="Permalink to this headline">¶</a></h3>
-<p>After uploading a Document, the Konfuzio server also creates a <span class="xref myst">PDF OCR version</span> of it with indexed and
+<h3><a class="toc-backref" href="#id46">Download the OCR version of an uploaded Document</a><a class="headerlink" href="#download-the-ocr-version-of-an-uploaded-document" title="Permalink to this headline">¶</a></h3>
+<p>After uploading a Document, the Konfuzio server also creates a <a class="reference external" href="#ocr-processing">PDF OCR version</a> of it with indexed and
 selectable text. This version is also used to generate images for each page for our SmartView functionality. If you
 need it, you can download this OCR version of the Document: the <code class="docutils literal notranslate"><span class="pre">file_url</span></code> property of the
 <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/documents/documents_retrieve">document retrieve endpoint</a> contains the URL to it
