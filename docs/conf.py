@@ -108,13 +108,15 @@ sitemap_url_scheme = "{link}"
 # sphinx-notfound-page
 notfound_urls_prefix = '/'
 
+# -----------------------------------------------------------------------------
 # MyST-NB
+# -----------------------------------------------------------------------------
 
 # No execution timeout
 nb_execution_timeout = -1
 
-# Raise an exception on failed execution, rather than emitting a warning
-# nb_execution_raise_on_error = True
+# Only emit warning, do not raise exception. This is default behavior, and kept here only for clarity.
+nb_execution_raise_on_error = False
 
 # Print traceback to stderr on execution error
 nb_execution_show_tb = True
