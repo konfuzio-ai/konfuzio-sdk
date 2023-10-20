@@ -654,19 +654,17 @@ The following steps need to be undertaken:
 | 1                   | Self-Hosted OCR worker | 8GB | 1200 (1 y 1200) Pages) / hours (Not needed if external API Service is used)          |
 | N                   | remaining Containers   | 4GB | ...                                                                                  |
 
-
-With this setup, around 1200 Pages per hour can be processed using OCR and Extraction, around 750 Pages per hour can be processed if OCR, Categorization and Extraction are active, around 850 Pages per hour can be processed if OCR, Splitting, Categorization and Extraction are active.
+With this setup, around 1200 Pages per hour can be processed using OCR and Extraction, around 750 Pages per hour can be processed if OCR, Categorization and Extraction are active, around 500 Pages per hour can be processed if OCR, Splitting, Categorization and Extraction are active.
 
 #### Scenario 2: Without self-hosted OCR
 
-
-| Number of Container | Container Type | RAM | Capacity                                                        |
-| --- | --- | --- | --- |
+| Number of Container | Container Type | RAM | Capacity                                                                  |
+| --- | --- | --- |---------------------------------------------------------------------------|
 | 1                   | Web Container          | 4GB | ...                                                                       |
-| 5                   | Generic Celery Worker  | 4GB | 2500 (3 x 500) Pages of Extraction, Categorization, or Splitting per hour |
+| 5                   | Generic Celery Worker  | 4GB | 1500 (3 x 500) Pages of Extraction, Categorization, or Splitting per hour |
 | N                   | remaining Containers   | 4GB | ...                                                                       |
 
-With this setup, around 2500 Pages per hour can be processed using OCR and Extraction, around 1250 Pages per hour can be processed if OCR, Categorization and Extraction are active, around 850 Pages per hour can be processed if OCR, Splitting, Categorization and Extraction are active.
+With this setup, around 1500 Pages per hour can be processed using OCR and Extraction, around 750 Pages per hour can be processed if OCR, Categorization and Extraction are active, around 500 Pages per hour can be processed if OCR, Splitting, Categorization and Extraction are active.
 
 .. note::
   In case you train large AI Models (>100 Training Pages) more than 4GB for Generic Celery Workers are needed. The Benchmark used an Extraction AI with "word" detection mode and 10 Labels in 1 Label Set. The capacity is shared between all Users using the Konfuzio Server setup.
@@ -761,47 +759,140 @@ A commonly chosen provider is [Keycloak](https://www.keycloak.org/). In the subs
 
 ### SSO Keycloak Integration
 
-Keycloak allows single sign-on funtionality. By doing so no user management is done wihtin Konfuzio Server. If you already operate a keycloak server, you can reuse keycloak users.
+With Keycloak, you can implement the following workflows in Konfuzio:
+
+- Use the Keycloak server to authenticate users with Konfuzio, automatically creating users in Konfuzio if they don't exist yet.
+- Disable password login in Konfuzio, forcing users to use Keycloak to log in.
+- Synchronize groups assigned to users in Keycloak with groups in Konfuzio.
+- Use Keycloak to generate tokens that can be used to access the Konfuzio REST API.
+
+Enabling the first workflow (authenticating Keycloak users with Konfuzio) is mandatory to support the other ones.
 
 #### Set up
 
-To start and set up keycloak server:
+To start and set up Keycloak server:
 
-1. Download [keycloak server](https://www.keycloak.org/downloads)
-2. Install and start keycloak server using [instruction](https://www.keycloak.org/docs/latest/server_installation/)
-3. Open keycloak dashboard in browser (locally it's http://0.0.0.0:8080/). 
-4. Create admin user
-5. Login to Administration Console
-6. You can add new Realm or use default (Master)
+1. Download the [Keycloak server](https://www.keycloak.org/downloads).
+2. Install and start Keycloak server using [instructions](https://www.keycloak.org/docs/latest/server_installation/).
+3. Open the Keycloak dashboard in browser (locally it's http://0.0.0.0:8080/). 
+4. Create the admin user.
+5. Login to the Administration Console.
+6. Create a new Realm or use the existing one (Master).
 
 .. image:: ./keycloak/add-realm.png
 
-8. Create new client from `Clients` navbar item
+At this point you need to create a new Keycloak client to integrate it with Konfuzio.
 
-.. image:: ./keycloak/add-client.png
+1. Create a new Keycloak _client_ of type _OpenID Connect_. Give it any name.
+2. When prompted for _client authentication_ or _access type_ (in older version) choose _On_ or _confidential_.
+3. Make sure that the _direct access grants_ option is enabled.
+4. Make sure that the _web origins_ URL list includes the URL where requests to Keycloak are coming from (i.e. your Konfuzio installation URL).
+5. Move to the `Credentials` tab and save the `Secret` value. Store it somewhere as it will be needed later.
 
-9. Fill client form correctly (`Access Type` and `Valid Redirect URIs` fields)
+You can now create your users and groups from the relevant sections in the Keycloak dashboard.
 
-.. image:: ./keycloak/client-form.png
+.. warning:
+  Usernames in Keycloak must be email addresses, otherwise the integration will not work.
 
-10. Move to `Credentials` tab and save `Secret` value
-10. In `Users` navbar item create users
+#### Use the Keycloak server to authenticate users with Konfuzio
 
-####  Environment Variables
-To integrate konfuzio with keycloak you need to set the following environment variables for you Konfuzio Server installation:
+After the setup, you need to set the following environment variables for you Konfuzio Server installation:
 
 - `KEYCLOAK_URL` (http://127.0.0.1:8080/ - for localhost)
-- `OIDC_RP_SIGN_ALGO` (`RS256` - by default)
-- `OIDC_RP_CLIENT_ID` (client name from 7th point of previous section)
-- `OIDC_RP_CLIENT_SECRET` (Secret value from 9th point of previous section)
-- `SSO_ENABLED` (set `True` to activate integration)
+- `OIDC_RP_SIGN_ALGO` (RS256 - by default)
+- `OIDC_RP_CLIENT_ID` (client name the setup)
+- `OIDC_RP_CLIENT_SECRET` (secret value from the setup)
+- `SSO_ENABLED` (set to `True` to activate the integration)
 
-Click `SSO` on login page to log in to Konfuzio using keycloak
-.. image:: ./keycloak/sso-button.png
+After a restart, you should see an `SSO` button on the login page. Clicking it will redirect you to the Keycloak login page. After a successful login, you will be redirected back to Konfuzio and logged in.
 
-#### Important notes
+.. warning:
+  The Keycloak admin user cannot login into the Konfuzio server.
 
-- The Keycloak admin user cannot login into Konfuzio Server.
+#### Disable password login in Konfuzio
+
+Set the `PASSWORD_LOGIN_ENABLED` environment variable to `False` on your Konfuzio installation. This will remove the password login form from the login page, forcing users to use Keycloak to log in.
+
+#### Synchronize groups assigned to users in Keycloak with groups in Konfuzio
+
+Konfuzio can synchronize groups with Keycloak. This means that if you create a group in Keycloak and assign users to it, those users will be automatically added to an already existing group with the same name in Konfuzio. This is done by creating a _group mapper_ in Keycloak:
+
+1. Select the client you created earlier.
+2. Go to the _Client scopes_ tab inside the client.
+3. You should see a scope which is the name of the client followed by `-dedicated`. Click on it.
+4. Click _Configure a new mapper_.
+5. Choose _Group Membership_.
+6. In the settings for the mapper,
+   1. Set the _Name_ to `groups` (lowercase).
+   2. Set the _Token Claim Name_ to `groups` (same as above).
+   3. Disable _Full group path_.
+   4. Save.
+
+You also need to set the `SYNCHRONIZE_KEYCLOAK_GROUPS_WITH_KONFUZIO_GROUPS` environment variable to `True` on your Konfuzio installation. For additional security, you can also set `OIDC_RENEW_ID_TOKEN_EXPIRY_SECONDS` (default: 15 minutes) to a lower value, so permissions are checked from the backend in shorter intervals (see [documentation](https://mozilla-django-oidc.readthedocs.io/en/stable/installation.html#validate-id-tokens-by-renewing-them)).
+
+Now when assigning users to groups in Keycloak, the same groups will be created in Konfuzio (if they don't exist already) and the users will be added to them. Note that you still need to add permissions to the groups in Konfuzio for them to have any effect. You can automate this process with a CLI command, run `python manage.py import_groups_and_permissions --help` for more information.
+
+An exception to this is a group created with the name `Superuser` on Keycloak. This group will map to the superuser status on Konfuzio, which gives access to everything on the instance. If you don't create a `Superuser` group on Keycloak, this will not be used.
+
+#### Use Keycloak to generate tokens for the Konfuzio REST API
+
+By default, the Konfuzio REST API requires [token authentication](https://dev.konfuzio.com/web/api-v3.html#token-authentication), which is only possible with regular username and password. However, your Keycloak server can be configured to directly generate tokens that are compatible with the REST API.
+
+##### Set up the Keycloak client
+
+You can reuse the client you've already created in the original client setup. However, by choosing the default *client authentication: on* option, users will also need to include the *secret* you've created to authenticate with the Keycloak server. This is not ideal for the REST API, so you probably want to create a new client with the *client authentication: off*/*public* option. If you're using groups synchronization, remember to add the `groups` mapper to the new client as well.
+
+##### Get a token from Keycloak
+
+Once you have your client setup, you can test the token generation. Create a request similar to this:
+
+```
+curl --request POST \
+  --url https://sso.konfuzio.com/realms/myrealm/protocol/openid-connect/token \
+  --header 'Content-Type: application/x-www-form-urlencoded' \
+  --data username=myaccount@konfuzio.com \
+  --data password=mypassword \
+  --data client_id=myclient \
+  --data client_secret=mysecret \
+  --data grant_type=password \
+  --data scope=openid
+```
+
+Change the variables accordingly:
+
+- `sso.konfuzio.com` should be replaced with your Keycloak installation URL.
+- `myrealm` should be replaced with the name of your Keycloak realm.
+- The `username` field should contain the username of the Keycloak user.
+- The `password` field should contain the password of the Keycloak user.
+- The `client_id` field should contain the name of the client you created earlier.
+- The `client_secret` field is only necessary if you configured your client to be "confidential". If so, it should contain the client secret as shown in the _Credentials_ tab of the Keycloak client.
+
+The request will return an `access_token` token field that you can use in the next step. Depending on your client setup, it will also include a `refresh_token` and various fields that determine how long the generated token(s) are valid (see the Keycloak documentation for more information).
+
+##### Use the Keycloak token to access the REST API
+
+With the token generated in the previous step, we can test a request to the Konfuzio API;
+
+```
+curl --request GET \
+  --url https://app.konfuzio.com/api/v3/auth/me/ \
+  --header 'Authorization: Bearer mytoken'
+```
+
+Change the variables accordingly:
+
+- `app.konfuzio.com` should be replaced with your Konfuzio installation URL.
+- `mytoken` should be replaced with the `access_token` token field returned by Keycloak.
+
+If everything is configured correctly, the request should return information about the user whose credentials were used to generate the token:
+
+```
+{
+	"username": "myaccount@konfuzio.com"
+}
+```
+
+You can use the token to access any other endpoint of the Konfuzio REST API with the same user permissions as the user whose credentials were used to generate the token.
 
 ### SSO via other Identity Management software 
 In order to connect your Identity Management software with Konfuzio using Single Sign-On (SSO), you'll need to follow these steps. Please note, this tutorial is meant for Identity Management software that supports OIDC (OpenID Connect), a widely adopted standard for user authentication that's compatible with many software platforms. If you're using Keycloak, please refer to the separate tutorial on connecting Konfuzio with Keycloak.
@@ -1457,13 +1548,14 @@ See https://mozilla-django-oidc.readthedocs.io/en/stable/settings.html#OIDC_RP_S
 
 _Type: string_
 
-#### 9. Snapshot Settings (This feature is under active development and not yet available on https://app.konfuzio.com)
+#### 9. Snapshot Settings
 
 ##### SNAPSHOT_DEFAULT_FILE_STORAGE
 Default: 'django.core.files.storage.FileSystemStorage'
 
 By default, the file system is used as file storage. 
-To use an S3-compatible storage set: 'storages.backends.s3boto.S3BotoStorage''.
+To use an S3-compatible storage set: 'storages.backends.s3boto.S3BotoStorage'.
+To use an Azure Blob Storage set: 'storages.backends.azure_storage.AzureStorage'.
 See https://docs.djangoproject.com/en/4.0/ref/settings/#default-file-storage
 
 _Type: string_
@@ -1523,6 +1615,33 @@ Whether or not to verify the connection to S3. Can be set to False to not verify
 
 _Type: string_
 
+##### SNAPSHOT_AZURE_ACCOUNT_KEY:
+Default: ''
+
+The Azure account key.
+
+_This is mandatory if SNAPSHOT_DEFAULT_FILE_STORAGE='storages.backends.azure_storage.AzureStorage'. Type: string_
+
+##### SNAPSHOT_AZURE_ACCOUNT_NAME:
+Default: ''
+
+The name if the Azure account name.
+
+_This is mandatory if SNAPSHOT_DEFAULT_FILE_STORAGE='storages.backends.azure_storage.AzureStorage'. Type: string_
+
+##### SNAPSHOT_AZURE_CONTAINER:
+Default: ''
+
+The name if the Azure storage container.
+
+_This is mandatory if SNAPSHOT_DEFAULT_FILE_STORAGE='storages.backends.azure_storage.AzureStorage'. Type: string_
+
+##### SNAPSHOT_HOST_NAME
+Default: None
+
+This allows to set a different hostname which is used to make API calls when creating a Snapshot.  
+
+_Type: string_
 
 ##### SNAPSHOT_RESTORE_ACROSS_ENVIRONMENTS
 Default: False
