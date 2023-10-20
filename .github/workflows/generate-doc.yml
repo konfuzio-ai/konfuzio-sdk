@@ -17,9 +17,15 @@ jobs:
           python-version: 3.8
       - name: Generate pages content
         run: |
-          pip install -e .[docs]
+          pip install -e .[dev,ai]
           sphinx-build -d _build/doctrees docs _build/html
           mv _build/html public
+        env:
+          KONFUZIO_PROJECT_ID: ${{ secrets.KONFUZIO_PROJECT_ID }}
+          KONFUZIO_HOST: ${{ secrets.KONFUZIO_HOST }}
+          KONFUZIO_USER: ${{ secrets.KONFUZIO_USER }}
+          KONFUZIO_PASSWORD: ${{ secrets.KONFUZIO_PASSWORD }}
+          KONFUZIO_TOKEN: ${{ secrets.KONFUZIO_TOKEN }}                  
       - name: Publish generated content to GitHub Pages
         uses: tsunematsu21/actions-publish-gh-pages@v1.0.1
         with:
