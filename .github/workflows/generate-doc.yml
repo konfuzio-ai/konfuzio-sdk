@@ -15,9 +15,9 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.8
-      - name: Install Sphinx
+      - name: Install Sphinx and Theme
         run: |
-          pip install sphinx          
+          pip install sphinx sphinx_rtd_theme
       - name: Generate pages content
         run: |
           pip install -e .[ai]
