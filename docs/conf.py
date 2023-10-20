@@ -50,7 +50,8 @@ extensions = [
     'notfound.extension',
     "sphinx_copybutton",
     'myst_nb',
-    'validate_nb'
+    'validate_nb',
+    'myst_parser',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
