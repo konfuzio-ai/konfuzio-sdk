@@ -17,7 +17,7 @@ jobs:
           python-version: 3.8
       - name: Generate pages content
         run: |
-          pip install -e .[ai]
+          pip install -e .[docs]
           sphinx-build -d _build/doctrees docs _build/html
           mv _build/html public
       - name: Publish generated content to GitHub Pages
