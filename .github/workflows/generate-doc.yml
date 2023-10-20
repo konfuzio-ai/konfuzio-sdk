@@ -26,4 +26,4 @@ jobs:
           dir: public
           branch: gh-pages
           token: ${{ secrets.ACCESS_TOKEN }}
-          cname: ${{ github.ref_slug }}.konfuzio.com
+          cname: ${{ github.ref_slug }}.dev.konfuzio.com
