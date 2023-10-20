@@ -18,6 +18,9 @@ jobs:
       - name: Install Sphinx and Theme
         run: |
           pip install sphinx sphinx_rtd_theme
+      - name: Install m2r2
+        run: |
+          pip install m2r2          
       - name: Generate pages content
         run: |
           pip install -e .[ai]
