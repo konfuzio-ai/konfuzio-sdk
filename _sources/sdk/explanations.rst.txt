@@ -10,7 +10,7 @@ Explanations
 
 .. mdinclude:: home/index.md
 
-.. mdinclude:: tutorials/data_validation/index.md
+.. mdinclude:: tutorials/data_validations/index.md
 
 .. mdinclude:: releasing/index.md
 

@@ -8,7 +8,6 @@
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="shortcut icon" href="../../_static/full_green_square.png"/>
     <link rel="canonical" href="https://dev.konfuzio.com/sdk/tutorials/index.html" />
@@ -102,25 +101,19 @@
 <section id="project">
 <h2>Project<a class="headerlink" href="#project" title="Permalink to this headline">¶</a></h2>
 <p>Retrieve all information available for your Project:</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_get_started.py
-:language: python
-:start-after: start project
-:end-before: end project
-:dedent: 4</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>The information will be stored in the folder that you defined to allocate the data in the package initialization.
 A subfolder will be created for each Document in the Project.</p>
 <p>Every time that there are changes in the Project in the Konfuzio Server, the local Project can be updated this way:</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_get_started.py
-:language: python
-:start-after: start get
-:end-before: end get
-:dedent: 4</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_project</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">update</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>To make sure that your Project is loaded with all the latest data:</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_get_started.py
-:language: python
-:start-after: start update
-:end-before: end update
-:dedent: 4</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">,</span> <span class="n">update</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
 </section>
 <section id="documents">
 <h2>Documents<a class="headerlink" href="#documents" title="Permalink to this headline">¶</a></h2>
@@ -139,11 +132,9 @@ A subfolder will be created for each Document in the Project.</p>
 <li><p>Waiting for splitting confirmation: 41</p></li>
 </ul>
 <p>To access the Documents in the Project you can use:</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_get_started.py
-:language: python
-:start-after: start documents
-:end-before: end documents
-:dedent: 4</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">documents</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span>
+</pre></div>
+</div>
 <p>By default, it will get the Documents with training status (dataset_status = 2). The code for the dataset status is:</p>
 <ul class="simple">
 <li><p>None: 0</p></li>
@@ -153,11 +144,9 @@ A subfolder will be created for each Document in the Project.</p>
 <li><p>Excluded: 4</p></li>
 </ul>
 <p>The Test Documents can be accessed directly by:</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_get_started.py
-:language: python
-:start-after: start test_documents
-:end-before: end test_documents
-:dedent: 4</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">test_documents</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">test_documents</span>
+</pre></div>
+</div>
 <p>For more details, you can check out the <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#project">Project documentation</a>.</p>
 <p>By default, you get 4 files for each Document that contain information of the text, pages, annotation sets and
 annotations. You can see these files inside the Document folder.</p>
@@ -177,7 +166,7 @@ SV-Nummer       |Krankenkasse                       KK%®|PGRS Bars  jum.SV-Tg. 
                                              170299  L L       l     L     l     l
  -                                       +  Steuer-ID       IMrB?       Zeitlohn Sta.|Überstd.  |Bez. Sta.
   Teststraße123
-   12345 Testort                                   12345678911       \     ı     ı     \
+   12345 Testort                                   12345678911           ı     ı     \
                                B/N
                Pers.-Nr.  00104        x02
                Abt.-Nr. A12         10103          HinweisezurAbrechnung
@@ -329,20 +318,15 @@ Boxes).</p>
 </div>
 <p>After downloading these files, their paths will become available in the Project instance.</p>
 <p>You can get the path to the folder containing the Documents’ folders with:</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_get_started.py
-:language: python
-:start-after: start folder
-:end-before: end folder
-:dedent: 4</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_project</span><span class="o">.</span><span class="n">documents_folder</span>
+</pre></div>
+</div>
 <p>And you can get the path to the file with the Document text with:</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_get_started.py
-:language: python
-:start-after: start document text path
-:end-before: end document text path
-:dedent: 4</p>
-<p>.. _upload-document:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span><span class="o">.</span><span class="n">txt_file_path</span>
+</pre></div>
+</div>
 <section id="upload-document">
-<h3>Upload Document<a class="headerlink" href="#upload-document" title="Permalink to this headline">¶</a></h3>
+<span id="id1"></span><h3>Upload Document<a class="headerlink" href="#upload-document" title="Permalink to this headline">¶</a></h3>
 <p>Before you can upload a new file to your Project using the Konfuzio SDK, you must have completed the following steps:</p>
 <ol class="arabic simple">
 <li><p>Register for a Konfuzio account</p></li>
@@ -366,36 +350,35 @@ to start working with the Document immediately after the OCR processing is compl
 <p>Here’s an example of how to use the <code class="docutils literal notranslate"><span class="pre">from_file</span></code> method with <code class="docutils literal notranslate"><span class="pre">sync</span></code> set to <code class="docutils literal notranslate"><span class="pre">True</span></code>:</p>
 </li>
 </ol>
-<p>.. literalinclude:: /sdk/boilerplates/test_get_started.py
-:language: python
-:start-after: start sync_true
-:end-before: end sync_true
-:dedent: 4</p>
-<ol class="arabic" start="2">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span> <span class="o">=</span> <span class="n">Document</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">FILE_PATH</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">my_project</span><span class="p">,</span> <span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<ol class="arabic">
 <li><p><strong>Asynchronous upload (sync=False)</strong>: With this setting, the method immediately returns an empty Document object
 after initiating the upload. The OCR processing takes place in the background. This method is advantageous when
 uploading a large file or a large number of files, as it doesn’t require waiting for each file’s processing to complete.</p>
 <p>Here is how to use the asynchronous method:</p>
 </li>
 </ol>
-<p>.. literalinclude:: /sdk/boilerplates/test_get_started.py
-:language: python
-:start-after: start sync_false
-:end-before: end sync_false
-:dedent: 4</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span> <span class="o">=</span> <span class="n">Document</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">FILE_PATH</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">my_project</span><span class="p">,</span> <span class="n">sync</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>After asynchronous upload, you can check the status of the Document processing using the <code class="docutils literal notranslate"><span class="pre">document.update()</span></code> method on
 the returned Document object. If the Document is ready, this method will update the Document object with the OCR information.</p>
 <p>It’s important to note that if the Document is not ready, you may need to call <code class="docutils literal notranslate"><span class="pre">document.update()</span></code> again at a later time.
 This could be done manually or by setting up a looping mechanism depending on your application’s workflow.</p>
 <p>To check if the document is ready and update it with the OCR information, you can implement a custom pulling strategy
 like this:</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_get_started.py
-:language: python
-:start-after: start pulling loop
-:end-before: end pulling loop
-:dedent: 4</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+    <span class="n">document</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">document</span><span class="o">.</span><span class="n">ocr_ready</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">document</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">break</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>For a more sophisticated pulling method for asynchronously uploaded Documents using the callback function, you can
-checkout our :ref:<code class="docutils literal notranslate"><span class="pre">tutorial</span> <span class="pre">on</span> <span class="pre">how</span> <span class="pre">to</span> <span class="pre">use</span> <span class="pre">ngrok</span> <span class="pre">to</span> <span class="pre">receive</span> <span class="pre">callbacks</span> <span class="pre">from</span> <span class="pre">the</span> <span class="pre">Konfuzio</span> <span class="pre">Server&lt;async_upload_with_callback&gt;</span></code>.</p>
+checkout our <a class="reference internal" href="async_upload_with_callback/index.html#async-upload-with-callback"><span class="std std-ref">tutorial on how to use ngrok to receive callbacks from the Konfuzio Server</span></a>.</p>
 </section>
 <section id="timeout-parameter">
 <h4>Timeout Parameter<a class="headerlink" href="#timeout-parameter" title="Permalink to this headline">¶</a></h4>
@@ -403,103 +386,84 @@ checkout our :ref:<code class="docutils literal notranslate"><span class="pre">t
 within 2 minutes, the operation will stop waiting for a response and return an error. If you’re uploading a larger file,
 it might take more time to process, and the default timeout value might not be sufficient. In such a case, you can
 increase the timeout by setting the timeout parameter to a higher value.</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_get_started.py
-:language: python
-:start-after: start timeout upload
-:end-before: end timeout upload
-:dedent: 4</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span> <span class="o">=</span> <span class="n">Document</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">FILE_PATH</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">my_project</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># 300 seconds timeout</span>
+</pre></div>
+</div>
 </section>
 </section>
 <section id="modify-document">
 <h3>Modify Document<a class="headerlink" href="#modify-document" title="Permalink to this headline">¶</a></h3>
 <p>If you would like to use the SDK to modify some Document’s meta-data like the dataset status or the assignee, you can do
 it like this:</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_get_started.py
-:language: python
-:start-after: start assignee
-:end-before: end assignee
-:dedent: 4</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span><span class="o">.</span><span class="n">assignee</span> <span class="o">=</span> <span class="n">ASSIGNEE_ID</span>
+<span class="n">document</span><span class="o">.</span><span class="n">dataset_status</span> <span class="o">=</span> <span class="mi">2</span>
+
+<span class="n">document</span><span class="o">.</span><span class="n">save_meta_data</span><span class="p">()</span>
+</pre></div>
+</div>
 </section>
 <section id="update-document">
 <h3>Update Document<a class="headerlink" href="#update-document" title="Permalink to this headline">¶</a></h3>
 <p>If there are changes in the Document in the Konfuzio Server, you can update your local version of the Document with:</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_get_started.py
-:language: python
-:start-after: start update_doc
-:end-before: end update_doc
-:dedent: 4</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+</pre></div>
+</div>
 <p>If a Document is part of the Training or Test set, you can also update it by updating the entire Project via
 <code class="docutils literal notranslate"><span class="pre">project.get(update=True)</span></code>. However, for Projects with many Documents it can be faster to update only the relevant Documents.</p>
 </section>
 <section id="download-pdfs">
 <h3>Download PDFs<a class="headerlink" href="#download-pdfs" title="Permalink to this headline">¶</a></h3>
 <p>To get the PDFs of the Documents, you can use <code class="docutils literal notranslate"><span class="pre">get_file()</span></code>.</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_get_started.py
-:language: python
-:start-after: start get file
-:end-before: end get file
-:dedent: 4</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">document</span> <span class="ow">in</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">:</span>
+    <span class="n">document</span><span class="o">.</span><span class="n">get_file</span><span class="p">()</span>
+</pre></div>
+</div>
 <p>This will download the OCR version of the Document which contains the text, the Bounding Boxes
 information of the characters and the image of the Document.</p>
 <p>In the Document folder, you will see a new file with the original name followed by “_ocr”.</p>
 <p>If you want to original version of the Document (without OCR) you can use <code class="docutils literal notranslate"><span class="pre">ocr_version=False</span></code>.</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_get_started.py
-:language: python
-:start-after: start get original
-:end-before: end get original
-:dedent: 4</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">document</span> <span class="ow">in</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">:</span>
+    <span class="n">document</span><span class="o">.</span><span class="n">get_file</span><span class="p">(</span><span class="n">ocr_version</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>In the Document folder, you will see a new file with the original name.</p>
 </section>
 <section id="download-pages-as-images">
 <h3>Download pages as images<a class="headerlink" href="#download-pages-as-images" title="Permalink to this headline">¶</a></h3>
 <p>To get the Pages of the Document as png images, you can use <code class="docutils literal notranslate"><span class="pre">get_images()</span></code>.</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_get_started.py
-:language: python
-:start-after: start get images
-:end-before: end get images
-:dedent: 4</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">document</span> <span class="ow">in</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">:</span>
+    <span class="n">document</span><span class="o">.</span><span class="n">get_images</span><span class="p">()</span>
+</pre></div>
+</div>
 <p>You will get one png image named “page_number_of_page.png” for each Page in the Document.</p>
 </section>
 <section id="download-bounding-boxes-of-the-characters">
 <h3>Download bounding boxes of the characters<a class="headerlink" href="#download-bounding-boxes-of-the-characters" title="Permalink to this headline">¶</a></h3>
 <p>To get the Bounding Boxes information of the characters, you can use <code class="docutils literal notranslate"><span class="pre">get_bbox()</span></code>.</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_get_started.py
-:language: python
-:start-after: start get bbox
-:end-before: end get bbox
-:dedent: 4</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">document</span> <span class="ow">in</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">:</span>
+    <span class="n">document</span><span class="o">.</span><span class="n">get_bbox</span><span class="p">()</span>
+</pre></div>
+</div>
 <p>You will get a file named “bbox.zip” in the Document folder. This file contains the “bbox.json5” file. You can find the
 path to the zip file in the Document instance with:</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_get_started.py
-:language: python
-:start-after: start document bbox path
-:end-before: end document bbox path
-:dedent: 4</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span><span class="o">.</span><span class="n">bbox_file_path</span>
+</pre></div>
+</div>
 </section>
 <section id="delete-document">
 <h3>Delete Document<a class="headerlink" href="#delete-document" title="Permalink to this headline">¶</a></h3>
-<section id="delete-document-locally">
-<h4>Delete Document Locally<a class="headerlink" href="#delete-document-locally" title="Permalink to this headline">¶</a></h4>
 <p>To locally delete a Document, you can use:</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_get_started.py
-:language: python
-:start-after: start delete
-:end-before: end delete
-:dedent: 4</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+</pre></div>
+</div>
 <p>The Document will be deleted from your local data folder, but it will remain in the Konfuzio Server.
 If you want to get it again you can update the Project.</p>
-</section>
-<section id="delete-document-online">
-<h4>Delete Document Online<a class="headerlink" href="#delete-document-online" title="Permalink to this headline">¶</a></h4>
 <p>If you would like to delete a Document in the remote server you can simply use the <code class="docutils literal notranslate"><span class="pre">Document.delete</span></code> method the <code class="docutils literal notranslate"><span class="pre">delete_online</span></code> setting set to <code class="docutils literal notranslate"><span class="pre">True</span></code>. You can only delete Documents with a dataset status of None (0). <strong>Be careful!</strong> Once the Document is deleted online, we will have no way of recovering it.</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_get_started.py
-:language: python
-:start-after: start online_delete
-:end-before: end online_delete
-:dedent: 4</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">delete_online</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>If <code class="docutils literal notranslate"><span class="pre">delete_online</span></code> is set to False (the default), the Document will only be deleted on your local machine, and will be
 reloaded next time you load the Project, or if you run the <code class="docutils literal notranslate"><span class="pre">Project.init_or_update_document</span></code> method directly.</p>
-</section>
 </section>
 </section>
 </section>

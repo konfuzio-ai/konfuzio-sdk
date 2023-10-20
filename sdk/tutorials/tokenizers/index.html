@@ -8,7 +8,6 @@
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
-      <link rel="stylesheet" href="../../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
     <link rel="shortcut icon" href="../../../_static/full_green_square.png"/>
     <link rel="canonical" href="https://dev.konfuzio.com/sdk/tutorials/tokenizers/index.html" />
@@ -52,7 +51,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../index.html">What is the Konfuzio SDK?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../get_started.html">Get Started</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../tutorials.html">Tutorials</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="../data-preparation/index.html">Prepare Training and Testing Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../data-preparation/index.html">Prepare the data for training and testing the AI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../document_categorization/index.html">Document Categorization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../file_splitting/index.html">File Splitting</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Tokenization</a><ul>
@@ -71,7 +70,7 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#sentence-tokenizer">Sentence Tokenizer</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id1">Example Usage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id3">Example Usage</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#how-to-choose-which-tokenizer-to-use">How to Choose Which Tokenizer to Use?</a><ul>
@@ -139,12 +138,11 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <p>.. _tokenization-tutorials:</p>
-<section id="tokenization">
+  <section id="tokenization">
 <h1>Tokenization<a class="headerlink" href="#tokenization" title="Permalink to this headline">¶</a></h1>
 <section id="whitespacetokenizer">
 <h2>WhitespaceTokenizer<a class="headerlink" href="#whitespacetokenizer" title="Permalink to this headline">¶</a></h2>
-<p>The <span class="xref myst">WhitespaceTokenizer</span>,
+<p>The <a class="reference external" href="../../sourcecode.html#konfuzio_sdk.tokenizer.regex.WhitespaceTokenizer">WhitespaceTokenizer</a>,
 part of the Konfuzio SDK, is a foundational tool in natural language processing (NLP). It segments text into smaller
 units called tokens, using the white spaces between words as natural delimiters. This approach is simple, effective, and
 ideal for basic tokenization tasks.</p>
@@ -167,73 +165,89 @@ be visualized or used to extract BBox information.</p>
 </section>
 <section id="preview-of-result">
 <h4>Preview of Result<a class="headerlink" href="#preview-of-result" title="Permalink to this headline">¶</a></h4>
-<img src="https://github.com/konfuzio-ai/konfuzio-sdk/assets/2879188/5f7a8501-cd89-487d-a332-0703f3c35fc8" data-canonical-src="https://github.com/konfuzio-ai/konfuzio-sdk/assets/2879188/5f7a8501-cd89-487d-a332-0703f3c35fc8" width="200" height="400" />
+<p><span class="raw-html-m2r"><img src="https://github.com/konfuzio-ai/konfuzio-sdk/assets/2879188/5f7a8501-cd89-487d-a332-0703f3c35fc8" data-canonical-src="https://github.com/konfuzio-ai/konfuzio-sdk/assets/2879188/5f7a8501-cd89-487d-a332-0703f3c35fc8" width="200" height="400" /></span></p>
 </section>
 <section id="steps">
 <h4>Steps<a class="headerlink" href="#steps" title="Permalink to this headline">¶</a></h4>
-<p>.. collapse:: Full code</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_word_bboxes.py
-:language: python
-:start-after: start full word_bboxes
-:end-before: end full word_bboxes
-:dedent: 4</p>
-<br/>
-1. **Import necessary modules**:
-<p>.. literalinclude:: /sdk/boilerplates/test_word_bboxes.py
-:language: python
-:start-after: start import
-:end-before: end import
-:dedent: 4</p>
-<ol class="arabic" start="2">
+<details class="summary-full-code">
+<summary>Full code</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># start import</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.regex</span> <span class="kn">import</span> <span class="n">WhitespaceTokenizer</span>
+
+<span class="c1"># end import</span>
+
+<span class="c1"># start project</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
+<span class="c1"># end project</span>
+
+<span class="c1"># start document</span>
+<span class="n">document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
+<span class="c1"># end document</span>
+<span class="c1"># start copy</span>
+<span class="n">document</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
+<span class="c1"># end copy</span>
+<span class="c1"># start tokenize</span>
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">WhitespaceTokenizer</span><span class="p">()</span>
+<span class="n">document</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
+<span class="c1"># end tokenize</span>
+<span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">document</span><span class="o">.</span><span class="n">spans</span><span class="p">())</span> <span class="o">==</span> <span class="mi">309</span>
+<span class="c1"># start image</span>
+<span class="n">document</span><span class="o">.</span><span class="n">get_page_by_index</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">get_annotations_image</span><span class="p">(</span><span class="n">display_all</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1"># end image</span>
+<span class="c1"># start spans</span>
+<span class="n">span_bboxes</span> <span class="o">=</span> <span class="p">[</span><span class="n">span</span><span class="o">.</span><span class="n">bbox</span><span class="p">()</span> <span class="k">for</span> <span class="n">span</span> <span class="ow">in</span> <span class="n">document</span><span class="o">.</span><span class="n">spans</span><span class="p">()]</span>
+<span class="c1"># end spans</span>
+</pre></div>
+</div>
+</details><p><span class="raw-html-m2r"><br/></span></p>
+<ol class="arabic">
+<li><p><strong>Import necessary modules</strong>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.regex</span> <span class="kn">import</span> <span class="n">WhitespaceTokenizer</span>
+
+</pre></div>
+</div>
+</li>
 <li><p><strong>Initialize your Project</strong>:</p>
 <p>This involves creating a Project instance with the appropriate ID.</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_word_bboxes.py
-:language: python
-:start-after: start project
-:end-before: end project
-:dedent: 4</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
+</pre></div>
+</div>
 </li>
 <li><p><strong>Retrieve a Document from your Project</strong>:</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_word_bboxes.py
-:language: python
-:start-after: start document
-:end-before: end document
-:dedent: 4</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
+</pre></div>
+</div>
 </li>
 <li><p><strong>Create a copy of your Document without Annotations</strong>:</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_word_bboxes.py
-:language: python
-:start-after: start copy
-:end-before: end copy
-:dedent: 4</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
+</pre></div>
+</div>
 </li>
 <li><p><strong>Tokenize the Document</strong>:</p>
 <p>This process involves splitting the Document into word-level Spans using the <code class="docutils literal notranslate"><span class="pre">WhitespaceTokenizer</span></code>.</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_word_bboxes.py
-:language: python
-:start-after: start tokenize
-:end-before: end tokenize
-:dedent: 4</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tokenizer</span> <span class="o">=</span> <span class="n">WhitespaceTokenizer</span><span class="p">()</span>
+<span class="n">document</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
+</pre></div>
+</div>
 </li>
 <li><p><strong>Visualize all word-level Annotations</strong>:</p>
 <p>After getting the bounding box for all Spans, you might want to visually check the results to make sure the bounding
 boxes are correctly assigned. Here’s how you can do it:</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_word_bboxes.py
-:language: python
-:start-after: start image
-:end-before: end image
-:dedent: 4</p>
-<p>.. image:: /sdk/tutorials/tokenizers/word-bboxes.png</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span><span class="o">.</span><span class="n">get_page_by_index</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">get_annotations_image</span><span class="p">(</span><span class="n">display_all</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../../../_images/word-bboxes.png" src="../../../_images/word-bboxes.png" />
 <p>This will display an image of the Document with all word-level Annotations. The image may look a bit messy with all
 the Labels.</p>
 </li>
 <li><p><strong>Get bounding box for all Spans</strong>:</p>
 <p>You can retrieve bounding boxes for all word-level Spans using the following code:</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_word_bboxes.py
-:language: python
-:start-after: start spans
-:end-before: end spans
-:dedent: 4</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">span_bboxes</span> <span class="o">=</span> <span class="p">[</span><span class="n">span</span><span class="o">.</span><span class="n">bbox</span><span class="p">()</span> <span class="k">for</span> <span class="n">span</span> <span class="ow">in</span> <span class="n">document</span><span class="o">.</span><span class="n">spans</span><span class="p">()]</span>
+</pre></div>
+</div>
 <p>Each bounding box (<code class="docutils literal notranslate"><span class="pre">Bbox</span></code>) in the list corresponds to a specific word and is defined by four coordinates: x0 and y0
 specify the coordinates of the bottom left corner, while x1 and y1 mark the coordinates of the top right corner,
 thereby specifying the box’s position and dimensions on the Document Page.</p>
@@ -253,67 +267,93 @@ than relying on a basic <code class="docutils literal notranslate"><span class="
 <h3>Example Usage<a class="headerlink" href="#example-usage" title="Permalink to this headline">¶</a></h3>
 <p>In this example, you will see how to find regex expressions that match with occurrences of the “Lohnart” Label in the
 training data.</p>
-<p>.. collapse:: Full code</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_train_label_regex_tokenizer.py
-:language: python
-:start-after: start full training
-:end-before: end full training
-:dedent: 4</p>
-<br/>
-1. **Import necessary modules**:
-<p>.. literalinclude:: /sdk/boilerplates/test_train_label_regex_tokenizer.py
-:language: python
-:start-after: start import
-:end-before: end import
-:dedent: 4</p>
-<ol class="arabic" start="2">
+<details class="summary-full-code">
+<summary>Full code</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># start import</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.regex</span> <span class="kn">import</span> <span class="n">RegexTokenizer</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.base</span> <span class="kn">import</span> <span class="n">ListTokenizer</span>
+
+<span class="c1"># end import</span>
+
+<span class="c1"># start initialize</span>
+<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
+<span class="n">category</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_category_by_id</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_CATEGORY_ID</span><span class="p">)</span>
+<span class="c1"># end initialize</span>
+
+<span class="c1"># start listtokenizer</span>
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">ListTokenizer</span><span class="p">(</span><span class="n">tokenizers</span><span class="o">=</span><span class="p">[])</span>
+<span class="c1"># end listtokenizer</span>
+
+<span class="c1"># start label</span>
+<span class="n">label</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="s2">&quot;Lohnart&quot;</span><span class="p">)</span>
+<span class="c1"># end label</span>
+
+<span class="c1"># start train</span>
+<span class="k">for</span> <span class="n">regex</span> <span class="ow">in</span> <span class="n">label</span><span class="o">.</span><span class="n">find_regex</span><span class="p">(</span><span class="n">category</span><span class="o">=</span><span class="n">category</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">regex</span><span class="p">)</span>  <span class="c1"># to show how the regex can look, for instance: (?:(?P&lt;Label_861_N_672673_1638&gt;\d\d\d\d))[ ]{1,2}</span>
+    <span class="n">regex_tokenizer</span> <span class="o">=</span> <span class="n">RegexTokenizer</span><span class="p">(</span><span class="n">regex</span><span class="o">=</span><span class="n">regex</span><span class="p">)</span>
+    <span class="n">tokenizer</span><span class="o">.</span><span class="n">tokenizers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">regex_tokenizer</span><span class="p">)</span>
+<span class="c1"># end train</span>
+
+<span class="c1"># start use</span>
+<span class="c1"># You can then use it to create an Annotation for every matching string in a Document.</span>
+<span class="n">document</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
+<span class="n">tokenizer</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
+<span class="c1"># end use</span>
+</pre></div>
+</div>
+</details><p><span class="raw-html-m2r"><br/></span></p>
+<ol class="arabic">
+<li><p><strong>Import necessary modules</strong>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.regex</span> <span class="kn">import</span> <span class="n">RegexTokenizer</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.base</span> <span class="kn">import</span> <span class="n">ListTokenizer</span>
+
+</pre></div>
+</div>
+</li>
 <li><p><strong>Initialize your Project and retrieve the Category</strong>:</p>
 <p>This involves creating a Project instance with the appropriate Project ID and retrieving the relevant Category with
 the Category ID.</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_train_label_regex_tokenizer.py
-:language: python
-:start-after: # start initialize
-:end-before: end initialize
-:dedent: 4</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
+<span class="n">category</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_category_by_id</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_CATEGORY_ID</span><span class="p">)</span>
+</pre></div>
+</div>
 </li>
 <li><p><strong>Initialize the ListTokenizer</strong></p>
 <p>The <code class="docutils literal notranslate"><span class="pre">ListTokenizer</span></code> will hold all the <code class="docutils literal notranslate"><span class="pre">RegexTokenizers</span></code> found for the Label.</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_train_label_regex_tokenizer.py
-:language: python
-:start-after: start listtokenizer
-:end-before: end listtokenizer
-:dedent: 4</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tokenizer</span> <span class="o">=</span> <span class="n">ListTokenizer</span><span class="p">(</span><span class="n">tokenizers</span><span class="o">=</span><span class="p">[])</span>
+</pre></div>
+</div>
 </li>
 <li><p><strong>Retrieve the “Lohnart” Label</strong></p>
 <p>We retrieve the Label using its name. If you have its ID, you could also use the <code class="docutils literal notranslate"><span class="pre">Project.get_label_by_id</span></code> method.</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_train_label_regex_tokenizer.py
-:language: python
-:start-after: start label
-:end-before: end label
-:dedent: 4</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">label</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="s2">&quot;Lohnart&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 </li>
 <li><p><strong>Find Label Regexes and Create RegexTokenizers</strong></p>
 <p>We then use <code class="docutils literal notranslate"><span class="pre">Label.find_regex</span></code> to algorithmically search for the best fitting regexes matching the Annotations associated with this Label.</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_train_label_regex_tokenizer.py
-:language: python
-:start-after: start train
-:end-before: end train
-:dedent: 4</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">regex</span> <span class="ow">in</span> <span class="n">label</span><span class="o">.</span><span class="n">find_regex</span><span class="p">(</span><span class="n">category</span><span class="o">=</span><span class="n">category</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">regex</span><span class="p">)</span>  <span class="c1"># to show how the regex can look, for instance: (?:(?P&lt;Label_861_N_672673_1638&gt;\d\d\d\d))[ ]{1,2}</span>
+    <span class="n">regex_tokenizer</span> <span class="o">=</span> <span class="n">RegexTokenizer</span><span class="p">(</span><span class="n">regex</span><span class="o">=</span><span class="n">regex</span><span class="p">)</span>
+    <span class="n">tokenizer</span><span class="o">.</span><span class="n">tokenizers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">regex_tokenizer</span><span class="p">)</span>
+</pre></div>
+</div>
 </li>
 <li><p><strong>Use the new Tokenizer to Create New Annotations</strong></p>
 <p>Finally, we can use the Tokenizer to create new <code class="docutils literal notranslate"><span class="pre">NO_LABEL</span></code> Annotations which match with the regex patterns found.</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_train_label_regex_tokenizer.py
-:language: python
-:start-after: start use
-:end-before: end use
-:dedent: 4</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># You can then use it to create an Annotation for every matching string in a Document.</span>
+<span class="n">document</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
+<span class="n">tokenizer</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
+</pre></div>
+</div>
 </li>
 </ol>
-<p>.. _paragraph-tokenizer-tutorial:</p>
 </section>
 </section>
 <section id="paragraph-tokenizer">
-<h2>Paragraph Tokenizer<a class="headerlink" href="#paragraph-tokenizer" title="Permalink to this headline">¶</a></h2>
+<span id="paragraph-tokenizer-tutorial"></span><h2>Paragraph Tokenizer<a class="headerlink" href="#paragraph-tokenizer" title="Permalink to this headline">¶</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">ParagraphTokenizer</span></code> class is a specialized <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#tokenizers">Tokenizer</a>
 designed to create <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#annotation">Annotations</a> splitting a Document into
 meaningful sections. It provides two modes of operation: <code class="docutils literal notranslate"><span class="pre">detectron</span></code> and <code class="docutils literal notranslate"><span class="pre">line_distance</span></code>.</p>
@@ -347,12 +387,24 @@ If set to None, the Tokenizer uses the intelligently calculated height threshold
 </ul>
 <p>For a quicker result with a relatively simpler, single-column Document, you can use the <code class="docutils literal notranslate"><span class="pre">ParagraphTokenizer</span></code> in
 <code class="docutils literal notranslate"><span class="pre">line_distance</span></code> mode like this:</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_paragraph_tokenizer.py
-:language: python
-:start-after: start init2
-:end-before: end init2
-:dedent: 4</p>
-<p>.. image:: /_static/img/line_distance_paragraph_tokenizer.png</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.paragraph_and_sentence</span> <span class="kn">import</span> <span class="n">ParagraphTokenizer</span>
+
+<span class="c1"># initialize a Project and fetch a Document to tokenize</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
+
+<span class="n">document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
+
+<span class="c1"># create the ParagraphTokenizer and tokenize the Document</span>
+
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">ParagraphTokenizer</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;line_distance&#39;</span><span class="p">)</span>
+
+<span class="n">document</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
+
+<span class="n">document</span><span class="o">.</span><span class="n">get_page_by_index</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">get_annotations_image</span><span class="p">(</span><span class="n">display_all</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># display_all to show NO_LABEL Annotations</span>
+</pre></div>
+</div>
+<img alt="../../../_images/line_distance_paragraph_tokenizer.png" src="../../../_images/line_distance_paragraph_tokenizer.png" />
 <p>While the line_distance approach offers efficient Document segmentation for simpler formats, it can struggle with complex
 layouts and diverse Document elements. The computer vision approach, using tools like Detectron2, adapts to a wide range
 of layouts and provides precise segmentation even in complex scenarios. Although it may require more processing power,
@@ -376,13 +428,25 @@ value is False.</p></li>
 </ul>
 <p>To tokenize a Document into paragraphs using the <code class="docutils literal notranslate"><span class="pre">ParagraphTokenizer</span></code> in <code class="docutils literal notranslate"><span class="pre">detectron</span></code> mode and the
 <code class="docutils literal notranslate"><span class="pre">create_detectron_labels</span></code> option to use the Labels provided by our Detectron model, you can use the following code:</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_paragraph_tokenizer.py
-:language: python
-:start-after: start init1
-:end-before: end init1
-:dedent: 4</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.paragraph_and_sentence</span> <span class="kn">import</span> <span class="n">ParagraphTokenizer</span>
+
+<span class="c1"># initialize a Project and fetch a Document to tokenize</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
+
+<span class="n">document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
+
+<span class="c1"># create the ParagraphTokenizer and tokenize the Document</span>
+
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">ParagraphTokenizer</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;detectron&#39;</span><span class="p">,</span> <span class="n">create_detectron_labels</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">document</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
+
+<span class="n">document</span><span class="o">.</span><span class="n">get_page_by_index</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">get_annotations_image</span><span class="p">()</span>
+</pre></div>
+</div>
 <p>The resulting Annotations will look like this:</p>
-<p>.. image:: /_static/img/paragraph_tokenizer.png</p>
+<img alt="../../../_images/paragraph_tokenizer.png" src="../../../_images/paragraph_tokenizer.png" />
 <p>Once you have a grasp on how to implement and utilize the ParagraphTokenizer, you open a new world of possibilities.
 The segmentation of Documents doesn’t stop at the paragraph level. On the contrary, it is just the beginning. Let’s
 embark on a journey to dive deeper into the Document’s structure and semantics with the SentenceTokenizer.</p>
@@ -391,21 +455,33 @@ embark on a journey to dive deeper into the Document’s structure and semantics
 </section>
 <section id="sentence-tokenizer">
 <h2>Sentence Tokenizer<a class="headerlink" href="#sentence-tokenizer" title="Permalink to this headline">¶</a></h2>
-<p>The <code class="docutils literal notranslate"><span class="pre">SentenceTokenizer</span></code> class, akin to the :ref:<code class="docutils literal notranslate"><span class="pre">ParagraphTokenizer&lt;paragraph-tokenizer-tutorial&gt;</span></code>,
+<p>The <code class="docutils literal notranslate"><span class="pre">SentenceTokenizer</span></code> class, akin to the <a class="reference internal" href="#paragraph-tokenizer-tutorial"><span class="std std-ref">ParagraphTokenizer</span></a>,
 is a specialized Tokenizer designed to split a Document into sentences. It also provides two modes of operation:
 <code class="docutils literal notranslate"><span class="pre">detectron</span></code> and <code class="docutils literal notranslate"><span class="pre">line_distance</span></code>. And just like the <code class="docutils literal notranslate"><span class="pre">ParagraphTokenizer</span></code>, you can customize the behavior of the Tokenizer
 by passing using the <code class="docutils literal notranslate"><span class="pre">mode</span></code>, <code class="docutils literal notranslate"><span class="pre">line_height_ratio</span></code>, <code class="docutils literal notranslate"><span class="pre">height</span></code> and <code class="docutils literal notranslate"><span class="pre">create_detectron_labels</span></code> parameters. The distinguishing
 feature of the <code class="docutils literal notranslate"><span class="pre">SentenceTokenizer</span></code> is that it will split the Document into sentences, not paragraphs.</p>
-<section id="id1">
-<h3>Example Usage<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<section id="id3">
+<h3>Example Usage<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
 <p>To use it, you can use the following code:</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_sentence_tokenizer.py
-:language: python
-:start-after: start import
-:end-before: end import
-:dedent: 4</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.paragraph_and_sentence</span> <span class="kn">import</span> <span class="n">SentenceTokenizer</span>
+
+<span class="c1"># initialize a Project and fetch a Document to tokenize</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
+
+<span class="n">document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
+
+<span class="c1"># create the SentenceTokenizer and tokenize the Document</span>
+
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">SentenceTokenizer</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;detectron&#39;</span><span class="p">)</span>
+
+<span class="n">document</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
+
+<span class="n">document</span><span class="o">.</span><span class="n">get_page_by_index</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">get_annotations_image</span><span class="p">(</span><span class="n">display_all</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>The resulting Annotations will look like this:</p>
-<p>.. image:: /_static/img/sentence_tokenizer.png</p>
+<img alt="../../../_images/sentence_tokenizer.png" src="../../../_images/sentence_tokenizer.png" />
 </section>
 </section>
 <section id="how-to-choose-which-tokenizer-to-use">
@@ -437,11 +513,22 @@ can he helpful in this regard.</p>
 RegexTokenizer is suitable at finding the Spans of a Label, or what Spans might have been annotated wrong. Say, you
 have a number of Annotations assigned to the <code class="docutils literal notranslate"><span class="pre">Austellungsdatum</span></code> Label and want to know which Spans would not be found
 when using the Whitespace Tokenizer. You can follow this example to find all the relevant Spans.</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_spans_not_found_label.py
-:language: python
-:start-after: start spans
-:end-before: end spans
-:dedent: 4</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.regex</span> <span class="kn">import</span> <span class="n">WhitespaceTokenizer</span>
+
+<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
+<span class="n">category</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">categories</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">WhitespaceTokenizer</span><span class="p">()</span>
+
+<span class="n">label</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="s1">&#39;Austellungsdatum&#39;</span><span class="p">)</span>
+
+<span class="n">spans_not_found</span> <span class="o">=</span> <span class="n">label</span><span class="o">.</span><span class="n">spans_not_found_by_tokenizer</span><span class="p">(</span><span class="n">tokenizer</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="p">[</span><span class="n">category</span><span class="p">])</span>
+
+<span class="k">for</span> <span class="n">span</span> <span class="ow">in</span> <span class="n">spans_not_found</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">span</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">span</span><span class="o">.</span><span class="n">offset_string</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 </section>
 </section>
 </section>

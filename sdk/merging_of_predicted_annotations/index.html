@@ -2,13 +2,13 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+<meta content="Documentation of the ExtractionAI merge logic." name="description" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Merging of predicted Annotations &mdash; Konfuzio  documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="shortcut icon" href="../../_static/full_green_square.png"/>
     <link rel="canonical" href="https://dev.konfuzio.com/sdk/merging_of_predicted_annotations/index.html" />
@@ -96,9 +96,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <p>.. meta::
-:description: Documentation of the ExtractionAI merge logic.</p>
-<section id="merging-of-predicted-annotations">
+  <section id="merging-of-predicted-annotations">
 <h1>Merging of predicted Annotations<a class="headerlink" href="#merging-of-predicted-annotations" title="Permalink to this headline">¶</a></h1>
 <p>Our extraction AI runs a merging logic at two steps in the extraction process. The first is a horizontal merging of Spans right after the Label classifier. This can be particularly useful when using the <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#konfuzio_sdk.tokenizer.regex.WhitespaceTokenizer">Whitespace tokenizer</a> as it can find Spans containing spaces. The second merging logic is a vertical merging of Spans into a single multiline Annotation. Checkout the <a class="reference external" href="https://dev.konfuzio.com/sdk/contribution.html#architecture-sdk-to-server">architecture diagram</a> for more detail.</p>
 <section id="horizontal-merge">
@@ -115,72 +113,96 @@
 <li><p>The <a class="reference external" href="https://dev.konfuzio.com/web/api.html#supported-data-normalization">Label type</a> is not one of the following: ‘Number’, ‘Positive Number’, ‘Percentage’, ‘Date’
 OR the resulting merging create a Span <a class="reference external" href="https://dev.konfuzio.com/web/api.html#supported-data-normalization">normalizable</a> to the same type</p></li>
 </ol>
-<table class="colwidths-auto docutils align-default">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
 <thead>
-<tr class="row-odd"><th class="text-center head"><p>Input</p></th>
-<th class="text-center head"><p>Able to merge?</p></th>
-<th class="text-center head"><p>Reason</p></th>
-<th class="text-center head"><p>Result</p></th>
+<tr class="row-odd"><th class="head"><p>Input</p></th>
+<th class="head"><p>Able to merge?</p></th>
+<th class="head"><p>Reason</p></th>
+<th class="head"><p>Result</p></th>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td class="text-center"><p><span style="background-color: #ff726f">Text</span><span>  </span><span style="background-color: #ff726f">Annotation</span></p></td>
-<td class="text-center"><p>yes</p></td>
-<td class="text-center"><p>/</p></td>
-<td class="text-center"><p><span style="background-color: #ff726f">Text</span><span style="background-color: #ff726f">  </span><span style="background-color: #ff726f">Annotation</span></p></td>
+<tr class="row-even"><td><p><span class="raw-html-m2r"><span style="background-color: #ff726f">Text</span></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span></p></td>
+<td><p>yes</p></td>
+<td><p>/</p></td>
+<td><p><span class="raw-html-m2r"><span style="background-color: #ff726f">Text</span></span><span class="raw-html-m2r"><span style="background-color: #ff726f">&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span></p></td>
 </tr>
-<tr class="row-odd"><td class="text-center"><p><span style="background-color: #ff726f">Text</span><span>      </span><span style="background-color: #ff726f">Annotation</span></p></td>
-<td class="text-center"><p>no</p></td>
-<td class="text-center"><p>5.</p></td>
-<td class="text-center"><p><span style="background-color: #ff726f">Text</span><span>      </span><span style="background-color: #ff726f">Annotation</span></p></td>
+<tr class="row-odd"><td><p><span class="raw-html-m2r"><span style="background-color: #ff726f">Text</span></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span></p></td>
+<td><p>no</p></td>
+<td><ol class="arabic simple" start="5">
+<li></li>
+</ol>
+</td>
+<td><p><span class="raw-html-m2r"><span style="background-color: #ff726f">Text</span></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span></p></td>
 </tr>
-<tr class="row-even"><td class="text-center"><p><span style="background-color: #ff726f">Text</span><span> . </span><span style="background-color: #ff726f">Annotation</span></p></td>
-<td class="text-center"><p>no</p></td>
-<td class="text-center"><p>4.</p></td>
-<td class="text-center"><p><span style="background-color: #ff726f">Text</span><span> . </span><span style="background-color: #ff726f">Annotation</span></p></td>
+<tr class="row-even"><td><p><span class="raw-html-m2r"><span style="background-color: #ff726f">Text</span></span><span class="raw-html-m2r"><span>&nbsp;.&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span></p></td>
+<td><p>no</p></td>
+<td><ol class="arabic simple" start="4">
+<li></li>
+</ol>
+</td>
+<td><p><span class="raw-html-m2r"><span style="background-color: #ff726f">Text</span></span><span class="raw-html-m2r"><span>&nbsp;.&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span></p></td>
 </tr>
-<tr class="row-odd"><td class="text-center"><p><span style="background-color: #ff726f">Annotation</span><span> </span><span style="background-color: #86c5da">7</span></p></td>
-<td class="text-center"><p>no</p></td>
-<td class="text-center"><p>1.</p></td>
-<td class="text-center"><p><span style="background-color: #ff726f">Annotation</span><span> </span><span style="background-color: #86c5da">7</span></p></td>
+<tr class="row-odd"><td><p><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span><span class="raw-html-m2r"><span>&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #86c5da">7</span></span></p></td>
+<td><p>no</p></td>
+<td><ol class="arabic simple">
+<li></li>
+</ol>
+</td>
+<td><p><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span><span class="raw-html-m2r"><span>&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #86c5da">7</span></span></p></td>
 </tr>
-<tr class="row-even"><td class="text-center"><p><span style="background-color: #86c5da">34</span><span>    </span><span style="background-color: #86c5da">98</span></p></td>
-<td class="text-center"><p>no</p></td>
-<td class="text-center"><p>6. (<a class="reference external" href="https://dev.konfuzio.com/web/api.html#numbers">see here</a>)</p></td>
-<td class="text-center"><p><span style="background-color: #86c5da">34</span><span>    </span><span style="background-color: #86c5da">98</span></p></td>
+<tr class="row-even"><td><p><span class="raw-html-m2r"><span style="background-color: #86c5da">34</span></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #86c5da">98</span></span></p></td>
+<td><p>no</p></td>
+<td><ol class="arabic simple" start="6">
+<li><p>(<a class="reference external" href="https://dev.konfuzio.com/web/api.html#numbers">see here</a>)</p></li>
+</ol>
+</td>
+<td><p><span class="raw-html-m2r"><span style="background-color: #86c5da">34</span></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #86c5da">98</span></span></p></td>
 </tr>
-<tr class="row-odd"><td class="text-center"><p><span style="background-color: #86c5da">34</span><span>  </span><span style="background-color: #86c5da">98</span></p></td>
-<td class="text-center"><p>yes</p></td>
-<td class="text-center"><p>/</p></td>
-<td class="text-center"><p><span style="background-color: #86c5da">34</span><span style="background-color: #86c5da">  </span><span style="background-color: #86c5da">98</span></p></td>
+<tr class="row-odd"><td><p><span class="raw-html-m2r"><span style="background-color: #86c5da">34</span></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #86c5da">98</span></span></p></td>
+<td><p>yes</p></td>
+<td><p>/</p></td>
+<td><p><span class="raw-html-m2r"><span style="background-color: #86c5da">34</span></span><span class="raw-html-m2r"><span style="background-color: #86c5da">&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #86c5da">98</span></span></p></td>
 </tr>
-<tr class="row-even"><td class="text-center"><p><span style="background-color: #34df00">November</span><span> </span><span style="background-color: #34df00">2022</span></p></td>
-<td class="text-center"><p>yes</p></td>
-<td class="text-center"><p>/</p></td>
-<td class="text-center"><p><span style="background-color: #34df00">November</span><span style="background-color: #34df00"> </span><span style="background-color: #34df00">2022</span></p></td>
+<tr class="row-even"><td><p><span class="raw-html-m2r"><span style="background-color: #34df00">November</span></span><span class="raw-html-m2r"><span>&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #34df00">2022</span></span></p></td>
+<td><p>yes</p></td>
+<td><p>/</p></td>
+<td><p><span class="raw-html-m2r"><span style="background-color: #34df00">November</span></span><span class="raw-html-m2r"><span style="background-color: #34df00">&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #34df00">2022</span></span></p></td>
 </tr>
-<tr class="row-odd"><td class="text-center"><p><span style="background-color: #34df00">Novamber</span><span> </span><span style="background-color: #34df00">2022</span></p></td>
-<td class="text-center"><p>no</p></td>
-<td class="text-center"><p>6. (<a class="reference external" href="https://dev.konfuzio.com/web/api.html#date-values">see here</a>)</p></td>
-<td class="text-center"><p><span style="background-color: #34df00">Novamber</span><span> </span><span style="background-color: #34df00">2022</span></p></td>
+<tr class="row-odd"><td><p><span class="raw-html-m2r"><span style="background-color: #34df00">Novamber</span></span><span class="raw-html-m2r"><span>&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #34df00">2022</span></span></p></td>
+<td><p>no</p></td>
+<td><ol class="arabic simple" start="6">
+<li><p>(<a class="reference external" href="https://dev.konfuzio.com/web/api.html#date-values">see here</a>)</p></li>
+</ol>
+</td>
+<td><p><span class="raw-html-m2r"><span style="background-color: #34df00">Novamber</span></span><span class="raw-html-m2r"><span>&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #34df00">2022</span></span></p></td>
 </tr>
-<tr class="row-even"><td class="text-center"><p><span style="background-color: #ff8c00">34</span><span>  </span><span style="background-color: #ff8c00">98%</span></p></td>
-<td class="text-center"><p>yes</p></td>
-<td class="text-center"><p>/</p></td>
-<td class="text-center"><p><span style="background-color: #ff8c00">34</span><span style="background-color: #ff8c00">  </span><span style="background-color: #ff8c00">98%</span></p></td>
+<tr class="row-even"><td><p><span class="raw-html-m2r"><span style="background-color: #ff8c00">34</span></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #ff8c00">98%</span></span></p></td>
+<td><p>yes</p></td>
+<td><p>/</p></td>
+<td><p><span class="raw-html-m2r"><span style="background-color: #ff8c00">34</span></span><span class="raw-html-m2r"><span style="background-color: #ff8c00">&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #ff8c00">98%</span></span></p></td>
 </tr>
-<tr class="row-odd"><td class="text-center"><p><span style="background-color: #ff8c00">34</span><span>  </span><span style="background-color: #dcdcdc">98%</span></p></td>
-<td class="text-center"><p>no</p></td>
-<td class="text-center"><p>2.</p></td>
-<td class="text-center"><p><span style="background-color: #ff8c00">34</span><span>  </span><span style="background-color: #dcdcdc">98%</span></p></td>
+<tr class="row-odd"><td><p><span class="raw-html-m2r"><span style="background-color: #ff8c00">34</span></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #dcdcdc">98%</span></span></p></td>
+<td><p>no</p></td>
+<td><ol class="arabic simple" start="2">
+<li></li>
+</ol>
+</td>
+<td><p><span class="raw-html-m2r"><span style="background-color: #ff8c00">34</span></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #dcdcdc">98%</span></span></p></td>
 </tr>
 </tbody>
 </table>
-<p>Label Type: <span style="background-color: #ff726f">Text</span><br>
-Label Type: <span style="background-color: #86c5da">Number</span><br>
-Label Type: <span style="background-color: #34df00">Date</span><br>
-Label Type: <span style="background-color: #ff8c00">Percentage</span><br>
-Label Type: <span style="background-color: #dcdcdc">NO LABEL/Below Label threshold</span></p>
+<p>Label Type: <span class="raw-html-m2r"><span style="background-color: #ff726f">Text</span></span><span class="raw-html-m2r"><br></span>
+Label Type: <span class="raw-html-m2r"><span style="background-color: #86c5da">Number</span></span><span class="raw-html-m2r"><br></span>
+Label Type: <span class="raw-html-m2r"><span style="background-color: #34df00">Date</span></span><span class="raw-html-m2r"><br></span>
+Label Type: <span class="raw-html-m2r"><span style="background-color: #ff8c00">Percentage</span></span><span class="raw-html-m2r"><br></span>
+Label Type: <span class="raw-html-m2r"><span style="background-color: #dcdcdc">NO LABEL/Below Label threshold</span></span></p>
 </section>
 <section id="vertical-merge">
 <h2>Vertical Merge<a class="headerlink" href="#vertical-merge" title="Permalink to this headline">¶</a></h2>
@@ -195,73 +217,91 @@ Label Type: <span style="background-color: #dcdcdc">NO LABEL/Below Label thresho
 <li><p>Spans are on consecutive lines</p></li>
 <li><p>Merged lower Span belongs to an Annotation in the same AnnotationSet, OR to an AnnotationSet with only a single Annotation</p></li>
 </ol>
-<table class="colwidths-auto docutils align-default">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
 <thead>
-<tr class="row-odd"><th class="text-center head"><p>Input</p></th>
-<th class="text-center head"><p>Able to merge?</p></th>
-<th class="text-center head"><p>Reason</p></th>
+<tr class="row-odd"><th class="head"><p>Input</p></th>
+<th class="head"><p>Able to merge?</p></th>
+<th class="head"><p>Reason</p></th>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td class="text-center"><p><span style="background-color: #ff726f">Text</span><br><span style="background-color: #ff726f">Annotation</span></p></td>
-<td class="text-center"><p>yes</p></td>
-<td class="text-center"><p>/</p></td>
+<tr class="row-even"><td><p><span class="raw-html-m2r"><span style="background-color: #ff726f">Text</span></span><span class="raw-html-m2r"><br></span><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span></p></td>
+<td><p>yes</p></td>
+<td><p>/</p></td>
 </tr>
-<tr class="row-odd"><td class="text-center"><p><span style="background-color: #ff726f">Annotation</span><br><span style="background-color: #86c5da">42</span></p></td>
-<td class="text-center"><p>no</p></td>
-<td class="text-center"><p>2.</p></td>
+<tr class="row-odd"><td><p><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span><span class="raw-html-m2r"><br></span><span class="raw-html-m2r"><span style="background-color: #86c5da">42</span></span></p></td>
+<td><p>no</p></td>
+<td><ol class="arabic simple" start="2">
+<li></li>
+</ol>
+</td>
 </tr>
-<tr class="row-even"><td class="text-center"><p><span style="background-color: #ff726f">Text</span><span> </span><span style="background-color: #dcdcdc">more text</span><br><span>          </span><span style="background-color: #ff726f">Annotation</span></p></td>
-<td class="text-center"><p>no</p></td>
-<td class="text-center"><p>4.</p></td>
+<tr class="row-even"><td><p><span class="raw-html-m2r"><span style="background-color: #ff726f">Text</span></span><span class="raw-html-m2r"><span>&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #dcdcdc">more text</span></span><span class="raw-html-m2r"><br></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span></p></td>
+<td><p>no</p></td>
+<td><ol class="arabic simple" start="4">
+<li></li>
+</ol>
+</td>
 </tr>
-<tr class="row-odd"><td class="text-center"><p><span style="background-color: #dcdcdc">Some random text</span><span> </span><span style="background-color: #ff726f">Text</span><br><span style="background-color: #ff726f">Annotation</span></p></td>
-<td class="text-center"><p>yes</p></td>
-<td class="text-center"><p>/</p></td>
+<tr class="row-odd"><td><p><span class="raw-html-m2r"><span style="background-color: #dcdcdc">Some random text</span></span><span class="raw-html-m2r"><span>&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #ff726f">Text</span></span><span class="raw-html-m2r"><br></span><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span></p></td>
+<td><p>yes</p></td>
+<td><p>/</p></td>
 </tr>
-<tr class="row-even"><td class="text-center"><p><span style="background-color: #dcdcdc">Some random text</span><span> </span><span style="background-color: #ff726f">Text</span><span>  </span><span style="background-color: #dcdcdc">.</span><br><span style="background-color: #ff726f">Annotation</span></p></td>
-<td class="text-center"><p>no</p></td>
-<td class="text-center"><p>4.</p></td>
+<tr class="row-even"><td><p><span class="raw-html-m2r"><span style="background-color: #dcdcdc">Some random text</span></span><span class="raw-html-m2r"><span>&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #ff726f">Text</span></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #dcdcdc">.</span></span><span class="raw-html-m2r"><br></span><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span></p></td>
+<td><p>no</p></td>
+<td><ol class="arabic simple" start="4">
+<li></li>
+</ol>
+</td>
 </tr>
-<tr class="row-odd"><td class="text-center"><p><span style="background-color: #ff726f">Text</span><span> </span><span style="background-color: #dcdcdc">more text</span><br><span>    </span><span style="background-color: #ff726f">Annotation</span><br><span>        </span><span style="background-color: #ff726f">42</span></p></td>
-<td class="text-center"><p>yes</p></td>
-<td class="text-center"><p>/</p></td>
+<tr class="row-odd"><td><p><span class="raw-html-m2r"><span style="background-color: #ff726f">Text</span></span><span class="raw-html-m2r"><span>&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #dcdcdc">more text</span></span><span class="raw-html-m2r"><br></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span><span class="raw-html-m2r"><br></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #ff726f">42</span></span></p></td>
+<td><p>yes</p></td>
+<td><p>/</p></td>
 </tr>
-<tr class="row-even"><td class="text-center"><p><span style="background-color: #ff726f">Text</span><span> </span><br><span>        </span><span style="background-color: #dcdcdc">more text</span><span>    </span><br><span>   </span><span style="background-color: #ff726f">Annotation</span></p></td>
-<td class="text-center"><p>no</p></td>
-<td class="text-center"><p>6.</p></td>
+<tr class="row-even"><td><p><span class="raw-html-m2r"><span style="background-color: #ff726f">Text</span></span><span class="raw-html-m2r"><span>&nbsp;</span></span><span class="raw-html-m2r"><br></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #dcdcdc">more text</span></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><br></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span></p></td>
+<td><p>no</p></td>
+<td><ol class="arabic simple" start="6">
+<li></li>
+</ol>
+</td>
 </tr>
-<tr class="row-odd"><td class="text-center"><p><span style="background-color: #ff726f">Annotation</span><span>  </span><span style="background-color: #86c5da">Nb.</span><br><span>                      </span><span style="background-color: #86c5da">42</span></p></td>
-<td class="text-center"><p>yes</p></td>
-<td class="text-center"><p><span>*</span></p></td>
+<tr class="row-odd"><td><p><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #86c5da">Nb.</span></span><span class="raw-html-m2r"><br></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #86c5da">42</span></span></p></td>
+<td><p>yes</p></td>
+<td><p><span class="raw-html-m2r"><span>*</span></span></p></td>
 </tr>
-<tr class="row-even"><td class="text-center"><p><span style="background-color: #ff726f">Annotation</span><span>  </span><span style="background-color: #86c5da">41</span><br><span style="background-color: #ff726f">Annotation</span><span>  </span><span style="background-color: #86c5da">42</span></p></td>
-<td class="text-center"><p>no</p></td>
-<td class="text-center"><p>7. <span>**</span></p></td>
+<tr class="row-even"><td><p><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #86c5da">41</span></span><span class="raw-html-m2r"><br></span><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #86c5da">42</span></span></p></td>
+<td><p>no</p></td>
+<td><ol class="arabic simple" start="7">
+<li><p><span class="raw-html-m2r"><span>**</span></span></p></li>
+</ol>
+</td>
 </tr>
 </tbody>
 </table>
-<p><span>* The bottom Annotation is alone in its AnnotationSet and therefore can be merged.</span><br>
-<span>** The Annotations on each line have been grouped into their own AnnotationSets and are not merged.</span></p>
-<p><span style="background-color: #ff726f">Label 1</span><br>
-<span style="background-color: #86c5da">Label 2</span><br>
-<span style="background-color: #dcdcdc">NO LABEL/Below Label threshold</span></p>
+<p><span class="raw-html-m2r"><span>* The bottom Annotation is alone in its AnnotationSet and therefore can be merged.</span></span><span class="raw-html-m2r"><br></span>
+<span class="raw-html-m2r"><span>** The Annotations on each line have been grouped into their own AnnotationSets and are not merged.</span></span></p>
+<p><span class="raw-html-m2r"><span style="background-color: #ff726f">Label 1</span></span><span class="raw-html-m2r"><br></span>
+<span class="raw-html-m2r"><span style="background-color: #86c5da">Label 2</span></span><span class="raw-html-m2r"><br></span>
+<span class="raw-html-m2r"><span style="background-color: #dcdcdc">NO LABEL/Below Label threshold</span></span></p>
 </section>
 <section id="horizontal-and-vertical-merge-with-the-paragraph-and-sentence-tokenizers">
 <h2>Horizontal and Vertical Merge with the Paragraph and Sentence Tokenizers<a class="headerlink" href="#horizontal-and-vertical-merge-with-the-paragraph-and-sentence-tokenizers" title="Permalink to this headline">¶</a></h2>
 <p>When using the <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#paragraph-tokenizer">Paragraph</a> or <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#sentence-tokenizer">Sentence Tokenizer</a> together with our <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#extraction-ai">Extraction AI model</a>, we do not use the rule based vertical and horizontal merge logic above, and instead use the sentence/paragraph segmentation provided by the Tokenizer.</p>
 <p>The logic is as follows:</p>
-<div class="highlight-mermaid notranslate"><div class="highlight"><pre><span></span>
-   graph TD
-      A[Virtual Document] --&gt;|Paragraph/Sentence Tokenizer|B(Document_A with NO_LABEL\n Paragraph/Sentence Annotations)
-      B --&gt; |RFExtractionAI feature extraction|C(Span features)
-      C --&gt; |RFExtractionAI labeling|D(Labeled Spans)
-      D --&gt; |extraction_result_to_document |E(Document B with labeled single-Span Annotations)
-      E --&gt; |&quot;RFExtractionAI().merge_vertical_like(Document_B, Document_A)&quot; |F(Document_B with labeled multi-line Annotations)
-</pre></div>
-</div>
-<p>And here’s an illustrated example of the merge logic in action:</p>
-<p>.. image:: /_static/img/merge_docs_gif.gif</p>
+<div class="mermaid">
+            graph TD
+   A[Virtual Document] --&gt;|Paragraph/Sentence Tokenizer|B(Document_A with NO_LABEL\n Paragraph/Sentence Annotations)
+   B --&gt; |RFExtractionAI feature extraction|C(Span features)
+   C --&gt; |RFExtractionAI labeling|D(Labeled Spans)
+   D --&gt; |extraction_result_to_document |E(Document B with labeled single-Span Annotations)
+   E --&gt; |&quot;RFExtractionAI().merge_vertical_like(Document_B, Document_A)&quot; |F(Document_B with labeled multi-line Annotations)
+        </div><p>And here’s an illustrated example of the merge logic in action:</p>
+<img alt="../../_images/merge_docs_gif.gif" src="../../_images/merge_docs_gif.gif" />
 </section>
 </section>
 

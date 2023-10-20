@@ -8,7 +8,6 @@
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" type="text/css" />
       <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
     <link rel="shortcut icon" href="../_static/full_green_square.png"/>
     <link rel="canonical" href="https://dev.konfuzio.com/dvui/explanations.html" />
@@ -104,7 +103,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#how-to-customize-the-document-validation-ui">How to customize the Document Validation UI?</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#how-to-add-the-custom-variables-to-your-project">How to add the custom variables to your project?</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id1">HTML</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id4">HTML</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#css-file">CSS file</a></li>
 </ul>
 </li>
@@ -141,9 +140,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <p>.. meta::
-:description: this section explains the different user and mode options available in the Document Validation UI</p>
-<section id="explanations">
+  <section id="explanations">
 <h1>Explanations<a class="headerlink" href="#explanations" title="Permalink to this headline">¶</a></h1>
 <section id="managing-users-in-the-konfuzio-document-validation-ui">
 <h2>Managing users in the Konfuzio Document Validation UI<a class="headerlink" href="#managing-users-in-the-konfuzio-document-validation-ui" title="Permalink to this headline">¶</a></h2>
@@ -158,13 +155,13 @@
 <p>The Konfuzio Document Validation UI can be configured to be run as Read Only or Full Mode:</p>
 <section id="read-only-mode">
 <h3>Read Only Mode<a class="headerlink" href="#read-only-mode" title="Permalink to this headline">¶</a></h3>
-<p>This is the default mode of the app. In this mode, you will have a sample Document with Annotations that you can only preview. Unless configured, it uses the default API endpoint at https://app.konfuzio.com and no user account is needed.</p>
+<p>This is the default mode of the app. In this mode, you will have a sample Document with Annotations that you can only preview. Unless configured, it uses the default API endpoint at <a class="reference external" href="https://app.konfuzio.com">https://app.konfuzio.com</a> and no user account is needed.</p>
 </section>
 <section id="full-mode">
 <h3>Full Mode<a class="headerlink" href="#full-mode" title="Permalink to this headline">¶</a></h3>
-<p>If you want to run the widget in full mode to be able to interact with the Document by editing Annotations, Document Pages, and other functionalities, you will need to have a user account created (more information in our <span class="xref myst">Managing users</span> section). Then, you should generate a user token by accessing the <a class="reference external" href="https://app.konfuzio.com/v3/swagger/">Konfuzio API version 3 Auth Request</a> and making a request with your username and password. If the provided credentials are correct, then a Token will be generated that you can copy and add to the <code class="docutils literal notranslate"><span class="pre">.env</span></code> file (see below for more details).</p>
+<p>If you want to run the widget in full mode to be able to interact with the Document by editing Annotations, Document Pages, and other functionalities, you will need to have a user account created (more information in our <a class="reference external" href="/dvui/explanations.html#managing-users-in-the-konfuzio-document-validation-ui">Managing users</a> section). Then, you should generate a user token by accessing the <a class="reference external" href="https://app.konfuzio.com/v3/swagger/">Konfuzio API version 3 Auth Request</a> and making a request with your username and password. If the provided credentials are correct, then a Token will be generated that you can copy and add to the <code class="docutils literal notranslate"><span class="pre">.env</span></code> file (see below for more details).</p>
 <p>You will also need a <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/documents/documents_create">Document uploaded</a> and a Document id, and will need to be logged in to <a class="reference external" href="https://app.konfuzio.com/">Konfuzio</a>) before being able to upload the Document. After successfully uploading it, if you want to show it on the Document Validation UI, you can copy the Document id from the URL, as shown in the image below:</p>
-<p>.. image:: ./images/docid.png</p>
+<img alt="../_images/docid.png" src="../_images/docid.png" />
 <p>To complete the setup, create an environment variables file <code class="docutils literal notranslate"><span class="pre">.env</span></code> on the root of the repository based on the <a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui/blob/main/.env.example">.env.example</a> for specifying the following required values:</p>
 <ul class="simple">
 <li><p>The user token: <code class="docutils literal notranslate"><span class="pre">VUE_APP_GUEST_USER_TOKEN</span></code></p></li>
@@ -212,8 +209,8 @@
 <p>Once the package is installed, you can configure the application in two ways:</p>
 <section id="pointing-to-the-dist-folder">
 <h5>Pointing to the dist folder<a class="headerlink" href="#pointing-to-the-dist-folder" title="Permalink to this headline">¶</a></h5>
-<p>You can use the compiled version under the <code class="docutils literal notranslate"><span class="pre">dist</span></code> folder on the package source, by pointing to it from the <code class="docutils literal notranslate"><span class="pre">index.html</span></code> and making any necessary changes to the <code class="docutils literal notranslate"><span class="pre">HTML</span></code> properties on the <code class="docutils literal notranslate"><span class="pre">App</span></code> tag. See an example <span class="xref myst">here</span>.</p>
-<p><img alt="dist-npm-package.png" src="../_images/dist-npm-package.png" /></p>
+<p>You can use the compiled version under the <code class="docutils literal notranslate"><span class="pre">dist</span></code> folder on the package source, by pointing to it from the <code class="docutils literal notranslate"><span class="pre">index.html</span></code> and making any necessary changes to the <code class="docutils literal notranslate"><span class="pre">HTML</span></code> properties on the <code class="docutils literal notranslate"><span class="pre">App</span></code> tag. See an example <a class="reference external" href="#imports-from-the-dist-folder">here</a>.</p>
+<a class="reference external image-reference" href="./images/dist-npm-package.png"><img alt="dist-npm-package.png" src="../_images/dist-npm-package.png" /></a>
 </section>
 <section id="using-a-javascript-bundler">
 <h5>Using a JavaScript bundler<a class="headerlink" href="#using-a-javascript-bundler" title="Permalink to this headline">¶</a></h5>
@@ -249,7 +246,7 @@ module.exports = {
 };
 </pre></div>
 </div>
-<p>See how to add it in the <code class="docutils literal notranslate"><span class="pre">HTML</span></code> <span class="xref myst">in this example</span>.</p>
+<p>See how to add it in the <code class="docutils literal notranslate"><span class="pre">HTML</span></code> <a class="reference external" href="#webpack-bundle">in this example</a>.</p>
 </section>
 </section>
 <section id="html">
@@ -287,12 +284,11 @@ module.exports = {
 </section>
 <section id="webpack-bundle">
 <h6>Webpack bundle<a class="headerlink" href="#webpack-bundle" title="Permalink to this headline">¶</a></h6>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span> &lt;div id=&quot;app&quot;&gt;
-    &lt;app document=&quot;document_id&quot; user_token=”user_token” locale=&quot;de/en/es&quot; documents_list_path=&quot;/document_list_path/&quot;&gt;&lt;/app&gt;
-  &lt;/div&gt;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&lt;div id=&quot;app&quot;&gt;
+   &lt;app document=&quot;document_id&quot; user_token=”user_token” locale=&quot;de/en/es&quot; documents_list_path=&quot;/document_list_path/&quot;&gt;&lt;/app&gt;
+ &lt;/div&gt;
 
-   &lt;script src=&quot;/server/bundle/document_validation_ui.js&quot;&gt;&lt;/script&gt;
-
+  &lt;script src=&quot;/server/bundle/document_validation_ui.js&quot;&gt;&lt;/script&gt;
 </pre></div>
 </div>
 </section>
@@ -323,16 +319,16 @@ module.exports = {
 </ol>
 <p>You can download the application by cloning our <a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui">GitHub repository</a> or downloading the source code.</p>
 <p><code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">clone</span> <span class="pre">git&#64;github.com:konfuzio-ai/document-validation-ui.git</span></code></p>
-<ol class="arabic simple" start="2">
+<ol class="arabic simple">
 <li><p>Configure the Application</p></li>
 </ol>
-<p>Decide if the application will be run as <span class="xref myst">Read Only or Full Mode</span>.</p>
-<ol class="arabic simple" start="3">
+<p>Decide if the application will be run as <a class="reference external" href="#read-only-mode-vs-full-mode">Read Only or Full Mode</a>.</p>
+<ol class="arabic simple">
 <li><p>Install all packages</p></li>
 </ol>
 <p>Install all the dependencies by running:</p>
 <p><code class="docutils literal notranslate"><span class="pre">npm</span> <span class="pre">install</span></code></p>
-<ol class="arabic simple" start="4">
+<ol class="arabic simple">
 <li><p>Run the Application</p></li>
 </ol>
 <section id="deploy">
@@ -340,17 +336,17 @@ module.exports = {
 <p>If you want to deploy this application in a web server environment then you should run:</p>
 <p><code class="docutils literal notranslate"><span class="pre">npm</span> <span class="pre">run</span> <span class="pre">build</span></code></p>
 <p>When succeeded, you should export the <code class="docutils literal notranslate"><span class="pre">dist</span></code> folder generated from that command to the destination source in the host server and configure the web server engine to have the <code class="docutils literal notranslate"><span class="pre">index.html</span></code> file as the entry point. If everything is correctly configured you should be able to open the server URL and the application will load.</p>
-<p><img alt="dist.png" src="../_images/dist.png" /></p>
+<a class="reference external image-reference" href="./images/dist.png"><img alt="dist.png" src="../_images/dist.png" /></a>
 </section>
 <section id="local-development">
 <h4>Local Development<a class="headerlink" href="#local-development" title="Permalink to this headline">¶</a></h4>
-<p>If you want to serve the application locally to run on a browser (default URL: http://localhost:8080) you should run:</p>
+<p>If you want to serve the application locally to run on a browser (default URL: <a class="reference external" href="http://localhost:8080">http://localhost:8080</a>) you should run:</p>
 <p><code class="docutils literal notranslate"><span class="pre">npm</span> <span class="pre">run</span> <span class="pre">serve</span></code></p>
 </section>
 </section>
 <section id="run-the-document-validation-ui-in-non-vue-applications">
 <h3>Run the Document Validation UI in non-Vue applications<a class="headerlink" href="#run-the-document-validation-ui-in-non-vue-applications" title="Permalink to this headline">¶</a></h3>
-<p>If your application is developed using technologies other than Vue (for example React or Angular), you can build the Document Validation UI application into a package, as described in our <span class="xref myst">configuration example</span>, and import it to your existing project, or install it as an npm package.</p>
+<p>If your application is developed using technologies other than Vue (for example React or Angular), you can build the Document Validation UI application into a package, as described in our <a class="reference external" href="#configure-the-application">configuration example</a>, and import it to your existing project, or install it as an npm package.</p>
 <section id="run-in-react">
 <h4>Run in React<a class="headerlink" href="#run-in-react" title="Permalink to this headline">¶</a></h4>
 <p>You can find a full example of using the Document Validation UI in a React application <a class="reference external" href="https://medium.com/&#64;pateldhruv020/using-vue-component-in-react-9161f30d29a0">here</a>.</p>
@@ -364,7 +360,7 @@ module.exports = {
 <h3>Iframe integration<a class="headerlink" href="#iframe-integration" title="Permalink to this headline">¶</a></h3>
 <section id="html-iframe-as-public-document">
 <h4>HTML iframe as Public Document<a class="headerlink" href="#html-iframe-as-public-document" title="Permalink to this headline">¶</a></h4>
-<p>You can mark your Documents as public. Marking Documents as “public” will generate a read-only, publicly accessible URL that does not require authentication. This allows you to share a link to the Document and its extracted data, or embed it in another website. See <span class="xref myst">Read Only mode</span> for reference.</p>
+<p>You can mark your Documents as public. Marking Documents as “public” will generate a read-only, publicly accessible URL that does not require authentication. This allows you to share a link to the Document and its extracted data, or embed it in another website. See <a class="reference external" href="#read-only-mode">Read Only mode</a> for reference.</p>
 <section id="share-a-document-with-a-link">
 <h5>Share a Document with a link<a class="headerlink" href="#share-a-document-with-a-link" title="Permalink to this headline">¶</a></h5>
 <p>From the details page, you can copy a public URL to your Document, which you can share with other people. Apart from the URL, it does not contain any Konfuzio branding.</p>
@@ -380,14 +376,14 @@ module.exports = {
 <section id="add-your-domain-s-to-the-projects-domain-whitelist">
 <h4>Add your domain(s) to the Project’s domain whitelist<a class="headerlink" href="#add-your-domain-s-to-the-projects-domain-whitelist" title="Permalink to this headline">¶</a></h4>
 <p>On the Konfuzio Dashboard, open the left-side menu and click “Projects”.</p>
-<p><img alt="dashboard.png" src="../_images/dashboard.png" /></p>
+<a class="reference external image-reference" href="./images/dashboard.png"><img alt="dashboard.png" src="../_images/dashboard.png" /></a>
 <p>Click on the Project associated with the Document(s) you want to make public.</p>
-<p><img alt="project.png" src="../_images/project.png" /></p>
+<a class="reference external image-reference" href="./images/project.png"><img alt="project.png" src="../_images/project.png" /></a>
 <p>In the “Domain whitelist” field, add the domains where you’re going to embed your Document(s), one per line and without “http” or “https”.</p>
-<p>For example, if you want to embed a Document on https://www.example.org, you should add www.example.org to the list.</p>
-<p><img alt="whitelist.png" src="../_images/whitelist.png" /></p>
+<p>For example, if you want to embed a Document on <a class="reference external" href="https://www.example.org">https://www.example.org</a>, you should add www.example.org to the list.</p>
+<a class="reference external image-reference" href="./images/whitelist.png"><img alt="whitelist.png" src="../_images/whitelist.png" /></a>
 <p>Click “Save”.</p>
-<p><img alt="save.png" src="../_images/save.png" /></p>
+<a class="reference external image-reference" href="./images/save.png"><img alt="save.png" src="../_images/save.png" /></a>
 <p><em>It is important to note that this process will NOT make all your Projects’ Documents public by default. It simply establishes which domains are allowed to embed public Documents for this Project. You will still need to mark Documents as public by yourself.</em></p>
 </section>
 <section id="customize-the-iframe">
@@ -396,24 +392,23 @@ module.exports = {
 <p><code class="docutils literal notranslate"><span class="pre">&lt;iframe</span> <span class="pre">src=&quot;https://app.konfuzio.com/d/&lt;id&gt;/?embed=1&quot;</span> <span class="pre">width=&quot;100%&quot;</span> <span class="pre">height=&quot;600&quot;</span> <span class="pre">frameborder=&quot;0&quot;&gt;&lt;/iframe&gt;</span></code></p>
 <p>This creates on your page an iframe with 100% width (full width of its container) and a height of 600 pixels that don’t have a border. The <code class="docutils literal notranslate"><span class="pre">embed</span></code> parameter forces the DVUI to render without the Konfuzio header, so it blends easily into an existing page.</p>
 <p>You can customize the iframe‘s size and other options by changing these and other attributes (see <a class="reference external" href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe">iframe documentation</a>).</p>
-<p><img alt="public_dvui.png" src="../_images/public_dvui.png" /></p>
+<a class="reference external image-reference" href="./images/public_dvui.png"><img alt="public_dvui.png" src="../_images/public_dvui.png" /></a>
 </section>
 </section>
 </section>
 <section id="how-to-customize-the-document-validation-ui">
 <h2>How to customize the Document Validation UI?<a class="headerlink" href="#how-to-customize-the-document-validation-ui" title="Permalink to this headline">¶</a></h2>
 <p>With our software, you can change the primary color of the user interface to match your brand. This allows you to create a seamless experience for your users and reinforce your brand identity.
-To change the primary color, simply add a <code class="docutils literal notranslate"><span class="pre">:root</span></code> pseudo-class to your <code class="docutils literal notranslate"><span class="pre">CSS</span></code> file or inside a <code class="docutils literal notranslate"><span class="pre">&lt;style&gt;</span></code> tag in your <code class="docutils literal notranslate"><span class="pre">index.html</span></code>, inside which you can set the variable <code class="docutils literal notranslate"><span class="pre">--primary-color</span></code> to your custom hue to match your exact brand color (see an example <span class="xref myst">here</span>).
+To change the primary color, simply add a <code class="docutils literal notranslate"><span class="pre">:root</span></code> pseudo-class to your <code class="docutils literal notranslate"><span class="pre">CSS</span></code> file or inside a <code class="docutils literal notranslate"><span class="pre">&lt;style&gt;</span></code> tag in your <code class="docutils literal notranslate"><span class="pre">index.html</span></code>, inside which you can set the variable <code class="docutils literal notranslate"><span class="pre">--primary-color</span></code> to your custom hue to match your exact brand color (see an example <a class="reference external" href="#how-to-add-the-custom-variables-to-your-project">here</a>).
 Once you’ve selected your desired color, the user interface will update in real-time to reflect your changes. This means that you can easily experiment with different color options until you find the perfect match for your brand.</p>
 <p>In addition to the primary color, you also have the ability to customize other aspects of the user interface, such as the button border-radius. Whether your brand has sharp angles or soft curves, we allow you to make the perfect adjustments to achieve the look and feel that you want. For this customization, all you have to do is set a second variable <code class="docutils literal notranslate"><span class="pre">--primary-button</span></code> to the desired value.</p>
-<p><img alt="buttons.png" src="../_images/buttons.png" /></p>
+<a class="reference external image-reference" href="./images/buttons.png"><img alt="buttons.png" src="../_images/buttons.png" /></a>
 <section id="how-to-add-the-custom-variables-to-your-project">
 <h3>How to add the custom variables to your project?<a class="headerlink" href="#how-to-add-the-custom-variables-to-your-project" title="Permalink to this headline">¶</a></h3>
 <p>Below are two examples of how to set the custom variables, whether in the <code class="docutils literal notranslate"><span class="pre">index.html</span></code> or in a dedicated <code class="docutils literal notranslate"><span class="pre">CSS</span></code> file.</p>
 <p><em>Please note that the default values from the examples below are based on Konfuzio’s default styles.</em></p>
-<p>.. _custom-variables-html:</p>
-<section id="id1">
-<h4>HTML<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<section id="id4">
+<h4>HTML<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">div</span> <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;app&quot;</span><span class="o">&gt;</span>
    <span class="o">&lt;</span><span class="n">app</span> <span class="n">document</span><span class="o">=</span><span class="s2">&quot;id&quot;</span> <span class="n">locale</span><span class="o">=</span><span class="s2">&quot;de/en/es&quot;</span> <span class="n">user_token</span><span class="o">=</span><span class="s2">&quot;token&quot;</span> <span class="n">documents_list_path</span><span class="o">=</span><span class="s2">&quot;/document_list_path/&quot;</span><span class="o">&gt;&lt;/</span><span class="n">app</span><span class="o">&gt;</span>
  <span class="o">&lt;/</span><span class="n">div</span><span class="o">&gt;</span>
@@ -426,7 +421,6 @@ Once you’ve selected your desired color, the user interface will update in rea
 <span class="o">&lt;/</span><span class="n">style</span><span class="o">&gt;</span>
 </pre></div>
 </div>
-<p>.. _custom-variables-css:</p>
 </section>
 <section id="css-file">
 <h4>CSS file<a class="headerlink" href="#css-file" title="Permalink to this headline">¶</a></h4>
@@ -441,7 +435,7 @@ Once you’ve selected your desired color, the user interface will update in rea
 <section id="try-it-out-before-adding-it-to-your-project">
 <h3>Try it out before adding it to your project<a class="headerlink" href="#try-it-out-before-adding-it-to-your-project" title="Permalink to this headline">¶</a></h3>
 <p>If you want to test the final result before making changes to your application, you can do so <a class="reference external" href="https://codepen.io/konfuzio/pen/QWVpKVE">here</a>.</p>
-<p><em>The example from Codepen shows the Read only mode of the Document Validation UI, which has limited functionalities. To see all the features the UI has to offer, you can add your <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/auth/auth_create">user token</a> and change the Document id in the <code class="docutils literal notranslate"><span class="pre">app</span></code> tag.</em></p>
+<p>_The example from Codepen shows the Read only mode of the Document Validation UI, which has limited functionalities. To see all the features the UI has to offer, you can add your <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/auth/auth_create">user token</a> and change the Document id in the <code class="docutils literal notranslate"><span class="pre">app</span></code> tag._</p>
 <p>We hope this feature will help you take your branding to the next level and provide an even more engaging experience for your users. If you have any questions or need assistance with customization, please don’t hesitate to contact <a class="reference external" href="https://konfuzio.com/en/support/">support</a>.</p>
 </section>
 </section>

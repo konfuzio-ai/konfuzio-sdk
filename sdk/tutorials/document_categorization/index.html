@@ -8,7 +8,6 @@
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
-      <link rel="stylesheet" href="../../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
     <link rel="shortcut icon" href="../../../_static/full_green_square.png"/>
     <link rel="canonical" href="https://dev.konfuzio.com/sdk/tutorials/document_categorization/index.html" />
@@ -28,7 +27,7 @@
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="File Splitting" href="../file_splitting/index.html" />
-    <link rel="prev" title="Prepare Training and Testing Data" href="../data-preparation/index.html" /> 
+    <link rel="prev" title="Prepare the data for training and testing the AI" href="../data-preparation/index.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -52,7 +51,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../index.html">What is the Konfuzio SDK?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../get_started.html">Get Started</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../tutorials.html">Tutorials</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="../data-preparation/index.html">Prepare Training and Testing Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../data-preparation/index.html">Prepare the data for training and testing the AI</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Document Categorization</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#setting-the-category-of-a-document-and-its-individual-pages-manually">Setting the Category of a Document and its individual Pages Manually</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#name-based-categorization-ai">Name-based Categorization AI</a></li>
@@ -126,36 +125,49 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <p>.. _document-categorization-tutorials:</p>
-<section id="document-categorization">
+  <section id="document-categorization">
 <h1>Document Categorization<a class="headerlink" href="#document-categorization" title="Permalink to this headline">¶</a></h1>
-<p>When uploading a Document to Konfuzio, the first step is to assign it to a :ref:<code class="docutils literal notranslate"><span class="pre">Category&lt;category-concept&gt;</span></code>. This
+<p>When uploading a Document to Konfuzio, the first step is to assign it to a <a class="reference internal" href="../../home/index.html#category-concept"><span class="std std-ref">Category</span></a>. This
 can be done manually, or automatically using a Categorization AI. Categorization always happens on a Project level.</p>
 <section id="setting-the-category-of-a-document-and-its-individual-pages-manually">
 <h2>Setting the Category of a Document and its individual Pages Manually<a class="headerlink" href="#setting-the-category-of-a-document-and-its-individual-pages-manually" title="Permalink to this headline">¶</a></h2>
-<p>You can initialize a Document with a :ref:<code class="docutils literal notranslate"><span class="pre">Category&lt;category-concept&gt;</span></code>. You can also use <code class="docutils literal notranslate"><span class="pre">Document.set_category</span></code> to set
+<p>You can initialize a Document with a <a class="reference internal" href="../../home/index.html#category-concept"><span class="std std-ref">Category</span></a>. You can also use <code class="docutils literal notranslate"><span class="pre">Document.set_category</span></code> to set
 a Document’s Category after it has been initialized. This will count as if a human manually revised it.</p>
 <p>Note: a Document’s Category can be changed via <code class="docutils literal notranslate"><span class="pre">set_category</span></code> only if the original Category has
 been set to <code class="docutils literal notranslate"><span class="pre">no_category</span></code>. Otherwise, an attempt to change a Category will cause an error.</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_document_categorization.py
-:language: python
-:start-after: start init
-:end-before: end init
-:dedent: 4</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
+<span class="n">my_category</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_category_by_id</span><span class="p">(</span><span class="n">YOUR_CATEGORY_ID</span><span class="p">)</span>
+
+<span class="n">my_document</span> <span class="o">=</span> <span class="n">Document</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;My text.&quot;</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="n">my_category</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">my_document</span><span class="o">.</span><span class="n">category</span> <span class="o">==</span> <span class="n">my_category</span>
+<span class="n">my_document</span><span class="o">.</span><span class="n">set_category</span><span class="p">(</span><span class="n">my_category</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">my_document</span><span class="o">.</span><span class="n">category_is_revised</span> <span class="ow">is</span> <span class="kc">True</span>
+</pre></div>
+</div>
 <p>If a Document is initialized with no Category, it will automatically be set to NO_CATEGORY. Another Category can be
 manually set later.</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_document_categorization.py
-:language: python
-:start-after: start no_category
-:end-before: end no_category
-:dedent: 4</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
+<span class="n">document</span><span class="o">.</span><span class="n">set_category</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">document</span><span class="o">.</span><span class="n">category</span> <span class="o">==</span> <span class="n">project</span><span class="o">.</span><span class="n">no_category</span>
+<span class="n">document</span><span class="o">.</span><span class="n">set_category</span><span class="p">(</span><span class="n">my_category</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">document</span><span class="o">.</span><span class="n">category</span> <span class="o">==</span> <span class="n">my_category</span>
+<span class="k">assert</span> <span class="n">document</span><span class="o">.</span><span class="n">category_is_revised</span> <span class="ow">is</span> <span class="kc">True</span>
+<span class="c1"># This will set it for all of its Pages as well.</span>
+<span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">document</span><span class="o">.</span><span class="n">pages</span><span class="p">():</span>
+    <span class="k">assert</span> <span class="n">page</span><span class="o">.</span><span class="n">category</span> <span class="o">==</span> <span class="n">my_category</span>
+</pre></div>
+</div>
 <p>If you use a Categorization AI to automatically assign a Category to a Document (such as the
-<span class="xref myst">NameBasedCategorizationAI</span>, each Page will be assigned a
+<a class="reference external" href="#name-based-categorization-ai">NameBasedCategorizationAI</a>, each Page will be assigned a
 Category Annotation with predicted confidence information, and the following properties will be accessible. You can
-also find these documented under <span class="xref myst">API Reference - Document</span>,
-<span class="xref myst">API Reference - Page</span> and
-<span class="xref myst">API Reference - Category Annotation</span>.</p>
-<table class="colwidths-auto docutils align-default">
+also find these documented under <a class="reference external" href="../../sourcecode.html#document">API Reference - Document</a>,
+<a class="reference external" href="../../sourcecode.html#page">API Reference - Page</a> and
+<a class="reference external" href="../../sourcecode.html#category-annotation">API Reference - Category Annotation</a>.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Property</p></th>
 <th class="head"><p>Description</p></th>
@@ -163,31 +175,31 @@ also find these documented under <span class="xref myst">API Reference - Documen
 </thead>
 <tbody>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">CategoryAnnotation.category</span></code></p></td>
-<td><p>The AI predicted Category of this Category<br>Annotation.</p></td>
+<td><p>The AI predicted Category of this Category<span class="raw-html-m2r"><br></span>Annotation.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">CategoryAnnotation.confidence</span></code></p></td>
-<td><p>The AI predicted confidence of this Category<br>Annotation.</p></td>
+<td><p>The AI predicted confidence of this Category<span class="raw-html-m2r"><br></span>Annotation.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">Document.category_annotations</span></code></p></td>
-<td><p>List of predicted Category Annotations at the<br>Document level.</p></td>
+<td><p>List of predicted Category Annotations at the<span class="raw-html-m2r"><br></span>Document level.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">Document.maximum_confidence_category_annotation</span></code></p></td>
-<td><p>Get the maximum confidence predicted Category<br>Annotation, or the human revised one if present.</p></td>
+<td><p>Get the maximum confidence predicted Category<span class="raw-html-m2r"><br></span>Annotation, or the human revised one if present.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">Document.maximum_confidence_category</span></code></p></td>
-<td><p>Get the maximum confidence predicted Category<br>or the human revised one if present.</p></td>
+<td><p>Get the maximum confidence predicted Category<span class="raw-html-m2r"><br></span>or the human revised one if present.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">Document.category</span></code></p></td>
-<td><p>Returns a Category only if all Pages have same<br>Category, otherwise None. In that case, it hints<br>to the fact that the Document should probably<br>be revised or split into Documents with<br>consistently categorized Pages.</p></td>
+<td><p>Returns a Category only if all Pages have same<span class="raw-html-m2r"><br></span>Category, otherwise None. In that case, it hints<span class="raw-html-m2r"><br></span>to the fact that the Document should probably<span class="raw-html-m2r"><br></span>be revised or split into Documents with<span class="raw-html-m2r"><br></span>consistently categorized Pages.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">Page.category_annotations</span></code></p></td>
-<td><p>List of predicted Category Annotations at the<br>Page level.</p></td>
+<td><p>List of predicted Category Annotations at the<span class="raw-html-m2r"><br></span>Page level.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">Page.maximum_confidence_category_annotation</span></code></p></td>
-<td><p>Get the maximum confidence predicted Category<br>Annotation or the one revised by the user for this<br>Page.</p></td>
+<td><p>Get the maximum confidence predicted Category<span class="raw-html-m2r"><br></span>Annotation or the one revised by the user for this<span class="raw-html-m2r"><br></span>Page.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">Page.category</span></code></p></td>
-<td><p>Get the maximum confidence predicted Category<br>or the one revised by user for this Page.</p></td>
+<td><p>Get the maximum confidence predicted Category<span class="raw-html-m2r"><br></span>or the one revised by user for this Page.</p></td>
 </tr>
 </tbody>
 </table>
@@ -198,40 +210,112 @@ more complex Model-based Categorization AI.</p>
 <h2>Name-based Categorization AI<a class="headerlink" href="#name-based-categorization-ai" title="Permalink to this headline">¶</a></h2>
 <p>The name-based Categorization AI is a good fallback logic using the name of the Category to categorize Documents when
 no model-based Categorization AI is available:</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_document_categorization.py
-:language: python
-:start-after: start name-based
-:end-before: end name-based
-:dedent: 4</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.document_categorization</span> <span class="kn">import</span> <span class="n">NameBasedCategorizationAI</span>
+
+<span class="c1"># Set up your Project.</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
+
+<span class="c1"># Initialize the Categorization Model.</span>
+<span class="n">categorization_model</span> <span class="o">=</span> <span class="n">NameBasedCategorizationAI</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">categories</span><span class="p">)</span>
+
+<span class="c1"># Retrieve a Document to categorize.</span>
+<span class="n">test_document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
+
+<span class="c1"># The Categorization Model returns a copy of the SDK Document with Category attribute</span>
+<span class="c1"># (use inplace=True to maintain the original Document instead).</span>
+<span class="c1"># If the input Document is already categorized, the already present Category is used</span>
+<span class="c1"># (use recategorize=True if you want to force a recategorization).</span>
+<span class="n">result_doc</span> <span class="o">=</span> <span class="n">categorization_model</span><span class="o">.</span><span class="n">categorize</span><span class="p">(</span><span class="n">document</span><span class="o">=</span><span class="n">test_document</span><span class="p">)</span>
+
+<span class="c1"># Each Page is categorized individually.</span>
+<span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">result_doc</span><span class="o">.</span><span class="n">pages</span><span class="p">():</span>
+    <span class="k">assert</span> <span class="n">page</span><span class="o">.</span><span class="n">category</span> <span class="o">==</span> <span class="n">project</span><span class="o">.</span><span class="n">categories</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found category </span><span class="si">{</span><span class="n">page</span><span class="o">.</span><span class="n">category</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">page</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># The Category of the Document is defined when all pages&#39; Categories are equal.</span>
+<span class="c1"># If the Document contains mixed Categories, only the Page level Category will be defined,</span>
+<span class="c1"># and the Document level Category will be NO_CATEGORY.</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found category </span><span class="si">{</span><span class="n">result_doc</span><span class="o">.</span><span class="n">category</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">result_doc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 </section>
 <section id="model-based-categorization-ai">
 <h2>Model-based Categorization AI<a class="headerlink" href="#model-based-categorization-ai" title="Permalink to this headline">¶</a></h2>
 <p>For better results you can build, train and test a Categorization AI using Image Models and Text Models to classify
 the image and text of each Page:</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_document_categorization.py
-:language: python
-:start-after: start imports
-:end-before: end imports
-:dedent: 4
-.. literalinclude:: /sdk/boilerplates/test_document_categorization.py
-:language: python
-:start-after: Start Build
-:end-before: End Build
-:dedent: 4</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Document</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.document_categorization</span> <span class="kn">import</span> <span class="n">build_categorization_ai_pipeline</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.document_categorization</span> <span class="kn">import</span> <span class="n">ImageModel</span><span class="p">,</span> <span class="n">TextModel</span><span class="p">,</span> <span class="n">CategorizationAI</span>
+
+<span class="c1"># Set up your Project.</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Build the Categorization AI architecture using a template</span>
+<span class="c1"># of pre-built Image and Text classification Models.</span>
+<span class="n">categorization_pipeline</span> <span class="o">=</span> <span class="n">build_categorization_ai_pipeline</span><span class="p">(</span>
+    <span class="n">categories</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">categories</span><span class="p">,</span>
+    <span class="n">documents</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">documents</span><span class="p">,</span>
+    <span class="n">test_documents</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">test_documents</span><span class="p">,</span>
+    <span class="n">image_model</span><span class="o">=</span><span class="n">ImageModel</span><span class="o">.</span><span class="n">EfficientNetB0</span><span class="p">,</span>
+    <span class="n">text_model</span><span class="o">=</span><span class="n">TextModel</span><span class="o">.</span><span class="n">NBOWSelfAttention</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Train the AI.</span>
+<span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">n_epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Adam&#39;</span><span class="p">})</span>
+
+<span class="c1"># Evaluate the AI</span>
+<span class="n">data_quality</span> <span class="o">=</span> <span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">use_training_docs</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">ai_quality</span> <span class="o">=</span> <span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">evaluate</span><span class="p">()</span>
+<span class="k">assert</span> <span class="n">data_quality</span><span class="o">.</span><span class="n">f1</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span> <span class="o">==</span> <span class="mf">1.0</span>
+<span class="k">assert</span> <span class="n">ai_quality</span><span class="o">.</span><span class="n">f1</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span> <span class="o">==</span> <span class="mf">1.0</span>
+
+<span class="c1"># Categorize a Document</span>
+<span class="n">document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
+<span class="n">categorization_result</span> <span class="o">=</span> <span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">categorize</span><span class="p">(</span><span class="n">document</span><span class="o">=</span><span class="n">document</span><span class="p">)</span>
+<span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">categorization_result</span><span class="p">,</span> <span class="n">Document</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">categorization_result</span><span class="o">.</span><span class="n">pages</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found category </span><span class="si">{</span><span class="n">page</span><span class="o">.</span><span class="n">category</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">page</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Save and load a pickle file for the AI</span>
+<span class="n">pickle_ai_path</span> <span class="o">=</span> <span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+<span class="n">categorization_pipeline</span> <span class="o">=</span> <span class="n">CategorizationAI</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">pickle_ai_path</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>To prepare the data for training and testing your AI, follow the <a class="reference external" href="https://dev.konfuzio.com/sdk/tutorials/data-preparation/index.html#prepare-the-data-for-training-and-testing-the-ai">data preparation tutorial</a>.</p>
-<p>For a list of available Models see all the available <span class="xref myst">Categorization Models</span> below.</p>
+<p>For a list of available Models see all the available <a class="reference external" href="#categorization-ai-models">Categorization Models</a> below.</p>
 <section id="categorization-ai-models">
 <h3>Categorization AI Models<a class="headerlink" href="#categorization-ai-models" title="Permalink to this headline">¶</a></h3>
 <p>When using <code class="docutils literal notranslate"><span class="pre">build_categorization_ai_pipeline</span></code>, you can select which Image Module and/or Text Module to use for
 classification. At least one between the Image Model or the Text Model must be specified. Both can also be used
 at the same time.</p>
 <p>The list of available Categorization Models is implemented as an Enum containing the following elements:</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_document_categorization.py
-:language: python
-:start-after: Start Models
-:end-before: End Models
-:dedent: 4</p>
-<p>See more details about these Categorization Models under <span class="xref myst">API Reference - Categorization AI</span>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.document_categorization</span> <span class="kn">import</span> <span class="n">ImageModel</span><span class="p">,</span> <span class="n">TextModel</span>
+
+<span class="c1"># Image Models</span>
+<span class="n">ImageModel</span><span class="o">.</span><span class="n">VGG11</span>
+<span class="n">ImageModel</span><span class="o">.</span><span class="n">VGG13</span>
+<span class="n">ImageModel</span><span class="o">.</span><span class="n">VGG16</span>
+<span class="n">ImageModel</span><span class="o">.</span><span class="n">VGG19</span>
+<span class="n">ImageModel</span><span class="o">.</span><span class="n">EfficientNetB0</span>
+<span class="n">ImageModel</span><span class="o">.</span><span class="n">EfficientNetB1</span>
+<span class="n">ImageModel</span><span class="o">.</span><span class="n">EfficientNetB2</span>
+<span class="n">ImageModel</span><span class="o">.</span><span class="n">EfficientNetB3</span>
+<span class="n">ImageModel</span><span class="o">.</span><span class="n">EfficientNetB4</span>
+<span class="n">ImageModel</span><span class="o">.</span><span class="n">EfficientNetB5</span>
+<span class="n">ImageModel</span><span class="o">.</span><span class="n">EfficientNetB6</span>
+<span class="n">ImageModel</span><span class="o">.</span><span class="n">EfficientNetB7</span>
+<span class="n">ImageModel</span><span class="o">.</span><span class="n">EfficientNetB8</span>
+
+<span class="c1"># Text Models</span>
+<span class="n">TextModel</span><span class="o">.</span><span class="n">NBOW</span>
+<span class="n">TextModel</span><span class="o">.</span><span class="n">NBOWSelfAttention</span>
+<span class="n">TextModel</span><span class="o">.</span><span class="n">LSTM</span>
+<span class="n">TextModel</span><span class="o">.</span><span class="n">BERT</span>
+</pre></div>
+</div>
+<p>See more details about these Categorization Models under <a class="reference external" href="../../sourcecode.html#categorization-ai">API Reference - Categorization AI</a>.</p>
 </section>
 <section id="possible-configurations">
 <h3>Possible configurations<a class="headerlink" href="#possible-configurations" title="Permalink to this headline">¶</a></h3>
@@ -242,7 +326,13 @@ either locally or on app/on-prem installation.</p>
 default value will be applied.</p>
 <p>You can find more information on how to use these configurations, what are default values and where to specify
 them <a class="reference external" href="https://help.konfuzio.com/modules/projects/index.html?highlight=efficientnet#categorization-ai-parameters">here</a>.</p>
-<table class="colwidths-auto docutils align-default">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Tokenizer</p></th>
 <th class="head"><p>Text processor</p></th>
@@ -324,24 +414,126 @@ runtime and initialize the SDK once again; this will resolve the issue.</p>
 You just need to wrap it into the class that corresponds to our Categorization AI structure. Follow the steps in this
 tutorial to find out what are the requirements for that.</p>
 <p>Note: currently, the Server supports AI models created using <code class="docutils literal notranslate"><span class="pre">torch&lt;2.0.0</span></code>.</p>
-<p>By default, any <span class="xref myst">Categorization AI</span> class should derive from the
+<p>By default, any <a class="reference external" href="../../sourcecode.html#categorization-ai">Categorization AI</a> class should derive from the
 <code class="docutils literal notranslate"><span class="pre">AbstractCategorizationModel</span></code> class and implement the following methods:</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_custom_categorization_ai.py
-:language: python
-:start-after: start init
-:end-before: end init
-:dedent: 4</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.document_categorization</span> <span class="kn">import</span> <span class="n">AbstractCategorizationAI</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Page</span><span class="p">,</span> <span class="n">Category</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+
+<span class="k">class</span> <span class="nc">CustomCategorizationAI</span><span class="p">(</span><span class="n">AbstractCategorizationAI</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">categories</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Category</span><span class="p">],</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># a list of Categories between which the AI will differentiate</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">categories</span><span class="p">)</span>
+        <span class="k">pass</span>
+
+    <span class="c1"># initialize key variables required by the custom AI:</span>
+    <span class="c1"># for instance, self.documents and self.test_documents to train and test the AI on, self.categories to determine</span>
+    <span class="c1"># which Categories will the AI be able to predict</span>
+
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="c1"># Define architecture and training that the model undergoes, i.e. a NN architecture or a custom hardcoded logic</span>
+    <span class="c1"># for instance:</span>
+    <span class="c1">#</span>
+    <span class="c1"># self.classifier_iterator = build_document_classifier_iterator(</span>
+    <span class="c1">#             self.documents,</span>
+    <span class="c1">#             self.train_transforms,</span>
+    <span class="c1">#             use_image = True,</span>
+    <span class="c1">#             use_text = False,</span>
+    <span class="c1">#             device=&#39;cpu&#39;,</span>
+    <span class="c1">#         )</span>
+    <span class="c1"># self.classifier._fit_classifier(self.classifier_iterator, **kwargs)</span>
+    <span class="c1">#</span>
+    <span class="c1"># This method does not return anything; rather, it modifies the self.model if you provide this attribute.</span>
+    <span class="c1">#</span>
+    <span class="c1"># This method is allowed to be implemented as a no-op if you provide the trained model in other ways</span>
+
+    <span class="k">def</span> <span class="nf">_categorize_page</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">page</span><span class="p">:</span> <span class="n">Page</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Page</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="c1"># define how the model assigns a Category to a Page.</span>
+    <span class="c1"># for instance:</span>
+    <span class="c1">#</span>
+    <span class="c1"># predicted_category_id, predicted_confidence = self._predict(page_image)</span>
+    <span class="c1">#</span>
+    <span class="c1"># for category in self.categories:</span>
+    <span class="c1">#     if category.id_ == predicted_category_id:</span>
+    <span class="c1">#         _ = CategoryAnnotation(category=category, confidence=predicted_confidence, page=page)</span>
+    <span class="c1">#</span>
+    <span class="c1"># **NB:** The result of extraction must be the input Page with added Categorization attribute `Page.category`</span>
+
+    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="c1"># define how to save a model in a .pt format – for example, in a way it&#39;s defined in the CategorizationAI</span>
+    <span class="c1">#</span>
+    <span class="c1">#  data_to_save = {</span>
+    <span class="c1">#             &#39;tokenizer&#39;: self.tokenizer,</span>
+    <span class="c1">#             &#39;image_preprocessing&#39;: self.image_preprocessing,</span>
+    <span class="c1">#             &#39;image_augmentation&#39;: self.image_augmentation,</span>
+    <span class="c1">#             &#39;text_vocab&#39;: self.text_vocab,</span>
+    <span class="c1">#             &#39;category_vocab&#39;: self.category_vocab,</span>
+    <span class="c1">#             &#39;classifier&#39;: self.classifier,</span>
+    <span class="c1">#             &#39;eval_transforms&#39;: self.eval_transforms,</span>
+    <span class="c1">#             &#39;train_transforms&#39;: self.train_transforms,</span>
+    <span class="c1">#             &#39;model_type&#39;: &#39;CategorizationAI&#39;,</span>
+    <span class="c1">#         }</span>
+    <span class="c1"># torch.save(data_to_save, path)</span>
+
+</pre></div>
+</div>
 <p>Example usage of your Custom Categorization AI:</p>
-<p>.. literalinclude:: /sdk/boilerplates/test_custom_categorization_ai.py
-:language: python
-:start-after: start usage
-:end-before: end usage
-:dedent: 4
-.. literalinclude:: /sdk/boilerplates/test_custom_categorization_ai.py
-:language: python
-:start-after: start fit
-:end-before: end fit
-:dedent: 4</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.document_categorization</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">CategorizationAI</span><span class="p">,</span>
+    <span class="n">EfficientNet</span><span class="p">,</span>
+    <span class="n">PageImageCategorizationModel</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Initialize Project and provide the AI training and test data</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>  <span class="c1"># see https://dev.konfuzio.com/sdk/get_started.html#example-usage</span>
+
+<span class="n">categorization_pipeline</span> <span class="o">=</span> <span class="n">CategorizationAI</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">categories</span><span class="p">)</span>
+<span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">categories</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">categories</span>
+<span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">documents</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">document</span> <span class="k">for</span> <span class="n">category</span> <span class="ow">in</span> <span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">categories</span> <span class="k">for</span> <span class="n">document</span> <span class="ow">in</span> <span class="n">category</span><span class="o">.</span><span class="n">documents</span><span class="p">()</span>
+<span class="p">]</span>
+<span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">test_documents</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">document</span> <span class="k">for</span> <span class="n">category</span> <span class="ow">in</span> <span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">categories</span> <span class="k">for</span> <span class="n">document</span> <span class="ow">in</span> <span class="n">category</span><span class="o">.</span><span class="n">test_documents</span><span class="p">()</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># initialize all necessary parts of the AI – in the example we run an AI that uses images and does not use text</span>
+<span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">category_vocab</span> <span class="o">=</span> <span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">build_template_category_vocab</span><span class="p">()</span>
+<span class="c1"># image processing model</span>
+<span class="n">image_model</span> <span class="o">=</span> <span class="n">EfficientNet</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;efficientnet_b0&#39;</span><span class="p">)</span>
+<span class="c1"># building a classifier for the page images</span>
+<span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">classifier</span> <span class="o">=</span> <span class="n">PageImageCategorizationModel</span><span class="p">(</span>
+    <span class="n">image_model</span><span class="o">=</span><span class="n">image_model</span><span class="p">,</span>
+    <span class="n">output_dim</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">category_vocab</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">build_preprocessing_pipeline</span><span class="p">(</span><span class="n">use_image</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1"># fit the AI</span>
+<span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">n_epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Adam&#39;</span><span class="p">})</span>
+
+<span class="c1"># evaluate the AI</span>
+<span class="n">data_quality</span> <span class="o">=</span> <span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">use_training_docs</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">ai_quality</span> <span class="o">=</span> <span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">use_training_docs</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># Categorize a Document</span>
+<span class="n">document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
+<span class="n">categorization_result</span> <span class="o">=</span> <span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">categorize</span><span class="p">(</span><span class="n">document</span><span class="o">=</span><span class="n">document</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">categorization_result</span><span class="o">.</span><span class="n">pages</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found category </span><span class="si">{</span><span class="n">page</span><span class="o">.</span><span class="n">category</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">page</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found category </span><span class="si">{</span><span class="n">categorization_result</span><span class="o">.</span><span class="n">category</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">categorization_result</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Save and load a pickle file for the model</span>
+<span class="n">pickle_model_path</span> <span class="o">=</span> <span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">reduce_weight</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">categorization_pipeline_loaded</span> <span class="o">=</span> <span class="n">CategorizationAI</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">pickle_model_path</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>After you have trained and saved your custom AI, you can upload it using the steps from the <a class="reference external" href="https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html#upload-extraction-or-category-ai-to-target-instance">tutorial</a>
 or using the method <code class="docutils literal notranslate"><span class="pre">upload_ai_model()</span></code> as described in <a class="reference external" href="https://dev.konfuzio.com/sdk/tutorials/upload-your-ai/index.html">Upload your AI</a>, provided that you have the Superuser rights.</p>
 </section>
@@ -355,16 +547,15 @@ Image Model, such that the predictions from both Models can be unified in a uniq
 interface to categorize Documents, as exemplified in the code examples above. It uses a Page Categorization Model
 to categorize each Page. The Page Categorization Model is a container for Categorization Models: it wraps the feature
 output layers of each contained Model with a Dropout Layer and a Fully Connected Layer.</p>
-<div class="mxgraph" style="max-width:100%;border:1px solid transparent;" data-mxgraph="{&quot;highlight&quot;:&quot;#0000ff&quot;,&quot;nav&quot;:true,&quot;resize&quot;:true,&quot;toolbar&quot;:&quot;zoom layers tags lightbox&quot;,&quot;edit&quot;:&quot;_blank&quot;,&quot;url&quot;:&quot;https://raw.githubusercontent.com/konfuzio-ai/konfuzio-sdk/master/docs/sdk/tutorials/document_categorization/CategorizationAI.drawio&quot;}"></div>
-<script type="text/javascript" src="https://viewer.diagrams.net/embed2.js?&fetch=https%3A%2F%2Fraw.githubusercontent.com%2Fkonfuzio-ai%2Fkonfuzio-sdk%2Fmaster%2Fdocs%2Fsdk%2Ftutorials%2Fdocument_categorization%2FCategorizationAI.drawio"></script>
-</section>
+<p><span class="raw-html-m2r"><div class="mxgraph" style="max-width:100%;border:1px solid transparent;" data-mxgraph="{&quot;highlight&quot;:&quot;#0000ff&quot;,&quot;nav&quot;:true,&quot;resize&quot;:true,&quot;toolbar&quot;:&quot;zoom layers tags lightbox&quot;,&quot;edit&quot;:&quot;_blank&quot;,&quot;url&quot;:&quot;https://raw.githubusercontent.com/konfuzio-ai/konfuzio-sdk/master/docs/sdk/tutorials/document_categorization/CategorizationAI.drawio&quot;}"></div></span></p>
+<script type="text/javascript" src="https://viewer.diagrams.net/embed2.js?&fetch=https%3A%2F%2Fraw.githubusercontent.com%2Fkonfuzio-ai%2Fkonfuzio-sdk%2Fmaster%2Fdocs%2Fsdk%2Ftutorials%2Fdocument_categorization%2FCategorizationAI.drawio"></script></section>
 </section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../data-preparation/index.html" class="btn btn-neutral float-left" title="Prepare Training and Testing Data" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../data-preparation/index.html" class="btn btn-neutral float-left" title="Prepare the data for training and testing the AI" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="../file_splitting/index.html" class="btn btn-neutral float-right" title="File Splitting" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

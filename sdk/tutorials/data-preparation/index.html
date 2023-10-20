@@ -4,11 +4,10 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Prepare Training and Testing Data &mdash; Konfuzio  documentation</title>
+  <title>Prepare the data for training and testing the AI &mdash; Konfuzio  documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
-      <link rel="stylesheet" href="../../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
     <link rel="shortcut icon" href="../../../_static/full_green_square.png"/>
     <link rel="canonical" href="https://dev.konfuzio.com/sdk/tutorials/data-preparation/index.html" />
@@ -52,13 +51,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../index.html">What is the Konfuzio SDK?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../get_started.html">Get Started</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../tutorials.html">Tutorials</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Prepare Training and Testing Data</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#introduction">Introduction</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#upload-documents">Upload Documents</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#optional-alter-document-status">Optional: Alter Document Status</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#conclusion">Conclusion</a></li>
-</ul>
-</li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Prepare the data for training and testing the AI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../document_categorization/index.html">Document Categorization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../file_splitting/index.html">File Splitting</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tokenizers/index.html">Tokenization</a></li>
@@ -111,9 +104,9 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
           <li><a href="../../tutorials.html">Tutorials</a> &raquo;</li>
-      <li>Prepare Training and Testing Data</li>
+      <li>Prepare the data for training and testing the AI</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../../../_sources/sdk/tutorials/data-preparation/index.ipynb.txt" rel="nofollow"> View page source</a>
+            <a href="../../../_sources/sdk/tutorials/data-preparation/index.md.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -121,89 +114,31 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="prepare-training-and-testing-data">
-<h1>Prepare Training and Testing Data<a class="headerlink" href="#prepare-training-and-testing-data" title="Permalink to this headline">¶</a></h1>
-<hr class="docutils" />
-<p><strong>Prerequisites:</strong></p>
-<ul class="simple">
-<li><p>Basic knowledge about what training and testing means in the context of AI models</p></li>
-<li><p>Be familiar with uploading Documents using the Konfuzio UI</p></li>
-<li><p>Have access to a Konfuzio Project or have the permissions to create one</p></li>
-</ul>
-<p><strong>Difficulty:</strong> Easy</p>
-<p><strong>Goal:</strong> Be able to programmatically upload Documents within a Konfuzio Project.</p>
-<hr class="docutils" />
-<section id="introduction">
-<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
-<p>Before training an AI model, Documents for training and testing need to be uploaded within a Konfuzio Project. This can be done in two ways: using the server interface, detailed instruction to upload Documents are <a class="reference external" href="https://help.konfuzio.com/modules/documents/index.html">here</a>. Alternatively, to reduce the manual work of uploading many Documents at once the instructions described in this tutorial can be followed.</p>
-</section>
-<section id="upload-documents">
-<h2>Upload Documents<a class="headerlink" href="#upload-documents" title="Permalink to this headline">¶</a></h2>
-<p>We start by defining a path where a PDF Document exists.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">FILE_PATH_1</span> <span class="o">=</span> <span class="s1">&#39;path/to/pdf_file1.pdf&#39;</span>
-<span class="n">FILE_PATH_2</span> <span class="o">=</span> <span class="s1">&#39;path/to/pdf_file2.pdf&#39;</span>
-<span class="n">FILE_PATH_3</span> <span class="o">=</span> <span class="s1">&#39;path/to/pdf_file3.pdf&#39;</span>
-</pre></div>
-</div>
-</div>
-</div>
-<p>We import the id of the default test Project, as well as the libraries we need:</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">tests.variables</span> <span class="kn">import</span> <span class="n">TEST_PROJECT_ID</span>
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Document</span>
-</pre></div>
-</div>
-</div>
-</div>
-<p>We now initialize a Konfuzio Project object and a list of paths with the PDFs of interest:</p>
-<div class="cell tag_remove-output docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">TEST_PROJECT_ID</span><span class="p">)</span>
-<span class="n">file_paths</span> <span class="o">=</span> <span class="p">[</span><span class="n">FILE_PATH_1</span><span class="p">,</span> <span class="n">FILE_PATH_2</span><span class="p">,</span> <span class="n">FILE_PATH_3</span><span class="p">]</span>
-</pre></div>
-</div>
-</div>
-</div>
-<p>Then, create a new Document from each PDF in the list of paths <code class="docutils literal notranslate"><span class="pre">file_paths</span></code>:</p>
-<div class="cell tag_skip-execution docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">document_path</span> <span class="ow">in</span> <span class="n">file_paths</span><span class="p">:</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">Document</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">document_path</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span> <span class="n">sync</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<p>The <code class="docutils literal notranslate"><span class="pre">Document.from_file</span></code> method uploads a new Document to the Konfuzio server. The <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#document">documentation</a> provides an overview of the returned values and optional paramenters for this method.</p>
-</section>
-<section id="optional-alter-document-status">
-<h2>Optional: Alter Document Status<a class="headerlink" href="#optional-alter-document-status" title="Permalink to this headline">¶</a></h2>
-<p>A Document in the Konfuzio Server can be assigned a Status defining if the Document belongs to the Training or Testing data-set. Setting a Status for a Document is necessary to determine which Documents will be used for Training (status 1) and which will be used for Testing (status 2). More information can be found in the <a class="reference external" href="https://help.konfuzio.com/modules/documents/index.html#id1">Konfuzio Manual</a>, and an example can be found <a class="reference external" href="https://dev.konfuzio.com/sdk/get_started.html#modify-document">here</a>.</p>
-</section>
-<section id="conclusion">
-<h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this headline">¶</a></h2>
-<p>In this tutorial, we have walked through the essential steps for programmatically uploading PDFs to the Konfuzio Server. Below is the full code to accomplish this task:</p>
-<div class="cell tag_skip-execution docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">tests.variables</span> <span class="kn">import</span> <span class="n">TEST_PROJECT_ID</span>
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Document</span>
+  <section id="prepare-the-data-for-training-and-testing-the-ai">
+<h1>Prepare the data for training and testing the AI<a class="headerlink" href="#prepare-the-data-for-training-and-testing-the-ai" title="Permalink to this headline">¶</a></h1>
+<p>Before training the AI model, the Documents for training and testing need to be uploaded into the Project. You can use
+the Server app (here’s the <a class="reference external" href="https://help.konfuzio.com/modules/documents/index.html">tutorial</a>).</p>
+<p>Note: all uploaded Documents have to have their Pages in the correct order.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># if you want to create a new Project, use the create_new_project method</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.api</span> <span class="kn">import</span> <span class="n">create_new_project</span>
 
-<span class="n">FILE_PATH_1</span> <span class="o">=</span> <span class="s1">&#39;path/to/pdf_file1.pdf&#39;</span>
-<span class="n">FILE_PATH_2</span> <span class="o">=</span> <span class="s1">&#39;path/to/pdf_file2.pdf&#39;</span>
-<span class="n">FILE_PATH_3</span> <span class="o">=</span> <span class="s1">&#39;path/to/pdf_file3.pdf&#39;</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">create_new_project</span><span class="p">(</span><span class="s1">&#39;project_name&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># if you want to use the existing Project, initialize it</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Document</span>
 
 <span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">TEST_PROJECT_ID</span><span class="p">)</span>
-<span class="n">file_paths</span> <span class="o">=</span> <span class="p">[</span><span class="n">FILE_PATH_1</span><span class="p">,</span> <span class="n">FILE_PATH_2</span><span class="p">,</span> <span class="n">FILE_PATH_3</span><span class="p">]</span>
 
+<span class="c1"># provide paths to your locally stored Documents</span>
+<span class="n">file_paths</span> <span class="o">=</span> <span class="p">[</span><span class="n">FILE_PATH_1</span><span class="p">,</span> <span class="n">FILE_PATH_2</span><span class="p">,</span> <span class="n">FILE_PATH_3</span><span class="p">]</span>
 <span class="k">for</span> <span class="n">document_path</span> <span class="ow">in</span> <span class="n">file_paths</span><span class="p">:</span>
+    <span class="c1"># create new Documents from your local files</span>
     <span class="n">_</span> <span class="o">=</span> <span class="n">Document</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">document_path</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span> <span class="n">sync</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-</div>
-</section>
+<p>You can also assign the status of a training or testing Document to the newly uploaded Documents as described in <a class="reference external" href="get_started.html#modify-document">Modify Document</a>
+section: <code class="docutils literal notranslate"><span class="pre">dataset_status</span> <span class="pre">==</span> <span class="pre">1</span></code> is equal to the training status, <code class="docutils literal notranslate"><span class="pre">dataset_status</span> <span class="pre">==</span> <span class="pre">2</span></code> is equal to the testing status.</p>
 </section>
 
 
