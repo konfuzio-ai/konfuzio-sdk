@@ -22,7 +22,7 @@ Review the release notes and and the source code on `GitHub <https://github.com/
 
 **Konfuzio Server:** Register a trial account via our SaaS hosting on `app.konfuzio.com <https://app.konfuzio.com>`_ or
 :ref:`install it on your own infrastructure <Server Installation>` (see :ref:`Server Changelog`).
-To then access the REST API via :ref:`Server API v2` and  :ref:`Server API v3` or
+To then access the REST API via Server API v2 and  Server API v3 or
 use further integrations, see `help.konfuzio.com <https://help.konfuzio.com/integrations/index.html>`_.
 Also see `What is the Konfuzio Server? <https://dev.konfuzio.com/web/index.html>`_
 
@@ -62,7 +62,6 @@ Review the release notes and and the source code on `GitHub <https://github.com/
 
    dvui/index.md
    dvui/explanations.md
-   dvui/guides.md
    dvui/sourcecode.md
    Changelog <https://github.com/konfuzio-ai/document-validation-ui/releases>
    
