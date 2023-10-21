@@ -574,24 +574,26 @@ class SplittingAI:
         """
         Run prediction on Document's Pages, marking them as first or non-first.
 
+
         :param document: The Document to predict the Pages of.
         :type document: Document
         :param inplace: Whether to predict the Pages on the original Document or on a copy.
         :type inplace: bool
         :returns: A list containing the modified Document.
         """
+        if inplace:
+            processed_document = document
+        else:
+            processed_document = deepcopy(document)
+
         if not self.model.requires_images:
-            if inplace:
-                processed_document = self.tokenizer.tokenize(document)
-            else:
-                processed_document = self.tokenizer.tokenize(deepcopy(document))
+            processed_document = self.tokenizer.tokenize(processed_document)
             # we set a Page's Category explicitly because we don't want to lose original Page's Category information
             # because by default a Page is assigned a Category of a Document, and they are not necessarily the same
             for page in processed_document.pages():
                 self.model.predict(page)
                 page.set_category(page.get_original_page().category)
         else:
-            processed_document = document
             for page in document.pages():
                 self.model.predict(page)
         return [processed_document]
