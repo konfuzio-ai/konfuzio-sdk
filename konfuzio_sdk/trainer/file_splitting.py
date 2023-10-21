@@ -592,9 +592,10 @@ class SplittingAI:
             # because by default a Page is assigned a Category of a Document, and they are not necessarily the same
             for page in processed_document.pages():
                 self.model.predict(page)
+                # Why is done the in both cases?
                 page.set_category(page.get_original_page().category)
         else:
-            for page in document.pages():
+            for page in processed_document.pages():
                 self.model.predict(page)
         return [processed_document]
 
