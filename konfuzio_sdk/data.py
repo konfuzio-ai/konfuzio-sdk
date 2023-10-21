@@ -164,12 +164,11 @@ class Page(Data):
         self._segmentation = None
         self.is_first_page = None
         self.is_first_page_confidence = None
-        if self.document.dataset_status in (2, 3):
-            if self.number == 1:
-                self.is_first_page = True
-                self.is_first_page_confidence = 1
-            else:
-                self.is_first_page = False
+        if self.number == 1:
+            self.is_first_page = True
+            self.is_first_page_confidence = 1
+        else:
+            self.is_first_page = False
 
         check_page = True
         if self.index is None:
