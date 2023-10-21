@@ -335,7 +335,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
                 raise ValueError('Fitting on the GPU is impossible because there is no GPU available on the device.')
         logger.info('Multimodal File Splitting Model fitting finished.')
 
-    def predict(self, page: Page, use_gpu: bool = False) -> Page:
+    def predict(self, page: Page, use_gpu: bool = False, previous_page: Page = None) -> Page:
         """
         Run prediction with the trained model.
 
@@ -611,11 +611,8 @@ class SplittingAI:
         else:
             document_tokenized = document
         for page in document_tokenized.pages():
-            if page.number == 1:
+            if self.model.predict(page).is_first_page:
                 suggested_splits.append(page)
-            else:
-                if self.model.predict(page).is_first_page:
-                    suggested_splits.append(page)
         if len(suggested_splits) == 1:
             return [document]
         else:
