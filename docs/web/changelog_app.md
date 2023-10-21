@@ -1,7 +1,7 @@
 .. meta::
 :description: Konfuzio Server Changlog to inform developers, partners and user about all notable changes.
 
-.. \_Server Changelog:
+.. _Server Changelog:
 
 # Changelog
 
