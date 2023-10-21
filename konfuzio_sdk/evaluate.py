@@ -842,6 +842,7 @@ class FileSplittingEvaluation:
             evaluation_documents = self.document_pairs
         for ground_truth, prediction in evaluation_documents:
             for page_gt, page_pr in zip(ground_truth.pages(), prediction.pages()):
+                print(f'gt: {page_gt.is_first_page}, pr: {page_pr.is_first_page}, pr_confidence: {page_pr.is_first_page_confidence}, is_correct: {page_gt.is_first_page == page_pr.is_first_page}')
                 if page_gt.is_first_page and page_pr.is_first_page:
                     tp += 1
                 elif not page_gt.is_first_page and page_pr.is_first_page:
