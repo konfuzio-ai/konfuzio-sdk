@@ -813,6 +813,7 @@ class FileSplittingEvaluation:
         projects = list(set([document.project for document in ground_truth_documents]))
         if len(projects) > 1:
             raise ValueError("All Documents have to belong to the same Project.")
+        print(f'ground_truth_documents: {len(ground_truth_documents)}, prediction_documents: {len(prediction_documents)}')
         self.document_pairs = [
             [document[0], document[1]] for document in zip(ground_truth_documents, prediction_documents)
         ]
@@ -841,6 +842,7 @@ class FileSplittingEvaluation:
         else:
             evaluation_documents = self.document_pairs
         for ground_truth, prediction in evaluation_documents:
+            print(f'gr_id: {ground_truth.id_}, pr_id: {prediction.id_}, pages_len: {len(ground_truth.pages())}')
             for page_gt, page_pr in zip(ground_truth.pages(), prediction.pages()):
                 print(f'gt: {page_gt.is_first_page}, pr: {page_pr.is_first_page}, pr_confidence: {page_pr.is_first_page_confidence:.2f}, is_correct: {page_gt.is_first_page == page_pr.is_first_page}, document: {page_gt.document.id_}')
                 if page_gt.is_first_page and page_pr.is_first_page:

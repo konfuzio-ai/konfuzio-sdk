@@ -683,6 +683,7 @@ class SplittingAI:
         else:
             original_docs = self.model.documents
         for doc in original_docs:
+            print(f'Processing {doc.id_}.')
             predictions = self.propose_split_documents(doc, return_pages=True)
             assert len(predictions) == 1
             pred_docs.append(predictions[0])
