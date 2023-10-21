@@ -17,6 +17,7 @@
 import sphinx_rtd_theme
 import os
 import sys
+from datetime import datetime
 
 print(os.path.abspath('../konfuzio_sdk'))
 sys.path.insert(0, os.path.abspath('../konfuzio_sdk'))
@@ -25,10 +26,9 @@ sys.path.insert(0, os.path.abspath('../konfuzio_sdk'))
 sys.path.append(os.path.abspath('sphinx_custom_extensions'))
 
 # -- Project information -----------------------------------------------------
-
-
+year = str(datetime.now().year)
 project = 'Konfuzio'
-copyright = '2023, Helm und Nagel GmbH'
+copyright = f'{year}, Helm und Nagel GmbH'
 author = 'Helm und Nagel GmbH'
 
 
@@ -51,7 +51,6 @@ extensions = [
     "sphinx_copybutton",
     'myst_nb',
     'validate_nb',
-    'myst_parser',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
