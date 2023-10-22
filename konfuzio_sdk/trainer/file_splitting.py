@@ -309,8 +309,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
                                           weight_decay=0.01,
                                           )
         print('='*50)
-        timestamp = time.time()
-        logger.info(f'[{time.ctime(timestamp)}]\tStarting Training...')
+        logger.info(f'[{time.ctime(time.time())}]\tStarting Training...')
         logger.info(f'\nclass weights for the training dataset: \n{class_weights}\n')
         # custom trainer with custom loss to leverage class weights
         class CustomTrainer(Trainer):
@@ -331,10 +330,13 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
             compute_metrics=compute_metrics,
         )
         trainer.train()
-        timestamp = time.time()
-        logger.info(f'[{time.ctime(timestamp)}]\t🎉 Textual File Splitting Model fitting finished.')
+        logger.info(f'[{time.ctime(time.time())}]\t🎉 Textual File Splitting Model fitting finished.')
         print('='*50)
-        return ()
+        logger.info(f'[{time.ctime(time.time())}]\tComputing AI Quality.')
+        evaluation_results = trainer.evaluate()
+        logger.info(f'[{time.ctime(time.time())}]\tTextual File Splitting Model Evaluation finished.')
+        print('='*50)
+        return (evaluation_results)
 
 
     def old_fit(self, epochs: int = 1, use_gpu: bool = False, *args, **kwargs):
