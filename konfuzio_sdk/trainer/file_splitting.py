@@ -259,6 +259,10 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
             for page in doc.pages():
                 if not os.path.exists(page.image_path):
                     page.get_image()
+        print('training documents:')
+        print([doc.id for doc in self.documents])
+        print('testing documents:')
+        print([doc.id for doc in self.test_documents])
         train_image_paths, train_texts, train_labels = self._preprocess_documents(self.documents)
         test_image_paths, test_texts, test_labels = self._preprocess_documents(self.test_documents)
         logger.info('Document preprocessing finished.')
@@ -324,7 +328,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         logger.info('Multimodal File Splitting Model compiling finished.')
         if not use_gpu:
             with tf.device('/cpu:0'):
-                self.model.fit([self.train_img_data, self.train_txt_data], self.train_labels, epochs=epochs, verbose=1)
+                self.model.fit(x = [self.train_img_data, self.train_txt_data], y = self.train_labels, epochs=epochs, verbose=1, validation_data=([self.test_img_data, self.test_txt_data], self.test_labels))
         else:
             if tf.config.list_physical_devices('GPU'):
                 with tf.device('/gpu:0'):
