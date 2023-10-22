@@ -4,7 +4,11 @@ import logging
 import os
 import PIL
 
+import pandas as pd
 import numpy as np
+from datasets import Dataset
+import evaluate
+from transformers import AutoModelForSequenceClassification, TrainingArguments, Trainer, DataCollatorWithPadding, AutoTokenizer
 
 from copy import deepcopy
 from inspect import signature
@@ -197,9 +201,10 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         configuration.num_labels = 2
         configuration.output_hidden_states = True
         self.bert_model = transformers.AutoModel.from_pretrained(text_processing_model, config=configuration)
-        self.bert_tokenizer = transformers.BertTokenizer.from_pretrained(
-            text_processing_model, do_lower_case=True, max_length=2000, padding="max_length", truncate=True
-        )
+        # self.bert_tokenizer = transformers.BertTokenizer.from_pretrained(
+        #     text_processing_model, do_lower_case=True, max_length=2000, padding="max_length", truncate=True
+        # )
+        self.bert_tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
 
     def reduce_model_weight(self):
         """Remove all non-strictly necessary parameters before saving."""
@@ -249,11 +254,68 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
             images.append(image)
         return images
     
-    def new_fit(self, epochs: int = 10, use_gpu: bool = False, *args, **kwargs):
+    def fit(self, epochs: int = 1, use_gpu: bool = False, *args, **kwargs):
+        """
+        """
+        logger.info('Fitting Textual File Splitting Model.')
+        logger.info('training documents:')
+        print([doc.id_ for doc in self.documents])
+        logger.info('testing documents:')
+        print([doc.id_ for doc in self.test_documents])
+        print('='*50)
+        logger.info('Preprocessing training & test documents')
+        train_texts, train_labels = self._preprocess_documents(self.documents, return_images=False)
+        test_texts, test_labels = self._preprocess_documents(self.test_documents, return_images=False)
+        logger.info('Document preprocessing finished.')
+        print('='*50)
+        logger.info('Creating datasets')
+        train_df = pd.DataFrame({'text': train_texts, 'label': train_labels})
+        test_df = pd.DataFrame({'text': test_texts, 'label': test_labels})
+        # Convert to Dataset objects
+        train_dataset = Dataset.from_pandas(train_df)
+        test_dataset = Dataset.from_pandas(test_df)
+        # defining tokenizer
+        tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
+        # defining metric
+        metric = evaluate.load("f1")
+        # utility functions
+        def tokenize_function(examples):
+            return tokenizer(examples["text"], truncation=True)
+        def compute_metrics(eval_pred):
+            predictions, labels = eval_pred
+            predictions = np.argmax(predictions, axis=1)
+            return metric.compute(predictions=predictions, references=labels, average='macro')
+        print('='*50)
+        logger.info('Tokenizing datasets')
+        train_dataset = train_dataset.map(tokenize_function, batched=True)
+        test_dataset = test_dataset.map(tokenize_function, batched=True)
+        print('='*50)
+        logger.info('Loading model')
+        self.model = AutoModelForSequenceClassification.from_pretrained("bert-base-uncased", num_labels=2)
+        training_args = TrainingArguments(output_dir="splitting_ai_trainer", 
+                                          evaluation_strategy="epoch", 
+                                          load_best_model_at_end=True, 
+                                          push_to_hub=False, 
+                                          learning_rate=1e-5,
+                                          per_device_train_batch_size=32,   
+                                          per_device_eval_batch_size=32,
+                                          num_train_epochs=epochs,
+                                          weight_decay=0.01,
+                                          )
+        print('='*50)
+        logger.info('Starting Training...')
+        trainer = Trainer(
+            model=self.model,
+            args=training_args,
+            train_dataset=train_dataset,
+            eval_dataset=test_dataset,
+            compute_metrics=compute_metrics,
+        )
+        logger.info('Textual File Splitting Model fitting finished.')
         return ()
 
 
-    def fit(self, epochs: int = 1, use_gpu: bool = False, *args, **kwargs):
+    def old_fit(self, epochs: int = 1, use_gpu: bool = False, *args, **kwargs):
         """
         Process the train and test data, initialize and fit the model.
 
@@ -346,8 +408,39 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
             else:
                 raise ValueError('Fitting on the GPU is impossible because there is no GPU available on the device.')
         logger.info('Multimodal File Splitting Model fitting finished.')
-
+    
     def predict(self, page: Page, use_gpu: bool = False) -> Page:
+        """
+        Run prediction with the trained model.
+
+        :param page: A Page to be predicted as first or non-first.
+        :type page: Page
+        :param use_gpu: Run prediction on GPU if available.
+        :type use_gpu: bool
+        :return: A Page with possible changes in is_first_page attribute value.
+        """
+        self.check_is_ready()
+        tokenized_text = self.bert_tokenizer(page.text, truncation=True, return_tensors='pt')
+        with torch.no_grad():
+            output = self.model(**tokenized_text)
+        logits = output.logits
+
+        # apply a softmax to get probabilities
+        probabilities = torch.softmax(logits, dim=1)
+
+        # Extract the probability of the 'is_first_page' being True
+        predicted_prob_is_first = probabilities[:, 1].item()
+
+        # Determine the predicted label based on a threshold (e.g., 0.5)
+        predicted_is_first = predicted_prob_is_first >= 0.5
+
+        # Update the 'is_first_page' & 'is_first_page_confidence' attributes of the Page object
+        page.is_first_page = predicted_is_first
+        page.is_first_page_confidence = predicted_prob_is_first
+        return page
+
+
+    def old_predict(self, page: Page, use_gpu: bool = False) -> Page:
         """
         Run prediction with the trained model.
 
