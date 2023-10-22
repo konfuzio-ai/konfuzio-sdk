@@ -827,6 +827,26 @@ class AbstractExtractionAI(BaseModel):
 
         self.evaluation = None
 
+    def save(self, *args, **kwargs):
+        import bentoml
+
+        model = bentoml.picklable_model.save_model(
+            "extraction",
+            self,
+            signatures={
+                'extract': {'batchable': False},
+                'evaluate': {'batchable': False},
+            },
+        )
+        bentoml.bentos.build(
+            service='extraction_service.py:svc',
+            include=['extraction_service.py'],
+            python={'packages': ['konfuzio_sdk', 'konfuzio_sdk[ai]', 'jsonpickle'], 'lock_packages': True},
+            # set file dir (build_ctx) to ../bento (relative to this file)
+            build_ctx=os.path.dirname(os.path.abspath(__file__)) + '/../bento',
+            models=[str(model.tag)],
+        )
+
     @property
     def project(self):
         """Get RFExtractionAI Project."""
