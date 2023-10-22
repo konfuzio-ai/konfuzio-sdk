@@ -260,9 +260,9 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
                 if not os.path.exists(page.image_path):
                     page.get_image()
         print('training documents:')
-        print([doc.id for doc in self.documents])
+        print([doc.id_ for doc in self.documents])
         print('testing documents:')
-        print([doc.id for doc in self.test_documents])
+        print([doc.id_ for doc in self.test_documents])
         train_image_paths, train_texts, train_labels = self._preprocess_documents(self.documents)
         test_image_paths, test_texts, test_labels = self._preprocess_documents(self.test_documents)
         logger.info('Document preprocessing finished.')
