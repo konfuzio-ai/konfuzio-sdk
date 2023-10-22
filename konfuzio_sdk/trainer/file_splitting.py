@@ -280,7 +280,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         metric = evaluate.load("f1")
         # utility functions
         def tokenize_function(examples):
-            return tokenizer(examples["text"], truncation=True)
+            return tokenizer(examples["text"], truncation=True, padding='max_length')
         def compute_metrics(eval_pred):
             predictions, labels = eval_pred
             predictions = np.argmax(predictions, axis=1)
