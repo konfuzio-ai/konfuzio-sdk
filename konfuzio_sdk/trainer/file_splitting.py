@@ -9,6 +9,8 @@ import numpy as np
 from datasets import Dataset
 import evaluate
 from transformers import AutoModelForSequenceClassification, TrainingArguments, Trainer, DataCollatorWithPadding, AutoTokenizer
+from sklearn.utils.class_weight import compute_class_weight
+from torch import nn
 
 from copy import deepcopy
 from inspect import signature
@@ -274,6 +276,8 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         # Convert to Dataset objects
         train_dataset = Dataset.from_pandas(train_df)
         test_dataset = Dataset.from_pandas(test_df)
+        # Calculate class weights to solve unbalanced dataset problem
+        class_weights = compute_class_weight('balanced', classes=[0, 1], y=train_labels)
         # defining tokenizer
         tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
         # defining metric
@@ -305,7 +309,18 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
                                           )
         print('='*50)
         logger.info('Starting Training...')
-        trainer = Trainer(
+        # custom trainer with custom loss to leverage class weights
+        class CustomTrainer(Trainer):
+            def compute_loss(self, model, inputs, return_outputs=False):
+                labels = inputs.pop("labels")
+                # forward pass
+                outputs = model(**inputs)
+                logits = outputs.get("logits")
+                # compute custom loss (suppose one has 3 labels with different weights)
+                loss_fct = nn.CrossEntropyLoss(weight=torch.tensor(class_weights, device=model.device))
+                loss = loss_fct(logits.view(-1, self.model.config.num_labels), labels.view(-1))
+                return (loss, outputs) if return_outputs else loss
+        trainer = CustomTrainer(
             model=self.model,
             args=training_args,
             train_dataset=train_dataset,
