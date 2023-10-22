@@ -293,7 +293,8 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         logger.info('Loading model')
         self.model = AutoModelForSequenceClassification.from_pretrained("bert-base-uncased", num_labels=2)
         training_args = TrainingArguments(output_dir="splitting_ai_trainer", 
-                                          evaluation_strategy="epoch", 
+                                          evaluation_strategy="epoch",
+                                          save_strategy="epoch", 
                                           load_best_model_at_end=True, 
                                           push_to_hub=False, 
                                           learning_rate=1e-5,
