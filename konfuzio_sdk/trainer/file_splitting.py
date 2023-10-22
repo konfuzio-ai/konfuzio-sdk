@@ -309,6 +309,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
                                           )
         print('='*50)
         logger.info('Starting Training...')
+        logger.info(f'\nclass weights for the training dataset: \n{class_weights}\n')
         # custom trainer with custom loss to leverage class weights
         class CustomTrainer(Trainer):
             def compute_loss(self, model, inputs, return_outputs=False):
