@@ -311,6 +311,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
             eval_dataset=test_dataset,
             compute_metrics=compute_metrics,
         )
+        trainer.train()
         logger.info('Textual File Splitting Model fitting finished.')
         return ()
 
