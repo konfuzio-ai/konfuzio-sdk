@@ -205,7 +205,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         """Remove all non-strictly necessary parameters before saving."""
         self.project.lose_weight()
 
-    def _preprocess_documents(self, data: List[Document]) -> (List[PIL.Image.Image], List[str], List[int]):
+    def _preprocess_documents(self, data: List[Document], return_images: bool = True) -> (List[PIL.Image.Image], List[str], List[int]):
         """
         Take a list of Documents and obtain Pages' images, texts and labels of first or non-first class.
 
@@ -213,18 +213,22 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         :type data: List[Document]
         :returns: Three lists – Pages' images, Pages' texts and Pages' labels.
         """
-        page_images = []
+        if return_images:
+            page_images = []
         texts = []
         labels = []
         for doc in data:
             for page in doc.pages():
-                page_images.append(page.get_image())
+                if return_images:
+                    page_images.append(page.get_image())
                 texts.append(page.text)
                 if page.is_first_page:
                     labels.append(1)
                 else:
                     labels.append(0)
-        return page_images, texts, labels
+        if return_images:
+            return page_images, texts, labels
+        return texts, labels
 
     def _image_transformation(self, page_images: List[PIL.Image.Image]) -> List[np.ndarray]:
         """
@@ -244,8 +248,12 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
             image[0] -= 103.939
             images.append(image)
         return images
+    
+    def new_fit(self, epochs: int = 10, use_gpu: bool = False, *args, **kwargs):
+        return ()
 
-    def fit(self, epochs: int = 10, use_gpu: bool = False, *args, **kwargs):
+
+    def fit(self, epochs: int = 1, use_gpu: bool = False, *args, **kwargs):
         """
         Process the train and test data, initialize and fit the model.
 
@@ -339,7 +347,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
                 raise ValueError('Fitting on the GPU is impossible because there is no GPU available on the device.')
         logger.info('Multimodal File Splitting Model fitting finished.')
 
-    def predict(self, page: Page, use_gpu: bool = False, previous_page: Page = None) -> Page:
+    def predict(self, page: Page, use_gpu: bool = False) -> Page:
         """
         Run prediction with the trained model.
 
