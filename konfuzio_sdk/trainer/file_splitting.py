@@ -3,6 +3,7 @@ import abc
 import logging
 import os
 import PIL
+import time
 
 import pandas as pd
 import numpy as np
@@ -308,7 +309,8 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
                                           weight_decay=0.01,
                                           )
         print('='*50)
-        logger.info('Starting Training...')
+        timestamp = time.time()
+        logger.info(f'[{time.ctime(timestamp)}]\tStarting Training...')
         logger.info(f'\nclass weights for the training dataset: \n{class_weights}\n')
         # custom trainer with custom loss to leverage class weights
         class CustomTrainer(Trainer):
@@ -329,7 +331,8 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
             compute_metrics=compute_metrics,
         )
         trainer.train()
-        logger.info('🎉 Textual File Splitting Model fitting finished.')
+        timestamp = time.time()
+        logger.info(f'[{time.ctime(timestamp)}]\t🎉 Textual File Splitting Model fitting finished.')
         print('='*50)
         return ()
 
