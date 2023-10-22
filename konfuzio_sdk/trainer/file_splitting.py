@@ -329,8 +329,8 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
             compute_metrics=compute_metrics,
         )
         trainer.train()
-        print('='*50)
         logger.info('🎉 Textual File Splitting Model fitting finished.')
+        print('='*50)
         return ()
 
 
