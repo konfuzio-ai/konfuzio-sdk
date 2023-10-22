@@ -817,6 +817,7 @@ class FileSplittingEvaluation:
         self.document_pairs = [
             [document[0], document[1]] for document in zip(ground_truth_documents, prediction_documents)
         ]
+        print(f'project:{projects}')
         self.project = projects[0]  # because we check that exactly one Project exists across the Documents
         self.zero_division = zero_division
         self.evaluation_results = None
