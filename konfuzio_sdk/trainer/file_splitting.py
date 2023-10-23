@@ -207,7 +207,8 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         # self.bert_tokenizer = transformers.BertTokenizer.from_pretrained(
         #     text_processing_model, do_lower_case=True, max_length=2000, padding="max_length", truncate=True
         # )
-        self.bert_tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
+        self.model_name = "bert-base-uncased"
+        self.bert_tokenizer = AutoTokenizer.from_pretrained(self.model_name)
 
     def reduce_model_weight(self):
         """Remove all non-strictly necessary parameters before saving."""
@@ -257,7 +258,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
             images.append(image)
         return images
     
-    def fit(self, epochs: int = 1, use_gpu: bool = False, *args, **kwargs):
+    def fit(self, epochs: int = 2, use_gpu: bool = False, *args, **kwargs):
         """
         """
         logger.info('Fitting Textual File Splitting Model.')
@@ -280,7 +281,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         # Calculate class weights to solve unbalanced dataset problem
         class_weights = compute_class_weight('balanced', classes=[0, 1], y=train_labels)
         # defining tokenizer
-        tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
+        tokenizer = AutoTokenizer.from_pretrained(self.model_name)
         # defining metric
         metric = evaluate.load("f1")
         # utility functions
@@ -296,7 +297,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         test_dataset = test_dataset.map(tokenize_function, batched=True)
         print('='*50)
         logger.info('Loading model')
-        self.model = AutoModelForSequenceClassification.from_pretrained("bert-base-uncased", num_labels=2)
+        self.model = AutoModelForSequenceClassification.from_pretrained(self.model_name, num_labels=2)
         training_args = TrainingArguments(output_dir="splitting_ai_trainer", 
                                           evaluation_strategy="epoch",
                                           save_strategy="epoch", 
