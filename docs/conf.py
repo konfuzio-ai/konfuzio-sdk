@@ -50,7 +50,7 @@ extensions = [
     'sphinxcontrib.mermaid',
     'notfound.extension',
     "sphinx_copybutton",
-    # 'validate_nb',
+    'validate_nb',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
