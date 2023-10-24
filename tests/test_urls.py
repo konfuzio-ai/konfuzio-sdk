@@ -19,7 +19,7 @@ from konfuzio_sdk.urls import (
     get_page_image_url,
     get_create_ai_model_url,
     get_update_ai_model_url,
-    get_ai_model_url,
+    get_ai_model_url, get_ai_model_download_url,
 )
 
 
@@ -154,6 +154,15 @@ class TestUrls(unittest.TestCase):
             get_ai_model_url(ai_type='filesplitting', ai_model_id=ai_model_id),
             f'{KONFUZIO_HOST}/api/v3/splitting-ais/{ai_model_id}/'
         )
+
+    def test_download_ai_url(self):
+        """Test to get URL to download AI file."""
+        ai_model_id = 100
+        self.assertEqual(
+            get_ai_model_download_url(ai_model_id=ai_model_id, host=KONFUZIO_HOST),
+            f"{KONFUZIO_HOST}/aimodel/file/{ai_model_id}/"
+        )
+
 
     def test_change_ai_url(self):
         """Test to get URL to change AI."""

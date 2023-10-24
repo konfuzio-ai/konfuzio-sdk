@@ -33,6 +33,8 @@ from konfuzio_sdk.api import (
     upload_file_konfuzio_api,
     get_results_from_segmentation,
     get_all_project_ais,
+    export_ai_models,
+    created_or_forbidden,
 )
 from konfuzio_sdk.normalize import normalize
 from konfuzio_sdk.regex import get_best_regex, regex_matches, suggest_regex_for_string, merge_regex
@@ -2412,11 +2414,12 @@ class Annotation(Data):
                 page_number=self.page_number,
                 session=self.document.project.session,
             )
-            if response.status_code == 201:
+            annotation_created_response = created_or_forbidden(response)
+            if annotation_created_response:
                 json_response = json.loads(response.text)
                 self.id_ = json_response["id"]
                 new_annotation_added = True
-            elif response.status_code == 403:
+            elif not annotation_created_response:
                 logger.error(response.text)
                 try:
                     if "In one Project you cannot label the same text twice." in response.text:
@@ -4323,101 +4326,51 @@ class Project(Data):
         self._meta_data = []
         return self
 
+    def download_training_and_test_data(self) -> None:
+        """
+        Migrate your Project to another HOST.
 
-def export_project_data(id_: int, include_ais=False, training_and_test_documents=True):
-    """Export the Project data including Training, Test Documents and AI models based on the provided project ID."""
-    project = Project(id_=id_, update=True)
-    if training_and_test_documents:
-        try:
-            print("[INFO] Starting Training and Test Document export!")
-            download_training_and_test_data(project=project)
-        except Exception as error:
-            print("[ERROR] Something went wrong while downloading Document data!")
-            raise error
-    if include_ais:
-        try:
-            print("[INFO] Starting AI Model file export!")
-            export_ais(project)
-        except Exception as error:
-            print("[ERROR] Something went wrong while downloading AIs and AI metadata!")
-            raise error
+        See https://dev.konfuzio.com/web/migration-between-konfuzio-server-instances/index.html
 
+        """
+        if len(self.documents + self.test_documents) == 0:
+            raise ValueError(
+                "No Documents in the training or test set. Please add them."
+            )
+        for document in tqdm(self.documents + self.test_documents):
+            document.download_document_details()
+            document.get_file()
+            document.get_file(ocr_version=False)
+            document.get_bbox()
+            document.get_images()
 
-def download_training_and_test_data(project: Project):
-    """
-    Migrate your Project to another HOST.
+        print("[SUCCESS] Data exporting finished successfully!")
 
-    See https://dev.konfuzio.com/web/migration-between-konfuzio-server-instances/index.html
+    def export_project_data(
+        self, include_ais=False, training_and_test_documents=True
+    ) -> None:
+        """
+        "Export the Project data including Training, Test Documents and AI models
 
-    """
-    if len(project.documents + project.test_documents) == 0:
-        raise ValueError("No Documents in the training or test set. Please add them.")
-
-    for document in tqdm(project.documents + project.test_documents):
-        document.download_document_details()
-        document.get_file()
-        document.get_file(ocr_version=False)
-        document.get_bbox()
-        document.get_images()
-
-    print("[SUCCESS] Data exporting finished successfully!")
-
-
-def export_ais(project: Project) -> None:
-    """Download a Projects AIs model (pkl & pts)."""
-    ai_types = []  # Keeps track of the models variants to export. e.g.: Extraction, Categorization, Splitting
-    project_ai_models = project.ai_models
-    for model_type, details in project_ai_models.items():
-        # We only add those variants to the List which actually have models in the Project.
-        if details.get('count') > 0:
-            ai_types.append(model_type)
-
-    for ai_type in ai_types:
-        variant = ai_type
-        folder = f'{project.project_folder}/models/{variant}_ais'
-        models_dir = os.path.join(folder)
-        if not os.path.exists(models_dir):
-            os.makedirs(models_dir)
-
-        for ai_model in project_ai_models.get(variant, {}).get('results', []):
-            # Only export fully trained AIs which are set as active
-            if not ai_model.get('status') == 'done' or not ai_model.get('active'):
-                print(f'Skip {ai_model} in export.')
-                continue
-            ai_model_id = ai_model['id']
-            ai_model_version = ai_model['version']
-
-            # Download model
-            if project.session.host:
-                host = project.session.host
-            else:
-                from konfuzio_sdk import KONFUZIO_HOST
-
-                host = KONFUZIO_HOST
-            model_url = f'{host}/aimodel/file/{ai_model_id}/'
-
+        :include_ais: Whether or not to include AI models in the export
+        :training_and_test_documents: Whether or not to include training & test documents in the export.
+        """
+        if training_and_test_documents:
             try:
-                response = project.session.get(model_url)
-            except HTTPError:
-                # AI File response error, such as the AI has no associated file (likely for a name-based
-                # Categorization AI)
-                continue
-            if response.status_code == 200:
-                alternative_name = f'{variant}_ai_{ai_model_id}_version_{ai_model_version}'
-                content_disposition = response.headers.get('Content-Disposition', alternative_name)
-                if 'filename=' in content_disposition:
-                    # Split the string by 'filename=' and get the second part
-                    file_name = content_disposition.split('filename=')[1].strip()
-
-                    # Remove double quotes from the beginning and end if present
-                    file_name = file_name.strip('"')
+                print("[INFO] Starting Training and Test Document export!")
+                self.download_training_and_test_data()
+            except Exception as error:
+                print("[ERROR] Something went wrong while downloading Document data!")
+                raise error
+        if include_ais:
+            try:
+                print("[INFO] Starting AI Model file export!")
+                exported_ais = export_ai_models(self)
+                if exported_ais:
+                    print(f"[INFO] Export finished. {exported_ais} AIs were available for export.")
                 else:
-                    file_name = alternative_name
-
-                local_model_path = os.path.join(models_dir, file_name)
-
-                with open(local_model_path, 'wb') as f:
-                    f.write(response.content)
-
-                print(f"[SUCCESS] exported AI model to {file_name}")
+                    print(f"[INFO] No AIs available for export.")
+            except Exception as error:
+                print("[ERROR] Something went wrong while downloading AIs or AI metadata!")
+                raise error
 

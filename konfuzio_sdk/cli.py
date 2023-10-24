@@ -5,7 +5,7 @@ import sys
 from getpass import getpass
 
 from konfuzio_sdk.api import create_new_project
-from konfuzio_sdk.data import export_project_data
+from konfuzio_sdk.data import Project
 from konfuzio_sdk.api import init_env
 
 sys.tracebacklimit = 0
@@ -56,7 +56,8 @@ def main():
         include_ais = False
         if len(sys.argv) == 3:
             include_ais = True if sys.argv[2] == "include_ai" else False
-        export_project_data(id_=int(sys.argv[1]), include_ais=include_ais)
+        project = Project(id_=int(sys.argv[1]))
+        project.export_project_data(include_ais=include_ais)
     elif len(sys.argv) == 2 and sys.argv[0] == "create_project" and sys.argv[1]:
         create_new_project(sys.argv[1])
     else:
