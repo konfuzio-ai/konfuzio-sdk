@@ -76,7 +76,8 @@ language = 'en'
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store',
-                    'sdk/tutorials/*.ipynb', 'sdk/tutorials/**/*.md']
+                    'sdk/tutorials/*.ipynb', 'sdk/tutorials/**/*.md', 
+                    'sdk/tutorials/**/.*']
 
 # make sure that make html starts with the index.rst
 master_doc = 'index'
