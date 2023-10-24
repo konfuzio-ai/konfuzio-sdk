@@ -15,6 +15,9 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.8
+      - name: Convert Markdown tutorials to Jupyter Notebooks
+        run: |
+         find docs/sdk/tutorials -name "*.md" -exec jupytext --to notebook {} \;
       - name: Generate pages content
         run: |
           pip install -e .[dev,ai]
