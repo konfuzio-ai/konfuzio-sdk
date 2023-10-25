@@ -3349,8 +3349,6 @@ class Document(Data):
             self.annotations()
 
         # Convert legacy Span lists to Dict.
-        if isinstance(self._spans, list):
-            self._spans = {((span.start_offset, span.end_offset), span) for span in self._spans}
         if isinstance(annotation._spans, list):
             annotation._spans = {((span.start_offset, span.end_offset), span) for span in annotation._spans}
 
