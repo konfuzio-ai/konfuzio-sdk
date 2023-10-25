@@ -630,35 +630,21 @@ After the summarization container is running you need to set the [SUMMARIZATION_
 
 ### 11a. Upgrade to newer Konfuzio Version
 
-1. Install OpenVPN or any VPN client for your operating system
-2. Make sure you have the necessary `ovpn` file to create a tunnel to the server of interest
-3. Connect with `sudo openvpn path/to/your-ovpn-file.ovpn` (`sudo` is necessary for *nix OSs)
-4. You will be prompted for login credentials, enter your username and password
-5. In a different terminal/tab ssh into the server: 
-```
-ssh -o PubkeyAuthentication=no -o PreferredAuthentications=password <username>@<server-ip>
-```
-6. Enter the SSH password associated to `<username>`
-7. Run `su root`, when prompted for a password, enter your `root` password
-8. By running `ls -la` you should see `docker-compose.yml` among other files.
-9. By running `cat docker-compose.yml` within the output you should see:
+1. To update Konfuzio to the latest released version, check the timestamped name of the latest release here: https://dev.konfuzio.com/web/changelog_app.html
+2. SSH into the server that runs the Konfuzio Docker container
+3. Open the `docker-compose.yml` file for editing, and search for the line:
 ```
 image: git.konfuzio.com:5050/konfuzio/text-annotation/master:released-<timestamp>
 ```
-10. To update Konfuzio to the latest released version, check the timestamped name of the latest release here: https://dev.konfuzio.com/web/changelog_app.html
-11. Open the `docker-compose.yml` file for editing, you can use:
-```
-nano docker-compose.yml
-```
-12. Then replace `released-<timestamp>` with the latest release you want to update to. For example, if the latest release happened on November 15, you will have something like `released-2023-11-15_09-39-24`, so you will change the image path to:
+4. Replace `released-<timestamp>` with the latest release you want to update to. For example, if the latest release happened on November 15, you will have something like `released-2023-11-15_09-39-24`, so you will change the image path to:
 ```
 image: git.konfuzio.com:5050/konfuzio/text-annotation/master:released-2023-11-15_09-39-24
 ```
-13. We now want docker to pull the new image and rebuild the container, to do so run:
+5. Run the following to have Docker pull the new image and rebuild the container:
 ```
 docker compose up
 ```
-14. Once the command completed successfully the server update is complete.
+6. Once the command completed successfully the server update is complete.
 
 ### 11b. Downgrade to older Konfuzio Version
 
