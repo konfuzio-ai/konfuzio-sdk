@@ -3348,10 +3348,6 @@ class Document(Data):
         if self._annotations is None:
             self.annotations()
 
-        # Convert legacy Span lists to Dict.
-        if isinstance(annotation._spans, list):
-            annotation._spans = dict(((span.start_offset, span.end_offset), span) for span in annotation._spans)
-
         ann_key = (tuple(sorted(annotation._spans.keys())), annotation.label.name)
 
         duplicated = self._annotations.get(ann_key, None)
