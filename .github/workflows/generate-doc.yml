@@ -18,7 +18,10 @@ jobs:
       - name: Convert Markdown tutorials to Jupyter Notebooks
         run: |
          pip install jupytext
-         find docs/sdk/tutorials -name "*.md" -exec jupytext --to notebook {} \;
+         # Convert Markdown to Jupyter Notebook
+         find docs/sdk/tutorials/**/ -name "*.md" -exec jupytext --to notebook {} \;
+         # Remove Markdown files
+         find docs/sdk/tutorials/**/ -name "*.md" -exec rm {} \;
       - name: Generate pages content
         run: |
           pip install -e .[dev,ai]
