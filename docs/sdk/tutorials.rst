@@ -1,61 +1,91 @@
 =============
-Tutorials
-=============
-
-# Developer's Guide Tutorials
+Developer's Guide Tutorials
+==========================
 
 Welcome to the Developer's Guide Tutorials section, where you'll find a comprehensive set of tutorials to help you make the most of our powerful AI tools. These tutorials are designed to guide you through various aspects of document processing, from data preparation to advanced techniques like Named Entity Recognition (NER) and barcode scanning.
 
-## Getting Started
+Getting Started
+---------------
 
-### 1. [Data Preparation](tutorials/data-preparation/index.md)
-Learn how to efficiently prepare your data for optimal processing. This tutorial covers data organization, cleaning, and formatting to ensure seamless integration with our AI models.
+1. Data Preparation
+   :doc:`tutorials/data-preparation/index`
 
-## Document Processing Essentials
+   Learn how to efficiently prepare your data for optimal processing. This tutorial covers data organization, cleaning, and formatting to ensure seamless integration with our AI models.
 
-### 2. [Document Categorization](tutorials/document_categorization/index.md)
-Master the art of categorizing documents within your projects. This tutorial provides step-by-step guidance on labeling and organizing documents based on their content.
+Document Processing Essentials
+-------------------------------
 
-### 3. [File Splitting](tutorials/file_splitting/index.md)
-Discover how to break down complex documents into manageable segments. This tutorial empowers you to handle multi-part documents with ease.
+2. Document Categorization
+   :doc:`tutorials/document_categorization/index`
 
-### 4. [Tokenization](tutorials/tokenizers/index.md)
-Delve into the world of document tokenization, a crucial step in text analysis. This tutorial explores various tokenization techniques and their applications.
+   Master the art of categorizing documents within your projects. This tutorial provides step-by-step guidance on labeling and organizing documents based on their content.
 
-### 5. [Information Extraction](tutorials/information_extraction/index.md)
-Unlock the potential of extracting valuable information from unstructured text. This tutorial guides you through the process of identifying and labeling key details.
+3. File Splitting
+   :doc:`tutorials/file_splitting/index`
 
-## Advanced Techniques
+   Discover how to break down complex documents into manageable segments. This tutorial empowers you to handle multi-part documents with ease.
 
-### 6. [Named Entity Recognition (OntoNotes)](tutorials/ner-ontonotes-fast/index.md)
-Take your text analysis to the next level with fast and accurate Named Entity Recognition using OntoNotes. This tutorial provides in-depth insights into NER techniques.
+4. Tokenization
+   :doc:`tutorials/tokenizers/index`
 
-### 7. [Annual Reports Analysis](tutorials/annual-reports/index.md)
-Learn how to extract critical insights from annual reports using our advanced AI models. This tutorial is ideal for financial analysts and researchers.
+   Delve into the world of document tokenization, a crucial step in text analysis. This tutorial explores various tokenization techniques and their applications.
 
-## Specialized Applications
+5. Information Extraction
+   :doc:`tutorials/information_extraction/index`
 
-### 8. [Barcode Scanner](tutorials/barcode-scanner/index.md)
-Explore the capabilities of our barcode scanning tool. This tutorial demonstrates how to effortlessly extract information from barcodes in documents.
+   Unlock the potential of extracting valuable information from unstructured text. This tutorial guides you through the process of identifying and labeling key details.
 
-### 9. [PDF Form Generator](tutorials/pdf-form-generator/index.md)
-Learn how to dynamically generate PDF forms using our AI-powered tools. This tutorial is perfect for streamlining document creation processes.
+Advanced Techniques
+--------------------
 
-## Workflow Optimization
+6. Named Entity Recognition (OntoNotes)
+   :doc:`tutorials/ner-ontonotes-fast/index`
 
-### 10. [Data Validation](tutorials/data_validation/index.md)
-Ensure the accuracy and integrity of your data with effective validation techniques. This tutorial provides best practices for maintaining high-quality data sets.
+   Take your text analysis to the next level with fast and accurate Named Entity Recognition using OntoNotes. This tutorial provides in-depth insights into NER techniques.
 
-### 11. [Outlier Annotations](tutorials/outlier-annotations/index.md)
-Discover how to identify and handle outliers in your document processing pipeline. This tutorial offers strategies for accurate annotations.
+7. Annual Reports Analysis
+   :doc:`tutorials/annual-reports/index`
 
-### 12. [Regex-based Annotations](tutorials/regex_based_annotations/index.md)
-Harness the power of regular expressions for precise document annotations. This tutorial guides you through the process of using regex patterns effectively.
+   Learn how to extract critical insights from annual reports using our advanced AI models. This tutorial is ideal for financial analysts and researchers.
 
-## Streamlined Operations
+Specialized Applications
+-------------------------
 
-### 13. [Async Upload with Callback](tutorials/async_upload_with_callback/index.md)
-Optimize your document processing workflow with asynchronous upload and callback functionality. This tutorial enhances the efficiency of large-scale operations.
+8. Barcode Scanner
+   :doc:`tutorials/barcode-scanner/index`
+
+   Explore the capabilities of our barcode scanning tool. This tutorial demonstrates how to effortlessly extract information from barcodes in documents.
+
+9. PDF Form Generator
+   :doc:`tutorials/pdf-form-generator/index`
+
+   Learn how to dynamically generate PDF forms using our AI-powered tools. This tutorial is perfect for streamlining document creation processes.
+
+Workflow Optimization
+----------------------
+
+10. Data Validation
+    :doc:`tutorials/data_validation/index`
+
+    Ensure the accuracy and integrity of your data with effective validation techniques. This tutorial provides best practices for maintaining high-quality data sets.
+
+11. Outlier Annotations
+    :doc:`tutorials/outlier-annotations/index`
+
+    Discover how to identify and handle outliers in your document processing pipeline. This tutorial offers strategies for accurate annotations.
+
+12. Regex-based Annotations
+    :doc:`tutorials/regex_based_annotations/index`
+
+    Harness the power of regular expressions for precise document annotations. This tutorial guides you through the process of using regex patterns effectively.
+
+Streamlined Operations
+-----------------------
+
+13. Async Upload with Callback
+    :doc:`tutorials/async_upload_with_callback/index`
+
+    Optimize your document processing workflow with asynchronous upload and callback functionality. This tutorial enhances the efficiency of large-scale operations.
 
 Dive into these tutorials and elevate your document processing capabilities. Whether you're a beginner or an experienced developer, you'll find valuable insights and practical techniques to enhance your projects. Happy coding!
 
