@@ -320,7 +320,7 @@ def get_ai_model_url(ai_model_id: int, ai_type: str, host: str = None) -> str:
         raise ValueError
 
 
-def get_ai_model_download_url(ai_model_id: int, host: str):
+def get_ai_model_download_url(ai_model_id: int, host: str) -> str:
     """
     Get url to download an AI model.
 
