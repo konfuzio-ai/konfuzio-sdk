@@ -28,7 +28,5 @@ EXTRAS = {
         "timm==0.6.7",
         "spacy>=2.3.5",
         "accelerate==0.20.1",
-        "evaluate==0.4.1",
-        "datasets==2.14.6",
     ],
 }
