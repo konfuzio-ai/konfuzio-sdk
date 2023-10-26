@@ -1,4 +1,3 @@
-=============
 Developer's Guide Tutorials
 ==========================
 
@@ -7,85 +6,85 @@ Welcome to the Developer's Guide Tutorials section, where you'll find a comprehe
 Getting Started
 ---------------
 
-1. Data Preparation
-   :doc:`tutorials/data-preparation/index`
+Data Preparation
+~~~~~~~~~~~~~~~~
 
-   Learn how to efficiently prepare your data for optimal processing. This tutorial covers data organization, cleaning, and formatting to ensure seamless integration with our AI models.
+Learn how to efficiently prepare your data for optimal processing. This tutorial covers data organization, cleaning, and formatting to ensure seamless integration with our AI models.
 
 Document Processing Essentials
 -------------------------------
 
-2. Document Categorization
-   :doc:`tutorials/document_categorization/index`
+Document Categorization
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
-   Master the art of categorizing documents within your projects. This tutorial provides step-by-step guidance on labeling and organizing documents based on their content.
+Master the art of categorizing documents within your projects. This tutorial provides step-by-step guidance on labeling and organizing documents based on their content.
 
-3. File Splitting
-   :doc:`tutorials/file_splitting/index`
+File Splitting
+~~~~~~~~~~~~~~
 
-   Discover how to break down complex documents into manageable segments. This tutorial empowers you to handle multi-part documents with ease.
+Discover how to break down complex documents into manageable segments. This tutorial empowers you to handle multi-part documents with ease.
 
-4. Tokenization
-   :doc:`tutorials/tokenizers/index`
+Tokenization
+~~~~~~~~~~~~
 
-   Delve into the world of document tokenization, a crucial step in text analysis. This tutorial explores various tokenization techniques and their applications.
+Delve into the world of document tokenization, a crucial step in text analysis. This tutorial explores various tokenization techniques and their applications.
 
-5. Information Extraction
-   :doc:`tutorials/information_extraction/index`
+Information Extraction
+~~~~~~~~~~~~~~~~~~~~~~~
 
-   Unlock the potential of extracting valuable information from unstructured text. This tutorial guides you through the process of identifying and labeling key details.
+Unlock the potential of extracting valuable information from unstructured text. This tutorial guides you through the process of identifying and labeling key details.
 
 Advanced Techniques
 --------------------
 
-6. Named Entity Recognition (OntoNotes)
-   :doc:`tutorials/ner-ontonotes-fast/index`
+Named Entity Recognition (OntoNotes)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-   Take your text analysis to the next level with fast and accurate Named Entity Recognition using OntoNotes. This tutorial provides in-depth insights into NER techniques.
+Take your text analysis to the next level with fast and accurate Named Entity Recognition using OntoNotes. This tutorial provides in-depth insights into NER techniques.
 
-7. Annual Reports Analysis
-   :doc:`tutorials/annual-reports/index`
+Annual Reports Analysis
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
-   Learn how to extract critical insights from annual reports using our advanced AI models. This tutorial is ideal for financial analysts and researchers.
+Learn how to extract critical insights from annual reports using our advanced AI models. This tutorial is ideal for financial analysts and researchers.
 
 Specialized Applications
 -------------------------
 
-8. Barcode Scanner
-   :doc:`tutorials/barcode-scanner/index`
+Barcode Scanner
+~~~~~~~~~~~~~~~~
 
-   Explore the capabilities of our barcode scanning tool. This tutorial demonstrates how to effortlessly extract information from barcodes in documents.
+Explore the capabilities of our barcode scanning tool. This tutorial demonstrates how to effortlessly extract information from barcodes in documents.
 
-9. PDF Form Generator
-   :doc:`tutorials/pdf-form-generator/index`
+PDF Form Generator
+~~~~~~~~~~~~~~~~~~
 
-   Learn how to dynamically generate PDF forms using our AI-powered tools. This tutorial is perfect for streamlining document creation processes.
+Learn how to dynamically generate PDF forms using our AI-powered tools. This tutorial is perfect for streamlining document creation processes.
 
 Workflow Optimization
 ----------------------
 
-10. Data Validation
-    :doc:`tutorials/data_validation/index`
+Data Validation
+~~~~~~~~~~~~~~~~
 
-    Ensure the accuracy and integrity of your data with effective validation techniques. This tutorial provides best practices for maintaining high-quality data sets.
+Ensure the accuracy and integrity of your data with effective validation techniques. This tutorial provides best practices for maintaining high-quality data sets.
 
-11. Outlier Annotations
-    :doc:`tutorials/outlier-annotations/index`
+Outlier Annotations
+~~~~~~~~~~~~~~~~~~~~
 
-    Discover how to identify and handle outliers in your document processing pipeline. This tutorial offers strategies for accurate annotations.
+Discover how to identify and handle outliers in your document processing pipeline. This tutorial offers strategies for accurate annotations.
 
-12. Regex-based Annotations
-    :doc:`tutorials/regex_based_annotations/index`
+Regex-based Annotations
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-    Harness the power of regular expressions for precise document annotations. This tutorial guides you through the process of using regex patterns effectively.
+Harness the power of regular expressions for precise document annotations. This tutorial guides you through the process of using regex patterns effectively.
 
 Streamlined Operations
 -----------------------
 
-13. Async Upload with Callback
-    :doc:`tutorials/async_upload_with_callback/index`
+Async Upload with Callback
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    Optimize your document processing workflow with asynchronous upload and callback functionality. This tutorial enhances the efficiency of large-scale operations.
+Optimize your document processing workflow with asynchronous upload and callback functionality. This tutorial enhances the efficiency of large-scale operations.
 
 Dive into these tutorials and elevate your document processing capabilities. Whether you're a beginner or an experienced developer, you'll find valuable insights and practical techniques to enhance your projects. Happy coding!
 
