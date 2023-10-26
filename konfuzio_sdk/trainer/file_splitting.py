@@ -9,7 +9,12 @@ import pandas as pd
 import numpy as np
 from datasets import Dataset
 import evaluate
-from transformers import AutoModelForSequenceClassification, TrainingArguments, Trainer, DataCollatorWithPadding, AutoTokenizer
+from transformers import (
+    AutoModelForSequenceClassification,
+    TrainingArguments,
+    Trainer,
+    AutoTokenizer,
+)
 from sklearn.utils.class_weight import compute_class_weight
 from torch import nn
 
@@ -214,7 +219,9 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         """Remove all non-strictly necessary parameters before saving."""
         self.project.lose_weight()
 
-    def _preprocess_documents(self, data: List[Document], return_images: bool = True) -> (List[PIL.Image.Image], List[str], List[int]):
+    def _preprocess_documents(
+        self, data: List[Document], return_images: bool = True
+    ) -> (List[PIL.Image.Image], List[str], List[int]):
         """
         Take a list of Documents and obtain Pages' images, texts and labels of first or non-first class.
 
@@ -257,21 +264,20 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
             image[0] -= 103.939
             images.append(image)
         return images
-    
+
     def fit(self, epochs: int = 2, use_gpu: bool = False, *args, **kwargs):
-        """
-        """
+        """Process the train and test data, initialize and fit the model."""
         logger.info('Fitting Textual File Splitting Model.')
         logger.info('training documents:')
         print([doc.id_ for doc in self.documents])
         logger.info('testing documents:')
         print([doc.id_ for doc in self.test_documents])
-        print('='*50)
+        print('=' * 50)
         logger.info('Preprocessing training & test documents')
         train_texts, train_labels = self._preprocess_documents(self.documents, return_images=False)
         test_texts, test_labels = self._preprocess_documents(self.test_documents, return_images=False)
         logger.info('Document preprocessing finished.')
-        print('='*50)
+        print('=' * 50)
         logger.info('Creating datasets')
         train_df = pd.DataFrame({'text': train_texts, 'label': train_labels})
         test_df = pd.DataFrame({'text': test_texts, 'label': test_labels})
@@ -284,35 +290,41 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         tokenizer = AutoTokenizer.from_pretrained(self.model_name)
         # defining metric
         metric = evaluate.load("f1")
+
         # utility functions
         def tokenize_function(examples):
             return tokenizer(examples["text"], truncation=True, padding='max_length')
+
         def compute_metrics(eval_pred):
             predictions, labels = eval_pred
             predictions = np.argmax(predictions, axis=1)
             return metric.compute(predictions=predictions, references=labels, average='macro')
-        print('='*50)
+
+        print('=' * 50)
         logger.info('Tokenizing datasets')
         train_dataset = train_dataset.map(tokenize_function, batched=True)
         test_dataset = test_dataset.map(tokenize_function, batched=True)
-        print('='*50)
+        print('=' * 50)
         logger.info('Loading model')
         self.model = AutoModelForSequenceClassification.from_pretrained(self.model_name, num_labels=2)
-        training_args = TrainingArguments(output_dir="splitting_ai_trainer", 
-                                          evaluation_strategy="epoch",
-                                          save_strategy="epoch", 
-                                          load_best_model_at_end=True, 
-                                          push_to_hub=False, 
-                                          learning_rate=1e-5,
-                                          per_device_train_batch_size=32,   
-                                          per_device_eval_batch_size=32,
-                                          num_train_epochs=epochs,
-                                          weight_decay=0.01,
-                                          )
-        print('='*50)
+        training_args = TrainingArguments(
+            output_dir="splitting_ai_trainer",
+            evaluation_strategy="epoch",
+            save_strategy="epoch",
+            load_best_model_at_end=True,
+            push_to_hub=False,
+            learning_rate=1e-5,
+            per_device_train_batch_size=32,
+            per_device_eval_batch_size=32,
+            num_train_epochs=epochs,
+            weight_decay=0.01,
+        )
+        print('=' * 50)
         logger.info(f'[{time.ctime(time.time())}]\tStarting Training...')
         logger.info(f'\nclass weights for the training dataset: \n{class_weights}\n')
+
         # custom trainer with custom loss to leverage class weights
+
         class CustomTrainer(Trainer):
             def compute_loss(self, model, inputs, return_outputs=False):
                 labels = inputs.pop("labels")
@@ -320,9 +332,12 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
                 outputs = model(**inputs)
                 logits = outputs.get("logits")
                 # compute custom loss (suppose one has 3 labels with different weights)
-                loss_fct = nn.CrossEntropyLoss(weight=torch.tensor(class_weights, device=model.device, dtype=torch.float))
+                loss_fct = nn.CrossEntropyLoss(
+                    weight=torch.tensor(class_weights, device=model.device, dtype=torch.float)
+                )
                 loss = loss_fct(logits.view(-1, self.model.config.num_labels), labels.view(-1))
                 return (loss, outputs) if return_outputs else loss
+
         trainer = CustomTrainer(
             model=self.model,
             args=training_args,
@@ -332,13 +347,12 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         )
         trainer.train()
         logger.info(f'[{time.ctime(time.time())}]\t🎉 Textual File Splitting Model fitting finished.')
-        print('='*50)
+        print('=' * 50)
         logger.info(f'[{time.ctime(time.time())}]\tComputing AI Quality.')
         evaluation_results = trainer.evaluate()
         logger.info(f'[{time.ctime(time.time())}]\tTextual File Splitting Model Evaluation finished.')
-        print('='*50)
-        return (evaluation_results)
-
+        print('=' * 50)
+        return evaluation_results
 
     def old_fit(self, epochs: int = 1, use_gpu: bool = False, *args, **kwargs):
         """
@@ -423,7 +437,13 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         logger.info('Multimodal File Splitting Model compiling finished.')
         if not use_gpu:
             with tf.device('/cpu:0'):
-                self.model.fit(x = [self.train_img_data, self.train_txt_data], y = self.train_labels, epochs=epochs, verbose=1, validation_data=([self.test_img_data, self.test_txt_data], self.test_labels))
+                self.model.fit(
+                    x=[self.train_img_data, self.train_txt_data],
+                    y=self.train_labels,
+                    epochs=epochs,
+                    verbose=1,
+                    validation_data=([self.test_img_data, self.test_txt_data], self.test_labels),
+                )
         else:
             if tf.config.list_physical_devices('GPU'):
                 with tf.device('/gpu:0'):
@@ -433,7 +453,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
             else:
                 raise ValueError('Fitting on the GPU is impossible because there is no GPU available on the device.')
         logger.info('Multimodal File Splitting Model fitting finished.')
-    
+
     def predict(self, page: Page, use_gpu: bool = False) -> Page:
         """
         Run prediction with the trained model.
@@ -463,7 +483,6 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         page.is_first_page = predicted_is_first
         page.is_first_page_confidence = predicted_prob_is_first
         return page
-
 
     def old_predict(self, page: Page, use_gpu: bool = False) -> Page:
         """
@@ -703,7 +722,6 @@ class SplittingAI:
     def _suggest_first_pages(self, document: Document, inplace: bool = False) -> List[Document]:
         """
         Run prediction on Document's Pages, marking them as first or non-first.
-
 
         :param document: The Document to predict the Pages of.
         :type document: Document
