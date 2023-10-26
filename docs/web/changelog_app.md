@@ -36,7 +36,7 @@ This version uses the Konfuzio Python SDK in version v.0.2.36 and Konfuzio Docum
 - [In the DVUI there is a link to the details of the custom data mapped on extracted data](https://help.konfuzio.com/document-validation-ui/review-documents/additional-features/index.html#translate-annotation-text-into-custom-value) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11797)).
 
 ### Changed
-- Upgraded the base image from `python:3.8.18-slim-bullseye` to the more recent Debian version `python:3.8.18-slim-bookworm` for improving security: this version has a reduced number of known Common Vulnerabilities and Exposures (CVEs) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11726)).
+- Upgraded the base image from `python:3.8.18-slim-bullseye` to the more recent Debian version `python:3.8.18-slim-bookworm`([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11726)).
 - Tesseract 5 is now used, instead of tesseract 4:  enhances OCR capabilities and ensures you get the best text recognition experience ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9783)).
 
 ### Fixed
