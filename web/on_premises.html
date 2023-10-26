@@ -770,9 +770,26 @@ After the summarization container is running you need to set the <a class="refer
 </section>
 <section id="a-upgrade-to-newer-konfuzio-version">
 <h3>11a. Upgrade to newer Konfuzio Version<a class="headerlink" href="#a-upgrade-to-newer-konfuzio-version" title="Permalink to this headline">¶</a></h3>
-<p>Konfuzio upgrades are performed by replacing the Docker Tag to the <a class="reference external" href="https://dev.konfuzio.com/web/changelog_app.html">desired version</a>
-After starting the new containers, database migrations need to be applied by <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">migrate</span></code> and new email-templates need to be initialized <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">init_email_templates</span></code> (see 4.).
-In case additional migration steps are needed, they will be mentioned in the release notes.</p>
+<ol class="arabic">
+<li><p>To update Konfuzio to the latest released version, check the timestamped name of the latest release here: <a class="reference external" href="https://dev.konfuzio.com/web/changelog_app.html">https://dev.konfuzio.com/web/changelog_app.html</a></p></li>
+<li><p>SSH into the server that runs the Konfuzio Docker container</p></li>
+<li><p>Open the <code class="docutils literal notranslate"><span class="pre">docker-compose.yml</span></code> file for editing, and search for the line:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">image</span><span class="p">:</span> <span class="n">git</span><span class="o">.</span><span class="n">konfuzio</span><span class="o">.</span><span class="n">com</span><span class="p">:</span><span class="mi">5050</span><span class="o">/</span><span class="n">konfuzio</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">/</span><span class="n">master</span><span class="p">:</span><span class="n">released</span><span class="o">-&lt;</span><span class="n">timestamp</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+</li>
+<li><p>Replace <code class="docutils literal notranslate"><span class="pre">released-&lt;timestamp&gt;</span></code> with the latest release you want to update to. For example, if the latest release happened on November 15, you will have something like <code class="docutils literal notranslate"><span class="pre">released-2023-11-15_09-39-24</span></code>, so you will change the image path to:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">image</span><span class="p">:</span> <span class="n">git</span><span class="o">.</span><span class="n">konfuzio</span><span class="o">.</span><span class="n">com</span><span class="p">:</span><span class="mi">5050</span><span class="o">/</span><span class="n">konfuzio</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">/</span><span class="n">master</span><span class="p">:</span><span class="n">released</span><span class="o">-</span><span class="mi">2023</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">15_09</span><span class="o">-</span><span class="mi">39</span><span class="o">-</span><span class="mi">24</span>
+</pre></div>
+</div>
+</li>
+<li><p>Run the following to have Docker pull the new image and rebuild the container:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">compose</span> <span class="n">up</span>
+</pre></div>
+</div>
+</li>
+<li><p>Once the command completed successfully the server update is complete.</p></li>
+</ol>
 </section>
 <section id="b-downgrade-to-older-konfuzio-version">
 <h3>11b. Downgrade to older Konfuzio Version<a class="headerlink" href="#b-downgrade-to-older-konfuzio-version" title="Permalink to this headline">¶</a></h3>
