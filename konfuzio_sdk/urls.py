@@ -323,6 +323,7 @@ def get_ai_model_url(ai_model_id: int, ai_type: str, host: str = None) -> str:
 def get_ai_model_download_url(ai_model_id: int, host: str):
     """
     Get url to download an AI model.
+
     @param ai_model_id:  ID of the AI model
     @param host: Konfuzio host
     @return: URL

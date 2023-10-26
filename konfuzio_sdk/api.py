@@ -776,6 +776,7 @@ def get_all_project_ais(project_id: int, session=None, host: str = None) -> dict
 def export_ai_models(project) -> int: # NOQA
     """
     Export all AI Model files for a specific Project.
+
     :param: project: Konfuzio Project
     :return: Number of exported AIs
     """
