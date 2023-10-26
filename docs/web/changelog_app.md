@@ -21,9 +21,31 @@ You can think of the _Planned_ section as a _Roadmap_ that lists Konfuzio Server
 - Allow administrators of Konfuzio on-premise installations to run a speedtest ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9870)).
 - Start automatic AI retraining after User confirms that he has finished a annotation review ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9166)).
 
-## Next Release (estimated release date 18th October 2023)
+## Next Release (estimated release date 1st November 2023)
 
 Upcoming...
+
+## released-2023-10-19_09-39-24
+
+This version uses the Konfuzio Python SDK in version v.0.2.36 and Konfuzio Document Validation UI in version v.0.1.17.
+
+### Added
+- [Automatically map extracted data to custom data](https://help.konfuzio.com/modules/annotations/index.html#annotation-translated-string) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11799)).
+- [Allow Project Managers to enable mapping of extracted data to custom data. Manage custom data: add, edit or remove.](https://help.konfuzio.com/modules/annotations/index.html#annotation-translated-string) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11799))
+- [Custom data mapped on extracted data is shown in the DVUI](https://help.konfuzio.com/document-validation-ui/review-documents/additional-features/index.html#translate-annotation-text-into-custom-value) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11797)).
+- [In the DVUI there is a link to the details of the custom data mapped on extracted data](https://help.konfuzio.com/document-validation-ui/review-documents/additional-features/index.html#translate-annotation-text-into-custom-value) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11797)).
+
+### Changed
+- Upgraded the base image from `python:3.8.18-slim-bullseye` to the more recent Debian version `python:3.8.18-slim-bookworm`([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11726)).
+- Tesseract 5 is now used, instead of tesseract 4:  enhances OCR capabilities and ensures you get the best text recognition experience ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9783)).
+
+### Fixed
+- Error messages are properly shown in the language set for the server app ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11445)).
+- IntegrityErrors are not visible to the user, as expected ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11445)).
+- Annotations created by the user in the SmartView appear as accepted in the DVUI ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11882)).
+- When an Annotation is rejected/deleted from the SmartView, it also disappears from the DVUI ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11882)).
+- Coming-soon error on the Swagger API ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/11964)).
+
 
 ## released-2023-10-04_18-41-03
 
