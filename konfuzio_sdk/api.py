@@ -748,8 +748,7 @@ def get_all_project_ais(project_id: int, session=None, host: str = None) -> dict
     """
     if session is None:
         session = konfuzio_session()
-    if hasattr(session, "host"):
-        host = session.host
+
     if host is None:
         host = KONFUZIO_HOST
 
@@ -774,7 +773,7 @@ def get_all_project_ais(project_id: int, session=None, host: str = None) -> dict
     return all_ais
 
 
-def export_ai_models(project) -> int:
+def export_ai_models(project) -> int: # NOQA
     """
     Export all AI Model files for a specific Project.
     :param: project: Konfuzio Project
@@ -803,10 +802,9 @@ def export_ai_models(project) -> int:
             if not ai_model_id or not ai_model_version:
                 continue
 
-            # Download model
-            if project.session.host:
-                host = project.session.host
-            else:
+            host = project.session.host
+
+            if host is None:
                 host = KONFUZIO_HOST
 
             model_url = get_ai_model_download_url(ai_model_id=ai_model_id, host=host)

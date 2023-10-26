@@ -29,6 +29,8 @@ from konfuzio_sdk.api import (
     create_label,
     TimeoutHTTPAdapter,
     get_page_image,
+    get_all_project_ais,
+    created_or_forbidden,
 )
 from tests.variables import TEST_PROJECT_ID, TEST_DOCUMENT_ID
 
@@ -486,6 +488,80 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         env_file = ".testenv"
         assert init_env(user='me', password='pw', file_ending=env_file)
         os.remove(os.path.join(os.getcwd(), env_file))
+
+    @patch("requests.get")
+    def test_created_response(self, mock_get):
+        """Test response with status code 201."""
+
+        class _Response:
+            status_code = 201
+
+        mock_get.return_value = _Response()
+        result = created_or_forbidden(mock_get())
+        self.assertTrue(result)
+
+    @patch("requests.get")
+    def test_forbidden_response(self, mock_get):
+        """Test response with status code 403."""
+
+        class _Response:
+            status_code = 403
+
+        mock_get.return_value = _Response()
+        result = created_or_forbidden(mock_get())
+        self.assertFalse(result)
+
+    @patch("requests.get")
+    def test_invalid_response(self, mock_get):
+        """Test response with a status code other than 201 or 403."""
+
+        class _Response:
+            status_code = 500
+            content = "Internal Server Error"
+            url = "http://example.com"
+
+        mock_get.return_value = _Response()
+        with self.assertRaises(ConnectionError) as cm:
+            created_or_forbidden(mock_get())
+        self.assertEqual(str(cm.exception), "Error500: Internal Server Error http://example.com")
+
+    @patch('konfuzio_sdk.api.konfuzio_session')
+    @patch('konfuzio_sdk.api.get_extraction_ais_list_url')
+    @patch('konfuzio_sdk.api.get_splitting_ais_list_url')
+    @patch('konfuzio_sdk.api.get_categorization_ais_list_url')
+    @patch('konfuzio_sdk.api.json.loads')
+    def test_get_all_project_ais(
+            self,
+            mock_json_loads,
+            mock_get_categorization_url,
+            mock_get_splitting_url,
+            mock_get_extraction_url,
+            mock_session
+    ):
+        # Setup
+        sample_data = {"AI_DATA": "AI_SAMPLE_DATA"}
+        host = 'https://app.konfuzio.com'
+
+        mock_session.return_value.get.return_value.status_code = 200
+        mock_json_loads.return_value = sample_data
+
+        # Action
+        result = get_all_project_ais(project_id=1, host=host)
+
+        # Assertions
+        self.assertEqual(
+            result,
+            {
+                "extraction": sample_data,
+                "filesplitting": sample_data,
+                "categorization": sample_data,
+            }
+        )
+
+        # Ensure the mock methods were called with the correct arguments
+        mock_get_extraction_url.assert_called_once_with(1, host)
+        mock_get_splitting_url.assert_called_once_with(1, host)
+        mock_get_categorization_url.assert_called_once_with(1, host)
 
 
 def test_init_env():
