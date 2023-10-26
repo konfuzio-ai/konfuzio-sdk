@@ -4350,7 +4350,7 @@ class Project(Data):
         self, include_ais=False, training_and_test_documents=True
     ) -> None:
         """
-        "Export the Project data including Training, Test Documents and AI models
+        "Export the Project data including Training, Test Documents and AI models.
 
         :include_ais: Whether or not to include AI models in the export
         :training_and_test_documents: Whether or not to include training & test documents in the export.

@@ -630,9 +630,21 @@ After the summarization container is running you need to set the [SUMMARIZATION_
 
 ### 11a. Upgrade to newer Konfuzio Version
 
-Konfuzio upgrades are performed by replacing the Docker Tag to the [desired version](https://dev.konfuzio.com/web/changelog_app.html)
-After starting the new containers, database migrations need to be applied by `python manage.py migrate` and new email-templates need to be initialized `python manage.py init_email_templates` (see 4.).
-In case additional migration steps are needed, they will be mentioned in the release notes.
+1. To update Konfuzio to the latest released version, check the timestamped name of the latest release here: https://dev.konfuzio.com/web/changelog_app.html
+2. SSH into the server that runs the Konfuzio Docker container
+3. Open the `docker-compose.yml` file for editing, and search for the line:
+```
+image: git.konfuzio.com:5050/konfuzio/text-annotation/master:released-<timestamp>
+```
+4. Replace `released-<timestamp>` with the latest release you want to update to. For example, if the latest release happened on November 15, you will have something like `released-2023-11-15_09-39-24`, so you will change the image path to:
+```
+image: git.konfuzio.com:5050/konfuzio/text-annotation/master:released-2023-11-15_09-39-24
+```
+5. Run the following to have Docker pull the new image and rebuild the container:
+```
+docker compose up
+```
+6. Once the command completed successfully the server update is complete.
 
 ### 11b. Downgrade to older Konfuzio Version
 
