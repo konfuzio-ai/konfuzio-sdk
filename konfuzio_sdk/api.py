@@ -32,7 +32,8 @@ from konfuzio_sdk.urls import (
     get_ai_model_url,
     get_splitting_ais_list_url,
     get_categorization_ais_list_url,
-    get_extraction_ais_list_url, get_ai_model_download_url,
+    get_extraction_ais_list_url,
+    get_ai_model_download_url,
 )
 from konfuzio_sdk.utils import is_file
 

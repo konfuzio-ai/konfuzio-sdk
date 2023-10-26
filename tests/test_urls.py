@@ -19,7 +19,8 @@ from konfuzio_sdk.urls import (
     get_page_image_url,
     get_create_ai_model_url,
     get_update_ai_model_url,
-    get_ai_model_url, get_ai_model_download_url,
+    get_ai_model_url,
+    get_ai_model_download_url,
 )
 
 
