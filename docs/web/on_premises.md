@@ -444,7 +444,7 @@ After completing these steps you can exit and remove the container.
   The username used during the createsuperuser dialog must have the format of a valid e-mail in order to be able to login later.
 
 .. note::
-  The default email templates can be customized by navigating to your on-prem installation in the section "Email Templates". Section 11a, explains how these templates can be updated.
+  The default email templates can be customized by navigating to your on-prem installation in the section "Email Templates". [Section 11a](/web/on_premises.html#a-upgrade-to-newer-konfuzio-version), explains how these templates can be updated.
 
 ### 5. Start the container
 In this example we start four containers. The first one to serve the Konfuzio web application. 
