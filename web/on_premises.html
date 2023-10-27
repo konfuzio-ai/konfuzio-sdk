@@ -106,7 +106,10 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#optional-9-install-the-document-layout-analysis-segmentation-container">[Optional] 9. Install the Document Layout Analysis (Segmentation) Container</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#optional-10-install-document-summarization-container">[Optional] 10. Install document summarization container</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#a-upgrade-to-newer-konfuzio-version">11a. Upgrade to newer Konfuzio Version</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#a-upgrade-to-newer-konfuzio-version">11a. Upgrade to newer Konfuzio Version</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#updating-existing-email-templates">Updating existing email templates</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#b-downgrade-to-older-konfuzio-version">11b. Downgrade to older Konfuzio Version</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#load-scenario-for-single-vm-with-32gb">Load Scenario for Single VM with 32GB</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#scenario-1-with-self-hosted-ocr">Scenario 1: With self-hosted OCR</a></li>
@@ -607,6 +610,10 @@ The container needs to be able to access IP addresses and hostnames used in the 
 <p class="admonition-title">Note</p>
 <p>The username used during the createsuperuser dialog must have the format of a valid e-mail in order to be able to login later.</p>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The default email templates can be customized by navigating to your on-prem installation in the section “Email Templates”. [Section 11a](/web/on_premises.html#a-upgrade-to-newer-konfuzio-version), explains how these templates can be updated.</p>
+</div>
 </section>
 <section id="start-the-container">
 <h3>5. Start the container<a class="headerlink" href="#start-the-container" title="Permalink to this headline">¶</a></h3>
@@ -790,6 +797,15 @@ After the summarization container is running you need to set the <a class="refer
 </li>
 <li><p>Once the command completed successfully the server update is complete.</p></li>
 </ol>
+<section id="updating-existing-email-templates">
+<h4>Updating existing email templates<a class="headerlink" href="#updating-existing-email-templates" title="Permalink to this headline">¶</a></h4>
+<p>During Konfuzio upgrades it is possible that we release some updates to the installed email-templates. It is important
+to note, that these email templates, do not override any existing email templates. This ensures, that you can make
+your own changes, without the risk of losing them during each upgrade. If you do want to update and sync your email
+templates with each Konfuzio update. You can delete all the current email templates, or a single email template which needs
+updating, and then running <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">init_email_templates</span></code> (see 4). This action will then set each template to
+its default template value.</p>
+</section>
 </section>
 <section id="b-downgrade-to-older-konfuzio-version">
 <h3>11b. Downgrade to older Konfuzio Version<a class="headerlink" href="#b-downgrade-to-older-konfuzio-version" title="Permalink to this headline">¶</a></h3>
