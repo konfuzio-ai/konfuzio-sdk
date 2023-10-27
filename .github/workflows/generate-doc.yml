@@ -9,6 +9,9 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
+      - name: Trigger Dev-Center build
+        run: |
+          curl -X POST --fail -F token=${{ secrets.DEV_CENTER_TOKEN }} -F ref=main https://git.konfuzio.com/api/v4/projects/140/trigger/pipeline 
       - name: Check out
         uses: actions/checkout@v1
       - name: Set up Python 3.8
