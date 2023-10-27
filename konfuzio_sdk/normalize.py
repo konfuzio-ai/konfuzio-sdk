@@ -217,6 +217,15 @@ def _normalize_string_to_absolute_float(offset_string: str) -> Optional[float]:
         and offset_string.replace(',', '').isdecimal()
     ):
         _float = float(offset_string.replace(',', '.'))  # => 12.3
+    # check for 123,4567 (comma and 4 decimals, no thousand separators).
+    elif (
+        ',' in offset_string
+        and (len(offset_string) - offset_string.index(',')) == 5
+        and offset_string.replace(',', '').isdecimal()
+    ):
+        offset_string = offset_string.replace(',', '.')  # => 123.4567
+        if all(x.isdecimal() for x in offset_string.split('.')):
+            _float = float(offset_string)
     # check for 12.3 (dot is second last char).
     elif offset_string.count('.') == 1 and (len(offset_string) - offset_string.index('.')) == 2:
         if all(x.isdecimal() for x in offset_string.split('.')):
