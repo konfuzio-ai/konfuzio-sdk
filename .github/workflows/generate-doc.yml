@@ -1,4 +1,4 @@
-name: Publish to GitHub Pages
+name: Trigger docs build
 
 on:
   push:
@@ -12,20 +12,3 @@ jobs:
       - name: Trigger Dev-Center build
         run: |
           curl -X POST --fail -F token=${{ secrets.DEV_CENTER_TOKEN }} -F ref=main https://git.konfuzio.com/api/v4/projects/140/trigger/pipeline 
-      - name: Check out
-        uses: actions/checkout@v1
-      - name: Set up Python 3.8
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-      - name: Generate pages content
-        run: |
-          pip install -e .[dev]
-          sphinx-build -d _build/doctrees docs _build/html
-          mv _build/html public
-      - name: Publish generated content to GitHub Pages
-        uses: tsunematsu21/actions-publish-gh-pages@v1.0.1
-        with:
-          dir: public
-          branch: pages
-          token: ${{ secrets.ACCESS_TOKEN }}

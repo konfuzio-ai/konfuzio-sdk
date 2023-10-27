@@ -39,6 +39,9 @@ settings.py
 *.ipynb_checkpoints/
 *.ipynb~
 
+# Ignore any Jupyter Notebook in the tutorials folder at any depth
+docs/sdk/tutorials/**/*.ipynb
+
 # Ignore distribution and build directories
 dist/
 build/
