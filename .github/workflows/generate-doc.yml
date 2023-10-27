@@ -1,14 +1,48 @@
-name: Trigger docs build
+name: Publish to GitHub Pages
 
 on:
   push:
     branches:
-      - master
+      - 11969-integrate-jupyter-nb-4docs
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger Dev-Center build
+      - name: Check out
+        uses: actions/checkout@v1
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Convert Markdown tutorials to Jupyter Notebooks
         run: |
-          curl -X POST --fail -F token=${{ secrets.DEV_CENTER_TOKEN }} -F ref=main https://git.konfuzio.com/api/v4/projects/140/trigger/pipeline 
+         pip install jupytext
+         # Convert Markdown to Jupyter Notebook
+         find docs/sdk/tutorials/**/ -name "*.md" -exec jupytext --to notebook {} \;
+         # Remove Markdown files
+         find docs/sdk/tutorials/**/ -name "*.md" -exec rm {} \;
+      - name: Generate pages content
+        run: |
+          pip install -e .[dev,ai]
+          sphinx-build -d _build/doctrees docs _build/html
+          mv _build/html public
+        env:
+          KONFUZIO_PROJECT_ID: ${{ secrets.KONFUZIO_PROJECT_ID }}
+          KONFUZIO_HOST: ${{ secrets.KONFUZIO_HOST }}
+          KONFUZIO_USER: ${{ secrets.KONFUZIO_USER }}
+          KONFUZIO_PASSWORD: ${{ secrets.KONFUZIO_PASSWORD }}
+          KONFUZIO_TOKEN: ${{ secrets.KONFUZIO_TOKEN }}
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: docs-build-test
+          path: |
+            public/
+      # - name: Publish generated content to GitHub Pages
+      #   uses: tsunematsu21/actions-publish-gh-pages@v1.0.1
+      #   with:
+      #     dir: public
+      #     branch: pages
+      #     token: ${{ secrets.ACCESS_TOKEN }}
+      #     cname: ${{ github.ref_slug }}.dev.konfuzio.com
