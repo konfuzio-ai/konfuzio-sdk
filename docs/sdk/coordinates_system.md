@@ -10,7 +10,7 @@ The format is [width, height].
 Original size of the Document is the size of the uploaded Document (which can be a PDF file or an image). The bounding 
 boxes of the Annotations are based on this size.
    E.g.: [1552, 1932]
-   
+
 
 Current size can be accessed via calling `height` and `width` from the Page object. They show the dimensions of the 
 image representation of a Document Page. These representations are used for computer vision tasks and the SmartView.
