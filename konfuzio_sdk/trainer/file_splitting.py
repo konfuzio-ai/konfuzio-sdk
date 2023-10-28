@@ -265,7 +265,15 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
             images.append(image)
         return images
 
-    def fit(self, epochs: int = 2, use_gpu: bool = False, *args, **kwargs):
+    def fit(
+        self,
+        epochs: int = 2,
+        use_gpu: bool = False,
+        eval_batch_size: int = 72,
+        train_batch_size: int = 32,
+        *args,
+        **kwargs,
+    ):
         """Process the train and test data, initialize and fit the model."""
         logger.info('Fitting Textual File Splitting Model.')
         logger.info('training documents:')
@@ -314,14 +322,16 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
             load_best_model_at_end=True,
             push_to_hub=False,
             learning_rate=1e-5,
-            per_device_train_batch_size=32,
-            per_device_eval_batch_size=72,
+            per_device_train_batch_size=train_batch_size,
+            per_device_eval_batch_size=eval_batch_size,
             num_train_epochs=epochs,
             weight_decay=0.01,
         )
         print('=' * 50)
         logger.info(f'[{time.ctime(time.time())}]\tStarting Training...')
         logger.info(f'\nclass weights for the training dataset: \n{class_weights}\n')
+        logger.info(f'Batch size for training: {train_batch_size}')
+        logger.info(f'Batch size for evaluation: {eval_batch_size}')
 
         # custom trainer with custom loss to leverage class weights
 
