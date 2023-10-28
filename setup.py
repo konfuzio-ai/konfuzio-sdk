@@ -92,6 +92,8 @@ setuptools.setup(
         'tabulate>=0.9.0',  # Used to pretty print DataFrames
         'tqdm>=4.64.0',
         'pympler>=1.0.1',  # Use to get pickle file size.
+        'evaluate==0.4.1',
+        'datasets==2.14.6',
     ],
     extras_require=EXTRAS,
 )

@@ -3348,9 +3348,17 @@ class Document(Data):
         if self._annotations is None:
             self.annotations()
 
-        ann_key = (tuple(sorted(annotation._spans.keys())), annotation.label.name)
+        # Keep compatibility with older AI versions that use lists for spans
+        if isinstance(annotation._spans, list):
+            ann_key = (
+                tuple(sorted((s.start_offset, s.end_offset) for s in annotation._spans)),
+                annotation.label.name,
+            )
+        else:
+            ann_key = (tuple(sorted(annotation._spans.keys())), annotation.label.name)
 
         duplicated = self._annotations.get(ann_key, None)
+
         if not duplicated:
             # Hotfix Text Annotation Server:
             #  Annotation belongs to a Label / Label Set that does not relate to the Category of the Document.
