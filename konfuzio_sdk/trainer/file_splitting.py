@@ -315,7 +315,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
             push_to_hub=False,
             learning_rate=1e-5,
             per_device_train_batch_size=32,
-            per_device_eval_batch_size=32,
+            per_device_eval_batch_size=72,
             num_train_epochs=epochs,
             weight_decay=0.01,
         )
