@@ -369,15 +369,19 @@ class Page(Data):
 
     def get_category_annotation(self, category, add_if_not_present: bool = False) -> 'CategoryAnnotation':
         """
-        Get the Category Annotation corresponding to a Category in this Page.
+        Retrieve the Category Annotation associated with a specific Category within this Page.
 
-        If no Category Annotation is found with the provided Category, one is created. See the `add_if_not_present`
+        If no Category Annotation is found for the provided Category, one can be created based on the `add_if_not_present`
         argument.
 
-        :param category: The Category to filter for.
-        :param add_if_not_present: Adds the Category Annotation to the current Page if not present. Otherwise it creates
-        a dummy Category Annotation, not linked to any Document or Page.
-        :return: The found or created Category Annotation.
+        :param category: The Category for which to retrieve the Category Annotation.
+        :type category: Category
+        :param add_if_not_present: If True, a Category Annotation will be added to the current Page if none is found. If 
+                                False, a dummy Category Annotation will be created, not linked to any Document or Page.
+        :type add_if_not_present: bool
+
+        :return: The located or newly created Category Annotation.
+        :rtype: CategoryAnnotation
         """
         filtered_category_annotations = [
             category_annotation
@@ -607,15 +611,20 @@ class Bbox:
 
     @classmethod
     def from_image_size(cls, x0, x1, y0, y1, page: Page) -> 'Bbox':
-        """Create Bbox from the image dimensions based result to the scale of the characters Bboxes of the Document.
+        """
+        Create a Bbox from image dimensions, based on the scaling of character Bboxes within the Document.
 
-        Compute the coordinates of the bottom-left and the top-right corners in
-        a (down-to-up y-axis, left-right x-axis, page-scaled system).
+        This method computes the coordinates of the bottom-left and top-right corners in
+        a coordinate system where the y-axis is oriented from bottom to top, the x-axis is from left to right,
+        and the scale is based on the page.
 
-        :param: (x0,y0) and (x1,y1) are the coordniates of resp. the top-left and the bottom-right corners
-        in a (up-to-down y-axis, left-right x-axis, image-scaled) system.
+        :param x0: The x-coordinate of the top-left corner in an image-scaled system.
+        :param x1: The x-coordinate of the bottom-right corner in an image-scaled system.
+        :param y0: The y-coordinate of the top-left corner in an image-scaled system.
+        :param y1: The y-coordinate of the bottom-right corner in an image-scaled system.
+        :param page: The Page object for reference in scaling.
 
-        :return: Bbox with the rescaled dimensions.
+        :return: A Bbox object with rescaled dimensions.
         """
         factor_y = page.height / page.image_height
         factor_x = page.width / page.image_width
@@ -1202,11 +1211,11 @@ class Label(Data):
             2.doc: "My was born on 12.06.1997." (1 Annotations)
             regex: dd.dd.dddd (without escaped characters for easier reading)
             stats:
-                  total_correct_findings: 2
-                  correct_label_annotations: 3
-                  total_findings: 2 --> precision 100 %
-                  num_docs_matched: 2
-                  Project.documents: 2  --> Document recall 100%
+            - total_correct_findings: 2
+            - correct_label_annotations: 3
+            - total_findings: 2 --> precision 100 %
+            - num_docs_matched: 2
+            - Project.documents: 2  --> Document recall 100%
 
         """
         evaluations = []
@@ -1470,24 +1479,27 @@ class Label(Data):
         self, categories: List[Category], use_test_docs: bool = False, top_worst_percentage: float = 0.1
     ) -> List['Annotation']:
         """
-        Get a list of Annotations that come from the least precise regex.
+        Get a list of Annotations that are identified by the least precise regular expressions.
 
-        A method iterates over the list of Categories and Annotations under each of the Category, gathering all regexes
-        for them. Once regexes are gathered, they run through the evaluation and top worst (= ones with the least
-        True Positives) are collected. For each top worst regex, the Annotations that were found by it and not found by
-        the best regex for this label are returned as possible outliers.
+        This method iterates over the list of Categories and Annotations within each Category, collecting all the regexes
+        associated with them. It then evaluates these regexes and collects the top worst ones (i.e., those with the least
+        True Positives). For each of these top worst regexes, it returns the Annotations found by them but not by the best
+        regex for that label, potentially identifying them as outliers.
 
-        For detecting outlier Annotations that are multi-Span, the method iterates over all the multi-Span Annotations
-        under the Label and checks each Span that was not detected by the said worst regexes: if it is not found by any
-        other regex in the Project, the whole Annotation is deemed a possible outlier.
+        To detect outlier Annotations with multi-Spans, the method iterates over all the multi-Span Annotations under the
+        Label and checks each Span that was not detected by the aforementioned worst regexes. If it is not found by any
+        other regex in the Project, the entire Annotation is considered a potential outlier.
 
-        :param categories: Categories under which the search is done.
+        :param categories: A list of Category objects under which the search is conducted.
         :type categories: List[Category]
-        :param use_test_docs: Whether the evaluation of the regex happens on test Documents or training Documents.
+        :param use_test_docs: Indicates whether the evaluation of the regular expressions occurs on test Documents or 
+                            training Documents.
         :type use_test_docs: bool
-        :param top_worst_percentage: A threshold for determining which percentage of the worst regexes' output to
-        return.
+        :param top_worst_percentage: A threshold for determining what percentage of the worst regexes' output to return.
         :type top_worst_percentage: float
+
+        :return: A list of Annotation objects identified by the least precise regular expressions.
+        :rtype: List[Annotation]
         """
         if use_test_docs:
             documents = self.project.test_documents
