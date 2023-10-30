@@ -128,7 +128,7 @@ def get_page_image_url(page_id: int, host: str = KONFUZIO_HOST) -> str:
 
 
 def get_document_api_details_url(
-    document_id: int, project_id: int, host: str = KONFUZIO_HOST, extra_fields='hocr,bbox'
+    document_id: int, project_id: int, host: str = KONFUZIO_HOST, extra_fields='bbox'
 ) -> str:
     """
     Generate URL to access the details of a Document in a Project.

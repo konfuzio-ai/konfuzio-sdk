@@ -131,7 +131,6 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             'data_file_name',
             'text',
             # 'bbox',  removed from default to reduce loading time
-            # 'hocr',  removed from default to reduce loading time
             'data_file_producer',
             'data_file',
             'ocr_time',
@@ -158,7 +157,6 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             'data_file_name',
             'text',
             # 'bbox',  removed from default to reduce loading time
-            # 'hocr',  removed from default to reduce loading time
             'data_file_producer',
             'data_file',
             'ocr_time',
