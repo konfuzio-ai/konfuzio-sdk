@@ -36,10 +36,6 @@ Before training an AI model, Documents for training and testing need to be uploa
 
 We start by defining a path where a PDF Document exists.
 
-```python
-print "hello"
-```
-
 ```python tags=["skip-execution", "nbval-skip"]
 FILE_PATH_1 = 'path/to/pdf_file1.pdf'
 FILE_PATH_2 = 'path/to/pdf_file2.pdf'
