@@ -7,23 +7,14 @@ import time
 
 import pandas as pd
 import numpy as np
-from datasets import Dataset
-import evaluate
-from transformers import (
-    AutoModelForSequenceClassification,
-    TrainingArguments,
-    Trainer,
-    AutoTokenizer,
-)
 from sklearn.utils.class_weight import compute_class_weight
-from torch import nn
 
 from copy import deepcopy
 from inspect import signature
 from typing import List, Union
 
 from konfuzio_sdk.data import Document, Page, Category
-from konfuzio_sdk.extras import torch, tensorflow as tf, transformers
+from konfuzio_sdk.extras import torch, tensorflow as tf, transformers, evaluate, datasets, Trainer
 from konfuzio_sdk.evaluate import FileSplittingEvaluation
 from konfuzio_sdk.trainer.information_extraction import BaseModel
 from konfuzio_sdk.utils import get_timestamp
@@ -213,7 +204,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         #     text_processing_model, do_lower_case=True, max_length=2000, padding="max_length", truncate=True
         # )
         self.model_name = "bert-base-uncased"
-        self.bert_tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+        self.bert_tokenizer = transformers.AutoTokenizer.from_pretrained(self.model_name)
 
     def reduce_model_weight(self):
         """Remove all non-strictly necessary parameters before saving."""
@@ -290,12 +281,12 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         train_df = pd.DataFrame({"text": train_texts, "label": train_labels})
         test_df = pd.DataFrame({"text": test_texts, "label": test_labels})
         # Convert to Dataset objects
-        train_dataset = Dataset.from_pandas(train_df)
-        test_dataset = Dataset.from_pandas(test_df)
+        train_dataset = datasets.Dataset.from_pandas(train_df)
+        test_dataset = datasets.Dataset.from_pandas(test_df)
         # Calculate class weights to solve unbalanced dataset problem
         class_weights = compute_class_weight("balanced", classes=[0, 1], y=train_labels)
         # defining tokenizer
-        tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+        tokenizer = transformers.AutoTokenizer.from_pretrained(self.model_name)
         # defining metric
         metric = evaluate.load("f1")
 
@@ -314,8 +305,8 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         test_dataset = test_dataset.map(tokenize_function, batched=True)
         print("=" * 50)
         logger.info("Loading model")
-        self.model = AutoModelForSequenceClassification.from_pretrained(self.model_name, num_labels=2)
-        training_args = TrainingArguments(
+        self.model = transformers.AutoModelForSequenceClassification.from_pretrained(self.model_name, num_labels=2)
+        training_args = transformers.TrainingArguments(
             output_dir="splitting_ai_trainer",
             evaluation_strategy="epoch",
             save_strategy="epoch",
@@ -342,7 +333,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
                 outputs = model(**inputs)
                 logits = outputs.get("logits")
                 # compute custom loss (suppose one has 3 labels with different weights)
-                loss_fct = nn.CrossEntropyLoss(
+                loss_fct = torch.nn.CrossEntropyLoss(
                     weight=torch.tensor(class_weights, device=model.device, dtype=torch.float)
                 )
                 loss = loss_fct(logits.view(-1, self.model.config.num_labels), labels.view(-1))

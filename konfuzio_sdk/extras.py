@@ -70,6 +70,8 @@ class ModuleWrapper:
         self.replaced = type(module, (object,), {"__metaclass__": abc.ABCMeta})
 
 
+datasets = PackageWrapper('datasets', ['File Splitting AI'])
+evaluate = PackageWrapper('evaluate', ['File Splitting AI'])
 spacy = PackageWrapper('spacy', ['Document Categorization AI'])
 if spacy.package:
     SpacyPhraseMatcher = spacy.matcher.PhraseMatcher
@@ -96,6 +98,10 @@ else:
     LongTensor = ModuleWrapper('LongTensor').replaced
 torchvision = PackageWrapper('torchvision', ['Document Categorization AI'])
 transformers = PackageWrapper('transformers', ['Document Categorization AI, File Splitting AI'])
+if transformers.package:
+    Trainer = transformers.Trainer
+else:
+    Trainer = ModuleWrapper('Trainer').replaced
 
 
 def torch_no_grad(method):
