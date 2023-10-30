@@ -1,83 +1,137 @@
-.. _document-categorization-tutorials:
-## Document Categorization
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .md
+      format_name: markdown
+      format_version: '1.3'
+      jupytext_version: 1.15.2
+  kernelspec:
+    display_name: Python 3 (ipykernel)
+    language: python
+    name: python3
+---
 
-When uploading a Document to Konfuzio, the first step is to assign it to a :ref:`Category<category-concept>`. This 
-can be done manually, or automatically using a Categorization AI. Categorization always happens on a Project level.
+<!-- #region editable=true slideshow={"slide_type": ""} -->
+## Categorize a Document using Categorization AI
 
-### Setting the Category of a Document and its individual Pages Manually
+---
 
-You can initialize a Document with a :ref:`Category<category-concept>`. You can also use `Document.set_category` to set 
-a Document's Category after it has been initialized. This will count as if a human manually revised it.
+**Prerequisites:**
+- Data Layer concepts of Konfuzio SDK
+- AI concepts of Konfuzio SDK
 
-Note: a Document's Category can be changed via `set_category` only if the original Category has 
-been set to `no_category`. Otherwise, an attempt to change a Category will cause an error.
+**Difficulty:** Medium
 
+**Goal:** Learn how to categorize a Document using one of Categorization AIs pre-constructed by Konfuzio
 
-.. literalinclude:: /sdk/boilerplates/test_document_categorization.py
-   :language: python
-   :start-after: start init
-   :end-before: end init
-   :dedent: 4
+---
 
-If a Document is initialized with no Category, it will automatically be set to NO_CATEGORY. Another Category can be 
-manually set later.
+### Introduction
 
-.. literalinclude:: /sdk/boilerplates/test_document_categorization.py
-   :language: python
-   :start-after: start no_category
-   :end-before: end no_category
-   :dedent: 4
+To categorize a Document with a Categorization AI constructed by Konfuzio, there are two main options: the Name-based Categorization AI and the more complex Model-based Categorization AI.
 
+#### Name-based Categorization AI
 
-If you use a Categorization AI to automatically assign a Category to a Document (such as the 
-[NameBasedCategorizationAI](#name-based-categorization-ai), each Page will be assigned a 
-Category Annotation with predicted confidence information, and the following properties will be accessible. You can 
-also find these documented under [API Reference - Document](../../sourcecode.html#document), 
-[API Reference - Page](../../sourcecode.html#page) and 
-[API Reference - Category Annotation](../../sourcecode.html#category-annotation).
+The name-based Categorization AI is a simple logic that checks if a name of the Category appears in the Document. It can be used to categorize Documents when no model-based Categorization AI is available.
+<!-- #endregion -->
 
-| Property                     | Description                                                                                                                                                                                                                       |
-|-------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `CategoryAnnotation.category`    | The AI predicted Category of this Category<br>Annotation.                                                                                                                                                                         |
-| `CategoryAnnotation.confidence`  | The AI predicted confidence of this Category<br>Annotation.                                                                                                                                                                       |
-| `Document.category_annotations`   | List of predicted Category Annotations at the<br>Document level.                                                                                                                                                                  |
-| `Document.maximum_confidence_category_annotation`   | Get the maximum confidence predicted Category<br>Annotation, or the human revised one if present.                                                                                                                                 |
-| `Document.maximum_confidence_category`   | Get the maximum confidence predicted Category<br>or the human revised one if present.                                                                                                                                             |
-| `Document.category`  | Returns a Category only if all Pages have same<br>Category, otherwise None. In that case, it hints<br>to the fact that the Document should probably<br>be revised or split into Documents with<br>consistently categorized Pages. |
-| `Page.category_annotations`   | List of predicted Category Annotations at the<br>Page level.                                                                                                                                                                      |
-| `Page.maximum_confidence_category_annotation`   | Get the maximum confidence predicted Category<br>Annotation or the one revised by the user for this<br>Page.                                                                                                                      |
-| `Page.category`  | Get the maximum confidence predicted Category<br>or the one revised by user for this Page.                                                                                                                                        |
+```python editable=true slideshow={"slide_type": ""} tags=["remove-cell"] vscode={"languageId": "plaintext"}
+YOUR_PROJECT_ID = 46
+YOUR_CATEGORY_ID = 63
+YOUR_DOCUMENT_ID = 44865
+```
 
-To categorize a Document with a Categorization AI, we have two main options: the Name-based Categorization AI and the 
-more complex Model-based Categorization AI.
+```python editable=true slideshow={"slide_type": ""} tags=["remove-output"] vscode={"languageId": "plaintext"}
+from konfuzio_sdk.data import Project
+from konfuzio_sdk.trainer.document_categorization import NameBasedCategorizationAI
 
-### Name-based Categorization AI
+# Set up your Project.
+project = Project(id_=YOUR_PROJECT_ID)
 
-The name-based Categorization AI is a good fallback logic using the name of the Category to categorize Documents when 
-no model-based Categorization AI is available:
+# Initialize the Categorization Model.
+categorization_model = NameBasedCategorizationAI(project.categories)
 
-.. literalinclude:: /sdk/boilerplates/test_document_categorization.py
-   :language: python
-   :start-after: start name-based
-   :end-before: end name-based
-   :dedent: 4
+# Retrieve a Document to categorize.
+test_document = project.get_document_by_id(YOUR_DOCUMENT_ID)
 
-### Model-based Categorization AI
+# The Categorization Model returns a copy of the SDK Document with Category attribute
+# (use inplace=True to maintain the original Document instead).
+# If the input Document is already categorized, the already present Category is used
+# (use recategorize=True if you want to force a recategorization).
+result_doc = categorization_model.categorize(document=test_document)
 
-For better results you can build, train and test a Categorization AI using Image Models and Text Models to classify 
-the image and text of each Page:
+# Each Page is categorized individually.
+for page in result_doc.pages():
+    assert page.category == project.categories[0]
+    print(f"Found category {page.category} for {page}")
 
-.. literalinclude:: /sdk/boilerplates/test_document_categorization.py
-   :language: python
-   :start-after: start imports
-   :end-before: end imports
-   :dedent: 4
-.. literalinclude:: /sdk/boilerplates/test_document_categorization.py
-   :language: python
-   :start-after: Start Build
-   :end-before: End Build
-   :dedent: 4
+# The Category of the Document is defined when all pages' Categories are equal.
+# If the Document contains mixed Categories, only the Page level Category will be defined,
+# and the Document level Category will be NO_CATEGORY.
+print(f"Found category {result_doc.category} for {result_doc}")
+```
 
+<!-- #region editable=true slideshow={"slide_type": ""} -->
+#### Model-based Categorization AI
+
+For better results you can build, train and test a Categorization AI using Image Models and Text Models to classify the image and text of each Page.
+<!-- #endregion -->
+
+```python editable=true slideshow={"slide_type": ""}
+from konfuzio_sdk.data import Project, Document
+from konfuzio_sdk.trainer.document_categorization import build_categorization_ai_pipeline
+from konfuzio_sdk.trainer.document_categorization import ImageModel, TextModel, CategorizationAI
+
+# Set up your Project.
+project = Project(id_=YOUR_PROJECT_ID)
+```
+
+```python editable=true slideshow={"slide_type": ""} tags=["remove-cell"]
+for doc in project.documents + project.test_documents:
+    doc.get_images()
+for document in project.documents[3:] + project.test_documents[1:]:
+    document.dataset_status = 4 
+project.get_document_by_id(44864).dataset_status = 4
+```
+
+```python editable=true slideshow={"slide_type": ""} tags=["remove-output"]
+# Build the Categorization AI architecture using a template
+# of pre-built Image and Text classification Models.
+categorization_pipeline = build_categorization_ai_pipeline(
+    categories=project.categories,
+    documents=project.documents,
+    test_documents=project.test_documents,
+    image_model=ImageModel.EfficientNetB0,
+    text_model=TextModel.NBOWSelfAttention,
+)
+
+# Train the AI.
+categorization_pipeline.fit(n_epochs=1, optimizer={'name': 'Adam'})
+
+# Evaluate the AI
+data_quality = categorization_pipeline.evaluate(use_training_docs=True)
+ai_quality = categorization_pipeline.evaluate()
+assert data_quality.f1(None) == 1.0
+assert ai_quality.f1(None) == 1.0
+
+# Categorize a Document
+document = project.get_document_by_id(YOUR_DOCUMENT_ID)
+categorization_result = categorization_pipeline.categorize(document=document)
+assert isinstance(categorization_result, Document)
+for page in categorization_result.pages():
+    print(f"Found category {page.category} for {page}")
+
+# Save and load a pickle file for the AI
+pickle_ai_path = categorization_pipeline.save()
+categorization_pipeline = CategorizationAI.load_model(pickle_ai_path)
+```
+
+```python editable=true slideshow={"slide_type": ""} tags=["remove-cell"]
+os.remove(pickle_ai_path)
+```
+
+<!-- #region editable=true slideshow={"slide_type": ""} -->
 To prepare the data for training and testing your AI, follow the [data preparation tutorial](https://dev.konfuzio.com/sdk/tutorials/data-preparation/index.html#prepare-the-data-for-training-and-testing-the-ai).
 
 For a list of available Models see all the available [Categorization Models](#categorization-ai-models) below.
@@ -89,13 +143,34 @@ classification. At least one between the Image Model or the Text Model must be s
 at the same time.
 
 The list of available Categorization Models is implemented as an Enum containing the following elements:
+<!-- #endregion -->
 
-.. literalinclude:: /sdk/boilerplates/test_document_categorization.py
-   :language: python
-   :start-after: Start Models
-   :end-before: End Models
-   :dedent: 4
+```python editable=true slideshow={"slide_type": ""} tags=["skip-execution"]
+from konfuzio_sdk.trainer.document_categorization import ImageModel, TextModel
 
+# Image Models
+ImageModel.VGG11
+ImageModel.VGG13
+ImageModel.VGG16
+ImageModel.VGG19
+ImageModel.EfficientNetB0
+ImageModel.EfficientNetB1
+ImageModel.EfficientNetB2
+ImageModel.EfficientNetB3
+ImageModel.EfficientNetB4
+ImageModel.EfficientNetB5
+ImageModel.EfficientNetB6
+ImageModel.EfficientNetB7
+ImageModel.EfficientNetB8
+
+# Text Models
+TextModel.NBOW
+TextModel.NBOWSelfAttention
+TextModel.LSTM
+TextModel.BERT
+```
+
+<!-- #region editable=true slideshow={"slide_type": ""} -->
 See more details about these Categorization Models under [API Reference - Categorization AI](../../sourcecode.html#categorization-ai).
 
 #### Possible configurations
@@ -125,55 +200,17 @@ them [here](https://help.konfuzio.com/modules/projects/index.html?highlight=effi
 | None | None | VGG | vgg16                    |
 | None | None | VGG | vgg19                    |
 
+<!-- #endregion -->
 
-### Create a custom Categorization AI
+<!-- #region editable=true slideshow={"slide_type": ""} -->
+### Conclusion
 
-This section explains how to train a custom Categorization AI locally, how to save it and upload it to the Konfuzio 
-Server. If you run this tutorial in Colab and experience any version compatibility issues when working with the SDK, restart the
-runtime and initialize the SDK once again; this will resolve the issue.
+In this tutorial, we presented two different ways to categorize a Document using AIs constructed by Konfuzio and provided possible configurations that can be used in model-based Categorization.
+<!-- #endregion -->
 
-Note: you don't necessarily need to create the AI from scratch if you already have some document-processing architecture.
-You just need to wrap it into the class that corresponds to our Categorization AI structure. Follow the steps in this 
-tutorial to find out what are the requirements for that.
+<!-- #region editable=true slideshow={"slide_type": ""} -->
+### What's next?
 
-Note: currently, the Server supports AI models created using `torch<2.0.0`.
+- Create your custom Categorization AI
 
-By default, any [Categorization AI](../../sourcecode.html#categorization-ai) class should derive from the 
-`AbstractCategorizationModel` class and implement the following methods:
-
-.. literalinclude:: /sdk/boilerplates/test_custom_categorization_ai.py
-   :language: python
-   :start-after: start init
-   :end-before: end init
-   :dedent: 4
-
-Example usage of your Custom Categorization AI:
-
-.. literalinclude:: /sdk/boilerplates/test_custom_categorization_ai.py
-   :language: python
-   :start-after: start usage
-   :end-before: end usage
-   :dedent: 4
-.. literalinclude:: /sdk/boilerplates/test_custom_categorization_ai.py
-   :language: python
-   :start-after: start fit
-   :end-before: end fit
-   :dedent: 4
-
-After you have trained and saved your custom AI, you can upload it using the steps from the [tutorial](https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html#upload-extraction-or-category-ai-to-target-instance)
-or using the method `upload_ai_model()` as described in [Upload your AI](https://dev.konfuzio.com/sdk/tutorials/upload-your-ai/index.html), provided that you have the Superuser rights.
-
-### Categorization AI Overview Diagram
-
-In the first diagram, we show the class hierarchy of the available Categorization Models within the SDK. Note that the 
-Multimodal Model simply consists of a Multi Layer Perceptron to concatenate the feature outputs of a Text Model and an 
-Image Model, such that the predictions from both Models can be unified in a unique Category prediction.
-
-In the second diagram, we show how these models are contained within a Model-based Categorization AI. The 
-[Categorization AI](https://dev.konfuzio.com/sdk/sourcecode.html#categorization-ai) class provides the high level 
-interface to categorize Documents, as exemplified in the code examples above. It uses a Page Categorization Model 
-to categorize each Page. The Page Categorization Model is a container for Categorization Models: it wraps the feature 
-output layers of each contained Model with a Dropout Layer and a Fully Connected Layer.
-
-<div class="mxgraph" style="max-width:100%;border:1px solid transparent;" data-mxgraph="{&quot;highlight&quot;:&quot;#0000ff&quot;,&quot;nav&quot;:true,&quot;resize&quot;:true,&quot;toolbar&quot;:&quot;zoom layers tags lightbox&quot;,&quot;edit&quot;:&quot;_blank&quot;,&quot;url&quot;:&quot;https://raw.githubusercontent.com/konfuzio-ai/konfuzio-sdk/master/docs/sdk/tutorials/document_categorization/CategorizationAI.drawio&quot;}"></div>
-<script type="text/javascript" src="https://viewer.diagrams.net/embed2.js?&fetch=https%3A%2F%2Fraw.githubusercontent.com%2Fkonfuzio-ai%2Fkonfuzio-sdk%2Fmaster%2Fdocs%2Fsdk%2Ftutorials%2Fdocument_categorization%2FCategorizationAI.drawio"></script>
+<!-- #endregion -->
