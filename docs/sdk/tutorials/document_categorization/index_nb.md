@@ -31,7 +31,7 @@ jupyter:
 
 To categorize a Document with a Categorization AI constructed by Konfuzio, there are two main options: the Name-based Categorization AI and the more complex Model-based Categorization AI.
 
-#### Name-based Categorization AI
+### Name-based Categorization AI
 
 The name-based Categorization AI is a simple logic that checks if a name of the Category appears in the Document. It can be used to categorize Documents when no model-based Categorization AI is available.
 <!-- #endregion -->
@@ -73,7 +73,7 @@ print(f"Found category {result_doc.category} for {result_doc}")
 ```
 
 <!-- #region editable=true slideshow={"slide_type": ""} -->
-#### Model-based Categorization AI
+### Model-based Categorization AI
 
 For better results you can build, train and test a Categorization AI using Image Models and Text Models to classify the image and text of each Page.
 <!-- #endregion -->
@@ -132,11 +132,11 @@ os.remove(pickle_ai_path)
 ```
 
 <!-- #region editable=true slideshow={"slide_type": ""} -->
-To prepare the data for training and testing your AI, follow the [data preparation tutorial](https://dev.konfuzio.com/sdk/tutorials/data-preparation/index.html#prepare-the-data-for-training-and-testing-the-ai).
+To prepare the data for training and testing your AI, follow the [data preparation tutorial](https://dev.konfuzio.com/sdk/tutorials/data-preparation/index.html).
 
 For a list of available Models see all the available [Categorization Models](#categorization-ai-models) below.
 
-#### Categorization AI Models
+### Categorization AI Models
 
 When using `build_categorization_ai_pipeline`, you can select which Image Module and/or Text Module to use for 
 classification. At least one between the Image Model or the Text Model must be specified. Both can also be used 
@@ -171,9 +171,9 @@ TextModel.BERT
 ```
 
 <!-- #region editable=true slideshow={"slide_type": ""} -->
-See more details about these Categorization Models under [API Reference - Categorization AI](../../sourcecode.html#categorization-ai).
+See more details about these Categorization Models under [API Reference - Categorization AI](ADD LINK).
 
-#### Possible configurations
+### Possible configurations
 
 The following configurations of Categorization AI are tested. Tokenizer, text and image processors can be specified 
 when building Categorization pipeline locally; text and image processors can be specified when building the pipeline 
