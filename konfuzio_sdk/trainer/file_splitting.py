@@ -253,6 +253,8 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         logger.info("testing documents:")
         print([doc.id_ for doc in self.test_documents])
         print("=" * 50)
+        logger.info(f"Length of training documents: {len(self.documents)}")
+        logger.info(f"Length of testing documents: {len(self.test_documents)}")
         logger.info("Preprocessing training & test documents")
         train_texts, train_labels = self._preprocess_documents(self.documents, return_images=False)
         test_texts, test_labels = self._preprocess_documents(self.test_documents, return_images=False)
