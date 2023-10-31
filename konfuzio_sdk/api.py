@@ -791,7 +791,7 @@ def export_ai_models(project) -> int: # NOQA
 
     for ai_type in ai_types:
         variant = ai_type
-        folder = f"{project.project_folder}/models/{variant}_ais"
+        folder = os.path.join(project.project_folder, 'models', variant + '_ais')
 
         for ai_model in project_ai_models.get(variant, {}).get("results", []):
             # Only export fully trained AIs which are set as active
