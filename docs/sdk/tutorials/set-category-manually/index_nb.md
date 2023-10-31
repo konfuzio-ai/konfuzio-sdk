@@ -12,6 +12,7 @@ jupyter:
     name: python3
 ---
 
+
 ## Set the Category manually
 
 ---
@@ -31,13 +32,13 @@ When creating a new Document, the first step is to assign a Category to it. In t
 
 You can initialize a Document with a specific Category:
 
-```python editable=true slideshow={"slide_type": ""} tags=["remove-cell"]
+```python tags=["remove-cell"]
 YOUR_PROJECT_ID = 46
 YOUR_CATEGORY_ID = 63
 YOUR_DOCUMENT_ID = 44865
 ```
 
-```python editable=true slideshow={"slide_type": ""} tags=["remove-output"] vscode={"languageId": "plaintext"}
+```python tags=["remove-output"]
 project = Project(id_=YOUR_PROJECT_ID)
 my_category = project.get_category_by_id(YOUR_CATEGORY_ID)
 
@@ -49,7 +50,7 @@ You can also use `Document.set_category` to set a Document’s Category after it
 
 *Note:* a Document’s Category can be changed via set_category only if the original Category has been set to no_category. Otherwise, an attempt to change a Category will cause an error.
 
-```python editable=true slideshow={"slide_type": ""} tags=["remove-output"]
+```python tags=["remove-output"]
 document = project.get_document_by_id(YOUR_DOCUMENT_ID)
 document.set_category(None)
 assert document.category == project.no_category
@@ -68,7 +69,7 @@ If a Document is initialized with no Category, it will automatically be set to N
 ### Conclusion
 In this tutorial, we walked you through the steps of manually setting and changing the Category of a Document and its Pages. Below is the full code to accomplish this task:
 
-```python editable=true slideshow={"slide_type": ""} tags=["skip-execution"] vscode={"languageId": "plaintext"}
+```python tags=["skip-execution"]
 project = Project(id_=YOUR_PROJECT_ID)
 my_category = project.get_category_by_id(YOUR_CATEGORY_ID)
 
