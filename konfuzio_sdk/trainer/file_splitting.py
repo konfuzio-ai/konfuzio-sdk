@@ -5,6 +5,17 @@ import os
 import PIL
 import time
 
+from datasets import Dataset
+import evaluate
+from transformers import (
+    AutoModelForSequenceClassification,
+    TrainingArguments,
+    Trainer,
+    AutoTokenizer,
+)
+
+from torch import nn
+
 import pandas as pd
 import numpy as np
 from sklearn.utils.class_weight import compute_class_weight
@@ -17,10 +28,6 @@ from konfuzio_sdk.data import Document, Page, Category
 from konfuzio_sdk.extras import (
     torch,
     tensorflow as tf,
-    transformers,
-    evaluate,
-    datasets,
-    Trainer,
 )
 from konfuzio_sdk.evaluate import FileSplittingEvaluation
 from konfuzio_sdk.trainer.information_extraction import BaseModel
@@ -204,7 +211,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         self.model = None
         logger.info("Initializing BERT components of the Multimodal File Splitting Model.")
         self.model_name = "distilbert-base-uncased"
-        self.bert_tokenizer = transformers.AutoTokenizer.from_pretrained(self.model_name)
+        self.bert_tokenizer = AutoTokenizer.from_pretrained(self.model_name)
 
     def reduce_model_weight(self):
         """Remove all non-strictly necessary parameters before saving."""
@@ -241,7 +248,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         self,
         epochs: int = 1,
         use_gpu: bool = False,
-        eval_batch_size: int = 160,
+        eval_batch_size: int = 128,
         train_batch_size: int = 32,
         *args,
         **kwargs,
@@ -264,8 +271,8 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         train_df = pd.DataFrame({"text": train_texts, "label": train_labels})
         test_df = pd.DataFrame({"text": test_texts, "label": test_labels})
         # Convert to Dataset objects
-        train_dataset = datasets.Dataset.from_pandas(train_df)
-        test_dataset = datasets.Dataset.from_pandas(test_df)
+        train_dataset = Dataset.from_pandas(train_df)
+        test_dataset = Dataset.from_pandas(test_df)
         # Calculate class weights to solve unbalanced dataset problem
         class_weights = compute_class_weight("balanced", classes=[0, 1], y=train_labels)
         # defining tokenizer
@@ -288,8 +295,8 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         test_dataset = test_dataset.map(tokenize_function, batched=True)
         print("=" * 50)
         logger.info("Loading model")
-        self.model = transformers.AutoModelForSequenceClassification.from_pretrained(self.model_name, num_labels=2)
-        training_args = transformers.TrainingArguments(
+        self.model = AutoModelForSequenceClassification.from_pretrained(self.model_name, num_labels=2)
+        training_args = TrainingArguments(
             output_dir="splitting_ai_trainer",
             evaluation_strategy="epoch",
             save_strategy="epoch",
@@ -316,7 +323,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
                 outputs = model(**inputs)
                 logits = outputs.get("logits")
                 # compute custom loss (suppose one has 3 labels with different weights)
-                loss_fct = torch.nn.CrossEntropyLoss(
+                loss_fct = nn.CrossEntropyLoss(
                     weight=torch.tensor(class_weights, device=model.device, dtype=torch.float)
                 )
                 loss = loss_fct(logits.view(-1, model.config.num_labels), labels.view(-1))
