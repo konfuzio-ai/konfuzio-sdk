@@ -5,6 +5,17 @@ import os
 import PIL
 import time
 
+from datasets import Dataset
+import evaluate
+from transformers import (
+    AutoModelForSequenceClassification,
+    TrainingArguments,
+    Trainer,
+    AutoTokenizer,
+)
+
+from torch import nn
+
 import pandas as pd
 import numpy as np
 from sklearn.utils.class_weight import compute_class_weight
@@ -14,7 +25,10 @@ from inspect import signature
 from typing import List, Union
 
 from konfuzio_sdk.data import Document, Page, Category
-from konfuzio_sdk.extras import torch, tensorflow as tf, transformers, evaluate, datasets, Trainer
+from konfuzio_sdk.extras import (
+    torch,
+    tensorflow as tf,
+)
 from konfuzio_sdk.evaluate import FileSplittingEvaluation
 from konfuzio_sdk.trainer.information_extraction import BaseModel
 from konfuzio_sdk.utils import get_timestamp
@@ -184,7 +198,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         # https://towardsdatascience.com/eager-execution-vs-graph-execution-which-is-better-38162ea4dbf6
         tf.config.experimental_run_functions_eagerly(True)
         self.output_dir = self.project.model_folder
-        self.requires_images = True
+        self.requires_images = False
         self.requires_text = True
         self.train_txt_data = []
         self.train_img_data = None
@@ -196,22 +210,15 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         self.scale = scale
         self.model = None
         logger.info("Initializing BERT components of the Multimodal File Splitting Model.")
-        configuration = transformers.AutoConfig.from_pretrained(text_processing_model)
-        configuration.num_labels = 2
-        configuration.output_hidden_states = True
-        self.bert_model = transformers.AutoModel.from_pretrained(text_processing_model, config=configuration)
-        # self.bert_tokenizer = transformers.BertTokenizer.from_pretrained(
-        #     text_processing_model, do_lower_case=True, max_length=2000, padding="max_length", truncate=True
-        # )
-        self.model_name = "bert-base-uncased"
-        self.bert_tokenizer = transformers.AutoTokenizer.from_pretrained(self.model_name)
+        self.model_name = "distilbert-base-uncased"
+        self.bert_tokenizer = AutoTokenizer.from_pretrained(self.model_name)
 
     def reduce_model_weight(self):
         """Remove all non-strictly necessary parameters before saving."""
         self.project.lose_weight()
 
     def _preprocess_documents(
-        self, data: List[Document], return_images: bool = True
+        self, data: List[Document], return_images: bool = False
     ) -> (List[PIL.Image.Image], List[str], List[int]):
         """
         Take a list of Documents and obtain Pages' images, texts and labels of first or non-first class.
@@ -237,28 +244,9 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
             return page_images, texts, labels
         return texts, labels
 
-    def _image_transformation(self, page_images: List[PIL.Image.Image]) -> List[np.ndarray]:
-        """
-        Take an image and transform it into the format acceptable by the model's architecture.
-
-        :param page_images: A list of Pages' images to be transformed.
-        :type page_images: List[str]
-        :returns: A list of processed images.
-        """
-        images = []
-        for page_image in page_images:
-            image = page_image.convert("RGB")
-            image = image.resize((224, 224))
-            image = tf.keras.preprocessing.image.img_to_array(image)
-            image = image.reshape((1, image.shape[0], image.shape[1], image.shape[2]))
-            image = image[..., ::-1]  # replacement of keras's preprocess_input implementation because of dimensionality
-            image[0] -= 103.939
-            images.append(image)
-        return images
-
     def fit(
         self,
-        epochs: int = 5,
+        epochs: int = 1,
         use_gpu: bool = False,
         eval_batch_size: int = 128,
         train_batch_size: int = 32,
@@ -272,6 +260,8 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         logger.info("testing documents:")
         print([doc.id_ for doc in self.test_documents])
         print("=" * 50)
+        logger.info(f"Length of training documents: {len(self.documents)}")
+        logger.info(f"Length of testing documents: {len(self.test_documents)}")
         logger.info("Preprocessing training & test documents")
         train_texts, train_labels = self._preprocess_documents(self.documents, return_images=False)
         test_texts, test_labels = self._preprocess_documents(self.test_documents, return_images=False)
@@ -281,12 +271,12 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         train_df = pd.DataFrame({"text": train_texts, "label": train_labels})
         test_df = pd.DataFrame({"text": test_texts, "label": test_labels})
         # Convert to Dataset objects
-        train_dataset = datasets.Dataset.from_pandas(train_df)
-        test_dataset = datasets.Dataset.from_pandas(test_df)
+        train_dataset = Dataset.from_pandas(train_df)
+        test_dataset = Dataset.from_pandas(test_df)
         # Calculate class weights to solve unbalanced dataset problem
         class_weights = compute_class_weight("balanced", classes=[0, 1], y=train_labels)
         # defining tokenizer
-        tokenizer = transformers.AutoTokenizer.from_pretrained(self.model_name)
+        tokenizer = self.bert_tokenizer
         # defining metric
         metric = evaluate.load("f1")
 
@@ -305,8 +295,8 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         test_dataset = test_dataset.map(tokenize_function, batched=True)
         print("=" * 50)
         logger.info("Loading model")
-        self.model = transformers.AutoModelForSequenceClassification.from_pretrained(self.model_name, num_labels=2)
-        training_args = transformers.TrainingArguments(
+        self.model = AutoModelForSequenceClassification.from_pretrained(self.model_name, num_labels=2)
+        training_args = TrainingArguments(
             output_dir="splitting_ai_trainer",
             evaluation_strategy="epoch",
             save_strategy="epoch",
@@ -333,10 +323,10 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
                 outputs = model(**inputs)
                 logits = outputs.get("logits")
                 # compute custom loss (suppose one has 3 labels with different weights)
-                loss_fct = torch.nn.CrossEntropyLoss(
+                loss_fct = nn.CrossEntropyLoss(
                     weight=torch.tensor(class_weights, device=model.device, dtype=torch.float)
                 )
-                loss = loss_fct(logits.view(-1, self.model.config.num_labels), labels.view(-1))
+                loss = loss_fct(logits.view(-1, model.config.num_labels), labels.view(-1))
                 return (loss, outputs) if return_outputs else loss
 
         trainer = CustomTrainer(
@@ -351,119 +341,10 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         print("=" * 50)
         logger.info(f"[{time.ctime(time.time())}]\tComputing AI Quality.")
         evaluation_results = trainer.evaluate()
+        self.model = trainer.model
         logger.info(f"[{time.ctime(time.time())}]\tTextual File Splitting Model Evaluation finished.")
         print("=" * 50)
         return evaluation_results
-
-    def old_fit(self, epochs: int = 1, use_gpu: bool = False, *args, **kwargs):
-        """
-        Process the train and test data, initialize and fit the model.
-
-        :param epochs: A number of epochs to train a model on.
-        :type epochs: int
-        :param use_gpu: Run training on GPU if available.
-        :type use_gpu: bool
-        """
-        logger.info("Fitting Multimodal File Splitting Model.")
-        for doc in self.documents + self.test_documents:
-            for page in doc.pages():
-                if not os.path.exists(page.image_path):
-                    page.get_image()
-        print("training documents:")
-        print([doc.id_ for doc in self.documents])
-        print("testing documents:")
-        print([doc.id_ for doc in self.test_documents])
-        train_image_paths, train_texts, train_labels = self._preprocess_documents(self.documents)
-        test_image_paths, test_texts, test_labels = self._preprocess_documents(self.test_documents)
-        logger.info("Document preprocessing finished.")
-        train_images = self._image_transformation(train_image_paths)
-        test_images = self._image_transformation(test_image_paths)
-        # labels are transformed into numpy array, reshaped into arrays of len==1 and then into TF tensor of shape
-        # (len(train_labels), 1) with elements of dtype==float32. this is needed to feed labels into the Multi-Layered
-        # Perceptron as input.
-        self.train_labels = tf.cast(np.asarray(train_labels).reshape((-1, 1)), tf.float32)
-        self.test_labels = tf.cast(np.asarray(test_labels).reshape((-1, 1)), tf.float32)
-        self.train_img_data = np.concatenate(train_images)
-        self.test_img_data = np.concatenate(test_images)
-        logger.info("Image data preprocessing finished.")
-        for text in train_texts:
-            inputs = self.bert_tokenizer(text, truncation=True, return_tensors="pt")
-            with torch.no_grad():
-                output = self.bert_model(**inputs)
-            self.train_txt_data.append(output.pooler_output)
-        self.train_txt_data = [np.asarray(x).astype("float32") for x in self.train_txt_data]
-        self.train_txt_data = np.asarray(self.train_txt_data)
-        for text in test_texts:
-            inputs = self.bert_tokenizer(text, truncation=True, return_tensors="pt")
-            with torch.no_grad():
-                output = self.bert_model(**inputs)
-            self.test_txt_data.append(output.pooler_output)
-        self.input_shape = self.test_txt_data[0].shape
-        self.test_txt_data = [np.asarray(x).astype("float32") for x in self.test_txt_data]
-        self.test_txt_data = np.asarray(self.test_txt_data)
-        logger.info("Text data preprocessing finished.")
-        logger.info("Multimodal File Splitting Model compiling started.")
-        # we combine an output of a simplified VGG19 architecture for image processing (read more about it
-        # at https://iq.opengenus.org/vgg19-architecture/) and an output of BERT in an MLP-like
-        # architecture (read more about it at http://shorturl.at/puKN3). a scheme of our custom architecture can be
-        # found at https://dev.konfuzio.com/sdk/tutorials/file_splitting/index.html#develop-and-save-a-context-aware-file-splitting-ai  # NOQA
-        txt_input = tf.keras.Input(shape=self.input_shape, name="text")
-        txt_x = tf.keras.layers.Dense(units=512, activation="relu")(txt_input)
-        txt_x = tf.keras.layers.Flatten()(txt_x)
-        txt_x = tf.keras.layers.Dense(units=256 * self.scale, activation="relu")(txt_x)
-        img_input = tf.keras.Input(shape=(224, 224, 3), name="image")
-        img_x = tf.keras.layers.Conv2D(
-            input_shape=(224, 224, 3),
-            filters=64,
-            kernel_size=(3, 3),
-            padding="same",
-            activation="relu",
-        )(img_input)
-        img_x = tf.keras.layers.Conv2D(filters=64, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
-        img_x = tf.keras.layers.MaxPool2D(pool_size=(2, 2), strides=(2, 2))(img_x)
-        img_x = tf.keras.layers.Conv2D(filters=128, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
-        img_x = tf.keras.layers.Conv2D(filters=128, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
-        img_x = tf.keras.layers.MaxPool2D(pool_size=(2, 2), strides=(2, 2))(img_x)
-        img_x = tf.keras.layers.Conv2D(filters=256, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
-        img_x = tf.keras.layers.Conv2D(filters=256, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
-        img_x = tf.keras.layers.MaxPool2D(pool_size=(2, 2), strides=(2, 2))(img_x)
-        img_x = tf.keras.layers.Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
-        img_x = tf.keras.layers.MaxPool2D(pool_size=(2, 2), strides=(2, 2))(img_x)
-        img_x = tf.keras.layers.Flatten()(img_x)
-        img_x = tf.keras.layers.Dense(units=256 * self.scale, activation="relu")(img_x)
-        img_x = tf.keras.layers.Dense(units=256 * self.scale, activation="relu", name="img_outputs")(img_x)
-        concatenated = tf.keras.layers.Concatenate(axis=-1)([img_x, txt_x])
-        x = tf.keras.layers.Dense(50, input_shape=(512 * self.scale,), activation="relu")(concatenated)
-        x = tf.keras.layers.Dense(50, activation="elu")(x)
-        x = tf.keras.layers.Dense(50, activation="elu")(x)
-        output = tf.keras.layers.Dense(1, activation="sigmoid")(x)
-        self.model = tf.keras.models.Model(inputs=[img_input, txt_input], outputs=output)
-        self.model.compile(loss="binary_crossentropy", optimizer="adam", metrics=["accuracy"])
-        logger.info("Multimodal File Splitting Model compiling finished.")
-        if not use_gpu:
-            with tf.device("/cpu:0"):
-                self.model.fit(
-                    x=[self.train_img_data, self.train_txt_data],
-                    y=self.train_labels,
-                    epochs=epochs,
-                    verbose=1,
-                    validation_data=(
-                        [self.test_img_data, self.test_txt_data],
-                        self.test_labels,
-                    ),
-                )
-        else:
-            if tf.config.list_physical_devices("GPU"):
-                with tf.device("/gpu:0"):
-                    self.model.fit(
-                        [self.train_img_data, self.train_txt_data],
-                        self.train_labels,
-                        epochs=epochs,
-                        verbose=1,
-                    )
-            else:
-                raise ValueError("Fitting on the GPU is impossible because there is no GPU available on the device.")
-        logger.info("Multimodal File Splitting Model fitting finished.")
 
     def predict(self, page: Page, use_gpu: bool = False) -> Page:
         """
@@ -476,8 +357,9 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         :return: A Page with possible changes in is_first_page attribute value.
         """
         self.check_is_ready()
-        tokenized_text = self.bert_tokenizer(page.text, truncation=True, return_tensors="pt")
+        tokenized_text = self.bert_tokenizer(page.text, truncation=True, padding="max_length", return_tensors="pt")
         with torch.no_grad():
+            self.model.eval()
             output = self.model(**tokenized_text)
         logits = output.logits
 
@@ -493,50 +375,6 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         # Update the 'is_first_page' & 'is_first_page_confidence' attributes of the Page object
         page.is_first_page = predicted_is_first
         page.is_first_page_confidence = predicted_prob_is_first
-        return page
-
-    def old_predict(self, page: Page, use_gpu: bool = False) -> Page:
-        """
-        Run prediction with the trained model.
-
-        :param page: A Page to be predicted as first or non-first.
-        :type page: Page
-        :param use_gpu: Run prediction on GPU if available.
-        :type use_gpu: bool
-        :return: A Page with possible changes in is_first_page attribute value.
-        """
-        self.check_is_ready()
-        inputs = self.bert_tokenizer(page.text, truncation=True, return_tensors="pt")
-        with torch.no_grad():
-            output = self.bert_model(**inputs)
-        txt_data = [output.pooler_output]
-        txt_data = [np.asarray(x).astype("float32") for x in txt_data]
-        txt_data = np.asarray(txt_data)
-        image = page.get_image().convert("RGB")
-        image = image.resize((224, 224))
-        image = tf.keras.preprocessing.image.img_to_array(image)
-        image = image.reshape((1, image.shape[0], image.shape[1], image.shape[2]))
-        image = image[..., ::-1]
-        image[0] -= 103.939
-        img_data = np.concatenate([image])
-        preprocessed = [
-            img_data.reshape((1, 224, 224, 3)),
-            txt_data.reshape((1, 1, 512)),
-        ]
-        if not use_gpu:
-            with tf.device("/cpu:0"):
-                prediction = self.model.predict(preprocessed, verbose=0)[0, 0]
-        else:
-            if tf.config.list_physical_devices("GPU"):
-                with tf.device("/gpu:0"):
-                    prediction = self.model.predict(preprocessed, verbose=0)[0, 0]
-            else:
-                raise ValueError("Predicting on the GPU is impossible because there is no GPU available on the device.")
-        page.is_first_page_confidence = prediction
-        if round(prediction) == 1:
-            page.is_first_page = True
-        else:
-            page.is_first_page = False
         return page
 
     def remove_dependencies(self):
@@ -730,8 +568,6 @@ class SplittingAI:
         if not AbstractFileSplittingModel.has_compatible_interface(model):
             raise ValueError("The model is not inheriting from AbstractFileSplittingModel class.")
         self.model = model
-        if not self.model.requires_images:
-            self.tokenizer = self.model.tokenizer
 
     def _suggest_first_pages(self, document: Document, inplace: bool = False) -> List[Document]:
         """
@@ -749,7 +585,8 @@ class SplittingAI:
             processed_document = deepcopy(document)
 
         if not self.model.requires_images:
-            processed_document = self.tokenizer.tokenize(processed_document)
+            # TODO: delete it, we don't need tokenizer
+            # processed_document = self.tokenizer.tokenize(processed_document)
             # we set a Page's Category explicitly because we don't want to lose original Page's Category information
             # because by default a Page is assigned a Category of a Document, and they are not necessarily the same
             for page in processed_document.pages():
