@@ -71,6 +71,10 @@ class ModuleWrapper:
 
 
 datasets = PackageWrapper('datasets', ['File Splitting AI'])
+if datasets.package:
+    Dataset = datasets.Dataset
+else:
+    Dataset = ModuleWrapper('Dataset').replaced
 evaluate = PackageWrapper('evaluate', ['File Splitting AI'])
 spacy = PackageWrapper('spacy', ['Document Categorization AI'])
 if spacy.package:

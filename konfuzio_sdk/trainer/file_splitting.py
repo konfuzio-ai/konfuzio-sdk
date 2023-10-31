@@ -5,8 +5,6 @@ import os
 import PIL
 import time
 
-from datasets import Dataset
-import evaluate
 from transformers import (
     AutoModelForSequenceClassification,
     TrainingArguments,
@@ -25,10 +23,7 @@ from inspect import signature
 from typing import List, Union
 
 from konfuzio_sdk.data import Document, Page, Category
-from konfuzio_sdk.extras import (
-    torch,
-    tensorflow as tf,
-)
+from konfuzio_sdk.extras import torch, tensorflow as tf, Dataset, evaluate
 from konfuzio_sdk.evaluate import FileSplittingEvaluation
 from konfuzio_sdk.trainer.information_extraction import BaseModel
 from konfuzio_sdk.utils import get_timestamp
