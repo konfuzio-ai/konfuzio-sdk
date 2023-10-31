@@ -9,6 +9,7 @@ from pandas import DataFrame
 from konfuzio_sdk.data import Project, Document, AnnotationSet, Annotation, Span, LabelSet, Label, Category
 from konfuzio_sdk.evaluate import compare, grouped, EvaluationCalculator, ExtractionEvaluation, CategorizationEvaluation
 from konfuzio_sdk.samples import LocalTextProject
+from konfuzio_sdk.settings_importer import is_dependency_installed
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
 from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel, SplittingAI, FileSplittingEvaluation
 
@@ -1452,6 +1453,13 @@ class TestEvaluationCalculator(unittest.TestCase):
             EvaluationCalculator(tp=0, fp=0, fn=0, zero_division='hehe')
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('datasets')
+    and not is_dependency_installed('torch')
+    and not is_dependency_installed('transformers')
+    and not is_dependency_installed('evaluate'),
+    reason='Required dependencies not installed.',
+)
 class TestEvaluationFileSplitting(unittest.TestCase):
     """Test Evaluation class for ContextAwareFileSplitting."""
 
