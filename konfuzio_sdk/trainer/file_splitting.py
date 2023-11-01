@@ -11,8 +11,9 @@ from transformers import (
     Trainer,
     AutoTokenizer,
 )
-
 from torch import nn
+from datasets import Dataset
+import evaluate
 
 import pandas as pd
 import numpy as np
@@ -23,7 +24,7 @@ from inspect import signature
 from typing import List, Union
 
 from konfuzio_sdk.data import Document, Page, Category
-from konfuzio_sdk.extras import torch, tensorflow as tf, Dataset, evaluate
+from konfuzio_sdk.extras import torch, tensorflow as tf
 from konfuzio_sdk.evaluate import FileSplittingEvaluation
 from konfuzio_sdk.trainer.information_extraction import BaseModel
 from konfuzio_sdk.utils import get_timestamp
