@@ -342,7 +342,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         print("=" * 50)
         return evaluation_results
 
-    def predict(self, page: Page, use_gpu: bool = False) -> Page:
+    def predict(self, page: Page, use_gpu: bool = False, previous_page: Page = None) -> Page:
         """
         Run prediction with the trained model.
 
@@ -364,6 +364,10 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
 
         # Extract the probability of the 'is_first_page' being True
         predicted_prob_is_first = probabilities[:, 1].item()
+
+        # if the previous page is not None and is empty, increase the probability of the current page being the first
+        if previous_page is not None and len(previous_page.text.strip()) == 0:
+            predicted_prob_is_first += 0.4
 
         # Determine the predicted label based on a threshold (e.g., 0.5)
         predicted_is_first = predicted_prob_is_first >= 0.5
