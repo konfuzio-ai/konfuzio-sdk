@@ -10,20 +10,20 @@ Getting Started
 
 Learn how to efficiently prepare your data for optimal processing. This tutorial covers data organization, cleaning, and formatting to ensure seamless integration with our AI models.
 
-.. only:: html
-
-    .. toctree::
-       tutorials/data-preparation/index
+.. toctree::
+   :maxdepth: 1
+   tutorials/data-preparation/index
 
 Document Processing Essentials
 ------------------------------
 
 .. toctree::
+   :maxdepth: 1
    tutorials/document_categorization/index
    tutorials/file_splitting/index
    tutorials/tokenizers/index
    tutorials/information_extraction/index
-   
+
 2. :doc:`Document Categorization <tutorials/document_categorization/index>`
 
 Master the art of categorizing documents within your projects. This tutorial provides step-by-step guidance on labeling and organizing documents based on their content.
@@ -91,6 +91,7 @@ Dive into these tutorials and elevate your document processing capabilities. Whe
 To upload your own model.
 
 .. toctree::
+   :maxdepth: 1
    tutorials/ner-ontonotes-fast/index
    tutorials/annual-reports/index
    tutorials/barcode-scanner/index
