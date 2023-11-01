@@ -589,13 +589,17 @@ class SplittingAI:
             # processed_document = self.tokenizer.tokenize(processed_document)
             # we set a Page's Category explicitly because we don't want to lose original Page's Category information
             # because by default a Page is assigned a Category of a Document, and they are not necessarily the same
-            for page in processed_document.pages():
-                self.model.predict(page)
+            for index, page in enumerate(processed_document.pages()):
+                previous_page = None if index == 0 else processed_document.pages()[index - 1]
+                self.model.predict(page=page, previous_page=previous_page)
                 # Why is done the in both cases?
                 page.set_category(page.get_original_page().category)
         else:
-            for page in processed_document.pages():
-                self.model.predict(page)
+            for index, page in enumerate(processed_document.pages()):
+                previous_page = None if index == 0 else processed_document.pages()[index - 1]
+                self.model.predict(page=page, previous_page=previous_page)
+                # Why is done the in both cases?
+                page.set_category(page.get_original_page().category)
         return [processed_document]
 
     def _suggest_page_split(self, document: Document) -> List[Document]:
@@ -612,8 +616,9 @@ class SplittingAI:
             document_tokenized = self.tokenizer.tokenize(deepcopy(document))
         else:
             document_tokenized = document
-        for page in document_tokenized.pages():
-            if self.model.predict(page).is_first_page:
+        for index, page in enumerate(document_tokenized.pages()):
+            previous_page = None if index == 0 else document_tokenized.pages()[index - 1]
+            if self.model.predict(page=page, previous_page=previous_page).is_first_page:
                 suggested_splits.append(page)
         if len(suggested_splits) == 1:
             return [document]
