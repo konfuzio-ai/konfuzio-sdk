@@ -32,7 +32,7 @@ This tutorial explains how to build and train a custom Categorization AI locally
 Server. If you run this tutorial in Colab and experience any version compatibility issues when working with the SDK, restart the
 runtime and initialize the SDK once again; this will resolve the issue.
 
-**Note**: you don't necessarily need to create the AI from scratch if you already have some document-processing architecture.
+**Note**: you don't necessarily need to create the AI from scratch if you already have some Document-processing architecture.
 You just need to wrap it into the class that corresponds to our Categorization AI structure. Follow the steps in this 
 tutorial to find out what are the requirements for that.
 
@@ -366,3 +366,4 @@ os.remove(pickle_model_path)
 - Learn how to upload a trained custom AI to the Konfuzio app or an on-prem installation.
 
 <!-- #endregion -->
+
