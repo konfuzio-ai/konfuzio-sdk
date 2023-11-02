@@ -5,21 +5,21 @@ Welcome to the Developer's Guide Tutorials section, where you'll find a comprehe
 
 **Getting Started**
 
-1. :doc:`Data Preparation <tutorials/data-preparation/index_nb>`
+1. :doc:`Data Preparation <tutorials/data-preparation/index>`
 
 Learn how to efficiently prepare your data for optimal processing. This tutorial covers data organization, cleaning, and formatting to ensure seamless integration with our AI models.
 
 **Document Processing Essentials**
 
-2. :doc:`Categorize a Document manually <tutorials/set-category-manually/index_nb>`
+2. :doc:`Categorize a Document manually <tutorials/set-category-manually/index>`
 
 Get to know how to assign and change Category of Documents and its Pages manually.
 
-3. :doc:`Categorize a Document using Categorization AI <tutorials/document_categorization/index_nb>`
+3. :doc:`Categorize a Document using Categorization AI <tutorials/document_categorization/index>`
 
 Master the art of categorizing documents within your projects automatically. This tutorial provides step-by-step guidance on labeling and organizing documents based on their content.
 
-4. :doc:`Create your own Categorization AI <tutorials/create-custom-categorization-ai/index_nb>`
+4. :doc:`Create your own Categorization AI <tutorials/create-custom-categorization-ai/index>`
 
 Build your own Categorization AI and define a custom architecture or reuse any external model. This tutorial provides
 guidance about constructing a class for the model for Document Categorization that can later be reused on Konfuzio app
@@ -90,14 +90,14 @@ Dive into these tutorials and elevate your document processing capabilities. Whe
    :maxdepth: 1
    :caption: Tutorials
 
-   tutorials/data-preparation/index_nb.md
-   tutorials/set-category-manually/index_nb.md
-   tutorials/document_categorization/index_nb.md
-   tutorials/create-custom-categorization-ai/index_nb.md
+   tutorials/data-preparation/index.md
+   tutorials/set-category-manually/index.md
+   tutorials/document_categorization/index.md
+   tutorials/create-custom-categorization-ai/index.md
    tutorials/file_splitting/index.md
    tutorials/tokenizers/index.md
    tutorials/information_extraction/index.md
-   tutorials/upload-your-ai/index_nb.md
+   tutorials/upload-your-ai/index.md
    tutorials/data_validation/index.md
    tutorials/outlier-annotations/index.md
    tutorials/regex_based_annotations/index.md

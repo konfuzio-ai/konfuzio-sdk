@@ -201,7 +201,7 @@ class CustomCategorizationAI(AbstractCategorizationAI):
 ```
 
 <!-- #region editable=true slideshow={"slide_type": ""} -->
-After building the class, we need to test it to ensure it works. You can run it over a small subset of documents so that it does not take too much time. 
+After building the class, we need to test it to ensure it works. You can run it over a small subset of Documents so that it does not take too much time. 
 <!-- #endregion -->
 
 ```python editable=true slideshow={"slide_type": ""} tags=["remove-cell"]
