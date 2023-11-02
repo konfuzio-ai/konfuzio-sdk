@@ -19,8 +19,8 @@ jobs:
     strategy:
       max-parallel: 1
       matrix:
-        python-version: ["3.8"]
-        extra-set: ["ai"]
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        extra-set: ["lightweight", "ai"]
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
@@ -58,7 +58,7 @@ jobs:
         id: tests_coverage
         run: |
           if [ "${{ matrix.python-version }}" == "3.8" ] && [ "${{ matrix.extra-set }}" == "ai" ]; then
-            coverage run -m pytest tests/test_normalize.py
+            coverage run -m pytest
             coverage report --omit="docs/sdk/boilerplates/*,tests/*" > coverage_report.txt
           else
             pytest --durations=10 -m 'not local'
