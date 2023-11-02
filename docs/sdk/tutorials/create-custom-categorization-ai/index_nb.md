@@ -220,14 +220,19 @@ from konfuzio_sdk.trainer.document_categorization import (
     )
 
 
+# Initialize the Project and the custom AI
 project = Project(id_=YOUR_PROJECT_ID)
 categorization_pipeline = CustomCategorizationAI(project.categories)
+
+# Use a small subset of Documents to test the AI so that the runtime is not too long
 categorization_pipeline.documents = [
         document for category in categorization_pipeline.categories for document in category.documents()
     ][:5]
 categorization_pipeline.test_documents = [
     document for category in categorization_pipeline.categories for document in category.test_documents()
 ][:5]
+
+# Define all necessary components of the AI and train it
 categorization_pipeline.category_vocab = categorization_pipeline.build_template_category_vocab()
 image_model = EfficientNet(name='efficientnet_b0')
 categorization_pipeline.classifier = PageImageCategorizationModel(
@@ -237,7 +242,7 @@ categorization_pipeline.classifier = PageImageCategorizationModel(
 categorization_pipeline.build_preprocessing_pipeline(use_image=True)
 categorization_pipeline.fit(n_epochs=1)
 
-# evaluate the AI
+# Evaluate the AI
 data_quality = categorization_pipeline.evaluate(use_training_docs=True)
 ai_quality = categorization_pipeline.evaluate(use_training_docs=False)
 
@@ -323,14 +328,19 @@ class CustomCategorizationAI(AbstractCategorizationAI):
         os.remove(temp_pt_file_path)
         return self.pipeline_path
 
+# Initialize the Project and the custom AI
 project = Project(id_=YOUR_PROJECT_ID)
 categorization_pipeline = CustomCategorizationAI(project.categories)
+
+# Use a small subset of Documents to test the AI so that the runtime is not too long
 categorization_pipeline.documents = [
         document for category in categorization_pipeline.categories for document in category.documents()
     ][:5]
 categorization_pipeline.test_documents = [
     document for category in categorization_pipeline.categories for document in category.test_documents()
 ][:5]
+
+# Define all necessary components of the AI and train it
 categorization_pipeline.category_vocab = categorization_pipeline.build_template_category_vocab()
 image_model = EfficientNet(name='efficientnet_b0')
 categorization_pipeline.classifier = PageImageCategorizationModel(
@@ -340,7 +350,7 @@ categorization_pipeline.classifier = PageImageCategorizationModel(
 categorization_pipeline.build_preprocessing_pipeline(use_image=True)
 categorization_pipeline.fit(n_epochs=1)
 
-# evaluate the AI
+# Evaluate the AI
 data_quality = categorization_pipeline.evaluate(use_training_docs=True)
 ai_quality = categorization_pipeline.evaluate(use_training_docs=False)
 

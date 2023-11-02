@@ -56,8 +56,11 @@ assert document.category == project.no_category
 document.set_category(my_category)
 assert document.category == my_category
 assert document.category_is_revised is True
+```
 
-# This will set it for all of its Pages as well.
+Each Page's Category will also be changed to a Category set to this Document.
+
+```python tags=["remove-output"]
 for page in document.pages():
     assert page.category == my_category
 ```
@@ -82,12 +85,11 @@ document.set_category(my_category)
 assert document.category == my_category
 assert document.category_is_revised is True
 
-# This will set it for all of its Pages as well.
 for page in document.pages():
     assert page.category == my_category
 ```
 
 ### What's next?
 
-- ...
-- ...
+- Learn how to categorize Documents automatically using Categorization AI
+- Create your own custom Categorization AI
