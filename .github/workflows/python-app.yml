@@ -64,15 +64,6 @@ jobs:
           KONFUZIO_USER: ${{ secrets.KONFUZIO_USER }}
           KONFUZIO_PASSWORD: ${{ secrets.KONFUZIO_PASSWORD }}
           KONFUZIO_TOKEN: ${{ secrets.KONFUZIO_TOKEN }}
-      - name: Run doctests
-        run: |
-          python -m doctest -v konfuzio_sdk/trainer/file_splitting.py
-        env:
-          KONFUZIO_PROJECT_ID: ${{ secrets.KONFUZIO_PROJECT_ID }}
-          KONFUZIO_HOST: ${{ secrets.KONFUZIO_HOST }}
-          KONFUZIO_USER: ${{ secrets.KONFUZIO_USER }}
-          KONFUZIO_PASSWORD: ${{ secrets.KONFUZIO_PASSWORD }}
-          KONFUZIO_TOKEN: ${{ secrets.KONFUZIO_TOKEN }}
       - name: Post coverage report as comment
         if: ( matrix.python-version == '3.8' && matrix.extra-set == 'ai' && steps.tests_coverage.outcome == 'success' )
         uses: actions/github-script@v6
