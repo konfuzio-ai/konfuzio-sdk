@@ -50,8 +50,14 @@ jobs:
           cd konfuzio_sdk
           pydocstyle
       - name: Run tests
+        id: tests_coverage
         run: |
-          pytest --durations=10 -m 'not local'
+          if [ "${{ matrix.python-version }}" == "3.8" ] && [ "${{ matrix.extra-set }}" == "ai" ]; then
+            coverage run -m pytest
+            coverage report --omit="docs/sdk/boilerplates/*,tests/*" > coverage_report.txt
+          else
+            pytest --durations=10 -m 'not local'
+          fi
         env:
           KONFUZIO_PROJECT_ID: ${{ secrets.KONFUZIO_PROJECT_ID }}
           KONFUZIO_HOST: ${{ secrets.KONFUZIO_HOST }}
@@ -67,22 +73,8 @@ jobs:
           KONFUZIO_USER: ${{ secrets.KONFUZIO_USER }}
           KONFUZIO_PASSWORD: ${{ secrets.KONFUZIO_PASSWORD }}
           KONFUZIO_TOKEN: ${{ secrets.KONFUZIO_TOKEN }}
-      - name: Run tests with coverage
-        if: ( matrix.python-version == '3.8' &&
-             matrix.extra-set == 'ai' )
-        id: create_coverage
-        run: |
-          coverage run -m pytest 
-          coverage report --omit="docs/sdk/boilerplates/*,tests/*" > coverage_report.txt
-        env:
-          KONFUZIO_PROJECT_ID: ${{ secrets.KONFUZIO_PROJECT_ID }}
-          KONFUZIO_HOST: ${{ secrets.KONFUZIO_HOST }}
-          KONFUZIO_USER: ${{ secrets.KONFUZIO_USER }}
-          KONFUZIO_PASSWORD: ${{ secrets.KONFUZIO_PASSWORD }}
-          KONFUZIO_TOKEN: ${{ secrets.KONFUZIO_TOKEN }}
       - name: Post coverage report as comment
-        if: ( matrix.python-version == '3.8' &&
-          matrix.extra-set == 'ai' )
+        if: ( matrix.python-version == '3.8' && matrix.extra-set == 'ai' && steps.tests_coverage.outcome == 'success' )
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -92,7 +84,7 @@ jobs:
             let lastFourCharacters = report.slice(-4);
             let coverage = parseFloat(lastFourCharacters.replace('%', '').trim());
             if (coverage < 80) {
-                console.error('Coverage is less than 90%');
+                console.error('Coverage is less than 80%');
                 process.exit(1);
             }
             github.rest.issues.createComment({
