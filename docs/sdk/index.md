@@ -1,6 +1,6 @@
 # What is the Konfuzio SDK?
 
-## Overview
+## Overview of the SDK
 
 The Open Source Konfuzio Software Development Kit (Konfuzio SDK) provides a Python API to build custom document processes. For a quick introduction to the SDK, check out the [Get Started](get_started.html) section. Review the release notes and the source code on [GitHub](https://github.com/konfuzio-ai/konfuzio-sdk/releases).
 

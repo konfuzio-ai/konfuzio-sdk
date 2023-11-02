@@ -17,6 +17,7 @@ EXTRAS = {
         "sphinx-rtd-theme==1.0.0",
         "sphinxcontrib-mermaid==0.8.1",
         "sphinx-copybutton==0.5.2",
+        "myst_nb==0.17.2",
     ],
     "ai": [
         "chardet==5.1.0",

@@ -33,11 +33,14 @@ settings.py
 *.tar.gz
 
 # Ignore files containing 'data_'
-*data_*
+*data_[0-9]*
 
 # Ignore Jupyter Notebook checkpoints
 *.ipynb_checkpoints/
 *.ipynb~
+
+# Ignore any Jupyter Notebook in the tutorials folder at any depth
+docs/sdk/tutorials/**/*.ipynb
 
 # Ignore distribution and build directories
 dist/
