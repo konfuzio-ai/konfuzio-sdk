@@ -78,8 +78,13 @@ jobs:
                 console.error('Coverage is less than 80%');
                 process.exit(1);
             }
+            const issue_or_pr_number = context.issue.number || context.payload.pull_request?.number;
+            if (!issue_or_pr_number) {
+              console.error('No issue or pull request number found!');
+              process.exit(1);
+            }
             github.rest.issues.createComment({
-              issue_number: context.issue.number,
+              issue_number: issue_or_pr_number,
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: '```\n' + report + '\n```'
