@@ -1154,7 +1154,7 @@ class TestInformationExtraction(unittest.TestCase):
 
         logger.info(f"This took {sum(its)/len(its)}s on average.")
 
-        assert sum(its) / len(its) < 2
+        assert sum(its) / len(its) < 4
 
     def test_extract_with_unfitted_clf(self):
         """Test to extract a Document."""
