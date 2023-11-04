@@ -568,6 +568,8 @@ class SplittingAI:
         if not AbstractFileSplittingModel.has_compatible_interface(model):
             raise ValueError("The model is not inheriting from AbstractFileSplittingModel class.")
         self.model = model
+        if not self.model.requires_images:
+            self.tokenizer = self.model.tokenizer
 
     def _suggest_first_pages(self, document: Document, inplace: bool = False) -> List[Document]:
         """
@@ -586,12 +588,17 @@ class SplittingAI:
 
         if not self.model.requires_images:
             # TODO: delete it, we don't need tokenizer
-            # processed_document = self.tokenizer.tokenize(processed_document)
+            # no, we need tokenizer for ContextAwareFileSplittingModel.
+            if self.model.name == 'ContextAwareFileSplittingModel':
+                processed_document = self.tokenizer.tokenize(processed_document)
             # we set a Page's Category explicitly because we don't want to lose original Page's Category information
             # because by default a Page is assigned a Category of a Document, and they are not necessarily the same
             for index, page in enumerate(processed_document.pages()):
                 previous_page = None if index == 0 else processed_document.pages()[index - 1]
-                self.model.predict(page=page, previous_page=previous_page)
+                if self.model.name != 'ContextAwareFileSplittingModel':
+                    self.model.predict(page=page, previous_page=previous_page)
+                else:
+                    self.model.predict(page=page)
                 # Why is done the in both cases?
                 page.set_category(page.get_original_page().category)
         else:
@@ -618,7 +625,11 @@ class SplittingAI:
             document_tokenized = document
         for index, page in enumerate(document_tokenized.pages()):
             previous_page = None if index == 0 else document_tokenized.pages()[index - 1]
-            if self.model.predict(page=page, previous_page=previous_page).is_first_page:
+            if self.model.name != 'ContextAwareFileSplittingModel':
+                prediction = self.model.predict(page=page, previous_page=previous_page)
+            else:
+                prediction = self.model.predict(page=page)
+            if prediction.is_first_page:
                 suggested_splits.append(page)
         if len(suggested_splits) == 1:
             return [document]
@@ -696,9 +707,3 @@ class SplittingAI:
             pred_docs.append(predictions[0])
         self.full_evaluation = FileSplittingEvaluation(original_docs, pred_docs, zero_division)
         return self.full_evaluation
-
-
-if __name__ == "__main__":
-    import doctest
-
-    doctest.testmod()
