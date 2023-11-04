@@ -5,16 +5,6 @@ import os
 import PIL
 import time
 
-from transformers import (
-    AutoModelForSequenceClassification,
-    TrainingArguments,
-    Trainer,
-    AutoTokenizer,
-)
-from torch import nn
-from datasets import Dataset
-import evaluate
-
 import pandas as pd
 import numpy as np
 from sklearn.utils.class_weight import compute_class_weight
@@ -24,7 +14,7 @@ from inspect import signature
 from typing import List, Union
 
 from konfuzio_sdk.data import Document, Page, Category
-from konfuzio_sdk.extras import torch, tensorflow as tf
+from konfuzio_sdk.extras import torch, tensorflow as tf, transformers, Trainer, datasets, evaluate
 from konfuzio_sdk.evaluate import FileSplittingEvaluation
 from konfuzio_sdk.trainer.information_extraction import BaseModel
 from konfuzio_sdk.utils import get_timestamp
@@ -207,7 +197,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         self.model = None
         logger.info("Initializing BERT components of the Multimodal File Splitting Model.")
         self.model_name = "distilbert-base-uncased"
-        self.bert_tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+        self.bert_tokenizer = transformers.AutoTokenizer.from_pretrained(self.model_name)
 
     def reduce_model_weight(self):
         """Remove all non-strictly necessary parameters before saving."""
@@ -267,8 +257,8 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         train_df = pd.DataFrame({"text": train_texts, "label": train_labels})
         test_df = pd.DataFrame({"text": test_texts, "label": test_labels})
         # Convert to Dataset objects
-        train_dataset = Dataset.from_pandas(train_df)
-        test_dataset = Dataset.from_pandas(test_df)
+        train_dataset = datasets.Dataset.from_pandas(train_df)
+        test_dataset = datasets.Dataset.from_pandas(test_df)
         # Calculate class weights to solve unbalanced dataset problem
         class_weights = compute_class_weight("balanced", classes=[0, 1], y=train_labels)
         # defining tokenizer
@@ -291,8 +281,8 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         test_dataset = test_dataset.map(tokenize_function, batched=True)
         print("=" * 50)
         logger.info("Loading model")
-        self.model = AutoModelForSequenceClassification.from_pretrained(self.model_name, num_labels=2)
-        training_args = TrainingArguments(
+        self.model = transformers.AutoModelForSequenceClassification.from_pretrained(self.model_name, num_labels=2)
+        training_args = transformers.TrainingArguments(
             output_dir="splitting_ai_trainer",
             evaluation_strategy="epoch",
             save_strategy="epoch",
@@ -319,7 +309,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
                 outputs = model(**inputs)
                 logits = outputs.get("logits")
                 # compute custom loss (suppose one has 3 labels with different weights)
-                loss_fct = nn.CrossEntropyLoss(
+                loss_fct = torch.nn.CrossEntropyLoss(
                     weight=torch.tensor(class_weights, device=model.device, dtype=torch.float)
                 )
                 loss = loss_fct(logits.view(-1, model.config.num_labels), labels.view(-1))
@@ -387,10 +377,16 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         globals()["torch"] = None
         globals()["tf"] = None
         globals()["transformers"] = None
+        globals()["evaluate"] = None
+        globals()["datasets"] = None
+        globals()["Trainer"] = None
 
         del globals()["torch"]
         del globals()["tf"]
         del globals()["transformers"]
+        del globals()["evaluate"]
+        del globals()["datasets"]
+        del globals()["Trainer"]
 
     def restore_dependencies(self):
         """
@@ -399,11 +395,14 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         This is needed for proper functioning of a loaded model because we have previously removed these dependencies
         upon saving the model.
         """
-        from konfuzio_sdk.extras import torch, tensorflow as tf, transformers
+        from konfuzio_sdk.extras import torch, tensorflow as tf, transformers, datasets, evaluate, Trainer
 
         globals()["torch"] = torch
         globals()["tf"] = tf
         globals()["transformers"] = transformers
+        globals()["datasets"] = datasets
+        globals()["evalute"] = evaluate
+        globals()["Trainer"] = Trainer
 
     def check_is_ready(self):
         """

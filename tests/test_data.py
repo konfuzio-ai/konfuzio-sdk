@@ -2159,7 +2159,7 @@ class TestOfflineDataSetup(unittest.TestCase):
             end_offset=12,
             number=1,
         )
-        assert _.is_first_page is None
+        assert _.is_first_page is True
         text = "Sample text.\n\fSome more."
         document = Document(id=None, project=project, text=text, dataset_status=2)
         _ = Page(
@@ -3416,7 +3416,7 @@ class TestData(unittest.TestCase):
         self.assertFalse(a.is_online)
 
 
-def  test_download_training_and_test_data():
+def test_download_training_and_test_data():
     """Test downloading of data from training and test documents."""
     project = Project(id_=1249, update=True)
     download_training_and_test_data(project=project)
