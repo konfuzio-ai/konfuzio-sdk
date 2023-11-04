@@ -298,7 +298,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
             save_strategy="epoch",
             load_best_model_at_end=True,
             push_to_hub=False,
-            learning_rate=3e-5,
+            learning_rate=1e-4,
             per_device_train_batch_size=train_batch_size,
             per_device_eval_batch_size=eval_batch_size,
             num_train_epochs=epochs,
