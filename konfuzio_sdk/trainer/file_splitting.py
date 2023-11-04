@@ -245,7 +245,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         epochs: int = 1,
         use_gpu: bool = False,
         eval_batch_size: int = 128,
-        train_batch_size: int = 8,
+        train_batch_size: int = 16,
         *args,
         **kwargs,
     ):
