@@ -307,11 +307,11 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         print("=" * 50)
         logger.info(f"[{time.ctime(time.time())}]\tStarting Training...")
         logger.info("\nConfiguration to be used for Training:")
-        logger.info(f"\nclass weights for the training dataset: {class_weights}")
+        logger.info(f"\nclass weights for the training dataset: {[f'{weight:.2e}' for weight in class_weights]}")
         logger.info(f"Number of epochs: {epochs}")
         logger.info(f"Batch size for training: {train_batch_size}")
         logger.info(f"Batch size for evaluation: {eval_batch_size}")
-        logger.info(f"Learning rate: {training_args.learning_rate}")
+        logger.info(f"Learning rate: {training_args.learning_rate:.2e}\n")
 
         # custom trainer with custom loss to leverage class weights
 
