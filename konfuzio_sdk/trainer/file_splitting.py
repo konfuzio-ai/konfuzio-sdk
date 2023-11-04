@@ -298,17 +298,20 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
             save_strategy="epoch",
             load_best_model_at_end=True,
             push_to_hub=False,
-            learning_rate=1e-4,
+            learning_rate=3e-4,
             per_device_train_batch_size=train_batch_size,
             per_device_eval_batch_size=eval_batch_size,
             num_train_epochs=epochs,
-            weight_decay=0.01,
+            weight_decay=0.1,
         )
         print("=" * 50)
         logger.info(f"[{time.ctime(time.time())}]\tStarting Training...")
-        logger.info(f"\nclass weights for the training dataset: \n{class_weights}\n")
+        logger.info("\nConfiguration to be used for Training:")
+        logger.info(f"\nclass weights for the training dataset: {class_weights}")
+        logger.info(f"Number of epochs: {epochs}")
         logger.info(f"Batch size for training: {train_batch_size}")
         logger.info(f"Batch size for evaluation: {eval_batch_size}")
+        logger.info(f"Learning rate: {training_args.learning_rate}")
 
         # custom trainer with custom loss to leverage class weights
 
@@ -589,13 +592,13 @@ class SplittingAI:
         if not self.model.requires_images:
             # TODO: delete it, we don't need tokenizer
             # no, we need tokenizer for ContextAwareFileSplittingModel.
-            if self.model.name == 'ContextAwareFileSplittingModel':
+            if self.model.name == "ContextAwareFileSplittingModel":
                 processed_document = self.tokenizer.tokenize(processed_document)
             # we set a Page's Category explicitly because we don't want to lose original Page's Category information
             # because by default a Page is assigned a Category of a Document, and they are not necessarily the same
             for index, page in enumerate(processed_document.pages()):
                 previous_page = None if index == 0 else processed_document.pages()[index - 1]
-                if self.model.name != 'ContextAwareFileSplittingModel':
+                if self.model.name != "ContextAwareFileSplittingModel":
                     self.model.predict(page=page, previous_page=previous_page)
                 else:
                     self.model.predict(page=page)
@@ -625,7 +628,7 @@ class SplittingAI:
             document_tokenized = document
         for index, page in enumerate(document_tokenized.pages()):
             previous_page = None if index == 0 else document_tokenized.pages()[index - 1]
-            if self.model.name != 'ContextAwareFileSplittingModel':
+            if self.model.name != "ContextAwareFileSplittingModel":
                 prediction = self.model.predict(page=page, previous_page=previous_page)
             else:
                 prediction = self.model.predict(page=page)
