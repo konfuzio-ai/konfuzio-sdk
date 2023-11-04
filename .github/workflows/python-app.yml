@@ -1,50 +1,96 @@
-# This workflow will install Python dependencies, run tests and lint with a single version of Python
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
-
 name: Python application
 
 on:
   push:
+    branches-ignore:
+      - '*'
+  pull_request:
+    branches:
+      - '*'
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.8
-    - name: Load cached Python environment
-      # see https://blog.allenai.org/python-caching-in-github-actions-e9452698e98d
-      uses: actions/cache@v2
-      with:
-        path: ${{ env.pythonLocation }}
-        key: ${{ env.pythonLocation }}-${{ hashFiles('setup.py') }}
-    - name: Install dependencies
-      run: |
-        sudo apt-get -y install python3-pandas-lib
-        python -m pip install --upgrade pip
-        pip install --upgrade --upgrade-strategy eager -e .[dev]
-    - name: Lint with flake8
-      run: |
-        # stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - name: Run pydocstyle
-      run: |
-        cd konfuzio_sdk
-        pydocstyle
-    - name: Run tests
-      run: |
-        cd tests
-        pytest --durations=10 -m 'not local'        
-      env:
-        KONFUZIO_PROJECT_ID: ${{ secrets.KONFUZIO_PROJECT_ID }}  
-        KONFUZIO_HOST: ${{ secrets.KONFUZIO_HOST }}  
-        KONFUZIO_USER: ${{ secrets.KONFUZIO_USER }}  
-        KONFUZIO_PASSWORD: ${{ secrets.KONFUZIO_PASSWORD }}   
-        KONFUZIO_TOKEN: ${{ secrets.KONFUZIO_TOKEN }}   
+      - run: |
+          echo "No build step required."
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 1
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        extra-set: ["lightweight", "ai"]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Load cached Python environment
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.pythonLocation }}
+          key: ${{ env.pythonLocation }}-${{ hashFiles('setup.py') }}
+      - name: Install lightweight SDK
+        if: matrix.extra-set == 'lightweight'
+        run: |
+          sudo apt-get -y install python3-pandas-lib
+          python -m pip install --upgrade pip
+          pip install --upgrade --upgrade-strategy eager -e .[dev]
+      - name: Install dependencies
+        if: matrix.extra-set == 'ai'
+        run: |
+          sudo apt-get -y install python3-pandas-lib
+          python -m pip install --upgrade pip
+          pip install --upgrade --upgrade-strategy eager -e .[dev,ai]
+      - name: Lint with flake8
+        run: |
+          # stop the build if there are Python syntax errors or undefined names
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      - name: Run pydocstyle
+        run: |
+          cd konfuzio_sdk
+          pydocstyle
+      - name: Run tests
+        id: tests_coverage
+        run: |
+          if [ "${{ matrix.python-version }}" == "3.8" ] && [ "${{ matrix.extra-set }}" == "ai" ]; then
+            coverage run -m pytest
+            coverage report --omit="docs/sdk/boilerplates/*,tests/*" > coverage_report.txt
+          else
+            pytest --durations=10 -m 'not local'
+          fi
+        env:
+          KONFUZIO_PROJECT_ID: ${{ secrets.KONFUZIO_PROJECT_ID }}
+          KONFUZIO_HOST: ${{ secrets.KONFUZIO_HOST }}
+          KONFUZIO_USER: ${{ secrets.KONFUZIO_USER }}
+          KONFUZIO_PASSWORD: ${{ secrets.KONFUZIO_PASSWORD }}
+          KONFUZIO_TOKEN: ${{ secrets.KONFUZIO_TOKEN }}
+      - name: Post coverage report as comment
+        if: ( matrix.python-version == '3.8' && matrix.extra-set == 'ai')
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('coverage_report.txt', 'utf8');
+            let lastFourCharacters = report.slice(-4);
+            let coverage = parseFloat(lastFourCharacters.replace('%', '').trim());
+            if (coverage < 80) {
+                console.error('Coverage is less than 80%');
+                process.exit(1);
+            }
+            const issue_or_pr_number = context.issue.number || context.payload.pull_request?.number;
+            if (!issue_or_pr_number) {
+              console.error('No issue or pull request number found!');
+              process.exit(1);
+            }
+            github.rest.issues.createComment({
+              issue_number: issue_or_pr_number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '```\n' + report + '\n```'
+            });

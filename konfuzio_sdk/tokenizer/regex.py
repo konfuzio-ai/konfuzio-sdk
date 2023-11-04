@@ -4,7 +4,7 @@ import time
 from typing import List
 
 
-from konfuzio_sdk.data import Annotation, Document, Category, Span
+from konfuzio_sdk.data import Annotation, Document, Span
 from konfuzio_sdk.regex import regex_matches
 from konfuzio_sdk.tokenizer.base import AbstractTokenizer, ProcessingStep
 from konfuzio_sdk.utils import sdk_isinstance
@@ -27,15 +27,6 @@ class RegexTokenizer(AbstractTokenizer):
     def __hash__(self):
         """Get unique hash for RegexTokenizer."""
         return hash(repr(self.regex))
-
-    def __eq__(self, other) -> bool:
-        """Compare RegexTokenizer with another Tokenizer."""
-        return hash(self) == hash(other)
-
-    def fit(self, category: Category):
-        """Fit the tokenizer accordingly with the Documents of the Category."""
-        assert sdk_isinstance(category, Category)
-        return self
 
     def tokenize(self, document: Document) -> Document:
         """
@@ -87,7 +78,7 @@ class RegexTokenizer(AbstractTokenizer):
             else:
                 if self not in document_spans[span_key].regex_matching:
                     document_spans[span_key].regex_matching.append(self)  # add tokenizer to Span.regex_matches:
-                logger.warning(f'{document} contains {span} already. It will not be added by the Tokenizer.')
+                logger.debug(f'{document} contains {span} already. It will not be added by the Tokenizer.')
         after_none = len(document.annotations(use_correct=False, label=document.project.no_label))
         logger.info(f'{after_none - before_none} new Annotations in {document} by {repr(self)}.')
 

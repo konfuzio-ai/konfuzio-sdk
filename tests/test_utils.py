@@ -1,10 +1,16 @@
 """Validate utils functions."""
+import importlib.metadata
 import os
 import unittest
 
+from tests.variables import (
+    OFFLINE_PROJECT,
+    TEST_DOCUMENT_ID,
+)
+
 import pytest
 from konfuzio_sdk import IMAGE_FILE, PDF_FILE, OFFICE_FILE
-from konfuzio_sdk.data import Project, Document, Annotation, Span, Label, LabelSet, Category
+from konfuzio_sdk.data import Project, Document, Annotation, AnnotationSet, Span, Label, LabelSet, Category, Bbox
 from konfuzio_sdk.utils import (
     get_id,
     get_timestamp,
@@ -21,9 +27,11 @@ from konfuzio_sdk.utils import (
     iter_before_and_after,
     get_bbox,
     normalize_memory,
+    exception_or_log_error,
+    get_sdk_version,
+    get_spans_from_bbox,
 )
 
-TEST_STRING = "sample string"
 FOLDER_ROOT = os.path.dirname(os.path.realpath(__file__))
 TEST_PDF_FILE = os.path.join(FOLDER_ROOT, 'test_data', 'pdf.pdf')
 TEST_IMAGE_FILE = os.path.join(FOLDER_ROOT, 'test_data', 'png.png')
@@ -33,9 +41,15 @@ TEST_ZIP_FILE = os.path.join(FOLDER_ROOT, 'test_data', 'docx.docx')
 class TestUtils(unittest.TestCase):
     """Test utility functions."""
 
+    def test_exception_or_log_error(self):
+        """Test switching to Log error or raise an exception."""
+        with pytest.raises(NotImplementedError, match="test exception msg"):
+            exception_or_log_error(msg="test exception msg", fail_loudly=True, exception_type=NotImplementedError)
+        exception_or_log_error(msg="test log error msg", fail_loudly=False)
+
     def test_get_id(self):
         """Test if the returned unique id_ is an instance of String."""
-        assert isinstance(get_id(TEST_STRING), int)
+        assert isinstance(get_id(), str)
 
     def test_get_timestamp(self):
         """Test if the returned timestamp is an instance of String."""
@@ -61,21 +75,23 @@ class TestUtils(unittest.TestCase):
 
     def test_convert_to_bio_scheme(self):
         """Test conversion to BIO scheme."""
-        proj = Project(None)
-        category = Category(project=proj, id_=1)
-        label_set = LabelSet(id_=2, project=proj, categories=[category])
-        label = Label(text='Organization', project=proj, label_sets=[label_set])
+        project = Project(None)
+        category = Category(project=project, id_=1)
+        label_set = LabelSet(id_=2, project=project, categories=[category])
+        label = Label(text='Organization', project=project, label_sets=[label_set])
         text = "Hello, it's Konfuzio."
-        doc = Document(proj, text=text, category=category)
+        document = Document(project, text=text, category=category)
+        annotation_set = AnnotationSet(id_=1, project=project, document=document, label_set=label_set)
         _ = Annotation(
             id_=20,
-            document=doc,
+            document=document,
             label=label,
             label_set=label_set,
+            annotation_set=annotation_set,
             spans=[Span(start_offset=12, end_offset=20)],
         )
 
-        converted_text = convert_to_bio_scheme(doc)
+        converted_text = convert_to_bio_scheme(document)
 
         assert converted_text == [
             ('Hello', 'O'),
@@ -99,20 +115,22 @@ class TestUtils(unittest.TestCase):
 
     def test_convert_to_bio_scheme_no_text(self):
         """Test conversion to BIO scheme without text."""
-        proj = Project(None)
-        category = Category(project=proj, id_=1)
-        label_set = LabelSet(id_=2, project=proj, categories=[category])
-        label = Label(text='Organization', project=proj, label_sets=[label_set])
+        project = Project(None)
+        category = Category(project=project, id_=1)
+        label_set = LabelSet(id_=2, project=project, categories=[category])
+        label = Label(text='Organization', project=project, label_sets=[label_set])
         text = ""
-        doc = Document(proj, text=text, category=category)
+        document = Document(project, text=text, category=category)
+        annotation_set = AnnotationSet(id_=1, project=project, document=document, label_set=label_set)
         _ = Annotation(
             id_=20,
-            document=doc,
+            document=document,
             label=label,
             label_set=label_set,
+            annotation_set=annotation_set,
             spans=[Span(start_offset=12, end_offset=20)],
         )
-        converted_text = convert_to_bio_scheme(doc)
+        converted_text = convert_to_bio_scheme(document)
 
         self.assertEqual(converted_text, [])
 
@@ -488,3 +506,35 @@ def test_iter_before_and_after():
             assert before + 1 == i
         elif after:
             assert after - 1 == i
+
+
+def test_get_spans_from_bbox():
+    """Test to get Spans in a bounding box."""
+    project = Project(id_=None, project_folder=OFFLINE_PROJECT)
+    document = project.get_document_by_id(document_id=TEST_DOCUMENT_ID)
+    page = document.get_page_by_index(0)
+    bbox = Bbox(x0=0, y0=0, x1=500, y1=100, page=page)
+
+    spans = get_spans_from_bbox(selection_bbox=bbox)
+
+    assert len(spans) == 7
+    assert spans[0].start_offset == 3588
+    assert spans[0].end_offset == 3677
+    assert spans[6].start_offset == 4322
+    assert spans[6].end_offset == 4427
+
+    bbox_2 = Bbox(x0=300, y0=400, x1=400, y1=550, page=page)
+    spans_2 = get_spans_from_bbox(selection_bbox=bbox_2)
+
+    assert len(spans_2) == 2
+    assert spans_2[0].start_offset == 1694
+    assert spans_2[0].end_offset == 1717
+    assert spans_2[1].start_offset == 1926
+    assert spans_2[1].end_offset == 1932
+
+
+def test_get_sdk_version():
+    """Test to get a current SDK version."""
+    version = get_sdk_version()
+    assert isinstance(version, str)
+    assert version == importlib.metadata.version('konfuzio_sdk')

@@ -2,6 +2,7 @@
 name: Nightly build master branch
 
 on:
+  workflow_dispatch: {}
   schedule:
     # Adjust refresh schedule here. By default, it runs once per day.
     # Syntax reference: https://docs.github.com/en/actions/reference/events-that-trigger-workflows#schedule

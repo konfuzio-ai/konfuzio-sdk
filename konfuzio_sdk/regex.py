@@ -142,7 +142,7 @@ def get_best_regex(evaluations: List, log_stats: bool = True) -> List:
         stats = df.loc[index_of_regex][
             ['regex', 'runtime', 'annotation_recall', 'annotation_precision', 'f1_score', 'new_matches_count']
         ]
-        logger.info(f'\n\n{tabulate(stats, floatfmt=".4f", headers="keys", tablefmt="pipe")}\n')
+        logger.debug(f'\n\n{tabulate(stats, floatfmt=".4f", headers="keys", tablefmt="pipe")}\n')
 
     # best_regex = df.loc[index_of_regex, 'regex'].to_list()
     best_regex = df.loc[df['new_matches_count'] > 0, 'regex'].to_list()
@@ -245,7 +245,7 @@ def regex_matches(
 
 
 def generic_candidate_function(regex, flags=0, overlapped=False, filtered_group=None):
-    """Regex approach tob build a candidate function by one regex.
+    """Regex approach to build a candidate function by one regex.
 
     :param filtered_group: If a regex contains multiple named groups, you can filter the respective group by name
     :param overlapped: Indicate if regex matches can overlapp.

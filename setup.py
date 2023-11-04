@@ -6,6 +6,7 @@ from os import path, getenv
 
 import setuptools
 
+from extras_list import EXTRAS
 
 # Define version or calculate it for nightly build.
 #
@@ -74,35 +75,23 @@ setuptools.setup(
     include_package_data=True,
     entry_points={'console_scripts': ['konfuzio_sdk=konfuzio_sdk.cli:main']},
     install_requires=[
-        'cloudpickle==2.0.0',  # Used to pickle objects
+        'certifi==2023.7.22',
+        'cloudpickle==2.2.1',  # Used to pickle objects
         'filetype==1.0.7',  # Used to check that files are in the correct format
-        'nltk',
-        'numpy>=1.21.6',
-        'pandas>=1.3.5',
-        'Pillow>=7.1.2',
-        'python-dateutil',
-        'python-decouple',  # todo add ==3.3 ?
-        'requests',  # todo add ==2.24.0 ?
+        'lz4>=4.3.2',  # Used to compress pickles
+        'matplotlib==3.7.1',
+        'nltk>=3.6.3',
+        'numpy>=1.22.4',
+        'pandas>=1.3.5,<2.0.0',
+        'Pillow>=8.4.0',
+        'python-dateutil>=2.8.2',
+        'python-decouple>=3.3',
+        'requests',
         'regex>=2020.6.8',  # re module but better
-        'tabulate==0.8.7',  # Used to pretty print DataFrames
-        'tqdm',
-        'pympler==1.0.1',  # Use to get pickle file size.
-        'scikit-learn==1.0.2',
+        'scikit-learn==1.2.2',
+        'tabulate>=0.9.0',  # Used to pretty print DataFrames
+        'tqdm>=4.64.0',
+        'pympler>=1.0.1',  # Use to get pickle file size.
     ],
-    extras_require={
-        'dev': [
-            'flake8',
-            'pydocstyle',
-            'pytest',
-            'pre-commit',
-            'parameterized',
-            'Sphinx==4.4.0',
-            'sphinx-reload==0.2.0',
-            'sphinx-notfound-page==0.8',
-            'm2r2==0.3.2',
-            'sphinx-sitemap==2.2.0',
-            'sphinx-rtd-theme==1.0.0',
-            'sphinxcontrib-mermaid==0.7.1',
-        ]
-    },
+    extras_require=EXTRAS,
 )

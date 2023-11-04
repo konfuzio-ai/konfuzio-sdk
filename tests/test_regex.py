@@ -512,7 +512,7 @@ class TestRegexGenerator(unittest.TestCase):
         """Test to calculate a regex."""
         project = Project(id_=None)
         category = Category(project=project)
-        label_set = LabelSet(id_=33, project=project, categories=[category])
+        label_set = LabelSet(id_=33, project=project, categories=[category], has_multiple_annotation_sets=True)
         label = Label(
             id_=22, text='Label Name', text_clean='LabelName', project=project, label_sets=[label_set], threshold=0.5
         )

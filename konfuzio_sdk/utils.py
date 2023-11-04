@@ -1,16 +1,18 @@
 """Utils for the konfuzio sdk package."""
 import datetime
-import hashlib
 import itertools
 import logging
 import operator
 import os
+import pkg_resources
 import regex as re
 import unicodedata
+import uuid
 import zipfile
 from contextlib import contextmanager
 from io import BytesIO
-from typing import Union, List, Tuple, Dict, Optional
+from pympler import asizeof
+from typing import Union, List, Tuple, Dict, Optional, Type, TYPE_CHECKING
 from warnings import warn
 
 import filetype
@@ -19,6 +21,9 @@ from PIL import Image
 from konfuzio_sdk import IMAGE_FILE, PDF_FILE, OFFICE_FILE, SUPPORTED_FILE_TYPES
 
 logger = logging.getLogger(__name__)
+
+if TYPE_CHECKING:  # only import when type checking to prevent circular import errors
+    from konfuzio_sdk.data import Bbox, Span
 
 
 def sdk_isinstance(instance, klass):
@@ -34,22 +39,45 @@ def sdk_isinstance(instance, klass):
     return result
 
 
-def get_id(a_string, include_time: bool = False) -> int:
+def exception_or_log_error(
+    msg: str,
+    handler: str = "sdk",
+    fail_loudly: Optional[bool] = True,
+    exception_type: Optional[Type[Exception]] = ValueError,
+) -> None:
+    """
+    Log error or raise an exception.
+
+    This function is needed to control error handling in production. If `fail_loudly` is set to `True`, the function
+    raises an exception to type `exception_type` with a message and handler in the format `{"message" : msg,
+                                                                                            "handler" : handler}`.
+    If `fail_loudly` is set to `False`, the function logs an error with `msg` using the logger.
+
+    :param msg: (str): The error message to be logged or raised.
+    :param handler: (str): The handler associated with the error. Defaults to "sdk"
+    :param fail_loudly: A flag indicating whether to raise an exception or log the error. Defaults to `True`.
+    :param exception_type: The type of exception to be raised. Defaults to `ValueError`.
+    :return: None
+    """
+    # Raise whatever exception while specifying the handler
+    if fail_loudly:
+        raise exception_type({"message": msg, "handler": handler})
+    else:
+        logger.error(msg)
+
+
+def get_id(include_time: bool = False) -> str:
     """
     Generate a unique ID.
 
-    :param a_string: String used to generating the unique ID
     :param include_time: Bool to include the time in the unique ID
     :return: Unique ID
     """
+    unique_id = str(uuid.uuid4())
     if include_time:
-        unique_string = a_string + get_timestamp(konfuzio_format='%Y-%m-%d-%H-%M-%S.%f')
+        return unique_id + get_timestamp(konfuzio_format='%Y-%m-%d-%H-%M-%S.%f')
     else:
-        unique_string = a_string
-    try:
-        return int(hashlib.md5(unique_string.encode()).hexdigest(), 16)
-    except (UnicodeDecodeError, AttributeError):  # duck typing for bytes like objects
-        return int(hashlib.md5(unique_string).hexdigest(), 16)
+        return unique_id
 
 
 def is_file(file_path, raise_exception=True, maximum_size=100000000, allow_empty=False) -> bool:
@@ -67,8 +95,8 @@ def is_file(file_path, raise_exception=True, maximum_size=100000000, allow_empty
         if file_size > 0 or allow_empty:
             if file_size > maximum_size:
                 logger.warning(f'Please check your BIG file with size {file_size / 1000000:.2f} MB at {file_path}.')
-            with open(file_path, 'rb') as f:
-                logger.debug(f"File expected and found at {file_path} with ID {get_id(f.read())}")
+            with open(file_path, 'rb'):
+                logger.debug(f"File expected and found at {file_path} with ID {get_id()}")
             return True
         else:
             if raise_exception:
@@ -80,6 +108,12 @@ def is_file(file_path, raise_exception=True, maximum_size=100000000, allow_empty
             raise FileNotFoundError(f'File expected but not found at: {file_path}')
         else:
             return False
+
+
+def memory_size_of(obj) -> int:
+    """Return memory size of object in bytes."""
+    size = asizeof.asizeof(obj)
+    return size
 
 
 def normalize_memory(memory: Union[None, str]) -> Union[int, None]:
@@ -352,115 +386,6 @@ def amend_file_path(file_path: str, append_text: str = '', new_extension: str = 
     return os.path.join(split_file_path, new_filename)
 
 
-# def get_paragraphs_by_line_space(
-#     bbox: dict,
-#     text: str,
-#     height: Union[float, int] = None,
-#     # return_dataframe: bool = False,
-#     line_height_ration: float = 0.8,
-# ) -> Union[List[List[List[dict]]], Tuple[List[List[List[dict]]]]]:
-#     """
-#     Split a text into paragraphs considering the space between the lines.
-#
-#     A paragraph consists in a list of lines. Each line corresponds to a dictionary.
-#
-#     :param bbox: Bounding boxes of the characters in the  Document
-#     :param text: Text of the document
-#     :param height: Threshold value for the distance between lines
-#     #:param return_dataframe: If to return a dataframe with the paragraph text and page number
-#     :param line_height_ration: Ratio of the result of median of the distance between lines as threshold
-#     :return: List of with the paragraph information per page of the document.
-#     """
-#     # Add start_offset and end_offset to every bbox item.
-#     from statistics import median
-#
-#     bbox = dict((k, dict(**v, start_offset=int(k), end_offset=int(k) + 1)) for (k, v) in bbox.items())
-#     page_numbers = set(int(box['page_number']) for box in bbox.values())
-#     document_structure = []
-#
-#     if height is not None:
-#         if not (isinstance(height, int) or isinstance(height, float)):
-#             raise Exception(f'Parameter must be of type int or float. It is {type(height)}.')
-#
-#     for page_number in page_numbers:
-#         previous_y0 = None
-#         paragraphs = []
-#
-#         if height is None:
-#             line_threshold = round(
-#                 line_height_ration
-#                 * median(box['y1'] - box['y0'] for box in bbox.values() if box['page_number'] == page_number),
-#                 6,
-#             )
-#         else:
-#             line_threshold = height
-#
-#         line_numbers = set(int(box['line_number']) for box in bbox.values() if box['page_number'] == page_number)
-#         for line_number in line_numbers:
-#             line_bboxes = list(
-#                 box for box in bbox.values()
-#                 if box['page_number'] == page_number and box['line_number'] == line_number
-#             )
-#             max_y1 = max([x['y1'] for x in line_bboxes])
-#             min_y0 = min([x['y0'] for x in line_bboxes])
-#
-#             max_x1 = max([x['x1'] for x in line_bboxes])
-#             min_x0 = min([x['x0'] for x in line_bboxes])
-#
-#             min_top = min([x['top'] for x in line_bboxes])
-#             max_bottom = max([x['bottom'] for x in line_bboxes])
-#
-#             start_offset = min(x['start_offset'] for x in line_bboxes)
-#             end_offset = max(x['end_offset'] for x in line_bboxes)
-#             _text = text[start_offset:end_offset]
-#
-#             # Do not create a paragraph for whitespaces.
-#             if _text.replace(' ', '') == '':
-#                 continue
-#
-#             paragraph = {
-#                 'start_offset': start_offset,
-#                 'end_offset': end_offset,
-#                 'text': _text,
-#                 'line_bbox': {
-#                     'x0': min_x0,
-#                     'x1': max_x1,
-#                     'y0': min_y0,
-#                     'y1': max_y1,
-#                     'top': min_top,
-#                     'bottom': max_bottom,
-#                     'page_index': page_number - 1,
-#                 },
-#             }
-#
-#             if previous_y0 is not None and previous_y0 - max_y1 < 0:
-#                 raise ValueError('Order of offsets does not match order y coordinate.')
-#
-#             if previous_y0 is not None and previous_y0 - max_y1 < line_threshold:
-#                 paragraphs[-1].append(paragraph)
-#             else:
-#                 paragraphs.append([paragraph])
-#
-#             previous_y0 = min_y0
-#
-#         document_structure.append(paragraphs)
-#
-#     return document_structure
-#
-#     #     for paragraph_ in paragraphs:
-#     #         paragraph_text = [line['text'] + "\n" for line in paragraph_]
-#     #         paragraph_text = ''.join(paragraph_text)
-#     #         data.append({"page_number": page_number, "paragraph_text": paragraph_text})
-#     #
-#     # dataframe = pd.DataFrame(data=data)
-#     #
-#     # if return_dataframe:
-#     #     return document_structure, dataframe
-#     #
-#     # else:
-#     #     return document_structure
-
-
 def get_sentences(text: str, offsets_map: Union[dict, None] = None, language: str = 'german') -> List[dict]:
     """
     Split a text into sentences using the sentence tokenizer from the package nltk.
@@ -536,29 +461,31 @@ def map_offsets(characters_bboxes: list) -> dict:
     return offsets_map
 
 
-def convert_segmentation_bbox(bbox: dict, page: dict) -> dict:
-    """
-    Convert bounding box from the segmentation result to the scale of the characters bboxes of the document.
+def detectron_get_paragraph_bboxes(detectron_document_results: List[List[Dict]], document) -> List[List['Bbox']]:
+    """Call detectron Bbox corresponding to each paragraph."""
+    from konfuzio_sdk.data import Bbox
 
-    :param bbox: Bounding box from the segmentation result
-    :param page: Page information
-    :return: Converted bounding box.
-    """
-    warn('Method needs testing and revision. Please create a Ticket if you use it.', DeprecationWarning, stacklevel=2)
-    original_size = page['original_size']
-    image_size = page['size']
-    factor_y = original_size[1] / image_size[1]
-    factor_x = original_size[0] / image_size[0]
-    height = image_size[1]
+    assert len(detectron_document_results) == document.number_of_pages
 
-    temp_y0 = (height - bbox['y0']) * factor_y
-    temp_y1 = (height - bbox['y1']) * factor_y
-    bbox['y0'] = temp_y1
-    bbox['y1'] = temp_y0
-    bbox['x0'] = bbox['x0'] * factor_x
-    bbox['x1'] = bbox['x1'] * factor_x
+    paragraph_document_bboxes: List[List['Bbox']] = []
 
-    return bbox
+    for page_index, detectron_page_results in enumerate(detectron_document_results):
+        paragraph_page_bboxes = []
+        for detectron_result in detectron_page_results:
+            paragraph_bbox = Bbox.from_image_size(
+                x0=detectron_result['x0'],
+                x1=detectron_result['x1'],
+                y1=detectron_result['y1'],
+                y0=detectron_result['y0'],
+                page=document.get_page_by_index(page_index=page_index),
+            )
+            label_name = detectron_result['label']
+            paragraph_bbox._label_name = label_name
+            paragraph_page_bboxes.append(paragraph_bbox)
+        paragraph_document_bboxes.append(paragraph_page_bboxes)
+    assert len(document.pages()) == len(paragraph_document_bboxes)
+
+    return paragraph_document_bboxes
 
 
 def select_bboxes(selection_bbox: dict, page_bboxes: list, tolerance: int = 10) -> list:
@@ -583,69 +510,6 @@ def select_bboxes(selection_bbox: dict, page_bboxes: list, tolerance: int = 10) 
     ]
 
     return selected_char_bboxes
-
-
-def group_bboxes_per_line(char_bboxes: dict, page_index: int) -> list:
-    """
-    Group characters bounding boxes per line.
-
-    A line will have a single bounding box.
-
-    :param char_bboxes: Bounding boxes of the characters.
-    :param page_index: Index of the page in the document.
-    :return: List with 1 bounding box per line.
-    """
-    warn('Method needs testing and revision. Please create a Ticket if you use it.', DeprecationWarning, stacklevel=2)
-    lines_bboxes = []
-
-    # iterate over each line_number and all of the character bboxes with that line number
-    for line_number, line_char_bboxes in itertools.groupby(char_bboxes, lambda x: x['line_number']):
-        # set the default values which we overwrite with the actual character bbox values
-        x0 = 100000000
-        top = 10000000
-        y0 = 10000000
-        x1 = 0
-        y1 = 0
-        bottom = 0
-        start_offset = 100000000
-        end_offset = 0
-
-        # remove space chars from the line selection so they don't interfere with the merging of bboxes
-        # (a bbox should never start with a space char)
-        trimmed_line_char_bboxes = [char for char in line_char_bboxes if not char['text'].isspace()]
-
-        if len(trimmed_line_char_bboxes) == 0:
-            continue
-
-        # merge characters bounding boxes of the same line
-        for char_bbox in trimmed_line_char_bboxes:
-            x0 = min(char_bbox['x0'], x0)
-            top = min(char_bbox['top'], top)
-            y0 = min(char_bbox['y0'], y0)
-
-            x1 = max(char_bbox['x1'], x1)
-            bottom = max(char_bbox['bottom'], bottom)
-            y1 = max(char_bbox['y1'], y1)
-
-            start_offset = min(int(char_bbox['string_offset']), start_offset)
-            end_offset = max(int(char_bbox['string_offset']), end_offset)
-
-        line_bbox = {
-            'bottom': bottom,
-            'page_index': page_index,
-            'top': top,
-            'x0': x0,
-            'x1': x1,
-            'y0': y0,
-            'y1': y1,
-            'start_offset': start_offset,
-            'end_offset': end_offset + 1,
-            'line_number': line_number,
-        }
-
-        lines_bboxes.append(line_bbox)
-
-    return lines_bboxes
 
 
 def merge_bboxes(bboxes: list):
@@ -996,3 +860,37 @@ def get_merged_bboxes(doc_bbox: Dict, bboxes: Union[Dict, List], doc_text: Optio
             bbox['offset_string_original'] = offset_string
 
     return merged_bboxes
+
+
+def get_sdk_version():
+    """Get a version of current Konfuzio SDK used."""
+    return pkg_resources.get_distribution("konfuzio-sdk").version
+
+
+def get_spans_from_bbox(selection_bbox: 'Bbox') -> List['Span']:
+    """Get a list of Spans for all the text contained within a Bbox."""
+    from konfuzio_sdk.data import Span
+
+    selected_bboxes = [
+        char_bbox for _, char_bbox in selection_bbox.page.get_bbox().items() if selection_bbox.check_overlap(char_bbox)
+    ]
+    selected_bboxes = sorted(selected_bboxes, key=lambda x: x['char_index'])
+
+    # iterate over each line_number (or bottom, depending on group_by) and all of the character
+    # bboxes that have the same line_number (or bottom)
+    spans = []
+    for _, line_char_bboxes in itertools.groupby(selected_bboxes, lambda x: x['line_number']):
+        # remove space chars from the line selection so they don't interfere with the merging of bboxes
+        # (a bbox should never start with a space char)
+        trimmed_line_char_bboxes = [char for char in line_char_bboxes if not char['text'].isspace()]
+
+        if len(trimmed_line_char_bboxes) == 0:
+            continue
+
+        # combine all of the found character bboxes on a given line and calculate their combined x0, x1, etc. values
+        start_offset = min(char_bbox['char_index'] for char_bbox in trimmed_line_char_bboxes)
+        end_offset = max(char_bbox['char_index'] for char_bbox in trimmed_line_char_bboxes)
+        span = Span(start_offset=start_offset, end_offset=end_offset + 1, document=selection_bbox.page.document)
+        spans.append(span)
+
+    return spans
