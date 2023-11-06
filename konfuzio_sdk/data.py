@@ -2677,7 +2677,6 @@ class Document(Data):
                 self._bbox_validation_type = BboxValidationTypes.ALLOW_ZERO_SIZE
             else:
                 self._bbox_validation_type = BboxValidationTypes.DISABLED
-        self._hocr = None
         self._pages: List[Page] = []
         self._n_pages = None
         self.text_encoded: List[int] = None
@@ -2688,7 +2687,6 @@ class Document(Data):
         self.annotation_file_path = os.path.join(self.document_folder, "annotations.json5")
         self.annotation_set_file_path = os.path.join(self.document_folder, "annotation_sets.json5")
         self.txt_file_path = os.path.join(self.document_folder, "document.txt")
-        self.hocr_file_path = os.path.join(self.document_folder, "document.hocr")
         self.pages_file_path = os.path.join(self.document_folder, "pages.json5")
         self.bbox_file_path = os.path.join(self.document_folder, "bbox.zip")
         self.bio_scheme_file_path = os.path.join(self.document_folder, "bio_scheme.txt")
@@ -3644,30 +3642,6 @@ class Document(Data):
                 start_offset = end_offset + 1
 
         return self._pages
-
-    @property
-    def hocr(self):
-        """Get HOCR of Document. Once loaded stored in memory."""
-        if self._hocr:
-            pass
-        elif is_file(self.hocr_file_path, raise_exception=False):
-            # hocr might not be available (depends on the Project settings)
-            with open(self.hocr_file_path, "r", encoding="utf-8") as f:
-                self._hocr = f.read()
-        else:
-            if self.status[0] == Document.DONE:
-                data = get_document_details(
-                    document_id=self.id_, project_id=self.project.id_, session=self.session, extra_fields="hocr"
-                )
-
-                if 'hocr' in data.keys() and data['hocr']:
-                    self._hocr = data['hocr']
-                    with open(self.hocr_file_path, "w", encoding="utf-8") as f:
-                        f.write(self._hocr)
-                else:
-                    logger.warning(f'Please enable HOCR in {self.project} and upload {self} again to create HOCR.')
-
-        return self._hocr
 
     def update(self):
         """Update Document information."""

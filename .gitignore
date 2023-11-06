@@ -33,7 +33,7 @@ settings.py
 *.tar.gz
 
 # Ignore files containing 'data_'
-*data_*
+*data_[0-9]*
 
 # Ignore Jupyter Notebook checkpoints
 *.ipynb_checkpoints/

@@ -236,7 +236,7 @@ def get_document_details(document_id: int, project_id: int, session=None, extra_
     :param document_id: ID of the document
     :param project_id: ID of the Project
     :param session: Konfuzio session with Retry and Timeout policy
-    :param extra_fields: Retrieve bounding boxes and HOCR from document, too. Can be "bbox,hocr", it's a hotfix
+    :param extra_fields: Retrieve bounding boxes from document, too. Can be "bbox", it's a hotfix
     :return: Data of the document.
     """
     if session is None:
