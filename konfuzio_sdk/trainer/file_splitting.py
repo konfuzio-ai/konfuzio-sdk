@@ -235,7 +235,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         epochs: int = 1,
         use_gpu: bool = False,
         eval_batch_size: int = 128,
-        train_batch_size: int = 8,
+        train_batch_size: int = 16,
         *args,
         **kwargs,
     ):
@@ -292,7 +292,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
             per_device_train_batch_size=train_batch_size,
             per_device_eval_batch_size=eval_batch_size,
             num_train_epochs=epochs,
-            weight_decay=0.1,
+            weight_decay=1e-3,
         )
         print("=" * 50)
         logger.info(f"[{time.ctime(time.time())}]\tStarting Training...")
