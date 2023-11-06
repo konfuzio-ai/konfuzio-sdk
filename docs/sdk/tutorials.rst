@@ -25,9 +25,9 @@ Build your own Categorization AI and define a custom architecture or reuse any e
 guidance about constructing a class for the model for Document Categorization that can later be reused on Konfuzio app
 or on an on-prem installation.
 
-5. :doc:`File Splitting <tutorials/file_splitting/index>`
+5. :doc:`Train and use a Context-Aware File Splitting Model <tutorials/context-aware-file-splitting-model/index>`
 
-Discover how to break down complex documents into manageable segments. This tutorial empowers you to handle multi-part documents with ease.
+Familiarize yourself with a simple fallback logic for splitting stream of Pages into separate sub-Documents.
 
 6. :doc:`Tokenization <tutorials/tokenizers/index>`
 
@@ -94,7 +94,7 @@ Dive into these tutorials and elevate your document processing capabilities. Whe
    tutorials/set-category-manually/index.md
    tutorials/document_categorization/index.md
    tutorials/create-custom-categorization-ai/index.md
-   tutorials/file_splitting/index.md
+   tutorials/context-aware-file-splitting-model/index.md
    tutorials/tokenizers/index.md
    tutorials/information_extraction/index.md
    tutorials/upload-your-ai/index.md
