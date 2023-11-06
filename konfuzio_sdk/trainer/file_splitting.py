@@ -14,7 +14,7 @@ from inspect import signature
 from typing import List, Union
 
 from konfuzio_sdk.data import Document, Page, Category
-from konfuzio_sdk.extras import torch, tensorflow as tf, transformers, Trainer, datasets, evaluate
+from konfuzio_sdk.extras import torch, tensorflow as tf, transformers, Trainer, TrainerCallback, datasets, evaluate
 from konfuzio_sdk.evaluate import FileSplittingEvaluation
 from konfuzio_sdk.trainer.information_extraction import BaseModel
 from konfuzio_sdk.utils import get_timestamp
@@ -242,17 +242,17 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         """Process the train and test data, initialize and fit the model."""
         logger.info("Fitting Textual File Splitting Model.")
         logger.info("training documents:")
-        print([doc.id_ for doc in self.documents])
+        logger.info([doc.id_ for doc in self.documents])
         logger.info("testing documents:")
-        print([doc.id_ for doc in self.test_documents])
-        print("=" * 50)
+        logger.info([doc.id_ for doc in self.test_documents])
+        logger.info("=" * 50)
         logger.info(f"Length of training documents: {len(self.documents)}")
         logger.info(f"Length of testing documents: {len(self.test_documents)}")
         logger.info("Preprocessing training & test documents")
         train_texts, train_labels = self._preprocess_documents(self.documents, return_images=False)
         test_texts, test_labels = self._preprocess_documents(self.test_documents, return_images=False)
         logger.info("Document preprocessing finished.")
-        print("=" * 50)
+        logger.info("=" * 50)
         logger.info("Creating datasets")
         train_df = pd.DataFrame({"text": train_texts, "label": train_labels})
         test_df = pd.DataFrame({"text": test_texts, "label": test_labels})
@@ -275,11 +275,11 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
             predictions = np.argmax(predictions, axis=1)
             return metric.compute(predictions=predictions, references=labels, average="macro")
 
-        print("=" * 50)
+        logger.info("=" * 50)
         logger.info("Tokenizing datasets")
         train_dataset = train_dataset.map(tokenize_function, batched=True)
         test_dataset = test_dataset.map(tokenize_function, batched=True)
-        print("=" * 50)
+        logger.info("=" * 50)
         logger.info("Loading model")
         self.model = transformers.AutoModelForSequenceClassification.from_pretrained(self.model_name, num_labels=2)
         training_args = transformers.TrainingArguments(
@@ -293,15 +293,23 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
             per_device_eval_batch_size=eval_batch_size,
             num_train_epochs=epochs,
             weight_decay=1e-3,
+            disable_tqdm=True,
         )
-        print("=" * 50)
+        logger.info("=" * 50)
         logger.info(f"[{time.ctime(time.time())}]\tStarting Training...")
         logger.info("\nConfiguration to be used for Training:")
-        logger.info(f"\nclass weights for the training dataset: {[f'{weight:.2e}' for weight in class_weights]}")
+        logger.info(f"Class weights for the training dataset: {[f'{weight:.2e}' for weight in class_weights]}")
         logger.info(f"Number of epochs: {epochs}")
         logger.info(f"Batch size for training: {train_batch_size}")
         logger.info(f"Batch size for evaluation: {eval_batch_size}")
         logger.info(f"Learning rate: {training_args.learning_rate:.2e}\n")
+
+        # custom callback for logger.info to be used in Trainer
+        class LoggerCallback(TrainerCallback):
+            def on_log(self, args, state, control, logs=None, **kwargs):
+                _ = logs.pop("total_flos", None)
+                if state.is_local_process_zero:
+                    logger.info(logs)
 
         # custom trainer with custom loss to leverage class weights
 
@@ -324,15 +332,16 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
             train_dataset=train_dataset,
             eval_dataset=test_dataset,
             compute_metrics=compute_metrics,
+            callbacks=[LoggerCallback],
         )
         trainer.train()
         logger.info(f"[{time.ctime(time.time())}]\t🎉 Textual File Splitting Model fitting finished.")
-        print("=" * 50)
+        logger.info("=" * 50)
         logger.info(f"[{time.ctime(time.time())}]\tComputing AI Quality.")
         evaluation_results = trainer.evaluate()
         self.model = trainer.model
         logger.info(f"[{time.ctime(time.time())}]\tTextual File Splitting Model Evaluation finished.")
-        print("=" * 50)
+        logger.info("=" * 50)
         return evaluation_results
 
     def predict(self, page: Page, use_gpu: bool = False, previous_page: Page = None) -> Page:
@@ -703,7 +712,7 @@ class SplittingAI:
         else:
             original_docs = self.model.documents
         for doc in original_docs:
-            print(f"Processing {doc.id_}.")
+            logger.info(f"Processing {doc.id_}.")
             predictions = self.propose_split_documents(doc, return_pages=True)
             assert len(predictions) == 1
             pred_docs.append(predictions[0])

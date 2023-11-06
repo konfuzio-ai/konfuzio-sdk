@@ -306,15 +306,15 @@ class TestMultimodalFileSplittingModel(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Initialize the tested class."""
-        cls.project = Project(id_=46)
+        cls.project = Project(id_=14392)
         cls.file_splitting_model = MultimodalFileSplittingModel(categories=cls.project.categories)
         if not TEST_WITH_FULL_DATASET:
-            cls.file_splitting_model.documents = [cls.file_splitting_model.categories[0].documents()[0]]
+            cls.file_splitting_model.documents = cls.file_splitting_model.categories[0].documents()[:20]
         cls.test_document = cls.file_splitting_model.test_documents[-1]
 
     def test_model_training(self):
         """Test model's fit() method."""
-        self.file_splitting_model.fit(epochs=2)
+        self.file_splitting_model.fit(epochs=2, per_device_train_batch_size=4)
         assert self.file_splitting_model.model
 
     def test_run_page_prediction(self):

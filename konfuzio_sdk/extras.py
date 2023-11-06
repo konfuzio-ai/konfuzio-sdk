@@ -100,8 +100,10 @@ torchvision = PackageWrapper('torchvision', ['Document Categorization AI'])
 transformers = PackageWrapper('transformers', ['Document Categorization AI, File Splitting AI'])
 if transformers.package:
     Trainer = transformers.Trainer
+    TrainerCallback = transformers.TrainerCallback
 else:
     Trainer = ModuleWrapper('Trainer').replaced
+    TrainerCallback = ModuleWrapper('TrainerCallback').replaced
 
 
 def torch_no_grad(method):
