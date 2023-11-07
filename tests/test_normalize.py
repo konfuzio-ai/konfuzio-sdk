@@ -224,6 +224,8 @@ test_data_numbers = [
     ('034,466416.3105.832', None, None),
     ('034,466416.31', 34466416.31, None),
     ('Woch.Arb.Zt.', None, None),
+    ('0.30.2', None, None),
+    ('14.55.43', None, None)
     # ('12.', 12.0, 0), undefined test cases:
     # ('1.', 1.0, 0),
     # ('.', None, 0),
