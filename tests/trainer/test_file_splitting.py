@@ -315,7 +315,7 @@ class TestMultimodalFileSplittingModel(unittest.TestCase):
 
     def test_model_training(self):
         """Test model's fit() method."""
-        self.file_splitting_model.fit()
+        self.file_splitting_model.fit(epochs=3)
         assert self.file_splitting_model.model
 
     def test_run_page_prediction(self):
