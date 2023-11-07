@@ -283,7 +283,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         logger.info("Loading model")
         self.model = transformers.AutoModelForSequenceClassification.from_pretrained(self.model_name, num_labels=2)
         training_args = transformers.TrainingArguments(
-            output_dir="splitting_ai_trainer",
+            output_dir="training_logs/textual_file_splitting_model_trainer",
             evaluation_strategy="epoch",
             save_strategy="epoch",
             load_best_model_at_end=True,
