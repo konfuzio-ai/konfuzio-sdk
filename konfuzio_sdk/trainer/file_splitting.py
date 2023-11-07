@@ -228,10 +228,19 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         texts = []
         labels = []
         for doc in data:
-            for page in doc.pages():
+            for i, page in enumerate(doc.pages()):
                 if return_images:
                     page_images.append(page.get_image())
-                texts.append(page.text)
+                # !TODO: move this logic of preprocessing empty pages to data.py class Page
+                # add the text of the previous page to the current page's text so that the model can learn
+                # from previous pages and predict better the split occurences
+                previous_page_text = ""
+                if i > 0:
+                    previous_page_text = doc.pages()[i - 1].text
+                    # here we would like to transform blank pages into a string of [SEP] tokens
+                    # for the transformer to understand that it is a blank page
+                    previous_page_text = previous_page_text if previous_page_text.strip() else "[SEP]" * 10
+                texts.append(previous_page_text + page.text)
                 if page.is_first_page:
                     labels.append(1)
                 else:
@@ -367,10 +376,6 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
 
         # Extract the probability of the 'is_first_page' being True
         predicted_prob_is_first = probabilities[:, 1].item()
-
-        # if the previous page is not None and is empty, increase the probability of the current page being the first
-        if previous_page is not None and len(previous_page.text.strip()) == 0:
-            predicted_prob_is_first += 0.4
 
         # Determine the predicted label based on a threshold (e.g., 0.5)
         predicted_is_first = predicted_prob_is_first >= 0.5
