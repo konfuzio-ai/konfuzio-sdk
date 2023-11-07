@@ -121,6 +121,11 @@ def _normalize_string_to_absolute_float(offset_string: str) -> Optional[float]:
     if offset_string.count('*') == 1 and offset_string[0] == '*' and offset_string.count('(') == 0:
         return None
 
+    if offset_string.count('.') == 2:  # cases like '0.30.1' or '16.22.43'
+        split = offset_string.split('.')
+        if len(split[0]) <= 2 and len(split[1]) == 2 and len(split[2]) > 0:
+            return None
+
     offset_string = (
         offset_string.replace('O', '0')
         .replace('°', '')
