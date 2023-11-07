@@ -239,8 +239,10 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
                     previous_page_text = doc.pages()[i - 1].text
                     # here we would like to transform blank pages into a string of [SEP] tokens
                     # for the transformer to understand that it is a blank page
-                    previous_page_text = previous_page_text if previous_page_text.strip() else "[SEP]" * 10
-                texts.append(previous_page_text + "[SEP] [SEP]" + page.text)
+                    previous_page_text = (
+                        previous_page_text + "[SEP] [SEP]" if previous_page_text.strip() else "[SEP]" * 20
+                    )
+                texts.append(previous_page_text + page.text)
                 if page.is_first_page:
                     labels.append(1)
                 else:
