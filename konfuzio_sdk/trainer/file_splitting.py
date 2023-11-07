@@ -232,9 +232,9 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
 
     def fit(
         self,
-        epochs: int = 1,
+        epochs: int = 2,
         use_gpu: bool = False,
-        eval_batch_size: int = 128,
+        eval_batch_size: int = 32,
         train_batch_size: int = 16,
         *args,
         **kwargs,

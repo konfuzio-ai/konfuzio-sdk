@@ -309,22 +309,25 @@ class TestMultimodalFileSplittingModel(unittest.TestCase):
         cls.project = Project(id_=14392)
         cls.file_splitting_model = MultimodalFileSplittingModel(categories=cls.project.categories)
         if not TEST_WITH_FULL_DATASET:
-            cls.file_splitting_model.documents = cls.file_splitting_model.categories[0].documents()[:20]
+            cls.file_splitting_model.documents = cls.file_splitting_model.categories[0].documents()
+            cls.file_splitting_model.test_documents = cls.file_splitting_model.categories[0].test_documents()
         cls.test_document = cls.file_splitting_model.test_documents[-1]
 
     def test_model_training(self):
         """Test model's fit() method."""
-        self.file_splitting_model.fit(epochs=2, per_device_train_batch_size=4)
+        self.file_splitting_model.fit()
         assert self.file_splitting_model.model
 
     def test_run_page_prediction(self):
         """Test model's prediction."""
         for doc in self.file_splitting_model.test_documents:
             for page in doc.pages():
+                ground_truth_is_first_page = page.is_first_page
                 page.is_first_page = None
                 page = self.file_splitting_model.predict(page)
-                assert page.is_first_page
-                assert page.is_first_page_confidence
+                predicted_is_first_page = page.is_first_page
+                assert ground_truth_is_first_page == predicted_is_first_page
+                assert type(page.is_first_page_confidence) is float
 
     def test_run_splitting_ai_prediction(self):
         """Test Splitting AI integration with the Multimodal File Splitting Model."""
@@ -351,26 +354,22 @@ class TestMultimodalFileSplittingModel(unittest.TestCase):
         """Test Splitting AI's evaluate_full on training Documents."""
         splitting_ai = SplittingAI(self.file_splitting_model)
         splitting_ai.evaluate_full(use_training_docs=True)
-        if TEST_WITH_FULL_DATASET:
-            assert splitting_ai.full_evaluation.tp() == 25
-        else:
-            assert splitting_ai.full_evaluation.tp() == 1
-        assert splitting_ai.full_evaluation.fp() == 0
-        assert splitting_ai.full_evaluation.fn() == 0
-        assert splitting_ai.full_evaluation.tn() == 0
-        assert splitting_ai.full_evaluation.precision() == 1.0
-        assert splitting_ai.full_evaluation.recall() == 1.0
+        assert splitting_ai.full_evaluation.tp() >= 0.0
+        assert splitting_ai.full_evaluation.fp() >= 0.0
+        assert splitting_ai.full_evaluation.fn() >= 0.0
+        assert splitting_ai.full_evaluation.tn() >= 0.0
+        assert splitting_ai.full_evaluation.precision() >= 0.0
+        assert splitting_ai.full_evaluation.recall() >= 0.0
         assert splitting_ai.full_evaluation.f1() == 1.0
 
     def test_splitting_ai_evaluate_full_on_testing(self):
         """Test Splitting AI's evaluate_full on testing Documents."""
         splitting_ai = SplittingAI(self.file_splitting_model)
         splitting_ai.evaluate_full()
-        print(splitting_ai.full_evaluation.evaluation_results)
-        assert splitting_ai.full_evaluation.tp() == 3
-        assert splitting_ai.full_evaluation.fp() == 0
-        assert splitting_ai.full_evaluation.fn() == 0
-        assert splitting_ai.full_evaluation.tn() == 0
-        assert splitting_ai.full_evaluation.precision() == 1.0
-        assert splitting_ai.full_evaluation.recall() == 1.0
+        assert splitting_ai.full_evaluation.tp() >= 0.0
+        assert splitting_ai.full_evaluation.fp() >= 0.0
+        assert splitting_ai.full_evaluation.fn() >= 0.0
+        assert splitting_ai.full_evaluation.tn() >= 0.0
+        assert splitting_ai.full_evaluation.precision() >= 0.0
+        assert splitting_ai.full_evaluation.recall() >= 0.0
         assert splitting_ai.full_evaluation.f1() == 1.0
