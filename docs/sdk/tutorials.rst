@@ -23,7 +23,7 @@ Master the art of categorizing documents within your projects automatically. Thi
 
 Build your own Categorization AI and define a custom architecture or reuse any external model. This tutorial provides
 guidance about constructing a class for the model for Document Categorization that can later be reused on Konfuzio app
-or on an on-prem installation.
+or in an on-prem installation.
 
 5. :doc:`Build a Context-Aware File Splitting Model <tutorials/build-context-aware-file-splitting-model/index>`
 
@@ -34,55 +34,61 @@ about the existing class of Konfuzio SDK.
 
 Familiarize yourself with a simple fallback logic for splitting stream of Pages into separate sub-Documents.
 
-7. :doc:`Tokenization <tutorials/tokenizers/index>`
+7. :doc:`Create your own File Splitting AI <tutorials/create-custom-splitting-ai/index>`
+
+Build a custom File Splitting AI and define your own architecture or reuse any external model. This tutorial provides
+guidance about constructing a class for the model for File Splitting that can later be reused on Konfuzio app
+or in an on-prem installation.
+
+8. :doc:`Tokenization <tutorials/tokenizers/index>`
 
 Delve into the world of document tokenization, a crucial step in text analysis. This tutorial explores various tokenization techniques and their applications.
 
-8. :doc:`Information Extraction <tutorials/information_extraction/index>`
+9. :doc:`Information Extraction <tutorials/information_extraction/index>`
 
 Unlock the potential of extracting valuable information from unstructured text. This tutorial guides you through the process of identifying and labeling key details.
 
-9. :doc:`Upload your AI model to use on Konfuzio app or an on-prem installation <tutorials/upload-your-ai/index_nb>`
+10. :doc:`Upload your AI model to use on Konfuzio app or an on-prem installation <tutorials/upload-your-ai/index_nb>`
 
 Learn how to proceed with your model after you built and trained it and upload it to use in production using API.
 
 **Advanced Techniques**
 
-10. :doc:`Named Entity Recognition <tutorials/ner-ontonotes-fast/index>`
+11. :doc:`Named Entity Recognition <tutorials/ner-ontonotes-fast/index>`
 
 Take your text analysis to the next level with fast and accurate Named Entity Recognition using OntoNotes. This tutorial provides in-depth insights into NER techniques.
 
-11. :doc:`Annual Reports Analysis <tutorials/annual-reports/index>`
+12. :doc:`Annual Reports Analysis <tutorials/annual-reports/index>`
 
 Learn how to extract critical insights from annual reports using our advanced AI models. This tutorial is ideal for financial analysts and researchers.
 
 **Specialized Applications**
 
-12. :doc:`Barcode Scanner <tutorials/barcode-scanner/index>`
+13. :doc:`Barcode Scanner <tutorials/barcode-scanner/index>`
 
 Explore the capabilities of our barcode scanning tool. This tutorial demonstrates how to effortlessly extract information from barcodes in documents.
 
-13. :doc:`PDF Form Generator <tutorials/pdf-form-generator/index>`
+14. :doc:`PDF Form Generator <tutorials/pdf-form-generator/index>`
 
 Learn how to dynamically generate PDF forms using our AI-powered tools. This tutorial is perfect for streamlining document creation processes.
 
 **Workflow Optimization**
 
-14. :doc:`Data Validation <tutorials/data_validation/index>`
+15. :doc:`Data Validation <tutorials/data_validation/index>`
 
 Ensure the accuracy and integrity of your data with effective validation techniques. This tutorial provides best practices for maintaining high-quality data sets.
 
-15. :doc:`Outlier Annotations <tutorials/outlier-annotations/index>`
+16. :doc:`Outlier Annotations <tutorials/outlier-annotations/index>`
 
 Discover how to identify and handle outliers in your document processing pipeline. This tutorial offers strategies for accurate annotations.
 
-16. :doc:`Regex-based Annotations <tutorials/regex_based_annotations/index>`
+17. :doc:`Regex-based Annotations <tutorials/regex_based_annotations/index>`
 
 Harness the power of regular expressions for precise document annotations. This tutorial guides you through the process of using regex patterns effectively.
 
 **Streamlined Operations**
 
-17. :doc:`Async Upload with Callback <tutorials/async_upload_with_callback/index>`
+18. :doc:`Async Upload with Callback <tutorials/async_upload_with_callback/index>`
 
 Optimize your document processing workflow with asynchronous upload and callback functionality. This tutorial enhances the efficiency of large-scale operations.
 
@@ -101,6 +107,7 @@ Dive into these tutorials and elevate your document processing capabilities. Whe
    tutorials/create-custom-categorization-ai/index.md
    tutorials/build-context-aware-file-splitting-model/index.md
    tutorials/context-aware-file-splitting-model/index.md
+   tutorials/create-custom-splitting-ai/index.md
    tutorials/tokenizers/index.md
    tutorials/information_extraction/index.md
    tutorials/upload-your-ai/index.md
