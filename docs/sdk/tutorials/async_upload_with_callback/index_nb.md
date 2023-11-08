@@ -17,7 +17,7 @@ jupyter:
 ---
 
 **Prerequisites:**
-- Understanding of the Konfuzio SDK and its usage, including authentication, project setup, and interacting with the Konfuzio API.
+- Understanding of the Konfuzio SDK and its usage, including authentication, Project setup, and interacting with the Konfuzio API.
 - Basic knowledge of web servers and how they handle incoming requests.
 - Basic understanding of asynchronous programming concepts, including threads and event handling.
 - Familiarity with ngrok and its setup process to expose a local server to the internet.
@@ -93,7 +93,7 @@ import threading
 from werkzeug.serving import run_simple
 ```
 
-2. **Create a project object**
+2. **Create a Project object**
 
 You will find your Project id in the Konfuzio web interface.
 
@@ -191,4 +191,4 @@ if __name__=='__main__':
 
 In this tutorial, we've explored a powerful method for efficiently uploading a large number of files to Konfuzio using asynchronous mode and a webhook callback URL. By leveraging the Document.from_file method and ngrok for exposing a local server, we've enabled simultaneous file uploads without the need to wait for backend processing. Additionally, the implementation of a callback function ensures real-time notifications, allowing for timely access to results.
 
-By following this tutorial, you've gained valuable insights into the seamless integration of Konfuzio with ngrok, optimizing your workflow for document processing tasks. This approach not only enhances efficiency but also provides a foundation for building robust, automated solutions for document management and analysis.
+By following this tutorial, you've gained valuable insights into the seamless integration of Konfuzio with ngrok, optimizing your workflow for Document processing tasks. This approach not only enhances efficiency but also provides a foundation for building robust, automated solutions for Document management and analysis.
