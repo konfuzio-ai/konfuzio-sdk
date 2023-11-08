@@ -350,5 +350,5 @@ pickle_model_path = barcode_extraction_ai.save()
 
 ### What's next?
 
-- Learn how to upload a custom AI
-- Get to know how to create any custom Extraction AI
+- [Learn how to upload a custom AI](https://dev.konfuzio.com/sdk/tutorials/upload-your-ai/index.html)
+- [Get to know how to create any custom Extraction AI](https://dev.konfuzio.com/sdk/tutorials/information_extraction/index.html#train-a-custom-date-extraction-ai)
