@@ -195,6 +195,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         tf.config.experimental_run_functions_eagerly(True)
         self.output_dir = self.project.model_folder
         self.requires_images = False
+        self.use_previous_page = True
         self.requires_text = True
         self.train_txt_data = []
         self.train_img_data = None
@@ -212,6 +213,27 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
     def reduce_model_weight(self):
         """Remove all non-strictly necessary parameters before saving."""
         self.project.lose_weight()
+
+    def _concat_pages_text(self, page: Page, previous_page: Page) -> str:
+        """
+        Concatenate the text of the current Page with the text of the previous Page.
+
+        :param page: The current Page to concatenate the text of.
+        :type page: Page
+        :param previous_page: The previous Page to concatenate the text of.
+        :type previous_page: Page
+        :return: A string with the concatenated text.
+        """
+        previous_page_text = previous_page.text
+        if previous_page_text.strip():
+            # we add two [SEP] tokens to the end of the previous page's text
+            # to mark the end of the previous page and the beginning of the current page
+            previous_page_text += "[SEP] [SEP]"
+        else:
+            # here we would like to transform blank pages into a string of [SEP] tokens
+            # for the transformer to understand that it is a blank page
+            previous_page_text = "[SEP]" * 20
+        return previous_page_text + page.text
 
     def _preprocess_documents(
         self, data: List[Document], return_images: bool = False
@@ -231,18 +253,10 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
             for i, page in enumerate(doc.pages()):
                 if return_images:
                     page_images.append(page.get_image())
-                # !TODO: move this logic of preprocessing empty pages to data.py class Page
-                # add the text of the previous page to the current page's text so that the model can learn
-                # from previous pages and predict better the split occurences
-                previous_page_text = ""
-                if i > 0:
-                    previous_page_text = doc.pages()[i - 1].text
-                    # here we would like to transform blank pages into a string of [SEP] tokens
-                    # for the transformer to understand that it is a blank page
-                    previous_page_text = (
-                        previous_page_text + "[SEP] [SEP]" if previous_page_text.strip() else "[SEP]" * 20
-                    )
-                texts.append(previous_page_text + page.text)
+                text = page.text
+                if self.use_previous_page & (i > 0):
+                    text = self._concat_pages_text(page=page, previous_page=doc.pages()[i - 1])
+                texts.append(text)
                 if page.is_first_page:
                     labels.append(1)
                 else:
@@ -270,8 +284,8 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         logger.info(f"Length of training documents: {len(self.documents)}")
         logger.info(f"Length of testing documents: {len(self.test_documents)}")
         logger.info("Preprocessing training & test documents")
-        train_texts, train_labels = self._preprocess_documents(self.documents, return_images=False)
-        test_texts, test_labels = self._preprocess_documents(self.test_documents, return_images=False)
+        train_texts, train_labels = self._preprocess_documents(data=self.documents, return_images=False)
+        test_texts, test_labels = self._preprocess_documents(data=self.test_documents, return_images=False)
         logger.info("Document preprocessing finished.")
         print("=" * 50)
         logger.info("Creating datasets")
@@ -364,10 +378,17 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         :type page: Page
         :param use_gpu: Run prediction on GPU if available.
         :type use_gpu: bool
+        :param previous_page: The previous Page which would help give more context to the model
+        :type page: Page
         :return: A Page with possible changes in is_first_page attribute value.
         """
         self.check_is_ready()
-        tokenized_text = self.bert_tokenizer(page.text, truncation=True, padding="max_length", return_tensors="pt")
+        concatenated_text = page.text
+        if previous_page is not None:
+            concatenated_text = self._concat_pages_text(page=page, previous_page=previous_page)
+        tokenized_text = self.bert_tokenizer(
+            concatenated_text, truncation=True, padding="max_length", return_tensors="pt"
+        )
         with torch.no_grad():
             self.model.eval()
             output = self.model(**tokenized_text)
@@ -604,8 +625,8 @@ class SplittingAI:
             # we set a Page's Category explicitly because we don't want to lose original Page's Category information
             # because by default a Page is assigned a Category of a Document, and they are not necessarily the same
             for index, page in enumerate(processed_document.pages()):
-                previous_page = None if index == 0 else processed_document.pages()[index - 1]
-                if self.model.name != "ContextAwareFileSplittingModel":
+                if self.use_previous_page & (index > 0):
+                    previous_page = processed_document.pages()[index - 1]
                     self.model.predict(page=page, previous_page=previous_page)
                 else:
                     self.model.predict(page=page)
@@ -634,8 +655,8 @@ class SplittingAI:
         else:
             document_tokenized = document
         for index, page in enumerate(document_tokenized.pages()):
-            previous_page = None if index == 0 else document_tokenized.pages()[index - 1]
-            if self.model.name != "ContextAwareFileSplittingModel":
+            if self.use_previous_page & (index > 0):
+                previous_page = document_tokenized.pages()[index - 1]
                 prediction = self.model.predict(page=page, previous_page=previous_page)
             else:
                 prediction = self.model.predict(page=page)
