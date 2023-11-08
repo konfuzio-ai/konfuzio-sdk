@@ -12,6 +12,7 @@ jupyter:
     name: python3
 ---
 
+(info-extraction)=
 ## Information Extraction
 
 ---
@@ -20,7 +21,7 @@ jupyter:
 - Familiarity with OOP principles, in particular inheritance.
 - A basic understanding of regular expressions.
 - A basic understanding of evaluation measures for machine learning models.
-- Konfuzio Concepts: Labels, Label Sets, Annotations, Spans, Categories.
+- Konfuzio Concepts: [Labels](https://dev.konfuzio.com/sdk/explanations.html#label-concept), [Label Sets](https://dev.konfuzio.com/sdk/explanations.html#label-set), [Annotations](https://dev.konfuzio.com/sdk/explanations.html#annotation), [Spans](https://dev.konfuzio.com/sdk/explanations.html#span-concept), [Categories](https://dev.konfuzio.com/sdk/explanations.html#category-concept).
 
 **Difficulty:** Advanced
 
@@ -144,7 +145,7 @@ If you have the Superuser rights, it is also possible to upload the AI from your
 
 
 ### The Paragraph Custom Extraction AI
-In :ref:`the Paragraph Tokenizer tutorial<paragraph-tokenizer-tutorial>`, we saw how we can use the Paragraph Tokenizer in `detectron` mode and with the `create_detectron_labels` option to segment a Document and create `figure`, `table`, `list`, `text` and `title` Annotations.
+In [the Paragraph Tokenizer tutorial](https://dev.konfuzio.com/sdk/tutorials/tokenizers/index.html#paragraph-tokenization), we saw how we can use the Paragraph Tokenizer in `detectron` mode and with the `create_detectron_labels` option to segment a Document and create `figure`, `table`, `list`, `text` and `title` Annotations.
 
 Here, we will see how we can use the Paragraph Tokenizer to create a Custom Extraction AI. We will create a simple wrapper around the Paragraph Tokenizer. This shows how you can create your own Custom Extraction AI which 
 can be used in Konfuzio on-prem installations or in the [Konfuzio Marketplace](https://help.konfuzio.com/modules/marketplace/index.html).

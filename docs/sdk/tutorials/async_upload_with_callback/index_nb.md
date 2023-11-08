@@ -12,12 +12,12 @@ jupyter:
     name: python3
 ---
 
-## Asynchronously Uploading and Processing Multiple Files with Konfuzio using Webhooks
+## Asynchronously Uploading and Processing Multiple Files using Webhooks
 
 ---
 
 **Prerequisites:**
-- Understanding of the Konfuzio SDK and its usage, including authentication, Project setup, and interacting with the Konfuzio API.
+- Understanding of the Konfuzio SDK and its usage, including authentication, [Project](https://dev.konfuzio.com/sdk/sourcecode.html#project) setup, and interacting with the Konfuzio API.
 - Basic knowledge of web servers and how they handle incoming requests.
 - Basic understanding of asynchronous programming concepts, including threads and event handling.
 - Familiarity with ngrok and its setup process to expose a local server to the internet.
@@ -28,7 +28,7 @@ jupyter:
 **Difficulty:** Advanced
 
 **Goal:**
-This tutorial aims to guide users in efficiently uploading a large number of files to Konfuzio by utilizing the Document.from_file method in asynchronous mode. The primary objectives achieved through this tutorial are:
+This tutorial aims to guide users in efficiently uploading a large number of files to Konfuzio by utilizing the `Document.from_file` (see [docs](https://dev.konfuzio.com/sdk/sourcecode.html#document)) method in asynchronous mode. The primary objectives achieved through this tutorial are:
 
 - Efficient File Upload
 - Real-time Notifications
@@ -38,7 +38,7 @@ This tutorial aims to guide users in efficiently uploading a large number of fil
 
 ### Introduction
 
-Uploading a large number of files to Konfuzio can be made highly convenient by employing the Document.from_file method in asynchronous mode. This approach allows for the simultaneous upload of multiple files without the need to wait for backend processing. However, a drawback of this method is the lack of real-time updates on processing status. This tutorial outlines a solution using a webhook callback URL to receive notifications once processing is complete, allowing for timely access to results.
+Uploading a large number of files to Konfuzio can be made highly convenient by employing the `Document.from_file` method in asynchronous mode. This approach allows for the simultaneous upload of multiple files without the need to wait for backend processing. However, a drawback of this method is the lack of real-time updates on processing status. This tutorial outlines a solution using a webhook callback URL to receive notifications once processing is complete, allowing for timely access to results.
 
 
 ### Preliminary Steps
@@ -144,7 +144,7 @@ def callback():
 
 7. **Create a function to send your files asynchronously and update them once a callback response is received**
 
-Now we can create the function that will send the files to the Konfuzio Server. We create a Document object for each file and set the `sync` parameter to `False` to indicate that we want to upload the files asynchronously. We also set the `callback_url` parameter to the callback URL we created earlier.
+Now we can create the function that will send the files to the Konfuzio Server. We create a [Document](https://dev.konfuzio.com/sdk/sourcecode.html#document) object for each file and set the `sync` parameter to `False` to indicate that we want to upload the files asynchronously. We also set the `callback_url` parameter to the callback URL we created earlier.
 
 We then start a thread for each Document to wait for the callback response to be received. Once the callback response for a Document has been received, we can update it with the OCR information.
 

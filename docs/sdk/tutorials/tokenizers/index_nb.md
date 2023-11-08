@@ -37,12 +37,12 @@ In this tutorial, we will explore the concept of tokenization and the various to
 
 
 ### Whitespace Tokenization
-The `WhitespaceTokenizer`, part of the Konfuzio SDK, is a simple yet effective tool for basic tokenization tasks. It segments text into tokens using white spaces as natural delimiters.
+The `WhitespaceTokenizer`, [part of the Konfuzio SDK](https://dev.konfuzio.com/sdk/sourcecode.html#konfuzio_sdk.tokenizer.regex.WhitespaceTokenizer), is a simple yet effective tool for basic tokenization tasks. It segments text into tokens using white spaces as natural delimiters.
 
 #### Use case: Retrieving the Word Bounding Box for a Document
-In this section, we will walk through how to use the `WhitespaceTokenizer` to extract word-level [Bounding Boxes](ADD-LINK) for a Document.
+In this section, we will walk through how to use the `WhitespaceTokenizer` to extract word-level Bounding Boxes for a Document.
 
-We will use the Konfuzio SDK to tokenize the Document and identify word-level [Spans](ADD-LINK), which can then be visualized or used to extract bounding box information.
+We will use the Konfuzio SDK to tokenize the Document and identify word-level Spans, which can then be visualized or used to extract bounding box information.
 
 
 ##### Steps
@@ -90,7 +90,7 @@ We now visually check that the Bounding Boxes are correctly assigned.
 document.get_page_by_index(0).get_annotations_image(display_all=True)
 ```
 
-Observe how each individual word is enclosed in a Bounding Box. Also note that these Bounding Boxes have no [Label](ADD-LINK) associated, thereby the placeholder 'NO_LABEL' is shown above each Bounding Box.
+Observe how each individual word is enclosed in a Bounding Box. Also note that these Bounding Boxes have no Label associated, thereby the placeholder 'NO_LABEL' is shown above each Bounding Box.
 
 
 5. Retrieving Bounding Boxes
@@ -140,7 +140,7 @@ Note: remember to use a Project and Document id to which you have access. The va
 
 
 ### Regex Tokenization for Specific Labels
-In some cases, especially when dealing with intricate annotation strings, a custom Regex Tokenizer can offer a powerful solution. Unlike basic `WhitespaceTokenizers`, which split text based on spaces, a Regex Tokenizer utilizes regular expressions to define complex patterns for identifying and extracting tokens. This tutorial will guide you through the process of creating and training your own Regex Tokenizer, providing you with a versatile tool to handle even the most challenging tokenization tasks. Let's get started!
+In some cases, especially when dealing with intricate annotation strings, a custom [Regex Tokenizer](https://dev.konfuzio.com/sdk/sourcecode.html#regex-tokenizer) can offer a powerful solution. Unlike basic `WhitespaceTokenizers`, which split text based on spaces, a Regex Tokenizer utilizes regular expressions to define complex patterns for identifying and extracting tokens. This tutorial will guide you through the process of creating and training your own Regex Tokenizer, providing you with a versatile tool to handle even the most challenging tokenization tasks. Let's get started!
 
 In this example, we will see how to find regular expressions that match with occurrences of the "Lohnart" (which approximately means _type of salary_ in German) Label in the training data, namely Documents that have been annotated by hand.
 
@@ -160,7 +160,7 @@ my_project = Project(id_=TEST_PROJECT_ID)
 category = my_project.get_category_by_id(id_=TEST_PAYSLIPS_CATEGORY_ID)
 ```
 
-3. We use the ListTokenizer, a class that provides a way to organize and apply multiple tokenizers to a Document, allowing for complex tokenization pipelines in natural language processing tasks. In this case, we simply use to hold our regular expression tokenizers.
+3. We use the [ListTokenizer](https://dev.konfuzio.com/sdk/sourcecode.html#list-tokenizer), a class that provides a way to organize and apply multiple tokenizers to a Document, allowing for complex tokenization pipelines in natural language processing tasks. In this case, we simply use to hold our regular expression tokenizers.
 
 ```python
 tokenizer_list = ListTokenizer(tokenizers=[])
@@ -226,7 +226,7 @@ document = tokenizer_list.tokenize(document)
 ### Paragraph Tokenization
 
 
-The `ParagraphTokenizer` class is a specialized tool designed to split a Document into meaningful sections, creating Annotations. It offers two modes of operation: `detectron` and `line_distance`.
+The `ParagraphTokenizer` [class](https://dev.konfuzio.com/sdk/sourcecode.html#paragraph-tokenizer) is a specialized tool designed to split a Document into meaningful sections, creating Annotations. It offers two modes of operation: `detectron` and `line_distance`.
 
 To determine the mode of operation, the `mode` constructor parameter is used, it can take two values: `detectron` (default) or `line_distance`. In `detectron` mode, the Tokenizer employs a fine-tuned Detectron2 model to assist in Document segmentation. While this mode tends to be more accurate, it is slower as it requires making an API call to the model hosted on Konfuzio servers. On the other hand, the `line_distance` mode uses a rule-based approach that is faster but less accurate, especially with Documents having two columns or other complex layouts.
 
@@ -295,7 +295,7 @@ tmp_doc.get_page_by_index(0).get_annotations_image(display_all=True)
 tmp_doc.delete(delete_online=True)
 ```
 
-Note that this example uses a PDF file named 'heroic.pdf', you can download this file [here](ADD-LINK) in case you wish to try running this code.
+Note that this example uses a PDF file named 'sample.pdf', you can download this file <a href="sample.pdf">here</a> in case you wish to try running this code.
 
 
 #### Detectron (CV) Approach
@@ -333,7 +333,7 @@ Comparing this result to tokenizing the same Document with the `line_distance` a
 ### Sentence Tokenization
 
 
-The `SentenceTokenizer` is a specialized tokenizer designed to split text into sentences. Similarly to the ParagraphTokenizer, it has two modes of operation: `detectron` and `line_distance`, and accepts the same additional parameters: `line_height_ratio`, `height` and `create_detectron_labels`.
+The `SentenceTokenizer` is a specialized [tokenizer](https://dev.konfuzio.com/sdk/sourcecode.html#sentence-tokenizer) designed to split text into sentences. Similarly to the ParagraphTokenizer, it has two modes of operation: `detectron` and `line_distance`, and accepts the same additional parameters: `line_height_ratio`, `height` and `create_detectron_labels`.
 
 Using it is straightforward and comparable to using the `ParagraphTokenizer`:
 

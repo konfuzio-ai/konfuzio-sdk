@@ -17,7 +17,7 @@ jupyter:
 ---
 
 **Prerequisites:**
-- Understanding of Konfuzio's Annotations, Spans, Bboxes, Documents, Projects, Categories.
+- Understanding of Konfuzio's [Annotations](https://dev.konfuzio.com/sdk/explanations.html#annotation), [Spans](https://dev.konfuzio.com/sdk/explanations.html#span-concept), [Bboxes](https://dev.konfuzio.com/sdk/explanations.html#bbox-concept), [Documents](https://dev.konfuzio.com/sdk/explanations.html#document), [Projects](https://dev.konfuzio.com/sdk/explanations.html#project-concept), [Categories](https://dev.konfuzio.com/sdk/explanations.html#category-concept).
 
 **Difficulty:** Basic
 
@@ -33,7 +33,7 @@ In this tutorial, we will explore the different types of validation rules and un
 
 ### Data Validation Rules Overview
 
-Konfuzio applies the following Data Validation Rules:
+Konfuzio applies the following [Data Validation Rules](https://dev.konfuzio.com/sdk/explanations.html#data-validation-rules):
 
 1. **Document Validation Rules:**
    A Document passes the Data Validation Rules only if all the contained Annotations, Spans, and Bboxes pass the checks. If any Annotation, Span, or Bbox within a Document fails, the entire Document is marked as unsuitable for training an Extraction AI.
@@ -85,3 +85,9 @@ Note: We highly recommend keeping the Data Validation Rules enabled at all times
 
 ### Conclusion
 In this tutorial, you have learned about the important Data Validation Rules in Konfuzio and how they play a vital role in ensuring the quality and consistency of training data for Extraction AI. It is recommended to always keep these rules enabled to maintain the highest level of accuracy in your AI models.
+
+
+### What's Next?
+
+- Explore <a href="/sdk/tutorials/information_extraction">Extraction AI</a> methods
+
