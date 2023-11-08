@@ -1,42 +1,52 @@
-.. \_barcode-scanner-tutorials:
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .md
+      format_name: markdown
+      format_version: '1.3'
+      jupytext_version: 1.15.2
+  kernelspec:
+    display_name: Python 3 (ipykernel)
+    language: python
+    name: python3
+---
 
-## Barcode Scanner with zxing-cpp
+## Barcode scanner
 
-In this tutorial, we'll walk through the creation of a Barcode Extraction AI using the `zxing-cpp` library. We'll implement a `BarcodeAnnotation` class, an Extraction AI logic, and integrate the AI with the `konfuzio-sdk` library. This AI will be able to detect barcodes from Documents and generate bounding box Annotations for the detected barcodes.
+---
+
+**Prerequisites:** 
+
+- Data Layer concepts of Konfuzio
+- AI Layer concepts of Konfuzio
+- zxing-cpp installed
+
+**Difficulty:** Medium
+
+**Goal:** Create a custom Extraction AI that is able to extract barcodes from the Documents.
+
+---
+
+### Introduction
+
+In this tutorial, we'll walk through the creation of a Barcode Extraction AI using the `zxing-cpp` library. We'll implement a `BarcodeAnnotation` class, an Extraction AI logic, and integrate the AI with the SDK. This AI will be able to detect barcodes from Documents and generate bounding box Annotations for the detected barcodes.
 
 The final result on the [DVUI](https://dev.konfuzio.com/dvui/index.html#what-is-the-konfuzio-document-validation-ui) would look like this:
 
-.. image:: /sdk/tutorials/barcode-scanner/barcode_scanner_example.png
+![Result](barcode_scanner_example.png)
 
-### Requirements
+### Setting up the BarcodeAnnotation class
 
----
+The first step is to create a BarcodeAnnotation class that inherits from [Annotation](https://dev.konfuzio.com/sdk/sourcecode.html?highlight=annotation#annotation). This is needed because Annotation class is based on Spans and its Bounding Boxes are computed using these Spans.
 
-Before we start, please ensure that the following requirements are available and properly installed on your system:
+In our case, we want to use custom Bounding Boxes that are computed using the `zxing-cpp` library, which is why we need to override the `bboxes` property of the Annotation class to return our custom Bounding Boxes. This will later be used by the [Server](https://dev.konfuzio.com/web/index.html#what-is-the-konfuzio-server) as well as the [DVUI](https://dev.konfuzio.com/dvui/index.html#what-is-the-konfuzio-document-validation-ui) to annotate the barcodes in the Document.
 
-1.  `Python 3.8` or a higher version. 🐍
-2.  The [konfuzio-sdk](https://pypi.org/project/konfuzio-sdk/) package. ✅
-3.  The [zxing-cpp](https://github.com/zxing-cpp/zxing-cpp) library. 💻
+The difference between Span-based `bboxes` (dashed-line boxes) and custom `bboxes` (yellow box) is illustrated in the following image:
 
-### 1. Set up the `BarcodeAnnotation` class
+<img src="barcode_example.png" width="200">
 
----
-
-The first step is to create a BarcodeAnnotation class that inherits from [Annotation](https://dev.konfuzio.com/sdk/sourcecode.html?highlight=annotation#annotation).
-
-This is mainly due to the fact that the [Annotation](https://dev.konfuzio.com/sdk/sourcecode.html?highlight=annotation#annotation) class is based on Spans and it's `bboxes` are computed using these Spans.
-
-However, in our case, we want to use custom bounding boxes that are computed using the `zxing-cpp` library. Therefore, we need to override the `bboxes` property of the [Annotation](https://dev.konfuzio.com/sdk/sourcecode.html?highlight=annotation#annotation) class to return our custom bounding boxes.
-
-This will later be used by the [Server](https://dev.konfuzio.com/web/index.html#what-is-the-konfuzio-server) as well as the [DVUI](https://dev.konfuzio.com/dvui/index.html#what-is-the-konfuzio-document-validation-ui) to annotate the barcodes in the Document.
-
-The difference between Span based `bboxes` (dashed-line boxes) and custom `bboxes` (yellow box) is illustrated in the following image:
-
-.. image:: /sdk/tutorials/barcode-scanner/barcode_example.png
-   :width: 40%
-   :align: center
-
-```python
+```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
 from typing import Dict, List
 from konfuzio_sdk.data import Annotation
 
@@ -60,31 +70,21 @@ class BarcodeAnnotation(Annotation):
         return self.custom_bboxes
 ```
 
-### 2. Defining the `BarcodeExtractionAI` class methods
+### Define BarcodeExtractionAI class 
 
----
+The second step is to create a custom [Extraction AI](https://dev.konfuzio.com/sdk/sourcecode.html#extraction-ai) class that uses the `CustomAnnotation` class. Firstly, we'll define a method to extract Bounding Boxes and barcode text from an image using the `zxing-cpp` library.
 
-The second step is to create a custom [Extraction AI](https://dev.konfuzio.com/sdk/sourcecode.html#extraction-ai) class that leverages the `CustomAnnotation` class defined in _Step 1_ in order to extract barcodes from [Documents](https://dev.konfuzio.com/sdk/sourcecode.html?highlight=document#document). We will start by explaining the different methods that will be used in this class.
-
-**NB.** If you want to directly have the full code of the `BarcodeExtractionAI` class, you can skip to [Step 3](#putting-it-all-together).
-
-#### 2.1. Extract Bounding Boxes from Image
-
----
-
-In this step, we'll implement the method to extract bounding boxes and barcode text from an image using the `zxing-cpp` library.
-
-```python
+```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"] vscode={"languageId": "plaintext"}
 def get_bboxes_from_image(self, image, page_index):
     """
-    Extract the bboxes and texts of the barcodes from an image and format the bbox dictionaries in the right format
+    Extract the bboxes and texts of the barcodes from an image and transform the bbox dictionaries into the right format.
     :param image: PIL image (the image of the page, resize to original size or probide the original image for better results )
     :param page_index: int
     """
     # import the necessary function from the library
     from zxingcpp import read_barcodes
 
-    # create empty list to store the bboxes
+    # create empty list to store the Bboxes
     bboxes_list = []
     # get the results from the library
     barcodes_lib_results = read_barcodes(image)
@@ -101,24 +101,20 @@ def get_bboxes_from_image(self, image, page_index):
         bbox_dict = self.get_bbox_dict_from_coords(
             top_right, bottom_left, page_index, image, barcode_text_value
         )
-        # append the bbox dictionary to the list
+        # append the Bbox dictionary to the list
         bboxes_list.append(bbox_dict)
     return bboxes_list
 ```
 
-#### 2.2. Create Bbox Dictionary from `zxing-cpp` Output
+Next, we'll implement the method to create the Bbox dictionary from the output of `zxing-cpp`.
 
----
-
-In this step, we'll implement the method to create the Bbox dictionary from the output of `zxing-cpp`.
-
-```python
+```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
 def get_bbox_dict_from_coords(
     top_right, bottom_left, page_index, image, barcode_text_value
 ):
     """
-    transform the coordinates of the bottom-left and top-right corners
-    of the detected barcode from cv2 coordinates system to DVUI coordinates system
+    Transform the coordinates of the bottom-left and top-right corners
+    of the detected barcode from cv2 coordinates system to DVUI coordinates system.
     """
     # get the coordinates of the top-right corner in cv2 coordinates system
     x1 = int(top_right[0])
@@ -136,7 +132,7 @@ def get_bbox_dict_from_coords(
     temp_y1 = image.height - y1
     y0 = temp_y0
     y1 = temp_y1
-    # create the bbox dictionary
+    # create the Bbox dictionary
     bbox_dict = {
         "x0": x0,
         "x1": x1,
@@ -151,17 +147,10 @@ def get_bbox_dict_from_coords(
     return bbox_dict
 ```
 
-With these two separate steps, you have a clear distinction between extracting bounding boxes from the image using `zxing-cpp` and creating the final bbox dictionary from the output. This makes the code more modular and easier to maintain.
+In case the machine which the AI will run on does not have necessary dependencies installed, we'll implement the method to install the `zxing-cpp` library.
 
-#### 2.3. Install Dependencies
-
----
-
-In this step, we'll implement the method to install the `zxing-cpp` library (since it might not be installed by default on the running environment).
-
-```python
+```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
 def install_dependencies():
-    # try installing the zxing-cpp library otherwise raise an error
     try:
         import subprocess
 
@@ -175,14 +164,10 @@ def install_dependencies():
         )
 ```
 
-#### 2.4. Check if the Extraction AI is ready
+Lastly, we'll create a function that will be used to check if the Extraction AI is ready. This is needed by the server to know when to start the Extraction process.
 
----
-
-In this step, we'll implement a function that will be used to check if the Extraction AI is ready. This is needed by the server to know when to start the extraction process.
-
-```python
-def check_is_ready(self) -> bool:
+```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
+def check_is_ready(self) -> bol:
     # check if the zxing-cpp library is already installed
     try:
         self.install_dependencies()
@@ -192,19 +177,36 @@ def check_is_ready(self) -> bool:
         return False
 ```
 
-### 3. Putting it All Together
+For the whole code of the class, scroll down to the Conclusion.
 
----
+### Save the Barcode scanner
 
-Finally, we'll create a `BarcodeExtractionAI` class that uses all the earlier defined functions to extract the barcode from a [Document](https://dev.konfuzio.com/sdk/sourcecode.html?highlight=document#document).
+Let's create the main script to save our Extraction AI that will be used to process Documents on Konfuzio. For that, we need to define the Project the AI will be used with and then save the Extraction AI as a compressed [pickle](https://docs.python.org/3/library/pickle.html) file that we will upload to the [Server](https://dev.konfuzio.com/web/index.html#what-is-the-konfuzio-server) later.
 
-```python
+```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
+from konfuzio_sdk.data import Project
+
+project = Project(id_=project_id, update=True, strict_data_validation=False)
+barcode_extraction_ai = BarcodeExtractionAI(category=project.categories[0])
+pickle_model_path = barcode_extraction_ai.save()
+```
+
+This is an example of how the output of this Barcode Scanner will look like on the [DVUI](https://dev.konfuzio.com/dvui/index.html#what-is-the-konfuzio-document-validation-ui):
+
+![Output](barcode_scanner_example.png)
+
+### Conclusion
+In this tutorial, we have walked through the steps for building the Barcode scanner AI. Below is the full code to accomplish this task:
+
+```python editable=true slideshow={"slide_type": ""} tags=["remove-cell"]
+YOUR_PROJECT_ID = 46
+```
+
+```python editable=true slideshow={"slide_type": ""} vscode={"languageId": "plaintext"}
 from typing import Dict, List
 from konfuzio_sdk.trainer.information_extraction import AbstractExtractionAI
-from konfuzio_sdk.data import Document, Category, Annotation, AnnotationSet
+from konfuzio_sdk.data import Document, Category, Annotation, AnnotationSet, Project
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
-from copy import deepcopy
-
 
 class BarcodeAnnotation(Annotation):
     def __init__(self, *args, **kwargs):
@@ -340,28 +342,13 @@ class BarcodeExtractionAI(AbstractExtractionAI):
             return True
         except:
             return False
-```
 
-### 4. Saving the `BarcodeExtractionAI`
-
----
-
-Now, let's create the main script to save our Extraction AI that will be used to process Documents on Konfuzio:
-
-We start by defining our `project_id` (don't forget to change the project_id to your own project_id, it should be an `int`) then we save the Extraction AI as a [pickle](https://docs.python.org/3/library/pickle.html) file that we will upload to the [Server](https://dev.konfuzio.com/web/index.html#what-is-the-konfuzio-server) later.
-
-```python
-project_id = "my_project_id"
-```
-
-```python
-from konfuzio_sdk.data import Project
-
-project = Project(id_=project_id, update=True, strict_data_validation=False)
+project = Project(id_=YOUR_PROJECT_ID, update=True, strict_data_validation=False)
 barcode_extraction_ai = BarcodeExtractionAI(category=project.categories[0])
 pickle_model_path = barcode_extraction_ai.save()
 ```
 
-This is an example of how the output of this Barcode Scanner will look like on the [DVUI](https://dev.konfuzio.com/dvui/index.html#what-is-the-konfuzio-document-validation-ui):
+### What's next?
 
-.. image:: /sdk/tutorials/barcode-scanner/barcode_scanner_example.png
+- Learn how to upload a custom AI
+- Get to know how to create any custom Extraction AI
