@@ -625,7 +625,7 @@ class SplittingAI:
             # we set a Page's Category explicitly because we don't want to lose original Page's Category information
             # because by default a Page is assigned a Category of a Document, and they are not necessarily the same
             for index, page in enumerate(processed_document.pages()):
-                if hasattr(self.model, "use_previous_page") and self.model.use_previous_page and (index > 0):
+                if getattr(self.model, "use_previous_page", False) and (index > 0):
                     previous_page = processed_document.pages()[index - 1]
                     self.model.predict(page=page, previous_page=previous_page)
                 else:
@@ -655,7 +655,7 @@ class SplittingAI:
         else:
             document_tokenized = document
         for index, page in enumerate(document_tokenized.pages()):
-            if hasattr(self.model, "use_previous_page") and self.model.use_previous_page and (index > 0):
+            if getattr(self.model, "use_previous_page", False) and (index > 0):
                 previous_page = document_tokenized.pages()[index - 1]
                 prediction = self.model.predict(page=page, previous_page=previous_page)
             else:
