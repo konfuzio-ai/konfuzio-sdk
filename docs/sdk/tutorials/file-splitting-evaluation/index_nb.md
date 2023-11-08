@@ -322,4 +322,4 @@ EvaluationCalculator(tp=3, fp=0, fn=1, tn=4).metrics_logging()
 
 ### What's next?
 
-- Upload an evaluated AI to Konfuzio app or an on-prem installation.
+- [Upload an evaluated AI to Konfuzio app or an on-prem installation](https://dev.konfuzio.com/sdk/tutorials/upload-your-ai/index.html)

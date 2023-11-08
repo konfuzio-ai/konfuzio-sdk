@@ -222,7 +222,7 @@ Documents can often come not as separate entities, but rather as a stream of Pag
 retrieval. Document splitting tackles this by disentangling these intertwined files into separate Documents. Konfuzio 
 SDK introduces you to tools and models that automate this process, streamlining your work with multi-Document PDFs.
 
-You can train your own File Splitting AI on the data from any Project of your choice ([data preparation tutorial here](ADD LINK)). 
+You can train your own File Splitting AI on the data from any Project of your choice ([data preparation tutorial here](https://dev.konfuzio.com/sdk/tutorials/data-preparation/index.html)). 
 Note that Pages in all the Documents used for training and testing have to be ordered correctly – that is to say, not 
 mixed up in order. The ground-truth first Page of each Document should go first in the file, ground-truth second Page 
 goes second and so on. This is needed because the Splitting AI operates on the idea that the splitting points in a 
@@ -231,13 +231,18 @@ stream of Pages are the starting Pages of each Sub-Document in the stream.
 For that purpose, there are several tools in the SDK that enable processing Documents that consist of multiple files and propose splitting them 
 into the Sub-Documents accordingly:
 
-- A [Context Aware File Splitting Model](ADD LINK) that uses a simple logic based on scanning Category's Documents and finding
+- A [Context Aware File Splitting Model](https://dev.konfuzio.com/sdk/tutorials/context-aware-file-splitting-model/index.html) that uses a simple logic based on scanning Category's Documents and finding
 strings exclusive for first Pages of all Documents within the Category. An instance of the Context Aware File Splitting Model can be used to initially build a File Splitting pipeline and can
 later be replaced with more complex solutions.
 
-- A placeholder for describing newer [File Splitting model](ADD LINK) that is based on BERT. Model's output is also a prediction of a Page being first or
+- A File Splitting model that is based on BERT. Model's output is also a prediction of a Page being first or
 non-first.
 
 For developing a custom File Splitting approach, we propose an abstract class `AbstractFileSplittingModel`.
 
 ### Information Extraction
+
+[Information Extraction](https://dev.konfuzio.com/sdk/tutorials/information_extraction/index.html) is a process of obtaining information from the Document's unstructured text and labelling it 
+with Labels like Name, Date, Recipient, or any other custom Labels. 
+
+Information Extraction always happens at a Category level, that is, operates under a single Category.

@@ -116,4 +116,4 @@ class CustomFileSplittingModel(AbstractFileSplittingModel):
 
 ### What's next?
 
-- Learn how to upload the custom AI you've just created
+- [Learn how to upload the custom AI you've just created](https://dev.konfuzio.com/sdk/tutorials/upload-your-ai/index.html)

@@ -75,9 +75,6 @@ delete_ai_model(YOUR_MODEL_ID, ai_type='categorization')
 delete_ai_model(YOUR_MODEL_ID, ai_type='filesplitting')
 ```
 
-<!-- #region editable=true slideshow={"slide_type": ""} -->
 ### What's next?
 
-- Get to know more about the Konfuzio API
-
-<!-- #endregion -->
+- [Get to know more about the Konfuzio API](https://dev.konfuzio.com/web/api-v3.html)

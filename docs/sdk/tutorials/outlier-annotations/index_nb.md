@@ -142,6 +142,6 @@ outliers = label.get_probable_outliers_by_normalization(project.categories)
 
 ### What's next?
 
-- Learn how to create regex-based Annotations
-- Get to know how to create a custom Extraction AI
+- [Learn how to create regex-based Annotations](https://dev.konfuzio.com/sdk/tutorials/regex_based_annotations/index.html)
+- [Get to know how to create a custom Extraction AI](https://dev.konfuzio.com/sdk/tutorials/information_extraction/index.html#train-a-custom-date-extraction-ai)
 

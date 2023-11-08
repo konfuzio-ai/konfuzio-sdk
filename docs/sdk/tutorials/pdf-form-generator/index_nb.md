@@ -164,5 +164,5 @@ outputStream.close()
 
 ### What's next?
 
-- Find out how to create Annotations based on Regular Expressions
-- Learn how to visualize Bounding Boxes of a Document's Annotations
+- [Find out how to create Annotations based on Regular Expressions](https://dev.konfuzio.com/sdk/tutorials/regex_based_annotations/index.html)
+- [Learn how to visualize Bounding Boxes of a Document's Annotations](https://dev.konfuzio.com//sdk/explanations.html#coordinates-system)

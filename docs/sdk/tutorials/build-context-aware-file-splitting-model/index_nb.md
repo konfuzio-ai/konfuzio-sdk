@@ -253,6 +253,6 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
 
 ### What's next?
 
-- Learn how to train and use Context-Aware File Splitting Model
-- Get to know how to build a custom File Splitting AI
+- [Learn how to train and use Context-Aware File Splitting Model](https://dev.konfuzio.com/sdk/tutorials/tutorials/build-context-aware-file-splitting-model/index.html)
+- [Get to know how to build a custom File Splitting AI](https://dev.konfuzio.com/sdk/tutorials/tutorials/file-splitting-evaluation/index.html)
 

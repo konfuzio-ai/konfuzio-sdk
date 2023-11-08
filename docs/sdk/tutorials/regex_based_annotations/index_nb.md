@@ -147,5 +147,5 @@ for offsets in matches_locations:
 
 ### What's next?
 
-- Learn how to create Annotations automatically using Extraction AI
-- Get to know how to visualize created Annotations
+- [Learn how to create Annotations automatically using Extraction AI](https://dev.konfuzio.com/sdk/tutorials/information_extraction/index.html)
+- [Get to know how to visualize created Annotations](https://dev.konfuzio.com//sdk/explanations.html#coordinates-system)
