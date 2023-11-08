@@ -38,11 +38,9 @@ tutorial to find out what are the requirements for that.
 
 **Note**: currently, the Server supports AI models created using `torch<2.0.0`.
 
-By default, any [Categorization AI](ADD LINK) class should derive from the `AbstractCategorizationModel` class and implement methods `__init__`, `fit`, `_categorize_page` and `save`.
+By default, any [Categorization AI](https://dev.konfuzio.com/sdk/tutorials/document_categorization/index.html) class should derive from the `AbstractCategorizationModel` class and implement methods `__init__`, `fit`, `_categorize_page` and `save`.
 
-<!-- #region editable=true slideshow={"slide_type": ""} -->
 Let's make necessary imports and define the class. In `__init__`, you can either not make any changes or initialize key variables required by your custom AI.
-<!-- #endregion -->
 
 ```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
 import lz4
@@ -57,11 +55,9 @@ class CustomCategorizationAI(AbstractCategorizationAI):
         super().__init__(categories)
 ```
 
-<!-- #region editable=true slideshow={"slide_type": ""} -->
-Then we need to define `fit` method. It can contain any custom architecture, for instance, a multi-layered perceptron, or some hardcoded logic like [Name-based Categorization](ADD LINK). his method does not return anything; rather, it modifies the `self.model` if you provide this attribute.
+Then we need to define `fit` method. It can contain any custom architecture, for instance, a multi-layered perceptron, or some hardcoded logic like [Name-based Categorization](https://dev.konfuzio.com/sdk/tutorials/document_categorization/index.html#name-based-categorization-ai). his method does not return anything; rather, it modifies the `self.model` if you provide this attribute.
 
 This method is allowed to be implemented as a no-op if you provide the trained model in other ways.
-<!-- #endregion -->
 
 ```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
     def fit(self):
@@ -78,9 +74,7 @@ This method is allowed to be implemented as a no-op if you provide the trained m
         self.classifier._fit_classifier(self.classifier_iterator, **kwargs)
 ```
 
-<!-- #region editable=true slideshow={"slide_type": ""} -->
-Next, we need to define how the model assigns a Category to a Page inside of a `_categorize_page` method. **NB:** The result of extraction must be the input Page with added Categorization attribute `Page.category`.
-<!-- #endregion -->
+Next, we need to define how the model assigns a Category to a Page inside a `_categorize_page` method. **NB:** The result of extraction must be the input Page with added Categorization attribute `Page.category`.
 
 ```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
     def _categorize_page(self, page: Page) -> Page:
@@ -97,9 +91,7 @@ Next, we need to define how the model assigns a Category to a Page inside of a `
         return page
 ```
 
-<!-- #region editable=true slideshow={"slide_type": ""} -->
 Lastly, we define saving method for the new AI. It needs to be compressed into .lz4 format to be compatible with Konfuzio when uploaded to the server or an on-prem installation later.
-<!-- #endregion -->
 
 ```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"] vscode={"languageId": "plaintext"}
     def save(self, output_dir: str=None):
@@ -139,7 +131,7 @@ Lastly, we define saving method for the new AI. It needs to be compressed into .
         return self.pipeline_path
 ```
 
-```python editable=true slideshow={"slide_type": ""} tags=["remove-cell"]
+```python editable=true slideshow={"slide_type": ""} tags=["remove-cell", "skip-execution", "nbval-skip"]
 import lz4
 import torch
 from konfuzio_sdk.trainer.document_categorization import AbstractCategorizationAI
@@ -200,9 +192,7 @@ class CustomCategorizationAI(AbstractCategorizationAI):
         return self.pipeline_path
 ```
 
-<!-- #region editable=true slideshow={"slide_type": ""} -->
-After building the class, we need to test it to ensure it works. You can run it over a small subset of Documents so that it does not take too much time. 
-<!-- #endregion -->
+After building the class, we need to test it to ensure it works. You can run it over a small subset of Documents so that it does not take too much time.
 
 ```python editable=true slideshow={"slide_type": ""} tags=["remove-cell"]
 YOUR_PROJECT_ID = 46
@@ -258,15 +248,11 @@ pickle_model_path = categorization_pipeline.save(reduce_weight=False)
 categorization_pipeline_loaded = CustomCategorizationAI.load_model(pickle_model_path)
 ```
 
-<!-- #region editable=true slideshow={"slide_type": ""} -->
-After you have trained and saved your custom AI, you can upload it using the steps from the [tutorial](ADD LINK) or using the method 
-`upload_ai_model()` as described in [Upload your AI](ADD LINK), provided that you have the Superuser rights.
-<!-- #endregion -->
+After you have trained and saved your custom AI, you can upload it using the steps from the [tutorial](https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html#upload-extraction-or-category-ai-to-target-instance) or using the method 
+`upload_ai_model()` as described in [Upload your AI](https://dev.konfuzio.com/sdk/tutorials/upload-your-ai/index.html), provided that you have the Superuser rights.
 
-<!-- #region editable=true slideshow={"slide_type": ""} -->
 ### Conclusion
 In this tutorial, we have walked through the construction, training, testing and preparation to uploading of the custom Categorization AI. Below is the full code to accomplish this task. Note that this class is completely demonstrative, and to make it functional you would need to replace contents of defined methods with your own code.
-<!-- #endregion -->
 
 ```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"] vscode={"languageId": "plaintext"}
 import os
@@ -370,10 +356,8 @@ categorization_pipeline_loaded = CustomCategorizationAI.load_model(pickle_model_
 os.remove(pickle_model_path)
 ```
 
-<!-- #region editable=true slideshow={"slide_type": ""} -->
 ### What's next?
 
-- Learn how to upload a trained custom AI to the Konfuzio app or an on-prem installation.
+- [Learn how to upload a trained custom AI to the Konfuzio app or an on-prem installation](https://dev.konfuzio.com/sdk/tutorials/upload-your-ai/index.html)
 
-<!-- #endregion -->
 

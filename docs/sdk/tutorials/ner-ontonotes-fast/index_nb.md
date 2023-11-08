@@ -60,7 +60,7 @@ from konfuzio_sdk import SUPPORTED_FILE_TYPES
 nltk.download('punkt')
 ```
 
-Initialize the Project and load the needed Documents. If you prefer, use the example Documents in the [example folder](https://drive.google.com/drive/folders/1pjJkfIDh07bvbOp4-YOM32aOC4iGUjwW?usp=sharing). The Documents are part of the public dataset [rvl-cdip](https://www.cs.cmu.edu/~aharley/rvl-cdip/). Alternatively, you can create new Documents using your own files as described in the [tutorial](ADD LINK).
+Initialize the Project and load the needed Documents. If you prefer, use the example Documents in the [example folder](https://drive.google.com/drive/folders/1pjJkfIDh07bvbOp4-YOM32aOC4iGUjwW?usp=sharing). The Documents are part of the public dataset [rvl-cdip](https://www.cs.cmu.edu/~aharley/rvl-cdip/). Alternatively, you can create new Documents using your own files as described in the [tutorial](https://dev.konfuzio.com/sdk/get_started.html#upload-document).
 
 ```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
 my_project = Project(id_=YOUR_PROJECT_ID)
@@ -365,5 +365,4 @@ retrain(model)
 
 ### What's next?
 
-- Learn how to upload an AI created locally
-- Get to know how to evaluate an AI's performance
+- [Learn how to upload an AI created locally](https://dev.konfuzio.com/sdk/tutorials/upload-your-ai/index.html)

@@ -40,11 +40,11 @@ The final result on the [DVUI](https://dev.konfuzio.com/dvui/index.html#what-is-
 
 The first step is to create a BarcodeAnnotation class that inherits from [Annotation](https://dev.konfuzio.com/sdk/sourcecode.html?highlight=annotation#annotation). This is needed because Annotation class is based on Spans and its Bounding Boxes are computed using these Spans.
 
-In our case, we want to use custom Bounding Boxes that are computed using the `zxing-cpp` library, which is why we need to override the `bboxes` property of the Annotation class to return our custom Bounding Boxes. This will later be used by the [Server](https://dev.konfuzio.com/web/index.html#what-is-the-konfuzio-server) as well as the [DVUI](https://dev.konfuzio.com/dvui/index.html#what-is-the-konfuzio-document-validation-ui) to annotate the barcodes in the Document.
+In our case, we want to use custom Bounding Boxes that are computed using the `zxing-cpp` library, which is why we need to override the `bboxes` property of the Annotation class to return our custom Bounding Boxes. This will later be used by the Server as well as the DVUI to annotate the barcodes in the Document.
 
 The difference between Span-based `bboxes` (dashed-line boxes) and custom `bboxes` (yellow box) is illustrated in the following image:
 
-<img src="barcode_example.png" width="200">
+![Example](barcode_example.png)
 
 ```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
 from typing import Dict, List
@@ -167,7 +167,7 @@ def install_dependencies():
 Lastly, we'll create a function that will be used to check if the Extraction AI is ready. This is needed by the server to know when to start the Extraction process.
 
 ```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
-def check_is_ready(self) -> bol:
+def check_is_ready(self) -> bool:
     # check if the zxing-cpp library is already installed
     try:
         self.install_dependencies()
@@ -343,7 +343,7 @@ class BarcodeExtractionAI(AbstractExtractionAI):
         except:
             return False
 
-project = Project(id_=YOUR_PROJECT_ID, update=True, strict_data_validation=False)
+project = Project(id_=YOUR_PROJECT_ID, strict_data_validation=False)
 barcode_extraction_ai = BarcodeExtractionAI(category=project.categories[0])
 pickle_model_path = barcode_extraction_ai.save()
 ```

@@ -355,6 +355,6 @@ count_per_year(df, 'pandemic')
 
 ### What's next?
 
-- Learn more about how to create the Regex-based Annotations
-- Find out how to build a custom Extraction AI
+- [Learn more about how to create the Regex-based Annotations](https://dev.konfuzio.com/sdk/tutorials/regex_based_annotations/index.html)
+- [Find out how to train a custom Extraction AI](https://dev.konfuzio.com/sdk/tutorials/information_extraction/index.html#train-a-custom-date-extraction-ai)
 

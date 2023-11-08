@@ -37,12 +37,12 @@ such string, we mark a Page to be first (thus meaning it is a splitting point).
 
 In this tutorial we will be using pre-built classes `ContextAwareFileSplittingModel` and `SplittingAI`. Let's start with making necessary imports, initializing the Project and fetching the test Document.
 
-```python editable=true slideshow={"slide_type": ""} tags=["remove-cell"]
+```python editable=true slideshow={"slide_type": ""} tags=["remove-cell", "skip-execution", "nbval-skip"]
 YOUR_PROJECT_ID = 46
 YOUR_DOCUMENT_ID = 44865
 ```
 
-```python editable=true slideshow={"slide_type": ""} tags=["remove-output"] vscode={"languageId": "plaintext"}
+```python editable=true slideshow={"slide_type": ""} tags=["remove-output", "skip-execution", "nbval-skip"] vscode={"languageId": "plaintext"}
 from konfuzio_sdk.data import Page, Category, Project
 from konfuzio_sdk.trainer.file_splitting import SplittingAI, ContextAwareFileSplittingModel
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
@@ -55,7 +55,7 @@ Then, initialize a Context-Aware File Splitting Model and "fit" it on the Projec
 
 `allow_empty_categories` parameter allows to have Categories that have Documents so diverse that there has not been any intersections found for them.
 
-```python editable=true slideshow={"slide_type": ""}
+```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
 file_splitting_model = ContextAwareFileSplittingModel(
     categories=project.categories, tokenizer=ConnectedTextTokenizer()
 )
@@ -68,13 +68,13 @@ file_splitting_model.fit(allow_empty_categories=True)
 
 Save the model:
 
-```python editable=true slideshow={"slide_type": ""}
+```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
 save_path = file_splitting_model.save(include_konfuzio=True)
 ```
 
 Run the prediction to ensure it is able to predict the split points (first Pages) correctly:
 
-```python editable=true slideshow={"slide_type": ""} tags=["remove-output"]
+```python editable=true slideshow={"slide_type": ""} tags=["remove-output", "skip-execution", "nbval-skip"]
 for page in test_document.pages():
     pred = file_splitting_model.predict(page)
     if pred.is_first_page:
@@ -91,7 +91,7 @@ Splitting AI is a more high-level interface to Context Aware File Splitting Mode
 
 You can load a pre-saved model or pass an initialized instance as the input. In this example, we load a previously saved one.
 
-```python editable=true slideshow={"slide_type": ""} tags=["skip-execution"] vscode={"languageId": "plaintext"}
+```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"] vscode={"languageId": "plaintext"}
 model = ContextAwareFileSplittingModel.load_model(save_path)
 
 splitting_ai = SplittingAI(model)
@@ -99,7 +99,7 @@ splitting_ai = SplittingAI(model)
 
 Splitting AI can be run in two modes: returning a list of Sub-Documents as the result of the input Document splitting or returning a copy of the input Document with Pages predicted as first having an attribute `is_first_page`. The flag `return_pages` has to be True for the latter; we will use it for an example.
 
-```python editable=true slideshow={"slide_type": ""} tags=["remove-output"]
+```python editable=true slideshow={"slide_type": ""} tags=["remove-output", "skip-execution", "nbval-skip"]
 new_document = splitting_ai.propose_split_documents(test_document, return_pages=True)
 
 for page in new_document[0].pages():
@@ -115,7 +115,7 @@ for page in new_document[0].pages():
 
 In this tutorial, we have walked through the essential steps for training and using Context-Aware File Splitting Model. Below is the full code to accomplish this task:
 
-```python editable=true slideshow={"slide_type": ""}
+```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
 from konfuzio_sdk.data import Page, Category, Project
 from konfuzio_sdk.trainer.file_splitting import SplittingAI, ContextAwareFileSplittingModel
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
@@ -148,7 +148,7 @@ for page in new_document[0].pages():
         print('Page {} is predicted as the non-first.'.format(page.number))
 ```
 
-```python editable=true slideshow={"slide_type": ""} tags=["remove-cell"]
+```python editable=true slideshow={"slide_type": ""} tags=["remove-cell", "nbval-skip"]
 os.remove(save_path)
 ```
 

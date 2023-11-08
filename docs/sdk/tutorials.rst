@@ -40,7 +40,7 @@ Build a custom File Splitting AI and define your own architecture or reuse any e
 guidance about constructing a class for the model for File Splitting that can later be reused on Konfuzio app
 or in an on-prem installation.
 
-8. :doc: `Evaluate the performance of a File Splitting AI <tutorials/file-splitting-evaluation/index>`
+8. :doc:`Evaluate the performance of a File Splitting AI <tutorials/file-splitting-evaluation/index>`
 
 Get to know how to work with `FileSplittingEvaluation` class, assess the performance of Splitting AIs and interpret the
 results.
@@ -53,7 +53,7 @@ Delve into the world of document tokenization, a crucial step in text analysis. 
 
 Unlock the potential of extracting valuable information from unstructured text. This tutorial guides you through the process of identifying and labeling key details.
 
-11. :doc:`Upload your AI model to use on Konfuzio app or an on-prem installation <tutorials/upload-your-ai/index_nb>`
+11. :doc:`Upload your AI model to use on Konfuzio app or an on-prem installation <tutorials/upload-your-ai/index>`
 
 Learn how to proceed with your model after you built and trained it and upload it to use in production using API.
 
@@ -113,6 +113,7 @@ Dive into these tutorials and elevate your document processing capabilities. Whe
    tutorials/build-context-aware-file-splitting-model/index.md
    tutorials/context-aware-file-splitting-model/index.md
    tutorials/create-custom-splitting-ai/index.md
+   tutorials/file-splitting-evaluation/index.md
    tutorials/tokenizers/index.md
    tutorials/information_extraction/index.md
    tutorials/upload-your-ai/index.md

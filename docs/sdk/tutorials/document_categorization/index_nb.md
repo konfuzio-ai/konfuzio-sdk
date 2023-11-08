@@ -12,7 +12,6 @@ jupyter:
     name: python3
 ---
 
-<!-- #region editable=true slideshow={"slide_type": ""} -->
 ## Categorize a Document using Categorization AI
 
 ---
@@ -34,7 +33,6 @@ To categorize a Document with a Categorization AI constructed by Konfuzio, there
 ### Name-based Categorization AI
 
 The name-based Categorization AI is a simple logic that checks if a name of the Category appears in the Document. It can be used to categorize Documents when no model-based Categorization AI is available.
-<!-- #endregion -->
 
 ```python editable=true slideshow={"slide_type": ""} tags=["remove-cell"] vscode={"languageId": "plaintext"}
 YOUR_PROJECT_ID = 46
@@ -72,11 +70,9 @@ for page in result_doc.pages():
 print(f"Found category {result_doc.category} for {result_doc}")
 ```
 
-<!-- #region editable=true slideshow={"slide_type": ""} -->
 ### Model-based Categorization AI
 
 For better results you can build, train and test a Categorization AI using Image Models and Text Models to classify the image and text of each Page.
-<!-- #endregion -->
 
 ```python editable=true slideshow={"slide_type": ""}
 from konfuzio_sdk.data import Project, Document
@@ -131,7 +127,6 @@ categorization_pipeline = CategorizationAI.load_model(pickle_ai_path)
 os.remove(pickle_ai_path)
 ```
 
-<!-- #region editable=true slideshow={"slide_type": ""} -->
 To prepare the data for training and testing your AI, follow the [data preparation tutorial](https://dev.konfuzio.com/sdk/tutorials/data-preparation/index.html).
 
 For a list of available Models see all the available [Categorization Models](#categorization-ai-models) below.
@@ -143,7 +138,6 @@ classification. At least one between the Image Model or the Text Model must be s
 at the same time.
 
 The list of available Categorization Models is implemented as an Enum containing the following elements:
-<!-- #endregion -->
 
 ```python editable=true slideshow={"slide_type": ""} tags=["skip-execution"]
 from konfuzio_sdk.trainer.document_categorization import ImageModel, TextModel
@@ -170,8 +164,7 @@ TextModel.LSTM
 TextModel.BERT
 ```
 
-<!-- #region editable=true slideshow={"slide_type": ""} -->
-See more details about these Categorization Models under [API Reference - Categorization AI](ADD LINK).
+See more details about these Categorization Models under [API Reference - Categorization AI](https://dev.konfuzio.com/sdk/sourcecode.html#categorization-ai).
 
 ### Possible configurations
 
@@ -200,17 +193,11 @@ them [here](https://help.konfuzio.com/modules/projects/index.html?highlight=effi
 | None | None | VGG | vgg16                    |
 | None | None | VGG | vgg19                    |
 
-<!-- #endregion -->
 
-<!-- #region editable=true slideshow={"slide_type": ""} -->
 ### Conclusion
 
 In this tutorial, we presented two different ways to categorize a Document using AIs constructed by Konfuzio and provided possible configurations that can be used in model-based Categorization.
-<!-- #endregion -->
 
-<!-- #region editable=true slideshow={"slide_type": ""} -->
 ### What's next?
 
-- Create your custom Categorization AI
-
-<!-- #endregion -->
+- [Create your own custom Categorization AI](https://dev.konfuzio.com/sdk/tutorials/create-custom-categorization-ai/index.html)

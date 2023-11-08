@@ -91,5 +91,5 @@ for page in document.pages():
 
 ### What's next?
 
-- Learn how to categorize Documents automatically using Categorization AI
-- Create your own custom Categorization AI
+- [Learn how to categorize Documents automatically using Categorization AI](https://dev.konfuzio.com/sdk/tutorials/document_categorization/index.html)
+- [Create your own custom Categorization AI](https://dev.konfuzio.com/sdk/tutorials/create-custom-categorization-ai/index.html)
