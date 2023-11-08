@@ -224,16 +224,14 @@ def retrain(model, data_folder='./'):
                 learning_rate=0.01,
                 mini_batch_size=32,
                 max_epochs=10)
-```
 
-```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
 retrain(model)
 ```
 
 ### Conclusion
 In this tutorial, we have walked through the steps for annotating Documents using the model from `flair` library and using them to train or retrain an AI for better extractions. Below is the full code to accomplish this task:
 
-```python editable=true slideshow={"slide_type": ""}
+```python editable=true slideshow={"slide_type": ""} tags=["remove-cell"]
 YOUR_PROJECT_ID = 46
 ```
 

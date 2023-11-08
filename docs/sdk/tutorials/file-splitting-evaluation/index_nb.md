@@ -86,11 +86,11 @@ Suppose in our test dataset we have 2 Documents of 2 Categories: one 3-paged, co
 only one ground-truth first Page) of a first Category, and one 5-paged, consisting of three files: two 2-paged and one 
 1-paged (-> it has three ground-truth first Pages), of a second Category.
 
-![Document 1](file-splitting-evaluation/document_example_1.png)
+![Document 1](document_example_1.png)
 
 _First document_
 
-![Document 2](file-splitting-evaluation/document_example_2.png)
+![Document 2](document_example_2.png)
 
 _Second document_
 

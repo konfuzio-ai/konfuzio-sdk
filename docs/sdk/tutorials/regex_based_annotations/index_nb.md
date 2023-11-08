@@ -68,7 +68,7 @@ matches_locations = [(m.start(0), m.end(0)) for m in re.finditer(input_expressio
 
 ### Create the Annotations
 
-```python editable=true slideshow={"slide_type": ""}
+```python editable=true slideshow={"slide_type": ""} tags=["remove-output"]
 # List to save the links to the Annotations created
 new_annotations_links = []
 

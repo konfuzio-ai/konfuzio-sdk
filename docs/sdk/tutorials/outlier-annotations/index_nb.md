@@ -63,7 +63,7 @@ YOUR_LABEL_NAME = 'Austellungsdatum'
 
 Initialize the Project and select the Label you want to assess.
 
-```python editable=true slideshow={"slide_type": ""}
+```python editable=true slideshow={"slide_type": ""} tags=["remove-output"]
 from konfuzio_sdk.data import Project
 
 project = Project(id_=YOUR_PROJECT_ID)

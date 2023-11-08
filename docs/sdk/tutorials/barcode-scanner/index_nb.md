@@ -202,7 +202,7 @@ In this tutorial, we have walked through the steps for building the Barcode scan
 YOUR_PROJECT_ID = 46
 ```
 
-```python editable=true slideshow={"slide_type": ""} vscode={"languageId": "plaintext"}
+```python editable=true slideshow={"slide_type": ""} vscode={"languageId": "plaintext"} tags=["remove-output"]
 from typing import Dict, List
 from konfuzio_sdk.trainer.information_extraction import AbstractExtractionAI
 from konfuzio_sdk.data import Document, Category, Annotation, AnnotationSet, Project
