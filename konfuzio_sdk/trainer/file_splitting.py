@@ -195,7 +195,6 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         tf.config.experimental_run_functions_eagerly(True)
         self.output_dir = self.project.model_folder
         self.requires_images = False
-        self.use_previous_page = True
         self.requires_text = True
         self.train_txt_data = []
         self.train_img_data = None
@@ -254,7 +253,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
                 if return_images:
                     page_images.append(page.get_image())
                 text = page.text
-                if self.use_previous_page and (i > 0):
+                if hasattr(self, "use_previous_page") and self.use_previous_page and (i > 0):
                     text = self._concat_pages_text(page=page, previous_page=doc.pages()[i - 1])
                 texts.append(text)
                 if page.is_first_page:
