@@ -427,18 +427,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
 
 
 class TextualFileSplittingModel(AbstractFileSplittingModel):
-    """
-    Split a multi-Document file into a list of shorter Documents based on model's prediction.
-
-    We use an approach suggested by Guha et al.(2022) that incorporates steps for accepting separate visual and textual
-    inputs and processing them independently via the VGG19 architecture and LegalBERT model which is essentially
-    a BERT-type architecture trained on domain-specific data, and passing the resulting outputs together to
-    a Multi-Layered Perceptron.
-
-    Guha, A., Alahmadi, A., Samanta, D., Khan, M. Z., & Alahmadi, A. H. (2022).
-    A Multi-Modal Approach to Digital Document Stream Segmentation for Title Insurance Domain.
-    https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=9684474
-    """
+    """Split a multi-Document file into a list of shorter Documents based on model's prediction."""
 
     def __init__(
         self,
