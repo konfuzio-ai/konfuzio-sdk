@@ -3,6 +3,8 @@ import bz2
 import cloudpickle
 import os
 import pathlib
+
+import numpy
 import pytest
 import shutil
 import sys
@@ -19,6 +21,7 @@ from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
 from konfuzio_sdk.trainer.file_splitting import (
     ContextAwareFileSplittingModel,
     SplittingAI,
+    TextualFileSplittingModel,
     MultimodalFileSplittingModel,
 )
 from konfuzio_sdk.urls import get_create_ai_model_url
@@ -300,6 +303,87 @@ TEST_WITH_FULL_DATASET = False
     and not is_dependency_installed('tensorflow'),
     reason='Required dependencies not installed.',
 )
+class TestTextualFileSplittingModel(unittest.TestCase):
+    """Test Textual File Splitting Model."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Initialize the tested class."""
+        cls.project = Project(id_=14392)
+        cls.file_splitting_model = TextualFileSplittingModel(categories=cls.project.categories)
+        if not TEST_WITH_FULL_DATASET:
+            cls.file_splitting_model.documents = cls.file_splitting_model.categories[0].documents()
+            cls.file_splitting_model.test_documents = cls.file_splitting_model.categories[0].test_documents()
+        cls.test_document = cls.file_splitting_model.test_documents[-1]
+
+    def test_model_training(self):
+        """Test model's fit() method."""
+        self.file_splitting_model.fit(epochs=3, train_batch_size=2)
+        assert self.file_splitting_model.model
+
+    def test_run_page_prediction(self):
+        """Test model's prediction."""
+        for doc in self.file_splitting_model.test_documents:
+            for page in doc.pages():
+                ground_truth_is_first_page = page.is_first_page
+                page.is_first_page = None
+                page = self.file_splitting_model.predict(page)
+                predicted_is_first_page = page.is_first_page
+                assert ground_truth_is_first_page == predicted_is_first_page
+                assert type(page.is_first_page_confidence) is float
+
+    def test_run_splitting_ai_prediction(self):
+        """Test Splitting AI integration with the Textual File Splitting Model."""
+        splitting_ai = SplittingAI(self.file_splitting_model)
+        pred = splitting_ai.propose_split_documents(self.test_document)
+        assert len(pred) == 1
+        for page in pred[0].pages():
+            if page.number == 1:
+                assert page.is_first_page
+                assert page.is_first_page_confidence > 0.51
+            else:
+                assert not page.is_first_page
+                assert page.is_first_page_confidence
+
+    def test_save_load_model(self):
+        """Test saving and loading pickle file of the model."""
+        path = self.file_splitting_model.save()
+        loaded = TextualFileSplittingModel.load_model(path)
+        splitting_ai = SplittingAI(model=loaded)
+        assert isinstance(splitting_ai.model, TextualFileSplittingModel)
+        pathlib.Path(path).unlink()
+
+    def test_splitting_ai_evaluate_full_on_training(self):
+        """Test Splitting AI's evaluate_full on training Documents."""
+        splitting_ai = SplittingAI(self.file_splitting_model)
+        splitting_ai.evaluate_full(use_training_docs=True)
+        assert splitting_ai.full_evaluation.tp() >= 0.0
+        assert splitting_ai.full_evaluation.fp() >= 0.0
+        assert splitting_ai.full_evaluation.fn() >= 0.0
+        assert splitting_ai.full_evaluation.tn() >= 0.0
+        assert splitting_ai.full_evaluation.precision() >= 0.0
+        assert splitting_ai.full_evaluation.recall() >= 0.0
+        assert splitting_ai.full_evaluation.f1() == 1.0
+
+    def test_splitting_ai_evaluate_full_on_testing(self):
+        """Test Splitting AI's evaluate_full on testing Documents."""
+        splitting_ai = SplittingAI(self.file_splitting_model)
+        splitting_ai.evaluate_full()
+        assert splitting_ai.full_evaluation.tp() >= 0.0
+        assert splitting_ai.full_evaluation.fp() >= 0.0
+        assert splitting_ai.full_evaluation.fn() >= 0.0
+        assert splitting_ai.full_evaluation.tn() >= 0.0
+        assert splitting_ai.full_evaluation.precision() >= 0.0
+        assert splitting_ai.full_evaluation.recall() >= 0.0
+        assert splitting_ai.full_evaluation.f1() == 1.0
+
+
+@pytest.mark.skipif(
+    not is_dependency_installed('torch')
+    and not is_dependency_installed('transformers')
+    and not is_dependency_installed('tensorflow'),
+    reason='Required dependencies not installed.',
+)
 class TestMultimodalFileSplittingModel(unittest.TestCase):
     """Test Multimodal File Splitting Model."""
 
@@ -315,7 +399,7 @@ class TestMultimodalFileSplittingModel(unittest.TestCase):
 
     def test_model_training(self):
         """Test model's fit() method."""
-        self.file_splitting_model.fit(epochs=3)
+        self.file_splitting_model.fit(epochs=10)
         assert self.file_splitting_model.model
 
     def test_run_page_prediction(self):
@@ -327,7 +411,7 @@ class TestMultimodalFileSplittingModel(unittest.TestCase):
                 page = self.file_splitting_model.predict(page)
                 predicted_is_first_page = page.is_first_page
                 assert ground_truth_is_first_page == predicted_is_first_page
-                assert type(page.is_first_page_confidence) is float
+                assert type(page.is_first_page_confidence) is numpy.float32
 
     def test_run_splitting_ai_prediction(self):
         """Test Splitting AI integration with the Multimodal File Splitting Model."""
@@ -335,12 +419,12 @@ class TestMultimodalFileSplittingModel(unittest.TestCase):
         pred = splitting_ai.propose_split_documents(self.test_document)
         assert len(pred) == 1
         for page in pred[0].pages():
-            if page.number == 1:
-                assert page.is_first_page
-                assert page.is_first_page_confidence > 0.51
-            else:
-                assert not page.is_first_page
-                assert page.is_first_page_confidence
+            ground_truth_is_first_page = page.is_first_page
+            page.is_first_page = None
+            page = self.file_splitting_model.predict(page)
+            predicted_is_first_page = page.is_first_page
+            assert ground_truth_is_first_page == predicted_is_first_page
+            assert type(page.is_first_page_confidence) is numpy.float32
 
     def test_save_load_model(self):
         """Test saving and loading pickle file of the model."""
