@@ -457,7 +457,6 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         tf.config.experimental_run_functions_eagerly(True)
         self.output_dir = self.project.model_folder
         self.requires_images = False
-        self.use_previous_page = True
         self.requires_text = True
         self.train_txt_data = []
         self.train_img_data = None
@@ -516,7 +515,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
                 if return_images:
                     page_images.append(page.get_image())
                 text = page.text
-                if self.use_previous_page & (i > 0):
+                if hasattr(self, "use_previous_page") and self.use_previous_page and (i > 0):
                     text = self._concat_pages_text(page=page, previous_page=doc.pages()[i - 1])
                 texts.append(text)
                 if page.is_first_page:
@@ -905,21 +904,20 @@ class SplittingAI:
             # we set a Page's Category explicitly because we don't want to lose original Page's Category information
             # because by default a Page is assigned a Category of a Document, and they are not necessarily the same
             for index, page in enumerate(processed_document.pages()):
-                if hasattr(self.model, "use_previous_page"):
-                    if self.model.use_previous_page & (index > 0):
-                        previous_page = processed_document.pages()[index - 1]
-                        self.model.predict(page=page, previous_page=previous_page)
-                else:
-                    self.model.predict(page=page)
+                previous_page = None if index == 0 else processed_document.pages()[index - 1]
+                self.model.predict(page=page)
+                if previous_page is not None and previous_page.text.strip() == "":
+                    page.is_first_page = True
+                    page.is_first_page_confidence = 1
                 # Why is done the in both cases?
                 page.set_category(page.get_original_page().category)
         else:
             for index, page in enumerate(processed_document.pages()):
-                if hasattr(self.model, "use_previous_page"):
-                    previous_page = None if index == 0 else processed_document.pages()[index - 1]
-                    self.model.predict(page=page, previous_page=previous_page)
-                else:
-                    self.model.predict(page=page)
+                previous_page = None if index == 0 else processed_document.pages()[index - 1]
+                self.model.predict(page=page)
+                if previous_page is not None and previous_page.text.strip() == "":
+                    page.is_first_page = True
+                    page.is_first_page_confidence = 1
                 # Why is done the in both cases?
                 page.set_category(page.get_original_page().category)
         return [processed_document]
@@ -939,13 +937,12 @@ class SplittingAI:
         else:
             document_tokenized = document
         for index, page in enumerate(document_tokenized.pages()):
-            if hasattr(self.model, "use_previous_page"):
-                if self.model.use_previous_page & (index > 0):
-                    previous_page = document_tokenized.pages()[index - 1]
-                    prediction = self.model.predict(page=page, previous_page=previous_page)
-            else:
-                prediction = self.model.predict(page=page)
-            if prediction.is_first_page:
+            previous_page = None if index == 0 else document_tokenized.pages()[index - 1]
+            self.model.predict(page=page)
+            if previous_page is not None and previous_page.text.strip() == "":
+                page.is_first_page = True
+                page.is_first_page_confidence = 1
+            if page.is_first_page:
                 suggested_splits.append(page)
         if len(suggested_splits) == 1:
             return [document]
