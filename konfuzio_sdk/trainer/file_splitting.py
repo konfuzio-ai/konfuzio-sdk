@@ -899,6 +899,8 @@ class SplittingAI:
         :type document: Document
         :param inplace: Whether to predict the Pages on the original Document or on a copy.
         :type inplace: bool
+        :param split_on_blank_pages: A flag to enable splitting on blank Pages.
+        :type split_on_blank_pages: bool
         :returns: A list containing the modified Document.
         """
         if inplace or self.model.requires_images:
@@ -932,6 +934,8 @@ class SplittingAI:
 
         :param document: The Document to suggest Page splits for.
         :type document: Document
+        :param split_on_blank_pages: A flag to enable splitting on blank Pages.
+        :type split_on_blank_pages: bool
         :returns: A list of Sub-Documents created from the original Document, split at predicted first Pages.
         """
         suggested_splits = []
@@ -998,6 +1002,8 @@ class SplittingAI:
         :param return_pages: A flag to enable returning a copy of an old Document with Pages marked .is_first_page on
         splitting points instead of a set of Sub-Documents.
         :type return_pages: bool
+        :param split_on_blank_pages: A flag to enable splitting on blank Pages.
+        :type split_on_blank_pages: bool
         :return: A list of suggested new Sub-Documents built from the original Document or a list with a Document
         with Pages marked .is_first_page on splitting points.
         """
