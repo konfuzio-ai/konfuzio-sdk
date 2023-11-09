@@ -14,9 +14,10 @@ from inspect import signature
 from typing import List, Union
 
 from konfuzio_sdk.data import Document, Page, Category
-from konfuzio_sdk.extras import torch, tensorflow as tf, transformers, Trainer, TrainerCallback, datasets, evaluate
+from konfuzio_sdk.extras import torch, tensorflow as tf, transformers, datasets, evaluate
 from konfuzio_sdk.evaluate import FileSplittingEvaluation
 from konfuzio_sdk.trainer.information_extraction import BaseModel
+from konfuzio_sdk.trainer.utils import BalancedLossTrainer, LoggerCallback
 from konfuzio_sdk.utils import get_timestamp
 
 logger = logging.getLogger(__name__)
@@ -386,13 +387,19 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         This is needed for proper saving of the model in lz4 compressed format – if the dependencies are not removed,
         the resulting pickle will be impossible to load.
         """
-        globals()['torch'] = None
-        globals()['tf'] = None
-        globals()['transformers'] = None
+        globals()["torch"] = None
+        globals()["tf"] = None
+        globals()["transformers"] = None
+        globals()["evaluate"] = None
+        globals()["datasets"] = None
+        globals()["Trainer"] = None
 
-        del globals()['torch']
-        del globals()['tf']
-        del globals()['transformers']
+        del globals()["torch"]
+        del globals()["tf"]
+        del globals()["transformers"]
+        del globals()["evaluate"]
+        del globals()["datasets"]
+        del globals()["Trainer"]
 
     def restore_dependencies(self):
         """
@@ -562,7 +569,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         # defining metric
         metric = evaluate.load("f1")
 
-        # utility functions
+        # functions to be used by transformers.trainer
         def tokenize_function(examples):
             return tokenizer(examples["text"], truncation=True, padding="max_length")
 
@@ -577,6 +584,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         test_dataset = test_dataset.map(tokenize_function, batched=True)
         logger.info("=" * 50)
         logger.info("Loading model")
+        # loading the transformers model and defining the training arguments
         self.model = transformers.AutoModelForSequenceClassification.from_pretrained(self.model_name, num_labels=2)
         training_args = transformers.TrainingArguments(
             output_dir="training_logs/textual_file_splitting_model_trainer",
@@ -599,30 +607,8 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         logger.info(f"Batch size for training: {train_batch_size}")
         logger.info(f"Batch size for evaluation: {eval_batch_size}")
         logger.info(f"Learning rate: {training_args.learning_rate:.2e}\n")
-
-        # custom callback for logger.info to be used in Trainer
-        class LoggerCallback(TrainerCallback):
-            def on_log(self, args, state, control, logs=None, **kwargs):
-                _ = logs.pop("total_flos", None)
-                if state.is_local_process_zero:
-                    logger.info(logs)
-
-        # custom trainer with custom loss to leverage class weights
-
-        class CustomTrainer(Trainer):
-            def compute_loss(self, model, inputs, return_outputs=False):
-                labels = inputs.pop("labels")
-                # forward pass
-                outputs = model(**inputs)
-                logits = outputs.get("logits")
-                # compute custom loss (suppose one has 3 labels with different weights)
-                loss_fct = torch.nn.CrossEntropyLoss(
-                    weight=torch.tensor(class_weights, device=model.device, dtype=torch.float)
-                )
-                loss = loss_fct(logits.view(-1, model.config.num_labels), labels.view(-1))
-                return (loss, outputs) if return_outputs else loss
-
-        trainer = CustomTrainer(
+        # initializing the trainer
+        trainer = BalancedLossTrainer(
             model=self.model,
             args=training_args,
             train_dataset=train_dataset,
@@ -630,13 +616,17 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
             compute_metrics=compute_metrics,
             callbacks=[LoggerCallback],
         )
+        trainer.class_weights = class_weights
+        # training the model
         trainer.train()
         logger.info(f"[{time.ctime(time.time())}]\t🎉 Textual File Splitting Model fitting finished.")
         logger.info("=" * 50)
         logger.info(f"[{time.ctime(time.time())}]\tComputing AI Quality.")
+        # computing the AI quality
         evaluation_results = trainer.evaluate()
         self.model = trainer.model
         logger.info(f"[{time.ctime(time.time())}]\tTextual File Splitting Model Evaluation finished.")
+
         logger.info("=" * 50)
         return evaluation_results
 
@@ -881,7 +871,9 @@ class SplittingAI:
         if not self.model.requires_images:
             self.tokenizer = self.model.tokenizer
 
-    def _suggest_first_pages(self, document: Document, inplace: bool = False) -> List[Document]:
+    def _suggest_first_pages(
+        self, document: Document, inplace: bool = False, split_on_blank_pages: bool = False
+    ) -> List[Document]:
         """
         Run prediction on Document's Pages, marking them as first or non-first.
 
@@ -906,7 +898,7 @@ class SplittingAI:
             for index, page in enumerate(processed_document.pages()):
                 previous_page = None if index == 0 else processed_document.pages()[index - 1]
                 self.model.predict(page=page)
-                if previous_page is not None and previous_page.text.strip() == "":
+                if split_on_blank_pages and previous_page is not None and previous_page.text.strip() == "":
                     page.is_first_page = True
                     page.is_first_page_confidence = 1
                 # Why is done the in both cases?
@@ -915,14 +907,14 @@ class SplittingAI:
             for index, page in enumerate(processed_document.pages()):
                 previous_page = None if index == 0 else processed_document.pages()[index - 1]
                 self.model.predict(page=page)
-                if previous_page is not None and previous_page.text.strip() == "":
+                if split_on_blank_pages and previous_page is not None and previous_page.text.strip() == "":
                     page.is_first_page = True
                     page.is_first_page_confidence = 1
                 # Why is done the in both cases?
                 page.set_category(page.get_original_page().category)
         return [processed_document]
 
-    def _suggest_page_split(self, document: Document) -> List[Document]:
+    def _suggest_page_split(self, document: Document, split_on_blank_pages: bool = False) -> List[Document]:
         """
         Create a list of Sub-Documents built from the original Document, split.
 
@@ -939,7 +931,7 @@ class SplittingAI:
         for index, page in enumerate(document_tokenized.pages()):
             previous_page = None if index == 0 else document_tokenized.pages()[index - 1]
             self.model.predict(page=page)
-            if previous_page is not None and previous_page.text.strip() == "":
+            if split_on_blank_pages and previous_page is not None and previous_page.text.strip() == "":
                 page.is_first_page = True
                 page.is_first_page_confidence = 1
             if page.is_first_page:
@@ -970,7 +962,7 @@ class SplittingAI:
         return split_docs
 
     def propose_split_documents(
-        self, document: Document, return_pages: bool = False, inplace: bool = False
+        self, document: Document, return_pages: bool = False, inplace: bool = False, split_on_blank_pages: bool = False
     ) -> List[Document]:
         """
         Propose a set of resulting Documents from a single Document.
@@ -988,9 +980,11 @@ class SplittingAI:
         if self.model.requires_images:
             document.get_images()
         if return_pages:
-            processed = self._suggest_first_pages(document, inplace)
+            processed = self._suggest_first_pages(
+                document=document, inplace=inplace, split_on_blank_pages=split_on_blank_pages
+            )
         else:
-            processed = self._suggest_page_split(document)
+            processed = self._suggest_page_split(document=document, split_on_blank_pages=split_on_blank_pages)
         return processed
 
     def evaluate_full(self, use_training_docs: bool = False, zero_division="warn") -> FileSplittingEvaluation:
