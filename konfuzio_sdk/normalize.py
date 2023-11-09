@@ -123,8 +123,10 @@ def _normalize_string_to_absolute_float(offset_string: str) -> Optional[float]:
 
     if offset_string.count('.') > 1:  # for cases like '0.22.1', '12.123.1111.3', '123.1.34'
         split = offset_string.split('.')
-        if [chunk for chunk in split[1:-1] if (len(chunk) <= 2 or len(chunk) > 3)]:
-            return None
+        # Check if middle parts have invalid length.
+        for chunk in split[1:-1]:
+            if len(chunk) != 3:
+                return None
 
     offset_string = (
         offset_string.replace('O', '0')
