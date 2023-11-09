@@ -451,8 +451,6 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
     def __init__(
         self,
         categories: List[Category],
-        text_processing_model: str = "nlpaueb/legal-bert-small-uncased",
-        scale: int = 2,
         *args,
         **kwargs,
     ):
