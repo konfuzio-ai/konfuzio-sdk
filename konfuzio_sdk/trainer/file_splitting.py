@@ -457,14 +457,8 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         """
         Initialize the Textual File Splitting Model.
 
+        :param categories: Categories from which Documents for training and testing are used.
         :type categories: List[Category]
-        :param text_processing_model: A path to the HuggingFace model that is used for processing the textual
-        data from the Documents, can be a path in the HuggingFace repo or a local path to a checkpoint of a pre-trained
-        HuggingFace model. Default is LegalBERT.
-        :type text_processing_model: str
-        :param scale: A multiplier to define a number of units (neurons) in Dense layers of a model for image
-        processing.
-        :type scale: int
         """
         logging.info("Initializing Textual File Splitting Model.")
         super().__init__(categories=categories)
