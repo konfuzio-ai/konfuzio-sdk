@@ -180,6 +180,8 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         """
         logging.info('Initializing Multimodal File Splitting Model.')
         super().__init__(categories=categories)
+        # restore dependencies in case they were deleted
+        self.restore_dependencies()
         # proper compiling of Multimodal File Splitting Model requires eager running instead of lazy
         # because of multiple inputs (read more about eager vs lazy (graph) here)
         # https://towardsdatascience.com/eager-execution-vs-graph-execution-which-is-better-38162ea4dbf6
@@ -249,7 +251,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
             images.append(image)
         return images
 
-    def fit(self, epochs: int = 10, use_gpu: bool = False, *args, **kwargs):
+    def fit(self, epochs: int = 10, use_gpu: bool = False, train_batch_size=8, *args, **kwargs):
         """
         Process the train and test data, initialize and fit the model.
 
@@ -328,12 +330,22 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         logger.info('Multimodal File Splitting Model compiling finished.')
         if not use_gpu:
             with tf.device('/cpu:0'):
-                self.model.fit([self.train_img_data, self.train_txt_data], self.train_labels, epochs=epochs, verbose=1)
+                self.model.fit(
+                    [self.train_img_data, self.train_txt_data],
+                    self.train_labels,
+                    epochs=epochs,
+                    verbose=1,
+                    batch_size=train_batch_size,
+                )
         else:
             if tf.config.list_physical_devices('GPU'):
                 with tf.device('/gpu:0'):
                     self.model.fit(
-                        [self.train_img_data, self.train_txt_data], self.train_labels, epochs=epochs, verbose=1
+                        [self.train_img_data, self.train_txt_data],
+                        self.train_labels,
+                        epochs=epochs,
+                        verbose=1,
+                        batch_size=train_batch_size,
                     )
             else:
                 raise ValueError('Fitting on the GPU is impossible because there is no GPU available on the device.')
@@ -458,10 +470,11 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         """
         logging.info("Initializing Textual File Splitting Model.")
         super().__init__(categories=categories)
+        # restore dependencies in case they were deleted
+        self.restore_dependencies()
         # proper compiling of Textual File Splitting Model requires eager running instead of lazy
         # because of multiple inputs (read more about eager vs lazy (graph) here)
         # https://towardsdatascience.com/eager-execution-vs-graph-execution-which-is-better-38162ea4dbf6
-        tf.config.experimental_run_functions_eagerly(True)
         self.output_dir = self.project.model_folder
         self.requires_images = False
         self.requires_text = True
@@ -471,13 +484,11 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         self.test_img_data = None
         self.train_labels = None
         self.test_labels = None
-        self.input_shape = None
         self.supports_gpu = True
-        self.scale = scale
         self.model = None
-        logger.info("Initializing BERT components of the Textual File Splitting Model.")
         self.model_name = "distilbert-base-uncased"
-        self.bert_tokenizer = transformers.AutoTokenizer.from_pretrained(self.model_name)
+        self.tokenizer = None
+        self.transformers_tokenizer = None
 
     def reduce_model_weight(self):
         """Remove all non-strictly necessary parameters before saving."""
@@ -567,13 +578,13 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         # Calculate class weights to solve unbalanced dataset problem
         class_weights = compute_class_weight("balanced", classes=[0, 1], y=train_labels)
         # defining tokenizer
-        tokenizer = self.bert_tokenizer
+        self.transformers_tokenizer = transformers.AutoTokenizer.from_pretrained(self.model_name)
         # defining metric
         metric = evaluate.load("f1")
 
         # functions to be used by transformers.trainer
         def tokenize_function(examples):
-            return tokenizer(examples["text"], truncation=True, padding="max_length")
+            return self.transformers_tokenizer(examples["text"], truncation=True, padding="max_length")
 
         def compute_metrics(eval_pred):
             predictions, labels = eval_pred
@@ -651,7 +662,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         concatenated_text = page.text
         if previous_page is not None:
             concatenated_text = self._concat_pages_text(page=page, previous_page=previous_page)
-        tokenized_text = self.bert_tokenizer(
+        tokenized_text = self.transformers_tokenizer(
             concatenated_text, truncation=True, padding="max_length", return_tensors="pt"
         )
         with torch.no_grad():
@@ -674,7 +685,8 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         page.is_first_page_confidence = predicted_prob_is_first
         return page
 
-    def remove_dependencies(self):
+    @staticmethod
+    def remove_dependencies():
         """
         Remove dependencies before saving.
 
@@ -699,7 +711,8 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         del globals()["BalancedLossTrainer"]
         del globals()["LoggerCallback"]
 
-    def restore_dependencies(self):
+    @staticmethod
+    def restore_dependencies():
         """
         Restore removed dependencies after loading.
 
