@@ -27,6 +27,10 @@ from konfuzio_sdk.trainer.file_splitting import (
 from konfuzio_sdk.urls import get_create_ai_model_url
 
 
+TEST_WITH_FULL_DATASET = False
+DEVICE = "cpu"
+
+
 @pytest.mark.skipif(
     not is_dependency_installed('torch')
     and not is_dependency_installed('transformers')
@@ -294,9 +298,6 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
         cls.project.delete()  # created when saving the AI model
 
 
-TEST_WITH_FULL_DATASET = False
-
-
 @pytest.mark.skipif(
     not is_dependency_installed('torch')
     and not is_dependency_installed('transformers')
@@ -318,7 +319,7 @@ class TestTextualFileSplittingModel(unittest.TestCase):
 
     def test_model_training(self):
         """Test model's fit() method."""
-        self.file_splitting_model.fit(epochs=3, train_batch_size=2)
+        self.file_splitting_model.fit(epochs=3, train_batch_size=2, device=DEVICE)
         assert self.file_splitting_model.model
 
     def test_run_page_prediction(self):
@@ -327,7 +328,7 @@ class TestTextualFileSplittingModel(unittest.TestCase):
             for page in doc.pages():
                 ground_truth_is_first_page = page.is_first_page
                 page.is_first_page = None
-                page = self.file_splitting_model.predict(page)
+                page = self.file_splitting_model.predict(page, device=DEVICE)
                 predicted_is_first_page = page.is_first_page
                 assert ground_truth_is_first_page == predicted_is_first_page
                 assert type(page.is_first_page_confidence) is float

@@ -472,6 +472,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         self.train_labels = None
         self.test_labels = None
         self.input_shape = None
+        self.supports_gpu = True
         self.scale = scale
         self.model = None
         logger.info("Initializing BERT components of the Textual File Splitting Model.")
@@ -539,6 +540,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         use_gpu: bool = False,
         eval_batch_size: int = 32,
         train_batch_size: int = 16,
+        device: str = "cpu",
         *args,
         **kwargs,
     ):
@@ -586,6 +588,9 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         logger.info("Loading model")
         # loading the transformers model and defining the training arguments
         self.model = transformers.AutoModelForSequenceClassification.from_pretrained(self.model_name, num_labels=2)
+        # move model to device
+        self.model.to(device)
+        # defining the training arguments
         training_args = transformers.TrainingArguments(
             output_dir="training_logs/textual_file_splitting_model_trainer",
             evaluation_strategy="epoch",
@@ -630,7 +635,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         logger.info("=" * 50)
         return evaluation_results
 
-    def predict(self, page: Page, use_gpu: bool = False, previous_page: Page = None) -> Page:
+    def predict(self, page: Page, previous_page: Page = None, device: str = "cpu") -> Page:
         """
         Run prediction with the trained model.
 
@@ -650,6 +655,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
             concatenated_text, truncation=True, padding="max_length", return_tensors="pt"
         )
         with torch.no_grad():
+            self.model.to(device)
             self.model.eval()
             output = self.model(**tokenized_text)
         logits = output.logits
@@ -681,6 +687,8 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         globals()["evaluate"] = None
         globals()["datasets"] = None
         globals()["Trainer"] = None
+        globals()["BalancedLossTrainer"] = None
+        globals()["LoggerCallback"] = None
 
         del globals()["torch"]
         del globals()["tf"]
@@ -688,6 +696,8 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         del globals()["evaluate"]
         del globals()["datasets"]
         del globals()["Trainer"]
+        del globals()["BalancedLossTrainer"]
+        del globals()["LoggerCallback"]
 
     def restore_dependencies(self):
         """
@@ -697,6 +707,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         upon saving the model.
         """
         from konfuzio_sdk.extras import torch, tensorflow as tf, transformers, datasets, evaluate, Trainer
+        from konfuzio_sdk.trainer.utils import BalancedLossTrainer, LoggerCallback
 
         globals()["torch"] = torch
         globals()["tf"] = tf
@@ -704,6 +715,8 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         globals()["datasets"] = datasets
         globals()["evalute"] = evaluate
         globals()["Trainer"] = Trainer
+        globals()["BalancedLossTrainer"] = BalancedLossTrainer
+        globals()["LoggerCallback"] = LoggerCallback
 
     def check_is_ready(self):
         """
@@ -872,7 +885,7 @@ class SplittingAI:
             self.tokenizer = self.model.tokenizer
 
     def _suggest_first_pages(
-        self, document: Document, inplace: bool = False, split_on_blank_pages: bool = False
+        self, document: Document, inplace: bool = False, split_on_blank_pages: bool = False, device: str = "cpu"
     ) -> List[Document]:
         """
         Run prediction on Document's Pages, marking them as first or non-first.
@@ -883,38 +896,32 @@ class SplittingAI:
         :type inplace: bool
         :returns: A list containing the modified Document.
         """
-        if inplace:
+        if inplace or self.model.requires_images:
             processed_document = document
         else:
             processed_document = deepcopy(document)
 
-        if not self.model.requires_images:
-            # TODO: delete it, we don't need tokenizer
-            # no, we need tokenizer for ContextAwareFileSplittingModel.
-            if self.model.name == "ContextAwareFileSplittingModel":
-                processed_document = self.tokenizer.tokenize(processed_document)
-            # we set a Page's Category explicitly because we don't want to lose original Page's Category information
-            # because by default a Page is assigned a Category of a Document, and they are not necessarily the same
-            for index, page in enumerate(processed_document.pages()):
-                previous_page = None if index == 0 else processed_document.pages()[index - 1]
+        if self.model.name == "ContextAwareFileSplittingModel":
+            processed_document = self.tokenizer.tokenize(processed_document)
+        # we set a Page's Category explicitly because we don't want to lose original Page's Category information
+        # because by default a Page is assigned a Category of a Document, and they are not necessarily the same
+        for index, page in enumerate(processed_document.pages()):
+            previous_page = None if index == 0 else processed_document.pages()[index - 1]
+            if getattr(self.model, "supports_gpu", False):
+                self.model.predict(page=page, device=device)
+            else:
                 self.model.predict(page=page)
-                if split_on_blank_pages and previous_page is not None and previous_page.text.strip() == "":
-                    page.is_first_page = True
-                    page.is_first_page_confidence = 1
-                # Why is done the in both cases?
-                page.set_category(page.get_original_page().category)
-        else:
-            for index, page in enumerate(processed_document.pages()):
-                previous_page = None if index == 0 else processed_document.pages()[index - 1]
-                self.model.predict(page=page)
-                if split_on_blank_pages and previous_page is not None and previous_page.text.strip() == "":
-                    page.is_first_page = True
-                    page.is_first_page_confidence = 1
-                # Why is done the in both cases?
-                page.set_category(page.get_original_page().category)
+            if split_on_blank_pages and previous_page is not None and previous_page.text.strip() == "":
+                page.is_first_page = True
+                page.is_first_page_confidence = 1
+            # Why is done the in both cases?
+            page.set_category(page.get_original_page().category)
+
         return [processed_document]
 
-    def _suggest_page_split(self, document: Document, split_on_blank_pages: bool = False) -> List[Document]:
+    def _suggest_page_split(
+        self, document: Document, split_on_blank_pages: bool = False, device: str = "cpu"
+    ) -> List[Document]:
         """
         Create a list of Sub-Documents built from the original Document, split.
 
@@ -929,11 +936,18 @@ class SplittingAI:
         else:
             document_tokenized = document
         for index, page in enumerate(document_tokenized.pages()):
+            # set previous page to None if the current page is the first page
             previous_page = None if index == 0 else document_tokenized.pages()[index - 1]
-            self.model.predict(page=page)
+            # run splitting prediction on the current page
+            if getattr(self.model, "supports_gpu", False):
+                self.model.predict(page=page, device=device)
+            else:
+                self.model.predict(page=page)
+            # if split_on_blank_pages is True, we mark pages that are preceded by blank pages as first pages
             if split_on_blank_pages and previous_page is not None and previous_page.text.strip() == "":
                 page.is_first_page = True
                 page.is_first_page_confidence = 1
+            # if the current page is marked as first page, we add it to the list of suggested splits
             if page.is_first_page:
                 suggested_splits.append(page)
         if len(suggested_splits) == 1:
@@ -962,7 +976,12 @@ class SplittingAI:
         return split_docs
 
     def propose_split_documents(
-        self, document: Document, return_pages: bool = False, inplace: bool = False, split_on_blank_pages: bool = False
+        self,
+        document: Document,
+        return_pages: bool = False,
+        inplace: bool = False,
+        split_on_blank_pages: bool = False,
+        device: str = "cpu",
     ) -> List[Document]:
         """
         Propose a set of resulting Documents from a single Document.
@@ -981,10 +1000,12 @@ class SplittingAI:
             document.get_images()
         if return_pages:
             processed = self._suggest_first_pages(
-                document=document, inplace=inplace, split_on_blank_pages=split_on_blank_pages
+                document=document, inplace=inplace, split_on_blank_pages=split_on_blank_pages, device=device
             )
         else:
-            processed = self._suggest_page_split(document=document, split_on_blank_pages=split_on_blank_pages)
+            processed = self._suggest_page_split(
+                document=document, split_on_blank_pages=split_on_blank_pages, device=device
+            )
         return processed
 
     def evaluate_full(self, use_training_docs: bool = False, zero_division="warn") -> FileSplittingEvaluation:
