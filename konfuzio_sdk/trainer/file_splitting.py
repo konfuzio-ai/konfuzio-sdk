@@ -539,10 +539,10 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
 
     def fit(
         self,
-        epochs: int = 2,
+        epochs: int = 5,
         use_gpu: bool = False,
-        eval_batch_size: int = 32,
-        train_batch_size: int = 16,
+        eval_batch_size: int = 8,
+        train_batch_size: int = 8,
         device: str = "cpu",
         *args,
         **kwargs,
@@ -664,7 +664,10 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         tokenized_text = self.transformers_tokenizer(
             concatenated_text, truncation=True, padding="max_length", return_tensors="pt"
         )
+        # move tokenized_text tensors to device
+        tokenized_text = {key: value.to(device) for key, value in tokenized_text.items()}
         with torch.no_grad():
+            # move model to device
             self.model.to(device)
             self.model.eval()
             output = self.model(**tokenized_text)

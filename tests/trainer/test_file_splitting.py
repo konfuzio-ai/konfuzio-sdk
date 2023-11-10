@@ -320,7 +320,7 @@ class TestTextualFileSplittingModel(unittest.TestCase):
 
     def test_model_training(self):
         """Test model's fit() method."""
-        self.file_splitting_model.fit(epochs=3, train_batch_size=2, device=DEVICE)
+        self.file_splitting_model.fit(device=DEVICE)
         assert self.file_splitting_model.model
 
     def test_run_page_prediction(self):
@@ -401,8 +401,7 @@ class TestMultimodalFileSplittingModel(unittest.TestCase):
 
     def test_model_training(self):
         """Test model's fit() method."""
-        use_gpu = True if DEVICE.find("cuda") != -1 else False
-        self.file_splitting_model.fit(epochs=10, train_batch_size=2, use_gpu=use_gpu)
+        self.file_splitting_model.fit(epochs=10, train_batch_size=2)
         assert self.file_splitting_model.model
 
     def test_run_page_prediction(self):
