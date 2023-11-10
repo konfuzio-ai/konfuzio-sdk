@@ -360,8 +360,8 @@ class TestTextualFileSplittingModel(unittest.TestCase):
         splitting_ai = SplittingAI(self.file_splitting_model)
         splitting_ai.evaluate_full(use_training_docs=True)
         assert splitting_ai.full_evaluation.tp() >= 0.0
-        assert splitting_ai.full_evaluation.fp() >= 0.0
-        assert splitting_ai.full_evaluation.fn() >= 0.0
+        assert splitting_ai.full_evaluation.fp() == 0.0
+        assert splitting_ai.full_evaluation.fn() == 0.0
         assert splitting_ai.full_evaluation.tn() >= 0.0
         assert splitting_ai.full_evaluation.precision() == 1.0
         assert splitting_ai.full_evaluation.recall() == 1.0
@@ -372,8 +372,8 @@ class TestTextualFileSplittingModel(unittest.TestCase):
         splitting_ai = SplittingAI(self.file_splitting_model)
         splitting_ai.evaluate_full()
         assert splitting_ai.full_evaluation.tp() >= 0.0
-        assert splitting_ai.full_evaluation.fp() >= 0.0
-        assert splitting_ai.full_evaluation.fn() >= 0.0
+        assert splitting_ai.full_evaluation.fp() == 0.0
+        assert splitting_ai.full_evaluation.fn() == 0.0
         assert splitting_ai.full_evaluation.tn() >= 0.0
         assert splitting_ai.full_evaluation.precision() == 1.0
         assert splitting_ai.full_evaluation.recall() == 1.0
@@ -442,8 +442,8 @@ class TestMultimodalFileSplittingModel(unittest.TestCase):
         splitting_ai = SplittingAI(self.file_splitting_model)
         splitting_ai.evaluate_full(use_training_docs=True)
         assert splitting_ai.full_evaluation.tp() >= 0.0
-        assert splitting_ai.full_evaluation.fp() >= 0.0
-        assert splitting_ai.full_evaluation.fn() >= 0.0
+        assert splitting_ai.full_evaluation.fp() == 0.0
+        assert splitting_ai.full_evaluation.fn() == 0.0
         assert splitting_ai.full_evaluation.tn() >= 0.0
         assert splitting_ai.full_evaluation.precision() >= 0.0
         assert splitting_ai.full_evaluation.recall() >= 0.0
@@ -454,8 +454,8 @@ class TestMultimodalFileSplittingModel(unittest.TestCase):
         splitting_ai = SplittingAI(self.file_splitting_model)
         splitting_ai.evaluate_full()
         assert splitting_ai.full_evaluation.tp() >= 0.0
-        assert splitting_ai.full_evaluation.fp() >= 0.0
-        assert splitting_ai.full_evaluation.fn() >= 0.0
+        assert splitting_ai.full_evaluation.fp() == 0.0
+        assert splitting_ai.full_evaluation.fn() == 0.0
         assert splitting_ai.full_evaluation.tn() >= 0.0
         assert splitting_ai.full_evaluation.precision() >= 0.0
         assert splitting_ai.full_evaluation.recall() >= 0.0
