@@ -8,7 +8,12 @@ logger = logging.getLogger(__name__)
 
 
 class LoggerCallback(TrainerCallback):
-    """Custom callback for logger.info to be used in Trainer."""
+    """
+    Custom callback for logger.info to be used in Trainer.
+
+    This callback is called by `Trainer` at the end of every epoch to log metrics.
+    It replaces calling `print` and `tqdm` and calls `logger.info` instead.
+    """
 
     def on_log(self, args, state, control, logs=None, **kwargs):
         """Log losses and metrics when training or evaluating using Trainer."""
