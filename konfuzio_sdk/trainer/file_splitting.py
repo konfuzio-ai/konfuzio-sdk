@@ -568,7 +568,14 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         train_dataset = datasets.Dataset.from_pandas(train_df)
         test_dataset = datasets.Dataset.from_pandas(test_df)
         # Calculate class weights to solve unbalanced dataset problem
-        class_weights = compute_class_weight("balanced", classes=[0, 1], y=train_labels)
+        try:
+            class_weights = compute_class_weight("balanced", classes=[0, 1], y=train_labels)
+        except ValueError:
+            logger.error(
+                "Your Dataset is composed of only first pages, no Splitting AI is needed! \
+                You are about to train a Splitting AI for a one class classification task!"
+            )
+            class_weights = [1, 1]
         # defining tokenizer
         self.transformers_tokenizer = transformers.AutoTokenizer.from_pretrained(self.model_name)
         # defining metric
