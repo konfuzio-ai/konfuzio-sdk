@@ -29,6 +29,7 @@ from konfuzio_sdk.urls import get_create_ai_model_url
 
 TEST_WITH_FULL_DATASET = False
 DEVICE = "cpu"
+TEST_SPLITTING_AI_PROJECT_ID = 14392
 
 
 @pytest.mark.skipif(
@@ -310,7 +311,7 @@ class TestTextualFileSplittingModel(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Initialize the tested class."""
-        cls.project = Project(id_=14392)
+        cls.project = Project(id_=TEST_SPLITTING_AI_PROJECT_ID)
         cls.file_splitting_model = TextualFileSplittingModel(categories=cls.project.categories)
         if not TEST_WITH_FULL_DATASET:
             cls.file_splitting_model.documents = cls.file_splitting_model.categories[0].documents()
@@ -391,7 +392,7 @@ class TestMultimodalFileSplittingModel(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Initialize the tested class."""
-        cls.project = Project(id_=14392)
+        cls.project = Project(id_=TEST_SPLITTING_AI_PROJECT_ID)
         cls.file_splitting_model = MultimodalFileSplittingModel(categories=cls.project.categories)
         if not TEST_WITH_FULL_DATASET:
             cls.file_splitting_model.documents = cls.file_splitting_model.categories[0].documents()
