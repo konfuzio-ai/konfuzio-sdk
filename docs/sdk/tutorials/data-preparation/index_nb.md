@@ -36,7 +36,7 @@ Before training an AI model, Documents for training and testing need to be uploa
 
 We start by defining a path where a PDF Document exists.
 
-```python
+```python tags=["skip-execution", "nbval-skip"]
 FILE_PATH_1 = 'path/to/pdf_file1.pdf'
 FILE_PATH_2 = 'path/to/pdf_file2.pdf'
 FILE_PATH_3 = 'path/to/pdf_file3.pdf'
@@ -79,7 +79,7 @@ for document_path in file_paths:
     _.delete(delete_online=True)
 ```
 
-```python tags=["skip-execution"]
+```python tags=["skip-execution", "nbval-skip"]
 for document_path in file_paths:
     _ = Document.from_file(document_path, project=project, sync=False)
 ```
@@ -94,7 +94,7 @@ A Document in the Konfuzio Server can be assigned a Status defining if the Docum
 ### Conclusion
 In this tutorial, we have walked through the essential steps for programmatically uploading PDFs to the Konfuzio Server. Below is the full code to accomplish this task:
 
-```python tags=["skip-execution"]
+```python tags=["skip-execution", "nbval-skip"]
 from tests.variables import TEST_PROJECT_ID
 from konfuzio_sdk.data import Project, Document
 

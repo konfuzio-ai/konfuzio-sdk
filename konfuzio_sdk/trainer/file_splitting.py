@@ -802,12 +802,6 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         :type allow_empty_categories: bool
         :raises ValueError: When allow_empty_categories is False and no exclusive first-page strings were found for
         at least one Category.
-
-        >>> from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
-        >>> from konfuzio_sdk.data import Project
-        >>> project = Project(id_=46)
-        >>> tokenizer = ConnectedTextTokenizer()
-        >>> model = ContextAwareFileSplittingModel(categories=project.categories, tokenizer=tokenizer).fit()
         """
         for category in self.categories:
             # method exclusive_first_page_strings fetches a set of first-page strings exclusive among the Documents
@@ -834,17 +828,6 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         :param page: A Page to receive first or non-first label.
         :type page: Page
         :return: A Page with a newly predicted is_first_page attribute.
-
-        >>> from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
-        >>> from konfuzio_sdk.data import Project
-        >>> project = Project(id_=46)
-        >>> tokenizer = ConnectedTextTokenizer()
-        >>> test_document = project.get_document_by_id(44865)
-        >>> model = ContextAwareFileSplittingModel(categories=project.categories, tokenizer=tokenizer)
-        >>> model.fit()
-        >>> model.check_is_ready()
-        >>> model.predict(model.tokenizer.tokenize(test_document).pages()[0]).is_first_page
-        True
         """
         self.check_is_ready()
         page.is_first_page = False

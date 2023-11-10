@@ -2,6 +2,7 @@
 
 EXTRAS = {
     "dev": [
+        "coverage==7.3.2",
         "flake8>=6.0.0",
         "pydocstyle>=6.3.0",
         "pytest>=7.1.2",
