@@ -102,10 +102,10 @@ class TestOnlineProject(unittest.TestCase):
         # we are no longer filtering out the rejected Annotations so it's 21
         self.assertEqual(21, len(doc.annotations(use_correct=False)))
         # a multiline Annotation in the top right corner, see https://app.konfuzio.com/a/4419937
-        self.assertEqual(66, doc.annotations()[0]._spans[0].start_offset)
-        self.assertEqual(78, doc.annotations()[0]._spans[0].end_offset)
-        self.assertEqual(159, doc.annotations()[0]._spans[1].start_offset)
-        self.assertEqual(169, doc.annotations()[0]._spans[1].end_offset)
+        self.assertEqual(66, doc.annotations()[0].spans[0].start_offset)
+        self.assertEqual(78, doc.annotations()[0].spans[0].end_offset)
+        self.assertEqual(159, doc.annotations()[0].spans[1].start_offset)
+        self.assertEqual(169, doc.annotations()[0].spans[1].end_offset)
         self.assertEqual(len(doc.annotations()), 19)
         # helm: 21.06.2022 changed from 21 to 19 as someone added (?) two annotations?
         # todo check this number, the offline project was still working fine for all evaluation tests
@@ -663,7 +663,7 @@ class TestEqualityAnnotation(unittest.TestCase):
         cls.category = Category(project=cls.project, id_=1)
         cls.label_set = LabelSet(project=cls.project, categories=[cls.category], id_=421)
         cls.label_one = Label(project=cls.project, text='First', label_sets=[cls.label_set])
-        cls.label_two = Label(project=cls.project, text='First', label_sets=[cls.label_set])
+        cls.label_two = Label(project=cls.project, text='Second', label_sets=[cls.label_set])
         cls.document = Document(project=cls.project, category=cls.category)
         # cls.label_set.add_label(cls.label)
         cls.annotation_set = AnnotationSet(document=cls.document, label_set=cls.label_set)
@@ -2159,7 +2159,7 @@ class TestOfflineDataSetup(unittest.TestCase):
             end_offset=12,
             number=1,
         )
-        assert _.is_first_page is None
+        assert _.is_first_page is True
         text = "Sample text.\n\fSome more."
         document = Document(id=None, project=project, text=text, dataset_status=2)
         _ = Page(
@@ -3416,7 +3416,7 @@ class TestData(unittest.TestCase):
         self.assertFalse(a.is_online)
 
 
-def  test_download_training_and_test_data():
+def test_download_training_and_test_data():
     """Test downloading of data from training and test documents."""
     project = Project(id_=1249, update=True)
     download_training_and_test_data(project=project)

@@ -3,17 +3,21 @@ import abc
 import logging
 import os
 import PIL
+import time
 
+import pandas as pd
 import numpy as np
+from sklearn.utils.class_weight import compute_class_weight
 
 from copy import deepcopy
 from inspect import signature
 from typing import List, Union
 
 from konfuzio_sdk.data import Document, Page, Category
-from konfuzio_sdk.extras import torch, tensorflow as tf, transformers
+from konfuzio_sdk.extras import torch, tensorflow as tf, transformers, datasets, evaluate
 from konfuzio_sdk.evaluate import FileSplittingEvaluation
 from konfuzio_sdk.trainer.information_extraction import BaseModel
+from konfuzio_sdk.trainer.utils import BalancedLossTrainer, LoggerCallback
 from konfuzio_sdk.utils import get_timestamp
 
 logger = logging.getLogger(__name__)
@@ -42,7 +46,7 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
             raise ValueError("At least one Category has to have Documents for training the model.")
         for category in nonempty_categories:
             if not category.test_documents():
-                raise ValueError(f'{category} does not have test Documents.')
+                raise ValueError(f"{category} does not have test Documents.")
         self.categories = categories
         self.project = self.categories[0].project  # we ensured that at least one Category is present
         self.documents = [document for category in self.categories for document in category.documents()]
@@ -74,7 +78,7 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
         """
         temp_pkl_file_path = os.path.join(
             self.output_dir,
-            f'{get_timestamp()}_{self.project.id_}_{self.name_lower()}_tmp.pkl',
+            f"{get_timestamp()}_{self.project.id_}_{self.name_lower()}_tmp.pkl",
         )
         return temp_pkl_file_path
 
@@ -87,7 +91,7 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
         """
         pkl_file_path = os.path.join(
             self.output_dir,
-            f'{get_timestamp()}_{self.project.id_}_{self.name_lower()}.pkl',
+            f"{get_timestamp()}_{self.project.id_}_{self.name_lower()}.pkl",
         )
         return pkl_file_path
 
@@ -106,10 +110,10 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
         """
         try:
             return (
-                signature(other.__init__).parameters['categories'].annotation._name == 'List'
-                and signature(other.__init__).parameters['categories'].annotation.__args__[0].__name__ == 'Category'
-                and signature(other.predict).parameters['page'].annotation.__name__ == 'Page'
-                and signature(other.predict).return_annotation.__name__ == 'Page'
+                signature(other.__init__).parameters["categories"].annotation._name == "List"
+                and signature(other.__init__).parameters["categories"].annotation.__args__[0].__name__ == "Category"
+                and signature(other.predict).parameters["page"].annotation.__name__ == "Page"
+                and signature(other.predict).return_annotation.__name__ == "Page"
                 and signature(other.fit)
                 and signature(other.check_is_ready)
             )
@@ -176,6 +180,8 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         """
         logging.info('Initializing Multimodal File Splitting Model.')
         super().__init__(categories=categories)
+        # restore dependencies in case they were deleted
+        self.restore_dependencies()
         # proper compiling of Multimodal File Splitting Model requires eager running instead of lazy
         # because of multiple inputs (read more about eager vs lazy (graph) here)
         # https://towardsdatascience.com/eager-execution-vs-graph-execution-which-is-better-38162ea4dbf6
@@ -245,7 +251,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
             images.append(image)
         return images
 
-    def fit(self, epochs: int = 10, use_gpu: bool = False, *args, **kwargs):
+    def fit(self, epochs: int = 10, use_gpu: bool = False, train_batch_size=8, *args, **kwargs):
         """
         Process the train and test data, initialize and fit the model.
 
@@ -324,12 +330,22 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         logger.info('Multimodal File Splitting Model compiling finished.')
         if not use_gpu:
             with tf.device('/cpu:0'):
-                self.model.fit([self.train_img_data, self.train_txt_data], self.train_labels, epochs=epochs, verbose=1)
+                self.model.fit(
+                    [self.train_img_data, self.train_txt_data],
+                    self.train_labels,
+                    epochs=epochs,
+                    verbose=1,
+                    batch_size=train_batch_size,
+                )
         else:
             if tf.config.list_physical_devices('GPU'):
                 with tf.device('/gpu:0'):
                     self.model.fit(
-                        [self.train_img_data, self.train_txt_data], self.train_labels, epochs=epochs, verbose=1
+                        [self.train_img_data, self.train_txt_data],
+                        self.train_labels,
+                        epochs=epochs,
+                        verbose=1,
+                        batch_size=train_batch_size,
                     )
             else:
                 raise ValueError('Fitting on the GPU is impossible because there is no GPU available on the device.')
@@ -383,13 +399,19 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         This is needed for proper saving of the model in lz4 compressed format – if the dependencies are not removed,
         the resulting pickle will be impossible to load.
         """
-        globals()['torch'] = None
-        globals()['tf'] = None
-        globals()['transformers'] = None
+        globals()["torch"] = None
+        globals()["tf"] = None
+        globals()["transformers"] = None
+        globals()["evaluate"] = None
+        globals()["datasets"] = None
+        globals()["Trainer"] = None
 
-        del globals()['torch']
-        del globals()['tf']
-        del globals()['transformers']
+        del globals()["torch"]
+        del globals()["tf"]
+        del globals()["transformers"]
+        del globals()["evaluate"]
+        del globals()["datasets"]
+        del globals()["Trainer"]
 
     def restore_dependencies(self):
         """
@@ -419,6 +441,320 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
 
         if not self.model:
             raise AttributeError(f'{self} has to be fitted before running a prediction.')
+
+        self.restore_dependencies()
+
+
+class TextualFileSplittingModel(AbstractFileSplittingModel):
+    """Split a multi-Document file into a list of shorter Documents based on model's prediction."""
+
+    def __init__(
+        self,
+        categories: List[Category],
+        *args,
+        **kwargs,
+    ):
+        """
+        Initialize the Textual File Splitting Model.
+
+        :param categories: Categories from which Documents for training and testing are used.
+        :type categories: List[Category]
+        """
+        logging.info("Initializing Textual File Splitting Model.")
+        super().__init__(categories=categories)
+        # restore dependencies in case they were deleted
+        self.restore_dependencies()
+        # proper compiling of Textual File Splitting Model requires eager running instead of lazy
+        # because of multiple inputs (read more about eager vs lazy (graph) here)
+        # https://towardsdatascience.com/eager-execution-vs-graph-execution-which-is-better-38162ea4dbf6
+        self.output_dir = self.project.model_folder
+        self.requires_images = False
+        self.requires_text = True
+        self.train_txt_data = []
+        self.train_img_data = None
+        self.test_txt_data = []
+        self.test_img_data = None
+        self.train_labels = None
+        self.test_labels = None
+        self.supports_gpu = True
+        self.model = None
+        self.model_name = "distilbert-base-uncased"
+        self.tokenizer = None
+        self.transformers_tokenizer = None
+
+    def reduce_model_weight(self):
+        """Remove all non-strictly necessary parameters before saving."""
+        self.project.lose_weight()
+
+    def _concat_pages_text(self, page: Page, previous_page: Page) -> str:
+        """
+        Concatenate the text of the current Page with the text of the previous Page.
+
+        :param page: The current Page to concatenate the text of.
+        :type page: Page
+        :param previous_page: The previous Page to concatenate the text of.
+        :type previous_page: Page
+        :return: A string with the concatenated text.
+        """
+        previous_page_text = previous_page.text
+        if previous_page_text.strip():
+            # we add two [SEP] tokens to the end of the previous page's text
+            # to mark the end of the previous page and the beginning of the current page
+            previous_page_text += "[SEP] [SEP]"
+        else:
+            # here we would like to transform blank pages into a string of [SEP] tokens
+            # for the transformer to understand that it is a blank page
+            previous_page_text = "[SEP]" * 20
+        return previous_page_text + page.text
+
+    def _preprocess_documents(
+        self, data: List[Document], return_images: bool = False
+    ) -> (List[PIL.Image.Image], List[str], List[int]):
+        """
+        Take a list of Documents and obtain Pages' images, texts and labels of first or non-first class.
+
+        :param data: A list of Documents to preprocess.
+        :type data: List[Document]
+        :returns: Three lists – Pages' images, Pages' texts and Pages' labels.
+        """
+        if return_images:
+            page_images = []
+        texts = []
+        labels = []
+        for doc in data:
+            for i, page in enumerate(doc.pages()):
+                if return_images:
+                    page_images.append(page.get_image())
+                text = page.text
+                if hasattr(self, "use_previous_page") and self.use_previous_page and (i > 0):
+                    text = self._concat_pages_text(page=page, previous_page=doc.pages()[i - 1])
+                texts.append(text)
+                if page.is_first_page:
+                    labels.append(1)
+                else:
+                    labels.append(0)
+        if return_images:
+            return page_images, texts, labels
+        return texts, labels
+
+    def fit(
+        self,
+        epochs: int = 5,
+        use_gpu: bool = False,
+        eval_batch_size: int = 8,
+        train_batch_size: int = 8,
+        device: str = "cpu",
+        *args,
+        **kwargs,
+    ):
+        """Process the train and test data, initialize and fit the model."""
+        logger.info("Fitting Textual File Splitting Model.")
+        logger.info("training documents:")
+        logger.info([doc.id_ for doc in self.documents])
+        logger.info("testing documents:")
+        logger.info([doc.id_ for doc in self.test_documents])
+        logger.info("=" * 50)
+        logger.info(f"Length of training documents: {len(self.documents)}")
+        logger.info(f"Length of testing documents: {len(self.test_documents)}")
+        logger.info("Preprocessing training & test documents")
+        train_texts, train_labels = self._preprocess_documents(data=self.documents, return_images=False)
+        test_texts, test_labels = self._preprocess_documents(data=self.test_documents, return_images=False)
+        logger.info("Document preprocessing finished.")
+        logger.info("=" * 50)
+        logger.info("Creating datasets")
+        train_df = pd.DataFrame({"text": train_texts, "label": train_labels})
+        test_df = pd.DataFrame({"text": test_texts, "label": test_labels})
+        # Convert to Dataset objects
+        train_dataset = datasets.Dataset.from_pandas(train_df)
+        test_dataset = datasets.Dataset.from_pandas(test_df)
+        # Calculate class weights to solve unbalanced dataset problem
+        try:
+            class_weights = compute_class_weight("balanced", classes=[0, 1], y=train_labels)
+        except ValueError:
+            logger.error(
+                "Your Dataset is composed of only first pages, no Splitting AI is needed! \
+                You are about to train a Splitting AI for a one class classification task!"
+            )
+            class_weights = [1, 1]
+        # defining tokenizer
+        self.transformers_tokenizer = transformers.AutoTokenizer.from_pretrained(self.model_name)
+        # defining metric
+        metric = evaluate.load("f1")
+
+        # functions to be used by transformers.trainer
+        def tokenize_function(examples):
+            return self.transformers_tokenizer(examples["text"], truncation=True, padding="max_length")
+
+        def compute_metrics(eval_pred):
+            predictions, labels = eval_pred
+            predictions = np.argmax(predictions, axis=1)
+            return metric.compute(predictions=predictions, references=labels, average="macro")
+
+        logger.info("=" * 50)
+        logger.info("Tokenizing datasets")
+        train_dataset = train_dataset.map(tokenize_function, batched=True)
+        test_dataset = test_dataset.map(tokenize_function, batched=True)
+        logger.info("=" * 50)
+        logger.info("Loading model")
+        # loading the transformers model and defining the training arguments
+        self.model = transformers.AutoModelForSequenceClassification.from_pretrained(self.model_name, num_labels=2)
+        # move model to device
+        self.model.to(device)
+        # defining the training arguments
+        training_args = transformers.TrainingArguments(
+            output_dir="training_logs/textual_file_splitting_model_trainer",
+            evaluation_strategy="epoch",
+            save_strategy="epoch",
+            load_best_model_at_end=True,
+            push_to_hub=False,
+            learning_rate=3e-5,
+            per_device_train_batch_size=train_batch_size,
+            per_device_eval_batch_size=eval_batch_size,
+            num_train_epochs=epochs,
+            weight_decay=1e-3,
+            disable_tqdm=True,
+        )
+        logger.info("=" * 50)
+        logger.info(f"[{time.ctime(time.time())}]\tStarting Training...")
+        logger.info("\nConfiguration to be used for Training:")
+        logger.info(f"Class weights for the training dataset: {[f'{weight:.2e}' for weight in class_weights]}")
+        logger.info(f"Number of epochs: {epochs}")
+        logger.info(f"Batch size for training: {train_batch_size}")
+        logger.info(f"Batch size for evaluation: {eval_batch_size}")
+        logger.info(f"Learning rate: {training_args.learning_rate:.2e}\n")
+        # initializing the trainer
+        trainer = BalancedLossTrainer(
+            model=self.model,
+            args=training_args,
+            train_dataset=train_dataset,
+            eval_dataset=test_dataset,
+            compute_metrics=compute_metrics,
+            callbacks=[LoggerCallback],
+        )
+        trainer.class_weights = class_weights
+        # training the model
+        trainer.train()
+        logger.info(f"[{time.ctime(time.time())}]\t🎉 Textual File Splitting Model fitting finished.")
+        logger.info("=" * 50)
+        logger.info(f"[{time.ctime(time.time())}]\tComputing AI Quality.")
+        # computing the AI quality
+        evaluation_results = trainer.evaluate()
+        self.model = trainer.model
+        logger.info(f"[{time.ctime(time.time())}]\tTextual File Splitting Model Evaluation finished.")
+
+        logger.info("=" * 50)
+        return evaluation_results
+
+    def predict(
+        self,
+        page: Page,
+        previous_page: Page = None,
+        device: str = "cpu",
+        *args,
+        **kwargs,
+    ) -> Page:
+        """
+        Run prediction with the trained model.
+
+        :param page: A Page to be predicted as first or non-first.
+        :type page: Page
+        :param use_gpu: Run prediction on GPU if available.
+        :type use_gpu: bool
+        :param previous_page: The previous Page which would help give more context to the model
+        :type page: Page
+        :return: A Page with possible changes in is_first_page attribute value.
+        """
+        self.check_is_ready()
+        concatenated_text = page.text
+        if previous_page is not None:
+            concatenated_text = self._concat_pages_text(page=page, previous_page=previous_page)
+        tokenized_text = self.transformers_tokenizer(
+            concatenated_text, truncation=True, padding="max_length", return_tensors="pt"
+        )
+        # move tokenized_text tensors to device
+        tokenized_text = {key: value.to(device) for key, value in tokenized_text.items()}
+        with torch.no_grad():
+            # move model to device
+            self.model.to(device)
+            self.model.eval()
+            output = self.model(**tokenized_text)
+        logits = output.logits
+
+        # apply a softmax to get probabilities
+        probabilities = torch.softmax(logits, dim=1)
+
+        # Extract the probability of the 'is_first_page' being True
+        predicted_prob_is_first = probabilities[:, 1].item()
+
+        # Determine the predicted label based on a threshold (e.g., 0.5)
+        predicted_is_first = predicted_prob_is_first >= 0.5
+
+        # Update the 'is_first_page' & 'is_first_page_confidence' attributes of the Page object
+        page.is_first_page = predicted_is_first
+        page.is_first_page_confidence = predicted_prob_is_first
+        return page
+
+    @staticmethod
+    def remove_dependencies():
+        """
+        Remove dependencies before saving.
+
+        This is needed for proper saving of the model in lz4 compressed format – if the dependencies are not removed,
+        the resulting pickle will be impossible to load.
+        """
+        globals()["torch"] = None
+        globals()["tf"] = None
+        globals()["transformers"] = None
+        globals()["evaluate"] = None
+        globals()["datasets"] = None
+        globals()["Trainer"] = None
+        globals()["BalancedLossTrainer"] = None
+        globals()["LoggerCallback"] = None
+
+        del globals()["torch"]
+        del globals()["tf"]
+        del globals()["transformers"]
+        del globals()["evaluate"]
+        del globals()["datasets"]
+        del globals()["Trainer"]
+        del globals()["BalancedLossTrainer"]
+        del globals()["LoggerCallback"]
+
+    @staticmethod
+    def restore_dependencies():
+        """
+        Restore removed dependencies after loading.
+
+        This is needed for proper functioning of a loaded model because we have previously removed these dependencies
+        upon saving the model.
+        """
+        from konfuzio_sdk.extras import torch, tensorflow as tf, transformers, datasets, evaluate, Trainer
+        from konfuzio_sdk.trainer.utils import BalancedLossTrainer, LoggerCallback
+
+        globals()["torch"] = torch
+        globals()["tf"] = tf
+        globals()["transformers"] = transformers
+        globals()["datasets"] = datasets
+        globals()["evalute"] = evaluate
+        globals()["Trainer"] = Trainer
+        globals()["BalancedLossTrainer"] = BalancedLossTrainer
+        globals()["LoggerCallback"] = LoggerCallback
+
+    def check_is_ready(self):
+        """
+        Check if Textual File Splitting Model instance is ready for inference.
+
+        A method checks that the instance of the Model has at least one Category passed as the input and that it
+        is fitted to run prediction.
+
+        :raises AttributeError: When no Categories are passed to the model.
+        :raises AttributeError: When a model is not fitted to run a prediction.
+        """
+        if not self.categories:
+            raise AttributeError(f"{self} requires Categories.")
+
+        if not self.model:
+            raise AttributeError(f"{self} has to be fitted before running a prediction.")
 
         self.restore_dependencies()
 
@@ -476,11 +812,11 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
             if not cur_first_page_strings:
                 if allow_empty_categories:
                     logger.warning(
-                        f'No exclusive first-page strings were found for {category}, so it will not be used '
-                        f'at prediction.'
+                        f"No exclusive first-page strings were found for {category}, so it will not be used "
+                        f"at prediction."
                     )
                 else:
-                    raise ValueError(f'No exclusive first-page strings were found for {category}.')
+                    raise ValueError(f"No exclusive first-page strings were found for {category}.")
 
     # end fit
 
@@ -497,7 +833,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         page.is_first_page = False
         for category in self.categories:
             cur_first_page_strings = category.exclusive_first_page_strings(tokenizer=self.tokenizer)
-            intersection = {span.offset_string.strip('\f').strip('\n') for span in page.spans()}.intersection(
+            intersection = {span.offset_string.strip("\f").strip("\n") for span in page.spans()}.intersection(
                 cur_first_page_strings
             )
             if len(intersection) > 0:
@@ -517,10 +853,10 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         :raises ValueError: When no Categories have _exclusive_first_page_strings.
         """
         if self.tokenizer is None:
-            raise AttributeError(f'{self} missing Tokenizer.')
+            raise AttributeError(f"{self} missing Tokenizer.")
 
         if not self.categories:
-            raise AttributeError(f'{self} requires Categories.')
+            raise AttributeError(f"{self} requires Categories.")
 
         empty_first_page_strings = [
             category
@@ -553,7 +889,9 @@ class SplittingAI:
         if not self.model.requires_images:
             self.tokenizer = self.model.tokenizer
 
-    def _suggest_first_pages(self, document: Document, inplace: bool = False) -> List[Document]:
+    def _suggest_first_pages(
+        self, document: Document, inplace: bool = False, split_on_blank_pages: bool = False, device: str = "cpu"
+    ) -> List[Document]:
         """
         Run prediction on Document's Pages, marking them as first or non-first.
 
@@ -561,30 +899,43 @@ class SplittingAI:
         :type document: Document
         :param inplace: Whether to predict the Pages on the original Document or on a copy.
         :type inplace: bool
+        :param split_on_blank_pages: A flag to enable splitting on blank Pages.
+        :type split_on_blank_pages: bool
         :returns: A list containing the modified Document.
         """
-        if not self.model.requires_images:
-            if inplace:
-                processed_document = self.tokenizer.tokenize(document)
-            else:
-                processed_document = self.tokenizer.tokenize(deepcopy(document))
-            # we set a Page's Category explicitly because we don't want to lose original Page's Category information
-            # because by default a Page is assigned a Category of a Document, and they are not necessarily the same
-            for page in processed_document.pages():
-                self.model.predict(page)
-                page.set_category(page.get_original_page().category)
-        else:
+        if inplace or self.model.requires_images:
             processed_document = document
-            for page in document.pages():
-                self.model.predict(page)
+        else:
+            processed_document = deepcopy(document)
+
+        if self.model.name == "ContextAwareFileSplittingModel":
+            processed_document = self.tokenizer.tokenize(processed_document)
+        # we set a Page's Category explicitly because we don't want to lose original Page's Category information
+        # because by default a Page is assigned a Category of a Document, and they are not necessarily the same
+        for index, page in enumerate(processed_document.pages()):
+            previous_page = None if index == 0 else processed_document.pages()[index - 1]
+            if getattr(self.model, "supports_gpu", False):
+                self.model.predict(page=page, device=device)
+            else:
+                self.model.predict(page=page)
+            if split_on_blank_pages and previous_page is not None and previous_page.text.strip() == "":
+                page.is_first_page = True
+                page.is_first_page_confidence = 1
+            # Why is done the in both cases?
+            page.set_category(page.get_original_page().category)
+
         return [processed_document]
 
-    def _suggest_page_split(self, document: Document) -> List[Document]:
+    def _suggest_page_split(
+        self, document: Document, split_on_blank_pages: bool = False, device: str = "cpu"
+    ) -> List[Document]:
         """
         Create a list of Sub-Documents built from the original Document, split.
 
         :param document: The Document to suggest Page splits for.
         :type document: Document
+        :param split_on_blank_pages: A flag to enable splitting on blank Pages.
+        :type split_on_blank_pages: bool
         :returns: A list of Sub-Documents created from the original Document, split at predicted first Pages.
         """
         suggested_splits = []
@@ -593,12 +944,21 @@ class SplittingAI:
             document_tokenized = self.tokenizer.tokenize(deepcopy(document))
         else:
             document_tokenized = document
-        for page in document_tokenized.pages():
-            if page.number == 1:
-                suggested_splits.append(page)
+        for index, page in enumerate(document_tokenized.pages()):
+            # set previous page to None if the current page is the first page
+            previous_page = None if index == 0 else document_tokenized.pages()[index - 1]
+            # run splitting prediction on the current page
+            if getattr(self.model, "supports_gpu", False):
+                self.model.predict(page=page, device=device)
             else:
-                if self.model.predict(page).is_first_page:
-                    suggested_splits.append(page)
+                self.model.predict(page=page)
+            # if split_on_blank_pages is True, we mark pages that are preceded by blank pages as first pages
+            if split_on_blank_pages and previous_page is not None and previous_page.text.strip() == "":
+                page.is_first_page = True
+                page.is_first_page_confidence = 1
+            # if the current page is marked as first page, we add it to the list of suggested splits
+            if page.is_first_page:
+                suggested_splits.append(page)
         if len(suggested_splits) == 1:
             return [document]
         else:
@@ -625,7 +985,12 @@ class SplittingAI:
         return split_docs
 
     def propose_split_documents(
-        self, document: Document, return_pages: bool = False, inplace: bool = False
+        self,
+        document: Document,
+        return_pages: bool = False,
+        inplace: bool = False,
+        split_on_blank_pages: bool = False,
+        device: str = "cpu",
     ) -> List[Document]:
         """
         Propose a set of resulting Documents from a single Document.
@@ -637,18 +1002,24 @@ class SplittingAI:
         :param return_pages: A flag to enable returning a copy of an old Document with Pages marked .is_first_page on
         splitting points instead of a set of Sub-Documents.
         :type return_pages: bool
+        :param split_on_blank_pages: A flag to enable splitting on blank Pages.
+        :type split_on_blank_pages: bool
         :return: A list of suggested new Sub-Documents built from the original Document or a list with a Document
         with Pages marked .is_first_page on splitting points.
         """
         if self.model.requires_images:
             document.get_images()
         if return_pages:
-            processed = self._suggest_first_pages(document, inplace)
+            processed = self._suggest_first_pages(
+                document=document, inplace=inplace, split_on_blank_pages=split_on_blank_pages, device=device
+            )
         else:
-            processed = self._suggest_page_split(document)
+            processed = self._suggest_page_split(
+                document=document, split_on_blank_pages=split_on_blank_pages, device=device
+            )
         return processed
 
-    def evaluate_full(self, use_training_docs: bool = False, zero_division='warn') -> FileSplittingEvaluation:
+    def evaluate_full(self, use_training_docs: bool = False, zero_division="warn") -> FileSplittingEvaluation:
         """
         Evaluate the Splitting AI's performance.
 
@@ -669,6 +1040,7 @@ class SplittingAI:
         else:
             original_docs = self.model.documents
         for doc in original_docs:
+            logger.info(f"Processing {doc.id_}.")
             predictions = self.propose_split_documents(doc, return_pages=True)
             assert len(predictions) == 1
             pred_docs.append(predictions[0])
