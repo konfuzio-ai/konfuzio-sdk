@@ -56,5 +56,5 @@ tests/example_project_data/
 # Ignore Python cache
 __pycache__/
 
-# Ignore training_logs
+# Ignore training logs
 training_logs
