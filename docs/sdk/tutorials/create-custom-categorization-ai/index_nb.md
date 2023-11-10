@@ -17,8 +17,9 @@ jupyter:
 ---
 
 **Prerequisites:**
-- Data Layer concepts of Konfuzio
-- AI concepts of Konfuzio
+- Data Layer concepts of Konfuzio: Project, Document, Category, Page
+- AI concepts of Konfuzio: Categorization
+- Understanding of OOP: Classes, inheritance
 
 **Difficulty:** Medium
 
@@ -36,14 +37,22 @@ runtime and initialize the SDK once again; this will resolve the issue.
 You just need to wrap it into the class that corresponds to our Categorization AI structure. Follow the steps in this 
 tutorial to find out what are the requirements for that.
 
-**Note**: currently, the Server supports AI models created using `torch<2.0.0`.
+**Note**: currently, the Server supports AI models created using `python 3.8`.
 
 By default, any [Categorization AI](https://dev.konfuzio.com/sdk/tutorials/document_categorization/index.html) class should derive from the `AbstractCategorizationModel` class and implement methods `__init__`, `fit`, `_categorize_page` and `save`.
 
 Let's make necessary imports and define the class. In `__init__`, you can either not make any changes or initialize key variables required by your custom AI.
+```python tags=["remove-cell"]
+import logging
+
+logging.getLogger("konfuzio_sdk").setLevel(logging.ERROR)
+logging.getLogger("timm").setLevel(logging.CRITICAL)
+```
 
 ```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
 import lz4
+import os
+import pathlib
 import torch
 from konfuzio_sdk.trainer.document_categorization import AbstractCategorizationAI
 from konfuzio_sdk.data import Page, Category, Project
@@ -55,15 +64,12 @@ class CustomCategorizationAI(AbstractCategorizationAI):
         super().__init__(categories)
 ```
 
-Then we need to define `fit` method. It can contain any custom architecture, for instance, a multi-layered perceptron, or some hardcoded logic like [Name-based Categorization](https://dev.konfuzio.com/sdk/tutorials/document_categorization/index.html#name-based-categorization-ai). his method does not return anything; rather, it modifies the `self.model` if you provide this attribute.
+Then we need to define `fit` method. It can contain any custom architecture, for instance, a multi-layered perceptron, or some hardcoded logic like [Name-based Categorization](https://dev.konfuzio.com/sdk/tutorials/document_categorization/index.html#name-based-categorization-ai). This method does not return anything; rather, it modifies the `self.model` if you provide this attribute.
 
 This method is allowed to be implemented as a no-op if you provide the trained model in other ways.
 
 ```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
     def fit(self):
-        # Define architecture and training that the model undergoes, i.e. a NN architecture or a custom hardcoded logic
-        # for instance:
-        
         self.classifier_iterator = build_document_classifier_iterator(
                     self.documents,
                     self.train_transforms,
@@ -78,9 +84,6 @@ Next, we need to define how the model assigns a Category to a Page inside a `_ca
 
 ```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
     def _categorize_page(self, page: Page) -> Page:
-        # define how the model assigns a Category to a Page.
-        # for instance:
-
         page_image = page.get_image()
         predicted_category_id, predicted_confidence = self._predict(page_image)
         
@@ -92,28 +95,22 @@ Next, we need to define how the model assigns a Category to a Page inside a `_ca
 ```
 
 Lastly, we define saving method for the new AI. It needs to be compressed into .lz4 format to be compatible with Konfuzio when uploaded to the server or an on-prem installation later.
+For example, saving can be defined similarly to the way it is defined in `CategorizationAI` class. Make sure to check that the save path exists using `pathlib`, 
+assign paths for temporary .pt file and final compressed file (this is needed for compressing the initially saved model),
+create dictionary to save all necessary model data needed for categorization/inference. If you use torch-based model, 
+save it using `torch.save()` and then compress the resulting file via lz4, removing the temporary file afterwards.
 
 ```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"] vscode={"languageId": "plaintext"}
     def save(self, output_dir: str=None):
 
-        # define how to save a model – for example, in a way it's defined in the CategorizationAI
         if not output_dir:
             self.output_dir = self.project.model_folder
         else:
             self.output_dir = output_dir
-
-        # make sure output dir exists
         pathlib.Path(self.output_dir).mkdir(parents=True, exist_ok=True)
-
-        # temp_pt_file_path is needed to save an intermediate .pt file that later will be compressed and deleted.
         temp_pt_file_path = self.temp_pt_file_path
         compressed_file_path = self.compressed_file_path
 
-        if self.categories:
-            self.categories[0].project.lose_weight()
-
-        # create dictionary to save all necessary model data. all attributes are arbitrary, include those that your custom AI has.
-        # save only the necessary parts of the model for extraction/inference.
         data_to_save = {
             "classifier": self.classifier,
             "categories": self.categories,
@@ -121,67 +118,6 @@ Lastly, we define saving method for the new AI. It needs to be compressed into .
         }
 
         # save all necessary model data
-        torch.save(data_to_save, temp_pt_file_path)
-        with open(temp_pt_file_path, 'rb') as f_in:
-            with open(compressed_file_path, 'wb') as f_out:
-                compressed = lz4.frame.compress(f_in.read())
-                f_out.write(compressed)
-        self.pipeline_path = compressed_file_path
-        os.remove(temp_pt_file_path)
-        return self.pipeline_path
-```
-
-```python editable=true slideshow={"slide_type": ""} tags=["remove-cell", "skip-execution", "nbval-skip"]
-import lz4
-import torch
-from konfuzio_sdk.trainer.document_categorization import AbstractCategorizationAI
-from konfuzio_sdk.data import Page, Category
-from typing import List
-
-class CustomCategorizationAI(AbstractCategorizationAI):
-    def __init__(self, categories: List[Category], *args, **kwargs):
-        super().__init__(categories)
-
-    def fit(self, n_epochs=1) -> None:
-        self.classifier_iterator = self.build_document_classifier_iterator(
-                    self.documents,
-                    self.train_transforms,
-                    use_image = True,
-                    use_text = False,
-                    device='cpu',
-                )
-        self.classifier, training_metrics = self._fit_classifier(train_iterator, **kwargs)
-
-    def _categorize_page(self, page: Page) -> Page:
-        page_image = page.get_image()
-        predicted_category_id, predicted_confidence = self._predict(page_image)
-        
-        for category in self.categories:
-            if category.id_ == predicted_category_id:
-                _ = CategoryAnnotation(category=category, confidence=predicted_confidence, page=page)
-        
-        return page
-
-    def save(self, output_dir: str=None):
-        if not output_dir:
-            self.output_dir = self.project.model_folder
-        else:
-            self.output_dir = output_dir
-
-        pathlib.Path(self.output_dir).mkdir(parents=True, exist_ok=True)
-
-        temp_pt_file_path = self.temp_pt_file_path
-        compressed_file_path = self.compressed_file_path
-
-        if self.categories:
-            self.categories[0].project.lose_weight()
-
-        data_to_save = {
-            "classifier": self.classifier,
-            "categories": self.categories,
-            "model_type": "CustomCategorizationAI",
-        }
-
         torch.save(data_to_save, temp_pt_file_path)
         with open(temp_pt_file_path, 'rb') as f_in:
             with open(compressed_file_path, 'wb') as f_out:

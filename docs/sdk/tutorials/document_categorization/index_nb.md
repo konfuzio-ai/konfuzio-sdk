@@ -17,8 +17,9 @@ jupyter:
 ---
 
 **Prerequisites:**
-- Data Layer concepts of Konfuzio SDK
-- AI concepts of Konfuzio SDK
+- Data Layer concepts of Konfuzio SDK: Document, Category, Project, Page
+- AI concepts of Konfuzio SDK: Extraction
+- Understanding of ML concepts: train-validation loop, optimizer, epochs
 
 **Difficulty:** Medium
 
@@ -34,7 +35,12 @@ To categorize a Document with a Categorization AI constructed by Konfuzio, there
 
 The name-based Categorization AI is a simple logic that checks if a name of the Category appears in the Document. It can be used to categorize Documents when no model-based Categorization AI is available.
 
+Let's begin with making imports, initializing the Categorization model and calling the Document to categorize.
 ```python editable=true slideshow={"slide_type": ""} tags=["remove-cell"] vscode={"languageId": "plaintext"}
+import logging
+import konfuzio_sdk
+
+logging.getLogger("konfuzio_sdk").setLevel(logging.ERROR)
 YOUR_PROJECT_ID = 46
 YOUR_CATEGORY_ID = 63
 YOUR_DOCUMENT_ID = 44865
@@ -44,29 +50,23 @@ YOUR_DOCUMENT_ID = 44865
 from konfuzio_sdk.data import Project
 from konfuzio_sdk.trainer.document_categorization import NameBasedCategorizationAI
 
-# Set up your Project.
 project = Project(id_=YOUR_PROJECT_ID)
-
-# Initialize the Categorization Model.
 categorization_model = NameBasedCategorizationAI(project.categories)
-
-# Retrieve a Document to categorize.
 test_document = project.get_document_by_id(YOUR_DOCUMENT_ID)
+```
 
-# The Categorization Model returns a copy of the SDK Document with Category attribute
-# (use inplace=True to maintain the original Document instead).
-# If the input Document is already categorized, the already present Category is used
-# (use recategorize=True if you want to force a recategorization).
+Then, we categorize the Document. The Categorization Model returns a copy of the SDK Document with Category attribute (use inplace=True to maintain the original Document instead).
+If the input Document is already categorized, the already present Category is used (use recategorize=True if you want to force a recategorization). Each Page is categorized individually.
+```python
 result_doc = categorization_model.categorize(document=test_document)
 
-# Each Page is categorized individually.
 for page in result_doc.pages():
     assert page.category == project.categories[0]
     print(f"Found category {page.category} for {page}")
+```
 
-# The Category of the Document is defined when all pages' Categories are equal.
-# If the Document contains mixed Categories, only the Page level Category will be defined,
-# and the Document level Category will be NO_CATEGORY.
+The Category of the Document is defined when all pages' Categories are equal. If the Document contains mixed Categories, only the Page level Category will be defined, and the Document level Category will be NO_CATEGORY.
+```python
 print(f"Found category {result_doc.category} for {result_doc}")
 ```
 
@@ -74,26 +74,28 @@ print(f"Found category {result_doc.category} for {result_doc}")
 
 For better results you can build, train and test a Categorization AI using Image Models and Text Models to classify the image and text of each Page.
 
+Let's start with the imports and initializing the Project.
 ```python editable=true slideshow={"slide_type": ""}
 from konfuzio_sdk.data import Project, Document
 from konfuzio_sdk.trainer.document_categorization import build_categorization_ai_pipeline
 from konfuzio_sdk.trainer.document_categorization import ImageModel, TextModel, CategorizationAI
 
-# Set up your Project.
 project = Project(id_=YOUR_PROJECT_ID)
 ```
 
 ```python editable=true slideshow={"slide_type": ""} tags=["remove-cell"]
+logging.getLogger("konfuzio_sdk").setLevel(logging.CRITICAL)
+logging.getLogger("timm").setLevel(logging.CRITICAL)
 for doc in project.documents + project.test_documents:
     doc.get_images()
 for document in project.documents[3:] + project.test_documents[1:]:
-    document.dataset_status = 4 
+    document.dataset_status = 4
 project.get_document_by_id(44864).dataset_status = 4
 ```
 
-```python editable=true slideshow={"slide_type": ""} tags=["remove-output"]
-# Build the Categorization AI architecture using a template
-# of pre-built Image and Text classification Models.
+Build the Categorization AI architecture using a template of pre-built Image and Text classification Models. In this tutorial, we use `EfficientNetB0` and `NBOWSelfAttention` together.
+
+```python editable=true slideshow={"slide_type": ""}
 categorization_pipeline = build_categorization_ai_pipeline(
     categories=project.categories,
     documents=project.documents,
@@ -101,24 +103,28 @@ categorization_pipeline = build_categorization_ai_pipeline(
     image_model=ImageModel.EfficientNetB0,
     text_model=TextModel.NBOWSelfAttention,
 )
+```
 
-# Train the AI.
+Train and evaluate the AI. You can specify parameters for training, for example, number of epochs and an optimizer.
+```python tags=["remove-output"]
 categorization_pipeline.fit(n_epochs=1, optimizer={'name': 'Adam'})
-
-# Evaluate the AI
 data_quality = categorization_pipeline.evaluate(use_training_docs=True)
 ai_quality = categorization_pipeline.evaluate()
 assert data_quality.f1(None) == 1.0
 assert ai_quality.f1(None) == 1.0
+```
 
-# Categorize a Document
+Categorize a Document using the newly trained model.
+```python
 document = project.get_document_by_id(YOUR_DOCUMENT_ID)
 categorization_result = categorization_pipeline.categorize(document=document)
 assert isinstance(categorization_result, Document)
 for page in categorization_result.pages():
     print(f"Found category {page.category} for {page}")
+```
 
-# Save and load a pickle file for the AI
+Save the model and check that it can be loaded after that to ensure it could be uploaded to the Konfuzio app or to an on-prem installation.
+```python
 pickle_ai_path = categorization_pipeline.save()
 categorization_pipeline = CategorizationAI.load_model(pickle_ai_path)
 ```
@@ -139,7 +145,7 @@ at the same time.
 
 The list of available Categorization Models is implemented as an Enum containing the following elements:
 
-```python editable=true slideshow={"slide_type": ""} tags=["skip-execution"]
+```python editable=true slideshow={"slide_type": ""}
 from konfuzio_sdk.trainer.document_categorization import ImageModel, TextModel
 
 # Image Models

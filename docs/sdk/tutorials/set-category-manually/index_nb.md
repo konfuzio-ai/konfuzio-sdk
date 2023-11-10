@@ -17,7 +17,7 @@ jupyter:
 ---
 
 **Prerequisites:** 
-- Familiarity with Data Layer concepts of Konfuzio SDK
+- Data Layer concepts of Konfuzio SDK: Project, Category, Document
 
 **Difficulty:** Easy
 
@@ -32,15 +32,21 @@ When creating a new Document, the first step is to assign a Category to it. In t
 You can initialize a Document with a specific Category:
 
 ```python tags=["remove-cell"]
+import logging
+import konfuzio_sdk
+
+logging.getLogger("konfuzio_sdk").setLevel(logging.ERROR)
+
 YOUR_PROJECT_ID = 46
 YOUR_CATEGORY_ID = 63
 YOUR_DOCUMENT_ID = 44865
 ```
 
-```python tags=["remove-output"]
+```python
+from konfuzio_sdk.data import Project, Document
+
 project = Project(id_=YOUR_PROJECT_ID)
 my_category = project.get_category_by_id(YOUR_CATEGORY_ID)
-
 my_document = Document(text="My text.", project=project, category=my_category)
 assert my_document.category == my_category
 ```
@@ -49,7 +55,7 @@ You can also use `Document.set_category` to set a Document’s Category after it
 
 *Note:* a Document’s Category can be changed via set_category only if the original Category has been set to no_category. Otherwise, an attempt to change a Category will cause an error.
 
-```python tags=["remove-output"]
+```python
 document = project.get_document_by_id(YOUR_DOCUMENT_ID)
 document.set_category(None)
 assert document.category == project.no_category
@@ -60,7 +66,7 @@ assert document.category_is_revised is True
 
 Each Page's Category will also be changed to a Category set to this Document.
 
-```python tags=["remove-output"]
+```python
 for page in document.pages():
     assert page.category == my_category
 ```
