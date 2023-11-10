@@ -638,7 +638,14 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         logger.info("=" * 50)
         return evaluation_results
 
-    def predict(self, page: Page, previous_page: Page = None, device: str = "cpu") -> Page:
+    def predict(
+        self,
+        page: Page,
+        previous_page: Page = None,
+        device: str = "cpu",
+        *args,
+        **kwargs,
+    ) -> Page:
         """
         Run prediction with the trained model.
 
