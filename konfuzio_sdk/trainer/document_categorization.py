@@ -1179,13 +1179,17 @@ class CategorizationAI(AbstractCategorizationAI):
                     # so we just have a list of None to keep the lists the same length
                     document_images.append(None)
                 if use_text:
-                    # if using a text module, tokenize the page, trim to max length and then numericalize
-                    # REPLACE page_tokens = tokenizer.get_tokens(page_text)[:max_len]
-                    # page_encoded = [text_vocab.stoi(span.offset_string) for span in
-                    # self.spans(start_offset=page.start_offset, end_offset=page.end_offset)]
-                    # document_tokens.append(torch.LongTensor(page_encoded))
-                    self.text_vocab.numericalize(page)
-                    document_tokens.append(torch.LongTensor(page.text_encoded))
+                    if self.classifier.text_model.__class__.__name__ == 'bert':
+                        self.tokenizer = transformers.AutoTokenizer.from_pretrained(self.classifier.text_model.name)
+                        document_tokens = self.tokenizer(document.text)
+                    else:
+                        # REPLACE page_tokens = tokenizer.get_tokens(page_text)[:max_len]
+                        # page_encoded = [text_vocab.stoi(span.offset_string) for span in
+                        # self.spans(start_offset=page.start_offset, end_offset=page.end_offset)]
+                        # document_tokens.append(torch.LongTensor(page_encoded))
+                        # if using a text module, tokenize the page, trim to max length and then numericalize
+                        self.text_vocab.numericalize(page)
+                        document_tokens.append(torch.LongTensor(page.text_encoded))
                 else:
                     # if not using text module then don't need the tokens
                     # so we just have a list of None to keep the lists the same length
@@ -1652,7 +1656,7 @@ document_components = [
     'classifier',
     'eval_transforms',
     'train_transforms',
-    'categories'
+    'categories',
 ]
 
 document_components.extend(COMMON_PARAMETERS)
@@ -1678,7 +1682,9 @@ def _load_categorization_model(path: str):
     model_args = MODEL_PARAMETERS_TO_SAVE[model_type]
 
     # Non-backwards compatible components to skip on the verification for loaded data.
-    optional_components = ['categories',]
+    optional_components = [
+        'categories',
+    ]
 
     # Verify if loaded data has all necessary components
     missing_components = [arg for arg in model_args if arg not in loaded_data.keys() and arg not in optional_components]

@@ -12,7 +12,7 @@ from typing import List, Dict
 
 from konfuzio_sdk.api import upload_ai_model, update_ai_model, delete_ai_model, konfuzio_session
 from konfuzio_sdk.data import Project, Document, Page
-from konfuzio_sdk.extras import torch, FloatTensor
+from konfuzio_sdk.extras import torch, FloatTensor, transformers
 from konfuzio_sdk.settings_importer import is_dependency_installed
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, ConnectedTextTokenizer
 from konfuzio_sdk.trainer.document_categorization import (
@@ -432,17 +432,17 @@ class TestTextCategorizationModels(unittest.TestCase):
         (WhitespaceTokenizer, LSTM, VGG, 'vgg13'),
         (ConnectedTextTokenizer, NBOW, VGG, 'vgg11'),
         (ConnectedTextTokenizer, LSTM, VGG, 'vgg13'),
-        # (PhraseMatcherTokenizer, BERT, VGG, 'vgg16'),  # PhraseMatcherTokenizer is WIP and not available for usage yet
+        (transformers.AutoTokenizer, BERT, VGG, 'vgg16'),
         (None, None, EfficientNet, 'efficientnet_b0'),
         (None, None, EfficientNet, 'efficientnet_b3'),
         (None, None, VGG, 'vgg11'),
         (None, None, VGG, 'vgg13'),
         (None, None, VGG, 'vgg16'),
         (None, None, VGG, 'vgg19'),
-        # (WhitespaceTokenizer, NBOWSelfAttention, None, None),
-        # (ConnectedTextTokenizer, NBOW, None, None),
+        (WhitespaceTokenizer, NBOWSelfAttention, None, None),
+        (ConnectedTextTokenizer, NBOW, None, None),
         # (PhraseMatcherTokenizer, LSTM, None, None),  # PhraseMatcherTokenizer is WIP and not available for usage yet
-        # (ConnectedTextTokenizer, BERT, None, None),
+        (transformers.AutoTokenizer, BERT, None, None),
     ],
 )
 @pytest.mark.skip(reason="Slow testcases training a Categorization AI on full dataset with multiple configurations.")
@@ -452,7 +452,7 @@ class TestAllCategorizationConfigurations(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Set up the Data and Categorization Pipeline."""
-        cls.training_prj = Project(id_=1680)
+        cls.training_prj = Project(id_=1680, update=True)
         cls.categorization_pipeline = CategorizationAI(cls.training_prj.categories)
         cls.payslips_category = cls.training_prj.get_category_by_id(5349)
         cls.receipts_category = cls.training_prj.get_category_by_id(5350)
@@ -468,13 +468,13 @@ class TestAllCategorizationConfigurations(unittest.TestCase):
 
     def test_1a_configure_dataset(self) -> None:
         """Test configure categories, with training and test docs for the Document Model."""
-        payslips_training_documents = self.payslips_category.documents()[:5]
-        receipts_training_documents = self.receipts_category.documents()[:5]
+        payslips_training_documents = self.payslips_category.documents()
+        receipts_training_documents = self.receipts_category.documents()
         self.categorization_pipeline.documents = payslips_training_documents + receipts_training_documents
         assert all(doc.category is not None for doc in self.categorization_pipeline.documents)
 
-        payslips_test_documents = self.payslips_category.test_documents()[:5]
-        receipts_test_documents = self.receipts_category.test_documents()[:5]
+        payslips_test_documents = self.payslips_category.test_documents()
+        receipts_test_documents = self.receipts_category.test_documents()
         self.categorization_pipeline.test_documents = payslips_test_documents + receipts_test_documents
         assert all(doc.category is not None for doc in self.categorization_pipeline.test_documents)
         wahrung = self.training_prj.get_label_by_name('Währung')
@@ -504,6 +504,8 @@ class TestAllCategorizationConfigurations(unittest.TestCase):
                 text_model=text_model,
                 output_dim=len(self.categorization_pipeline.category_vocab),
             )
+            if text_model == BERT:
+                assert isinstance(self.categorization_pipeline.tokenizer, transformers.AutoTokenizer)
         elif self.text_class is None:
             self.categorization_pipeline.classifier = PageImageCategorizationModel(
                 image_model=image_model,
