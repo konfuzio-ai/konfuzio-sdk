@@ -82,7 +82,7 @@ YOUR_CATEGORY_1 = YOUR_PROJECT.get_category_by_id(3)
 YOUR_CATEGORY_2 = YOUR_PROJECT.get_category_by_id(4)
 ```
 
-```python editable=true slideshow={"slide_type": ""}
+```python editable=true tags=["remove-output"] slideshow={"slide_type": ""}
 from konfuzio_sdk.data import Document, Page
 from konfuzio_sdk.evaluate import FileSplittingEvaluation, EvaluationCalculator
 from konfuzio_sdk.trainer.file_splitting import SplittingAI
@@ -131,10 +131,12 @@ Let's say the evaluation gave good results, with only one first Page being predi
 Pages being predicted correctly. An example of how the evaluation would be implemented would be:
 
 ```python tags=["remove-cell"]
+import logging
 from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
 YOUR_MODEL = ContextAwareFileSplittingModel(categories=[YOUR_CATEGORY_1, YOUR_CATEGORY_2], tokenizer=ConnectedTextTokenizer())
 YOUR_MODEL.fit(allow_empty_categories=True)
+logging.getLogger("konfuzio_sdk").setLevel(logging.CRITICAL)
 ```
 
 ```python editable=true slideshow={"slide_type": ""}
@@ -145,13 +147,13 @@ pred_2: Document = splitting_ai.propose_split_documents(document_2, return_pages
 evaluation = FileSplittingEvaluation(
     ground_truth_documents=[document_1, document_2], prediction_documents=[pred_1, pred_2]
 )
-print('True positives: ' + evaluation.tp())
-print('True negatives: ' + evaluation.tn())
-print('False positives: ' + evaluation.fp())
-print('False negatives: ' + evaluation.fn())
-print('Precision: ' + evaluation.precision())
-print('Recall: ' + evaluation.recall())
-print('F1 score: ' + evaluation.f1())
+print('True positives: ' + str(evaluation.tp()))
+print('True negatives: ' + str(evaluation.tn()))
+print('False positives: ' + str(evaluation.fp()))
+print('False negatives: ' + str(evaluation.fn()))
+print('Precision: ' + str(evaluation.precision()))
+print('Recall: ' + str(evaluation.recall()))
+print('F1 score: ' + str(evaluation.f1()))
 ```
 
 Our results could be reflected in a following table:
@@ -162,13 +164,13 @@ Our results could be reflected in a following table:
 
 If we want to see evaluation results by Category, the implementation of the Evaluation would look like this:
 ```python editable=true slideshow={"slide_type": ""}
-print('True positives for Category 1: ' + evaluation.tp(search=YOUR_CATEGORY_1) + ', for Category 2: ' + evaluation.tp(search=YOUR_CATEGORY_2))
-print('True negatives for Category 1: ' + evaluation.tn(search=YOUR_CATEGORY_1) + ', for Category 2: ' +  evaluation.tn(search=YOUR_CATEGORY_2))
-print('False positives for Category 1: ' + evaluation.fp(search=YOUR_CATEGORY_1) + ', for Category 2: ' + evaluation.fp(search=YOUR_CATEGORY_2))
-print('False negatives for Category 1: ' + evaluation.fn(search=YOUR_CATEGORY_1) + ', for Category 2: ' + evaluation.fn(search=YOUR_CATEGORY_2))
-print('Precision for Category 1: ' + evaluation.precision(search=YOUR_CATEGORY_1) + ', for Category 2: ' + evaluation.precision(search=YOUR_CATEGORY_2))
-print('Recall for Category 1: ' + evaluation.recall(search=YOUR_CATEGORY_1) + ', for Category 2: ' + evaluation.recall(search=YOUR_CATEGORY_2))
-print('F1 score for Category 1: ' + evaluation.f1(search=YOUR_CATEGORY_1) + ', for Category 2: ' + evaluation.f1(search=YOUR_CATEGORY_2))
+print('True positives for Category 1: ' + str(evaluation.tp(search=YOUR_CATEGORY_1)) + ', for Category 2: ' + str(evaluation.tp(search=YOUR_CATEGORY_2)))
+print('True negatives for Category 1: ' + str(evaluation.tn(search=YOUR_CATEGORY_1)) + ', for Category 2: ' +  str(evaluation.tn(search=YOUR_CATEGORY_2)))
+print('False positives for Category 1: ' + str(evaluation.fp(search=YOUR_CATEGORY_1))+ ', for Category 2: ' + str(evaluation.fp(search=YOUR_CATEGORY_2)))
+print('False negatives for Category 1: ' + str(evaluation.fn(search=YOUR_CATEGORY_1)) + ', for Category 2: ' + str(evaluation.fn(search=YOUR_CATEGORY_2)))
+print('Precision for Category 1: ' + str(evaluation.precision(search=YOUR_CATEGORY_1)) + ', for Category 2: ' + str(evaluation.precision(search=YOUR_CATEGORY_2)))
+print('Recall for Category 1: ' + str(evaluation.recall(search=YOUR_CATEGORY_1)) + ', for Category 2: ' + str(evaluation.recall(search=YOUR_CATEGORY_2)))
+print('F1 score for Category 1: ' + str(evaluation.f1(search=YOUR_CATEGORY_1)) + ', for Category 2: ' + str(evaluation.f1(search=YOUR_CATEGORY_2)))
 ```
 
 The output could be reflected in a following table:
@@ -238,21 +240,21 @@ evaluation = FileSplittingEvaluation(
         ground_truth_documents=YOUR_GROUND_TRUTH_LIST, prediction_documents=YOUR_PREDICTION_LIST
     )
 
-print('True positives: ' + evaluation.tp())
-print('True negatives: ' + evaluation.tn())
-print('False positives: ' + evaluation.fp())
-print('False negatives: ' + evaluation.fn())
-print('Precision: ' + evaluation.precision())
-print('Recall: ' + evaluation.recall())
-print('F1 score: ' + evaluation.f1())
+print('True positives: ' + str(evaluation.tp()))
+print('True negatives: ' + str(evaluation.tn()))
+print('False positives: ' + str(evaluation.fp()))
+print('False negatives: ' + str(evaluation.fn()))
+print('Precision: ' + str(evaluation.precision()))
+print('Recall: ' + str(evaluation.recall()))
+print('F1 score: ' + str(evaluation.
 
-print('True positives for Category 1: ' + evaluation.tp(search=YOUR_CATEGORY_1) + ', for Category 2: ' + evaluation.tp(search=YOUR_CATEGORY_2))
-print('True negatives for Category 1: ' + evaluation.tn(search=YOUR_CATEGORY_1) + ', for Category 2: ' +  evaluation.tn(search=YOUR_CATEGORY_2))
-print('False positives for Category 1: ' + evaluation.fp(search=YOUR_CATEGORY_1) + ', for Category 2: ' + evaluation.fp(search=YOUR_CATEGORY_2))
-print('False negatives for Category 1: ' + evaluation.fn(search=YOUR_CATEGORY_1) + ', for Category 2: ' + evaluation.fn(search=YOUR_CATEGORY_2))
-print('Precision for Category 1: ' + evaluation.precision(search=YOUR_CATEGORY_1) + ', for Category 2: ' + evaluation.precision(search=YOUR_CATEGORY_2))
-print('Recall for Category 1: ' + evaluation.recall(search=YOUR_CATEGORY_1) + ', for Category 2: ' + evaluation.recall(search=YOUR_CATEGORY_2))
-print('F1 score for Category 1: ' + evaluation.f1(search=YOUR_CATEGORY_1) + ', for Category 2: ' + evaluation.f1(search=YOUR_CATEGORY_2))
+print('True positives for Category 1: ' + str(evaluation.tp(search=YOUR_CATEGORY_1)) + ', for Category 2: ' + str(evaluation.tp(search=YOUR_CATEGORY_2)))
+print('True negatives for Category 1: ' + str(evaluation.tn(search=YOUR_CATEGORY_1)) + ', for Category 2: ' +  str(evaluation.tn(search=YOUR_CATEGORY_2)))
+print('False positives for Category 1: ' + str(evaluation.fp(search=YOUR_CATEGORY_1))+ ', for Category 2: ' + str(evaluation.fp(search=YOUR_CATEGORY_2)))
+print('False negatives for Category 1: ' + str(evaluation.fn(search=YOUR_CATEGORY_1)) + ', for Category 2: ' + str(evaluation.fn(search=YOUR_CATEGORY_2)))
+print('Precision for Category 1: ' + str(evaluation.precision(search=YOUR_CATEGORY_1)) + ', for Category 2: ' + str(evaluation.precision(search=YOUR_CATEGORY_2)))
+print('Recall for Category 1: ' + str(evaluation.recall(search=YOUR_CATEGORY_1)) + ', for Category 2: ' + str(evaluation.recall(search=YOUR_CATEGORY_2)))
+print('F1 score for Category 1: ' + str(evaluation.f1(search=YOUR_CATEGORY_1)) + ', for Category 2: ' + str(evaluation.f1(search=YOUR_CATEGORY_2)))
 
 EvaluationCalculator(tp=3, fp=0, fn=1, tn=4).metrics_logging()
 ```
