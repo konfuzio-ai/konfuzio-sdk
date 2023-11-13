@@ -918,7 +918,14 @@ class SplittingAI:
                 self.model.predict(page=page, device=device)
             else:
                 self.model.predict(page=page)
-            if split_on_blank_pages and previous_page is not None and previous_page.text.strip() == "":
+            # if split_on_blank_pages is True, we mark pages that are preceded by blank pages and that themselves
+            # are not empty as first pages
+            if (
+                split_on_blank_pages
+                and previous_page is not None
+                and previous_page.text.strip() == ""
+                and page.text.strip() != ""
+            ):
                 page.is_first_page = True
                 page.is_first_page_confidence = 1
             # Why is done the in both cases?
@@ -952,8 +959,14 @@ class SplittingAI:
                 self.model.predict(page=page, device=device)
             else:
                 self.model.predict(page=page)
-            # if split_on_blank_pages is True, we mark pages that are preceded by blank pages as first pages
-            if split_on_blank_pages and previous_page is not None and previous_page.text.strip() == "":
+            # if split_on_blank_pages is True, we mark pages that are preceded by blank pages and that themselves
+            # are not empty as first pages
+            if (
+                split_on_blank_pages
+                and previous_page is not None
+                and previous_page.text.strip() == ""
+                and page.text.strip() != ""
+            ):
                 page.is_first_page = True
                 page.is_first_page_confidence = 1
             # if the current page is marked as first page, we add it to the list of suggested splits
