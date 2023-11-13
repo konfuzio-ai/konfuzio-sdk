@@ -17,9 +17,9 @@ jupyter:
 ---
 
 **Prerequisites:**
-- Data Layer concepts of Konfuzio
-- AI Layer concepts of Konfuzio
-- `flair` and `nltk` installed 
+- Data Layer concepts of Konfuzio: Project, Annotation, Document, Category
+- AI Layer concepts of Konfuzio: Information Extraction
+- `flair` and `nltk` installed
 
 **Difficulty:** Hard
 
@@ -36,9 +36,9 @@ There are two main tasks that typically require human interaction with the data 
 
 In many cases, you need a custom model to solve your problem. This normally requires labeling a dataset based on your purpose and can be a very time-consuming process.
 
-What about using an open-source model for the labeling? It may not have the domain knowledge that you desire but you can bring it in with feedback loops, while you reduce the effort in the labeling process. Konfuzio allows this interaction - you can train the model using the Konfuzio Server and provide feedback using its SmartView/DVUI. However, if you want to use your own model and/or a machine learning pipeline but still benefit from the Konfuzio functionalities, such as the dataset hosting and labeling visualization, you can use Konfuzio SDK to connect your pipeline to Konfuzio Server in a simple and easy way.
+What about using an open-source model for the labeling? It may not have the domain knowledge that you desire, but you can bring it in with feedback loops, while you reduce the effort in the labeling process. Konfuzio allows this interaction - you can train the model using the Konfuzio Server and provide feedback using its SmartView/DVUI. However, if you want to use your own model and/or a machine learning pipeline but still benefit from the Konfuzio functionalities, such as the dataset hosting and labeling visualization, you can use Konfuzio SDK to connect your pipeline to Konfuzio Server in a simple and easy way.
 
-In this tutorial, we will show how you can use the SDK to include an easy feedback workflow in your training pipeline. With these revised Annotations you can retrain your model and repeat the loop. By doing this you can reduce the effort*in the labeling of the data and improve the performance of your model in the domain knowledge that you desire.
+In this tutorial, we will show how you can use the SDK to include an easy feedback workflow in your training pipeline. With these revised Annotations you can retrain your model and repeat the loop. By doing this you can reduce the effort in the labeling of the data and improve the performance of your model in the domain knowledge that you desire.
 
 Let's start with necessary imports. In this tutorial, we will use a model from the library Flair as an example. Flair is a framework for NLP that allows to use state-of-art models for different tasks, including Named Entity Recognition. It also allows to train your own model to predict custom entities from the text.
 

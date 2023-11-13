@@ -18,8 +18,8 @@ jupyter:
 
 **Prerequisites:**
 
-- Data Layer concepts of Konfuzio
-- AI concepts of Konfuzio
+- Data Layer concepts of Konfuzio: Project
+- AI concepts of Konfuzio: Information Extraction, Document Categorization, File Splitting
 - Konfuzio API
 - Superuser status
 
@@ -41,7 +41,6 @@ AI. The method returns the model's ID that can later be used to update or delete
 ```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"] vscode={"languageId": "plaintext"}
 from konfuzio_sdk.api import upload_ai_model
 
-# upload a saved model to the server
 extraction_model_id = upload_ai_model(pickle_model_path, ai_type='extraction', category_id=YOUR_CATEGORY_ID)
 categorization_model_id = upload_ai_model(pickle_model_path, ai_type='categorization', project_id=YOUR_PROJECT_ID)
 splitting_model_id = upload_ai_model(pickle_model_path, ai_type='filesplitting', project_id=YOUR_PROJECT_ID)
@@ -56,7 +55,6 @@ description.
 ```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
 from konfuzio_sdk.api import update_ai_model
 
-# update the uploaded model – the ai_type is different for different AIs
 update_ai_model(YOUR_MODEL_ID, ai_type='extraction')
 update_ai_model(YOUR_MODEL_ID, ai_type='categorization')
 update_ai_model(YOUR_MODEL_ID, ai_type='filesplitting')
@@ -69,7 +67,6 @@ You can also remove an uploaded model by using `delete_ai_model()`.
 ```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
 from konfuzio_sdk.api import delete_ai_model
 
-# delete the uploaded model – the ai_type is different for different AIs
 delete_ai_model(YOUR_MODEL_ID, ai_type='extraction')
 delete_ai_model(YOUR_MODEL_ID, ai_type='categorization')
 delete_ai_model(YOUR_MODEL_ID, ai_type='filesplitting')

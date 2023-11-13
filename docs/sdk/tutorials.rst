@@ -42,7 +42,7 @@ or in an on-prem installation.
 
 8. :doc:`Evaluate the performance of a File Splitting AI <tutorials/file-splitting-evaluation/index>`
 
-Get to know how to work with `FileSplittingEvaluation` class, assess the performance of Splitting AIs and interpret the
+Get to know how to work with FileSplittingEvaluation class, assess the performance of Splitting AIs and interpret the
 results.
 
 9. :doc:`Tokenization <tutorials/tokenizers/index>`

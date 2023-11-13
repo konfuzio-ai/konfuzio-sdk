@@ -18,8 +18,8 @@ jupyter:
 
 **Prerequisites:**
 
-- Data Layer concepts of Konfuzio
-- AI concepts of Konfuzio
+- Data Layer concepts of Konfuzio: Project, Category, Span, Document, Page
+- AI concepts of Konfuzio: File Splitting
 
 **Difficulty:** Hard
 
@@ -36,7 +36,7 @@ It's common for multi-paged files to not be perfectly organized, and in some cas
 _Multi-file Document Example_
 
 Konfuzio SDK offers two ways for separating Documents that may be included in a single file. One of them is training 
-the instance of the BERT-based File Splitting for file splitting that would predict whether a Page is first or 
+the instance of the Textual File Splitting Model for file splitting that would predict whether a Page is first or 
 not and running the Splitting AI with it. Another approach is context-aware file splitting logic which is presented by Context Aware File Splitting Model. This approach involves analyzing the contents of each Page and identifying similarities to the first Pages of the Document. It will allow us to define splitting points and divide the Document into multiple Sub-Documents. It's important to note 
 that this approach is only effective for Documents written in the same language and that the process must be repeated 
 for each Category.
@@ -51,8 +51,7 @@ Any custom File Splitting AI (derived from `AbstractFileSplittingModel` class) r
 methods implemented:
 
 - `__init__` to initialize key variables required by the custom AI;
-- `fit` to define architecture and training that the model undergoes, i.e. a certain NN architecture or a custom 
-- hardcoded logic;
+- `fit` to define architecture and training that the model undergoes, i.e. a certain NN architecture or a custom hardcoded logic;
 - `predict` to define how the model classifies Pages as first or non-first. **NB:** the classification needs to be 
 run on the Page level, not the Document level – the result of classification is reflected in `is_first_page` attribute 
 value, which is unique to the Page class and is not present in Document class. Pages with `is_first_page = True` become 
@@ -85,11 +84,13 @@ needed for distinguishing between preprocessing types once a model is passed int
 
 #### ConnectedTextTokenizer explained
 
-An example of how ConnectedTextTokenizer works:
+Here is an example of how ConnectedTextTokenizer works. At first, we have a Document with the untokenized text:
 
 ```python editable=true slideshow={"slide_type": ""} tags=["remove-cell"]
+import logging
 from konfuzio_sdk.samples import LocalTextProject
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
+logging.getLogger("konfuzio_sdk").setLevel(logging.ERROR)
 
 project = LocalTextProject()
 tokenizer = ConnectedTextTokenizer()
@@ -102,24 +103,22 @@ assert (
 assert test_document.spans() == []
 ```
 
-```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
+```python editable=true slideshow={"slide_type": ""}
 # before tokenization
 test_document = project.get_document_by_id(YOUR_DOCUMENT_ID)
-test_document.text
+print(test_document.text)
+```
 
-# output: "Hi all,\nI like bread.\n\fI hope to get everything done soon.\n\fMorning,\n\fI'm glad to see you."
-#             "\n\fMorning,"
-
+If we print this Document's Spans, we will see there are none.
+```python
 test_document.spans()
+```
 
-# output: []
-
+Let's tokenize the Document and check the Spans after that:
+```python
 test_document = tokenizer.tokenize(test_document)
 
-# after tokenization
 test_document.spans()
-
-# output: [Span (0, 7), Span (8, 21), Span (22, 58), Span (59, 68), Span (69, 90), Span (91, 100)]
 ```
 
 #### Creating necessary methods of the class
@@ -167,7 +166,7 @@ Lastly, a `check_is_ready()` method is defined. This method is used to ensure th
 checks cover that the Tokenizer and a set of Categories is defined, and that at least one of the Categories has 
 exclusive first-page strings.
 
-```python editable=true slideshow={"slide_type": ""}
+```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
     def check_is_ready(self):
         if self.tokenizer is None:
             raise AttributeError(f'{self} missing Tokenizer.')
@@ -190,7 +189,7 @@ exclusive first-page strings.
 ### Conclusion
 In this tutorial, we have walked through the essential steps for constructing the Context-Aware File Splitting Model. Below is the full code of the class:
 
-```python editable=true slideshow={"slide_type": ""} vscode={"languageId": "plaintext"} tags=["remove-output"]
+```python editable=true slideshow={"slide_type": ""} tags=["remove-output"] vscode={"languageId": "plaintext"}
 import logging
 from typing import List
 from konfuzio_sdk.data import Page, Category

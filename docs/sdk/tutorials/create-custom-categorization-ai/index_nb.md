@@ -159,7 +159,7 @@ categorization_pipeline.test_documents = [
 ```
 
 Then, define all necessary components of the AI, train and evaluate it.
-```python
+```python tags=["remove-output"]
 categorization_pipeline.category_vocab = categorization_pipeline.build_template_category_vocab()
 image_model = EfficientNet(name='efficientnet_b0')
 categorization_pipeline.classifier = PageImageCategorizationModel(
