@@ -98,7 +98,7 @@ Lastly, we define saving method for the new AI. It needs to be compressed into .
 For example, saving can be defined similarly to the way it is defined in `CategorizationAI` class. Make sure to check that the save path exists using `pathlib`, 
 assign paths for temporary .pt file and final compressed file (this is needed for compressing the initially saved model),
 create dictionary to save all necessary model data needed for categorization/inference. If you use torch-based model, 
-save it using `torch.save()` and then compress the resulting file via lz4, removing the temporary file afterwards.
+save it using `torch.save()` and then compress the resulting file via lz4, removing the temporary file afterward.
 
 ```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"] vscode={"languageId": "plaintext"}
     def save(self, output_dir: str=None):
@@ -128,7 +128,9 @@ save it using `torch.save()` and then compress the resulting file via lz4, remov
         return self.pipeline_path
 ```
 
-After building the class, we need to test it to ensure it works. You can run it over a small subset of Documents so that it does not take too much time.
+After building the class, we need to test it to ensure it works. Let's make necessary imports, initialize the Project
+and the AI. You can run the AI over a small subset of Documents so that it does not take too much time.
+
 
 ```python editable=true slideshow={"slide_type": ""} tags=["remove-cell"]
 YOUR_PROJECT_ID = 46
@@ -138,27 +140,26 @@ from konfuzio_sdk.trainer.document_categorization import CategorizationAI
 CustomCategorizationAI = CategorizationAI
 ```
 
-```python editable=true slideshow={"slide_type": ""} tags=["remove-output"]
+```python editable=true slideshow={"slide_type": ""}
 from konfuzio_sdk.data import Project
 from konfuzio_sdk.trainer.document_categorization import (
         EfficientNet,
         PageImageCategorizationModel,
     )
 
-
-# Initialize the Project and the custom AI
 project = Project(id_=YOUR_PROJECT_ID)
 categorization_pipeline = CustomCategorizationAI(project.categories)
 
-# Use a small subset of Documents to test the AI so that the runtime is not too long
 categorization_pipeline.documents = [
         document for category in categorization_pipeline.categories for document in category.documents()
     ][:5]
 categorization_pipeline.test_documents = [
     document for category in categorization_pipeline.categories for document in category.test_documents()
 ][:5]
+```
 
-# Define all necessary components of the AI and train it
+Then, define all necessary components of the AI, train and evaluate it.
+```python
 categorization_pipeline.category_vocab = categorization_pipeline.build_template_category_vocab()
 image_model = EfficientNet(name='efficientnet_b0')
 categorization_pipeline.classifier = PageImageCategorizationModel(
@@ -168,18 +169,21 @@ categorization_pipeline.classifier = PageImageCategorizationModel(
 categorization_pipeline.build_preprocessing_pipeline(use_image=True)
 categorization_pipeline.fit(n_epochs=1)
 
-# Evaluate the AI
 data_quality = categorization_pipeline.evaluate(use_training_docs=True)
 ai_quality = categorization_pipeline.evaluate(use_training_docs=False)
+```
 
-# Categorize a Document
+Now you can categorize a Document.
+```python
 document = project.get_document_by_id(YOUR_DOCUMENT_ID)
 categorization_result = categorization_pipeline.categorize(document=document)
 for page in categorization_result.pages():
     print(f"Found category {page.category} for {page}")
 print(f"Found category {categorization_result.category} for {categorization_result}")
+```
 
-# Save and load a pickle file for the model
+Finally, save the model and check that it is loadable.
+```python
 pickle_model_path = categorization_pipeline.save(reduce_weight=False)
 categorization_pipeline_loaded = CustomCategorizationAI.load_model(pickle_model_path)
 ```
@@ -250,11 +254,9 @@ class CustomCategorizationAI(AbstractCategorizationAI):
         os.remove(temp_pt_file_path)
         return self.pipeline_path
 
-# Initialize the Project and the custom AI
 project = Project(id_=YOUR_PROJECT_ID)
 categorization_pipeline = CustomCategorizationAI(project.categories)
 
-# Use a small subset of Documents to test the AI so that the runtime is not too long
 categorization_pipeline.documents = [
         document for category in categorization_pipeline.categories for document in category.documents()
     ][:5]
@@ -262,7 +264,6 @@ categorization_pipeline.test_documents = [
     document for category in categorization_pipeline.categories for document in category.test_documents()
 ][:5]
 
-# Define all necessary components of the AI and train it
 categorization_pipeline.category_vocab = categorization_pipeline.build_template_category_vocab()
 image_model = EfficientNet(name='efficientnet_b0')
 categorization_pipeline.classifier = PageImageCategorizationModel(
@@ -272,18 +273,15 @@ categorization_pipeline.classifier = PageImageCategorizationModel(
 categorization_pipeline.build_preprocessing_pipeline(use_image=True)
 categorization_pipeline.fit(n_epochs=1)
 
-# Evaluate the AI
 data_quality = categorization_pipeline.evaluate(use_training_docs=True)
 ai_quality = categorization_pipeline.evaluate(use_training_docs=False)
 
-# Categorize a Document
 document = project.get_document_by_id(YOUR_DOCUMENT_ID)
 categorization_result = categorization_pipeline.categorize(document=document)
 for page in categorization_result.pages():
     print(f"Found category {page.category} for {page}")
 print(f"Found category {categorization_result.category} for {categorization_result}")
 
-# Save and load a pickle file for the model
 pickle_model_path = categorization_pipeline.save(reduce_weight=False)
 categorization_pipeline_loaded = CustomCategorizationAI.load_model(pickle_model_path)
 ```
