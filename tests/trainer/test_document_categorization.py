@@ -340,8 +340,8 @@ class TestAbstractTextCategorizationModel(unittest.TestCase):
         (NBOWSelfAttention, 100, 64, 8, 'nbowselfattention-invalid'),
         (LSTM, 100, 64, None, 'lstm'),
         (BERT, 100, None, None, 'bert-base-german-cased'),
+        (BERT, 100, None, None, 'prajjwal1/bert-tiny'),
         (BERT, 100, None, None, 'bert-base-german-dbmdz-cased'),
-        (BERT, 100, None, None, 'bert-base-german-dbmdz-uncased'),
         (BERT, 100, None, None, 'distilbert-base-german-cased'),
     ],
 )
@@ -488,6 +488,10 @@ class TestAllCategorizationConfigurations(unittest.TestCase):
         if self.text_class is not None:
             if self.tokenizer == PhraseMatcherTokenizer:
                 self.categorization_pipeline.tokenizer = self.tokenizer(self.categorization_pipeline.documents)
+            elif self.tokenizer == transformers.AutoTokenizer:
+                self.categorization_pipeline.tokenizer = transformers.AutoTokenizer.from_pretrained(
+                    self.text_class.name
+                )
             else:
                 self.categorization_pipeline.tokenizer = self.tokenizer()
             self.categorization_pipeline.text_vocab = self.categorization_pipeline.build_text_vocab()
@@ -505,7 +509,7 @@ class TestAllCategorizationConfigurations(unittest.TestCase):
                 output_dim=len(self.categorization_pipeline.category_vocab),
             )
             if text_model == BERT:
-                assert isinstance(self.categorization_pipeline.tokenizer, transformers.AutoTokenizer)
+                assert isinstance(self.categorization_pipeline.tokenizer, transformers.BertTokenizerFast)
         elif self.text_class is None:
             self.categorization_pipeline.classifier = PageImageCategorizationModel(
                 image_model=image_model,

@@ -1100,8 +1100,11 @@ class CategorizationAI(AbstractCategorizationAI):
 
         # loop over documents updating counter using the tokens in each document
         for document in self.documents:
-            tokenized_document = self.tokenizer.tokenize(deepcopy(document))
-            tokens = [span.offset_string for span in tokenized_document.spans()]
+            if isinstance(self.tokenizer, transformers.BertTokenizerFast):
+                tokens = self.tokenizer.tokenize(document.text)
+            else:
+                tokenized_document = self.tokenizer.tokenize(deepcopy(document))
+                tokens = [span.offset_string for span in tokenized_document.spans()]
             counter.update(tokens)
 
         assert len(counter) > 0, 'Did not find any tokens when building the text vocab!'
@@ -1142,7 +1145,8 @@ class CategorizationAI(AbstractCategorizationAI):
         for document in documents:
             tokenized_doc = deepcopy(document)
             if self.tokenizer is not None:
-                tokenized_doc = self.tokenizer.tokenize(tokenized_doc)
+                if not isinstance(self.tokenizer, transformers.BertTokenizerFast):
+                    tokenized_doc = self.tokenizer.tokenize(tokenized_doc)
             tokenized_doc.status = document.status  # to allow to retrieve images from the original pages
             document_images = []
             document_tokens = []
@@ -1181,7 +1185,7 @@ class CategorizationAI(AbstractCategorizationAI):
                 if use_text:
                     if self.classifier.text_model.__class__.__name__ == 'bert':
                         self.tokenizer = transformers.AutoTokenizer.from_pretrained(self.classifier.text_model.name)
-                        document_tokens = self.tokenizer(document.text)
+                        document_tokens = self.tokenizer(document.text, truncation=True, padding=max_len)
                     else:
                         # REPLACE page_tokens = tokenizer.get_tokens(page_text)[:max_len]
                         # page_encoded = [text_vocab.stoi(span.offset_string) for span in
@@ -1360,7 +1364,8 @@ class CategorizationAI(AbstractCategorizationAI):
 
     def reduce_model_weight(self):
         """Reduce the size of the model by running lose_weight on the tokenizer."""
-        self.tokenizer.lose_weight()
+        if not isinstance(self.tokenizer, transformers.BertTokenizerFast):
+            self.tokenizer.lose_weight()
 
     @torch_no_grad
     def _predict(self, page_images, text, batch_size=2, *args, **kwargs) -> Tuple[Tuple[int, float], pd.DataFrame]:
