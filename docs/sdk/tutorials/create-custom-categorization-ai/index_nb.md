@@ -135,6 +135,7 @@ and the AI. You can run the AI over a small subset of Documents so that it does 
 ```python editable=true slideshow={"slide_type": ""} tags=["remove-cell"]
 YOUR_PROJECT_ID = 46
 YOUR_DOCUMENT_ID = 44823
+import os
 from konfuzio_sdk.trainer.document_categorization import CategorizationAI
 
 CustomCategorizationAI = CategorizationAI

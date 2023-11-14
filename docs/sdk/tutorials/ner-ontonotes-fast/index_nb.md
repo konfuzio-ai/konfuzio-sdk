@@ -41,10 +41,16 @@ What about using an open-source model for the labeling? It may not have the doma
 In this tutorial, we will show how you can use the SDK to include an easy feedback workflow in your training pipeline. With these revised Annotations you can retrain your model and repeat the loop. By doing this you can reduce the effort in the labeling of the data and improve the performance of your model in the domain knowledge that you desire.
 
 Let's start with necessary imports. In this tutorial, we will use a model from the library Flair as an example. Flair is a framework for NLP that allows to use state-of-art models for different tasks, including Named Entity Recognition. It also allows to train your own model to predict custom entities from the text.
+```python tags=["remove-cell"] tags=["skip-execution", "nbval-skip"]
+import sys
+import logging
+import subprocess
+subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'flair'])
+logging.getLogger('konfuzio_sdk').setLevel(logging.ERROR)
+YOUR_PROJECT_ID = 46
+```
 
-```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"] vscode={"languageId": "plaintext"}
-import os
-import glob
+```python editable=true slideshow={"slide_type": ""} vscode={"languageId": "plaintext"} tags=["skip-execution", "nbval-skip"]
 import nltk
 
 from flair.models import SequenceTagger
@@ -52,10 +58,7 @@ from flair.data import Sentence
 from flair.trainers import ModelTrainer
 from flair.datasets import ColumnCorpus
 
-from konfuzio_sdk.data import Project, Annotation, Document, Label
-from konfuzio_sdk.api import upload_file_konfuzio_api
-from konfuzio_sdk.utils import get_file_type
-from konfuzio_sdk import SUPPORTED_FILE_TYPES
+from konfuzio_sdk.data import Project, Annotation
 
 nltk.download('punkt')
 ```
@@ -66,12 +69,15 @@ Initialize the Project and load the needed Documents. If you prefer, use the exa
 my_project = Project(id_=YOUR_PROJECT_ID)
 documents = my_project.documents
 ```
+```python tags=["remove-output"]
+documents = documents[:10]
+```
 
 ### Initialize the model and create Annotations
 
 We will use a pre-trained model for Named Entity Recognition (NER) from the `flair` library. The model used is the "ner-ontonotes-fast" which is the fast version of the 18-class NER model for English from Flair. You can also your own model.
 
-```python editable=true slideshow={"slide_type": ""} tags=["skip-execution"]
+```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
 model = SequenceTagger.load('ner-ontonotes-fast')
 ```
 
@@ -83,37 +89,22 @@ print(labels_available)
 ```
 
 Our example Documents are invoices. We will detect the date of the invoice and the organization which is creating it, which could be used, for example, to group the invoices per company and year. Therefore, we will use the pre-trained model to create Annotations for **dates** and **organizations** in the Documents.
-
+The Labels for which we will create Annotations are `DATE` and `ORG`.
 ```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
-# Labels for which we want to create Annotations
 labels_names = ['DATE', 'ORG']
 ```
 
-We need to create the Labels in the Project in accordance with the `labels_names` defined above.
+We need to create the Labels in the Project in accordance with the `labels_names` defined above and save their Label Sets' IDs to reuse later.
 
 ```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
-# Labels defined in the Project that match the ones we want
 my_labels = [label for label in my_project.labels if label.name in labels_names]
-
-# correspondent Label Set IDs
 my_label_sets_ids = [my_label.label_sets[0].id for my_label in my_labels]
 ```
 
-Next, we define a metod that publishes the resulting Annotations from the pretrained model as Annotations in the Konfuzio app.
+Next, we define a method that publishes the resulting Annotations from the pretrained model as Annotations in the Konfuzio app.
 
 ```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
 def annotate_document(document, annotations, labels, label_sets_ids):
-    """
-    Create annotations in a document.
-
-    Based on a list of possible annotations, filter the ones that match with the
-    labels in the project.
-
-    :param document: document object
-    :param annotations: list of possible annotations
-    :param labels: labels for which the annotations can be created
-    :param label_sets_ids: label sets ids that correspondent to the labels
-    """
     labels_names = [label.name for label in labels]
 
     for entity in annotations:
@@ -156,33 +147,25 @@ If you want to retrain your local model, you have to update your local Project f
 
 ```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
 for doc in documents:
-  doc.update()
+    doc.update()
 ```
 
 The next step is to define which Documents should be used for training.
 
 ```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
-# define all needed Documents as added into the training dataset
 for doc in documents:
     doc.dataset_status = 2
     doc.save()
 ```
 
-Then, use the reviewed Annotations to retrain your model. An example of how to get the data in the format necessary to retrain the flair model is shown below. The model requires the data structure to be in the BIO scheme and to be saved in a text file. In this case, to convert the Annotations to the BIO scheme, we only need to get the **start** and **end offsets** of each Annotation and its Label.
-This conversion can be done using the method `get_text_in_bio_scheme()` of the Document class. We will wrap Document preprocessing into the method `create_data()`.
+Then, use the reviewed Annotations to retrain your model. An example of how to get the data in the format necessary to retrain the flair model is shown below. The model requires the data structure to be in the BIO scheme and to be saved in a text file. In this case, to convert the Annotations to the BIO scheme, we only need to get the start and end offsets of each Annotation and its Label.
+This conversion can be done using the method `get_text_in_bio_scheme()` of the Document class. We will wrap Document preprocessing into the method `create_data()` that creates data structure in the format expected by `flair` and saves it in a txt file.
+Then, we separate the dataset to have training and evaluation slices and create .txt files that will be used for retraining.
 
 This example is merely demonstrative. You might want to adapt the data structure and training parameters to your case and/or model.
 
 ```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
 def create_data(file_name, documents):
-    """
-    Create data structure in the format expected by flair and saves it in a txt file.
-
-    Each word is put on a separate line and there is an empty line after each document. 
-
-    :param file_name: name of the file where to save the data
-    :param documents: dataset documents
-    """
     with open(file_name, 'w') as f:
         for doc in documents:
             doc.get_text_in_bio_scheme()
@@ -202,20 +185,12 @@ After converting the data to the needed format, we can retrain the tagger model 
 
 ```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
 def retrain(model, data_folder='./'):
-    """
-    Train the existing model for a few more epochs.
-
-    :param tagger: pre trained model
-    :param data_folder: folder with the dataset files.
-    """
-    # define columns
     columns = {0: 'text', 1: 'ner'}
 
-    # initializing the corpus
     with open('train.txt') as train_file:
       train_file.seek(0)
       if not train_file.read(1):
-        return "There is no training data. Please assign a training data."
+        return "There is no training data. Please assign training data."
   
     corpus = ColumnCorpus(data_folder, columns, train_file='train.txt', test_file='test.txt', dev_file='dev.txt')
 
@@ -229,15 +204,10 @@ retrain(model)
 ```
 
 ### Conclusion
+
 In this tutorial, we have walked through the steps for annotating Documents using the model from `flair` library and using them to train or retrain an AI for better extractions. Below is the full code to accomplish this task:
 
-```python editable=true slideshow={"slide_type": ""} tags=["remove-cell"]
-YOUR_PROJECT_ID = 46
-```
-
 ```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"] vscode={"languageId": "plaintext"}
-import os
-import glob
 import nltk
 
 from flair.models import SequenceTagger
@@ -245,10 +215,7 @@ from flair.data import Sentence
 from flair.trainers import ModelTrainer
 from flair.datasets import ColumnCorpus
 
-from konfuzio_sdk.data import Project, Annotation, Document, Label
-from konfuzio_sdk.api import upload_file_konfuzio_api
-from konfuzio_sdk.utils import get_file_type
-from konfuzio_sdk import SUPPORTED_FILE_TYPES
+from konfuzio_sdk.data import Project, Annotation
 
 nltk.download('punkt')
 
@@ -258,27 +225,13 @@ model = SequenceTagger.load('ner-ontonotes-fast')
 labels_available = list(set([tag.split('-')[1] for tag in model.tag_dictionary.get_items() if '-' in tag]))
 print(labels_available)
 
-# Labels for which we want to create Annotations
 labels_names = ['DATE', 'ORG']
 
-# Labels defined in the Project that match the ones we want
 my_labels = [label for label in my_project.labels if label.name in labels_names]
 
-# correspondent Label Set IDs
 my_label_sets_ids = [my_label.label_sets[0].id for my_label in my_labels]
 
 def annotate_document(document, annotations, labels, label_sets_ids):
-    """
-    Create annotations in a document.
-
-    Based on a list of possible annotations, filter the ones that match with the
-    labels in the project.
-
-    :param document: document object
-    :param annotations: list of possible annotations
-    :param labels: labels for which the annotations can be created
-    :param label_sets_ids: label sets ids that correspondent to the labels
-    """
     labels_names = [label.name for label in labels]
 
     for entity in annotations:
@@ -306,20 +259,11 @@ for doc in documents:
 for doc in documents:
   doc.update()
 
-# define all needed Documents as added into the training dataset
 for doc in documents:
     doc.dataset_status = 2
     doc.save()
 
 def create_data(file_name, documents):
-    """
-    Create data structure in the format expected by flair and saves it in a txt file.
-
-    Each word is put on a separate line and there is an empty line after each document. 
-
-    :param file_name: name of the file where to save the data
-    :param documents: dataset documents
-    """
     with open(file_name, 'w') as f:
         for doc in documents:
             doc.get_text_in_bio_scheme()
@@ -327,7 +271,6 @@ def create_data(file_name, documents):
                 for line in doc_file:
                     f.write(line)
 
-# define a splitting point for the training dataset to create training and evaluation slices
 n_val = max(round(len(my_project.documents) * 0.3), 1)
 
 create_data('train.txt', my_project.documents[:-n_val])
@@ -335,16 +278,8 @@ create_data('dev.txt', my_project.documents[-n_val:])
 create_data('test.txt', my_project.test_documents)
 
 def retrain(model, data_folder='./'):
-    """
-    Train the existing model for a few more epochs.
-
-    :param tagger: pre trained model
-    :param data_folder: folder with the dataset files.
-    """
-    # define columns
     columns = {0: 'text', 1: 'ner'}
 
-    # initializing the corpus
     with open('train.txt') as train_file:
       train_file.seek(0)
       if not train_file.read(1):

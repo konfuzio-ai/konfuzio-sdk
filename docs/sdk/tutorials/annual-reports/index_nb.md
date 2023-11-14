@@ -18,7 +18,7 @@ jupyter:
 
 **Prerequisites:** 
 
-- Data Layer concepts of Konfuzio
+- Data Layer concepts of Konfuzio: Document, Annotation, Project
 - `pandas` and `matplotlib` installed
 - Basic `pandas` knowledge
 - Basic understanding of regular expressions
@@ -39,7 +39,13 @@ The aim is to analyse how much sustainability plays a role in the annual reports
 
 ### Make imports and initialize the Project
 
-```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"] vscode={"languageId": "plaintext"}
+```python
+import logging
+logging.getLogger('konfuzio_sdk').setLevel(logging.ERROR)
+YOUR_PROJECT_ID = 46
+```
+
+```python editable=true slideshow={"slide_type": ""} vscode={"languageId": "plaintext"}
 import re
 import matplotlib.pyplot as plt
 import pandas as pd

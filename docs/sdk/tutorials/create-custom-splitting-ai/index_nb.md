@@ -18,8 +18,8 @@ jupyter:
 
 **Prerequisites:** 
 
-- Data Layer concepts of Konfuzio
-- AI concepts of Konfuzio
+- Data Layer concepts of Konfuzio: Category, Page
+- AI concepts of Konfuzio: File Splitting
 
 **Difficulty:** Medium
 
@@ -93,7 +93,7 @@ In this tutorial, we have walked through the steps for building a custom File Sp
 import transformers
 
 from konfuzio_sdk.trainer.file_splitting import AbstractFileSplittingModel
-from konfuzio_sdk.data import Page, Category, Project
+from konfuzio_sdk.data import Page, Category
 from typing import List
 
 class CustomFileSplittingModel(AbstractFileSplittingModel):
