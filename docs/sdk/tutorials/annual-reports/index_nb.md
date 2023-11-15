@@ -39,7 +39,7 @@ The aim is to analyse how much sustainability plays a role in the annual reports
 
 ### Make imports and initialize the Project
 
-```python
+```python tags=["remove-cell"]
 import logging
 logging.getLogger('konfuzio_sdk').setLevel(logging.ERROR)
 YOUR_PROJECT_ID = 46
@@ -58,23 +58,21 @@ Load the existing Documents or create new ones using the example Documents in th
 
 Alternatively, you can do this step directly on the Konfuzio Server by uploading the Documents there. For more details take a look [here](https://help.konfuzio.com/documents/receipt/index.html#upload-receipts).
 
-```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
-documents = my_project.get_documents_from_project()
+```python editable=true slideshow={"slide_type": ""}
+documents = my_project.init_or_update_document(from_online=True)
 ```
 
 ### Specify the expressions you want to count
 
 Our aim is to count expressions related to sustainability (here: _climate_expressions_) and expressions related to pandemics (here: _pandemic_expressions_). Hence, we specify certain words and expressions related to these subjects. These expressions will then be searched in the Documents of the Project to find exact matches. However, there is flexibility for lower- or uppercases.
 
-```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
-# List of climate expressions to match
+```python editable=true slideshow={"slide_type": ""}
 climate_expressions = [re.compile("climate change|climate crisis|climate emergency|climate breakdown", re.I),
                        re.compile("global warming|global heating", re.I),
                        re.compile("Greenhouse Gas", re.I),
                        re.compile("carbon emission", re.I),
                        re.compile("renewable energy|renewable sources", re.I)]
 
-# List of pandemic expressions to match
 pandemic_expressions = [re.compile("Corona", re.I),
                      re.compile("Covid", re.I),
                      re.compile("pandemic", re.I),
@@ -85,33 +83,27 @@ pandemic_expressions = [re.compile("Corona", re.I),
 
 To do this, start by setting up a Label Set on app (_Label sets -> + Add Label Set_). It is important that each new Annotation gets assigned to a new Annotation Set, so tick the box "Multiple" to achieve this. Update your Project to get the new Label Set.
 
-```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
+```python editable=true slideshow={"slide_type": ""}
 my_project.update()
-# get Label Set
 label_set = [label_set for label_set in my_project.label_sets if not label_set.is_default][0]
 ```
 
 Now, you can add Labels to your respective Label Set. These Labels serve as containers for your Annotations. In our example, we cluster our Annotations into expressions either related to pandemic or to sustainability. Therefore, we create two Labels "Pandemic" and "Climate" to allocate the Annotations accordingly. Down below, we define the Label names of the Project we want to use and match them with the existing ones in our Project for the further proceeding.
 
-```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
-# Labels for which we want to cluster the expressions
+```python editable=true slideshow={"slide_type": ""}
 labels_names = ['Pandemic', 'Climate']
 for label in labels_names:
     Label(project=my_project, text=label, label_sets=[label_set]).save()
-
-# confirm that Labels exist in the Project
 my_project.update()
 
 print(f"Current labels in your project:\n{my_project.labels}")
 ```
 
-Collect the defined Labels and the correspondent Label Set(s):
+Collect the defined Labels and the correspondent Label Set(s).
 
-```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
-# Labels defined in the Konfuzio Project that match the ones we want
+```python editable=true slideshow={"slide_type": ""}
 labels = [label for label in my_project.labels if label.name in labels_names]
 
-# correspondent Label Sets
 label_sets = [my_label.label_sets[0] for my_label in labels]
 ```
 
@@ -119,7 +111,7 @@ label_sets = [my_label.label_sets[0] for my_label in labels]
 
 Now we will look for the expressions in the Documents which exactly match the expressions we defined above. If there is a match, it will be saved as Annotation and can be viewed on app in the SmartView of the respective Document.
 
-```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
+```python editable=true slideshow={"slide_type": ""}
 expressions = {'Climate': climate_expressions, 'Pandemic': pandemic_expressions}
 
 for document in documents:
@@ -142,10 +134,11 @@ for document in documents:
                     revised=True,
                 )
                 
-                _ = annotation_obj.save()
+                # to save Annotations online, uncomment the next line
+                # _ = annotation_obj.save()
 ```
 
-After the Annotations have been created online, update the Documents with the saved Annotations.
+If the Annotations have been created online, update the Documents with the saved Annotations.
 
 ```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
 for document in documents:
@@ -156,7 +149,7 @@ for document in documents:
 
 Let's have a quick look into how many matches were found. The following code provides you with the Annotations per Label for each of our respective Documents separately, giving you the opportunity to analyze the annotations for the individual Documents.
 
-```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
+```python editable=true slideshow={"slide_type": ""}
 print("Annotations per document and per label:")
 for doc in documents:
     count_dict_doc= {}
@@ -173,15 +166,15 @@ for doc in documents:
     print(count_dict_doc)
 ```
 
-The Annotations are now also posted on app. You can view them in the Smartview there. For a more complete and extensive analysis and to get a first glance about what is possible with the results we achieved with this tutorial, you can either use the provided code below or you can export the information from the Konfuzio server by downloading the data as a csv file.
+If you posted Annotations on app, you can view them in the Smartview there. For a more complete and extensive analysis and to get a first glance about what is possible with the results we achieved with this tutorial, you can either use the provided code below or you can export the information from the Konfuzio server by downloading the data as a csv file.
 
 To download the csv file, please follow [these](https://help.konfuzio.com/integrations/csv/index.html) steps. The csv provides you with further possibilities to work with the data and draw conclusions from it.
 
-We chose to analyze the relation between the occurences of sustainability and pandemic expressions, hence whether companies decreased their attention to sustainability issues with the arise of a global pandemic. In the code provided below, you can take a look at a first analysis drawn from the data we achieved with this analysis of the annual reports of the companies. 
+We chose to analyze the relation between the occurrences of sustainability and pandemic expressions, hence whether companies decreased their attention to sustainability issues with the rise of a global pandemic. In the code provided below, you can take a look at a first analysis drawn from the data we achieved with this analysis of the annual reports of the companies. 
 
 Retrieve different information from the Documents of your Konfuzio Project and create a dataframe with these information for a better overview:
 
-```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
+```python editable=true slideshow={"slide_type": ""}
 docs_info = []
 
 for doc in documents:
@@ -203,7 +196,7 @@ df.head()
 ```
 
 Retrieve the total number of Pages of all annual reports present in the dataset as well as the total count of climate and pandemic expressions.
-```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
+```python editable=true slideshow={"slide_type": ""}
 sum_pages = df['n_pages'].sum()
 print("Total sum of pages in dataset: {}.".format(sum_pages))
 sum_topics_climate = df["topics_climate"].sum()
@@ -214,7 +207,7 @@ print("Total sum of topics_pandemic: {}.".format(sum_topics_pandemic))
 
 Look into the group the number of climate and pandemic expressions by year to analyze the development of occurrences of each one over the timespan from 2010 to 2020:
 
-```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
+```python editable=true slideshow={"slide_type": ""}
 def count_per_year(dataframe, label):
     grouped = dataframe.groupby('year')['topics_' + label].sum()
     grouped_df = {'count_' + label: grouped}
@@ -234,20 +227,15 @@ The resulting charts look the following way:
 
 In this tutorial, we have walked through the essential steps for retrieving information from annual reports based on search for particular words and expressions and researching the results for insights. Below is the full code to accomplish this task:
 
-```python tags=["remove-cell"]
-YOUR_PROJECT_ID = 46
-```
-
-```python editable=true slideshow={"slide_type": ""} tags=["skip-execution"] vscode={"languageId": "plaintext"}
+```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"] vscode={"languageId": "plaintext"}
 import re
 import matplotlib.pyplot as plt
 import pandas as pd
 from konfuzio_sdk.data import Project, Annotation, Label
 
 my_project = Project(id_=YOUR_PROJECT_ID)
-documents = my_project.get_documents_from_project()
+documents = my_project.init_or_update_document(from_online=True)
 
-# List of climate expressions to match
 climate_expressions = [re.compile("climate change|climate crisis|climate emergency|climate breakdown", re.I),
                        re.compile("global warming|global heating", re.I),
                        re.compile("Greenhouse Gas", re.I),
@@ -261,23 +249,19 @@ pandemic_expressions = [re.compile("Corona", re.I),
                      re.compile("lockdown", re.I)]
 
 my_project.update()
-# get Label Set
+
 label_set = [label_set for label_set in my_project.label_sets if not label_set.is_default][0]
 
-# Labels for which we want to cluster the expressions
 labels_names = ['Pandemic', 'Climate']
 for label in labels_names:
     Label(project=my_project, text=label, label_sets=[label_set]).save()
 
-# confirm that Labels exist in the Project
 my_project.update()
 
 print(f"Current labels in your project:\n{my_project.labels}")
 
-# Labels defined in the Konfuzio Project that match the ones we want
 labels = [label for label in my_project.labels if label.name in labels_names]
 
-# correspondent Label Sets
 label_sets = [my_label.label_sets[0] for my_label in labels]
 
 expressions = {'Climate': climate_expressions, 'Pandemic': pandemic_expressions}
@@ -302,7 +286,7 @@ for document in documents:
                     revised=True,
                 )
                 
-                _ = annotation_obj.save()
+                # _ = annotation_obj.save()
 
 for document in documents:
     document.get_document_details(update=True)

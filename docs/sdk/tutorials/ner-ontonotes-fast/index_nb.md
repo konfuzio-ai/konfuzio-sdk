@@ -41,7 +41,7 @@ What about using an open-source model for the labeling? It may not have the doma
 In this tutorial, we will show how you can use the SDK to include an easy feedback workflow in your training pipeline. With these revised Annotations you can retrain your model and repeat the loop. By doing this you can reduce the effort in the labeling of the data and improve the performance of your model in the domain knowledge that you desire.
 
 Let's start with necessary imports. In this tutorial, we will use a model from the library Flair as an example. Flair is a framework for NLP that allows to use state-of-art models for different tasks, including Named Entity Recognition. It also allows to train your own model to predict custom entities from the text.
-```python tags=["remove-cell"] tags=["skip-execution", "nbval-skip"]
+```python tags=["skip-execution", "nbval-skip", "remove-cell"]
 import sys
 import logging
 import subprocess
@@ -69,9 +69,6 @@ Initialize the Project and load the needed Documents. If you prefer, use the exa
 my_project = Project(id_=YOUR_PROJECT_ID)
 documents = my_project.documents
 ```
-```python tags=["remove-output"]
-documents = documents[:10]
-```
 
 ### Initialize the model and create Annotations
 
@@ -85,7 +82,6 @@ Check which Labels are in the model and choose the ones that you need.
 
 ```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
 labels_available = list(set([tag.split('-')[1] for tag in model.tag_dictionary.get_items() if '-' in tag]))
-print(labels_available)
 ```
 
 Our example Documents are invoices. We will detect the date of the invoice and the organization which is creating it, which could be used, for example, to group the invoices per company and year. Therefore, we will use the pre-trained model to create Annotations for **dates** and **organizations** in the Documents.
@@ -223,7 +219,6 @@ my_project = Project(id_=YOUR_PROJECT_ID)
 documents = my_project.documents
 model = SequenceTagger.load('ner-ontonotes-fast')
 labels_available = list(set([tag.split('-')[1] for tag in model.tag_dictionary.get_items() if '-' in tag]))
-print(labels_available)
 
 labels_names = ['DATE', 'ORG']
 
