@@ -84,17 +84,15 @@ pandemic_expressions = [re.compile("Corona", re.I),
 To do this, start by setting up a Label Set on app (_Label sets -> + Add Label Set_). It is important that each new Annotation gets assigned to a new Annotation Set, so tick the box "Multiple" to achieve this. Update your Project to get the new Label Set.
 
 ```python editable=true slideshow={"slide_type": ""}
-my_project.update()
 label_set = [label_set for label_set in my_project.label_sets if not label_set.is_default][0]
 ```
 
 Now, you can add Labels to your respective Label Set. These Labels serve as containers for your Annotations. In our example, we cluster our Annotations into expressions either related to pandemic or to sustainability. Therefore, we create two Labels "Pandemic" and "Climate" to allocate the Annotations accordingly. Down below, we define the Label names of the Project we want to use and match them with the existing ones in our Project for the further proceeding.
 
-```python editable=true slideshow={"slide_type": ""}
+```python editable=true slideshow={"slide_type": ""} tags=["remove-output"]
 labels_names = ['Pandemic', 'Climate']
 for label in labels_names:
-    Label(project=my_project, text=label, label_sets=[label_set]).save()
-my_project.update()
+    _ = Label(project=my_project, text=label, label_sets=[label_set])
 
 print(f"Current labels in your project:\n{my_project.labels}")
 ```
@@ -149,7 +147,7 @@ for document in documents:
 
 Let's have a quick look into how many matches were found. The following code provides you with the Annotations per Label for each of our respective Documents separately, giving you the opportunity to analyze the annotations for the individual Documents.
 
-```python editable=true slideshow={"slide_type": ""}
+```python editable=true slideshow={"slide_type": ""} tags=["remove-output"]
 print("Annotations per document and per label:")
 for doc in documents:
     count_dict_doc= {}
@@ -174,7 +172,7 @@ We chose to analyze the relation between the occurrences of sustainability and p
 
 Retrieve different information from the Documents of your Konfuzio Project and create a dataframe with these information for a better overview:
 
-```python editable=true slideshow={"slide_type": ""}
+```python editable=true slideshow={"slide_type": ""} tags=["remove-output"]
 docs_info = []
 
 for doc in documents:
@@ -196,7 +194,7 @@ df.head()
 ```
 
 Retrieve the total number of Pages of all annual reports present in the dataset as well as the total count of climate and pandemic expressions.
-```python editable=true slideshow={"slide_type": ""}
+```python editable=true slideshow={"slide_type": ""} tags=["remove-output"]
 sum_pages = df['n_pages'].sum()
 print("Total sum of pages in dataset: {}.".format(sum_pages))
 sum_topics_climate = df["topics_climate"].sum()
@@ -207,7 +205,7 @@ print("Total sum of topics_pandemic: {}.".format(sum_topics_pandemic))
 
 Look into the group the number of climate and pandemic expressions by year to analyze the development of occurrences of each one over the timespan from 2010 to 2020:
 
-```python editable=true slideshow={"slide_type": ""}
+```python editable=true slideshow={"slide_type": ""} tags=["remove-output"]
 def count_per_year(dataframe, label):
     grouped = dataframe.groupby('year')['topics_' + label].sum()
     grouped_df = {'count_' + label: grouped}
@@ -242,21 +240,16 @@ climate_expressions = [re.compile("climate change|climate crisis|climate emergen
                        re.compile("carbon emission", re.I),
                        re.compile("renewable energy|renewable sources", re.I)]
 
-# List of pandemic expressions to match
 pandemic_expressions = [re.compile("Corona", re.I),
                      re.compile("Covid", re.I),
                      re.compile("pandemic", re.I),
                      re.compile("lockdown", re.I)]
 
-my_project.update()
-
 label_set = [label_set for label_set in my_project.label_sets if not label_set.is_default][0]
 
 labels_names = ['Pandemic', 'Climate']
 for label in labels_names:
-    Label(project=my_project, text=label, label_sets=[label_set]).save()
-
-my_project.update()
+    _ = Label(project=my_project, text=label, label_sets=[label_set])
 
 print(f"Current labels in your project:\n{my_project.labels}")
 
