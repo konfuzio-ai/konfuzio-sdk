@@ -110,20 +110,28 @@ default value will be applied.
 You can find more information on how to use these configurations, what are default values and where to specify
 them [here](https://help.konfuzio.com/modules/projects/index.html?highlight=efficientnet#categorization-ai-parameters).
 
-| Tokenizer | Text processor    | Image processor | Image processing version |
-|-----------|-------------------|-----------------|--------------------------|
-| WhitespaceTokenizer | NBOWSelfAttention | EfficientNet | efficientnet_b0          |
-| WhitespaceTokenizer | NBOWSelfAttention | EfficientNet | efficientnet_b3          |
-| WhitespaceTokenizer | NBOW              | VGG | vgg11                    |
-| WhitespaceTokenizer | LSTM              | VGG | vgg13                    |
-| ConnectedTextTokenizer | NBOW              | VGG | vgg11                    |
-| ConnectedTextTokenizer | LSTM              | VGG | vgg13                    |
-| None | None | EfficientNet | efficientnet_b0          |
-| None | None | EfficientNet | efficientnet_b3          |
-| None | None | VGG | vgg11                    |
-| None | None | VGG | vgg13                    |
-| None | None | VGG | vgg16                    |
-| None | None | VGG | vgg19                    |
+| Tokenizer              | Text processor    | Text processing version         | Image processor | Image processing version |
+|------------------------|-------------------|---------------------------------|-----------------|--------------------------|
+| WhitespaceTokenizer    | NBOWSelfAttention | None                            | EfficientNet    | efficientnet_b0          |
+| WhitespaceTokenizer    | NBOWSelfAttention | None                            | EfficientNet    | efficientnet_b3          |
+| WhitespaceTokenizer    | NBOW              | None                            | VGG             | vgg11                    |
+| WhitespaceTokenizer    | LSTM              | None                            | VGG             | vgg13                    |
+| ConnectedTextTokenizer | NBOW              | None                            | VGG             | vgg11                    |
+| ConnectedTextTokenizer | LSTM              | None                            | VGG             | vgg13                    |
+| None                   | None              | None                            | EfficientNet    | efficientnet_b0          |
+| None                   | None              | None                            | EfficientNet    | efficientnet_b3          |
+| None                   | None              | None                            | VGG             | vgg11                    |
+| None                   | None              | None                            | VGG             | vgg13                    |
+| None                   | None              | None                            | VGG             | vgg16                    |
+| None                   | None              | None                            | VGG             | vgg19                    |
+| WhitespaceTokenizer    | NBOW              | None                            | None            | None                     |
+| WhitespaceTokenizer    | NBOWSelfAttention | None                            | None            | None                     |
+| WhitespaceTokenizer    | LSTM              | None                            | None            | None                     |
+| BertTokenizerFast      | BERT              | 'bert-base-german-cased'        | None            | None                     |
+| BertTokenizerFast      | BERT              | 'prajjwal1/bert-tiny'           | None            | None                     |
+| BertTokenizerFast      | BERT              | 'bert-base-german-dbmdz-cased'  | None            | None                     |
+| BertTokenizerFast      | BERT              | 'distilbert-base-german-cased'  | None            | None                     |
+
 
 
 ### Create a custom Categorization AI
