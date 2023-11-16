@@ -442,7 +442,7 @@ class TestTextCategorizationModels(unittest.TestCase):
         (WhitespaceTokenizer, NBOWSelfAttention, None, None),
         (ConnectedTextTokenizer, NBOW, None, None),
         # (PhraseMatcherTokenizer, LSTM, None, None),  # PhraseMatcherTokenizer is WIP and not available for usage yet
-        (transformers.AutoTokenizer, BERT, None, None),
+        (transformers.BertTokenizerFast, BERT, None, None),
     ],
 )
 @pytest.mark.skip(reason="Slow testcases training a Categorization AI on full dataset with multiple configurations.")
@@ -488,13 +488,14 @@ class TestAllCategorizationConfigurations(unittest.TestCase):
         if self.text_class is not None:
             if self.tokenizer == PhraseMatcherTokenizer:
                 self.categorization_pipeline.tokenizer = self.tokenizer(self.categorization_pipeline.documents)
-            elif self.tokenizer == transformers.AutoTokenizer:
+                self.categorization_pipeline.text_vocab = self.categorization_pipeline.build_text_vocab()
+            elif self.tokenizer == transformers.BertTokenizerFast:
                 self.categorization_pipeline.tokenizer = transformers.AutoTokenizer.from_pretrained(
-                    self.text_class.name
+                    'bert-base-german-cased'
                 )
             else:
                 self.categorization_pipeline.tokenizer = self.tokenizer()
-            self.categorization_pipeline.text_vocab = self.categorization_pipeline.build_text_vocab()
+                self.categorization_pipeline.text_vocab = self.categorization_pipeline.build_text_vocab()
         self.categorization_pipeline.category_vocab = self.categorization_pipeline.build_template_category_vocab()
 
         image_model = None
@@ -502,14 +503,15 @@ class TestAllCategorizationConfigurations(unittest.TestCase):
         if self.image_class is not None:
             image_model = self.image_class(name=self.image_nn_version)
         if self.text_class is not None:
-            text_model = self.text_class(input_dim=len(self.categorization_pipeline.text_vocab))
+            if self.tokenizer == transformers.BertTokenizerFast:
+                text_model = self.text_class(input_dim=512)
+            else:
+                text_model = self.text_class(input_dim=len(self.categorization_pipeline.text_vocab))
         if self.image_class is None:
             self.categorization_pipeline.classifier = PageTextCategorizationModel(
                 text_model=text_model,
                 output_dim=len(self.categorization_pipeline.category_vocab),
             )
-            if text_model == BERT:
-                assert isinstance(self.categorization_pipeline.tokenizer, transformers.BertTokenizerFast)
         elif self.text_class is None:
             self.categorization_pipeline.classifier = PageImageCategorizationModel(
                 image_model=image_model,
@@ -534,6 +536,8 @@ class TestAllCategorizationConfigurations(unittest.TestCase):
         """Start to train the Model."""
         if self.image_class:
             self.categorization_pipeline.build_preprocessing_pipeline(use_image=True)
+        else:
+            self.categorization_pipeline.build_preprocessing_pipeline(use_image=False)
         self.categorization_pipeline.fit(n_epochs=1, optimizer={'name': 'Adam'})
 
     def test_3_save_model(self) -> None:

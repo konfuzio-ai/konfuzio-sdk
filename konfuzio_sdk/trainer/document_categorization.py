@@ -1180,9 +1180,13 @@ class CategorizationAI(AbstractCategorizationAI):
                     # so we just have a list of None to keep the lists the same length
                     document_images.append(None)
                 if use_text:
-                    if self.classifier.text_model.__class__.__name__ == 'bert':
+                    if self.classifier.text_model.__class__.__name__ == 'BERT':
                         self.tokenizer = transformers.AutoTokenizer.from_pretrained(self.classifier.text_model.name)
-                        document_tokens = self.tokenizer(document.text, truncation=True, padding=max_len)
+                        document_tokens.append(
+                            torch.LongTensor(
+                                self.tokenizer(document.text, truncation=True, padding='max_length')['input_ids']
+                            )
+                        )
                     else:
                         # REPLACE page_tokens = tokenizer.get_tokens(page_text)[:max_len]
                         # page_encoded = [text_vocab.stoi(span.offset_string) for span in
@@ -1216,7 +1220,14 @@ class CategorizationAI(AbstractCategorizationAI):
                 image = None
             if use_text:
                 # if we are using text, batch and pad the already tokenized and numericalized text and place on GPU
-                text = torch.nn.utils.rnn.pad_sequence(text, batch_first=True, padding_value=self.text_vocab.pad_idx)
+                if not isinstance(self.tokenizer, transformers.BertTokenizerFast):
+                    text = torch.nn.utils.rnn.pad_sequence(
+                        text, batch_first=True, padding_value=self.text_vocab.pad_idx
+                    )
+                else:
+                    text = torch.nn.utils.rnn.pad_sequence(
+                        text, batch_first=True, padding_value=int(self.classifier.text_model.get_max_length())
+                    )
                 text = text.to(device)
             else:
                 text = None
