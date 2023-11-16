@@ -1226,7 +1226,7 @@ class CategorizationAI(AbstractCategorizationAI):
                     )
                 else:
                     text = torch.nn.utils.rnn.pad_sequence(
-                        text, batch_first=True, padding_value=int(self.classifier.text_model.get_max_length())
+                        text, batch_first=True, padding_value=self.classifier.text_model.bert.config.pad_token_id
                     )
                 text = text.to(device)
             else:
