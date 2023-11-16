@@ -1100,11 +1100,8 @@ class CategorizationAI(AbstractCategorizationAI):
 
         # loop over documents updating counter using the tokens in each document
         for document in self.documents:
-            if isinstance(self.tokenizer, transformers.BertTokenizerFast):
-                tokens = self.tokenizer.tokenize(document.text)
-            else:
-                tokenized_document = self.tokenizer.tokenize(deepcopy(document))
-                tokens = [span.offset_string for span in tokenized_document.spans()]
+            tokenized_document = self.tokenizer.tokenize(deepcopy(document))
+            tokens = [span.offset_string for span in tokenized_document.spans()]
             counter.update(tokens)
 
         assert len(counter) > 0, 'Did not find any tokens when building the text vocab!'
@@ -1587,7 +1584,6 @@ def build_categorization_ai_pipeline(
     if tokenizer is None:
         tokenizer = WhitespaceTokenizer()
     categorization_pipeline.tokenizer = tokenizer
-    categorization_pipeline.text_vocab = categorization_pipeline.build_text_vocab()
     categorization_pipeline.category_vocab = categorization_pipeline.build_template_category_vocab()
     # Configure image and text models
     if image_model is not None:
@@ -1605,10 +1601,13 @@ def build_categorization_ai_pipeline(
         image_model = image_model_class(name=image_model.value)
     if text_model is not None:
         if isinstance(text_model, str):
+            text_model_name = text_model
             try:
                 text_model = next(model for model in TextModel if model.value in text_model)
             except StopIteration:
                 raise ValueError(f'{text_model} not found. Provide an existing name for the image model.')
+        else:
+            text_model_name = text_model.name
         text_model_class_mapping = {
             TextModel.NBOW: NBOW,
             TextModel.NBOWSelfAttention: NBOWSelfAttention,
@@ -1617,7 +1616,11 @@ def build_categorization_ai_pipeline(
         }
         text_model_class = text_model_class_mapping[text_model]
         # Configure text model
-        text_model = text_model_class(input_dim=len(categorization_pipeline.text_vocab))
+        if "bert" not in text_model_name:
+            categorization_pipeline.text_vocab = categorization_pipeline.build_text_vocab()
+            text_model = text_model_class(input_dim=len(categorization_pipeline.text_vocab))
+        else:
+            text_model = text_model_class(input_dim=512, name=text_model_name)
     # Configure the classifier (whether it predicts using only the image of the Page,
     # or only the text, or a MLP to concatenate both predictions)
     if image_model is None:
