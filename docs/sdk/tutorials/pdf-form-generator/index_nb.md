@@ -18,7 +18,7 @@ jupyter:
 
 **Prerequisites:**
 
-- Data Layer concepts of Konfuzio
+- Data Layer concepts of Konfuzio: Project, Document, Annotation, Page
 - PyPDF2 and reportlab installed
 
 **Difficulty:** Medium
@@ -67,22 +67,13 @@ for page_index, page in enumerate(document.pages()):
         if annotation.selection_bbox.get('page_index') == page_index:
             text_value = values.get(annotation.label.name, '')
             textobject = my_canvas.beginText()
-            # Set text location (x, y)
             textobject.setTextOrigin(annotation.x0, annotation.y0)
-            # Change text color
             textobject.setFillColor(colors.black)
-            # Write text
             textobject.textLine(text=text_value)
-            # Write text to the canvas
             my_canvas.drawText(textobject)
     my_canvas.save()
-
-    # move to the beginning of the StringIO buffer
     packet.seek(0)
-
-    # create a new PDF with Reportlab
     new_pdf = PdfFileReader(packet)
-
     page = existing_pdf.getPage(page_index)
     page.mergePage(new_pdf.getPage(0))
     output.addPage(page)
@@ -110,13 +101,12 @@ from PyPDF2 import PdfFileWriter, PdfFileReader
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
 
-from konfuzio_sdk.data import Project, Document, Page, Annotation
+from konfuzio_sdk.data import Project, Document
 
 def render(document_id, project_id, values):
     my_project = Project(id_=project_id, update=True)
     document: Document = my_project.get_document_by_id(document_id)
 
-    # read your existing PDF
     existing_pdf = PdfFileReader(open(document.get_file(), "rb"))
     output = PdfFileWriter()
 
@@ -124,24 +114,18 @@ def render(document_id, project_id, values):
         packet = io.BytesIO()
         my_canvas = canvas.Canvas(packet)
         my_canvas.setPageSize((page.width, page.height))
-        for annotation: Annotation in document.annotations():
+        for annotation in document.annotations():
             if annotation.selection_bbox.get('page_index') == page_index:
                 text_value = values.get(annotation.label.name, '')
                 textobject = my_canvas.beginText()
-                # Set text location (x, y)
                 textobject.setTextOrigin(annotation.x0, annotation.y0)
-                # Change text color
                 textobject.setFillColor(colors.black)
-                # Write text
                 textobject.textLine(text=text_value)
-                # Write text to the canvas
                 my_canvas.drawText(textobject)
         my_canvas.save()
 
-        # move to the beginning of the StringIO buffer
         packet.seek(0)
 
-        # create a new PDF with Reportlab
         new_pdf = PdfFileReader(packet)
 
         page = existing_pdf.getPage(page_index)

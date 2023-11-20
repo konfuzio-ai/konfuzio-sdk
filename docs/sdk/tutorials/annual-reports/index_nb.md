@@ -39,13 +39,8 @@ The aim is to analyse how much sustainability plays a role in the annual reports
 
 ### Make imports and initialize the Project
 
-```python tags=["remove-cell"]
-import logging
-logging.getLogger('konfuzio_sdk').setLevel(logging.ERROR)
-YOUR_PROJECT_ID = 46
-```
 
-```python editable=true slideshow={"slide_type": ""} vscode={"languageId": "plaintext"}
+```python editable=true slideshow={"slide_type": ""} vscode={"languageId": "plaintext"} tags=["skip-execution", "nbval-skip"]
 import re
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -58,7 +53,7 @@ Load the existing Documents or create new ones using the example Documents in th
 
 Alternatively, you can do this step directly on the Konfuzio Server by uploading the Documents there. For more details take a look [here](https://help.konfuzio.com/documents/receipt/index.html#upload-receipts).
 
-```python editable=true slideshow={"slide_type": ""}
+```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
 documents = my_project.init_or_update_document(from_online=True)
 ```
 
@@ -66,7 +61,7 @@ documents = my_project.init_or_update_document(from_online=True)
 
 Our aim is to count expressions related to sustainability (here: _climate_expressions_) and expressions related to pandemics (here: _pandemic_expressions_). Hence, we specify certain words and expressions related to these subjects. These expressions will then be searched in the Documents of the Project to find exact matches. However, there is flexibility for lower- or uppercases.
 
-```python editable=true slideshow={"slide_type": ""}
+```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
 climate_expressions = [re.compile("climate change|climate crisis|climate emergency|climate breakdown", re.I),
                        re.compile("global warming|global heating", re.I),
                        re.compile("Greenhouse Gas", re.I),
@@ -83,23 +78,21 @@ pandemic_expressions = [re.compile("Corona", re.I),
 
 To do this, start by setting up a Label Set on app (_Label sets -> + Add Label Set_). It is important that each new Annotation gets assigned to a new Annotation Set, so tick the box "Multiple" to achieve this. Update your Project to get the new Label Set.
 
-```python editable=true slideshow={"slide_type": ""}
+```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
 label_set = [label_set for label_set in my_project.label_sets if not label_set.is_default][0]
 ```
 
 Now, you can add Labels to your respective Label Set. These Labels serve as containers for your Annotations. In our example, we cluster our Annotations into expressions either related to pandemic or to sustainability. Therefore, we create two Labels "Pandemic" and "Climate" to allocate the Annotations accordingly. Down below, we define the Label names of the Project we want to use and match them with the existing ones in our Project for the further proceeding.
 
-```python editable=true slideshow={"slide_type": ""} tags=["remove-output"]
+```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
 labels_names = ['Pandemic', 'Climate']
 for label in labels_names:
     _ = Label(project=my_project, text=label, label_sets=[label_set])
-
-print(f"Current labels in your project:\n{my_project.labels}")
 ```
 
 Collect the defined Labels and the correspondent Label Set(s).
 
-```python editable=true slideshow={"slide_type": ""}
+```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
 labels = [label for label in my_project.labels if label.name in labels_names]
 
 label_sets = [my_label.label_sets[0] for my_label in labels]
@@ -109,7 +102,7 @@ label_sets = [my_label.label_sets[0] for my_label in labels]
 
 Now we will look for the expressions in the Documents which exactly match the expressions we defined above. If there is a match, it will be saved as Annotation and can be viewed on app in the SmartView of the respective Document.
 
-```python editable=true slideshow={"slide_type": ""}
+```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
 expressions = {'Climate': climate_expressions, 'Pandemic': pandemic_expressions}
 
 for document in documents:
@@ -131,9 +124,8 @@ for document in documents:
                     is_correct=True,
                     revised=True,
                 )
-                
-                # to save Annotations online, uncomment the next line
-                # _ = annotation_obj.save()
+        
+                _ = annotation_obj.save()
 ```
 
 If the Annotations have been created online, update the Documents with the saved Annotations.
@@ -147,7 +139,7 @@ for document in documents:
 
 Let's have a quick look into how many matches were found. The following code provides you with the Annotations per Label for each of our respective Documents separately, giving you the opportunity to analyze the annotations for the individual Documents.
 
-```python editable=true slideshow={"slide_type": ""} tags=["remove-output"]
+```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
 print("Annotations per document and per label:")
 for doc in documents:
     count_dict_doc= {}
@@ -172,7 +164,7 @@ We chose to analyze the relation between the occurrences of sustainability and p
 
 Retrieve different information from the Documents of your Konfuzio Project and create a dataframe with these information for a better overview:
 
-```python editable=true slideshow={"slide_type": ""} tags=["remove-output"]
+```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
 docs_info = []
 
 for doc in documents:
@@ -190,22 +182,18 @@ for doc in documents:
   docs_info.append(doc_info)
 
 df = pd.DataFrame(data=docs_info)
-df.head()
 ```
 
 Retrieve the total number of Pages of all annual reports present in the dataset as well as the total count of climate and pandemic expressions.
-```python editable=true slideshow={"slide_type": ""} tags=["remove-output"]
+```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
 sum_pages = df['n_pages'].sum()
-print("Total sum of pages in dataset: {}.".format(sum_pages))
 sum_topics_climate = df["topics_climate"].sum()
-print("Total sum of topics_climate: {}.".format(sum_topics_climate))
 sum_topics_pandemic = df["topics_pandemic"].sum()
-print("Total sum of topics_pandemic: {}.".format(sum_topics_pandemic))
 ```
 
 Look into the group the number of climate and pandemic expressions by year to analyze the development of occurrences of each one over the timespan from 2010 to 2020:
 
-```python editable=true slideshow={"slide_type": ""} tags=["remove-output"]
+```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
 def count_per_year(dataframe, label):
     grouped = dataframe.groupby('year')['topics_' + label].sum()
     grouped_df = {'count_' + label: grouped}
@@ -251,8 +239,6 @@ labels_names = ['Pandemic', 'Climate']
 for label in labels_names:
     _ = Label(project=my_project, text=label, label_sets=[label_set])
 
-print(f"Current labels in your project:\n{my_project.labels}")
-
 labels = [label for label in my_project.labels if label.name in labels_names]
 
 label_sets = [my_label.label_sets[0] for my_label in labels]
@@ -279,12 +265,11 @@ for document in documents:
                     revised=True,
                 )
                 
-                # _ = annotation_obj.save()
+                _ = annotation_obj.save()
 
 for document in documents:
     document.get_document_details(update=True)
 
-print("Annotations per document and per label:")
 for doc in documents:
     count_dict_doc= {}
     print("\n{}:".format(doc))
@@ -316,14 +301,10 @@ for doc in documents:
   docs_info.append(doc_info)
 
 df = pd.DataFrame(data=docs_info)
-df.head()
 
 sum_pages = df['n_pages'].sum()
-print("Total sum of pages in dataset: {}.".format(sum_pages))
 sum_topics_climate = df["topics_climate"].sum()
-print("Total sum of topics_climate: {}.".format(sum_topics_climate))
 sum_topics_pandemic = df["topics_pandemic"].sum()
-print("Total sum of topics_pandemic: {}.".format(sum_topics_pandemic))
 
 def count_per_year(dataframe, label):
     grouped = dataframe.groupby('year')['topics_' + label].sum()
