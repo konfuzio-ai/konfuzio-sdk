@@ -18,9 +18,9 @@ jupyter:
 
 **Prerequisites:** 
 
-- Data Layer concepts of Konfuzio
-- AI Layer concepts of Konfuzio
-- zxing-cpp installed
+- Data Layer concepts of Konfuzio: Project, Annotation, Document, Span, Bbox
+- AI Layer concepts of Konfuzio: Information Extraction
+- `zxing-cpp` installed
 
 **Difficulty:** Medium
 
@@ -58,81 +58,52 @@ class BarcodeAnnotation(Annotation):
 
     @property
     def bboxes(self) -> List[Dict]:
-        """
-        This method of the Annotation class must be overridden to return the custom_bboxes.
-        :return: List of dictionaries, each in the format:
-            {
-                'x0': int, 'x1': int, 'y0': int, 'y1': int,
-                'top': int, 'bottom': int, 'page_index': int,
-                'offset_string': str, 'custom_offset_string': bool
-            }
-        """
         return self.custom_bboxes
 ```
 
 ### Define BarcodeExtractionAI class 
 
 The second step is to create a custom [Extraction AI](https://dev.konfuzio.com/sdk/sourcecode.html#extraction-ai) class that uses the `CustomAnnotation` class. Firstly, we'll define a method to extract Bounding Boxes and barcode text from an image using the `zxing-cpp` library.
+Inside this method, we loop through the results returned by `zxingcpp` and extract the raw bounding boxes, which then are transformed into Bboxes native to the Konfuzio SDK format.
 
 ```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"] vscode={"languageId": "plaintext"}
 def get_bboxes_from_image(self, image, page_index):
-    """
-    Extract the bboxes and texts of the barcodes from an image and transform the bbox dictionaries into the right format.
-    :param image: PIL image (the image of the page, resize to original size or probide the original image for better results )
-    :param page_index: int
-    """
-    # import the necessary function from the library
     from zxingcpp import read_barcodes
 
-    # create empty list to store the Bboxes
     bboxes_list = []
-    # get the results from the library
     barcodes_lib_results = read_barcodes(image)
-    # loop through the results and extract the bboxes
+
     for result in barcodes_lib_results:
-        # unpack the result position ## output: '496x453 743x453 743x550 496x550'
         position = str(result.position).rstrip("\x00")
-        # unpack the result text ## output: '123456'
         barcode_text_value = str(result.text).rstrip("\x00")
-        # unpack the coordinates of the bottom-left and top-right corners of the detected barcode
         top_right = position.split()[1].split("x")
         bottom_left = position.split()[-1].split("x")
-        # create the bbox dictionary
         bbox_dict = self.get_bbox_dict_from_coords(
             top_right, bottom_left, page_index, image, barcode_text_value
         )
-        # append the Bbox dictionary to the list
         bboxes_list.append(bbox_dict)
     return bboxes_list
 ```
 
-Next, we'll implement the method to create the Bbox dictionary from the output of `zxing-cpp`.
+Next, we'll implement the method to create the Bbox dictionary from the output of `zxing-cpp`. Inside this method, we use the coordinates of the Bboxes to create the Bbox dictionaries which later will be used for positioning the `CustomAnnotation` instances.
 
 ```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
 def get_bbox_dict_from_coords(
     top_right, bottom_left, page_index, image, barcode_text_value
 ):
-    """
-    Transform the coordinates of the bottom-left and top-right corners
-    of the detected barcode from cv2 coordinates system to DVUI coordinates system.
-    """
-    # get the coordinates of the top-right corner in cv2 coordinates system
     x1 = int(top_right[0])
     y1 = int(top_right[1])
-    # get the coordinates of the bottom-left corner in cv2 coordinates system
     x0 = int(bottom_left[0])
     y0 = int(bottom_left[1])
-    # top and bottom are resp. equal to y1 and y0 in the cv2 coordinates system
-    # they don't need to be transformed to the DVUI coordinates system because they are distances and not coordinates
+
     top = y1
     bottom = y0
-    # transform the coordinates from cv2 coordinates system to DVUI coordinates system
-    # x0 and x1 don't need to be transformed because the x axis is unchanged in the DVUI coordinates system
+
     temp_y0 = image.height - y0
     temp_y1 = image.height - y1
     y0 = temp_y0
     y1 = temp_y1
-    # create the Bbox dictionary
+
     bbox_dict = {
         "x0": x0,
         "x1": x1,
@@ -155,7 +126,6 @@ def install_dependencies():
         import subprocess
 
         package_name = "zxing-cpp"
-        # Run the pip install command
         subprocess.check_call(["pip", "install", package_name])
         print(f"The package {package_name} is ready to be used.")
     except:
@@ -168,7 +138,6 @@ Lastly, we'll create a function that will be used to check if the Extraction AI 
 
 ```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
 def check_is_ready(self) -> bool:
-    # check if the zxing-cpp library is already installed
     try:
         self.install_dependencies()
         import zxingcpp
@@ -181,7 +150,7 @@ For the whole code of the class, scroll down to the Conclusion.
 
 ### Save the Barcode scanner
 
-Let's create the main script to save our Extraction AI that will be used to process Documents on Konfuzio. For that, we need to define the Project the AI will be used with and then save the Extraction AI as a compressed [pickle](https://docs.python.org/3/library/pickle.html) file that we will upload to the [Server](https://dev.konfuzio.com/web/index.html#what-is-the-konfuzio-server) later.
+Let's create the main script to save our Extraction AI that will be used to process Documents in Konfuzio. For that, we need to define the Project the AI will be used with and then save the Extraction AI as a compressed [pickle](https://docs.python.org/3/library/pickle.html) file that we will upload to the Server later.
 
 ```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
 from konfuzio_sdk.data import Project
@@ -191,7 +160,7 @@ barcode_extraction_ai = BarcodeExtractionAI(category=project.categories[0])
 pickle_model_path = barcode_extraction_ai.save()
 ```
 
-This is an example of how the output of this Barcode Scanner will look like on the [DVUI](https://dev.konfuzio.com/dvui/index.html#what-is-the-konfuzio-document-validation-ui):
+This is an example of how the output of this Barcode Scanner will look like on the DVUI:
 
 ![Output](barcode_scanner_example.png)
 
@@ -215,14 +184,6 @@ class BarcodeAnnotation(Annotation):
 
     @property
     def bboxes(self) -> List[Dict]:
-        """
-        This method of the Annotation class must be overwriten to return the custom_bboxes
-        :return: List of dictionaries each of the format {
-            'x0': int, 'x1': int, 'y0': int, 'y1': int,
-            'top': int, 'bottom': int, 'page_index': int,
-            'offset_string': str, 'custom_offset_string': bool
-        }
-        """
         return self.custom_bboxes
 
 
@@ -243,7 +204,6 @@ class BarcodeExtractionAI(AbstractExtractionAI):
         pass
 
     def extract(self, document: Document) -> Document:
-        # check if the model is ready otherwise raise an error
         self.check_is_ready()
         result_document = super().extract(document)
         result_document._text = "this should be a long text or at least twice the number of barcodes in the document"
@@ -252,20 +212,13 @@ class BarcodeExtractionAI(AbstractExtractionAI):
         barcode_annotation_set = AnnotationSet(
             document=result_document, label_set=barcode_label_set
         )
-        # loop through the pages of the document and extract the barcodes
         for page_index, page in enumerate(document.pages()):
             page_width = page.width
             page_height = page.height
-            # get the page in image format
             image = page.get_image(update=True)
-            # convert the image to RGB
             image = image.convert("RGB")
-            # resize the image to the page size
-            # IMPORTANT: since the image is already resized we won't need any scaling factors to transform the coordinates
             image = image.resize((int(page_width), int(page_height)))
-            # get the bboxes and texts of the barcodes using zxing-cpp
             page_bboxes_list = self.get_bboxes_from_image(image, page_index)
-            # loop through the bboxes and create the annotations using enumerate
             for bbox_index, bbox_dict in enumerate(page_bboxes_list):
                 _ = BarcodeAnnotation(
                     document=result_document,
