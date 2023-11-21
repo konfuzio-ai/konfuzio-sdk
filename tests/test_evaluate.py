@@ -9,6 +9,7 @@ from pandas import DataFrame
 from konfuzio_sdk.data import Project, Document, AnnotationSet, Annotation, Span, LabelSet, Label, Category
 from konfuzio_sdk.evaluate import compare, grouped, EvaluationCalculator, ExtractionEvaluation, CategorizationEvaluation
 from konfuzio_sdk.samples import LocalTextProject
+from konfuzio_sdk.settings_importer import is_dependency_installed
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
 from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel, SplittingAI, FileSplittingEvaluation
 
@@ -62,7 +63,8 @@ class TestCompare(unittest.TestCase):
         doc_a = prj.get_document_by_id(TEST_DOCUMENT_ID)
         doc_b = prj.get_document_by_id(TEST_DOCUMENT_ID)  # predicted
         doc_b.annotations()
-        doc_b._annotations.pop(0)  # pop an Annotation that is correct in BOTH  Documents
+        k = next(iter(doc_b._annotations))
+        doc_b._annotations.pop(k)  # pop an Annotation that is correct in BOTH  Documents
         assert doc_a._annotations == doc_b._annotations  # first Annotation is removed in both  Documents
         evaluation = compare(doc_a, doc_b)
         assert len(evaluation) == 22  # 21 if not considering negative Annotations, 2 Annotations are is_correct false
@@ -78,7 +80,7 @@ class TestCompare(unittest.TestCase):
         doc_a = prj.get_document_by_id(TEST_DOCUMENT_ID)
         doc_b = prj.get_document_by_id(TEST_DOCUMENT_ID)  # predicted
         doc_b.annotations()
-        doc_b._annotations.pop(11)  # pop an Annotation that is correct in BOTH  Documents
+        doc_b._annotations.popitem()  # pop an Annotation that is correct in BOTH  Documents
         assert doc_a._annotations == doc_b._annotations  # last Annotation is removed in both  Documents
         evaluation = compare(doc_a, doc_b)
         assert len(evaluation) == 23  # 22 if not considering negative Annotations, 2 Annotations are is_correct false
@@ -1451,6 +1453,13 @@ class TestEvaluationCalculator(unittest.TestCase):
             EvaluationCalculator(tp=0, fp=0, fn=0, zero_division='hehe')
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('datasets')
+    and not is_dependency_installed('torch')
+    and not is_dependency_installed('transformers')
+    and not is_dependency_installed('evaluate'),
+    reason='Required dependencies not installed.',
+)
 class TestEvaluationFileSplitting(unittest.TestCase):
     """Test Evaluation class for ContextAwareFileSplitting."""
 
