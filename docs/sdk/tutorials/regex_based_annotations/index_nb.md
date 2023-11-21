@@ -18,7 +18,8 @@ jupyter:
 
 **Prerequisites:** 
 
-- Data Layer concepts of Konfuzio
+- Data Layer concepts of Konfuzio: Project, Document, Annotation, Label, Annotation Set, Label Set
+- Regular expressions
 
 **Difficulty:** Easy
 
@@ -35,48 +36,45 @@ In this guide, we'll show you how to use Python and regular expressions (regex) 
 Let's say we have a Document, and we want to highlight every instance of the term "Musterstraße", which might represent a specific street name or location. Our task is to find this term, label it as "Lohnart", and associate it with the "Brutto-Bezug" Label Set.
 
 ```python editable=true slideshow={"slide_type": ""} tags=["remove-cell"] vscode={"languageId": "plaintext"}
+import logging
+
+logging.getLogger("konfuzio_sdk").setLevel(logging.ERROR)
 YOUR_PROJECT_ID = 46
 ```
 
-```python editable=true slideshow={"slide_type": ""} tags=["remove-output"] vscode={"languageId": "plaintext"}
+```python editable=true slideshow={"slide_type": ""} vscode={"languageId": "plaintext"}
 import re
 from konfuzio_sdk.data import Project, Annotation, Span, AnnotationSet
 
 my_project = Project(id_=YOUR_PROJECT_ID)
-# Word/expression to annotate in the Document should match an existing one in your Document
 input_expression = "Musterstraße"
-
-# Label for the Annotation
 label_name = "Lohnart"
 
-# Getting the Label from the Project
 my_label = my_project.get_label_by_name(label_name)
-
-# LabelSet to which the Label belongs
 label_set = my_label.label_sets[0]
 ```
 
 ### Get a Document and find matches of a string in it
 
+We fetch the first Document in the Project and search for the matches of the word/expression in the Document.
+
 ```python editable=true slideshow={"slide_type": ""}
-# First Document in the Project
 document = my_project.documents[0]
 
-# Matches of the word/expression in the Document
 matches_locations = [(m.start(0), m.end(0)) for m in re.finditer(input_expression, document.text)]
 ```
 
 ### Create the Annotations
 
+For each found match we create an Annotation. Note that no Annotation can exist outside the Annotation Set and every Annotation Set has to contain at least one Annotation.
+By using `Annotation.save()` we ensure that each Annotation is saved online.
+
 ```python editable=true slideshow={"slide_type": ""} tags=["remove-output"]
-# List to save the links to the Annotations created
 new_annotations_links = []
 
-# Create Annotation for each match
 for offsets in matches_locations:
     span = Span(start_offset=offsets[0], end_offset=offsets[1])
     annotation_set = AnnotationSet(document=document, label_set=label_set)
-    # note that no Annotation can exist outside the Annotation Set and every Annotation Set has to contain at least one Annotation
     annotation_obj = Annotation(
         document=document,
         annotation_set=annotation_set,
@@ -86,7 +84,7 @@ for offsets in matches_locations:
         spans=[span],
         is_correct=True,
     )
-    # ensure that the Annotation is saved online
+
     new_annotation_added = annotation_obj.save()
     if new_annotation_added:
         new_annotations_links.append(annotation_obj.get_link())
@@ -102,32 +100,23 @@ import re
 from konfuzio_sdk.data import Project, Annotation, Span, AnnotationSet
 
 my_project = Project(id_=YOUR_PROJECT_ID)
-# Word/expression to annotate in the Document should match an existing one in your Document
-input_expression = "Musterstraße"
 
-# Label for the Annotation
+input_expression = "Musterstraße"
 label_name = "Lohnart"
 
-# Getting the Label from the Project
 my_label = my_project.get_label_by_name(label_name)
 
-# LabelSet to which the Label belongs
 label_set = my_label.label_sets[0]
 
-# First Document in the Project
 document = my_project.documents[0]
 
-# Matches of the word/expression in the Document
 matches_locations = [(m.start(0), m.end(0)) for m in re.finditer(input_expression, document.text)]
 
-# List to save the links to the Annotations created
 new_annotations_links = []
 
-# Create Annotation for each match
 for offsets in matches_locations:
     span = Span(start_offset=offsets[0], end_offset=offsets[1])
     annotation_set = AnnotationSet(document=document, label_set=label_set)
-    # note that no Annotation can exist outside the Annotation Set and every Annotation Set has to contain at least one Annotation
     annotation_obj = Annotation(
         document=document,
         annotation_set=annotation_set,
@@ -137,7 +126,7 @@ for offsets in matches_locations:
         spans=[span],
         is_correct=True,
     )
-    # ensure that the Annotation is saved online
+
     new_annotation_added = annotation_obj.save()
     if new_annotation_added:
         new_annotations_links.append(annotation_obj.get_link())

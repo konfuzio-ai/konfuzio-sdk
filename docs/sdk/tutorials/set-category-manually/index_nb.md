@@ -78,6 +78,8 @@ If a Document is initialized with no Category, it will automatically be set to N
 In this tutorial, we walked you through the steps of manually setting and changing the Category of a Document and its Pages. Below is the full code to accomplish this task:
 
 ```python tags=["skip-execution"]
+from konfuzio_sdk.data import Project, Document
+
 project = Project(id_=YOUR_PROJECT_ID)
 my_category = project.get_category_by_id(YOUR_CATEGORY_ID)
 

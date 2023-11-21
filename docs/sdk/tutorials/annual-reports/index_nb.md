@@ -140,7 +140,6 @@ for document in documents:
 Let's have a quick look into how many matches were found. The following code provides you with the Annotations per Label for each of our respective Documents separately, giving you the opportunity to analyze the annotations for the individual Documents.
 
 ```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
-print("Annotations per document and per label:")
 for doc in documents:
     count_dict_doc= {}
     print("\n{}:".format(doc))

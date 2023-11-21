@@ -146,7 +146,7 @@ at the same time.
 
 The list of available Categorization Models is implemented as an Enum containing the following elements:
 
-```python editable=true slideshow={"slide_type": ""}
+```python editable=true slideshow={"slide_type": ""} tags=["remove-output"]
 from konfuzio_sdk.trainer.document_categorization import ImageModel, TextModel
 
 # Image Models

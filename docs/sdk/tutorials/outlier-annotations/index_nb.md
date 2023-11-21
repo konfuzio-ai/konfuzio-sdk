@@ -18,7 +18,7 @@ jupyter:
 
 **Prerequisites:**
 
-- Data Layer concepts of Konfuzio
+- Data Layer concepts of Konfuzio: Annotation, Label, Document, Project
 - Regular expressions
 
 **Difficulty:** Medium
@@ -37,6 +37,9 @@ If you want to ensure that Annotations of a Label are consistent and check for p
 the number of True Positives (correctly extracted Annotations) calculated when evaluating the regexes' performance. The method returns Annotations predicted by the regexes with the least amount of True Positives. By default, the method returns Annotations retrieved by the regex that performs on the level of 10% in comparison to the best one.
 
 ```python editable=true slideshow={"slide_type": ""} tags=["remove-cell"]
+import logging
+
+logging.getLogger("konfuzio_sdk").setLevel(logging.ERROR)
 YOUR_PROJECT_ID = 46
 YOUR_LABEL_NAME = 'Bank inkl. IBAN'
 TOP_WORST = 1.0
@@ -44,7 +47,7 @@ TOP_WORST = 1.0
 
 Initialize the Project, select the Label you want to assess and run the method, passing all Categories that are referring to the Label Set of a given Label as an input. TOP_WORST is threshold for determining what percentage of the worst regexes' output to return and can be also modified manually; by default it is 0.1.
 
-```python editable=true slideshow={"slide_type": ""} tags=["remove-output"] vscode={"languageId": "plaintext"}
+```python editable=true slideshow={"slide_type": ""} vscode={"languageId": "plaintext"}
 from konfuzio_sdk.data import Project
 
 project = Project(id_=YOUR_PROJECT_ID)
@@ -63,7 +66,7 @@ YOUR_LABEL_NAME = 'Austellungsdatum'
 
 Initialize the Project and select the Label you want to assess.
 
-```python editable=true slideshow={"slide_type": ""} tags=["remove-output"]
+```python editable=true slideshow={"slide_type": ""}
 from konfuzio_sdk.data import Project
 
 project = Project(id_=YOUR_PROJECT_ID)
@@ -92,14 +95,16 @@ GROUND_TRUTHS = pipeline.documents
 PREDICTIONS = predictions
 ```
 
-Pass ground-truth Documents and their processed counterparts into the `EvaluationExtraction` class, then use `get_probable_outliers_by_confidence` with evaluation results as the input.
+Pass a list of ground-truth Documents and a list of their processed counterparts into the `EvaluationExtraction` class, then use `get_probable_outliers_by_confidence` with evaluation results as the input.
 
 ```python editable=true slideshow={"slide_type": ""} tags=["remove-cell"]
 CONFIDENCE = 0.9
+GROUND_TRUTH_DOCUMENTS = pipeline.documents
+PREDICTED_DOCUMENTS = predictions
 ```
 
 ```python editable=true slideshow={"slide_type": ""}
-evaluation = ExtractionEvaluation(documents=list(zip(pipeline.documents, predictions)), strict=False)
+evaluation = ExtractionEvaluation(documents=list(zip(GROUND_TRUTH_DOCUMENTS, PREDICTED_DOCUMENTS)), strict=False)
 outliers = label.get_probable_outliers_by_confidence(evaluation, confidence=CONFIDENCE)
 ```
 
@@ -120,7 +125,8 @@ outliers = label.get_probable_outliers_by_normalization(project.categories)
 ```
 
 ### Conclusion
-In this tutorial, we have walked through the essential steps for finding potential outliers amongst the Annotations. Below is the full code to accomplish this task:
+In this tutorial, we have walked through the essential steps for finding potential outliers amongst the Annotations. Below is the full code to accomplish this task.
+Note that you need to replace placeholders with respective values for the tutorial to run.
 
 ```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"] vscode={"languageId": "plaintext"}
 from konfuzio_sdk.data import Project
@@ -133,7 +139,7 @@ label = project.get_label_by_name(YOUR_LABEL_NAME)
 outliers = label.get_probable_outliers_by_regex(project.categories, top_worst_percentage=TOP_WORST)
 
 # get outliers by confidence
-evaluation = ExtractionEvaluation(documents=list(zip(pipeline.documents, predictions)), strict=False)
+evaluation = ExtractionEvaluation(documents=list(zip(GROUND_TRUTH_DOCUMENTS, PREDICTED_DOCUMENTS)), strict=False)
 outliers = label.get_probable_outliers_by_confidence(evaluation, confidence=CONFIDENCE)
 
 # get outliers by normalization
