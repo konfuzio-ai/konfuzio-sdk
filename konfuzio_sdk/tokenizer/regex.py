@@ -42,17 +42,17 @@ class RegexTokenizer(AbstractTokenizer):
         before_none = len(document.annotations(use_correct=False, label=document.project.no_label))
 
         t0 = time.monotonic()
-        spans = []
+        spans = {}
         # do not keep the full regex match as we will see many matches whitespaces as pre or suffix
         for span_info in regex_matches(document.text, self.regex, keep_full_match=False):
             span = Span(start_offset=span_info['start_offset'], end_offset=span_info['end_offset'])
             span.regex_matching.append(self)
-            if span not in spans:  # do not use duplicated spans  # todo add test
-                spans.append(span)
+            if (span_info['start_offset'], span_info['end_offset']) not in spans:  # do not use duplicated spans  # todo add test
+                spans[(span_info['start_offset'], span_info['end_offset'])] = span
 
         # Create a revised = False and is_correct = False (defaults) Annotation
         document_spans = {(span.start_offset, span.end_offset): span for span in document.spans()}
-        for span in spans:
+        for span in spans.values():
             span_key = (span.start_offset, span.end_offset)
             if span_key not in document_spans:  # (use_correct=False):
                 document_spans[span_key] = span
