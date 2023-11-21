@@ -2068,7 +2068,7 @@ class AnnotationsContainer(dict):
     """
 
     def remove(self, obj):
-        """Remove an Annotation from the container. Mimicks the list.remove() method."""
+        """Delete an Annotation from the container. Mimicks the list.remove() method."""
         # obj._spans might be a list as it might come from a previous SDK version
         if isinstance(obj._spans, list):
             key = (
@@ -2080,7 +2080,7 @@ class AnnotationsContainer(dict):
         del self[key]
 
     def append(self, obj):
-        """Adds an Annotation to the container. Mimicks the list.append() method."""
+        """Add an Annotation to the container. Mimicks the list.append() method."""
         # obj._spans might be a list as it might come from a previous SDK version
         if isinstance(obj._spans, list):
             key = (
