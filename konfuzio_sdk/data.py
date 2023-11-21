@@ -2069,11 +2069,27 @@ class AnnotationsContainer(dict):
 
     def remove(self, obj):
         """Remove an Annotation from the container. Mimicks the list.remove() method."""
-        del self[(tuple(sorted(obj._spans.keys())), obj.label.name)]
+        # obj._spans might be a list as it might come from a previous SDK version
+        if isinstance(obj._spans, list):
+            key = (
+                tuple(sorted((s.start_offset, s.end_offset) for s in obj._spans)),
+                obj.label.name,
+            )
+        else:
+            key = (tuple(sorted(obj._spans.keys())), obj.label.name)
+        del self[key]
 
     def append(self, obj):
         """Adds an Annotation to the container. Mimicks the list.append() method."""
-        self[(tuple(sorted(obj._spans.keys())), obj.label.name)] = obj
+        # obj._spans might be a list as it might come from a previous SDK version
+        if isinstance(obj._spans, list):
+            key = (
+                tuple(sorted((s.start_offset, s.end_offset) for s in obj._spans)),
+                obj.label.name,
+            )
+        else:
+            key = (tuple(sorted(obj._spans.keys())), obj.label.name)
+        self[key] = obj
 
 
 class Annotation(Data):
