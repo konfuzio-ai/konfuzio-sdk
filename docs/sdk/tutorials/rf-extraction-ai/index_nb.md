@@ -28,7 +28,7 @@ The goal of this tutorial is to train a model using the Konfuzio SDK to extract 
 ---
 
 ### Introduction
-In this notebook we will see how to use the Konfuzio SDK to to train a model to find and extract relevant information like Name, Date and Recipient from payslip Documents. 
+In this notebook we will see how to use the Konfuzio SDK to train a model to find and extract relevant information like Name, Date and Recipient from payslip Documents. 
 
 Here we will see how to use the basic Konfuzio information extraction pipeline.
 <!-- #endregion -->
@@ -38,15 +38,15 @@ Here we will see how to use the basic Konfuzio information extraction pipeline.
 <!-- #endregion -->
 
 <!-- #region id="0328f306" -->
-First, we need to install the konfuzio_sdk package. See [here](https://github.com/konfuzio-ai/konfuzio-sdk) for more info.
+First, we need to install the Konfuzio SDK. See [here](https://github.com/konfuzio-ai/konfuzio-sdk) for more info.
 
-```bash
+```python tags=["nbval-skip", "skip-execution"]
 !pip install konfuzio-sdk
 ```
 
 If you are using an online Project, you will also need to initialize the SDK and input your credentials.
 
-```bash
+```python tags=["nbval-skip", "skip-execution"]
 konfuzio_sdk init
 ```
 <!-- #endregion -->

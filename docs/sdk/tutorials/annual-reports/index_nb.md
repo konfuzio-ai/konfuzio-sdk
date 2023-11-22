@@ -76,7 +76,7 @@ pandemic_expressions = [re.compile("Corona", re.I),
 
 ### Define the Labels
 
-To do this, start by setting up a Label Set on app (_Label sets -> + Add Label Set_). It is important that each new Annotation gets assigned to a new Annotation Set, so tick the box "Multiple" to achieve this. Update your Project to get the new Label Set.
+To do this, start by setting up a Label Set on Konfuzio app (_Label sets -> + Add Label Set_). It is important that each new Annotation gets assigned to a new Annotation Set, so tick the box "Multiple" to achieve this. Update your Project to get the new Label Set.
 
 ```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
 label_set = [label_set for label_set in my_project.label_sets if not label_set.is_default][0]
@@ -100,7 +100,7 @@ label_sets = [my_label.label_sets[0] for my_label in labels]
 
 ### Find matches for the expressions in the Documents
 
-Now we will look for the expressions in the Documents which exactly match the expressions we defined above. If there is a match, it will be saved as Annotation and can be viewed on app in the SmartView of the respective Document.
+Now we will look for the expressions in the Documents which exactly match the expressions we defined above. If there is a match, it will be saved as Annotation and can be viewed on Konfuzio app in the SmartView of the respective Document.
 
 ```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
 expressions = {'Climate': climate_expressions, 'Pandemic': pandemic_expressions}

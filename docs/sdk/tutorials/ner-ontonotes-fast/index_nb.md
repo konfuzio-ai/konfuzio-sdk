@@ -130,7 +130,7 @@ for doc in documents:
     annotate_document(doc, results, my_labels, my_label_sets_ids)
 ```
 
-After that, you will be able to view the results directly in the Document on app and accept or reject the Annotations. The revised Annotations then can be used to train a model on app or retrain your local model.
+After that, you will be able to view the results directly in the Document on Konfuzio app and accept or reject the Annotations. The revised Annotations then can be used to train a model on app or retrain your local model.
 
 ### Train an Extraction AI 
 
