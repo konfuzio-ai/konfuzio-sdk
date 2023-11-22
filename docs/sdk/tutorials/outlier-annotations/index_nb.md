@@ -81,7 +81,7 @@ from konfuzio_sdk.tokenizer.regex import RegexTokenizer
 pipeline = RFExtractionAI()
 pipeline.tokenizer = ListTokenizer(tokenizers=[])
 pipeline.category = label.project.get_category_by_id(id_=63)
-train_doc_ids = {44823, 44839, 44840, 44841}
+train_doc_ids = {44823, 44840, 44841}
 pipeline.documents = [doc for doc in pipeline.category.documents() if doc.id_ in train_doc_ids]
 for cur_label in pipeline.category.labels:
     for regex in cur_label.find_regex(category=pipeline.category):
