@@ -17,9 +17,9 @@ jupyter:
 ---
 
 **Prerequisites:**
-- Understanding of Konfuzio's [Annotations](https://dev.konfuzio.com/sdk/explanations.html#annotation), [Spans](https://dev.konfuzio.com/sdk/explanations.html#span-concept), [Bboxes](https://dev.konfuzio.com/sdk/explanations.html#bbox-concept), [Documents](https://dev.konfuzio.com/sdk/explanations.html#document), [Projects](https://dev.konfuzio.com/sdk/explanations.html#project-concept), [Categories](https://dev.konfuzio.com/sdk/explanations.html#category-concept).
+- Data Layer concepts of Konfuzio: Project, Document, Annotation, Span, Bbox, Category
 
-**Difficulty:** Basic
+**Difficulty:** Easy
 
 **Goal:** Learn how Konfuzio's Data Validation Rules ensure consistent and well-formed training data for Extraction AI.
 
@@ -27,36 +27,36 @@ jupyter:
 
 ### Introduction
 
-Konfuzio automatically applies a set of rules to validate data within a Project. These rules play a crucial role in ensuring that Training and Test data meet the necessary criteria for training an Extraction AI with Konfuzio.
+Konfuzio automatically applies a set of rules to validate data within a Project. These rules play a crucial role in ensuring that training and test data meet the necessary criteria for training an Extraction AI with Konfuzio.
 
 In this tutorial, we will explore the different types of validation rules and understand how they impact the suitability of a Document for training an Extraction AI.
 
-### Data Validation Rules Overview
+### Data validation rules overview
 
-Konfuzio applies the following [Data Validation Rules](https://dev.konfuzio.com/sdk/explanations.html#data-validation-rules):
+Konfuzio applies the following [data validation rules](https://dev.konfuzio.com/sdk/explanations.html#data-validation-rules):
 
-1. **Document Validation Rules:**
-   A Document passes the Data Validation Rules only if all the contained Annotations, Spans, and Bboxes pass the checks. If any Annotation, Span, or Bbox within a Document fails, the entire Document is marked as unsuitable for training an Extraction AI.
+1. **Document validation rules:**
+   A Document passes the data validation rules only if all the contained Annotations, Spans, and Bboxes pass the checks. If any Annotation, Span, or Bbox within a Document fails, the entire Document is marked as unsuitable for training an Extraction AI.
 
-2. **Annotation Validation Rules:**
+2. **Annotation validation rules:**
    - The Annotation must be from the same Category as the Document.
    - The Annotation must not entirely overlap with another Annotation with the same Label (partial overlaps are allowed).
    - Full overlaps with different Labels are allowed.
    - The Annotation must have at least one Span.
-   - Annotation Validation Rules are indifferent about the values of `Annotation.is_correct` or `Annotation.revised`. For more information about what these boolean values mean, see <a href="https://help.konfuzio.com/modules/annotations/index.html">Konfuzio Server - Annotations</a>.
+   - Annotation validation rules are indifferent about the values of `Annotation.is_correct` or `Annotation.revised`. For more information about what these boolean values mean, see <a href="https://help.konfuzio.com/modules/annotations/index.html">Konfuzio Server - Annotations</a>.
 
-3. **Span Validation Rules:**
-   - The Span must contain non-empty text (start offset must be strictly greater than the end offset).
+3. **Span validation rules:**
+   - The Span must contain non-empty text (start offset must be strictly lesser than the end offset).
    - The Span must be contained within a single line of text (not distributed across multiple lines).
 
-4. **Bbox Validation Rules:**
+4. **Bbox validation rules:**
    - The Bbox must have non-negative width and height (zero is allowed for compatibility reasons with many OCR engines).
    - The Bbox must be entirely contained within the bounds of a Page.
    - The character mapped by the Bbox must correspond to the text in the Document.
 
-### Initializing a Project with Data Validation Rules
+### Initializing a Project with data validation rules
 
-By default, any Project has the Data Validation Rules enabled, so nothing special needs to be done to enable it.
+By default, any Project has the data validation rules enabled, so nothing special needs to be done to enable it.
 
 ```python tags=["remove-cell"]
 # This is necessary to make sure we can import from 'tests'
@@ -72,22 +72,22 @@ from konfuzio_sdk.data import Project
 project = Project(id_=TEST_PROJECT_ID)
 ```
 
-### Initializing a Project with Data Validation Rules Disabled
+### Initializing a Project with data validation rules disabled
 
-In some cases, you may want to disable the Data Validation Rules to define a custom data structure or training pipeline that violates some assumptions normally present in Konfuzio Extraction AIs and pipelines. If you don’t want to validate your data, you should initialize the Project with `strict_data_validation=False`.
+In some cases, you may want to disable the data validation rules to define a custom data structure or training pipeline that violates some assumptions normally present in Konfuzio Extraction AIs and pipelines. If you don’t want to validate your data, you should initialize the Project with `strict_data_validation=False`.
 
 ```python tags=["remove-output"]
 project = Project(id_=TEST_PROJECT_ID, strict_data_validation=False)
 ```
 
-Note: We highly recommend keeping the Data Validation Rules enabled at all times, as they ensure that Training and Test data is consistent for training an Extraction AI. Disabling the Data Validation Rules and training an Extraction AI with potentially duplicated, malformed, or inconsistent data can decrease the quality of an Extraction AI. Only disable them if you know what you are doing.
+Note: We highly recommend keeping the data validation rules enabled at all times, as they ensure that training and test data is consistent for training an Extraction AI. Disabling the data validation rules and training an Extraction AI with potentially duplicated, malformed, or inconsistent data can decrease the quality of an Extraction AI. Only disable them if you know what you are doing.
 
 
 ### Conclusion
-In this tutorial, you have learned about the important Data Validation Rules in Konfuzio and how they play a vital role in ensuring the quality and consistency of training data for Extraction AI. It is recommended to always keep these rules enabled to maintain the highest level of accuracy in your AI models.
+In this tutorial, you have learned about the important data validation rules in Konfuzio and how they play a vital role in ensuring the quality and consistency of training data for Extraction AI. It is recommended to always keep these rules enabled to maintain the highest level of accuracy in your AI models.
 
 
 ### What's Next?
 
-- Explore <a href="/sdk/tutorials/information_extraction">Extraction AI</a> methods
+- <a href="/sdk/tutorials/information_extraction">Explore Extraction AI methods</a> 
 

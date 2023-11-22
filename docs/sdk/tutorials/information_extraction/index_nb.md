@@ -18,12 +18,13 @@ jupyter:
 ---
 
 **Prerequisites:**
-- Familiarity with OOP principles, in particular inheritance.
-- A basic understanding of regular expressions.
-- A basic understanding of evaluation measures for machine learning models.
-- Konfuzio Concepts: [Labels](https://dev.konfuzio.com/sdk/explanations.html#label-concept), [Label Sets](https://dev.konfuzio.com/sdk/explanations.html#label-set), [Annotations](https://dev.konfuzio.com/sdk/explanations.html#annotation), [Spans](https://dev.konfuzio.com/sdk/explanations.html#span-concept), [Categories](https://dev.konfuzio.com/sdk/explanations.html#category-concept).
+- Familiarity with OOP principles
+- Understanding of regular expressions.
+- Understanding of evaluation measures for machine learning models.
+- Data Layer of Konfuzio: Label, Annotation, Label Set, Span, Project, Document, Category
+- AI Layer of Konfuzio: Information Extraction
 
-**Difficulty:** Advanced
+**Difficulty:** Medium
 
 **Goal:** Be able to build and deploy custom models for data extraction.
 
@@ -37,10 +38,9 @@ Within Konfuzio, Documents are assigned a Category, which in turn can be associa
 In this tutorial we will cover the following topics:
 - How to train a custom Extraction AI that can be used with Konfuzio
 - How to evaluate the performance of a trained Extraction AI model
-- A practical Extraction AI example trained on payslip Documents
 
 
-### Train a Custom Date Extraction AI
+### Train a custom date Extraction AI
 This section explains how to create a custom Extraction AI locally, how to save it and upload it to the Konfuzio Server.
 
 Any Extraction AI class should derive from the `AbstractExtractionAI` class and implement the `extract()` method. In this tutorial, we demonstrate how to create a simple custom Extraction AI that extracts dates provided in 
@@ -48,15 +48,15 @@ a certain format. Note that to enable Labels' and Label Sets' dynamic creation d
 
 We start by defining a custom class CustomExtractionAI that inherits from AbstractExtractionAI, containing a single method extract that takes a Document object as input and returns a modified Document.
 
-Inside the extract method, the code first calls the parent method super().extract(). This method call retrieves a virtual Document with no annotations and changes the category to the one saved within the Extraction AI.
+Inside the `extract` method, the code first calls the parent method `super().extract()`. This method call retrieves a virtual Document with no Annotations and changes the Category to the one saved within the Extraction AI.
 
-The code checks if a label named 'Date' already exists in the labels associated with the category. It then either uses the existing Label, or creates a new one.
+The code checks if a Label named 'Date' already exists in the Labels associated with the Category. It then either uses the existing Label, or creates a new one.
 
-We uses a regular expression (`r'(\d+/\d+/\d+)'`) to find matches for dates within the text of the Document. This regular expression looks for patterns of digits separated by forward slashes (e.g., 12/31/2023).
+We use a regular expression (`r'(\d+/\d+/\d+)'`) to find matches for dates within the text of the Document. This regular expression looks for patterns of digits separated by forward slashes (e.g., 12/31/2023).
 
 For each match found, it creates a Span object representing the start and end offsets of the matched text.
 
-It then creates an Annotation object, associating it with the Document, then loops for each match found in the Document.
+It then creates an Annotation object, associating it with the Document, then loops for each match found in the Document. Note that by default, only the Annotations with confidence higher than 10% will be shown in the extracted Document. This can be changed in the Label settings UI.
 
 ```python
 import re
@@ -66,38 +66,30 @@ from konfuzio_sdk.trainer.information_extraction import AbstractExtractionAI
 
 class CustomExtractionAI(AbstractExtractionAI):
     def extract(self, document: Document) -> Document:
-        """Extract regex matches for dates."""
-        # call the parent method to get a Virtual Document with no Annotations and with the Category changed to the
-        # one saved within the Extraction AI
         document = super().extract(document)
 
-        # define a Label Set that will contain Labels for Annotations your Extraction AI extracts
-        # here we use the default Label Set of the Category
         label_set = document.category.default_label_set
-        # get or create a Label that will be used for annotating
+
         label_name = 'Date'
         if label_name in [label.name for label in document.category.labels]:
             label = document.project.get_label_by_name(label_name)
         else:
-            label = Label(text=label_name, project=project, label_sets=[label_set])
+            label = Label(text=label_name, project=document.project, label_sets=[label_set])
         annotation_set = document.default_annotation_set
         for re_match in re.finditer(r'(\d+/\d+/\d+)', document.text, flags=re.MULTILINE):
             span = Span(start_offset=re_match.span(1)[0], end_offset=re_match.span(1)[1])
-            # create Annotation Set for the Annotation. Note that every Annotation Set
-            # has to contain at least one Annotation, and Annotation always should be
-            # a part of an Annotation Set.
+
             _ = Annotation(
                 document=document,
                 label=label,
                 annotation_set=annotation_set,
-                confidence=1.0,  # note that by default, only the Annotations with confidence higher than 10%
-                # will be shown in the extracted Document. This can be changed in the Label settings UI.
+                confidence=1.0,  
                 spans=[span],
             )
         return document
 ```
 
-We can now use this custom Extraction AI class as follows:
+We can now use this custom Extraction AI class. Let's start with making the necessary imports, initializing the Project, the Category and the AI:
 
 ```python tags=["remove-cell"]
 # This is necessary to make sure we can import from 'tests'
@@ -111,24 +103,27 @@ from tests.variables import TEST_PROJECT_ID, TEST_PAYSLIPS_CATEGORY_ID, TEST_DOC
 import os
 from konfuzio_sdk.data import Project
 
-# Initialize Project and provide the AI training and test data
-project = Project(id_=TEST_PROJECT_ID)  # see https://dev.konfuzio.com/sdk/get_started.html#example-usage
+project = Project(id_=TEST_PROJECT_ID)
 category = project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID)
 categorization_pipeline = CustomExtractionAI(category)
+```
 
-# Create a sample test Document to run extraction on
+Then, create a sample test Document to run the extraction on.
+```python
 example_text = """
     19/05/1996 is my birthday.
     04/07/1776 is the Independence day.
     """
 sample_document = Document(project=project, text=example_text, category=category)
+```
 
-# Extract a Document
+Run the extraction of a Document.
+```python
 extracted = categorization_pipeline.extract(sample_document)
-# we set use_correct=False because we didn't change the default flag is_correct=False upon creating the Annotations
-assert len(extracted.annotations(use_correct=False)) == 2
+```
 
-# Save and load a pickle file for the model
+Now we can save the AI and check that it is possible to load it afterwards.
+```python
 pickle_model_path = categorization_pipeline.save()
 extraction_pipeline_loaded = CustomExtractionAI.load_model(pickle_model_path)
 ```
@@ -182,15 +177,8 @@ class ParagraphExtractionAI(AbstractExtractionAI):
     def extract(self, document: Document) -> Document:
         """
         Infer information from a given Document.
-
-        :param document: Document object
-        :return: Document with predicted Labels
-
-        :raises:
-        AttributeError: When missing a Tokenizer
         """
         inference_document = super().extract(document)
-
         inference_document = self.tokenizer.tokenize(inference_document)
 
         return inference_document
@@ -198,9 +186,6 @@ class ParagraphExtractionAI(AbstractExtractionAI):
     def check_is_ready(self):
         """
         Check if the ExtractionAI is ready for the inference.
-
-        :raises AttributeError: When no Category is specified.
-        :raises IndexError: When the Category does not contain the required Labels.
         """
         super().check_is_ready()
 
@@ -213,16 +198,14 @@ class ParagraphExtractionAI(AbstractExtractionAI):
         return True        
 ```
 
-Now that our custom Extraction AI is ready we can test it. First, we check that the category of interest indeed contains all Labels:
+Now that our custom Extraction AI is ready we can test it. First, we check that the category of interest indeed contains all Labels and create those that do not exist.
 
 ```python tags=["remove-output"]
 project = Project(id_=TEST_PROJECT_ID)
 category = project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID)
 
 labels = ['figure', 'table', 'list', 'text', 'title']
-
-# creating Labels in case they do not exist
-label_set = project.get_label_set_by_name(category.name)  # default Category label set
+label_set = project.get_label_set_by_name(category.name) 
 
 for label_name in labels:
     try:
@@ -231,7 +214,7 @@ for label_name in labels:
         Label(project=project, text=label_name, label_sets=[label_set])
 ```
 
-We can now use our custom extration model to extract data from a Document. 
+We can now use our custom extraction model to extract data from a Document. 
 
 ```python tags=["remove-output"]
 document = project.get_document_by_id(TEST_DOCUMENT_ID)
@@ -242,49 +225,61 @@ assert paragraph_extraction_ai.check_is_ready() is True
 extracted_document = paragraph_extraction_ai.extract(document)
 ```
 
+Let's see all the created Annotations.
 ```python
-# Show all the created Annotations
 print(extracted_document.annotations(use_correct=False))  
 ```
 
-We then save the model as Pickle file, so that we can upload it to the Konfuzio Server:
+We then save the model as a pickle file, so that we can upload it to the Konfuzio Server:
 
 ```python tags=["remove-output"]
 model_path = paragraph_extraction_ai.save()
 ```
 
-If you a Konfuzio on-premise setup, you can upload the model to Konfuzio:
+You can also upload the model to the Konfuzio app or an on-prem setup.
 
 ```python tags=["skip-execution"]
 from konfuzio_sdk.api import upload_ai_model
 
-upload_ai_model(model_path=model_path, category_ids=[category.id_])
+upload_ai_model(model_path=model_path, ai_type='extraction', category_id=category.id_)
 ```
 
-### Extraction AI Model Evaluation
+### Extraction AI Evaluation
 
-This section assumes you have already trained a such a model and have the Pickle file available. If you have not done so, please first complete [this](/sdk/tutorials/rf-extraction-ai/) tutorial.
+This section assumes you have already trained an Extraction AI model and have the pickle file available. If you have not done so, please first complete [this](/sdk/tutorials/rf-extraction-ai/) tutorial.
 
-In this example we will see how we can evaluate a trained `RFExtractionAI` model. We will assume that we have a trained pickled model available. this model is trained to extract data from payslip Documents.
+In this example we will see how we can evaluate a trained `RFExtractionAI` model. The model in the example is trained to extract data from payslip Documents. 
+
+Start by loading the model:
 
 ```python tags=["skip-execution", "nbval-skip"]
-pipeline = RFExtractionAI.load_model(MODEL_PATH)
+from konfuzio_sdk.trainer.information_extraction import RFExtractionAI
 
-# To get the evaluation of the full pipeline
+pipeline = RFExtractionAI.load_model(MODEL_PATH)
+```
+
+Run the evaluation of the Extraction AI and check the metrics:
+```python tags=["skip-execution", "nbval-skip"]
 evaluation = pipeline.evaluate_full()
 print(f"Full evaluation F1 score: {evaluation.f1()}")
 print(f"Full evaluation recall: {evaluation.recall()}")
 print(f"Full evaluation precision: {evaluation.precision()}")
+```
 
-# To get the evaluation of the Tokenizer alone
+You can also get the evaluation of the Tokenizer alone:
+```python tags=["skip-execution", "nbval-skip"]
 evaluation = pipeline.evaluate_tokenizer()
 print(f"Tokenizer evaluation F1 score: {evaluation.tokenizer_f1()}")
+```
 
-# To get the evaluation of the Label classifier given perfect tokenization
+It is also possible to get the evaluation of the Label classifier (given perfect tokenization).
+```python tags=["skip-execution", "nbval-skip"]
 evaluation = pipeline.evaluate_clf()
 print(f"Label classifier evaluation F1 score: {evaluation.clf_f1()}")
+```
 
-# To get the evaluation of the LabelSet given perfect Label classification
+Lastly, you can get the evaluation of the LabelSet (given perfect Label classification).
+```python tags=["skip-execution", "nbval-skip"]
 evaluation = pipeline.evaluate_clf()
 print(f"Label Set evaluation F1 score: {evaluation.f1()}")
 ```

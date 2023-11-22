@@ -74,10 +74,14 @@ label = project.get_label_by_name(YOUR_LABEL_NAME)
 ```
 
 ```python editable=true slideshow={"slide_type": ""} tags=["remove-cell"]
+from konfuzio_sdk.trainer.information_extraction import RFExtractionAI
+from konfuzio_sdk.tokenizer.base import ListTokenizer
+from konfuzio_sdk.tokenizer.regex import RegexTokenizer
+
 pipeline = RFExtractionAI()
 pipeline.tokenizer = ListTokenizer(tokenizers=[])
 pipeline.category = label.project.get_category_by_id(id_=63)
-train_doc_ids = {44823, 44834, 44839, 44840, 44841}
+train_doc_ids = {44823, 44839, 44840, 44841}
 pipeline.documents = [doc for doc in pipeline.category.documents() if doc.id_ in train_doc_ids]
 for cur_label in pipeline.category.labels:
     for regex in cur_label.find_regex(category=pipeline.category):
@@ -104,6 +108,8 @@ PREDICTED_DOCUMENTS = predictions
 ```
 
 ```python editable=true slideshow={"slide_type": ""}
+from konfuzio_sdk.evaluate import ExtractionEvaluation
+
 evaluation = ExtractionEvaluation(documents=list(zip(GROUND_TRUTH_DOCUMENTS, PREDICTED_DOCUMENTS)), strict=False)
 outliers = label.get_probable_outliers_by_confidence(evaluation, confidence=CONFIDENCE)
 ```
@@ -130,8 +136,9 @@ Note that you need to replace placeholders with respective values for the tutori
 
 ```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"] vscode={"languageId": "plaintext"}
 from konfuzio_sdk.data import Project
+from konfuzio_sdk.evaluate import ExtractionEvaluation
 
-project = Project(id_=YOUR_PROJECT_ID)
+project = Project(id_=YOUR_PROJECT_ID, strict_data_validation=False)
 
 label = project.get_label_by_name(YOUR_LABEL_NAME)
 

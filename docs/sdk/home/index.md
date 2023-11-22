@@ -242,7 +242,18 @@ For developing a custom File Splitting approach, we propose an abstract class `A
 
 ### Information Extraction
 
-[Information Extraction](https://dev.konfuzio.com/sdk/tutorials/information_extraction/index.html) is a process of obtaining information from the Document's unstructured text and labelling it 
-with Labels like Name, Date, Recipient, or any other custom Labels. 
+[Information Extraction](https://dev.konfuzio.com/sdk/tutorials/information_extraction/index.html) is a process of 
+obtaining information from the Document's unstructured text and labelling it with Labels like Name, Date, Recipient, or any other custom Labels. 
+For example, Labels could be the Name, the Date, the Recipient, or any other field of interest in the Document.
+
+Within Konfuzio, Documents are assigned a Category, which in turn can be associated to one or more Label Set(s) and 
+therefore to a Label. To be precise, it is Label Set(s) that are associated to Categories, and not the other way around.
+
+Konfuzio offers several tools to run Information Extraction:
+
+- [RFExtractionAI](https://dev.konfuzio.com/sdk/sourcecode.html#random-forest-extraction-ai) that utilizes a predefined architecture and can be trained on user's data;
+
+- [Custom Extraction AI](https://dev.konfuzio.com/sdk/tutorials/information_extraction/index.html#train-a-custom-date-extraction-ai) that can use an architecture defined by the user or a pre-existing model;
 
 Information Extraction always happens at a Category level, that is, operates under a single Category.
+
