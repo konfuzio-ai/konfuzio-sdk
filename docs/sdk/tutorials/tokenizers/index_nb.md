@@ -262,11 +262,15 @@ tmp_doc = Document.from_file("sample.pdf", project=project, sync=True)
 doc = deepcopy(tmp_doc)
 tokenizer = ParagraphTokenizer(mode='line_distance')
 
-tokenized = tokenizer.tokenize(tmp_doc)
+_ = tokenizer(tmp_doc)
+```
+
+```python tags=["remove-cell"]
+tokenized = _
 ```
 
 ```python
-tokenized.get_page_by_index(1).get_annotations_image(display_all=True)
+tokenized.get_page_by_index(0).get_annotations_image(display_all=True)
 ```
 
 ```python tags=["remove-cell"]
