@@ -59,7 +59,7 @@ jobs:
         run: |
           if [ "${{ matrix.python-version }}" == "3.8" ] && [ "${{ matrix.extra-set }}" == "ai" ]; then
             coverage run -m pytest
-            coverage report --omit="tests/*" > coverage_report.txt
+            coverage report --omit="docs/sdk/boilerplates/*,tests/*,/home/runner/.cache/huggingface/modules/evaluate_modules/*" > coverage_report.txt
           else
             pytest --durations=10 -m 'not local'
           fi
