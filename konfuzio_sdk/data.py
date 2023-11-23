@@ -371,8 +371,8 @@ class Page(Data):
         """
         Retrieve the Category Annotation associated with a specific Category within this Page.
 
-        If no Category Annotation is found for the provided Category, one can be created based on the `add_if_not_present`
-        argument.
+        If no Category Annotation is found for the provided Category, one can be created based on the
+        `add_if_not_present` argument.
 
         :param category: The Category for which to retrieve the Category Annotation.
         :type category: Category
@@ -560,7 +560,8 @@ class Bbox:
         if round(self.y1, round_decimals) > round(self.page.height, round_decimals):
             exception_or_log_error(
                 msg=f"{self} exceeds height of {self.page} by "
-                f"{round(self.y1, round_decimals) - round(self.page.height, round_decimals)} with validation {validation}.",
+                f"{round(self.y1, round_decimals) - round(self.page.height, round_decimals)} "
+                f"with validation {validation}.",
                 fail_loudly=str(validation) != str(BboxValidationTypes.DISABLED),
                 exception_type=ValueError,
                 handler=handler,
@@ -569,7 +570,8 @@ class Bbox:
         if round(self.x1, round_decimals) > round(self.page.width, round_decimals):
             exception_or_log_error(
                 msg=f"{self} exceeds width of {self.page} by "
-                f"{round(self.x1, round_decimals) - round(self.page.width, round_decimals)} with validation {validation}.",
+                f"{round(self.x1, round_decimals) - round(self.page.width, round_decimals)} "
+                f"with validation {validation}.",
                 fail_loudly=str(validation) != str(BboxValidationTypes.DISABLED),
                 exception_type=ValueError,
                 handler=handler,
@@ -1481,14 +1483,14 @@ class Label(Data):
         """
         Get a list of Annotations that are identified by the least precise regular expressions.
 
-        This method iterates over the list of Categories and Annotations within each Category, collecting all the regexes
-        associated with them. It then evaluates these regexes and collects the top worst ones (i.e., those with the least
-        True Positives). For each of these top worst regexes, it returns the Annotations found by them but not by the best
-        regex for that label, potentially identifying them as outliers.
+        This method iterates over the list of Categories and Annotations within each Category, collecting all the
+        regexes associated with them. It then evaluates these regexes and collects the top worst ones (i.e., those with
+        the least True Positives). For each of these top worst regexes, it returns the Annotations found by them but
+        not by the best regex for that label, potentially identifying them as outliers.
 
-        To detect outlier Annotations with multi-Spans, the method iterates over all the multi-Span Annotations under the
-        Label and checks each Span that was not detected by the aforementioned worst regexes. If it is not found by any
-        other regex in the Project, the entire Annotation is considered a potential outlier.
+        To detect outlier Annotations with multi-Spans, the method iterates over all the multi-Span Annotations under
+        the Label and checks each Span that was not detected by the aforementioned worst regexes. If it is not found by
+        any other regex in the Project, the entire Annotation is considered a potential outlier.
 
         :param categories: A list of Category objects under which the search is conducted.
         :type categories: List[Category]
@@ -2068,7 +2070,7 @@ class AnnotationsContainer(dict):
     """
 
     def remove(self, obj):
-        """Delete an Annotation from the container. Mimicks the list.remove() method."""
+        """Delete an Annotation from the container. Mimicks the similar method of the list."""
         # obj._spans might be a list as it might come from a previous SDK version
         if isinstance(obj._spans, list):
             key = (
@@ -2080,7 +2082,7 @@ class AnnotationsContainer(dict):
         del self[key]
 
     def append(self, obj):
-        """Add an Annotation to the container. Mimicks the list.append() method."""
+        """Add an Annotation to the container. Mimicks the similar method of the list."""
         # obj._spans might be a list as it might come from a previous SDK version
         if isinstance(obj._spans, list):
             key = (
