@@ -130,8 +130,6 @@ them [here](https://help.konfuzio.com/modules/projects/index.html?highlight=effi
 | BertTokenizerFast      | BERT              | 'bert-base-german-cased'        | None            | None                     |
 | BertTokenizerFast      | BERT              | 'prajjwal1/bert-tiny'           | None            | None                     |
 | BertTokenizerFast      | BERT              | 'bert-base-german-dbmdz-cased'  | None            | None                     |
-| BertTokenizerFast      | BERT              | 'distilbert-base-german-cased'  | None            | None                     |
-
 
 
 ### Create a custom Categorization AI
