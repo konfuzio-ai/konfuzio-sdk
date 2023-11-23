@@ -432,7 +432,7 @@ class TestTextCategorizationModels(unittest.TestCase):
         (WhitespaceTokenizer, LSTM, VGG, 'vgg13'),
         (ConnectedTextTokenizer, NBOW, VGG, 'vgg11'),
         (ConnectedTextTokenizer, LSTM, VGG, 'vgg13'),
-        (transformers.AutoTokenizer, BERT, VGG, 'vgg16'),
+        (transformers.BertTokenizerFast, BERT, VGG, 'vgg16'),
         (None, None, EfficientNet, 'efficientnet_b0'),
         (None, None, EfficientNet, 'efficientnet_b3'),
         (None, None, VGG, 'vgg11'),
