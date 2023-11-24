@@ -1485,8 +1485,8 @@ class Label(Data):
 
         This method iterates over the list of Categories and Annotations within each Category, collecting all the
         regexes associated with them. It then evaluates these regexes and collects the top worst ones (i.e., those with
-        the least True Positives). For each of these top worst regexes, it returns the Annotations found by them but not
-        by the best regex for that label, potentially identifying them as outliers.
+        the least True Positives). For each of these top worst regexes, it returns the Annotations found by them but
+        not by the best regex for that label, potentially identifying them as outliers.
 
         To detect outlier Annotations with multi-Spans, the method iterates over all the multi-Span Annotations under
         the Label and checks each Span that was not detected by the aforementioned worst regexes. If it is not found by
