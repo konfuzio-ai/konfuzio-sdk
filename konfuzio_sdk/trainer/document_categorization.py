@@ -1179,22 +1179,6 @@ class CategorizationAI(AbstractCategorizationAI):
                     # if not using image module then don't need the image paths
                     # so we just have a list of None to keep the lists the same length
                     document_images.append(None)
-                # if use_text:
-                #     if self.classifier.text_model.__class__.__name__ == 'BERT':
-                #         self.tokenizer = transformers.AutoTokenizer.from_pretrained(self.classifier.text_model.name)
-                #         document_tokens.append(
-                #             torch.LongTensor(
-                #                 self.tokenizer(document.text, truncation=True, padding='max_length')['input_ids']
-                #             )
-                #         )
-                #     else:
-                #         # REPLACE page_tokens = tokenizer.get_tokens(page_text)[:max_len]
-                #         # page_encoded = [text_vocab.stoi(span.offset_string) for span in
-                #         # self.spans(start_offset=page.start_offset, end_offset=page.end_offset)]
-                #         # document_tokens.append(torch.LongTensor(page_encoded))
-                #         # if using a text module, tokenize the page, trim to max length and then numericalize
-                #         self.text_vocab.numericalize(page)
-                #         document_tokens.append(torch.LongTensor(page.text_encoded))
                 if use_text:
                     if self.classifier.text_model.__class__.__name__ == 'BERT':
                         self.tokenizer = transformers.AutoTokenizer.from_pretrained(self.classifier.text_model.name)
