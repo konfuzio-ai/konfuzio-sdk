@@ -35,6 +35,12 @@ class TestCLI(TestCase):
         """Test to init with default Host."""
         assert credentials() == ("myuser", "pw", "https://app.konfuzio.com")
 
+    @patch('builtins.input', side_effect=['myuser', 'https://konfuzio.yourcompany.com//'])
+    @patch("konfuzio_sdk.cli.getpass", side_effect=['pw'])
+    def test_removing_trailing_slashes(self, input, getpass):
+        """Test to ensure that any trailing slash(es) in the end of the host URL are removed."""
+        assert credentials() == ("myuser", "pw", "https://konfuzio.yourcompany.com")
+
     @patch('builtins.input', side_effect=['myuser', ''])
     @patch("konfuzio_sdk.cli.getpass", side_effect=['pw'])
     def test_init_project(self, input, getpass):
