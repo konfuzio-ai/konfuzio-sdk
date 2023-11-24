@@ -496,7 +496,7 @@ class BERT(AbstractTextCategorizationModel):
         self,
         input_dim: int,
         name: str = 'bert-base-german-cased',
-        freeze: bool = True,
+        freeze: bool = False,
         **kwargs,
     ):
         """Initialize BERT model from the HuggingFace library."""
@@ -1218,14 +1218,11 @@ class CategorizationAI(AbstractCategorizationAI):
                 image = None
             if use_text:
                 # if we are using text, batch and pad the already tokenized and numericalized text and place on GPU
-                if not isinstance(self.tokenizer, transformers.BertTokenizerFast):
-                    text = torch.nn.utils.rnn.pad_sequence(
-                        text, batch_first=True, padding_value=self.text_vocab.pad_idx
-                    )
+                if isinstance(self.tokenizer, transformers.BertTokenizerFast):
+                    padding_value = self.classifier.text_model.bert.config.to_dict().get('pad_token_id', 0)
                 else:
-                    text = torch.nn.utils.rnn.pad_sequence(
-                        text, batch_first=True, padding_value=self.classifier.text_model.bert.config.pad_token_id
-                    )
+                    padding_value = self.text_vocab.pad_idx
+                text = torch.nn.utils.rnn.pad_sequence(text, batch_first=True, padding_value=padding_value)
                 text = text.to(device)
             else:
                 text = None
@@ -1267,7 +1264,7 @@ class CategorizationAI(AbstractCategorizationAI):
     def _fit_classifier(
         self,
         train_examples: DataLoader,
-        n_epochs: int = 25,
+        n_epochs: int = 20,
         patience: int = 3,
         optimizer=None,
         lr_decay: float = 0.999,
@@ -1281,7 +1278,7 @@ class CategorizationAI(AbstractCategorizationAI):
         validation loss decrease), whichever comes first.
         """
         if optimizer is None:
-            optimizer = {'name': 'Adam'}
+            optimizer = {'name': 'Adam', 'lr': 1e-4}  # default learning rate of Adam is 1e-3
         train_losses = []
         patience_counter = 0
         loss_fn = torch.nn.CrossEntropyLoss()
@@ -1440,8 +1437,12 @@ class CategorizationAI(AbstractCategorizationAI):
                 if use_image:
                     batch['image'] = torch.stack(batch_image).to(device)
                 if use_text:
+                    if not isinstance(self.tokenizer, transformers.BertTokenizerFast):
+                        padding_value = self.text_vocab.pad_idx
+                    else:
+                        padding_value = self.classifier.text_model.bert.config.to_dict().get('pad_token_id', 0)
                     batch_text = torch.nn.utils.rnn.pad_sequence(
-                        batch_text, batch_first=True, padding_value=self.text_vocab.pad_idx
+                        batch_text, batch_first=True, padding_value=padding_value
                     )
                     batch['text'] = batch_text.to(device)
 

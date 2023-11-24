@@ -655,6 +655,123 @@ class TestAllCategorizationConfigurations(unittest.TestCase):
             assert use_both
 
 
+@parameterized.parameterized_class(
+    ('bert_name'),
+    [
+        ('prajjwal1/bert-tiny',),
+        ('bert-base-german-dbmdz-cased',),
+    ],
+)
+@pytest.mark.skipif(
+    not is_dependency_installed('timm')
+    and not is_dependency_installed('torch')
+    and not is_dependency_installed('transformers')
+    and not is_dependency_installed('torchvision'),
+    reason='Required dependencies not installed.',
+)
+class TestBertCategorizationModels(unittest.TestCase):
+    """Test BERT models with different names."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Set up the Data and Categorization Pipeline."""
+        cls.training_prj = Project(id_=14392, update=True)
+        cls.categorization_pipeline = CategorizationAI(cls.training_prj.categories)
+        cls.category_1 = cls.training_prj.get_category_by_id(19827)
+        cls.category_2 = cls.training_prj.get_category_by_id(19828)
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        """Delete the Data and Categorization Pipeline."""
+        os.remove(cls.categorization_pipeline.pipeline_path)
+        del cls.training_prj
+        del cls.categorization_pipeline
+        del cls.category_1
+        del cls.category_2
+
+    def test_1_configure_dataset(self):
+        """Test configuring the dataset for the training and testing of the model."""
+        category_1_documents = self.category_1.documents()
+        category_2_documents = self.category_2.documents()
+        self.categorization_pipeline.documents = category_1_documents + category_2_documents
+        assert all(doc.category is not None for doc in self.categorization_pipeline.documents)
+
+        category_1_test_documents = self.category_1.test_documents()
+        category_2_test_documents = self.category_2.test_documents()
+        self.categorization_pipeline.test_documents = category_1_test_documents + category_2_test_documents
+        assert all(doc.category is not None for doc in self.categorization_pipeline.documents)
+
+    def test_2_configure_pipeline(self):
+        """Test configuring the training pipeline of the model."""
+        self.categorization_pipeline.tokenizer = transformers.AutoTokenizer.from_pretrained(self.bert_name)
+        self.categorization_pipeline.category_vocab = self.categorization_pipeline.build_template_category_vocab()
+        text_model = BERT(input_dim=512, name=self.bert_name)
+        bert_config = text_model.bert.config
+        assert hasattr(bert_config, '_name_or_path')
+        assert bert_config._name_or_path == self.bert_name
+        self.categorization_pipeline.classifier = PageTextCategorizationModel(
+            text_model=text_model,
+            output_dim=len(self.categorization_pipeline.category_vocab),
+        )
+        self.categorization_pipeline.classifier.eval()
+
+    def test_3_fit(self):
+        """Test training the model."""
+        self.categorization_pipeline.build_preprocessing_pipeline(use_image=False)
+        self.categorization_pipeline.fit(n_epochs=3, optimizer={'name': 'Adam'})
+
+    def test_4_categorize_document(self):
+        """Test categorizing the Document."""
+        test_document = self.training_prj.get_document_by_id(5589058)
+        ground_truth_category = test_document.category
+        test_document.set_category(self.training_prj.no_category)
+        result = self.categorization_pipeline.categorize(document=test_document)
+        assert isinstance(result, Document)
+        assert result.category == ground_truth_category
+        for page in result.pages():
+            assert page.category == ground_truth_category
+            assert page.maximum_confidence_category_annotation.confidence > 0.9
+        # restore category attribute to not interfere with next tests
+        test_document.set_category(result.category)
+
+    def test_5_categorize_page(self):
+        """Test categorizing the Document's Page."""
+        test_document = self.training_prj.get_document_by_id(5589057)
+        ground_truth_category = test_document.category
+        test_page = WhitespaceTokenizer().tokenize(deepcopy(test_document)).pages()[0]
+        # reset the category attribute to test that it can be categorized successfully
+        test_page.set_category(self.training_prj.no_category)
+        result = self.categorization_pipeline._categorize_page(test_page)
+        assert isinstance(result, Page)
+        assert result.category == ground_truth_category
+        assert result.maximum_confidence_category_annotation.confidence > 0.9
+
+    def test_6_save(self):
+        """Test saving the model."""
+        self.categorization_pipeline.pipeline_path = self.categorization_pipeline.save()
+        assert os.path.isfile(self.categorization_pipeline.pipeline_path)
+
+    def test_7_upload_ai_model(self) -> None:
+        """Upload the model."""
+        assert os.path.isfile(self.categorization_pipeline.pipeline_path)
+        try:
+            model_id = upload_ai_model(
+                ai_model_path=self.categorization_pipeline.pipeline_path, project_id=self.training_prj.id_
+            )
+            assert isinstance(model_id, int)
+            updated = update_ai_model(model_id, ai_type='categorization', description='test_description')
+            assert updated['description'] == 'test_description'
+            updated = update_ai_model(model_id, ai_type='categorization', patch=False, description='test_description')
+            assert updated['description'] == 'test_description'
+            delete_ai_model(model_id, ai_type='categorization')
+            url = get_create_ai_model_url(ai_type='categorization')
+            session = konfuzio_session()
+            not_found = session.get(url)
+            assert not_found.status_code == 204
+        except HTTPError as e:
+            assert ('403' in str(e)) or ('404' in str(e))
+
+
 @pytest.mark.skipif(
     not is_dependency_installed('timm')
     and not is_dependency_installed('torch')
