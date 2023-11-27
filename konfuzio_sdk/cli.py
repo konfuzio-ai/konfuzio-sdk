@@ -23,7 +23,8 @@ konfuzio_sdk create_Project >NAME<
 konfuzio_sdk export_project >ID<
     Download the data from a Project by ID to migrate it to another Host.
 konfuzio_sdk export_project >ID< include_ai
-    Download the data of a Project by ID to migrate it to another Host, including the (status) Done & Activated AI models
+    Download the data of a Project by ID to migrate it to another Host, including the (status) Done & Activated AI
+    models
 
 These commands should be run inside of your working directory.
 
@@ -36,9 +37,8 @@ def credentials():
     user = input("Username you use to login to Konfuzio Server: ")
     password = getpass("Password you use to login to Konfuzio Server: ")
     host = str(
-        input("Server Host URL (press [ENTER] for https://app.konfuzio.com): ")
-        or "https://app.konfuzio.com"
-    )
+        input("Server Host URL (press [ENTER] for https://app.konfuzio.com): ") or "https://app.konfuzio.com"
+    ).rstrip('/')
     return user, password, host
 
 
@@ -48,11 +48,7 @@ def main():
     if len(sys.argv) == 1 and sys.argv[0] == "init":
         user, password, host = credentials()
         init_env(user=user, password=password, host=host)
-    elif (
-        len(sys.argv) in range(2, 4)
-        and sys.argv[0] == "export_project"
-        and sys.argv[1].isdigit()
-    ):
+    elif len(sys.argv) in range(2, 4) and sys.argv[0] == "export_project" and sys.argv[1].isdigit():
         include_ais = False
         if len(sys.argv) == 3:
             include_ais = True if sys.argv[2] == "include_ai" else False
