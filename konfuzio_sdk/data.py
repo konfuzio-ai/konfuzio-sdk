@@ -371,12 +371,12 @@ class Page(Data):
         """
         Retrieve the Category Annotation associated with a specific Category within this Page.
 
-        If no Category Annotation is found for the provided Category, one can be created based on the `add_if_not_present`
-        argument.
+        If no Category Annotation is found for the provided Category, one can be created based on the
+        `add_if_not_present` argument.
 
         :param category: The Category for which to retrieve the Category Annotation.
         :type category: Category
-        :param add_if_not_present: If True, a Category Annotation will be added to the current Page if none is found. If 
+        :param add_if_not_present: If True, a Category Annotation will be added to the current Page if none is found. If
                                 False, a dummy Category Annotation will be created, not linked to any Document or Page.
         :type add_if_not_present: bool
 
@@ -560,7 +560,8 @@ class Bbox:
         if round(self.y1, round_decimals) > round(self.page.height, round_decimals):
             exception_or_log_error(
                 msg=f"{self} exceeds height of {self.page} by "
-                f"{round(self.y1, round_decimals) - round(self.page.height, round_decimals)} with validation {validation}.",
+                f"{round(self.y1, round_decimals) - round(self.page.height, round_decimals)} "
+                f"with validation {validation}.",
                 fail_loudly=str(validation) != str(BboxValidationTypes.DISABLED),
                 exception_type=ValueError,
                 handler=handler,
@@ -569,7 +570,8 @@ class Bbox:
         if round(self.x1, round_decimals) > round(self.page.width, round_decimals):
             exception_or_log_error(
                 msg=f"{self} exceeds width of {self.page} by "
-                f"{round(self.x1, round_decimals) - round(self.page.width, round_decimals)} with validation {validation}.",
+                f"{round(self.x1, round_decimals) - round(self.page.width, round_decimals)} "
+                f"with validation {validation}.",
                 fail_loudly=str(validation) != str(BboxValidationTypes.DISABLED),
                 exception_type=ValueError,
                 handler=handler,
@@ -1481,18 +1483,18 @@ class Label(Data):
         """
         Get a list of Annotations that are identified by the least precise regular expressions.
 
-        This method iterates over the list of Categories and Annotations within each Category, collecting all the regexes
-        associated with them. It then evaluates these regexes and collects the top worst ones (i.e., those with the least
-        True Positives). For each of these top worst regexes, it returns the Annotations found by them but not by the best
-        regex for that label, potentially identifying them as outliers.
+        This method iterates over the list of Categories and Annotations within each Category, collecting all the
+        regexes associated with them. It then evaluates these regexes and collects the top worst ones (i.e., those with
+        the least True Positives). For each of these top worst regexes, it returns the Annotations found by them but
+        not by the best regex for that label, potentially identifying them as outliers.
 
-        To detect outlier Annotations with multi-Spans, the method iterates over all the multi-Span Annotations under the
-        Label and checks each Span that was not detected by the aforementioned worst regexes. If it is not found by any
-        other regex in the Project, the entire Annotation is considered a potential outlier.
+        To detect outlier Annotations with multi-Spans, the method iterates over all the multi-Span Annotations under
+        the Label and checks each Span that was not detected by the aforementioned worst regexes. If it is not found by
+        any other regex in the Project, the entire Annotation is considered a potential outlier.
 
         :param categories: A list of Category objects under which the search is conducted.
         :type categories: List[Category]
-        :param use_test_docs: Indicates whether the evaluation of the regular expressions occurs on test Documents or 
+        :param use_test_docs: Indicates whether the evaluation of the regular expressions occurs on test Documents or
                             training Documents.
         :type use_test_docs: bool
         :param top_worst_percentage: A threshold for determining what percentage of the worst regexes' output to return.
@@ -2058,6 +2060,38 @@ class Span(Data):
 
         sentence_spans = [x for x in sentence_spans if len(x)]
         return sentence_spans
+
+
+class AnnotationsContainer(dict):
+    """
+    Hold a collection of Annotations in an efficient way (dict of tuples).
+
+    Provides methods to interact with the AnnotationsContainer as if it was a list.
+    """
+
+    def remove(self, obj):
+        """Delete an Annotation from the container. Mimicks the similar method of the list."""
+        # obj._spans might be a list as it might come from a previous SDK version
+        if isinstance(obj._spans, list):
+            key = (
+                tuple(sorted((s.start_offset, s.end_offset) for s in obj._spans)),
+                obj.label.name,
+            )
+        else:
+            key = (tuple(sorted(obj._spans.keys())), obj.label.name)
+        del self[key]
+
+    def append(self, obj):
+        """Add an Annotation to the container. Mimicks the similar method of the list."""
+        # obj._spans might be a list as it might come from a previous SDK version
+        if isinstance(obj._spans, list):
+            key = (
+                tuple(sorted((s.start_offset, s.end_offset) for s in obj._spans)),
+                obj.label.name,
+            )
+        else:
+            key = (tuple(sorted(obj._spans.keys())), obj.label.name)
+        self[key] = obj
 
 
 class Annotation(Data):
@@ -3751,7 +3785,7 @@ class Document(Data):
             self._annotation_sets = None  # clean Annotation Sets to not create duplicates
             self.annotation_sets()
 
-            self._annotations = {}  # clean Annotations to not create duplicates
+            self._annotations = AnnotationsContainer()  # clean Annotations to not create duplicates
             # We read the annotation file that we just downloaded
             with open(self.annotation_file_path, 'r') as f:
                 raw_annotations = json.load(f)
@@ -3770,7 +3804,7 @@ class Document(Data):
 
         if self._annotations is None:
             self.annotation_sets()
-            self._annotations = {}
+            self._annotations = AnnotationsContainer()
             # We load the annotation file if it exists
             if annotation_file_exists:
                 with open(self.annotation_file_path, 'r') as f:
