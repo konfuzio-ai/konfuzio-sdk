@@ -29,6 +29,7 @@ from konfuzio_sdk.api import (
     create_label,
     TimeoutHTTPAdapter,
     get_page_image,
+    get_all_project_ais,
 )
 from tests.variables import TEST_PROJECT_ID, TEST_DOCUMENT_ID
 
@@ -484,6 +485,45 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         env_file = ".testenv"
         assert init_env(user='me', password='pw', file_ending=env_file)
         os.remove(os.path.join(os.getcwd(), env_file))
+
+
+    @patch('konfuzio_sdk.api.konfuzio_session')
+    @patch('konfuzio_sdk.api.get_extraction_ais_list_url')
+    @patch('konfuzio_sdk.api.get_splitting_ais_list_url')
+    @patch('konfuzio_sdk.api.get_categorization_ais_list_url')
+    @patch('konfuzio_sdk.api.json.loads')
+    def test_get_all_project_ais(
+            self,
+            mock_json_loads,
+            mock_get_categorization_url,
+            mock_get_splitting_url,
+            mock_get_extraction_url,
+            mock_session
+    ):
+        # Setup
+        sample_data = {"AI_DATA": "AI_SAMPLE_DATA"}
+        host = 'https://app.konfuzio.com'
+
+        mock_session.return_value.get.return_value.status_code = 200
+        mock_json_loads.return_value = sample_data
+
+        # Action
+        result = get_all_project_ais(project_id=1, host=host)
+
+        # Assertions
+        self.assertEqual(
+            result,
+            {
+                "extraction": sample_data,
+                "filesplitting": sample_data,
+                "categorization": sample_data,
+            }
+        )
+
+        # Ensure the mock methods were called with the correct arguments
+        mock_get_extraction_url.assert_called_once_with(1, host)
+        mock_get_splitting_url.assert_called_once_with(1, host)
+        mock_get_categorization_url.assert_called_once_with(1, host)
 
 
 def test_init_env():

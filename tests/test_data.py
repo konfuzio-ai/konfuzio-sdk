@@ -17,7 +17,6 @@ from konfuzio_sdk.data import (
     LabelSet,
     Data,
     Span,
-    download_training_and_test_data,
     Category,
     CategoryAnnotation,
     Page,
@@ -3419,7 +3418,7 @@ class TestData(unittest.TestCase):
 def test_download_training_and_test_data():
     """Test downloading of data from training and test documents."""
     project = Project(id_=1249, update=True)
-    download_training_and_test_data(project=project)
+    project.download_training_and_test_data()
 
 
 def test_to_init_prj_from_folder():
