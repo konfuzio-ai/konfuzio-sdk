@@ -173,8 +173,8 @@ categorization_pipeline.fit(n_epochs=1)
 ```python
 data_quality = categorization_pipeline.evaluate(use_training_docs=True)
 ai_quality = categorization_pipeline.evaluate(use_training_docs=False)
-print(data_quality.f1())
-print(ai_quality.f1())
+print(data_quality.f1(category=project.categories[0]))
+print(ai_quality.f1(category=project.categories[0]))
 ```
 
 Now you can categorize a Document.
@@ -279,6 +279,8 @@ categorization_pipeline.fit(n_epochs=1)
 
 data_quality = categorization_pipeline.evaluate(use_training_docs=True)
 ai_quality = categorization_pipeline.evaluate(use_training_docs=False)
+print(data_quality.f1(category=project.categories[0]))
+print(ai_quality.f1(category=project.categories[0]))
 
 document = project.get_document_by_id(YOUR_DOCUMENT_ID)
 categorization_result = categorization_pipeline.categorize(document=document)
