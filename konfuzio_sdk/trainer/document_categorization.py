@@ -25,6 +25,7 @@ from konfuzio_sdk.tokenizer.base import AbstractTokenizer
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
 from konfuzio_sdk.data import Document, Page, Category, CategoryAnnotation
 from konfuzio_sdk.extras import (
+    evaluate,
     timm,
     torch,
     torchvision,
@@ -909,7 +910,7 @@ class PageMultimodalCategorizationModel(PageCategorizationModel):
 
 def get_optimizer(classifier: PageCategorizationModel, config: dict) -> Optimizer:
     """Get an optimizer for a given Model given a config."""
-    logger.info('getting optimizer')
+    logger.info('Getting optimizer')
 
     # name of the optimizer, i.e. SGD, Adam, RMSprop
     optimizer_name = config['name']
@@ -1252,14 +1253,20 @@ class CategorizationAI(AbstractCategorizationAI):
         """Perform one epoch of training."""
         self.classifier.train()
         losses = []
+        predictions_list = []
+        ground_truth_list = []
         for batch in tqdm.tqdm(examples, desc='Training'):
             predictions = self.classifier(batch)['prediction']
-            loss = loss_fn(predictions, batch['label'])
+            ground_truth = batch['label']
+            predictions_list.extend(torch.argmax(predictions, axis=1).tolist())
+            ground_truth_list.extend(ground_truth.tolist())
+            # use "evaluate" to compute train_f1
+            loss = loss_fn(predictions, ground_truth)
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
             losses.append(loss.item())
-        return losses
+        return losses, predictions_list, ground_truth_list
 
     def _fit_classifier(
         self,
@@ -1286,14 +1293,28 @@ class CategorizationAI(AbstractCategorizationAI):
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=0, factor=lr_decay)
         temp_dir = tempfile.gettempdir()
         temp_filename = os.path.join(temp_dir, f'temp_{uuid.uuid4().hex}.pt')
-        logger.info('begin fitting')
+        f1_metric = evaluate.load("f1")
+        acc_metric = evaluate.load("accuracy")
+        logger.info('Begin fitting')
         best_valid_loss = float('inf')
         train_loss = float('inf')
         for epoch in range(n_epochs):
-            train_loss = self._train(train_examples, loss_fn, optimizer)  # train epoch
+            train_loss, predictions_list, ground_truth_list = self._train(
+                train_examples, loss_fn, optimizer
+            )  # train epoch
+            f1_score = f1_metric.compute(predictions=predictions_list, references=ground_truth_list, average="macro")[
+                "f1"
+            ]  # compute f1 score
+            acc_score = acc_metric.compute(predictions=predictions_list, references=ground_truth_list)[
+                "accuracy"
+            ]  # compute accuracy score
             train_losses.extend(train_loss)  # keep track of all the losses/accs
-            logger.info(f'epoch: {epoch}')
-            logger.info(f'train_loss: {np.mean(train_loss):.3f}')
+            logger.info(
+                f'Epoch: {epoch + 1} | '
+                f'Train Loss: {np.mean(train_loss):.3f} | '
+                f'Train F1: {f1_score:.3f} | '
+                f'Train Accuracy: {acc_score:.3f} |'
+            )
             # use scheduler to reduce the lr
             scheduler.step(np.mean(train_loss))
             # if we get the best validation loss so far
@@ -1311,12 +1332,10 @@ class CategorizationAI(AbstractCategorizationAI):
             if patience_counter > patience:
                 logger.info('lost patience!')
                 break
-        logger.info('training finished, begin testing')
+        logger.info('Training finished. Loading best model')
         # load parameters that got us the best validation loss
         self.classifier.load_state_dict(torch.load(temp_filename))
         os.remove(temp_filename)
-        # evaluate model over the test data
-        logger.info(f'test_loss: {np.mean(train_losses):.3f}, test_acc: {np.nanmean(train_loss):.3f}')
 
         training_metrics = {
             'train_losses': train_losses,
@@ -1349,13 +1368,14 @@ class CategorizationAI(AbstractCategorizationAI):
             max_len=max_len,
             device=self.device,
         )
-        logger.info(f'{len(train_iterator)} training examples')
+        logger.info(f'{len(self.documents)} Training Documents')
+        logger.info(f'{len(train_iterator)} Training Pages')
         # logger.info(f'{len(test_iterator)} testing examples')
 
         # place document classifier on device (this is a no-op if CPU was selected)
         self.classifier = self.classifier.to(self.device)
 
-        logger.info('training label classifier')
+        logger.info('Training label classifier')
 
         # fit the document classifier
         self.classifier, training_metrics = self._fit_classifier(train_iterator, **kwargs)
