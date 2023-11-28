@@ -496,7 +496,7 @@ class BERT(AbstractTextCategorizationModel):
         self,
         input_dim: int,
         name: str = 'bert-base-german-cased',
-        freeze: bool = True,
+        freeze: bool = False,
         **kwargs,
     ):
         """Initialize BERT model from the HuggingFace library."""
@@ -1142,7 +1142,8 @@ class CategorizationAI(AbstractCategorizationAI):
         for document in documents:
             tokenized_doc = deepcopy(document)
             if self.tokenizer is not None:
-                tokenized_doc = self.tokenizer.tokenize(tokenized_doc)
+                if not isinstance(self.tokenizer, transformers.BertTokenizerFast):
+                    tokenized_doc = self.tokenizer.tokenize(tokenized_doc)
             tokenized_doc.status = document.status  # to allow to retrieve images from the original pages
             document_images = []
             document_tokens = []
@@ -1179,12 +1180,18 @@ class CategorizationAI(AbstractCategorizationAI):
                     # so we just have a list of None to keep the lists the same length
                     document_images.append(None)
                 if use_text:
-                    # if using a text module, tokenize the page, trim to max length and then numericalize
-                    # REPLACE page_tokens = tokenizer.get_tokens(page_text)[:max_len]
-                    # page_encoded = [text_vocab.stoi(span.offset_string) for span in
-                    # self.spans(start_offset=page.start_offset, end_offset=page.end_offset)]
-                    # document_tokens.append(torch.LongTensor(page_encoded))
-                    self.text_vocab.numericalize(page)
+                    if self.classifier.text_model.__class__.__name__ == 'BERT':
+                        self.tokenizer = transformers.AutoTokenizer.from_pretrained(self.classifier.text_model.name)
+                        page.text_encoded = self.tokenizer(
+                            page.text, truncation=True, padding='max_length', max_length=max_len
+                        )['input_ids']
+                    else:
+                        # REPLACE page_tokens = tokenizer.get_tokens(page_text)[:max_len]
+                        # page_encoded = [text_vocab.stoi(span.offset_string) for span in
+                        # self.spans(start_offset=page.start_offset, end_offset=page.end_offset)]
+                        # document_tokens.append(torch.LongTensor(page_encoded))
+                        # if using a text module, tokenize the page, trim to max length and then numericalize
+                        self.text_vocab.numericalize(page)
                     document_tokens.append(torch.LongTensor(page.text_encoded))
                 else:
                     # if not using text module then don't need the tokens
@@ -1211,7 +1218,11 @@ class CategorizationAI(AbstractCategorizationAI):
                 image = None
             if use_text:
                 # if we are using text, batch and pad the already tokenized and numericalized text and place on GPU
-                text = torch.nn.utils.rnn.pad_sequence(text, batch_first=True, padding_value=self.text_vocab.pad_idx)
+                if isinstance(self.tokenizer, transformers.BertTokenizerFast):
+                    padding_value = self.classifier.text_model.bert.config.to_dict().get('pad_token_id', 0)
+                else:
+                    padding_value = self.text_vocab.pad_idx
+                text = torch.nn.utils.rnn.pad_sequence(text, batch_first=True, padding_value=padding_value)
                 text = text.to(device)
             else:
                 text = None
@@ -1253,7 +1264,7 @@ class CategorizationAI(AbstractCategorizationAI):
     def _fit_classifier(
         self,
         train_examples: DataLoader,
-        n_epochs: int = 25,
+        n_epochs: int = 20,
         patience: int = 3,
         optimizer=None,
         lr_decay: float = 0.999,
@@ -1267,7 +1278,7 @@ class CategorizationAI(AbstractCategorizationAI):
         validation loss decrease), whichever comes first.
         """
         if optimizer is None:
-            optimizer = {'name': 'Adam'}
+            optimizer = {'name': 'Adam', 'lr': 1e-4}  # default learning rate of Adam is 1e-3
         train_losses = []
         patience_counter = 0
         loss_fn = torch.nn.CrossEntropyLoss()
@@ -1356,7 +1367,8 @@ class CategorizationAI(AbstractCategorizationAI):
 
     def reduce_model_weight(self):
         """Reduce the size of the model by running lose_weight on the tokenizer."""
-        self.tokenizer.lose_weight()
+        if not isinstance(self.tokenizer, transformers.BertTokenizerFast):
+            self.tokenizer.lose_weight()
 
     @torch_no_grad
     def _predict(self, page_images, text, batch_size=2, *args, **kwargs) -> Tuple[Tuple[int, float], pd.DataFrame]:
@@ -1425,8 +1437,12 @@ class CategorizationAI(AbstractCategorizationAI):
                 if use_image:
                     batch['image'] = torch.stack(batch_image).to(device)
                 if use_text:
+                    if not isinstance(self.tokenizer, transformers.BertTokenizerFast):
+                        padding_value = self.text_vocab.pad_idx
+                    else:
+                        padding_value = self.classifier.text_model.bert.config.to_dict().get('pad_token_id', 0)
                     batch_text = torch.nn.utils.rnn.pad_sequence(
-                        batch_text, batch_first=True, padding_value=self.text_vocab.pad_idx
+                        batch_text, batch_first=True, padding_value=padding_value
                     )
                     batch['text'] = batch_text.to(device)
 
@@ -1497,9 +1513,12 @@ class CategorizationAI(AbstractCategorizationAI):
         if use_text:
             if isinstance(self.classifier.text_model, BERT):
                 max_length = self.classifier.text_model.get_max_length()
+                page.text_encoded = self.tokenizer(
+                    page.text, truncation=True, padding='max_length', max_length=max_length
+                )['input_ids']
             else:
                 max_length = None
-            self.text_vocab.numericalize(page, max_length)
+                self.text_vocab.numericalize(page, max_length)
             text_coded = [torch.LongTensor(page.text_encoded)]
 
         (predicted_category_id, predicted_confidence), _ = self._predict(page_images=docs_data_images, text=text_coded)
@@ -1578,7 +1597,6 @@ def build_categorization_ai_pipeline(
     if tokenizer is None:
         tokenizer = WhitespaceTokenizer()
     categorization_pipeline.tokenizer = tokenizer
-    categorization_pipeline.text_vocab = categorization_pipeline.build_text_vocab()
     categorization_pipeline.category_vocab = categorization_pipeline.build_template_category_vocab()
     # Configure image and text models
     if image_model is not None:
@@ -1596,10 +1614,13 @@ def build_categorization_ai_pipeline(
         image_model = image_model_class(name=image_model.value)
     if text_model is not None:
         if isinstance(text_model, str):
+            text_model_name = text_model
             try:
                 text_model = next(model for model in TextModel if model.value in text_model)
             except StopIteration:
                 raise ValueError(f'{text_model} not found. Provide an existing name for the image model.')
+        else:
+            text_model_name = text_model.name
         text_model_class_mapping = {
             TextModel.NBOW: NBOW,
             TextModel.NBOWSelfAttention: NBOWSelfAttention,
@@ -1608,7 +1629,11 @@ def build_categorization_ai_pipeline(
         }
         text_model_class = text_model_class_mapping[text_model]
         # Configure text model
-        text_model = text_model_class(input_dim=len(categorization_pipeline.text_vocab))
+        if "bert" not in text_model_name:
+            categorization_pipeline.text_vocab = categorization_pipeline.build_text_vocab()
+            text_model = text_model_class(input_dim=len(categorization_pipeline.text_vocab))
+        else:
+            text_model = text_model_class(input_dim=512, name=text_model_name)
     # Configure the classifier (whether it predicts using only the image of the Page,
     # or only the text, or a MLP to concatenate both predictions)
     if image_model is None:
@@ -1652,7 +1677,7 @@ document_components = [
     'classifier',
     'eval_transforms',
     'train_transforms',
-    'categories'
+    'categories',
 ]
 
 document_components.extend(COMMON_PARAMETERS)
@@ -1678,7 +1703,9 @@ def _load_categorization_model(path: str):
     model_args = MODEL_PARAMETERS_TO_SAVE[model_type]
 
     # Non-backwards compatible components to skip on the verification for loaded data.
-    optional_components = ['categories',]
+    optional_components = [
+        'categories',
+    ]
 
     # Verify if loaded data has all necessary components
     missing_components = [arg for arg in model_args if arg not in loaded_data.keys() and arg not in optional_components]
