@@ -72,7 +72,7 @@ jobs:
           KONFUZIO_PASSWORD: ${{ secrets.KONFUZIO_PASSWORD }}
           KONFUZIO_TOKEN: ${{ secrets.KONFUZIO_TOKEN }}
       - name: Post coverage report as comment
-        if: ( matrix.python-version == '3.8' && matrix.extra-set == 'ai')
+        if: ( matrix.python-version == '3.8' && matrix.extra-set == 'ai' && github.event_name == 'pull_request')
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
