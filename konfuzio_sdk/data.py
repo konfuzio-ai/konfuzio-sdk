@@ -33,7 +33,6 @@ from konfuzio_sdk.api import (
     upload_file_konfuzio_api,
     get_results_from_segmentation,
     get_all_project_ais,
-    created_or_forbidden,
     export_ai_models,
 )
 from konfuzio_sdk.normalize import normalize
@@ -2459,12 +2458,11 @@ class Annotation(Data):
                 page_number=self.page_number,
                 session=self.document.project.session,
             )
-            annotation_created_response = created_or_forbidden(response)
-            if annotation_created_response:
+            if response.status_code == 201:
                 json_response = json.loads(response.text)
                 self.id_ = json_response["id"]
                 new_annotation_added = True
-            elif not annotation_created_response:
+            elif response.status_code == 403:
                 logger.error(response.text)
                 try:
                     if "In one Project you cannot label the same text twice." in response.text:

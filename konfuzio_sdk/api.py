@@ -854,18 +854,3 @@ def export_ai_models(project) -> int: # NOQA
 
                 print(f"[SUCCESS] Exported {variant} AI Model to {file_name}")
             return export_count
-
-
-def created_or_forbidden(response):
-    """
-    Check if the response is created or forbidden.
-
-    :param response: response
-    :return: True if the response is created (201) False if the response is Forbidden (403)
-    """
-    if response.status_code == 201:
-        return True
-    elif response.status_code == 403:
-        return False
-    else:
-        raise ConnectionError(f'Error{response.status_code}: {response.content} {response.url}')
