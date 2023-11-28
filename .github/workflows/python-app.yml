@@ -2,9 +2,6 @@ name: Python application
 
 on:
   push:
-    branches-ignore:
-      - '*'
-  pull_request:
     branches:
       - '*'
 
@@ -69,8 +66,13 @@ jobs:
           KONFUZIO_USER: ${{ secrets.KONFUZIO_USER }}
           KONFUZIO_PASSWORD: ${{ secrets.KONFUZIO_PASSWORD }}
           KONFUZIO_TOKEN: ${{ secrets.KONFUZIO_TOKEN }}
+
+  post_coverage:
+    runs-on: ubuntu-latest
+    needs: tests
+    if: github.event_name == 'push' && github.ref != 'refs/heads/main'
+    steps:
       - name: Post coverage report as comment
-        if: ( matrix.python-version == '3.8' && matrix.extra-set == 'ai')
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
