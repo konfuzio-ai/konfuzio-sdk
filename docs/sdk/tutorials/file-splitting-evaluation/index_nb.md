@@ -183,6 +183,10 @@ The output could be reflected in a following table:
 To log metrics after evaluation, you can call `EvaluationCalculator`'s method `metrics_logging` (you would need to 
 specify the metrics accordingly at the class's initialization). Example usage:
 
+```python tags=["remove-cell"]
+logging.getLogger("konfuzio_sdk").setLevel(logging.INFO)
+```
+
 ```python editable=true slideshow={"slide_type": ""}
 EvaluationCalculator(tp=3, fp=0, fn=1, tn=4).metrics_logging()
 ```
