@@ -9,11 +9,6 @@ on:
       - '*'
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - run: |
-          echo "No build step required."
   tests:
     runs-on: ubuntu-latest
     strategy:
