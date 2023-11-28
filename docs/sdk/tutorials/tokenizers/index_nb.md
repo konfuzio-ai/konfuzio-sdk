@@ -250,31 +250,30 @@ document.get_page_by_index(0).get_annotations_image(display_all=True)
 Due to the complexity of the Document we processed, the `line_distance` approach does not perform very well. We can see that a simpler Document that has a more linear structure gives better results:
 
 ```python tags=["remove-output"]
-from tests.variables import TEST_PROJECT_ID
 from konfuzio_sdk.data import Project, Document
 from konfuzio_sdk.tokenizer.paragraph_and_sentence import ParagraphTokenizer
 from copy import deepcopy
 
-project = Project(id_=TEST_PROJECT_ID)
+my_project = Project(id_=TEST_PROJECT_ID)
 
-
-tmp_doc = Document.from_file("sample.pdf", project=project, sync=True)
-doc = deepcopy(tmp_doc)
+sample_doc = Document.from_file("sample.pdf", project=my_project, sync=True)
+deepcopied_doc = deepcopy(sample_doc)
 tokenizer = ParagraphTokenizer(mode='line_distance')
 
-_ = tokenizer(tmp_doc)
+tokenized_doc = tokenizer(deepcopied_doc)
 ```
 
 ```python tags=["remove-cell"]
-tokenized = _
+tokenized_doc.pages()[0].image_width = 1414
+tokenized_doc.pages()[0].image_height = 2000
 ```
 
 ```python
-tokenized.get_page_by_index(0).get_annotations_image(display_all=True)
+tokenized_doc.get_page_by_index(0).get_annotations_image(display_all=True)
 ```
 
 ```python tags=["remove-cell"]
-tmp_doc.delete(delete_online=True)
+sample_doc.delete(delete_online=True)
 ```
 
 Note that this example uses a PDF file named 'sample.pdf', you can download this file <a href="sample.pdf">here</a> in case you wish to try running this code.
