@@ -372,7 +372,8 @@ class Page(Data):
         """
         Retrieve the Category Annotation associated with a specific Category within this Page.
 
-        If no Category Annotation is found, one can be created based on the `add_if_not_present` argument.
+        If no Category Annotation is found for the provided Category, one can be created based on the
+        `add_if_not_present` argument.
 
         :param category: The Category for which to retrieve the Category Annotation.
         :type category: Category

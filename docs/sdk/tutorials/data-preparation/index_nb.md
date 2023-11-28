@@ -18,8 +18,8 @@ jupyter:
 
 **Prerequisites:**
 - Basic knowledge about what training and testing means in the context of AI models
-- Be familiar with uploading Documents using the Konfuzio UI
-- Have access to a Konfuzio Project or have the permissions to create one
+- Be familiar with uploading [Documents](https://help.konfuzio.com/modules/documents/index.html) using the Konfuzio UI
+- Have access to a [Konfuzio Project](https://help.konfuzio.com/modules/projects/index.html) or have the permissions to create one
 
 **Difficulty:** Easy
 
