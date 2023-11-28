@@ -109,6 +109,13 @@ def _normalize_string_to_absolute_float(offset_string: str) -> Optional[float]:
     if offset_string.lower() in ['zwölf', 'twelve']:
         return 12.0
 
+    if 'Mio' in offset_string:
+        value = _normalize_string_to_absolute_float(offset_string.split('Mio')[0])
+        if value is None:
+            return None
+        else:
+            return 1000000 * value
+
     # check for major spaces
     if re.search(r'(\d)[ ]{3,}(\d)', offset_string):
         return None
