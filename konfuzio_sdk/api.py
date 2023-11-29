@@ -749,9 +749,10 @@ def get_all_project_ais(project_id: int, session=None, host: str = None) -> dict
     """
     if session is None:
         session = konfuzio_session()
-
-    if host is None:
-        host = KONFUZIO_HOST
+    if hasattr(session, 'host'):
+        host = session.host
+    else:
+        host = None
 
     urls = {
         "extraction": get_extraction_ais_list_url(project_id, host),
