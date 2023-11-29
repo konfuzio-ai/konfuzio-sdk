@@ -738,7 +738,7 @@ def update_ai_model(ai_model_id: int, ai_type: str, patch: bool = True, session=
     return json.loads(r.text)
 
 
-def get_all_project_ais(project_id: int, session=None, host: str = None) -> dict:
+def get_all_project_ais(project_id: int, session=None) -> dict:
     """
     Fetch all types of AIs for a specific project.
 
@@ -766,8 +766,9 @@ def get_all_project_ais(project_id: int, session=None, host: str = None) -> dict
         response = session.get(url=url)
         try:
             response.raise_for_status()
-        except HTTPError as e:
-            raise HTTPError(response.text) from e
+        except HTTPError:
+            all_ais[ai_type] = f"Error: {response.status_code}"
+
         if response.status_code == 200:
             all_ais[ai_type] = json.loads(response.text)
         else:
@@ -775,7 +776,7 @@ def get_all_project_ais(project_id: int, session=None, host: str = None) -> dict
     return all_ais
 
 
-def export_ai_models(project) -> int: # NOQA
+def export_ai_models(project, session=None) -> int:
     """
     Export all AI Model files for a specific Project.
 
@@ -790,6 +791,13 @@ def export_ai_models(project) -> int: # NOQA
             # Only AI types with at least one model will be exported
             ai_types.add(model_type)
 
+    if session is None:
+        session = konfuzio_session()
+    if hasattr(session, 'host'):
+        host = session.host
+    else:
+        host = None
+
     for ai_type in ai_types:
         variant = ai_type
         folder = os.path.join(project.project_folder, 'models', variant + '_ais')
@@ -797,7 +805,7 @@ def export_ai_models(project) -> int: # NOQA
         for ai_model in project_ai_models.get(variant, {}).get("results", []):
             # Only export fully trained AIs which are set as active
             if not ai_model.get("status") == "done" or not ai_model.get("active"):
-                print(f"Skip {ai_model} in export.")
+                logger.error(f"Skip {ai_model} in export.")
                 continue
             ai_model_id = ai_model.get("id")
             ai_model_version = ai_model.get("id")
@@ -805,23 +813,14 @@ def export_ai_models(project) -> int: # NOQA
             if not ai_model_id or not ai_model_version:
                 continue
 
-            host = project.session.host
-
-            if host is None:
-                host = KONFUZIO_HOST
-
             model_url = get_ai_model_download_url(ai_model_id=ai_model_id, host=host)
             response = project.session.get(model_url)
 
             try:
                 response.raise_for_status()
             except HTTPError as e:
-                if variant == 'categorization':
-                    # We are not raising the error here, as a named-based Categorization AI will not have a AI-Model.
-                    print("[WARNING] Skipping Categorization AI export: no AI-Model file found. "
-                          "If this is a name-based Categorization AI, this would be expected as they cannot be exported.")
-                    continue
-                raise HTTPError(response.text) from e
+                logger.error(f"Skip {ai_model} in export because this AI is corrupted (i.e. it does not have a file associated).")
+                continue
 
             if response.status_code == 200:
                 alternative_name = (

@@ -486,7 +486,6 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         assert init_env(user='me', password='pw', file_ending=env_file)
         os.remove(os.path.join(os.getcwd(), env_file))
 
-
     @patch('konfuzio_sdk.api.konfuzio_session')
     @patch('konfuzio_sdk.api.get_extraction_ais_list_url')
     @patch('konfuzio_sdk.api.get_splitting_ais_list_url')
@@ -508,7 +507,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         mock_json_loads.return_value = sample_data
 
         # Action
-        result = get_all_project_ais(project_id=1, host=host)
+        result = get_all_project_ais(project_id=1)
 
         # Assertions
         self.assertEqual(

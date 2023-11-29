@@ -320,7 +320,7 @@ def get_ai_model_url(ai_model_id: int, ai_type: str, host: str = None) -> str:
         raise ValueError
 
 
-def get_ai_model_download_url(ai_model_id: int, host: str) -> str:
+def get_ai_model_download_url(ai_model_id: int, host: str = None) -> str:
     """
     Get url to download an AI model.
 
@@ -328,4 +328,6 @@ def get_ai_model_download_url(ai_model_id: int, host: str) -> str:
     @param host: Konfuzio host
     @return: URL
     """
+    if host is None:
+        host = KONFUZIO_HOST
     return f"{host}/aimodel/file/{ai_model_id}/"
