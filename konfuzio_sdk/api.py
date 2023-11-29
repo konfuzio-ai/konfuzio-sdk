@@ -750,7 +750,9 @@ def get_all_project_ais(project_id: int, session=None, host: str = None) -> dict
     if session is None:
         session = konfuzio_session()
 
-    if host is None:
+    if hasattr(session, 'host'):
+        host = session.host
+    else:
         host = KONFUZIO_HOST
 
     urls = {
