@@ -1369,7 +1369,7 @@ class CategorizationAI(AbstractCategorizationAI):
             device=self.device,
         )
         logger.info(f'{len(self.documents)} Training Documents')
-        logger.info(f'{len(train_iterator)} Training Pages')
+        logger.info(f'{len(train_iterator.dataset)} Training Pages')
         # logger.info(f'{len(test_iterator)} testing examples')
 
         # place document classifier on device (this is a no-op if CPU was selected)
