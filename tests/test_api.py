@@ -501,7 +501,6 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
     ):
         # Setup
         sample_data = {"AI_DATA": "AI_SAMPLE_DATA"}
-        host = 'https://app.konfuzio.com'
 
         mock_session.return_value.get.return_value.status_code = 200
         mock_json_loads.return_value = sample_data
@@ -519,10 +518,11 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             }
         )
 
+        from konfuzio_sdk.api import konfuzio_session
         # Ensure the mock methods were called with the correct arguments
-        mock_get_extraction_url.assert_called_once_with(1, host)
-        mock_get_splitting_url.assert_called_once_with(1, host)
-        mock_get_categorization_url.assert_called_once_with(1, host)
+        mock_get_extraction_url.assert_called_once_with(1, konfuzio_session().host)
+        mock_get_splitting_url.assert_called_once_with(1, konfuzio_session().host)
+        mock_get_categorization_url.assert_called_once_with(1, konfuzio_session().host)
 
 
 def test_init_env():
