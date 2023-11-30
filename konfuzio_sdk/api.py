@@ -33,6 +33,7 @@ from konfuzio_sdk.urls import (
     get_splitting_ais_list_url,
     get_categorization_ais_list_url,
     get_extraction_ais_list_url,
+    get_ai_model_download_url,
 )
 from konfuzio_sdk.utils import is_file
 
@@ -737,7 +738,7 @@ def update_ai_model(ai_model_id: int, ai_type: str, patch: bool = True, session=
     return json.loads(r.text)
 
 
-def get_all_project_ais(project_id: int, session=None, host: str = None) -> dict:
+def get_all_project_ais(project_id: int, session=None) -> dict:
     """
     Fetch all types of AIs for a specific project.
 
@@ -750,22 +751,106 @@ def get_all_project_ais(project_id: int, session=None, host: str = None) -> dict
         session = konfuzio_session()
     if hasattr(session, 'host'):
         host = session.host
-    if host is None:
-        host = KONFUZIO_HOST
+    else:
+        host = None
 
     urls = {
-        'extraction': get_extraction_ais_list_url(project_id, host),
-        'filesplitting': get_splitting_ais_list_url(project_id, host),
-        'categorization': get_categorization_ais_list_url(project_id, host),
+        "extraction": get_extraction_ais_list_url(project_id, host),
+        "filesplitting": get_splitting_ais_list_url(project_id, host),
+        "categorization": get_categorization_ais_list_url(project_id, host),
     }
 
     all_ais = {}
 
     for ai_type, url in urls.items():
-        r = session.get(url=url)
-        if r.status_code == 200:
-            all_ais[ai_type] = json.loads(r.text)
-        else:
-            all_ais[ai_type] = f"Error: {r.status_code}"
+        response = session.get(url=url)
+        try:
+            response.raise_for_status()
+        except HTTPError:
+            all_ais[ai_type] = f"Error: {response.status_code}"
 
+        if response.status_code == 200:
+            all_ais[ai_type] = json.loads(response.text)
+        else:
+            all_ais[ai_type] = f"Error: {response.status_code}"
     return all_ais
+
+
+def export_ai_models(project, session=None) -> int:
+    """
+    Export all AI Model files for a specific Project.
+
+    :param: project: Konfuzio Project
+    :return: Number of exported AIs
+    """
+    ai_types = set()  # Using a set to store unique AI types
+    export_count = 0  # Keeping track of how many models were exported
+    project_ai_models = project.ai_models
+    for model_type, details in project_ai_models.items():
+        if details.get("count") > 0:
+            # Only AI types with at least one model will be exported
+            ai_types.add(model_type)
+
+    if session is None:
+        session = konfuzio_session()
+    if hasattr(session, 'host'):
+        host = session.host
+    else:
+        host = None
+
+    for ai_type in ai_types:
+        variant = ai_type
+        folder = os.path.join(project.project_folder, 'models', variant + '_ais')
+
+        for ai_model in project_ai_models.get(variant, {}).get("results", []):
+            # Only export fully trained AIs which are set as active
+            if not ai_model.get("status") == "done" or not ai_model.get("active"):
+                logger.error(f"Skip {ai_model} in export.")
+                continue
+            ai_model_id = ai_model.get("id")
+            ai_model_version = ai_model.get("id")
+
+            if not ai_model_id or not ai_model_version:
+                continue
+
+            model_url = get_ai_model_download_url(ai_model_id=ai_model_id, host=host)
+            response = project.session.get(model_url)
+
+            try:
+                response.raise_for_status()
+            except HTTPError as e:
+                logger.error(f"Skip {ai_model} in export because this AI is corrupted (i.e. it does not have a file associated).")
+                continue
+
+            if response.status_code == 200:
+                alternative_name = (
+                    f"{variant}_ai_{ai_model_id}_version_{ai_model_version}"
+                )
+
+                # Current implementation automatically downloads the AI file through the Content-Disposition header
+
+                content_disposition = response.headers.get(
+                    "Content-Disposition", alternative_name
+                )
+                if "filename=" in content_disposition:
+                    # Split the string by 'filename=' and get the second part
+                    file_name = content_disposition.split("filename=")[1].strip()
+
+                    # Remove double quotes from the beginning and end if present
+                    file_name = file_name.strip('"')
+                else:
+                    file_name = alternative_name
+
+                # Create the model directory
+                models_dir = os.path.join(folder)
+                if not os.path.exists(models_dir):
+                    os.makedirs(models_dir)
+
+                local_model_path = os.path.join(models_dir, file_name)
+
+                with open(local_model_path, "wb") as f:
+                    f.write(response.content)
+                export_count += 1
+
+                print(f"[SUCCESS] Exported {variant} AI Model to {file_name}")
+            return export_count
