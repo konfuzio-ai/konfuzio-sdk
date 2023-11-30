@@ -9,7 +9,7 @@ jupyter:
   kernelspec:
     display_name: konfuzio_sdk
     language: python
-    name: konfuzio_sdk
+    name: python3
 ---
 
 ## Fine-tune Flair NER-Ontonotes-Fast with human-revised Annotations
