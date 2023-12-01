@@ -116,6 +116,13 @@ def _normalize_string_to_absolute_float(offset_string: str) -> Optional[float]:
         else:
             return 1000000 * value
 
+    if 'Million' in offset_string:
+        value = _normalize_string_to_absolute_float(offset_string.split('Million')[0])
+        if value is None:
+            return None
+        else:
+            return 1000000 * value
+
     # check for major spaces
     if re.search(r'(\d)[ ]{3,}(\d)', offset_string):
         return None
