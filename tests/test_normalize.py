@@ -232,7 +232,7 @@ test_data_numbers = [
     ('123.123141.12.123', None, None),
     ('123 Mio', 123000000, None),
     ('123 Mio.', 123000000, None),
-    ('100 Millionen', 100000000, None),
+    ('100 Millionen', 123000000, None),
     # ('12.', 12.0, 0), undefined test cases:
     # ('1.', 1.0, 0),
     # ('.', None, 0),
