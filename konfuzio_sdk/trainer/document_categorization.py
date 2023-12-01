@@ -570,7 +570,7 @@ class PageTextCategorizationModel(PageCategorizationModel):
         self.text_model = text_model
         self.output_dim = output_dim
         self.dropout_rate = dropout_rate
-
+        # !TODO output_dim is not equal to the number of categories, this needs to be fixed !!
         self.fc_out = torch.nn.Linear(text_model.n_features, output_dim)
         self.dropout = torch.nn.Dropout(dropout_rate)
 
@@ -579,6 +579,7 @@ class PageTextCategorizationModel(PageCategorizationModel):
         encoded_text = self.text_model(input)
         text_features = encoded_text['features']
         # text_features = [batch, seq len, n text features]
+        # !TODO here features of the [CLS] token must be extracted and not an average pooling on all tokens !!
         pooled_text_features = text_features.mean(dim=1)  # mean pool across sequence length
         # pooled_text_features = [batch, n text features]
         prediction = self.fc_out(self.dropout(pooled_text_features))

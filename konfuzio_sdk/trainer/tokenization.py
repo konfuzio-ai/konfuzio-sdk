@@ -1,7 +1,7 @@
 """Tokenizers that use byte pair encoding or spaCy NLP package, and various utility functions for Tokenizers."""
 import collections
 import logging
-from typing import List
+from typing import Any, List
 
 from konfuzio_sdk.data import Category, Span, Document
 from konfuzio_sdk.extras import transformers
@@ -234,3 +234,71 @@ class PhraseMatcherTokenizer(SpacyTokenizer):
             _ = Span(start_offset=span.start_offset, end_offset=span.end_offset, document=document)
 
         return document
+
+
+class TransformersTokenizer:
+    """
+    SDK Wrapper for transformers.AutoTokenizer.
+
+    Tokenizes text using the tokenizer returned
+    from transformers.AutoTokenizer (must be in the allowed_tokenizers list).
+
+    :param tokenizer_name: The name or path of the pre-trained tokenizer. Default is 'bert-base-german-cased'.
+    :param max_length: Maximum sequence length after tokenization. Default is 512.
+
+    :param padding: 'max_length' pads to the maximum sequence length;
+    'longest' pads to the length of the longest sequence. Default is 'max_length'.
+
+    :param truncation: If True, truncate sequences longer than max_length. Default is True.
+    :param return_tensors: The type of PyTorch tensors to be returned. Default is 'pt' (PyTorch tensors).
+
+    :return: None
+
+    :raises ValueError: If the provided tokenizer is not in the allowed_tokenizers list.
+    """
+
+    def __init__(
+        self,
+        tokenizer_name: str = 'bert-base-german-cased',
+        max_length: int = 512,
+        padding: str = 'max_length',
+        truncation: bool = True,
+        return_tensors: str = 'pt',
+    ) -> None:
+        """Initialize the TransformersTokenizer."""
+        # Initialize the tokenizer using transformers.AutoTokenizer.from_pretrained()
+        self.tokenizer = transformers.AutoTokenizer.from_pretrained(
+            pretrained_model_name_or_path=tokenizer_name,
+            max_length=max_length,
+            padding=padding,
+            truncation=truncation,
+            return_tensors=return_tensors,
+        )
+        # List of allowed tokenizer types
+        self.allowed_tokenizers = [
+            transformers.BertTokenizerFast,  # tokenizer for BERT
+            transformers.DistilBertTokenizerFast,  # tokenizer for DistilBERT
+            transformers.AlbertTokenizerFast,  # tokenizer for ALBERT
+            transformers.BartTokenizerFast,  # tokenizer for BART
+            transformers.BertJapaneseTokenizer,  # tokenizer for Japanese BERT
+            transformers.T5TokenizerFast,  # tokenizer for T5
+            transformers.CamembertTokenizerFast,
+        ]  # tokenizer for CamemBERT (French)
+
+        # Check if the provided tokenizer is in the allowed_tokenizers list
+        if not isinstance(self.tokenizer, tuple(self.allowed_tokenizers)):
+            raise ValueError(
+                f'The tokenizer {tokenizer_name} is not supported.  \
+                Please use one of the following: {self.allowed_tokenizers}'
+            )
+
+    def __call__(self, *args: Any, **kwargs: Any) -> Any:
+        """
+        Call method to invoke the tokenizer.
+
+        :param args: Additional positional arguments to be passed to the tokenizer.
+        :param kwargs: Additional keyword arguments to be passed to the tokenizer.
+
+        :return: The result of calling the underlying tokenizer with the provided arguments.
+        """
+        return self.tokenizer(*args, **kwargs)
