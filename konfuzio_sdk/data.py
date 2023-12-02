@@ -4033,10 +4033,18 @@ class Project(Data):
     def write_project_files(self):
         """Overwrite files with Project, Label, Label Set information."""
         data = get_project_details(project_id=self.id_, session=self.session)
-        with open(self.label_sets_file_path, "w") as f:
-            json.dump(data['section_labels'], f, indent=2, sort_keys=True)
-        with open(self.labels_file_path, "w") as f:
-            json.dump(data['labels'], f, indent=2, sort_keys=True)
+        try:
+            label_sets = data['section_labels']
+            with open(self.label_sets_file_path, "w") as f:
+                json.dump(label_sets, f, indent=2, sort_keys=True)
+        except KeyError:
+            raise ValueError(f'No Label Sets found for Project {self.id_}.')
+        try:
+            labels = data['labels']
+            with open(self.labels_file_path, "w") as f:
+                json.dump(labels, f, indent=2, sort_keys=True)
+        except KeyError:
+            raise ValueError(f'No Labels found for Project {self.id_}.')
 
         self.write_meta_of_files()
 
@@ -4363,9 +4371,7 @@ class Project(Data):
 
         """
         if len(self.documents + self.test_documents) == 0:
-            raise ValueError(
-                "No Documents in the training or test set. Please add them."
-            )
+            raise ValueError("No Documents in the training or test set. Please add them.")
         for document in tqdm(self.documents + self.test_documents):
             document.download_document_details()
             document.get_file()
@@ -4375,9 +4381,7 @@ class Project(Data):
 
         print("[SUCCESS] Data exporting finished successfully!")
 
-    def export_project_data(
-        self, include_ais=False, training_and_test_documents=True
-    ) -> None:
+    def export_project_data(self, include_ais=False, training_and_test_documents=True) -> None:
         """
         "Export the Project data including Training, Test Documents and AI models.
 
@@ -4398,8 +4402,7 @@ class Project(Data):
                 if exported_ais:
                     print(f"[INFO] Export finished. {exported_ais} AIs were available for export.")
                 else:
-                    print(f"[INFO] No AIs available for export.")
+                    print("[INFO] No AIs available for export.")
             except Exception as error:
                 print("[ERROR] Something went wrong while downloading AIs or AI metadata!")
                 raise error
-
