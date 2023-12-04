@@ -140,7 +140,9 @@ class TimeoutHTTPAdapter(HTTPAdapter):
         return response
 
 
-def konfuzio_session(token: str = None, timeout: Optional[int] = None, num_retries: Optional[int] = None, host: str = None):
+def konfuzio_session(
+    token: str = None, timeout: Optional[int] = None, num_retries: Optional[int] = None, host: str = None
+):
     """
     Create a session incl. Token to the KONFUZIO_HOST.
 
@@ -201,6 +203,14 @@ def get_project_details(project_id: int, session=None) -> dict:
     url = get_project_url(project_id=project_id, host=host)
     r = session.get(url=url)
 
+    if 'section_labels' not in r.json().keys():
+        raise PermissionError(
+            f"You do not have permission to view Label Sets in Project {project_id}. Contact the " f"Project owner."
+        )
+    if 'labels' not in r.json().keys():
+        raise PermissionError(
+            f"You do not have permission to view Labels in Project {project_id}. Contact the " f"Project owner."
+        )
     return r.json()
 
 
@@ -246,10 +256,7 @@ def get_document_details(document_id: int, project_id: int, session=None, extra_
     else:
         host = None
     url = get_document_api_details_url(
-        document_id=document_id,
-        project_id=project_id,
-        extra_fields=extra_fields,
-        host=host
+        document_id=document_id, project_id=project_id, extra_fields=extra_fields, host=host
     )
     r = session.get(url)
     return r.json()
@@ -628,7 +635,6 @@ def get_results_from_segmentation(doc_id: int, project_id: int, session=None) ->
     return segmentation_result
 
 
-
 def upload_ai_model(ai_model_path: str, project_id: int = None, category_id: int = None, session=None):
     """
     Upload an ai_model to the text-annotation server.
@@ -818,20 +824,18 @@ def export_ai_models(project, session=None) -> int:
 
             try:
                 response.raise_for_status()
-            except HTTPError as e:
-                logger.error(f"Skip {ai_model} in export because this AI is corrupted (i.e. it does not have a file associated).")
+            except HTTPError:
+                logger.error(
+                    f"Skip {ai_model} in export because this AI is corrupted (i.e. it does not have a file associated)."
+                )
                 continue
 
             if response.status_code == 200:
-                alternative_name = (
-                    f"{variant}_ai_{ai_model_id}_version_{ai_model_version}"
-                )
+                alternative_name = f"{variant}_ai_{ai_model_id}_version_{ai_model_version}"
 
                 # Current implementation automatically downloads the AI file through the Content-Disposition header
 
-                content_disposition = response.headers.get(
-                    "Content-Disposition", alternative_name
-                )
+                content_disposition = response.headers.get("Content-Disposition", alternative_name)
                 if "filename=" in content_disposition:
                     # Split the string by 'filename=' and get the second part
                     file_name = content_disposition.split("filename=")[1].strip()

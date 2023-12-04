@@ -4033,18 +4033,10 @@ class Project(Data):
     def write_project_files(self):
         """Overwrite files with Project, Label, Label Set information."""
         data = get_project_details(project_id=self.id_, session=self.session)
-        try:
-            label_sets = data['section_labels']
-            with open(self.label_sets_file_path, "w") as f:
-                json.dump(label_sets, f, indent=2, sort_keys=True)
-        except KeyError:
-            raise ValueError(f'No Label Sets found for Project {self.id_}.')
-        try:
-            labels = data['labels']
-            with open(self.labels_file_path, "w") as f:
-                json.dump(labels, f, indent=2, sort_keys=True)
-        except KeyError:
-            raise ValueError(f'No Labels found for Project {self.id_}.')
+        with open(self.label_sets_file_path, "w") as f:
+            json.dump(data['section_labels'], f, indent=2, sort_keys=True)
+        with open(self.labels_file_path, "w") as f:
+            json.dump(data['labels'], f, indent=2, sort_keys=True)
 
         self.write_meta_of_files()
 
