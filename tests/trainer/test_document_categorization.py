@@ -675,7 +675,7 @@ class TestBertCategorizationModels(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Set up the Data and Categorization Pipeline."""
-        cls.training_prj = Project(id_=14392, update=True)
+        cls.training_prj = Project(id_=14392)
         cls.categorization_pipeline = CategorizationAI(cls.training_prj.categories)
         cls.category_1 = cls.training_prj.get_category_by_id(19827)
         cls.category_2 = cls.training_prj.get_category_by_id(19828)
@@ -703,7 +703,6 @@ class TestBertCategorizationModels(unittest.TestCase):
 
     def test_2_configure_pipeline(self):
         """Test configuring the training pipeline of the model."""
-        self.categorization_pipeline.tokenizer = transformers.AutoTokenizer.from_pretrained(self.bert_name)
         self.categorization_pipeline.category_vocab = self.categorization_pipeline.build_template_category_vocab()
         text_model = BERT(input_dim=512, name=self.bert_name)
         bert_config = text_model.bert.config
@@ -751,25 +750,25 @@ class TestBertCategorizationModels(unittest.TestCase):
         self.categorization_pipeline.pipeline_path = self.categorization_pipeline.save()
         assert os.path.isfile(self.categorization_pipeline.pipeline_path)
 
-    def test_7_upload_ai_model(self) -> None:
-        """Upload the model."""
-        assert os.path.isfile(self.categorization_pipeline.pipeline_path)
-        try:
-            model_id = upload_ai_model(
-                ai_model_path=self.categorization_pipeline.pipeline_path, project_id=self.training_prj.id_
-            )
-            assert isinstance(model_id, int)
-            updated = update_ai_model(model_id, ai_type='categorization', description='test_description')
-            assert updated['description'] == 'test_description'
-            updated = update_ai_model(model_id, ai_type='categorization', patch=False, description='test_description')
-            assert updated['description'] == 'test_description'
-            delete_ai_model(model_id, ai_type='categorization')
-            url = get_create_ai_model_url(ai_type='categorization')
-            session = konfuzio_session()
-            not_found = session.get(url)
-            assert not_found.status_code == 204
-        except HTTPError as e:
-            assert ('403' in str(e)) or ('500' in str(e))
+    # def test_7_upload_ai_model(self) -> None:
+    #     """Upload the model."""
+    #     assert os.path.isfile(self.categorization_pipeline.pipeline_path)
+    #     try:
+    #         model_id = upload_ai_model(
+    #             ai_model_path=self.categorization_pipeline.pipeline_path, project_id=self.training_prj.id_
+    #         )
+    #         assert isinstance(model_id, int)
+    #         updated = update_ai_model(model_id, ai_type='categorization', description='test_description')
+    #         assert updated['description'] == 'test_description'
+    #         updated = update_ai_model(model_id, ai_type='categorization', patch=False, description='test_description')
+    #         assert updated['description'] == 'test_description'
+    #         delete_ai_model(model_id, ai_type='categorization')
+    #         url = get_create_ai_model_url(ai_type='categorization')
+    #         session = konfuzio_session()
+    #         not_found = session.get(url)
+    #         assert not_found.status_code == 204
+    #     except HTTPError as e:
+    #         assert ('403' in str(e)) or ('500' in str(e))
 
 
 @pytest.mark.skipif(

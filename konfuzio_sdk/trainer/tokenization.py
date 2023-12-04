@@ -13,6 +13,16 @@ logger = logging.getLogger(__name__)
 
 # these modules are WIP and do not have testing yet.
 
+HF_ALLOWED_TOKENIZERS = [
+    transformers.BertTokenizerFast,  # tokenizer for BERT
+    transformers.DistilBertTokenizerFast,  # tokenizer for DistilBERT
+    transformers.AlbertTokenizerFast,  # tokenizer for ALBERT
+    transformers.BartTokenizerFast,  # tokenizer for BART
+    transformers.BertJapaneseTokenizer,  # tokenizer for Japanese BERT
+    transformers.T5TokenizerFast,  # tokenizer for T5
+    transformers.CamembertTokenizerFast,  # tokenizer for CamemBERT (French)
+]
+
 
 class Tokenizer(AbstractTokenizer):
     """Base Tokenizer."""
@@ -274,22 +284,12 @@ class TransformersTokenizer:
             truncation=truncation,
             return_tensors=return_tensors,
         )
-        # List of allowed tokenizer types
-        self.allowed_tokenizers = [
-            transformers.BertTokenizerFast,  # tokenizer for BERT
-            transformers.DistilBertTokenizerFast,  # tokenizer for DistilBERT
-            transformers.AlbertTokenizerFast,  # tokenizer for ALBERT
-            transformers.BartTokenizerFast,  # tokenizer for BART
-            transformers.BertJapaneseTokenizer,  # tokenizer for Japanese BERT
-            transformers.T5TokenizerFast,  # tokenizer for T5
-            transformers.CamembertTokenizerFast,
-        ]  # tokenizer for CamemBERT (French)
 
         # Check if the provided tokenizer is in the allowed_tokenizers list
-        if not isinstance(self.tokenizer, tuple(self.allowed_tokenizers)):
+        if not isinstance(self.tokenizer, tuple(HF_ALLOWED_TOKENIZERS)):
             raise ValueError(
                 f'The tokenizer {tokenizer_name} is not supported.  \
-                Please use one of the following: {self.allowed_tokenizers}'
+                Please use one of the following: {HF_ALLOWED_TOKENIZERS}'
             )
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
