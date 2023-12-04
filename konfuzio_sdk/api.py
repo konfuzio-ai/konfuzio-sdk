@@ -205,11 +205,11 @@ def get_project_details(project_id: int, session=None) -> dict:
 
     if 'section_labels' not in r.json().keys():
         raise PermissionError(
-            f"You do not have permission to view Label Sets in Project {project_id}. Contact the " f"Project owner."
+            f"You do not have permission to view Label Sets in Project {project_id}. Contact the Project owner."
         )
     if 'labels' not in r.json().keys():
         raise PermissionError(
-            f"You do not have permission to view Labels in Project {project_id}. Contact the " f"Project owner."
+            f"You do not have permission to view Labels in Project {project_id}. Contact the Project owner."
         )
     return r.json()
 
