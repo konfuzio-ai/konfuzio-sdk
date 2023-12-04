@@ -276,7 +276,7 @@ class AbstractTextCategorizationModel(AbstractCategorizationModel, metaclass=abc
 
     def __init__(
         self,
-        input_dim: int,
+        input_dim: int = 0,
         **kwargs,
     ):
         """Init and set parameters."""
@@ -496,13 +496,12 @@ class BERT(AbstractTextCategorizationModel):
 
     def __init__(
         self,
-        input_dim: int,
         name: str = 'bert-base-german-cased',
         freeze: bool = False,
         **kwargs,
     ):
         """Initialize BERT model from the HuggingFace library."""
-        super().__init__(input_dim=input_dim, name=name, freeze=freeze)
+        super().__init__(name=name, freeze=freeze)
         self.uses_attention = True
 
     def _valid(self) -> None:
@@ -1651,11 +1650,12 @@ def build_categorization_ai_pipeline(
         }
         text_model_class = text_model_class_mapping[text_model]
         # Configure text model
-        if "bert" not in text_model_name:
+        # Check if the text_model_class is BERT
+        if text_model_class.__name__ == 'BERT':
+            text_model = text_model_class(name=text_model_name)
+        else:
             categorization_pipeline.text_vocab = categorization_pipeline.build_text_vocab()
             text_model = text_model_class(input_dim=len(categorization_pipeline.text_vocab))
-        else:
-            text_model = text_model_class(input_dim=512, name=text_model_name)
     # Configure the classifier (whether it predicts using only the image of the Page,
     # or only the text, or a MLP to concatenate both predictions)
     if image_model is None:
