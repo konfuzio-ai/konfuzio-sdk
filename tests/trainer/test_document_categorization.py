@@ -35,7 +35,7 @@ from konfuzio_sdk.trainer.document_categorization import (
     TextModel,
     build_categorization_ai_pipeline,
 )
-from konfuzio_sdk.trainer.tokenization import PhraseMatcherTokenizer
+from konfuzio_sdk.trainer.tokenization import PhraseMatcherTokenizer, TransformersTokenizer
 from konfuzio_sdk.urls import get_create_ai_model_url
 from tests.variables import (
     OFFLINE_PROJECT,
@@ -339,10 +339,6 @@ class TestAbstractTextCategorizationModel(unittest.TestCase):
         (NBOWSelfAttention, 100, 64, 8, 'nbowselfattention'),
         (NBOWSelfAttention, 100, 64, 8, 'nbowselfattention-invalid'),
         (LSTM, 100, 64, None, 'lstm'),
-        (BERT, 100, None, None, 'bert-base-german-cased'),
-        (BERT, 100, None, None, 'prajjwal1/bert-tiny'),
-        (BERT, 100, None, None, 'bert-base-german-dbmdz-cased'),
-        (BERT, 100, None, None, 'distilbert-base-german-cased'),
     ],
 )
 class TestTextCategorizationModels(unittest.TestCase):
@@ -659,7 +655,15 @@ class TestAllCategorizationConfigurations(unittest.TestCase):
     ('bert_name'),
     [
         ('prajjwal1/bert-tiny',),
-        # ('bert-base-german-dbmdz-cased',),
+        # ('bert-base-german-dbmdz-cased',),  # commented out for passing on push in github actions (RAM limitations).
+        # feel free to uncomment when testing locally
+        # ('distilbert-base-german-cased',),
+        # ('albert-base-v2',),
+        # ('facebook/bart-large-cnn',),
+        # ('t5-small',),
+        # ('camembert-base',),
+        # ('bert-base-chinese',),
+        # ('bert-base-german-cased',),
     ],
 )
 @pytest.mark.skipif(
@@ -703,7 +707,7 @@ class TestBertCategorizationModels(unittest.TestCase):
 
     def test_2_configure_pipeline(self):
         """Test configuring the training pipeline of the model."""
-        self.categorization_pipeline.tokenizer = transformers.AutoTokenizer.from_pretrained(self.bert_name)
+        self.categorization_pipeline.tokenizer = TransformersTokenizer(tokenizer_name=self.bert_name)
         self.categorization_pipeline.category_vocab = self.categorization_pipeline.build_template_category_vocab()
         text_model = BERT(input_dim=512, name=self.bert_name)
         bert_config = text_model.bert.config
