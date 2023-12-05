@@ -35,7 +35,7 @@ from konfuzio_sdk.trainer.document_categorization import (
     TextModel,
     build_categorization_ai_pipeline,
 )
-from konfuzio_sdk.trainer.tokenization import PhraseMatcherTokenizer, TransformersTokenizer
+from konfuzio_sdk.trainer.tokenization import PhraseMatcherTokenizer
 from konfuzio_sdk.urls import get_create_ai_model_url
 from tests.variables import (
     OFFLINE_PROJECT,
@@ -679,7 +679,7 @@ class TestBertCategorizationModels(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Set up the Data and Categorization Pipeline."""
-        cls.training_prj = Project(id_=14392, update=True)
+        cls.training_prj = Project(id_=14392)
         cls.categorization_pipeline = CategorizationAI(cls.training_prj.categories)
         cls.category_1 = cls.training_prj.get_category_by_id(19827)
         cls.category_2 = cls.training_prj.get_category_by_id(19828)
@@ -707,7 +707,6 @@ class TestBertCategorizationModels(unittest.TestCase):
 
     def test_2_configure_pipeline(self):
         """Test configuring the training pipeline of the model."""
-        self.categorization_pipeline.tokenizer = TransformersTokenizer(tokenizer_name=self.bert_name)
         self.categorization_pipeline.category_vocab = self.categorization_pipeline.build_template_category_vocab()
         text_model = BERT(input_dim=512, name=self.bert_name)
         bert_config = text_model.bert.config
@@ -809,18 +808,15 @@ def test_build_categorization_ai() -> None:
 )
 def test_categorize_no_category_document():
     """Test categorization in case a NO_CATEGORY is predicted."""
-    project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-    test_document = project.get_document_by_id(44823)
+    project = Project(id_=14392)
+    test_document = project.documents[0]
     test_document.set_category(None)
     categorization_pipeline = build_categorization_ai_pipeline(
-        categories=[project.get_category_by_id(63)],
+        categories=[test_document.category],
         documents=[project.documents[0]],
         test_documents=[project.test_documents[1]],
         image_model=ImageModel.EfficientNetB0,
         text_model=TextModel.NBOWSelfAttention,
     )
-    tokenized_doc = deepcopy(test_document)
-    tokenized_doc = WhitespaceTokenizer().tokenize(tokenized_doc)
-    tokenized_doc.status = test_document.status
     categorization_pipeline.categorize(document=test_document, recategorize=True)
     assert test_document.category == project.no_category
