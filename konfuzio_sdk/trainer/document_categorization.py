@@ -1534,6 +1534,8 @@ class CategorizationAI(AbstractCategorizationAI):
                 max_length = self.classifier.text_model.get_max_length()
                 page.text_encoded = self.tokenizer(page.text, max_length=max_length)['input_ids']
             else:
+                if not page.spans():
+                    self.tokenizer.tokenize(page.document)
                 max_length = None
                 self.text_vocab.numericalize(page, max_length)
             text_coded = [torch.LongTensor(page.text_encoded).squeeze(0)]
