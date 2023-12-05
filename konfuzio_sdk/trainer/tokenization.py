@@ -254,13 +254,6 @@ class TransformersTokenizer:
     from transformers.AutoTokenizer (must be in the allowed_tokenizers list).
 
     :param tokenizer_name: The name or path of the pre-trained tokenizer. Default is 'bert-base-german-cased'.
-    :param max_length: Maximum sequence length after tokenization. Default is 512.
-
-    :param padding: 'max_length' pads to the maximum sequence length;
-    'longest' pads to the length of the longest sequence. Default is 'max_length'.
-
-    :param truncation: If True, truncate sequences longer than max_length. Default is True.
-    :param return_tensors: The type of PyTorch tensors to be returned. Default is 'pt' (PyTorch tensors).
 
     :return: None
 
@@ -270,19 +263,11 @@ class TransformersTokenizer:
     def __init__(
         self,
         tokenizer_name: str = 'bert-base-german-cased',
-        max_length: int = 512,
-        padding: str = 'max_length',
-        truncation: bool = True,
-        return_tensors: str = 'pt',
     ) -> None:
         """Initialize the TransformersTokenizer."""
         # Initialize the tokenizer using transformers.AutoTokenizer.from_pretrained()
         self.tokenizer = transformers.AutoTokenizer.from_pretrained(
             pretrained_model_name_or_path=tokenizer_name,
-            max_length=max_length,
-            padding=padding,
-            truncation=truncation,
-            return_tensors=return_tensors,
         )
 
         # Check if the provided tokenizer is in the allowed_tokenizers list
@@ -292,13 +277,37 @@ class TransformersTokenizer:
                 Please use one of the following: {HF_ALLOWED_TOKENIZERS}'
             )
 
-    def __call__(self, *args: Any, **kwargs: Any) -> Any:
+    def __call__(
+        self,
+        *args,
+        max_length: int = 512,
+        padding: str = 'max_length',
+        truncation: bool = True,
+        return_tensors: str = None,
+        **kwargs: Any,
+    ) -> Any:
         """
         Call method to invoke the tokenizer.
 
-        :param args: Additional positional arguments to be passed to the tokenizer.
+        :param max_length: Maximum sequence length after tokenization. Default is 512.
+
+        :param padding: 'max_length' pads to the maximum sequence length;
+        'longest' pads to the length of the longest sequence. Default is 'max_length'.
+
+        :param truncation: If True, truncate sequences longer than max_length. Default is True.
+
+        :param return_tensors: The type of PyTorch tensors to be returned.
+        Default is None so it returns a python list (since we already transform to tensor).
+
         :param kwargs: Additional keyword arguments to be passed to the tokenizer.
 
         :return: The result of calling the underlying tokenizer with the provided arguments.
         """
-        return self.tokenizer(*args, **kwargs)
+        return self.tokenizer(
+            *args,
+            max_length=max_length,
+            padding=padding,
+            truncation=truncation,
+            return_tensors=return_tensors,
+            **kwargs,
+        )

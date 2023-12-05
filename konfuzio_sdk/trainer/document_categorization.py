@@ -42,7 +42,7 @@ from konfuzio_sdk.evaluate import CategorizationEvaluation
 from konfuzio_sdk.tokenizer.base import Vocab
 from konfuzio_sdk.trainer.base import BaseModel
 from konfuzio_sdk.trainer.image import ImagePreProcessing, ImageDataAugmentation
-from konfuzio_sdk.trainer.tokenization import TransformersTokenizer, HF_ALLOWED_TOKENIZERS
+from konfuzio_sdk.trainer.tokenization import TransformersTokenizer
 from konfuzio_sdk.utils import get_timestamp
 
 logger = logging.getLogger(__name__)
@@ -1144,7 +1144,7 @@ class CategorizationAI(AbstractCategorizationAI):
         for document in documents:
             tokenized_doc = deepcopy(document)
             if self.tokenizer is not None:
-                if not isinstance(self.tokenizer, tuple([TransformersTokenizer] + HF_ALLOWED_TOKENIZERS)):
+                if not isinstance(self.tokenizer, TransformersTokenizer):
                     tokenized_doc = self.tokenizer.tokenize(tokenized_doc)
             tokenized_doc.status = document.status  # to allow to retrieve images from the original pages
             document_images = []
@@ -1183,10 +1183,8 @@ class CategorizationAI(AbstractCategorizationAI):
                     document_images.append(None)
                 if use_text:
                     if self.classifier.text_model.__class__.__name__ == 'BERT':
-                        self.tokenizer = TransformersTokenizer(self.classifier.text_model.name)
-                        page.text_encoded = self.tokenizer(
-                            page.text, truncation=True, padding='max_length', max_length=max_len
-                        )['input_ids']
+                        self.tokenizer = TransformersTokenizer(tokenizer_name=self.classifier.text_model.name)
+                        page.text_encoded = self.tokenizer(page.text, max_length=max_len)['input_ids']
                     else:
                         # REPLACE page_tokens = tokenizer.get_tokens(page_text)[:max_len]
                         # page_encoded = [text_vocab.stoi(span.offset_string) for span in
@@ -1194,7 +1192,7 @@ class CategorizationAI(AbstractCategorizationAI):
                         # document_tokens.append(torch.LongTensor(page_encoded))
                         # if using a text module, tokenize the page, trim to max length and then numericalize
                         self.text_vocab.numericalize(page)
-                    document_tokens.append(torch.LongTensor(page.text_encoded))
+                    document_tokens.append(torch.LongTensor(page.text_encoded).squeeze(0))
                 else:
                     # if not using text module then don't need the tokens
                     # so we just have a list of None to keep the lists the same length
@@ -1220,7 +1218,7 @@ class CategorizationAI(AbstractCategorizationAI):
                 image = None
             if use_text:
                 # if we are using text, batch and pad the already tokenized and numericalized text and place on GPU
-                if isinstance(self.tokenizer, tuple([TransformersTokenizer] + HF_ALLOWED_TOKENIZERS)):
+                if isinstance(self.tokenizer, TransformersTokenizer):
                     padding_value = self.classifier.text_model.bert.config.to_dict().get('pad_token_id', 0)
                 else:
                     padding_value = self.text_vocab.pad_idx
@@ -1388,7 +1386,7 @@ class CategorizationAI(AbstractCategorizationAI):
 
     def reduce_model_weight(self):
         """Reduce the size of the model by running lose_weight on the tokenizer."""
-        if not isinstance(self.tokenizer, tuple([TransformersTokenizer] + HF_ALLOWED_TOKENIZERS)):
+        if not isinstance(self.tokenizer, TransformersTokenizer):
             self.tokenizer.lose_weight()
 
     @torch_no_grad
@@ -1458,7 +1456,7 @@ class CategorizationAI(AbstractCategorizationAI):
                 if use_image:
                     batch['image'] = torch.stack(batch_image).to(device)
                 if use_text:
-                    if not isinstance(self.tokenizer, tuple([TransformersTokenizer] + HF_ALLOWED_TOKENIZERS)):
+                    if not isinstance(self.tokenizer, TransformersTokenizer):
                         padding_value = self.text_vocab.pad_idx
                     else:
                         padding_value = self.classifier.text_model.bert.config.to_dict().get('pad_token_id', 0)
@@ -1534,13 +1532,11 @@ class CategorizationAI(AbstractCategorizationAI):
         if use_text:
             if isinstance(self.classifier.text_model, BERT):
                 max_length = self.classifier.text_model.get_max_length()
-                page.text_encoded = self.tokenizer(
-                    page.text, truncation=True, padding='max_length', max_length=max_length
-                )['input_ids']
+                page.text_encoded = self.tokenizer(page.text, max_length=max_length)['input_ids']
             else:
                 max_length = None
                 self.text_vocab.numericalize(page, max_length)
-            text_coded = [torch.LongTensor(page.text_encoded)]
+            text_coded = [torch.LongTensor(page.text_encoded).squeeze(0)]
 
         (predicted_category_id, predicted_confidence), _ = self._predict(page_images=docs_data_images, text=text_coded)
 
