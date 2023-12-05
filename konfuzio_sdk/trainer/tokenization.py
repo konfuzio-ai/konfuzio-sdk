@@ -17,10 +17,6 @@ HF_ALLOWED_TOKENIZERS = [
     transformers.BertTokenizerFast,  # tokenizer for BERT
     transformers.DistilBertTokenizerFast,  # tokenizer for DistilBERT
     transformers.AlbertTokenizerFast,  # tokenizer for ALBERT
-    transformers.BartTokenizerFast,  # tokenizer for BART
-    transformers.BertJapaneseTokenizer,  # tokenizer for Japanese BERT
-    transformers.T5TokenizerFast,  # tokenizer for T5
-    transformers.CamembertTokenizerFast,  # tokenizer for CamemBERT (French)
 ]
 
 

@@ -659,9 +659,6 @@ class TestAllCategorizationConfigurations(unittest.TestCase):
         # feel free to uncomment when testing locally
         # ('distilbert-base-german-cased',),
         # ('albert-base-v2',),
-        # ('facebook/bart-large-cnn',),
-        # ('t5-small',),
-        # ('camembert-base',),
         # ('bert-base-chinese',),
         # ('bert-base-german-cased',),
     ],
@@ -754,7 +751,10 @@ class TestBertCategorizationModels(unittest.TestCase):
         self.categorization_pipeline.pipeline_path = self.categorization_pipeline.save()
         assert os.path.isfile(self.categorization_pipeline.pipeline_path)
 
-    def test_7_upload_ai_model(self) -> None:
+    def test_7_load_ai_model(self):
+        """Test loading a previously saved model."""
+
+    def test_8_upload_ai_model(self) -> None:
         """Upload the model."""
         assert os.path.isfile(self.categorization_pipeline.pipeline_path)
         try:
