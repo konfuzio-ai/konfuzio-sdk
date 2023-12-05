@@ -163,5 +163,5 @@ os.remove(save_path)
 
 ### What's next?
 
-- [Learn how to create a custom File Splitting AI](https://dev.konfuzio.com/sdk/tutorials/tutorials/create-custom-splitting-ai/index.html)
-- [Find out how to evaluate a File Splitting AI's performance](https://dev.konfuzio.com/sdk/tutorials/tutorials/file-splitting-evaluation/index.html)
+- [Learn how to create a custom File Splitting AI](https://dev.konfuzio.com/sdk/tutorials/create-custom-splitting-ai/index.html)
+- [Find out how to evaluate a File Splitting AI's performance](https://dev.konfuzio.com/sdk/tutorials/file-splitting-evaluation/index.html)
