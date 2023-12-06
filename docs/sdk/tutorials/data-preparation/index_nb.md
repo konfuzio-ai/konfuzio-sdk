@@ -79,9 +79,10 @@ for document_path in file_paths:
     _.delete(delete_online=True)
 ```
 
-```python tags=["skip-execution", "nbval-skip"]
+```python
 for document_path in file_paths:
     _ = Document.from_file(document_path, project=project, sync=False)
+    print(f'Document {_.id_} successfully created.')
 ```
 
 The `Document.from_file` method uploads a new Document to the Konfuzio server. The [documentation](https://dev.konfuzio.com/sdk/sourcecode.html#document) provides an overview of the returned values and optional paramenters for this method.
@@ -107,4 +108,5 @@ file_paths = [FILE_PATH_1, FILE_PATH_2, FILE_PATH_3]
 
 for document_path in file_paths:
     _ = Document.from_file(document_path, project=project, sync=False)
+    print(f'Document {_.id_} successfully created.')
 ```
