@@ -238,7 +238,7 @@ model_path = paragraph_extraction_ai.save()
 
 You can also upload the model to the Konfuzio app or an on-prem setup.
 
-```python tags=["skip-execution"]
+```python tags=["skip-execution", "nbval-skip"]
 from konfuzio_sdk.api import upload_ai_model
 
 upload_ai_model(model_path=model_path, ai_type='extraction', category_id=category.id_)
