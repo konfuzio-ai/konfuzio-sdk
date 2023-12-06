@@ -264,8 +264,8 @@ tokenized_doc = tokenizer(deepcopied_doc)
 ```
 
 ```python tags=["remove-cell"]
-tokenized_doc.pages()[0].image_width = 1414
-tokenized_doc.pages()[0].image_height = 2000
+tokenized_doc.pages()[0].image_width = 1100
+tokenized_doc.pages()[0].image_height = 1400
 ```
 
 ```python
@@ -388,4 +388,4 @@ We have seen the `WhitespaceTokenizer`, splitting text into chunks delimeted by 
 
 ### What's Next?
 
-<a href="/sdk/tutorials/information_extraction"> Find out how to train a custom Extraction AI model</a>.
+- <a href="/sdk/tutorials/information_extraction"> Find out how to train a custom Extraction AI model</a>

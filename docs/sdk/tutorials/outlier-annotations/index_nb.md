@@ -107,7 +107,7 @@ GROUND_TRUTH_DOCUMENTS = pipeline.documents
 PREDICTED_DOCUMENTS = predictions
 ```
 
-```python editable=true slideshow={"slide_type": ""}
+```python editable=true slideshow={"slide_type": ""} tags=["remove-output"]
 from konfuzio_sdk.evaluate import ExtractionEvaluation
 
 evaluation = ExtractionEvaluation(documents=list(zip(GROUND_TRUTH_DOCUMENTS, PREDICTED_DOCUMENTS)), strict=False)
