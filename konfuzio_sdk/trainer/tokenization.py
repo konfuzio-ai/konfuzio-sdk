@@ -17,6 +17,8 @@ HF_ALLOWED_TOKENIZERS = [
     transformers.BertTokenizerFast,  # tokenizer for BERT
     transformers.DistilBertTokenizerFast,  # tokenizer for DistilBERT
     transformers.AlbertTokenizerFast,  # tokenizer for ALBERT
+    transformers.MobileBertTokenizerFast,  # tokenizer for MobileBERT
+    transformers.PhobertTokenizer,  # tokenizer for PhoBERT (Vietnamese)
 ]
 
 
