@@ -782,6 +782,64 @@ class TestBertCategorizationModels(unittest.TestCase):
     and not is_dependency_installed('torchvision'),
     reason='Required dependencies not installed.',
 )
+class TestMultimodalConfigurations(unittest.TestCase):
+    """Test configurations that use both image and text model for Categorization."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Set up the Data and Categorization Pipeline."""
+        cls.training_prj = Project(id_=14392)
+        cls.categorization_pipeline = CategorizationAI(cls.training_prj.categories)
+        cls.category_1 = cls.training_prj.get_category_by_id(19827)
+        cls.category_2 = cls.training_prj.get_category_by_id(19828)
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        """Delete the Data and Categorization Pipeline."""
+        os.remove(cls.categorization_pipeline.pipeline_path)
+        del cls.training_prj
+        del cls.categorization_pipeline
+        del cls.category_1
+        del cls.category_2
+
+    def test_1_configure_dataset(self):
+        """Test configuring the dataset for the training and testing of the model."""
+        category_1_documents = self.category_1.documents()
+        category_2_documents = self.category_2.documents()
+        self.categorization_pipeline.documents = category_1_documents + category_2_documents
+        assert all(doc.category is not None for doc in self.categorization_pipeline.documents)
+
+        category_1_test_documents = self.category_1.test_documents()
+        category_2_test_documents = self.category_2.test_documents()
+        self.categorization_pipeline.test_documents = category_1_test_documents + category_2_test_documents
+        assert all(doc.category is not None for doc in self.categorization_pipeline.documents)
+
+    def test_2_configure_pipeline(self):
+        """Test configuring the training pipeline of the model."""
+        self.categorization_pipeline.category_vocab = self.categorization_pipeline.build_template_category_vocab()
+        text_model = BERT(input_dim=512, name=self.bert_name)
+        bert_config = text_model.bert.config
+        assert hasattr(bert_config, '_name_or_path')
+        assert bert_config._name_or_path == self.bert_name
+        self.categorization_pipeline.classifier = PageTextCategorizationModel(
+            text_model=text_model,
+            output_dim=len(self.categorization_pipeline.category_vocab),
+        )
+        self.categorization_pipeline.classifier.eval()
+
+    def test_3_fit(self):
+        """Test training the model."""
+        self.categorization_pipeline.build_preprocessing_pipeline(use_image=False)
+        self.categorization_pipeline.fit(n_epochs=3, optimizer={'name': 'Adam'})
+
+
+@pytest.mark.skipif(
+    not is_dependency_installed('timm')
+    and not is_dependency_installed('torch')
+    and not is_dependency_installed('transformers')
+    and not is_dependency_installed('torchvision'),
+    reason='Required dependencies not installed.',
+)
 def test_build_categorization_ai() -> None:
     """Test building a Categorization AI by choosing an ImageModel and a TextModel."""
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
