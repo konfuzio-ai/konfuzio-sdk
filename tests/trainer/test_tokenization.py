@@ -83,6 +83,13 @@ class TestTransformersTokenizer(unittest.TestCase):
         assert isinstance(tokens['input_ids'], list)
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('timm')
+    and not is_dependency_installed('torch')
+    and not is_dependency_installed('transformers')
+    and not is_dependency_installed('torchvision'),
+    reason='Required dependencies not installed.',
+)
 def test_no_supported_tokenizer_error():
     """Test that a non-supported tokenizer is not possible to use with the class."""
     with pytest.raises(ValueError, match="is not supported"):
