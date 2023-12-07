@@ -8,7 +8,7 @@ import time
 import pandas as pd
 import numpy as np
 from sklearn.utils.class_weight import compute_class_weight
-
+import mlflow
 from copy import deepcopy
 from inspect import signature
 from typing import List, Union
@@ -600,6 +600,11 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         self.model = transformers.AutoModelForSequenceClassification.from_pretrained(self.model_name, num_labels=2)
         # move model to device
         self.model.to(device)
+        # getting MLflow variables
+        experiment_name = kwargs.get('experiment_name', None)
+        tracking_uri = kwargs.get('tracking_uri', None)
+        # check if both are not None then use MLflow
+        use_mlflow = experiment_name is not None and tracking_uri is not None
         # defining the training arguments
         training_args = transformers.TrainingArguments(
             output_dir="training_logs/textual_file_splitting_model_trainer",
@@ -629,20 +634,32 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
             train_dataset=train_dataset,
             eval_dataset=test_dataset,
             compute_metrics=compute_metrics,
-            callbacks=[LoggerCallback],
+            callbacks=[transformers.integrations.MLflowCallback] if use_mlflow else [LoggerCallback],
         )
         trainer.class_weights = class_weights
+        if use_mlflow:
+            logger.info(f"Using MLflow to track the experiment with experiment_name={experiment_name}")
+            # disabling MLflow artifacts logging
+            os.environ["HF_MLFLOW_LOG_ARTIFACTS"] = "0"
+            mlflow.set_tracking_uri(tracking_uri)
+            _ = mlflow.set_experiment(experiment_name)
+            mlflow.start_run()
+        else:
+            logger.info("No experiment_id is passed, training without MLflow tracking.")
         # training the model
         trainer.train()
-        logger.info(f"[{time.ctime(time.time())}]\t🎉 Textual File Splitting Model fitting finished.")
+        logger.info(f"[{time.ctime(time.time())}]\t🎉 Textual File Splitting Model Training finished.")
         logger.info("=" * 50)
         logger.info(f"[{time.ctime(time.time())}]\tComputing AI Quality.")
         # computing the AI quality
         evaluation_results = trainer.evaluate()
-        self.model = trainer.model
         logger.info(f"[{time.ctime(time.time())}]\tTextual File Splitting Model Evaluation finished.")
-
         logger.info("=" * 50)
+        # making sure to end the MLflow run if it was started
+        if use_mlflow:
+            mlflow.end_run()
+        # saving the best model
+        self.model = trainer.model
         return evaluation_results
 
     def predict(
