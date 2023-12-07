@@ -74,11 +74,7 @@ class BalancedLossTrainer(Trainer):
         if "total_flos" in logs:
             logs.pop("total_flos")
         if "learning_rate" in logs:
-            learning_rate_digit = str(logs['learning_rate']).split("e")[0]
-            learning_rate_digit_formatted = round(float(learning_rate_digit), 2)
-            learning_rate_formatted = (
-                str(learning_rate_digit_formatted) + "e" + str(logs['learning_rate']).split("e")[1]
-            )
+            learning_rate_formatted = f"{logs['learning_rate']:.2e}"
             logs["learning_rate"] = float(learning_rate_formatted)
         ##########################################
         output = {**logs, **{"step": self.state.global_step}}
