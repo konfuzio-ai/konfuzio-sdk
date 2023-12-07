@@ -52,6 +52,8 @@ class BalancedLossTrainer(Trainer):
         for k, v in logs.items():
             if isinstance(v, (int, float)):
                 logs[k] = round(v, 2)
+        if "total_flos" in logs:
+            logs.pop("total_flos")
         output = {**logs, **{"step": self.state.global_step}}
         self.state.log_history.append(output)
         self.control = self.callback_handler.on_log(self.args, self.state, self.control, logs)

@@ -641,9 +641,13 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
             logger.info(f"Using MLflow to track the experiment with experiment_name={experiment_name}")
             # disabling MLflow artifacts logging
             os.environ["HF_MLFLOW_LOG_ARTIFACTS"] = "0"
-            mlflow.set_tracking_uri(tracking_uri)
-            _ = mlflow.set_experiment(experiment_name)
-            mlflow.start_run()
+            try:
+                mlflow.set_tracking_uri(tracking_uri)
+                _ = mlflow.set_experiment(experiment_name)
+                mlflow.start_run()
+            except Exception as e:
+                logger.error(f"Failed to start MLflow run. Training without MLflow tracking! Error: {e}")
+                use_mlflow = False
         else:
             logger.info("No experiment_id is passed, training without MLflow tracking.")
         # training the model
