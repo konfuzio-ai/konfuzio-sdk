@@ -763,16 +763,16 @@ def get_all_project_ais(project_id: int, session=None) -> dict:
     all_ais = {}
 
     for ai_type, url in urls.items():
-        response = session.get(url=url)
         try:
+            response = session.get(url=url)
             response.raise_for_status()
-        except HTTPError:
-            all_ais[ai_type] = f"Error: {response.status_code}"
 
-        if response.status_code == 200:
-            all_ais[ai_type] = json.loads(response.text)
-        else:
-            all_ais[ai_type] = f"Error: {response.status_code}"
+            if response.status_code == 200:
+                all_ais[ai_type] = json.loads(response.text)
+        except HTTPError as e:
+            all_ais[ai_type] = {'error': e}
+            print(f"[ERROR] while fetching {ai_type} AIs: {e}")
+
     return all_ais
 
 
@@ -787,7 +787,8 @@ def export_ai_models(project, session=None) -> int:
     export_count = 0  # Keeping track of how many models were exported
     project_ai_models = project.ai_models
     for model_type, details in project_ai_models.items():
-        if details.get("count") > 0:
+        count = details.get("count")
+        if count and count > 0:
             # Only AI types with at least one model will be exported
             ai_types.add(model_type)
 
