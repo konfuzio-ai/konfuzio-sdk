@@ -185,20 +185,66 @@ default value will be applied.
 You can find more information on how to use these configurations, what are default values and where to specify
 them [here](https://help.konfuzio.com/modules/projects/index.html?highlight=efficientnet#categorization-ai-parameters).
 
-| Tokenizer | Text processor    | Image processor | Image processing version |
-|-----------|-------------------|-----------------|--------------------------|
-| WhitespaceTokenizer | NBOWSelfAttention | EfficientNet | efficientnet_b0          |
-| WhitespaceTokenizer | NBOWSelfAttention | EfficientNet | efficientnet_b3          |
-| WhitespaceTokenizer | NBOW              | VGG | vgg11                    |
-| WhitespaceTokenizer | LSTM              | VGG | vgg13                    |
-| ConnectedTextTokenizer | NBOW              | VGG | vgg11                    |
-| ConnectedTextTokenizer | LSTM              | VGG | vgg13                    |
-| None | None | EfficientNet | efficientnet_b0          |
-| None | None | EfficientNet | efficientnet_b3          |
-| None | None | VGG | vgg11                    |
-| None | None | VGG | vgg13                    |
-| None | None | VGG | vgg16                    |
-| None | None | VGG | vgg19                    |
+| Tokenizer               | Text module       | Text module version            | Image module | Image module version |
+|-------------------------|-------------------|--------------------------------|--------------|----------------------|
+| WhitespaceTokenizer     | NBOWSelfAttention | `nbowselfattention`            | EfficientNet | `efficientnet_b0`    |
+| WhitespaceTokenizer     | NBOWSelfAttention | `nbowselfattention`            | EfficientNet | `efficientnet_b3`    |
+| WhitespaceTokenizer     | NBOW              | `nbow`                         | VGG          | `vgg11`              |
+| WhitespaceTokenizer     | LSTM              | `lstm`                         | VGG          | `vgg13`              |
+| ConnectedTextTokenizer  | NBOW              | `nbow`                         | VGG          | `vgg11`              |
+| ConnectedTextTokenizer  | LSTM              | `lstm`                         | VGG          | `vgg13`              |
+| None                    | None              |                                | EfficientNet | `efficientnet_b0`    |
+| None                    | None              |                                | EfficientNet | `efficientnet_b3`    |
+| None                    | None              |                                | VGG          | `vgg11`              |
+| None                    | None              |                                | VGG          | `vgg13`              |
+| None                    | None              |                                | VGG          | `vgg16`              |
+| None                    | None              |                                | VGG          | `vgg19`              |
+| BertTokenizerFast       | BERT              | `bert-base-german-cased`       | None         | None                 |
+| BertTokenizerFast       | BERT              | `bert-base-german-dbmdz-cased` | None         | None                 |
+| MobileBertTokenizerFast | BERT              | `google/mobilebert-uncased`    | None         | None                 |
+| DistilBertTokenizerFast | BERT              | `distilbert-base-german-cased` | None         | None                 |
+| AlbertTokenizerFast     | BERT              | `albert-base-v2`               | None         | None                 |
+| PhobertTokenizer        | BERT              | `vinai/phobert-base`           | None         | None                 |
+
+### Configurable parameters
+
+Every group of models/configuration you decide to use has manually configurable parameters. Follow this section to find 
+out what parameters are configurable and which models accept them.
+
+Some of the parameters are universally accepted for training regardless of the model. 
+
+- `n_epochs` - number of times the entire training dataset is passed through the model during training. BERT models
+require lower values like 3-5, other models can require higher number, like 20+. Default value is 20.
+- `patience` - number of epochs to wait before early stopping if the model's performance on the validation set does 
+not improve. Default value is 3.
+- `optimizer` -  algorithm used to update the model's parameters during training. Default value is `AdamW` with learning
+rate of `1e-4`.
+- `lr_decay` - rate at which the learning rate is reduced over time during training to help the model maximize training
+efficiency. Default value is 0.999.
+
+Other parameters are configurable only for some of the models and might not have a unified default value.
+
+- `input_dim` - dimensionality of the input data, which represents the number of features or variables in the input.
+- `dropout_rate` - fraction of the input units to randomly set to 0 during training to prevent overfitting.
+- `emb_dim` - dimensionality of the embeddings (vector representation). Default value is 64.
+- `n_heads` - number of attention heads in multi-head attention mechanisms which enable the model to attend to different
+parts of the input simultaneously. Note that `n_heads` must be a factor of `emb_dim`, i.e. `emb_dim % n_heads == 0`.
+- `hid_dim` - dimensionality of the hidden states in the model. Default value is 256.
+- `n_layers` - number of layers in the model. Default value is 2.
+- `bidirectional` - whether to use bidirectional processing in LSTM, enabling the model to consider both past and future
+context. Default value is True.
+- `name` - a name or identifier for the model.
+- `freeze` - whether to freeze the weights of certain layers or parameters during training, preventing them from being 
+updated.
+
+| Model             | `input_dim` | `dropout_rate` | `emb_dim` | `n_heads` | `hid_dim` | `n_layers` | `bidirectional` | `name` | `freeze` |
+|-------------------|-------------|----------------|-----------|-----------|-----------|------------|-----------------|--------|----------|
+| NBOW              | ✔           | ✔              | ✔         | ✘         | ✘         | ✘          | ✘               | ✘      | ✘        |
+| NBOWSelfAttention | ✔           | ✘              | ✔         | ✔         | ✘         | ✘          | ✘               | ✘      | ✘        |
+| LSTM              | ✔           | ✔              | ✔         | ✘         | ✔         | ✔          | ✔               | ✘      | ✘        |
+| BERT              | ✘           | ✘              | ✘         | ✘         | ✘         | ✘          | ✘               | ✔      | ✔        |
+| VGG               | ✘           | ✘              | ✘         | ✘         | ✘         | ✘          | ✘               | ✔      | ✔        |
+| EfficientNet      | ✘           | ✘              | ✘         | ✘         | ✘         | ✘          | ✘               | ✔      | ✔        |
 
 
 ### Conclusion
