@@ -49,11 +49,38 @@ class BalancedLossTrainer(Trainer):
         if self.state.epoch is not None:
             logs["epoch"] = round(self.state.epoch, 2)
             logs["percentage"] = round(100 * self.state.epoch / self.args.num_train_epochs, 2)
-        for k, v in logs.items():
-            if isinstance(v, (int, float)):
-                logs[k] = round(v, 2)
+
+        # reformatting metrics
+
+        ##########################################
+        if "loss" in logs:
+            logs["loss"] = round(logs["loss"], 4)
+        if "eval_loss" in logs:
+            logs["eval_loss"] = round(logs["eval_loss"], 4)
+        if "train_loss" in logs:
+            logs["train_loss"] = round(logs["train_loss"], 4)
+        if "eval_samples_per_second" in logs:
+            logs["eval_samples_per_second"] = round(logs["eval_samples_per_second"], 2)
+        if "train_samples_per_second" in logs:
+            logs["train_samples_per_second"] = round(logs["train_samples_per_second"], 2)
+        if "eval_steps_per_second" in logs:
+            logs["eval_steps_per_second"] = round(logs["eval_steps_per_second"], 2)
+        if "train_steps_per_second" in logs:
+            logs["train_steps_per_second"] = round(logs["train_steps_per_second"], 2)
+        if "eval_runtime" in logs:
+            logs["eval_runtime"] = round(logs["eval_runtime"], 2)
+        if "train_runtime" in logs:
+            logs["train_runtime"] = round(logs["train_runtime"], 2)
         if "total_flos" in logs:
             logs.pop("total_flos")
+        if "learning_rate" in logs:
+            learning_rate_digit = str(logs['learning_rate']).split("e")[0]
+            learning_rate_digit_formatted = round(float(learning_rate_digit), 2)
+            learning_rate_formatted = (
+                str(learning_rate_digit_formatted) + "e" + str(logs['learning_rate']).split("e")[1]
+            )
+            logs["learning_rate"] = float(learning_rate_formatted)
+        ##########################################
         output = {**logs, **{"step": self.state.global_step}}
         self.state.log_history.append(output)
         self.control = self.callback_handler.on_log(self.args, self.state, self.control, logs)

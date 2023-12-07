@@ -15,6 +15,7 @@ from typing import List, Union
 
 from konfuzio_sdk.data import Document, Page, Category
 from konfuzio_sdk.extras import torch, tensorflow as tf, transformers, datasets, evaluate
+from transformers.integrations import MLflowCallback
 from konfuzio_sdk.evaluate import FileSplittingEvaluation
 from konfuzio_sdk.trainer.information_extraction import BaseModel
 from konfuzio_sdk.trainer.utils import BalancedLossTrainer, LoggerCallback
@@ -611,6 +612,8 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
             evaluation_strategy="epoch",
             save_strategy="epoch",
             load_best_model_at_end=True,
+            logging_steps=0.05,
+            save_total_limit=1,
             push_to_hub=False,
             learning_rate=3e-5,
             per_device_train_batch_size=train_batch_size,
@@ -621,7 +624,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         )
         logger.info("=" * 50)
         logger.info(f"[{time.ctime(time.time())}]\tStarting Training...")
-        logger.info("\nConfiguration to be used for Training:")
+        logger.info("Configuration to be used for Training:")
         logger.info(f"Class weights for the training dataset: {[f'{weight:.2e}' for weight in class_weights]}")
         logger.info(f"Number of epochs: {epochs}")
         logger.info(f"Batch size for training: {train_batch_size}")
@@ -634,7 +637,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
             train_dataset=train_dataset,
             eval_dataset=test_dataset,
             compute_metrics=compute_metrics,
-            callbacks=[transformers.integrations.MLflowCallback] if use_mlflow else [LoggerCallback],
+            callbacks=[MLflowCallback] if use_mlflow else [LoggerCallback],
         )
         trainer.class_weights = class_weights
         if use_mlflow:
