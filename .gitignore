@@ -62,6 +62,7 @@ training_logs
 # Ignore mlflow artifacts
 mlruns
 mlartifacts
+*.db
 
 # Ignore any file or folder that starts with "draft"
 draft*
