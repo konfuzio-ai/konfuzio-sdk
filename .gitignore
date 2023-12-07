@@ -58,3 +58,10 @@ __pycache__/
 
 # Ignore training logs
 training_logs
+
+# Ignore mlflow artifacts
+mlruns
+mlartifacts
+
+# Ignore any file or folder that starts with "draft"
+draft*
