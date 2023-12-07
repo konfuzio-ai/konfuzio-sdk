@@ -524,6 +524,35 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         mock_get_splitting_url.assert_called_once_with(1, konfuzio_session().host)
         mock_get_categorization_url.assert_called_once_with(1, konfuzio_session().host)
 
+    @patch('konfuzio_sdk.api.konfuzio_session')
+    @patch('konfuzio_sdk.api.get_extraction_ais_list_url')
+    @patch('konfuzio_sdk.api.get_splitting_ais_list_url')
+    @patch('konfuzio_sdk.api.get_categorization_ais_list_url')
+    @patch('konfuzio_sdk.api.json.loads')
+    def test_get_all_project_ais_with_invalid_permissions(
+            self,
+            mock_json_loads,
+            mock_get_categorization_url,
+            mock_get_splitting_url,
+            mock_get_extraction_url,
+            mock_session
+    ):
+        """Assert that despite of not having permissions, the function can still be called without exception"""
+
+        # Setup
+        exception_message = '403 Client Error: Forbidden'
+        sample_data = {'error': exception_message}  # direct string, not HTTPError
+
+        mock_session.return_value.get.side_effect = HTTPError(exception_message)
+        mock_json_loads.return_value = sample_data
+
+        # Action
+        result = get_all_project_ais(project_id=1)
+
+        self.assertEqual(result['extraction']['error'].__str__(), exception_message)
+        self.assertEqual(result['categorization']['error'].__str__(), exception_message)
+        self.assertEqual(result['filesplitting']['error'].__str__(), exception_message)
+
 
 def test_init_env():
     """Test to write env file."""
