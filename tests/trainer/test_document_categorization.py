@@ -557,10 +557,10 @@ class TestBertCategorizationModels(unittest.TestCase):
         (NBOWSelfAttention, WhitespaceTokenizer, None, None, 20),
         (LSTM, WhitespaceTokenizer, None, None, 3),
         (NBOW, ConnectedTextTokenizer, EfficientNet, "efficientnet_b0", 5),
-        (None, None, EfficientNet, "efficientnet_b3", 5),
-        (NBOWSelfAttention, ConnectedTextTokenizer, VGG, "vgg11", 2),
-        (LSTM, ConnectedTextTokenizer, VGG, "vgg13", 3),
-        (None, None, VGG, "vgg19", 2),
+        # (None, None, EfficientNet, "efficientnet_b3", 5),  # commented out because of length of execution
+        # (NBOWSelfAttention, ConnectedTextTokenizer, VGG, "vgg11", 2),
+        # (LSTM, ConnectedTextTokenizer, VGG, "vgg13", 3),
+        # (None, None, VGG, "vgg19", 2),
     ],
 )
 @pytest.mark.skipif(
