@@ -193,18 +193,29 @@ them [here](https://help.konfuzio.com/modules/projects/index.html?highlight=effi
 | WhitespaceTokenizer     | LSTM              | `lstm`                         | VGG          | `vgg13`              |
 | ConnectedTextTokenizer  | NBOW              | `nbow`                         | VGG          | `vgg11`              |
 | ConnectedTextTokenizer  | LSTM              | `lstm`                         | VGG          | `vgg13`              |
-| None                    | None              |                                | EfficientNet | `efficientnet_b0`    |
-| None                    | None              |                                | EfficientNet | `efficientnet_b3`    |
-| None                    | None              |                                | VGG          | `vgg11`              |
-| None                    | None              |                                | VGG          | `vgg13`              |
-| None                    | None              |                                | VGG          | `vgg16`              |
-| None                    | None              |                                | VGG          | `vgg19`              |
-| BertTokenizerFast       | BERT              | `bert-base-german-cased`       | None         | None                 |
-| BertTokenizerFast       | BERT              | `bert-base-german-dbmdz-cased` | None         | None                 |
+| None                    | None              | None                           | EfficientNet | `efficientnet_b0`    |
+| None                    | None              | None                           | EfficientNet | `efficientnet_b3`    |
+| None                    | None              | None                           | VGG          | `vgg11`              |
+| None                    | None              | None                           | VGG          | `vgg13`              |
+| None                    | None              | None                           | VGG          | `vgg16`              |
+| None                    | None              | None                           | VGG          | `vgg19`              |
+| BertTokenizerFast       | BERT*             | `bert-base-german-cased`       | None         | None                 |
 | MobileBertTokenizerFast | BERT              | `google/mobilebert-uncased`    | None         | None                 |
 | DistilBertTokenizerFast | BERT              | `distilbert-base-german-cased` | None         | None                 |
 | AlbertTokenizerFast     | BERT              | `albert-base-v2`               | None         | None                 |
-| PhobertTokenizer        | BERT              | `vinai/phobert-base`           | None         | None                 |
+
+***Note**: even though there is a single model listed for each architecture of BERT-based models (e.g. BERT-base, 
+DistilBERT, AlBERT), any model that is based on any of these architectures (e.g. `bert-base-chinese`, 
+`osiria/distilbert-base-italian-cased` etc.) can be used as a text-processing model. To ensure a model is compatible
+with Categorization AI, initialize its tokenizer as follows. If tokenizer is listed in the first column of
+a table above, the model is compatible.
+
+```python
+from transformers import AutoTokenizer
+
+tokenizer = AutoTokenizer.from_pretrained('bert-base-chinese')
+print(tokenizer)
+```
 
 ### Configurable parameters
 
