@@ -211,7 +211,10 @@ class Page(Data):
         if not self.image or update:
             page_id = self.id_ if self.id_ else self.copy_of_id
             if self.image_bytes:
-                self.image = Image.open(io.BytesIO(self.image_bytes))
+                try:
+                    self.image = Image.open(io.BytesIO(self.image_bytes))
+                except ValueError:
+                    self.image = Image.open(io.BytesIO(self.image_bytes)).convert('RGB')
             elif is_file(self.image_path, raise_exception=False) and not update:
                 self.image = Image.open(self.image_path)
             elif (not is_file(self.image_path, raise_exception=False) or update) and page_id:
@@ -4363,9 +4366,7 @@ class Project(Data):
 
         """
         if len(self.documents + self.test_documents) == 0:
-            raise ValueError(
-                "No Documents in the training or test set. Please add them."
-            )
+            raise ValueError("No Documents in the training or test set. Please add them.")
         for document in tqdm(self.documents + self.test_documents):
             document.download_document_details()
             document.get_file()
@@ -4375,9 +4376,7 @@ class Project(Data):
 
         print("[SUCCESS] Data exporting finished successfully!")
 
-    def export_project_data(
-        self, include_ais=False, training_and_test_documents=True
-    ) -> None:
+    def export_project_data(self, include_ais=False, training_and_test_documents=True) -> None:
         """
         "Export the Project data including Training, Test Documents and AI models.
 
@@ -4398,8 +4397,7 @@ class Project(Data):
                 if exported_ais:
                     print(f"[INFO] Export finished. {exported_ais} AIs were available for export.")
                 else:
-                    print(f"[INFO] No AIs available for export.")
+                    print("[INFO] No AIs available for export.")
             except Exception as error:
                 print("[ERROR] Something went wrong while downloading AIs or AI metadata!")
                 raise error
-
