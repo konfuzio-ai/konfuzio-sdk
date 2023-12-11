@@ -709,7 +709,7 @@ class TestCategorizationConfigurations(unittest.TestCase):
             not_found = session.get(url)
             assert not_found.status_code == 204
         except (HTTPError, ReadTimeout) as e:
-            assert ('403' in str(e)) or ('500' in str(e)) or ('ReadTimeout' in str(e)) or ('404' in str(e))
+            assert ('403' in str(e)) or ('500' in str(e)) or ('Read timed out' in str(e)) or ('404' in str(e))
 
 
 @pytest.mark.skipif(
