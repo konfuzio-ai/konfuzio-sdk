@@ -1,6 +1,7 @@
 """Validate data functions."""
 import logging
 import os
+import PIL
 import unittest
 from copy import copy, deepcopy
 from requests import HTTPError, ConnectionError
@@ -393,6 +394,27 @@ class TestOnlineProject(unittest.TestCase):
         test_document.set_category(None)
         assert test_document.category == self.project.no_category
         assert test_document._category == self.project.no_category
+
+    def test_get_image_png(self):
+        """Test that a PNG image file can be obtained via page.get_image() method."""
+        document = Document.from_file(path="tests/test_data/png.png", project=self.project)
+        image = document.pages()[0].get_image()
+        assert isinstance(image, PIL.PngImagePlugin.PngImageFile)
+        document.delete(delete_online=True)
+
+    def test_get_image_pdf(self):
+        """Test that a PDF image file can be obtained via page.get_image() method."""
+        document = Document.from_file(path="tests/test_data/pdf.pdf", project=self.project)
+        image = document.pages()[0].get_image()
+        assert isinstance(image, PIL.PngImagePlugin.PngImageFile)
+        document.delete(delete_online=True)
+
+    def test_get_image_jpeg(self):
+        """Test that a JPEG image file can be obtained via page.get_image() method."""
+        document = Document.from_file(path="tests/test_data/jpg.jpg", project=self.project)
+        image = document.pages()[0].get_image()
+        assert isinstance(image, PIL.PngImagePlugin.PngImageFile)
+        document.delete(delete_online=True)
 
 
 class TestOfflineExampleData(unittest.TestCase):
