@@ -691,6 +691,7 @@ class TestCategorizationConfigurations(unittest.TestCase):
         # restore category attribute to not interfere with next tests
         test_document.set_category(result.category)
 
+    @unittest.skipIf(sys.version_info[:2] != (3, 8), reason='This AI can only be loaded on Python 3.8.')
     def test_8_upload_ai_model(self) -> None:
         """Upload the model."""
         assert os.path.isfile(self.categorization_pipeline.pipeline_path)
@@ -719,6 +720,7 @@ class TestCategorizationConfigurations(unittest.TestCase):
     and not is_dependency_installed('torchvision'),
     reason='Required dependencies not installed.',
 )
+@unittest.skipIf(sys.version_info[:2] != (3, 8), reason='This AI can only be loaded on Python 3.8.')
 def test_bert_in_multimodal_categorization_ai():
     """Test compatibility of BERT-based model and image-processing model for Categorization."""
     training_prj = Project(id_=14392)
@@ -738,7 +740,7 @@ def test_bert_in_multimodal_categorization_ai():
     bert_config = text_model.bert.config
     assert hasattr(bert_config, '_name_or_path')
     assert bert_config._name_or_path == 'prajjwal1/bert-tiny'
-    image_model = VGG(name="vgg16")
+    image_model = VGG(name="vgg11")
     multimodal_model = MultimodalConcatenate(
         n_image_features=image_model.n_features,
         n_text_features=text_model.n_features,
@@ -772,6 +774,7 @@ def test_bert_in_multimodal_categorization_ai():
         assert page.category == ground_truth_category
         assert page.maximum_confidence_category_annotation.confidence > 0.9
     test_document.set_category(result.category)
+    os.remove(categorization_pipeline.pipeline_path)
 
 
 @pytest.mark.skipif(
