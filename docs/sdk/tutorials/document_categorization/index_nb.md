@@ -199,22 +199,21 @@ them [here](https://help.konfuzio.com/modules/projects/index.html?highlight=effi
 | None                    | None              | None                           | VGG          | `vgg13`              |
 | None                    | None              | None                           | VGG          | `vgg16`              |
 | None                    | None              | None                           | VGG          | `vgg19`              |
-| BertTokenizerFast       | BERT*             | `bert-base-german-cased`       | None         | None                 |
-| MobileBertTokenizerFast | BERT              | `google/mobilebert-uncased`    | None         | None                 |
-| DistilBertTokenizerFast | BERT              | `distilbert-base-german-cased` | None         | None                 |
-| AlbertTokenizerFast     | BERT              | `albert-base-v2`               | None         | None                 |
+| TransformersTokenizer   | BERT*             | `bert-base-german-cased`       | None         | None                 |
+| TransformersTokenizer   | BERT              | `google/mobilebert-uncased`    | None         | None                 |
+| TransformersTokenizer   | BERT              | `distilbert-base-german-cased` | None         | None                 |
+| TransformersTokenizer   | BERT              | `albert-base-v2`               | None         | None                 |
 
 ***Note**: even though there is a single model listed for each architecture of BERT-based models (e.g. BERT-base, 
 DistilBERT, AlBERT), any model that is based on any of these architectures (e.g. `bert-base-chinese`, 
 `osiria/distilbert-base-italian-cased` etc.) can be used as a text-processing model. To ensure a model is compatible
-with Categorization AI, initialize its tokenizer as follows. If tokenizer is listed in the first column of
-a table above, the model is compatible.
+with Categorization AI, initialize it with the SDK's `TransformersTokenizer` class as follows. If a model is compatible, 
+the initialization will be successful; otherwise, an error about incompatibility will appear.
 
-```python
-from transformers import AutoTokenizer
+```python tags=["skip-execution", "nbval-skip"]
+from konfuzio_sdk.trainer.tokenization import TransformersTokenizer
 
-tokenizer = AutoTokenizer.from_pretrained('bert-base-chinese')
-print(tokenizer)
+tokenizer = TransformersTokenizer(name='bert-base-chinese')
 ```
 
 ### Configurable parameters
