@@ -1,9 +1,9 @@
 """Convert the Span according to the data_type of the Annotation."""
 import logging
-import numpy as np
 from typing import Dict, Optional
-import regex as re
 
+import numpy as np
+import regex as re
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ def _get_is_negative(offset_string: str) -> bool:
             is_negative = True
 
     if offset_string.count('S') > 0:
-        if offset_string.count('S') == 1 and offset_string[-1] == "S" and is_negative is False:
+        if offset_string.count('S') == 1 and offset_string[-1] == 'S' and is_negative is False:
             is_negative = True
 
     if (
@@ -127,7 +127,7 @@ def _normalize_string_to_absolute_float(offset_string: str) -> Optional[float]:
     if re.search(r'(\d)[ ]{3,}(\d)', offset_string):
         return None
 
-    offset_string = re.sub(r"(\d)[ ]{1,2}(\d)", r'\1.\2', offset_string)
+    offset_string = re.sub(r'(\d)[ ]{1,2}(\d)', r'\1.\2', offset_string)
 
     if offset_string.count('*') > 1:
         return None

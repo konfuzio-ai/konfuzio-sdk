@@ -21,38 +21,34 @@ import logging
 import os
 import time
 import unicodedata
-
 from copy import deepcopy
 from heapq import nsmallest
 from inspect import signature
-from typing import Tuple, Optional, List, Union, Dict
+from typing import Dict, List, Optional, Tuple, Union
 
 import numpy
 import pandas
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.utils.validation import check_is_fitted
 
-from konfuzio_sdk.data import Document, Annotation, Category, AnnotationSet, Label, LabelSet, Span
-from konfuzio_sdk.trainer.base import BaseModel
-from konfuzio_sdk.tokenizer.paragraph_and_sentence import ParagraphTokenizer, SentenceTokenizer
-
+from konfuzio_sdk.data import Annotation, AnnotationSet, Category, Document, Label, LabelSet, Span
+from konfuzio_sdk.evaluate import ExtractionEvaluation
 from konfuzio_sdk.normalize import (
-    normalize_to_float,
     normalize_to_date,
+    normalize_to_float,
     normalize_to_percentage,
     normalize_to_positive_float,
 )
 from konfuzio_sdk.regex import regex_matches
+from konfuzio_sdk.tokenizer.base import ListTokenizer
+from konfuzio_sdk.tokenizer.paragraph_and_sentence import ParagraphTokenizer, SentenceTokenizer
+from konfuzio_sdk.trainer.base import BaseModel
 from konfuzio_sdk.utils import (
-    get_timestamp,
     get_bbox,
+    get_timestamp,
     memory_size_of,
     sdk_isinstance,
 )
-
-from konfuzio_sdk.evaluate import ExtractionEvaluation
-
-from konfuzio_sdk.tokenizer.base import ListTokenizer
 
 logger = logging.getLogger(__name__)
 
@@ -234,74 +230,74 @@ CANDIDATES_CACHE_SIZE = 100
 
 def convert_to_feat(offset_string_list: list, ident_str: str = '') -> pandas.DataFrame:
     """Return a df containing all the features generated using the offset_string."""
-    df = dict()  # pandas.DataFrame()
+    df = {}  # pandas.DataFrame()
 
     # strip all accents
     offset_string_list_accented = offset_string_list
     offset_string_list = [strip_accents(s) for s in offset_string_list]
 
     # gets the return lists for all the features
-    df[ident_str + "feat_vowel_len"] = [vowel_count(s) for s in offset_string_list]
-    df[ident_str + "feat_special_len"] = [special_count(s) for s in offset_string_list]
-    df[ident_str + "feat_space_len"] = [space_count(s) for s in offset_string_list]
-    df[ident_str + "feat_digit_len"] = [digit_count(s) for s in offset_string_list]
-    df[ident_str + "feat_len"] = [len(s) for s in offset_string_list]
-    df[ident_str + "feat_upper_len"] = [upper_count(s) for s in offset_string_list]
-    df[ident_str + "feat_date_count"] = [date_count(s) for s in offset_string_list]
-    df[ident_str + "feat_num_count"] = [num_count(s) for s in offset_string_list]
-    df[ident_str + "feat_as_float"] = [normalize_to_python_float(offset_string) for offset_string in offset_string_list]
-    df[ident_str + "feat_unique_char_count"] = [unique_char_count(s) for s in offset_string_list]
-    df[ident_str + "feat_duplicate_count"] = [duplicate_count(s) for s in offset_string_list]
-    df[ident_str + "accented_char_count"] = [
+    df[ident_str + 'feat_vowel_len'] = [vowel_count(s) for s in offset_string_list]
+    df[ident_str + 'feat_special_len'] = [special_count(s) for s in offset_string_list]
+    df[ident_str + 'feat_space_len'] = [space_count(s) for s in offset_string_list]
+    df[ident_str + 'feat_digit_len'] = [digit_count(s) for s in offset_string_list]
+    df[ident_str + 'feat_len'] = [len(s) for s in offset_string_list]
+    df[ident_str + 'feat_upper_len'] = [upper_count(s) for s in offset_string_list]
+    df[ident_str + 'feat_date_count'] = [date_count(s) for s in offset_string_list]
+    df[ident_str + 'feat_num_count'] = [num_count(s) for s in offset_string_list]
+    df[ident_str + 'feat_as_float'] = [normalize_to_python_float(offset_string) for offset_string in offset_string_list]
+    df[ident_str + 'feat_unique_char_count'] = [unique_char_count(s) for s in offset_string_list]
+    df[ident_str + 'feat_duplicate_count'] = [duplicate_count(s) for s in offset_string_list]
+    df[ident_str + 'accented_char_count'] = [
         count_string_differences(s1, s2) for s1, s2 in zip(offset_string_list, offset_string_list_accented)
     ]
 
     (
-        df[ident_str + "feat_year_count"],
-        df[ident_str + "feat_month_count"],
-        df[ident_str + "feat_day_count"],
+        df[ident_str + 'feat_year_count'],
+        df[ident_str + 'feat_month_count'],
+        df[ident_str + 'feat_day_count'],
     ) = year_month_day_count(offset_string_list)
 
-    df[ident_str + "feat_substring_count_slash"] = substring_count(offset_string_list, "/")
-    df[ident_str + "feat_substring_count_percent"] = substring_count(offset_string_list, "%")
-    df[ident_str + "feat_substring_count_e"] = substring_count(offset_string_list, "e")
-    df[ident_str + "feat_substring_count_g"] = substring_count(offset_string_list, "g")
-    df[ident_str + "feat_substring_count_a"] = substring_count(offset_string_list, "a")
-    df[ident_str + "feat_substring_count_u"] = substring_count(offset_string_list, "u")
-    df[ident_str + "feat_substring_count_i"] = substring_count(offset_string_list, "i")
-    df[ident_str + "feat_substring_count_f"] = substring_count(offset_string_list, "f")
-    df[ident_str + "feat_substring_count_s"] = substring_count(offset_string_list, "s")
-    df[ident_str + "feat_substring_count_oe"] = substring_count(offset_string_list, "ö")
-    df[ident_str + "feat_substring_count_ae"] = substring_count(offset_string_list, "ä")
-    df[ident_str + "feat_substring_count_ue"] = substring_count(offset_string_list, "ü")
-    df[ident_str + "feat_substring_count_er"] = substring_count(offset_string_list, "er")
-    df[ident_str + "feat_substring_count_str"] = substring_count(offset_string_list, "str")
-    df[ident_str + "feat_substring_count_k"] = substring_count(offset_string_list, "k")
-    df[ident_str + "feat_substring_count_r"] = substring_count(offset_string_list, "r")
-    df[ident_str + "feat_substring_count_y"] = substring_count(offset_string_list, "y")
-    df[ident_str + "feat_substring_count_en"] = substring_count(offset_string_list, "en")
-    df[ident_str + "feat_substring_count_g"] = substring_count(offset_string_list, "g")
-    df[ident_str + "feat_substring_count_ch"] = substring_count(offset_string_list, "ch")
-    df[ident_str + "feat_substring_count_sch"] = substring_count(offset_string_list, "sch")
-    df[ident_str + "feat_substring_count_c"] = substring_count(offset_string_list, "c")
-    df[ident_str + "feat_substring_count_ei"] = substring_count(offset_string_list, "ei")
-    df[ident_str + "feat_substring_count_on"] = substring_count(offset_string_list, "on")
-    df[ident_str + "feat_substring_count_ohn"] = substring_count(offset_string_list, "ohn")
-    df[ident_str + "feat_substring_count_n"] = substring_count(offset_string_list, "n")
-    df[ident_str + "feat_substring_count_m"] = substring_count(offset_string_list, "m")
-    df[ident_str + "feat_substring_count_j"] = substring_count(offset_string_list, "j")
-    df[ident_str + "feat_substring_count_h"] = substring_count(offset_string_list, "h")
+    df[ident_str + 'feat_substring_count_slash'] = substring_count(offset_string_list, '/')
+    df[ident_str + 'feat_substring_count_percent'] = substring_count(offset_string_list, '%')
+    df[ident_str + 'feat_substring_count_e'] = substring_count(offset_string_list, 'e')
+    df[ident_str + 'feat_substring_count_g'] = substring_count(offset_string_list, 'g')
+    df[ident_str + 'feat_substring_count_a'] = substring_count(offset_string_list, 'a')
+    df[ident_str + 'feat_substring_count_u'] = substring_count(offset_string_list, 'u')
+    df[ident_str + 'feat_substring_count_i'] = substring_count(offset_string_list, 'i')
+    df[ident_str + 'feat_substring_count_f'] = substring_count(offset_string_list, 'f')
+    df[ident_str + 'feat_substring_count_s'] = substring_count(offset_string_list, 's')
+    df[ident_str + 'feat_substring_count_oe'] = substring_count(offset_string_list, 'ö')
+    df[ident_str + 'feat_substring_count_ae'] = substring_count(offset_string_list, 'ä')
+    df[ident_str + 'feat_substring_count_ue'] = substring_count(offset_string_list, 'ü')
+    df[ident_str + 'feat_substring_count_er'] = substring_count(offset_string_list, 'er')
+    df[ident_str + 'feat_substring_count_str'] = substring_count(offset_string_list, 'str')
+    df[ident_str + 'feat_substring_count_k'] = substring_count(offset_string_list, 'k')
+    df[ident_str + 'feat_substring_count_r'] = substring_count(offset_string_list, 'r')
+    df[ident_str + 'feat_substring_count_y'] = substring_count(offset_string_list, 'y')
+    df[ident_str + 'feat_substring_count_en'] = substring_count(offset_string_list, 'en')
+    df[ident_str + 'feat_substring_count_g'] = substring_count(offset_string_list, 'g')
+    df[ident_str + 'feat_substring_count_ch'] = substring_count(offset_string_list, 'ch')
+    df[ident_str + 'feat_substring_count_sch'] = substring_count(offset_string_list, 'sch')
+    df[ident_str + 'feat_substring_count_c'] = substring_count(offset_string_list, 'c')
+    df[ident_str + 'feat_substring_count_ei'] = substring_count(offset_string_list, 'ei')
+    df[ident_str + 'feat_substring_count_on'] = substring_count(offset_string_list, 'on')
+    df[ident_str + 'feat_substring_count_ohn'] = substring_count(offset_string_list, 'ohn')
+    df[ident_str + 'feat_substring_count_n'] = substring_count(offset_string_list, 'n')
+    df[ident_str + 'feat_substring_count_m'] = substring_count(offset_string_list, 'm')
+    df[ident_str + 'feat_substring_count_j'] = substring_count(offset_string_list, 'j')
+    df[ident_str + 'feat_substring_count_h'] = substring_count(offset_string_list, 'h')
 
-    df[ident_str + "feat_substring_count_plus"] = substring_count(offset_string_list, "+")
-    df[ident_str + "feat_substring_count_minus"] = substring_count(offset_string_list, "-")
-    df[ident_str + "feat_substring_count_period"] = substring_count(offset_string_list, ".")
-    df[ident_str + "feat_substring_count_comma"] = substring_count(offset_string_list, ",")
+    df[ident_str + 'feat_substring_count_plus'] = substring_count(offset_string_list, '+')
+    df[ident_str + 'feat_substring_count_minus'] = substring_count(offset_string_list, '-')
+    df[ident_str + 'feat_substring_count_period'] = substring_count(offset_string_list, '.')
+    df[ident_str + 'feat_substring_count_comma'] = substring_count(offset_string_list, ',')
 
-    df[ident_str + "feat_starts_with_plus"] = starts_with_substring(offset_string_list, "+")
-    df[ident_str + "feat_starts_with_minus"] = starts_with_substring(offset_string_list, "-")
+    df[ident_str + 'feat_starts_with_plus'] = starts_with_substring(offset_string_list, '+')
+    df[ident_str + 'feat_starts_with_minus'] = starts_with_substring(offset_string_list, '-')
 
-    df[ident_str + "feat_ends_with_plus"] = ends_with_substring(offset_string_list, "+")
-    df[ident_str + "feat_ends_with_minus"] = ends_with_substring(offset_string_list, "-")
+    df[ident_str + 'feat_ends_with_plus'] = ends_with_substring(offset_string_list, '+')
+    df[ident_str + 'feat_ends_with_minus'] = ends_with_substring(offset_string_list, '-')
 
     df = pandas.DataFrame(df)
 
@@ -384,7 +380,7 @@ def date_count(s: str) -> int:
     # checks the format
     if len(s) > 5:
         if (s[2] == '.' and s[5] == '.') or (s[2] == '/' and s[5] == '/'):
-            date1 = pandas.to_datetime("01.01.2010", dayfirst=True)
+            date1 = pandas.to_datetime('01.01.2010', dayfirst=True)
             date2 = normalize_to_date(s)
             if not date2:
                 return 0
@@ -480,7 +476,7 @@ def duplicate_count(s: str) -> int:
 
 def unique_char_count(s: str) -> int:
     """Given a string returns the number of unique characters."""
-    return len(set(list(s)))
+    return len(set(s))
 
 
 def get_first_candidate(document_text, document_bbox, line_list):
@@ -559,12 +555,12 @@ def process_document_data(
         assert isinstance(n_nearest, (tuple, list)) and len(n_nearest) == 2
         n_left_nearest, n_right_nearest = n_nearest
 
-    l_keys = ["l_dist" + str(x) for x in range(n_left_nearest)]
-    r_keys = ["r_dist" + str(x) for x in range(n_right_nearest)]
+    l_keys = ['l_dist' + str(x) for x in range(n_left_nearest)]
+    r_keys = ['r_dist' + str(x) for x in range(n_right_nearest)]
 
     if n_nearest_across_lines:
-        l_keys += ["l_pos" + str(x) for x in range(n_left_nearest)]
-        r_keys += ["r_pos" + str(x) for x in range(n_right_nearest)]
+        l_keys += ['l_pos' + str(x) for x in range(n_left_nearest)]
+        r_keys += ['r_pos' + str(x) for x in range(n_right_nearest)]
 
     document_bbox = document.get_bbox()
     document_text = document.text
@@ -590,9 +586,8 @@ def process_document_data(
         first_word_x1 = first_candidate['x1']
         first_word_y1 = first_candidate['y1']
 
-    candidates_cache = dict()
+    candidates_cache = {}
     for span in spans:
-
         # if span.annotation.id_:
         #     # Annotation
         #     logger.error(f'{span}')
@@ -727,11 +722,11 @@ def process_document_data(
                 span_dict['r_pos' + str(index)] = item['pos']
 
         # checks for ERRORS
-        if span_dict["confidence"] is None and not (span_dict["revised"] is False and span_dict["is_correct"] is True):
+        if span_dict['confidence'] is None and not (span_dict['revised'] is False and span_dict['is_correct'] is True):
             file_error_data.append(span_dict)
 
         # adds the sample_data to the list
-        if span_dict["page_index"] is not None:
+        if span_dict['page_index'] is not None:
             file_data_raw.append(span_dict)
 
     # creates the dataframe
@@ -747,14 +742,14 @@ def process_document_data(
         df['first_word_string'] = first_word_string
 
         # first word string features
-        df_string_features_first = convert_to_feat(list(df["first_word_string"]), "first_word_")
-        string_features_first_word = list(df_string_features_first.columns.values)  # NOQA
+        df_string_features_first = convert_to_feat(list(df['first_word_string']), 'first_word_')
+        string_features_first_word = list(df_string_features_first.columns.values)
         df = df.join(df_string_features_first, lsuffix='_caller', rsuffix='_other')
         first_word_features = ['first_word_x0', 'first_word_y0', 'first_word_x1', 'first_word_y1']
         first_word_features += string_features_first_word
 
     # creates all the features from the offset string
-    df_string_features_real = convert_to_feat(list(df["offset_string"]))
+    df_string_features_real = convert_to_feat(list(df['offset_string']))
     string_feature_column_order = list(df_string_features_real.columns.values)
 
     # joins it to the main DataFrame
@@ -771,15 +766,15 @@ def process_document_data(
         relative_string_feature_list += list(df_string_features_r.columns.values)
         df = df.join(df_string_features_r, lsuffix='_caller', rsuffix='_other')
 
-    df["relative_position_in_page"] = df["page_index"] / document_n_pages
+    df['relative_position_in_page'] = df['page_index'] / document_n_pages
 
-    abs_pos_feature_list = ["x0", "y0", "x1", "y1", "page_index", "area_quadrant_two", "area"]
+    abs_pos_feature_list = ['x0', 'y0', 'x1', 'y1', 'page_index', 'area_quadrant_two', 'area']
     relative_pos_feature_list = [
-        "x0_relative",
-        "x1_relative",
-        "y0_relative",
-        "y1_relative",
-        "relative_position_in_page",
+        'x0_relative',
+        'x1_relative',
+        'y0_relative',
+        'y1_relative',
+        'relative_position_in_page',
     ]
 
     feature_list = (
@@ -798,8 +793,8 @@ def process_document_data(
 
 def substring_on_page(substring, annotation, page_text_list) -> bool:
     """Check if there is an occurrence of the word on the according page."""
-    if not hasattr(annotation, "page_index"):
-        logger.warning("Annotation has no page_index!")
+    if not hasattr(annotation, 'page_index'):
+        logger.warning('Annotation has no page_index!')
         return False
     elif annotation.page_index > len(page_text_list) - 1:
         logger.warning("Annotation's page_index does not match given text.")
@@ -842,7 +837,7 @@ class AbstractExtractionAI(BaseModel):
 
         :raises AttributeError: When no Category is specified.
         """
-        logger.info(f"Checking if {self} is ready for extraction.")
+        logger.info(f'Checking if {self} is ready for extraction.')
         if not self.category:
             raise AttributeError(f'{self} requires a Category.')
 
@@ -858,7 +853,7 @@ class AbstractExtractionAI(BaseModel):
 
     def extract(self, document: Document) -> Document:
         """Perform preliminary extraction steps."""
-        logger.info(f"Starting extraction of {document}.")
+        logger.info(f'Starting extraction of {document}.')
 
         self.check_is_ready()  # check if the model is ready for extraction
 
@@ -883,7 +878,6 @@ class AbstractExtractionAI(BaseModel):
         )
         virtual_annotation_set_id += 1
         for label_or_label_set_name, information in extraction_result.items():
-
             if isinstance(information, pandas.DataFrame):
                 if information.empty:
                     continue
@@ -959,7 +953,7 @@ class AbstractExtractionAI(BaseModel):
                     )
                     if annotation.spans[0].offset_string is None:
                         raise NotImplementedError(
-                            f"Extracted {annotation} does not have a correspondence in the " f"text of {document}."
+                            f'Extracted {annotation} does not have a correspondence in the ' f'text of {document}.'
                         )
                 except ValueError as e:
                     if 'is a duplicate of' in str(e):
@@ -974,8 +968,8 @@ class AbstractExtractionAI(BaseModel):
 
         See more details at https://dev.konfuzio.com/sdk/explanations.html#horizontal-merge
         """
-        logger.info("Horizontal merge.")
-        merged_res_dict = dict()  # stores final results
+        logger.info('Horizontal merge.')
+        merged_res_dict = {}  # stores final results
         for label, items in res_dict.items():
             res_dicts = []
             buffer = []
@@ -1018,7 +1012,7 @@ class AbstractExtractionAI(BaseModel):
         ends = buffer[-1]['end_offset']
         text = doc_text[starts:ends]
 
-        res_dict = dict()
+        res_dict = {}
         res_dict['start_offset'] = starts
         res_dict['end_offset'] = ends
         res_dict['label_name'] = label
@@ -1061,7 +1055,7 @@ class AbstractExtractionAI(BaseModel):
             return False
 
         # Do not merge if any character in between the two Spans
-        if not all([c == ' ' for c in doc_text[buffer[-1]['end_offset'] : row['start_offset']]]):
+        if not all(c == ' ' for c in doc_text[buffer[-1]['end_offset'] : row['start_offset']]):
             return False
 
         # Do not merge if the difference in the offsets is bigger than the maximum offset distance
@@ -1154,7 +1148,7 @@ class AbstractExtractionAI(BaseModel):
         if not AbstractExtractionAI.has_compatible_interface(model):
             raise TypeError(
                 "Loaded model's interface is not compatible with any AIs. Please provide a model that has all the "
-                "abstract methods implemented."
+                'abstract methods implemented.'
             )
         return model
 
@@ -1184,12 +1178,12 @@ class GroupAnnotationSets:
         )
         self.label_sets_info = [
             LabelSetInfo(
-                **dict(
-                    is_default=label_set.is_default,
-                    name=label_set.name,
-                    has_multiple_annotation_sets=label_set.has_multiple_annotation_sets,
-                    target_names=label_set.get_target_names(self.use_separate_labels),
-                )
+                **{
+                    'is_default': label_set.is_default,
+                    'name': label_set.name,
+                    'has_multiple_annotation_sets': label_set.has_multiple_annotation_sets,
+                    'target_names': label_set.get_target_names(self.use_separate_labels),
+                }
             )
             for label_set in self.category.label_sets
         ]
@@ -1197,7 +1191,7 @@ class GroupAnnotationSets:
         if not [lset for lset in self.category.label_sets if not lset.is_default]:
             # todo see https://gitlab.com/konfuzio/objectives/-/issues/2247
             # todo check for NO_LABEL_SET if we should keep it
-            return
+            return None
         logger.info('Start training of Multi-class Label Set Classifier.')
         # ignores the section count as it actually worsens results
         # todo check if no category labels should be ignored
@@ -1208,7 +1202,7 @@ class GroupAnnotationSets:
         # Pretty long feature generation
         df_train_label = self.df_train
 
-        df_train_label_list = [(document_id, df_doc) for document_id, df_doc in df_train_label.groupby('document_id')]
+        df_train_label_list = list(df_train_label.groupby('document_id'))
 
         df_train_template_list = []
         df_train_ground_truth_list = []
@@ -1348,7 +1342,7 @@ class GroupAnnotationSets:
             line_annotations = [
                 x for x in document_annotations if char_count <= x.spans[0].start_offset < new_char_count
             ]
-            annotations_dict = dict((x.label.name, True) for x in line_annotations)
+            annotations_dict = {x.label.name: True for x in line_annotations}
             counter_dict = dict(
                 collections.Counter(annotation.annotation_set.label_set.name for annotation in line_annotations)
             )
@@ -1384,7 +1378,7 @@ class GroupAnnotationSets:
             assert line == text[char_count:new_char_count]
             line_df = df[(char_count <= df['start_offset']) & (df['end_offset'] <= new_char_count)]
             spans = [row for index, row in line_df.iterrows()]
-            spans_dict = dict((x['result_name'], True) for x in spans)
+            spans_dict = {x['result_name']: True for x in spans}
             # counter_dict = {}  # why?
             # annotations_accuracy_dict = defaultdict(lambda: 0)
             # for annotation in annotations:
@@ -1454,7 +1448,6 @@ class GroupAnnotationSets:
                         # we try to find the labels that match that section
                         for target_label_name in label_set.target_names:
                             if target_label_name in res_dict.keys():
-
                                 label_df = res_dict[target_label_name]
                                 if label_df.empty:
                                     continue
@@ -1561,21 +1554,21 @@ class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
         **kwargs,
     ):
         """RFExtractionAI."""
-        logger.info("Initializing RFExtractionAI.")
+        logger.info('Initializing RFExtractionAI.')
         super().__init__(category, *args, **kwargs)
         GroupAnnotationSets.__init__(self)
 
         self.label_feature_list = None
 
-        logger.info("RFExtractionAI settings:")
-        logger.info(f"{use_separate_labels=}")
-        logger.info(f"{category=}")
-        logger.info(f"{n_nearest=}")
-        logger.info(f"{first_word=}")
-        logger.info(f"{max_depth=}")
-        logger.info(f"{n_estimators=}")
-        logger.info(f"{no_label_limit=}")
-        logger.info(f"{n_nearest_across_lines=}")
+        logger.info('RFExtractionAI settings:')
+        logger.info(f'{use_separate_labels=}')
+        logger.info(f'{category=}')
+        logger.info(f'{n_nearest=}')
+        logger.info(f'{first_word=}')
+        logger.info(f'{max_depth=}')
+        logger.info(f'{n_estimators=}')
+        logger.info(f'{no_label_limit=}')
+        logger.info(f'{n_nearest_across_lines=}')
 
         self.use_separate_labels = use_separate_labels
         self.n_nearest = n_nearest
@@ -1586,7 +1579,7 @@ class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
         self.n_nearest_across_lines = n_nearest_across_lines
 
         self.tokenizer = tokenizer
-        logger.info(f"{tokenizer=}")
+        logger.info(f'{tokenizer=}')
 
         self.clf = None
 
@@ -1608,7 +1601,7 @@ class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
 
     def features(self, document: Document):
         """Calculate features using the best working default values that can be overwritten with self values."""
-        logger.info(f"Starting {document} feature calculation.")
+        logger.info(f'Starting {document} feature calculation.')
         if self.no_label_name is None or self.no_label_set_name is None:
             self.no_label_name = document.project.no_label.name_clean
             self.no_label_set_name = document.project.no_label_set.name_clean
@@ -1767,7 +1760,7 @@ class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
         :param document: Document whose Annotations should be merged vertically
         :param only_multiline_labels: Only merge if a multiline Label Annotation is in the Category Training set
         """
-        logger.info("Vertical merging Annotations.")
+        logger.info('Vertical merging Annotations.')
         if not self.category:
             raise AttributeError(f'{self} merge_vertical requires a Category.')
         labels_dict = {}
@@ -1835,10 +1828,10 @@ class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
 
         :param document: Document with multi-line Annotations
         """
-        logger.info(f"Vertical merging Annotations like {template_document}.")
+        logger.info(f'Vertical merging Annotations like {template_document}.')
         assert (
             document.text == template_document.text
-        ), f"{self} and {template_document} need to have the same ocr text."
+        ), f'{self} and {template_document} need to have the same ocr text.'
         span_to_annotation = {
             (span.start_offset, span.end_offset): hash(span.annotation)
             for span in template_document.spans(use_correct=False)
@@ -1847,7 +1840,7 @@ class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
         for annotation in document.annotations(use_correct=False):
             assert (
                 len(annotation.spans) == 1
-            ), f"Cannot use merge_verical_like in {document} with multi-span {annotation}."
+            ), f'Cannot use merge_verical_like in {document} with multi-span {annotation}.'
             span_offset_key = (annotation.spans[0].start_offset, annotation.spans[0].end_offset)
             if span_offset_key in span_to_annotation:
                 ann_to_anns[span_to_annotation[span_offset_key]].append(annotation)
@@ -2075,13 +2068,13 @@ class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
                         if require_revised_annotations:
                             raise ValueError(
                                 f"{span.annotation} is unrevised in this dataset and can't be used for training!"
-                                f"Please revise it manually by either confirming it, rejecting it, or modifying it."
+                                f'Please revise it manually by either confirming it, rejecting it, or modifying it.'
                             )
                         else:
                             logger.error(
-                                f"{span.annotation} is unrevised in this dataset and may impact model "
-                                f"performance! Please revise it manually by either confirming it, rejecting "
-                                f"it, or modifying it."
+                                f'{span.annotation} is unrevised in this dataset and may impact model '
+                                f'performance! Please revise it manually by either confirming it, rejecting '
+                                f'it, or modifying it.'
                             )
 
             virtual_document = deepcopy(document)
@@ -2175,7 +2168,7 @@ class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
         else:
             raise NotImplementedError
 
-        logger.info(f"Size of feature dict {memory_size_of(df_real_list)/1000} KB.")
+        logger.info(f'Size of feature dict {memory_size_of(df_real_list)/1000} KB.')
 
         return df_real_list, feature_list
 
@@ -2185,16 +2178,16 @@ class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
 
         # balanced gives every label the same weight so that the sample_number doesn't effect the results
         self.clf = RandomForestClassifier(
-            class_weight="balanced", n_estimators=self.n_estimators, max_depth=self.max_depth, random_state=420
+            class_weight='balanced', n_estimators=self.n_estimators, max_depth=self.max_depth, random_state=420
         )
 
         self.clf.fit(self.df_train[self.label_feature_list], self.df_train['target'])
 
-        logger.info(f"Size of Label classifier: {memory_size_of(self.clf)/1000} KB.")
+        logger.info(f'Size of Label classifier: {memory_size_of(self.clf)/1000} KB.')
 
         self.fit_label_set_clf()
 
-        logger.info(f"Size of LabelSet classifier: {memory_size_of(self.label_set_clf)/1000} KB.")
+        logger.info(f'Size of LabelSet classifier: {memory_size_of(self.label_set_clf)/1000} KB.')
 
         return self.clf
 

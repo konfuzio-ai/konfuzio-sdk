@@ -1,34 +1,32 @@
 """Test Splitting AI and the models' training, saving and prediction."""
 import bz2
-import cloudpickle
 import os
 import pathlib
-
-import numpy
-import pytest
 import shutil
 import sys
 import unittest
-
 from copy import deepcopy
+
+import cloudpickle
+import numpy
+import pytest
 from requests import HTTPError
 
-from konfuzio_sdk.api import upload_ai_model, update_ai_model, delete_ai_model, konfuzio_session
+from konfuzio_sdk.api import delete_ai_model, konfuzio_session, update_ai_model, upload_ai_model
 from konfuzio_sdk.data import Category, Document, Project
-from konfuzio_sdk.settings_importer import is_dependency_installed
 from konfuzio_sdk.samples import LocalTextProject
+from konfuzio_sdk.settings_importer import is_dependency_installed
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
 from konfuzio_sdk.trainer.file_splitting import (
     ContextAwareFileSplittingModel,
+    MultimodalFileSplittingModel,
     SplittingAI,
     TextualFileSplittingModel,
-    MultimodalFileSplittingModel,
 )
 from konfuzio_sdk.urls import get_create_ai_model_url
 
-
 TEST_WITH_FULL_DATASET = False
-DEVICE = "cpu"
+DEVICE = 'cpu'
 TEST_SPLITTING_AI_PROJECT_ID = 14392
 
 
@@ -73,27 +71,27 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
 
     def test_init_file_splitting_model_empty_list(self):
         """Test running Context Aware File Splitting Model with an empty Categories list."""
-        with pytest.raises(ValueError, match="an empty list"):
+        with pytest.raises(ValueError, match='an empty list'):
             ContextAwareFileSplittingModel(categories=[], tokenizer=ConnectedTextTokenizer())
 
     def test_init_file_splitting_model_not_a_category(self):
         """Test passing a list with an element that is not a Category as an input."""
-        with pytest.raises(ValueError, match="have to be Categories"):
+        with pytest.raises(ValueError, match='have to be Categories'):
             ContextAwareFileSplittingModel(
-                categories=[self.project.get_category_by_id(3), ""], tokenizer=ConnectedTextTokenizer()
+                categories=[self.project.get_category_by_id(3), ''], tokenizer=ConnectedTextTokenizer()
             )
 
     def test_init_file_splitting_model_category_no_documents(self):
         """Test passing a Category that does not have Documents."""
-        _ = Category(project=self.project, id_=5, name="CategoryName 5")
-        with pytest.raises(ValueError, match="At least one Category"):
+        _ = Category(project=self.project, id_=5, name='CategoryName 5')
+        with pytest.raises(ValueError, match='At least one Category'):
             ContextAwareFileSplittingModel(categories=[_], tokenizer=ConnectedTextTokenizer())
 
     def test_init_file_splitting_model_category_no_test_documents(self):
         """Test passing a Category that does not have test Documents."""
-        _ = Category(project=self.project, id_=6, name="CategoryName 6")
-        Document(project=self.project, category=_, text="Hi all, I like fish.", dataset_status=2)
-        with pytest.raises(ValueError, match="does not have test Documents"):
+        _ = Category(project=self.project, id_=6, name='CategoryName 6')
+        Document(project=self.project, category=_, text='Hi all, I like fish.', dataset_status=2)
+        with pytest.raises(ValueError, match='does not have test Documents'):
             ContextAwareFileSplittingModel(categories=[_], tokenizer=ConnectedTextTokenizer())
 
     def test_load_incompatible_model(self):
@@ -104,7 +102,7 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
     def test_load_model_from_different_class(self):
         """Test Splitting AI with a model that doesn't inherit from AbstractFileSplittingModel class."""
         wrong_class = ConnectedTextTokenizer()
-        with pytest.raises(ValueError, match="model is not inheriting from AbstractFileSplittingModel"):
+        with pytest.raises(ValueError, match='model is not inheriting from AbstractFileSplittingModel'):
             SplittingAI(model=wrong_class)
 
     def test_predict_context_aware_splitting_model(self):
@@ -142,7 +140,7 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
             categories=[self.project.get_category_by_id(2)], tokenizer=self.file_splitting_model.tokenizer
         )
         model.fit(allow_empty_categories=True)
-        with pytest.raises(ValueError, match="Cannot run prediction as none of the Categories in"):
+        with pytest.raises(ValueError, match='Cannot run prediction as none of the Categories in'):
             model.predict(self.test_document.pages()[0])
 
     def test_pickle_model_save_load(self):
