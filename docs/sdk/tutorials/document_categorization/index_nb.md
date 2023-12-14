@@ -185,30 +185,45 @@ default value will be applied.
 You can find more information on how to use these configurations, what are default values and where to specify
 them [here](https://help.konfuzio.com/modules/projects/index.html?highlight=efficientnet#categorization-ai-parameters).
 
-| Tokenizer               | Text module       | Text module version            | Image module | Image module version |
-|-------------------------|-------------------|--------------------------------|--------------|----------------------|
+| Tokenizer               | Text module      | Text module version            | Image module | Image module version |
+|-------------------------|------------------|--------------------------------|--------------|----------------------|
 | WhitespaceTokenizer     | NBOWSelfAttention | `nbowselfattention`            | EfficientNet | `efficientnet_b0`    |
 | WhitespaceTokenizer     | NBOWSelfAttention | `nbowselfattention`            | EfficientNet | `efficientnet_b3`    |
-| WhitespaceTokenizer     | NBOW              | `nbow`                         | VGG          | `vgg11`              |
-| WhitespaceTokenizer     | LSTM              | `lstm`                         | VGG          | `vgg13`              |
-| ConnectedTextTokenizer  | NBOW              | `nbow`                         | VGG          | `vgg11`              |
-| ConnectedTextTokenizer  | LSTM              | `lstm`                         | VGG          | `vgg13`              |
-| None                    | None              | None                           | EfficientNet | `efficientnet_b0`    |
-| None                    | None              | None                           | EfficientNet | `efficientnet_b3`    |
-| None                    | None              | None                           | VGG          | `vgg11`              |
-| None                    | None              | None                           | VGG          | `vgg13`              |
-| None                    | None              | None                           | VGG          | `vgg16`              |
-| None                    | None              | None                           | VGG          | `vgg19`              |
-| TransformersTokenizer   | BERT*             | `bert-base-german-cased`       | None         | None                 |
-| TransformersTokenizer   | BERT              | `google/mobilebert-uncased`    | None         | None                 |
-| TransformersTokenizer   | BERT              | `distilbert-base-german-cased` | None         | None                 |
-| TransformersTokenizer   | BERT              | `albert-base-v2`               | None         | None                 |
+| WhitespaceTokenizer     | NBOW             | `nbow`                         | VGG          | `vgg11`              |
+| WhitespaceTokenizer     | LSTM             | `lstm`                         | VGG          | `vgg13`              |
+| ConnectedTextTokenizer  | NBOW             | `nbow`                         | VGG          | `vgg11`              |
+| ConnectedTextTokenizer  | LSTM             | `lstm`                         | VGG          | `vgg13`              |
+| None                    | None             | None                           | EfficientNet | `efficientnet_b0`    |
+| None                    | None             | None                           | EfficientNet | `efficientnet_b3`    |
+| None                    | None             | None                           | VGG          | `vgg11`              |
+| None                    | None             | None                           | VGG          | `vgg13`              |
+| None                    | None             | None                           | VGG          | `vgg16`              |
+| None                    | None             | None                           | VGG          | `vgg19`              |
+| TransformersTokenizer   | *BERT* *         | `bert-base-german-cased`       | None         | None                 |
 
-***Note**: even though there is a single model listed for each architecture of BERT-based models (e.g. BERT-base, 
-DistilBERT, AlBERT), any model that is based on any of these architectures (e.g. `bert-base-chinese`, 
-`osiria/distilbert-base-italian-cased` etc.) can be used as a text-processing model. To ensure a model is compatible
-with Categorization AI, initialize it with the SDK's `TransformersTokenizer` class as follows. If a model is compatible, 
-the initialization will be successful; otherwise, an error about incompatibility will appear.
+***Note**: In this table, we list a single BERT-based model (`bert-base-german-cased`). The following table lists the
+possible values for text module versions that can be passed as `name` argument when configuring BERT model for 
+Categorization.
+
+### Models compatible with BERT class
+
+| Name                           | Embeddings dimension | Language |
+|--------------------------------|----------------------|----------|
+| `bert-base-german-cased`       | 768                  | German   |
+| `bert-base-german-uncased`     | 768                  | German   |
+| `bert-base-uncased`            | 768                  | English  |
+| `bert-base-multilingual-cased` | 768                  | Multiple |
+| `distilbert-base-uncased`      | 768                  | English  |
+| `distilbert-base-german-cased` | 768                  | German   |
+| `google/mobilebert-uncased`    | 512                  | English  |
+| `albert-base-v2`               | 768                  | English  |
+
+
+**Note:** This list is not exhaustive. We only list the models that are fully tested. However, you can use the 
+[Huggingface hub](https://huggingface.co/models) to find other models that best suit your needs. To ensure a model is 
+compatible with Categorization AI, initialize it with the SDK's `TransformersTokenizer` class as presented in an example
+below, replacing the value of `name` to the name of your model of choice. If a model is compatible, the initialization 
+will be successful; otherwise, an error about incompatibility will appear.
 
 ```python tags=["skip-execution", "nbval-skip"]
 from konfuzio_sdk.trainer.tokenization import TransformersTokenizer
