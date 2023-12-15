@@ -1015,7 +1015,7 @@ class CategorizationAI(AbstractCategorizationAI):
         temp_pt_file_path = self.temp_pt_file_path
         compressed_file_path = self.compressed_file_path
 
-        if self.categories:
+        if self.categories and reduce_weight:
             self.categories[0].project.lose_weight()
 
         # create dictionary to save all necessary model data
@@ -1534,6 +1534,8 @@ class CategorizationAI(AbstractCategorizationAI):
                 max_length = self.classifier.text_model.get_max_length()
                 page.text_encoded = self.tokenizer(page.text, max_length=max_length)['input_ids']
             else:
+                if not page.spans():
+                    self.tokenizer.tokenize(page.document)
                 max_length = None
                 self.text_vocab.numericalize(page, max_length)
             text_coded = [torch.LongTensor(page.text_encoded).squeeze(0)]

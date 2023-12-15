@@ -7,12 +7,12 @@ import sys
 import unittest
 from copy import deepcopy
 import parameterized
-from requests import HTTPError
+from requests import HTTPError, ReadTimeout
 from typing import List, Dict
 
 from konfuzio_sdk.api import upload_ai_model, update_ai_model, delete_ai_model, konfuzio_session
 from konfuzio_sdk.data import Project, Document, Page
-from konfuzio_sdk.extras import torch, FloatTensor, transformers
+from konfuzio_sdk.extras import torch, FloatTensor
 from konfuzio_sdk.settings_importer import is_dependency_installed
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, ConnectedTextTokenizer
 from konfuzio_sdk.trainer.document_categorization import (
@@ -30,12 +30,11 @@ from konfuzio_sdk.trainer.document_categorization import (
     NBOW,
     LSTM,
     BERT,
-    load_categorization_model,
     ImageModel,
     TextModel,
     build_categorization_ai_pipeline,
 )
-from konfuzio_sdk.trainer.tokenization import PhraseMatcherTokenizer
+
 from konfuzio_sdk.urls import get_create_ai_model_url
 from tests.variables import (
     OFFLINE_PROJECT,
@@ -339,10 +338,6 @@ class TestAbstractTextCategorizationModel(unittest.TestCase):
         (NBOWSelfAttention, 100, 64, 8, 'nbowselfattention'),
         (NBOWSelfAttention, 100, 64, 8, 'nbowselfattention-invalid'),
         (LSTM, 100, 64, None, 'lstm'),
-        (BERT, 100, None, None, 'bert-base-german-cased'),
-        (BERT, 100, None, None, 'prajjwal1/bert-tiny'),
-        (BERT, 100, None, None, 'bert-base-german-dbmdz-cased'),
-        (BERT, 100, None, None, 'distilbert-base-german-cased'),
     ],
 )
 class TestTextCategorizationModels(unittest.TestCase):
@@ -416,250 +411,19 @@ class TestTextCategorizationModels(unittest.TestCase):
             assert res['attention'].shape == (1, self.text_model.input_dim, self.text_model.input_dim)
 
 
-@pytest.mark.skipif(
-    not is_dependency_installed('timm')
-    and not is_dependency_installed('torch')
-    and not is_dependency_installed('transformers')
-    and not is_dependency_installed('torchvision'),
-    reason='Required dependencies not installed.',
-)
 @parameterized.parameterized_class(
-    ('tokenizer', 'text_class', 'image_class', 'image_nn_version'),
+    ('bert_name', 'n_epochs'),
     [
-        (WhitespaceTokenizer, NBOWSelfAttention, EfficientNet, 'efficientnet_b0'),
-        (WhitespaceTokenizer, NBOWSelfAttention, EfficientNet, 'efficientnet_b3'),
-        (WhitespaceTokenizer, NBOW, VGG, 'vgg11'),
-        (WhitespaceTokenizer, LSTM, VGG, 'vgg13'),
-        (ConnectedTextTokenizer, NBOW, VGG, 'vgg11'),
-        (ConnectedTextTokenizer, LSTM, VGG, 'vgg13'),
-        (transformers.BertTokenizerFast, BERT, VGG, 'vgg16'),
-        (None, None, EfficientNet, 'efficientnet_b0'),
-        (None, None, EfficientNet, 'efficientnet_b3'),
-        (None, None, VGG, 'vgg11'),
-        (None, None, VGG, 'vgg13'),
-        (None, None, VGG, 'vgg16'),
-        (None, None, VGG, 'vgg19'),
-        (WhitespaceTokenizer, NBOWSelfAttention, None, None),
-        (ConnectedTextTokenizer, NBOW, None, None),
-        # (PhraseMatcherTokenizer, LSTM, None, None),  # PhraseMatcherTokenizer is WIP and not available for usage yet
-        (transformers.BertTokenizerFast, BERT, None, None),
-    ],
-)
-@pytest.mark.skip(reason="Slow testcases training a Categorization AI on full dataset with multiple configurations.")
-class TestAllCategorizationConfigurations(unittest.TestCase):
-    """Test trainable CategorizationAI."""
-
-    @classmethod
-    def setUpClass(cls) -> None:
-        """Set up the Data and Categorization Pipeline."""
-        cls.training_prj = Project(id_=1680, update=True)
-        cls.categorization_pipeline = CategorizationAI(cls.training_prj.categories)
-        cls.payslips_category = cls.training_prj.get_category_by_id(5349)
-        cls.receipts_category = cls.training_prj.get_category_by_id(5350)
-
-    @classmethod
-    def tearDownClass(cls) -> None:
-        """Delete the Data and Categorization Pipeline."""
-        os.remove(cls.categorization_pipeline.pipeline_path)
-        del cls.training_prj
-        del cls.categorization_pipeline
-        del cls.payslips_category
-        del cls.receipts_category
-
-    def test_1a_configure_dataset(self) -> None:
-        """Test configure categories, with training and test docs for the Document Model."""
-        payslips_training_documents = self.payslips_category.documents()
-        receipts_training_documents = self.receipts_category.documents()
-        self.categorization_pipeline.documents = payslips_training_documents + receipts_training_documents
-        assert all(doc.category is not None for doc in self.categorization_pipeline.documents)
-
-        payslips_test_documents = self.payslips_category.test_documents()
-        receipts_test_documents = self.receipts_category.test_documents()
-        self.categorization_pipeline.test_documents = payslips_test_documents + receipts_test_documents
-        assert all(doc.category is not None for doc in self.categorization_pipeline.test_documents)
-        wahrung = self.training_prj.get_label_by_name('Währung')
-        label_set_quittung = self.training_prj.get_label_set_by_name('Quittung (GERMAN)')
-        label_set_zahlungsdetails = self.training_prj.get_label_set_by_name('Zahlungsdetails')
-        label_set_quittung.labels.append(wahrung)
-        label_set_zahlungsdetails.labels.append(wahrung)
-
-    def test_1b_configure_pipeline(self) -> None:
-        """Test configure pipeline."""
-        if self.text_class is not None:
-            if self.tokenizer == PhraseMatcherTokenizer:
-                self.categorization_pipeline.tokenizer = self.tokenizer(self.categorization_pipeline.documents)
-                self.categorization_pipeline.text_vocab = self.categorization_pipeline.build_text_vocab()
-            elif self.tokenizer == transformers.BertTokenizerFast:
-                self.categorization_pipeline.tokenizer = transformers.AutoTokenizer.from_pretrained(
-                    'bert-base-german-cased'
-                )
-            else:
-                self.categorization_pipeline.tokenizer = self.tokenizer()
-                self.categorization_pipeline.text_vocab = self.categorization_pipeline.build_text_vocab()
-        self.categorization_pipeline.category_vocab = self.categorization_pipeline.build_template_category_vocab()
-
-        image_model = None
-        text_model = None
-        if self.image_class is not None:
-            image_model = self.image_class(name=self.image_nn_version)
-        if self.text_class is not None:
-            if self.tokenizer == transformers.BertTokenizerFast:
-                text_model = self.text_class(input_dim=512)
-            else:
-                text_model = self.text_class(input_dim=len(self.categorization_pipeline.text_vocab))
-        if self.image_class is None:
-            self.categorization_pipeline.classifier = PageTextCategorizationModel(
-                text_model=text_model,
-                output_dim=len(self.categorization_pipeline.category_vocab),
-            )
-        elif self.text_class is None:
-            self.categorization_pipeline.classifier = PageImageCategorizationModel(
-                image_model=image_model,
-                output_dim=len(self.categorization_pipeline.category_vocab),
-            )
-        else:
-            multimodal_model = MultimodalConcatenate(
-                n_image_features=image_model.n_features,
-                n_text_features=text_model.n_features,
-            )
-            self.categorization_pipeline.classifier = PageMultimodalCategorizationModel(
-                image_model=image_model,
-                text_model=text_model,
-                multimodal_model=multimodal_model,
-                output_dim=len(self.categorization_pipeline.category_vocab),
-            )
-
-        # need to ensure classifier starts in evaluation mode
-        self.categorization_pipeline.classifier.eval()  # todo why?
-
-    def test_2_fit(self) -> None:
-        """Start to train the Model."""
-        if self.image_class:
-            self.categorization_pipeline.build_preprocessing_pipeline(use_image=True)
-        else:
-            self.categorization_pipeline.build_preprocessing_pipeline(use_image=False)
-        self.categorization_pipeline.fit(n_epochs=1, optimizer={'name': 'Adam'})
-
-    def test_3_save_model(self) -> None:
-        """Test save .pt file to disk."""
-        reduced = self.categorization_pipeline.save(reduce_weight=True)
-        os.remove(reduced)
-        self.categorization_pipeline.pipeline_path = self.categorization_pipeline.save()
-        assert os.path.isfile(self.categorization_pipeline.pipeline_path)
-
-    @unittest.skipIf(sys.version_info[:2] != (3, 8), reason='This AI can only be loaded on Python 3.8.')
-    def test_4_upload_ai_model(self) -> None:
-        """Upload the model."""
-        assert os.path.isfile(self.categorization_pipeline.pipeline_path)
-        try:
-            model_id = upload_ai_model(ai_model_path=self.categorization_pipeline.pipeline_path, project_id=46)
-            assert isinstance(model_id, int)
-            updated = update_ai_model(model_id, ai_type='categorization', description='test_description')
-            assert updated['description'] == 'test_description'
-            updated = update_ai_model(model_id, ai_type='categorization', patch=False, description='test_description')
-            assert updated['description'] == 'test_description'
-            delete_ai_model(model_id, ai_type='categorization')
-            url = get_create_ai_model_url(ai_type='categorization')
-            session = konfuzio_session()
-            not_found = session.get(url)
-            assert not_found.status_code == 204
-        except HTTPError as e:
-            assert ('403' in str(e)) or ('404' in str(e))
-
-    def test_5a_data_quality(self) -> None:
-        """Evaluate CategorizationModel on Training documents."""
-        data_quality = self.categorization_pipeline.evaluate(use_training_docs=True)
-        assert data_quality.f1(self.categorization_pipeline.categories[0]) == 1.0
-        assert data_quality.f1(self.categorization_pipeline.categories[1]) == 1.0
-        # global f1 score
-        assert data_quality.f1(None) == 1.0
-
-    def test_5b_ai_quality(self) -> None:
-        """Evaluate CategorizationModel on Test documents."""
-        ai_quality = self.categorization_pipeline.evaluate()
-        assert ai_quality.f1(self.categorization_pipeline.categories[0]) == 1.0
-        assert ai_quality.f1(self.categorization_pipeline.categories[1]) == 1.0
-        # global f1 score
-        assert ai_quality.f1(None) == 1.0
-
-    def test_6_categorize_test_document(self) -> None:
-        """Test categorize a test document."""
-        test_receipt_document = self.training_prj.get_document_by_id(345875)
-        # reset the category attribute to test that it can be categorized successfully
-        test_receipt_document.set_category(None)
-        result = self.categorization_pipeline.categorize(document=test_receipt_document)
-        assert isinstance(result, Document)
-        assert result.category == self.receipts_category
-        for page in result.pages():
-            assert page.category == self.receipts_category
-        # restore category attribute to not interfere with next tests
-        test_receipt_document.set_category(result.category)
-
-    def test_7_categorize_page(self) -> None:
-        """Test categorize a page."""
-        test_doc = self.training_prj.get_document_by_id(345875)
-        test_page = WhitespaceTokenizer().tokenize(deepcopy(test_doc)).pages()[0]
-        # reset the category attribute to test that it can be categorized successfully
-        test_page.set_category(self.training_prj.no_category)
-        result = self.categorization_pipeline._categorize_page(test_page)
-        assert isinstance(result, Page)
-        assert result.category == self.receipts_category
-
-    def test_8_load_ai_model(self):
-        """Test loading of trained model."""
-        self.pipeline = load_categorization_model(self.categorization_pipeline.pipeline_path)
-        test_receipt_document = self.training_prj.get_document_by_id(345875)
-        # reset the category attribute to test that it can be categorized successfully
-        test_receipt_document.set_category(None)
-        result = self.categorization_pipeline.categorize(document=test_receipt_document)
-        assert isinstance(result, Document)
-        assert result.category == self.receipts_category
-
-    def test_9_build_document_classifier_iterator(self):
-        """Test building the iterator."""
-        if self.text_class and not self.image_class:
-            use_text = self.categorization_pipeline.build_document_classifier_iterator(
-                self.categorization_pipeline.documents,
-                self.categorization_pipeline.train_transforms,
-                use_image=False,
-                use_text=True,
-                shuffle=True,
-                batch_size=1,
-                max_len=None,
-                device=self.categorization_pipeline.device,
-            )
-            assert use_text
-        elif self.image_class and not self.text_class:
-            use_image = self.categorization_pipeline.build_document_classifier_iterator(
-                self.categorization_pipeline.documents,
-                self.categorization_pipeline.train_transforms,
-                use_image=True,
-                use_text=False,
-                shuffle=True,
-                batch_size=1,
-                max_len=None,
-                device=self.categorization_pipeline.device,
-            )
-            assert use_image
-        else:
-            use_both = self.categorization_pipeline.build_document_classifier_iterator(
-                self.categorization_pipeline.documents,
-                self.categorization_pipeline.train_transforms,
-                use_image=True,
-                use_text=True,
-                shuffle=True,
-                batch_size=1,
-                max_len=None,
-                device=self.categorization_pipeline.device,
-            )
-            assert use_both
-
-
-@parameterized.parameterized_class(
-    ('bert_name'),
-    [
-        ('prajjwal1/bert-tiny',),
-        # ('bert-base-german-dbmdz-cased',),
+        ('prajjwal1/bert-tiny', 5),
+        # ('german-nlp-group/electra-base-german-uncased',5),
+        # ('bert-base-german-dbmdz-cased',3),  # commented out for passing on push in github actions (RAM limitations).
+        # feel free to uncomment when testing locally
+        # ('distilbert-base-german-cased',3),
+        # ('albert-base-v2',3),
+        # ('bert-base-chinese',3),
+        # ('bert-base-german-cased',3),
+        # ('google/mobilebert-uncased',3),
+        # ('vinai/phobert-base',3)
     ],
 )
 @pytest.mark.skipif(
@@ -704,7 +468,7 @@ class TestBertCategorizationModels(unittest.TestCase):
     def test_2_configure_pipeline(self):
         """Test configuring the training pipeline of the model."""
         self.categorization_pipeline.category_vocab = self.categorization_pipeline.build_template_category_vocab()
-        text_model = BERT(input_dim=512, name=self.bert_name)
+        text_model = BERT(name=self.bert_name)
         bert_config = text_model.bert.config
         assert hasattr(bert_config, '_name_or_path')
         assert bert_config._name_or_path == self.bert_name
@@ -717,7 +481,7 @@ class TestBertCategorizationModels(unittest.TestCase):
     def test_3_fit(self):
         """Test training the model."""
         self.categorization_pipeline.build_preprocessing_pipeline(use_image=False)
-        self.categorization_pipeline.fit(n_epochs=3, optimizer={'name': 'Adam'})
+        self.categorization_pipeline.fit(n_epochs=self.n_epochs, optimizer={'name': 'Adam'})
 
     def test_4_categorize_document(self):
         """Test categorizing the Document."""
@@ -747,10 +511,26 @@ class TestBertCategorizationModels(unittest.TestCase):
 
     def test_6_save(self):
         """Test saving the model."""
-        self.categorization_pipeline.pipeline_path = self.categorization_pipeline.save()
+        self.categorization_pipeline.pipeline_path = self.categorization_pipeline.save(reduce_weight=False)
         assert os.path.isfile(self.categorization_pipeline.pipeline_path)
 
-    def test_7_upload_ai_model(self) -> None:
+    def test_7_load_ai_model(self):
+        """Test loading a previously saved model."""
+        loaded = CategorizationAI.load_model(self.categorization_pipeline.pipeline_path)
+        test_document = self.training_prj.get_document_by_id(5589058)
+        ground_truth_category = test_document.category
+        test_document.set_category(self.training_prj.no_category)
+        result = loaded.categorize(document=test_document)
+        assert isinstance(result, Document)
+        assert result.category == ground_truth_category
+        for page in result.pages():
+            assert page.category == ground_truth_category
+            assert page.maximum_confidence_category_annotation.confidence > 0.9
+        # restore category attribute to not interfere with next tests
+        test_document.set_category(result.category)
+
+    @unittest.skipIf(sys.version_info[:2] != (3, 8), reason='This AI can only be loaded on Python 3.8.')
+    def test_8_upload_ai_model(self) -> None:
         """Upload the model."""
         assert os.path.isfile(self.categorization_pipeline.pipeline_path)
         try:
@@ -767,8 +547,235 @@ class TestBertCategorizationModels(unittest.TestCase):
             session = konfuzio_session()
             not_found = session.get(url)
             assert not_found.status_code == 204
-        except HTTPError as e:
-            assert ('403' in str(e)) or ('500' in str(e))
+        except (HTTPError, ReadTimeout) as e:
+            assert ('403' in str(e)) or ('500' in str(e)) or ('ReadTimeout' in str(e))
+
+
+@parameterized.parameterized_class(
+    ("text_class", "tokenizer", "image_class", "image_class_version", "n_epochs"),
+    [
+        (NBOW, WhitespaceTokenizer, None, None, 20),
+        (NBOWSelfAttention, WhitespaceTokenizer, None, None, 20),
+        (LSTM, WhitespaceTokenizer, None, None, 3),
+        (NBOW, ConnectedTextTokenizer, EfficientNet, "efficientnet_b0", 5),
+        # (None, None, EfficientNet, "efficientnet_b3", 5),  # commented out because of length of execution
+        # (NBOWSelfAttention, ConnectedTextTokenizer, VGG, "vgg11", 2),
+        # (LSTM, ConnectedTextTokenizer, VGG, "vgg13", 3),
+        # (None, None, VGG, "vgg19", 2),
+    ],
+)
+@pytest.mark.skipif(
+    not is_dependency_installed('timm')
+    and not is_dependency_installed('torch')
+    and not is_dependency_installed('transformers')
+    and not is_dependency_installed('torchvision'),
+    reason='Required dependencies not installed.',
+)
+class TestCategorizationConfigurations(unittest.TestCase):
+    """Test configurations that use both image and text model for Categorization."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Set up the Data and Categorization Pipeline."""
+        cls.training_prj = Project(id_=14392)
+        cls.categorization_pipeline = CategorizationAI(cls.training_prj.categories)
+        cls.category_1 = cls.training_prj.get_category_by_id(19827)
+        cls.category_2 = cls.training_prj.get_category_by_id(19828)
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        """Delete the Data and Categorization Pipeline."""
+        os.remove(cls.categorization_pipeline.pipeline_path)
+        del cls.training_prj
+        del cls.categorization_pipeline
+        del cls.category_1
+        del cls.category_2
+
+    def test_1_configure_dataset(self):
+        """Test configuring the dataset for the training and testing of the model."""
+        category_1_documents = self.category_1.documents()
+        category_2_documents = self.category_2.documents()
+        self.categorization_pipeline.documents = category_1_documents + category_2_documents
+        assert all(doc.category is not None for doc in self.categorization_pipeline.documents)
+
+        category_1_test_documents = self.category_1.test_documents()
+        category_2_test_documents = self.category_2.test_documents()
+        self.categorization_pipeline.test_documents = category_1_test_documents + category_2_test_documents
+        assert all(doc.category is not None for doc in self.categorization_pipeline.documents)
+
+    def test_2_configure_pipeline(self):
+        """Test configuring the training pipeline of the model."""
+        if self.text_class:
+            self.categorization_pipeline.tokenizer = self.tokenizer()
+            self.categorization_pipeline.text_vocab = self.categorization_pipeline.build_text_vocab()
+        self.categorization_pipeline.category_vocab = self.categorization_pipeline.build_template_category_vocab()
+
+        image_model = None
+        text_model = None
+
+        if self.image_class:
+            image_model = self.image_class(name=self.image_class_version)
+        if self.text_class:
+            text_model = self.text_class(input_dim=len(self.categorization_pipeline.text_vocab))
+        if not self.image_class:
+            self.categorization_pipeline.classifier = PageTextCategorizationModel(
+                text_model=text_model,
+                output_dim=len(self.categorization_pipeline.category_vocab),
+            )
+        elif not self.text_class:
+            self.categorization_pipeline.classifier = PageImageCategorizationModel(
+                image_model=image_model,
+                output_dim=len(self.categorization_pipeline.category_vocab),
+            )
+        else:
+            multimodal_model = MultimodalConcatenate(
+                n_image_features=image_model.n_features,
+                n_text_features=text_model.n_features,
+            )
+            self.categorization_pipeline.classifier = PageMultimodalCategorizationModel(
+                image_model=image_model,
+                text_model=text_model,
+                multimodal_model=multimodal_model,
+                output_dim=len(self.categorization_pipeline.category_vocab),
+            )
+
+        self.categorization_pipeline.classifier.eval()
+
+    def test_3_fit(self):
+        """Test training the model."""
+        if self.image_class:
+            self.categorization_pipeline.build_preprocessing_pipeline(use_image=True)
+        else:
+            self.categorization_pipeline.build_preprocessing_pipeline(use_image=False)
+        self.categorization_pipeline.fit(n_epochs=self.n_epochs, optimizer={'name': 'Adam'})
+
+    def test_4_categorize_document(self):
+        """Test categorizing the Document."""
+        test_document = self.training_prj.get_document_by_id(5589058)
+        ground_truth_category = test_document.category
+        test_document.set_category(self.training_prj.no_category)
+        result = self.categorization_pipeline.categorize(document=test_document)
+        assert isinstance(result, Document)
+        assert result.category == ground_truth_category
+        for page in result.pages():
+            assert page.category == ground_truth_category
+        # restore category attribute to not interfere with next tests
+        test_document.set_category(result.category)
+
+    def test_5_categorize_page(self):
+        """Test categorizing the Document's Page."""
+        test_document = self.training_prj.get_document_by_id(5589057)
+        ground_truth_category = test_document.category
+        test_page = WhitespaceTokenizer().tokenize(deepcopy(test_document)).pages()[0]
+        # reset the category attribute to test that it can be categorized successfully
+        test_page.set_category(self.training_prj.no_category)
+        result = self.categorization_pipeline._categorize_page(test_page)
+        assert isinstance(result, Page)
+        assert result.category == ground_truth_category
+
+    def test_6_save(self):
+        """Test saving the model."""
+        self.categorization_pipeline.pipeline_path = self.categorization_pipeline.save(reduce_weight=False)
+        assert os.path.isfile(self.categorization_pipeline.pipeline_path)
+
+    def test_7_load_ai_model(self):
+        """Test loading a previously saved model."""
+        loaded = CategorizationAI.load_model(self.categorization_pipeline.pipeline_path)
+        test_document = self.training_prj.get_document_by_id(5589058)
+        ground_truth_category = test_document.category
+        test_document.set_category(self.training_prj.no_category)
+        result = loaded.categorize(document=test_document)
+        assert isinstance(result, Document)
+        assert result.category == ground_truth_category
+        for page in result.pages():
+            assert page.category == ground_truth_category
+        # restore category attribute to not interfere with next tests
+        test_document.set_category(result.category)
+
+    @unittest.skipIf(sys.version_info[:2] != (3, 8), reason='This AI can only be loaded on Python 3.8.')
+    def test_8_upload_ai_model(self) -> None:
+        """Upload the model."""
+        assert os.path.isfile(self.categorization_pipeline.pipeline_path)
+        try:
+            model_id = upload_ai_model(
+                ai_model_path=self.categorization_pipeline.pipeline_path, project_id=self.training_prj.id_
+            )
+            assert isinstance(model_id, int)
+            updated = update_ai_model(model_id, ai_type='categorization', description='test_description')
+            assert updated['description'] == 'test_description'
+            updated = update_ai_model(model_id, ai_type='categorization', patch=False, description='test_description')
+            assert updated['description'] == 'test_description'
+            delete_ai_model(model_id, ai_type='categorization')
+            url = get_create_ai_model_url(ai_type='categorization')
+            session = konfuzio_session()
+            not_found = session.get(url)
+            assert not_found.status_code == 204
+        except (HTTPError, ReadTimeout) as e:
+            assert ('403' in str(e)) or ('500' in str(e)) or ('Read timed out' in str(e)) or ('404' in str(e))
+
+
+@pytest.mark.skipif(
+    not is_dependency_installed('timm')
+    and not is_dependency_installed('torch')
+    and not is_dependency_installed('transformers')
+    and not is_dependency_installed('torchvision'),
+    reason='Required dependencies not installed.',
+)
+@unittest.skipIf(sys.version_info[:2] != (3, 8), reason='This AI can only be loaded on Python 3.8.')
+def test_bert_in_multimodal_categorization_ai():
+    """Test compatibility of BERT-based model and image-processing model for Categorization."""
+    training_prj = Project(id_=14392)
+    categorization_pipeline = CategorizationAI(training_prj.categories)
+    category_1 = training_prj.get_category_by_id(19827)
+    category_2 = training_prj.get_category_by_id(19828)
+    category_1_documents = category_1.documents()
+    category_2_documents = category_2.documents()
+    categorization_pipeline.documents = category_1_documents + category_2_documents
+    assert all(doc.category is not None for doc in categorization_pipeline.documents)
+    category_1_test_documents = category_1.test_documents()
+    category_2_test_documents = category_2.test_documents()
+    categorization_pipeline.test_documents = category_1_test_documents + category_2_test_documents
+    assert all(doc.category is not None for doc in categorization_pipeline.documents)
+    categorization_pipeline.category_vocab = categorization_pipeline.build_template_category_vocab()
+    text_model = BERT(name='prajjwal1/bert-tiny')
+    bert_config = text_model.bert.config
+    assert hasattr(bert_config, '_name_or_path')
+    assert bert_config._name_or_path == 'prajjwal1/bert-tiny'
+    image_model = VGG(name="vgg11")
+    multimodal_model = MultimodalConcatenate(
+        n_image_features=image_model.n_features,
+        n_text_features=text_model.n_features,
+    )
+    categorization_pipeline.classifier = PageMultimodalCategorizationModel(
+        image_model=image_model,
+        text_model=text_model,
+        multimodal_model=multimodal_model,
+        output_dim=len(categorization_pipeline.category_vocab),
+    )
+    categorization_pipeline.classifier.eval()
+    categorization_pipeline.build_preprocessing_pipeline(use_image=True)
+    categorization_pipeline.fit(n_epochs=3, optimizer={'name': 'Adam'})
+    test_document = training_prj.get_document_by_id(5589058)
+    ground_truth_category = test_document.category
+    test_document.set_category(training_prj.no_category)
+    result = categorization_pipeline.categorize(document=test_document)
+    assert isinstance(result, Document)
+    assert result.category == ground_truth_category
+    for page in result.pages():
+        assert page.category == ground_truth_category
+    test_document.set_category(result.category)
+    categorization_pipeline.pipeline_path = categorization_pipeline.save(reduce_weight=False)
+    assert os.path.isfile(categorization_pipeline.pipeline_path)
+    loaded = CategorizationAI.load_model(categorization_pipeline.pipeline_path)
+    test_document.set_category(training_prj.no_category)
+    result = loaded.categorize(document=test_document)
+    assert isinstance(result, Document)
+    assert result.category == ground_truth_category
+    for page in result.pages():
+        assert page.category == ground_truth_category
+        assert page.maximum_confidence_category_annotation.confidence > 0.9
+    test_document.set_category(result.category)
+    os.remove(categorization_pipeline.pipeline_path)
 
 
 @pytest.mark.skipif(
@@ -804,18 +811,15 @@ def test_build_categorization_ai() -> None:
 )
 def test_categorize_no_category_document():
     """Test categorization in case a NO_CATEGORY is predicted."""
-    project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-    test_document = project.get_document_by_id(44823)
+    project = Project(id_=14392)
+    test_document = project.documents[0]
     test_document.set_category(None)
     categorization_pipeline = build_categorization_ai_pipeline(
-        categories=[project.get_category_by_id(63)],
+        categories=[test_document.category],
         documents=[project.documents[0]],
         test_documents=[project.test_documents[1]],
         image_model=ImageModel.EfficientNetB0,
         text_model=TextModel.NBOWSelfAttention,
     )
-    tokenized_doc = deepcopy(test_document)
-    tokenized_doc = WhitespaceTokenizer().tokenize(tokenized_doc)
-    tokenized_doc.status = test_document.status
     categorization_pipeline.categorize(document=test_document, recategorize=True)
     assert test_document.category == project.no_category
