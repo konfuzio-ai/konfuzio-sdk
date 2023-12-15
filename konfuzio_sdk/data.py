@@ -598,7 +598,7 @@ class Bbox:
 
     def check_overlap(self, bbox: Union['Bbox', Dict]) -> bool:
         """Verify if there's overlap between two Bboxes."""
-        if type(bbox) is dict and (
+        if isinstance(bbox, dict) and (
             bbox['x0'] <= self.x1 and bbox['x1'] >= self.x0 and bbox['y0'] <= self.y1 and bbox['y1'] >= self.y0
         ):
             return True
@@ -1182,7 +1182,7 @@ class Label(Data):
             raise TypeError(
                 "This value has never been computed. Please provide a value for keyword argument: 'categories'"
             )
-        elif type(categories) is list:
+        elif isinstance(categories, list):
             self._has_multiline_annotations = False
             for category in categories:
                 for document in category.documents():

@@ -48,8 +48,8 @@ def validate_notebooks(app: Sphinx):
     lowercase_detected = False
 
     for _, dirs, _ in os.walk(base_path):
-        for dir in dirs:
-            notebook_path = os.path.join(base_path, dir, 'index.ipynb')
+        for directory in dirs:
+            notebook_path = os.path.join(base_path, directory, 'index.ipynb')
             if not os.path.isfile(notebook_path):
                 continue
             print('Validating: ', notebook_path)

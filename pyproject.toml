@@ -15,7 +15,6 @@ select = [
     "C4",  # flake8-comprehensions
     "RSE",  # flake8-raise
     "T20",  # flake8-print
-    "RET",  # flake8-return
     "RUF001", "RUF002", "RUF003", "RUF100",  # ruff
 ]
 ignore = ["E501"]
