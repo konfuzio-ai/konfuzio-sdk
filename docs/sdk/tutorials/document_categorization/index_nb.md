@@ -185,21 +185,21 @@ default value will be applied.
 You can find more information on how to use these configurations, what are default values and where to specify
 them [here](https://help.konfuzio.com/modules/projects/index.html?highlight=efficientnet#categorization-ai-parameters).
 
-| Tokenizer               | Text module      | Text module version            | Image module | Image module version |
-|-------------------------|------------------|--------------------------------|--------------|----------------------|
+| Tokenizer               | Text module       | Text module version            | Image module | Image module version |
+|-------------------------|-------------------|--------------------------------|--------------|----------------------|
 | WhitespaceTokenizer     | NBOWSelfAttention | `nbowselfattention`            | EfficientNet | `efficientnet_b0`    |
 | WhitespaceTokenizer     | NBOWSelfAttention | `nbowselfattention`            | EfficientNet | `efficientnet_b3`    |
-| WhitespaceTokenizer     | NBOW             | `nbow`                         | VGG          | `vgg11`              |
-| WhitespaceTokenizer     | LSTM             | `lstm`                         | VGG          | `vgg13`              |
-| ConnectedTextTokenizer  | NBOW             | `nbow`                         | VGG          | `vgg11`              |
-| ConnectedTextTokenizer  | LSTM             | `lstm`                         | VGG          | `vgg13`              |
-| None                    | None             | None                           | EfficientNet | `efficientnet_b0`    |
-| None                    | None             | None                           | EfficientNet | `efficientnet_b3`    |
-| None                    | None             | None                           | VGG          | `vgg11`              |
-| None                    | None             | None                           | VGG          | `vgg13`              |
-| None                    | None             | None                           | VGG          | `vgg16`              |
-| None                    | None             | None                           | VGG          | `vgg19`              |
-| TransformersTokenizer   | *BERT* *         | `bert-base-german-cased`       | None         | None                 |
+| WhitespaceTokenizer     | NBOW              | `nbow`                         | VGG          | `vgg11`              |
+| WhitespaceTokenizer     | LSTM              | `lstm`                         | VGG          | `vgg13`              |
+| ConnectedTextTokenizer  | NBOW              | `nbow`                         | VGG          | `vgg11`              |
+| ConnectedTextTokenizer  | LSTM              | `lstm`                         | VGG          | `vgg13`              |
+| None                    | None              | None                           | EfficientNet | `efficientnet_b0`    |
+| None                    | None              | None                           | EfficientNet | `efficientnet_b3`    |
+| None                    | None              | None                           | VGG          | `vgg11`              |
+| None                    | None              | None                           | VGG          | `vgg13`              |
+| None                    | None              | None                           | VGG          | `vgg16`              |
+| None                    | None              | None                           | VGG          | `vgg19`              |
+| TransformersTokenizer   | *BERT* *          | `bert-base-german-cased`       | None         | None                 |
 
 ***Note**: In this table, we list a single BERT-based model (`bert-base-german-cased`). The following table lists the
 possible values for text module versions that can be passed as `name` argument when configuring BERT model for 
@@ -207,17 +207,17 @@ Categorization.
 
 ### Models compatible with BERT class
 
-| Name                           | Embeddings dimension | Language |
-|--------------------------------|----------------------|----------|
-| `bert-base-german-cased`       | 768                  | German   |
-| `bert-base-german-uncased`     | 768                  | German   |
-| `bert-base-uncased`            | 768                  | English  |
-| `bert-base-multilingual-cased` | 768                  | Multiple |
-| `distilbert-base-uncased`      | 768                  | English  |
-| `distilbert-base-german-cased` | 768                  | German   |
-| `google/mobilebert-uncased`    | 512                  | English  |
-| `albert-base-v2`               | 768                  | English  |
-
+| Name                                           | Embeddings dimension | Language | Number of parameters |
+|------------------------------------------------|----------------------|----------|----------------------|
+| `bert-base-uncased`                            | 768                  | English  | 110 million          |
+| `distilbert-base-uncased`                      | 768                  | English  | 66 million           |
+| `google/mobilebert-uncased`                    | 512                  | English  | 25 million           |
+| `albert-base-v2`                               | 768                  | English  | 12 million           |
+| `german-nlp-group/electra-base-german-uncased` | 768                  | German   | 111 million          |
+| `bert-base-german-cased`                       | 768                  | German   | 110 million          |
+| `bert-base-german-uncased`                     | 768                  | German   | 110 million          |
+| `distilbert-base-german-cased`                 | 768                  | German   | 66 million           |    
+| `bert-base-multilingual-cased`                 | 768                  | Multiple | 110 million          |
 
 **Note:** This list is not exhaustive. We only list the models that are fully tested. However, you can use the 
 [Huggingface hub](https://huggingface.co/models) to find other models that best suit your needs. To ensure a model is 
