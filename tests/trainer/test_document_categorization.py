@@ -412,17 +412,18 @@ class TestTextCategorizationModels(unittest.TestCase):
 
 
 @parameterized.parameterized_class(
-    ('bert_name'),
+    ('bert_name', 'n_epochs'),
     [
-        ('prajjwal1/bert-tiny',),
-        # ('bert-base-german-dbmdz-cased',),  # commented out for passing on push in github actions (RAM limitations).
+        ('prajjwal1/bert-tiny', 5),
+        # ('german-nlp-group/electra-base-german-uncased',5),
+        # ('bert-base-german-dbmdz-cased',3),  # commented out for passing on push in github actions (RAM limitations).
         # feel free to uncomment when testing locally
-        # ('distilbert-base-german-cased',),
-        # ('albert-base-v2',),
-        # ('bert-base-chinese',),
-        # ('bert-base-german-cased',),
-        # ('google/mobilebert-uncased',),
-        # ('vinai/phobert-base',)
+        # ('distilbert-base-german-cased',3),
+        # ('albert-base-v2',3),
+        # ('bert-base-chinese',3),
+        # ('bert-base-german-cased',3),
+        # ('google/mobilebert-uncased',3),
+        # ('vinai/phobert-base',3)
     ],
 )
 @pytest.mark.skipif(
@@ -467,7 +468,7 @@ class TestBertCategorizationModels(unittest.TestCase):
     def test_2_configure_pipeline(self):
         """Test configuring the training pipeline of the model."""
         self.categorization_pipeline.category_vocab = self.categorization_pipeline.build_template_category_vocab()
-        text_model = BERT(input_dim=512, name=self.bert_name)
+        text_model = BERT(name=self.bert_name)
         bert_config = text_model.bert.config
         assert hasattr(bert_config, '_name_or_path')
         assert bert_config._name_or_path == self.bert_name
@@ -480,7 +481,7 @@ class TestBertCategorizationModels(unittest.TestCase):
     def test_3_fit(self):
         """Test training the model."""
         self.categorization_pipeline.build_preprocessing_pipeline(use_image=False)
-        self.categorization_pipeline.fit(n_epochs=3, optimizer={'name': 'Adam'})
+        self.categorization_pipeline.fit(n_epochs=self.n_epochs, optimizer={'name': 'Adam'})
 
     def test_4_categorize_document(self):
         """Test categorizing the Document."""
@@ -736,7 +737,7 @@ def test_bert_in_multimodal_categorization_ai():
     categorization_pipeline.test_documents = category_1_test_documents + category_2_test_documents
     assert all(doc.category is not None for doc in categorization_pipeline.documents)
     categorization_pipeline.category_vocab = categorization_pipeline.build_template_category_vocab()
-    text_model = BERT(input_dim=512, name='prajjwal1/bert-tiny')
+    text_model = BERT(name='prajjwal1/bert-tiny')
     bert_config = text_model.bert.config
     assert hasattr(bert_config, '_name_or_path')
     assert bert_config._name_or_path == 'prajjwal1/bert-tiny'
