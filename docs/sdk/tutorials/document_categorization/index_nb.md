@@ -185,24 +185,24 @@ default value will be applied.
 You can find more information on how to use these configurations, what are default values and where to specify
 them [here](https://help.konfuzio.com/modules/projects/index.html?highlight=efficientnet#categorization-ai-parameters).
 
-| Tokenizer               | Text module       | Text module version            | Image module | Image module version |
-|-------------------------|-------------------|--------------------------------|--------------|----------------------|
-| WhitespaceTokenizer     | NBOWSelfAttention | `nbowselfattention`            | EfficientNet | `efficientnet_b0`    |
-| WhitespaceTokenizer     | NBOWSelfAttention | `nbowselfattention`            | EfficientNet | `efficientnet_b3`    |
-| WhitespaceTokenizer     | NBOW              | `nbow`                         | VGG          | `vgg11`              |
-| WhitespaceTokenizer     | LSTM              | `lstm`                         | VGG          | `vgg13`              |
-| ConnectedTextTokenizer  | NBOW              | `nbow`                         | VGG          | `vgg11`              |
-| ConnectedTextTokenizer  | LSTM              | `lstm`                         | VGG          | `vgg13`              |
-| None                    | None              | None                           | EfficientNet | `efficientnet_b0`    |
-| None                    | None              | None                           | EfficientNet | `efficientnet_b3`    |
-| None                    | None              | None                           | VGG          | `vgg11`              |
-| None                    | None              | None                           | VGG          | `vgg13`              |
-| None                    | None              | None                           | VGG          | `vgg16`              |
-| None                    | None              | None                           | VGG          | `vgg19`              |
-| TransformersTokenizer   | *BERT* *          | `bert-base-german-cased`       | None         | None                 |
+| Tokenizer               | Text model class  | Text model name          | Image model class | Image model name  |
+|-------------------------|-------------------|--------------------------|-------------------|-------------------|
+| WhitespaceTokenizer     | NBOWSelfAttention | `nbowselfattention`      | EfficientNet      | `efficientnet_b0` |
+| WhitespaceTokenizer     | NBOWSelfAttention | `nbowselfattention`      | EfficientNet      | `efficientnet_b3` |
+| WhitespaceTokenizer     | NBOW              | `nbow`                   | VGG               | `vgg11`           |
+| WhitespaceTokenizer     | LSTM              | `lstm`                   | VGG               | `vgg13`           |
+| ConnectedTextTokenizer  | NBOW              | `nbow`                   | VGG               | `vgg11`           |
+| ConnectedTextTokenizer  | LSTM              | `lstm`                   | VGG               | `vgg13`           |
+| None                    | None              | None                     | EfficientNet      | `efficientnet_b0` |
+| None                    | None              | None                     | EfficientNet      | `efficientnet_b3` |
+| None                    | None              | None                     | VGG               | `vgg11`           |
+| None                    | None              | None                     | VGG               | `vgg13`           |
+| None                    | None              | None                     | VGG               | `vgg16`           |
+| None                    | None              | None                     | VGG               | `vgg19`           |
+| TransformersTokenizer   | *BERT* *          | `bert-base-german-cased` | None              | None              |
 
 ***Note**: In this table, we list a single BERT-based model (`bert-base-german-cased`). The following table lists the
-possible values for text module versions that can be passed as `name` argument when configuring BERT model for 
+possible values for text model versions that can be passed as `name` argument when configuring BERT model for 
 Categorization.
 
 ### Models compatible with BERT class
