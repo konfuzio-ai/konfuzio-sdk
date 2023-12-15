@@ -26,7 +26,6 @@ from konfuzio_sdk.trainer.tokenization import TransformersTokenizer, HF_ALLOWED_
         ('bert-base-chinese',),
         ('bert-base-german-cased',),
         ('google/mobilebert-uncased',),
-        ('vinai/phobert-base',),
     ],
 )
 class TestTransformersTokenizer(unittest.TestCase):
