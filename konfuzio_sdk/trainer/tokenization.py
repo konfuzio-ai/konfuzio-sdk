@@ -264,15 +264,18 @@ class TransformersTokenizer:
     ) -> None:
         """Initialize the TransformersTokenizer."""
         # Initialize the tokenizer using transformers.AutoTokenizer.from_pretrained()
-        self.tokenizer = transformers.AutoTokenizer.from_pretrained(
-            pretrained_model_name_or_path=tokenizer_name,
-        )
+        try:
+            self.tokenizer = transformers.AutoTokenizer.from_pretrained(
+                pretrained_model_name_or_path=tokenizer_name,
+            )
+        except Exception:
+            raise ValueError(f'Could not load Transformers Tokenizer {self.name}.')
 
         # Check if the provided tokenizer is in the allowed_tokenizers list
         if not isinstance(self.tokenizer, tuple(HF_ALLOWED_TOKENIZERS)):
             raise ValueError(
                 f'The tokenizer {tokenizer_name} is not supported.  \
-                Please use one of the following: {HF_ALLOWED_TOKENIZERS}'
+                Please use a tokenizer that belongs to one of the following classes: {HF_ALLOWED_TOKENIZERS}'
             )
 
     def __call__(

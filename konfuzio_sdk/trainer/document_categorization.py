@@ -510,7 +510,10 @@ class BERT(AbstractTextCategorizationModel):
 
     def _load_architecture(self) -> None:
         """Load NN architecture."""
-        self.bert = transformers.AutoModel.from_pretrained(self.name)
+        try:
+            self.bert = transformers.AutoModel.from_pretrained(self.name)
+        except Exception:
+            raise ValueError(f'Could not load Transformer model {self.name}.')
         if self.freeze:
             for parameter in self.bert.parameters():
                 parameter.requires_grad = False
@@ -1599,8 +1602,8 @@ def build_categorization_ai_pipeline(
     documents: List[Document],
     test_documents: List[Document],
     tokenizer: Optional[AbstractTokenizer] = None,
-    image_model: Optional[ImageModel] = None,
-    text_model: Optional[TextModel] = None,
+    image_model_name: Optional[ImageModel] = None,
+    text_model_name: Optional[TextModel] = None,
 ) -> CategorizationAI:
     """
 
@@ -1618,12 +1621,14 @@ def build_categorization_ai_pipeline(
     categorization_pipeline.tokenizer = tokenizer
     categorization_pipeline.category_vocab = categorization_pipeline.build_template_category_vocab()
     # Configure image and text models
-    if image_model is not None:
-        if isinstance(image_model, str):
+    if image_model_name is not None:
+        if isinstance(image_model_name, str):
             try:
-                image_model = next(model for model in ImageModel if model.value == image_model)
+                image_model = next(model for model in ImageModel if model.value == image_model_name)
             except StopIteration:
                 raise ValueError(f'{image_model} not found. Provide an existing name for the image model.')
+        else:
+            image_model = image_model_name
         image_model_class = None
         if "efficientnet" in image_model.value:
             image_model_class = EfficientNet
@@ -1631,14 +1636,17 @@ def build_categorization_ai_pipeline(
             image_model_class = VGG
         # Configure image model
         image_model = image_model_class(name=image_model.value)
-    if text_model is not None:
-        if isinstance(text_model, str):
-            text_model_name = text_model
+    if text_model_name is not None:
+        if isinstance(text_model_name, str):
             try:
-                text_model = next(model for model in TextModel if model.value in text_model)
+                text_model = next(model for model in TextModel if model.value in text_model_name)
             except StopIteration:
-                raise ValueError(f'{text_model} not found. Provide an existing name for the image model.')
+                # use BERT as a default model if the text_model_name is not found in TextModel enums
+                # if text_model_name is not a supported Transformer model
+                # ValueError from within BERT or TransformersTokenizer will be raised
+                text_model = TextModel.BERT
         else:
+            text_model = text_model_name
             text_model_name = text_model.name
         text_model_class_mapping = {
             TextModel.NBOW: NBOW,
@@ -1656,13 +1664,13 @@ def build_categorization_ai_pipeline(
             text_model = text_model_class(input_dim=len(categorization_pipeline.text_vocab))
     # Configure the classifier (whether it predicts using only the image of the Page,
     # or only the text, or a MLP to concatenate both predictions)
-    if image_model is None:
+    if image_model_name is None:
         categorization_pipeline.classifier = PageTextCategorizationModel(
             text_model=text_model,
             output_dim=len(categorization_pipeline.category_vocab),
         )
         categorization_pipeline.build_preprocessing_pipeline(use_image=False)
-    elif text_model is None:
+    elif text_model_name is None:
         categorization_pipeline.classifier = PageImageCategorizationModel(
             image_model=image_model,
             output_dim=len(categorization_pipeline.category_vocab),

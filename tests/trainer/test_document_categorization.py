@@ -792,8 +792,8 @@ def test_build_categorization_ai() -> None:
         categories=project.categories,
         documents=[project.documents[0]],
         test_documents=[project.test_documents[1]],
-        image_model=ImageModel.EfficientNetB0,
-        text_model=TextModel.NBOWSelfAttention,
+        image_model_name=ImageModel.EfficientNetB0,
+        text_model_name=TextModel.NBOWSelfAttention,
     )
     pipeline_path = categorization_pipeline.save(output_dir='custom_output_dir')
     with pytest.raises(ValueError, match='output_dir'):
@@ -818,8 +818,8 @@ def test_categorize_no_category_document():
         categories=[test_document.category],
         documents=[project.documents[0]],
         test_documents=[project.test_documents[1]],
-        image_model=ImageModel.EfficientNetB0,
-        text_model=TextModel.NBOWSelfAttention,
+        image_model_name=ImageModel.EfficientNetB0,
+        text_model_name=TextModel.NBOWSelfAttention,
     )
     categorization_pipeline.categorize(document=test_document, recategorize=True)
     assert test_document.category == project.no_category
