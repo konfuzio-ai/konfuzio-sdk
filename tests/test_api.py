@@ -42,8 +42,8 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
     def test_projects_details(self):
         """Test to get Document details."""
         data = get_project_list()
-        assert TEST_PROJECT_ID in [prj["id"] for prj in data]
-        assert data[0].keys() == {
+        assert TEST_PROJECT_ID in [prj["id"] for prj in data["results"]]
+        assert data["results"].keys() == {
             'id',
             'name',
             'labels',
@@ -492,13 +492,14 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
     @patch('konfuzio_sdk.api.get_categorization_ais_list_url')
     @patch('konfuzio_sdk.api.json.loads')
     def test_get_all_project_ais(
-            self,
-            mock_json_loads,
-            mock_get_categorization_url,
-            mock_get_splitting_url,
-            mock_get_extraction_url,
-            mock_session
+        self,
+        mock_json_loads,
+        mock_get_categorization_url,
+        mock_get_splitting_url,
+        mock_get_extraction_url,
+        mock_session,
     ):
+        """Retrieve all AIs from a Project."""
         # Setup
         sample_data = {"AI_DATA": "AI_SAMPLE_DATA"}
 
@@ -515,10 +516,11 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
                 "extraction": sample_data,
                 "filesplitting": sample_data,
                 "categorization": sample_data,
-            }
+            },
         )
 
         from konfuzio_sdk.api import konfuzio_session
+
         # Ensure the mock methods were called with the correct arguments
         mock_get_extraction_url.assert_called_once_with(1, konfuzio_session().host)
         mock_get_splitting_url.assert_called_once_with(1, konfuzio_session().host)
@@ -530,15 +532,14 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
     @patch('konfuzio_sdk.api.get_categorization_ais_list_url')
     @patch('konfuzio_sdk.api.json.loads')
     def test_get_all_project_ais_with_invalid_permissions(
-            self,
-            mock_json_loads,
-            mock_get_categorization_url,
-            mock_get_splitting_url,
-            mock_get_extraction_url,
-            mock_session
+        self,
+        mock_json_loads,
+        mock_get_categorization_url,
+        mock_get_splitting_url,
+        mock_get_extraction_url,
+        mock_session,
     ):
-        """Assert that despite of not having permissions, the function can still be called without exception"""
-
+        """Assert that despite not having permissions, the function can still be called without exception."""
         # Setup
         exception_message = '403 Client Error: Forbidden'
         sample_data = {'error': exception_message}  # direct string, not HTTPError

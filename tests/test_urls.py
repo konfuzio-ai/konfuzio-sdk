@@ -44,7 +44,7 @@ class TestUrls(unittest.TestCase):
 
     def test_get_projects_list_url(self):
         """Test function used to generate url to list all the Projects available for the user."""
-        projects_list_url = f"{KONFUZIO_HOST}/api/projects/"
+        projects_list_url = f"{KONFUZIO_HOST}/api/v3/projects/"
         self.assertEqual(get_projects_list_url(), projects_list_url)
 
     def test_get_project_url(self):
@@ -127,7 +127,6 @@ class TestUrls(unittest.TestCase):
         """Test to access Page online."""
         self.assertEqual(get_page_image_url(PAGE_ID), f'{KONFUZIO_HOST}/page/show-image/{PAGE_ID}/')
 
-
     def test_upload_ai_url(self):
         """Test to get URL to upload new AI file."""
         self.assertEqual(
@@ -145,15 +144,15 @@ class TestUrls(unittest.TestCase):
         ai_model_id = 100
         self.assertEqual(
             get_ai_model_url(ai_type='extraction', ai_model_id=ai_model_id),
-            f'{KONFUZIO_HOST}/api/v3/extraction-ais/{ai_model_id}/'
+            f'{KONFUZIO_HOST}/api/v3/extraction-ais/{ai_model_id}/',
         )
         self.assertEqual(
             get_ai_model_url(ai_type='categorization', ai_model_id=ai_model_id),
-            f'{KONFUZIO_HOST}/api/v3/category-ais/{ai_model_id}/'
+            f'{KONFUZIO_HOST}/api/v3/category-ais/{ai_model_id}/',
         )
         self.assertEqual(
             get_ai_model_url(ai_type='filesplitting', ai_model_id=ai_model_id),
-            f'{KONFUZIO_HOST}/api/v3/splitting-ais/{ai_model_id}/'
+            f'{KONFUZIO_HOST}/api/v3/splitting-ais/{ai_model_id}/',
         )
 
     def test_download_ai_url(self):
@@ -161,9 +160,8 @@ class TestUrls(unittest.TestCase):
         ai_model_id = 100
         self.assertEqual(
             get_ai_model_download_url(ai_model_id=ai_model_id, host=KONFUZIO_HOST),
-            f"{KONFUZIO_HOST}/aimodel/file/{ai_model_id}/"
+            f"{KONFUZIO_HOST}/aimodel/file/{ai_model_id}/",
         )
-
 
     def test_change_ai_url(self):
         """Test to get URL to change AI."""
