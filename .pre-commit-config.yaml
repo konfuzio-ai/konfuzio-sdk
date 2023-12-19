@@ -3,6 +3,5 @@ repos:
     rev: v0.1.8
     hooks:
       # Enable after cleaning up the current errors
-      # - id: ruff
-      #   args: [--fix]
-      - id: ruff-format
+       - id: ruff
+         args: [--fix]

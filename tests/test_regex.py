@@ -109,13 +109,13 @@ suggest_regex_for_string_data = [
 
 
 @pytest.mark.parametrize('input, output, expected_exception', suggest_regex_for_string_data)
-def test_suggest_regex_for_string(input, output, expected_exception):
+def test_suggest_regex_for_string(input_strings, output, expected_exception):
     """Test different strings to represent them as a regex."""
     with expected_exception:
         if output is not None:
-            assert suggest_regex_for_string(**input) == output
+            assert suggest_regex_for_string(**input_strings) == output
         else:
-            assert suggest_regex_for_string(**input) is None
+            assert suggest_regex_for_string(**input_strings) is None
 
 
 def test_merge_regex():
@@ -688,9 +688,9 @@ class Test_named_group_multi_match:
 
     def test_keys_in_first_match(self):
         """Check the keys after evaluating the regex."""
-        for i, dict in enumerate(self.results):
+        for i, result_dict in enumerate(self.results):
             assert (
-                list(dict.keys()).sort()
+                list(result_dict.keys()).sort()
                 == ['regex_used', 'name', 'regex_group', 'value', 'start_offset', 'end_offset', 'start_text'].sort()
             )
 
@@ -840,9 +840,9 @@ class Test_match_by_named_regex:
 
     def test_keys_in_first_match(self):
         """Check the keys after evaluating the regex."""
-        for i, dict in enumerate(self.results):
+        for i, result_dict in enumerate(self.results):
             assert (
-                list(dict.keys()).sort()
+                list(result_dict.keys()).sort()
                 == ['regex_used', 'name', 'regex_group', 'value', 'start_offset', 'end_offset', 'start_text'].sort()
             )
 
@@ -926,9 +926,9 @@ class Test_multi_match_by_unamed_regex:
 
     def test_keys_in_first_match(self):
         """Check the keys after evaluating the regex."""
-        for i, dict in enumerate(self.results):
+        for i, result_dict in enumerate(self.results):
             assert (
-                list(dict.keys()).sort()
+                list(result_dict.keys()).sort()
                 == ['regex_used', 'name', 'regex_group', 'value', 'start_offset', 'end_offset', 'start_text'].sort()
             )
 
@@ -990,9 +990,9 @@ class Test_multi_match_by_ungrouped_regex:
 
     def test_keys_in_first_match(self):
         """Check the keys after evaluating the regex."""
-        for i, dict in enumerate(self.results):
+        for i, result_dict in enumerate(self.results):
             assert (
-                list(dict.keys()).sort()
+                list(result_dict.keys()).sort()
                 == ['regex_used', 'name', 'regex_group', 'value', 'start_offset', 'end_offset', 'start_text'].sort()
             )
 

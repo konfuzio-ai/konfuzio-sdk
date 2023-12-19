@@ -330,7 +330,7 @@ class TestTextualFileSplittingModel(unittest.TestCase):
                 page = self.file_splitting_model.predict(page, device=DEVICE)
                 predicted_is_first_page = page.is_first_page
                 assert ground_truth_is_first_page == predicted_is_first_page
-                assert type(page.is_first_page_confidence) is float
+                assert isinstance(page.is_first_page_confidence, float)
 
     def test_run_splitting_ai_prediction(self):
         """Test Splitting AI integration with the Textual File Splitting Model."""

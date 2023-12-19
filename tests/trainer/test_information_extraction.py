@@ -712,10 +712,10 @@ class TestRegexRFExtractionAI(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Clear Project files."""
-        dir = cls.project.regex_folder
+        project_dir = cls.project.regex_folder
 
-        for f in os.listdir(dir):
-            os.remove(os.path.join(dir, f))
+        for f in os.listdir(project_dir):
+            os.remove(os.path.join(project_dir, f))
         if os.path.isfile(cls.pipeline.pipeline_path):
             os.remove(cls.pipeline.pipeline_path)  # cleanup
             os.remove(cls.pipeline.pipeline_path_no_konfuzio_sdk)

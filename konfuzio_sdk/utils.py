@@ -118,13 +118,13 @@ def memory_size_of(obj) -> int:
 
 def normalize_memory(memory: Union[None, str]) -> Union[int, None]:
     """
-    Return memory size in human readable form to int of number of bytes.
+    Return memory size in human-readable form to int of number of bytes.
 
     :param memory: Memory size in human readable form (e.g. "50MB").
     :return: int of bytes if valid, else None
     """
     if memory is not None:
-        if type(memory) is int or memory.isdigit():
+        if isinstance(memory, int) or memory.isdigit():
             memory = int(memory)
         else:
             # Check if the first part of the string (before the unit) is numeric

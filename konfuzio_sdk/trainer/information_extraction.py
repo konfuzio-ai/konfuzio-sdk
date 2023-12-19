@@ -304,24 +304,24 @@ def convert_to_feat(offset_string_list: list, ident_str: str = '') -> pandas.Dat
     return df
 
 
-def substring_count(list: list, substring: str) -> list:
+def substring_count(list_of_strings: list, substring: str) -> list:
     """Given a list of strings returns the occurrence of a certain substring and returns the results as a list."""
-    r_list = [0] * len(list)
+    r_list = [0] * len(list_of_strings)
 
-    for index in range(len(list)):
-        r_list[index] = list[index].lower().count(substring)
+    for index in range(len(list_of_strings)):
+        r_list[index] = list_of_strings[index].lower().count(substring)
 
     return r_list
 
 
-def starts_with_substring(list: list, substring: str) -> list:
+def starts_with_substring(list_of_strings: list, substring: str) -> list:
     """Given a list of strings return 1 if string starts with the given substring for each item."""
-    return [1 if s.lower().startswith(substring) else 0 for s in list]
+    return [1 if s.lower().startswith(substring) else 0 for s in list_of_strings]
 
 
-def ends_with_substring(list: list, substring: str) -> list:
+def ends_with_substring(list_of_strings: list, substring: str) -> list:
     """Given a list of strings return 1 if string starts with the given substring for each item."""
-    return [1 if s.lower().endswith(substring) else 0 for s in list]
+    return [1 if s.lower().endswith(substring) else 0 for s in list_of_strings]
 
 
 def digit_count(s: str) -> int:

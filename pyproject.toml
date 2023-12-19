@@ -14,8 +14,7 @@ select = [
     "A",  # flake8-builtins
     "C4",  # flake8-comprehensions
     "RSE",  # flake8-raise
-    "T20",  # flake8-print
-    "RUF001", "RUF002", "RUF003", "RUF100",  # ruff
+    "RUF100",  # ruff
 ]
 ignore = ["E501"]
 extend-safe-fixes = ["C4", "RSE"]
