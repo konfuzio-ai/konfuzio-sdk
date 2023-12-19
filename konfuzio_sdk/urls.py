@@ -35,7 +35,7 @@ def get_projects_list_url(host: str = None) -> str:
     """
     if host is None:
         host = KONFUZIO_HOST
-    return f"{host}/api/projects/"
+    return f"{host}/api/v3/projects/"
 
 
 def get_project_url(project_id: Union[int, None], host: str = None) -> str:
@@ -65,7 +65,7 @@ def get_documents_meta_url(project_id: int, limit: int = 10, host: str = None) -
 
 
 def get_document_segmentation_details_url(
-        document_id: int, project_id: int, host: str = None, action='segmentation'
+    document_id: int, project_id: int, host: str = None, action='segmentation'
 ) -> str:
     """
     Generate URL to get the segmentation results of a  Document.
@@ -186,9 +186,7 @@ def get_page_image_url(page_id: int, host: str = None) -> str:
     return f'{host}/page/show-image/{page_id}/'
 
 
-def get_document_api_details_url(
-    document_id: int, project_id: int, host: str = None, extra_fields='bbox'
-) -> str:
+def get_document_api_details_url(document_id: int, project_id: int, host: str = None, extra_fields='bbox') -> str:
     """
     Generate URL to access the details of a Document in a Project.
 
