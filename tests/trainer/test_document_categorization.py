@@ -557,7 +557,7 @@ class TestBertCategorizationModels(unittest.TestCase):
         (NBOW, WhitespaceTokenizer, None, None, 20),
         (NBOWSelfAttention, WhitespaceTokenizer, None, None, 20),
         (LSTM, WhitespaceTokenizer, None, None, 3),
-        (NBOW, ConnectedTextTokenizer, EfficientNet, "efficientnet_b0", 5),
+        (NBOW, ConnectedTextTokenizer, EfficientNet, "efficientnet_b0", 10),
         # (None, None, EfficientNet, "efficientnet_b3", 5),  # commented out because of length of execution
         # (NBOWSelfAttention, ConnectedTextTokenizer, VGG, "vgg11", 2),
         # (LSTM, ConnectedTextTokenizer, VGG, "vgg13", 3),
