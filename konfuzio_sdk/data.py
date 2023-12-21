@@ -218,7 +218,9 @@ class Page(Data):
             elif is_file(self.image_path, raise_exception=False) and not update:
                 self.image = Image.open(self.image_path)
             elif (not is_file(self.image_path, raise_exception=False) or update) and page_id:
-                png_content = get_page_image(page_id, session=self.document.project.session)
+                png_content = get_page_image(
+                    document_id=self.document.id_, page_id=page_id, session=self.document.project.session
+                )
                 with open(self.image_path, "wb") as f:
                     f.write(png_content)
                     self.image = Image.open(io.BytesIO(png_content))

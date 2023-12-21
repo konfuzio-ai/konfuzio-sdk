@@ -48,7 +48,7 @@ def get_project_url(project_id: Union[int, None], host: str = None) -> str:
     """
     if host is None:
         host = KONFUZIO_HOST
-    return f'{host}/api/projects/{project_id}/'
+    return f'{host}/api/v3/projects/{project_id}/'
 
 
 def get_documents_meta_url(project_id: int, limit: int = 10, host: str = None) -> str:
@@ -174,7 +174,7 @@ def get_document_original_file_url(document_id: int, host: str = None) -> str:
     return f'{host}/doc/show-original/{document_id}/'
 
 
-def get_page_image_url(page_id: int, host: str = None) -> str:
+def get_page_image_url(document_id: int, page_id: int, host: str = None) -> str:
     """
     Generate URL to get Page as Image.
 
@@ -183,7 +183,7 @@ def get_page_image_url(page_id: int, host: str = None) -> str:
     """
     if host is None:
         host = KONFUZIO_HOST
-    return f'{host}/page/show-image/{page_id}/'
+    return f'{host}/api/v3/documents/{document_id}/pages/{page_id}/'
 
 
 def get_document_api_details_url(document_id: int, project_id: int, host: str = None, extra_fields='bbox') -> str:

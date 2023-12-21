@@ -262,7 +262,7 @@ def get_document_details(document_id: int, project_id: int, session=None, extra_
     return r.json()
 
 
-def get_page_image(page_id: int, session=None, thumbnail: bool = False):
+def get_page_image(document_id: int, page_id: int, session=None, thumbnail: bool = False):
     """
     Load image of a Page as Bytes.
 
@@ -280,9 +280,11 @@ def get_page_image(page_id: int, session=None, thumbnail: bool = False):
             host = session.host
         else:
             host = None
-        url = get_page_image_url(page_id=page_id, host=host)
+        url = get_page_image_url(document_id=document_id, page_id=page_id, host=host)
 
     r = session.get(url)
+    image_url = r.json()['image_url']
+    r = session.get(image_url)
 
     content_type = r.headers.get('content-type')
     if content_type != 'image/png':

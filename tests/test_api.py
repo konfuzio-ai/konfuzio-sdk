@@ -31,6 +31,7 @@ from konfuzio_sdk.api import (
     get_page_image,
     get_all_project_ais,
 )
+from konfuzio_sdk.data import Project
 from tests.variables import TEST_PROJECT_ID, TEST_DOCUMENT_ID
 
 FOLDER_ROOT = os.path.dirname(os.path.realpath(__file__))
@@ -329,8 +330,9 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         download_file_konfuzio_api(257244, ocr=False)
 
     def test_download_image(self):
-        """Test to download a image of a Page."""
-        assert type(get_page_image(1989960)) is bytes
+        """Test to download an image of a Page."""
+        document = Project(id_=TEST_PROJECT_ID).get_document_by_id(44823)
+        assert type(get_page_image(document_id=document.id_, page_id=document.get_page_by_index(0))) is bytes
 
     def test_get_results_from_segmentation(self):
         """Download segmentation results."""
