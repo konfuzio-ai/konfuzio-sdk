@@ -115,11 +115,14 @@ example_text = """
     04/07/1776 is the Independence day.
     """
 sample_document = Document(project=project, text=example_text, category=category)
+print(sample_document.text)
 ```
 
-Run the extraction of a Document.
+Run the extraction of a Document and print the extracted Annotations.
 ```python
 extracted = categorization_pipeline.extract(sample_document)
+for annotation in extracted.annotations(use_correct=False):
+    print(annotation.offset_string)
 ```
 
 Now we can save the AI and check that it is possible to load it afterwards.
