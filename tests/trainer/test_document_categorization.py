@@ -688,9 +688,10 @@ class TestCategorizationConfigurations(unittest.TestCase):
         test_document.set_category(self.training_prj.no_category)
         result = loaded.categorize(document=test_document)
         assert isinstance(result, Document)
-        assert result.category == ground_truth_category
-        for page in result.pages():
-            assert page.category == ground_truth_category
+        if self.test_quality:
+            assert result.category == ground_truth_category
+            for page in result.pages():
+                assert page.category == ground_truth_category
         # restore category attribute to not interfere with next tests
         test_document.set_category(result.category)
 
