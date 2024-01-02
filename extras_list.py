@@ -29,7 +29,7 @@ EXTRAS = {
         "spacy>=2.3.5",
         "torch>=1.8.1",
         "torchvision>=0.9.1",
-        "transformers==4.30.2",
+        "transformers==4.36.0",
         "tensorflow-cpu==2.12.0",
         "timm==0.6.7",
     ],
