@@ -1,9 +1,9 @@
 
 ## Internal release process
 
-Every day at 5:19 AM UTC (3:19 AM UTC+2, see code [here](https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/.github/workflows/nightly.yml)) a new nightly release of the SDK (master branch) is released to <https://pypi.org/project/konfuzio-sdk/#history>.
+Every day when there is a verified and approved change a new pre-release of the SDK (master branch) is released to <https://pypi.org/project/konfuzio-sdk/#history> at 5:19 AM UTC (3:19 AM UTC+2, see code [here](https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/.github/workflows/nightly.yml))
 
-Every day at 6:13 AM UTC a new nightly release of the Server using the latest nightly SDK is deployed at <https://testing.konfuzio.com/> as a Gitlab schedule from our Server repository.
+Every day at 6:13 AM UTC a new nightly release of the Server using the latest nightly SDK and DVUI is deployed at <https://testing.konfuzio.com/> as a Gitlab schedule from our Server repository.
 
 We get an early chance to find bugs with our integration of the SDK with the Konfuzio Server before the official release. During our internal development sprints (2 week periods) we follow the strategy summarized in the table below.
 
@@ -15,24 +15,25 @@ We get an early chance to find bugs with our integration of the SDK with the Kon
 | B    | Bug Fixing    |
 
 
-| Release  |                       | 1  |   2   |   3   |   4   |   5   |   6   |   7   |   8   |   9   |   10   | 
-| -------- | --------------------- | -- | ----- | ----- | ----- | ----- | ----- | ----- | ----- | ----- | ------ |
-| Server   | master Branch Server  |    |       |       |       |       |       |       |       |       | M      |
-| Server   | testing Branch Server |    |       |       |       |       |       | T     | B     | B     | R      |
-| Server   | nightly Build SDK     |    |       |       |       |       |       | T     | B     | B     | R      |
-| SDK      | master Branch         |    |       |       |       |       | T     | T     | B     | B     | R      |
-| SDK      | Pull Request          |    |       |       |       |       | M     |       |       |       |        |
-| DVUI     | master Branch         |    |       |       |       |       | T     | T     | B     | B     | R      |
-| DVUI     | Pull Request          |    |       |       |       |       | M     |       |       |       | --     |
+| Release  |                       | 1  |   2   |   3   |   4   |   5   |   6   |   7   |   8   |   9   |   10   |  +1  |   +2   |   +3   |   +4   |   +5   | 
+| -------- | --------------------- | -- | ----- | ----- | ----- | ----- | ----- | ----- | ----- | ----- | ------ | ---- | ------ | ------ | ------ | ------ |
+| Server   | master Branch Server  |    |       |       |       |       |       |       |       |       |        |      |        | R      |        |        |
+| Server   | testing Branch Server, using Server changes and latest official release of the SDK and DVUI |    |       |       |       |       |       |       |       |       | R      | T    | B      | M      |        |        |
+| Server   | testing Branch using pre-releases of the  SDK and DVUI   |  R  |    R   |   R    |    R   |   R    |    R   | R     | R     | R     | R      |      |        |        |        |        |
+| SDK      | official release of SDK Master Branch|    |       |       |       |       |       |       |       |       | R      |      |        |        |        |        |
+| SDK      | pre-release of SDK Master Branch   | T, B, R  | T, B, R  | T, B, R | T, B, R |T, B, R| T, B, R |  T, B, R |  T, B, R |T, B, R|       |      |        |        |        |        |
 
-The strategy follows a 2 weeks sprint schedule (10 work days). The SDK process is described in the following plan. The process with DVUI is completely analogous:
+The strategy follows a 2 weeks sprint schedule (10 work days). The last five days from the diagram (+1 to +5) are not part of the sprint, but part of the final verification process). These additional days, in which final verification and validation is done, overlap with the first week of the next sprint. The SDK process is described in the following plan. The process with DVUI is completely analogous:
 
-- On the first week we do development on the SDK / Server / DVUI side, and we open one pull request for each new SDK feature on Github (see the list of currently open SDK pull requests [here](https://github.com/konfuzio-ai/konfuzio-sdk/pulls)).
-- On the Monday of the second week we merge pull requests to master, which triggers the creation of a SDK nightly release. This becomes available as a Konfuzio Server deployment the next day at <https://testing.konfuzio.com/>, as a consequence of a Konfuzio Server Gitlab schedule.
-- We internally test the Konfuzio SDK/Server integration with the nightly deployment and collect any bugs that come up, either from the SDK side or the Server side. For the SDK side, these are scheduled as internal tickets for fixing until Friday, which marks the end of the sprint.
-- On Friday the bug fixing is over, the associated pull requests are merged to master and a new SDK official release is created containing the new features and bugfixes.
+- Durign the sprint we do development on the SDK / Server / DVUI side, and we open one pull request for each new SDK feature on Github (see the list of currently open SDK pull requests [here](https://github.com/konfuzio-ai/konfuzio-sdk/pulls)).
+- Once a pull request has passed the tests and has been reviewed it is merged to master, which triggers the creation of a SDK pre-release. This becomes available as a Konfuzio Server deployment the next day at <https://testing.konfuzio.com/>, as a consequence of a Konfuzio Server Gitlab schedule. This is an ongoing process and happens on demand.
+- We internally test the Konfuzio SDK/Server integration with the pre-release deployments and collect any bugs that come up, either from the SDK side or the Server side. These are scheduled as internal tickets for fixing until the second Friday, which marks the end of the sprint.
+- On the second Friday the bug fixing of the SDK is over, the associated pull requests are merged to master and a new SDK official release is created containing the new features and bugfixes.
 - SDK Release Notes are automatically generated from our pull requests using [the Github’s feature](https://docs.github.com/en/repositories/releasing-projects-on-github/automatically-generated-release-notes). Each pull request includes links to relevant documentation about how to use the new feature, see for example <https://github.com/konfuzio-ai/konfuzio-sdk/pull/124>.
-- The new SDK features are available on Friday evening at the end of each sprint. As we internally test and integrated the Konfuzio Server with each nightly SDK release, a new Server release is also available at app.konfuzio.com on the same Friday evening. See the [changelog](https://dev.konfuzio.com/web/changelog_app.html) for full information about each Konfuzio Server release.
+- The new SDK features of the new official release are available on the evening of the second Friday at the end of each sprint in the testing environmnet at <https://testing.konfuzio.com/>.
+- All Server changes developed during the sprint are merged on the last day of the sprint - the second Friday. This final version of the Server, using the official releases of the SDK and DVUI, is deployed on <https://testing.konfuzio.com/>.
+- The days after the sprint (+1 to +2) are used for Testing (happens on the Monday following the sprint - day '+1') and Bug Fixing (happens on the Tuesday following the sprint -day '+2') the version of the Server deployed on <https://testing.konfuzio.com/>. On the Wednesday after the sprint (day '+3') is time for the official release of the Server: the verified final version of the Server is delpoyed to <https://staging.konfuzio.com/> for final checks and then is finally deployed to the production environment on <https://app.konfuzio.com/>.
+- Documenting the official release of the Server: see the [changelog](https://dev.konfuzio.com/web/changelog_app.html) for full information about each Konfuzio official Server release.
 
 ## How to release with GitHub to PyPI
 
