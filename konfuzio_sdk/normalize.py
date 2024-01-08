@@ -231,6 +231,13 @@ def _normalize_string_to_absolute_float(offset_string: str) -> Optional[float]:
     elif offset_string.count('.') == 1 and (len(offset_string) - offset_string.index('.')) == 3:
         if all(x.isdecimal() for x in offset_string.split('.')):
             _float = float(offset_string)  # => 12.34
+    elif (
+        offset_string.count(',') > 1
+        and offset_string.replace(',', '').isdecimal()
+        and offset_string.endswith(',')
+        and '' in offset_string.split(',')
+    ):
+        _float = None
     # check for 12,3 (comma is second last char).
     elif (
         ',' in offset_string
