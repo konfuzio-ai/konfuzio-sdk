@@ -341,7 +341,7 @@ def slugify(value):
     return re.sub(r'[-\s\:\.]+', '-', value).replace('-_', '_')
 
 
-def amend_file_name(file_name: str, append_text: str = '', new_extension: str = None) -> str:
+def amend_file_name(file_name: str, append_text: str = '', append_separator: str = '_', new_extension: str = None) -> str:
     """
     Append text to a filename in front of extension.
 
@@ -364,14 +364,14 @@ def amend_file_name(file_name: str, append_text: str = '', new_extension: str = 
             extension = new_extension
 
         if append_text:
-            append_text = f'_{append_text}'
+            append_text = f'{append_separator}{append_text}'
 
         return f'{path}{append_text}{extension}'
     else:
         raise ValueError(f'Name of file cannot be: {file_name}')
 
 
-def amend_file_path(file_path: str, append_text: str = '', new_extension: str = None):
+def amend_file_path(file_path: str, append_text: str = '', append_separator: str = '_', new_extension: str = None):
     """
     Similar to amend_file_name however the file_name is interpreted as a full path.
 
@@ -382,7 +382,7 @@ def amend_file_path(file_path: str, append_text: str = '', new_extension: str = 
     :return: extended path to file
     """
     split_file_path, split_file_name = os.path.split(file_path)
-    new_filename = amend_file_name(split_file_name, append_text, new_extension)
+    new_filename = amend_file_name(file_name=split_file_name, append_text=append_text, append_separator=append_separator, new_extension=new_extension)
     return os.path.join(split_file_path, new_filename)
 
 

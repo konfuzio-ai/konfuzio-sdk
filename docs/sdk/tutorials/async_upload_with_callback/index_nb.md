@@ -81,7 +81,7 @@ Now that we have ngrok set up, we can see how to use it to pull the results of a
 
 Import the necessary modules:
 
-```python tags=["skip-execution"]
+```python tags=["skip-execution", "nbval-skip"]
 from flask import Flask, request
 from konfuzio_sdk.data import Project, Document
 import threading
