@@ -20,7 +20,7 @@ EXTRAS = {
         "myst_nb==0.17.2",
     ],
     "ai": [
-        "accelerate==0.20.1",
+        "accelerate>=0.19.0",
         "chardet==5.1.0",
         "datasets==2.14.6",
         "evaluate==0.4.1",
