@@ -13,10 +13,12 @@ from requests.adapters import HTTPAdapter
 from urllib3 import Retry
 
 from konfuzio_sdk import KONFUZIO_HOST, KONFUZIO_TOKEN
+
 from konfuzio_sdk.urls import (
+    create_annotation_url,
     get_auth_token_url,
     get_projects_list_url,
-    get_document_api_details_url,
+    get_document_details_url,
     get_project_url,
     get_document_ocr_file_url,
     get_document_original_file_url,
@@ -239,14 +241,12 @@ def create_new_project(project_name, session=None):
         )
 
 
-def get_document_details(document_id: int, project_id: int, session=None, extra_fields: str = ''):
+def get_document_details(document_id: int, session=None):
     """
     Use the text-extraction server to retrieve the data from a document.
 
     :param document_id: ID of the document
-    :param project_id: ID of the Project
     :param session: Konfuzio session with Retry and Timeout policy
-    :param extra_fields: Retrieve bounding boxes from document, too. Can be "bbox", it's a hotfix
     :return: Data of the document.
     """
     if session is None:
@@ -255,9 +255,26 @@ def get_document_details(document_id: int, project_id: int, session=None, extra_
         host = session.host
     else:
         host = None
-    url = get_document_api_details_url(
-        document_id=document_id, project_id=project_id, extra_fields=extra_fields, host=host
-    )
+    url = get_document_details_url(document_id=document_id, host=host)
+    r = session.get(url)
+    return r.json()
+
+
+def get_document_annotations(document_id: int, session=None):
+    """
+    Get Annotations of a Document.
+
+    :param document_id: ID of the Document.
+    :param session: Konfuzio session with Retry and Timeout policy
+    :return: List of the Annotations of the Document.
+    """
+    if session is None:
+        session = konfuzio_session()
+    if hasattr(session, 'host'):
+        host = session.host
+    else:
+        host = None
+    url = get_document_annotations_url(document_id=document_id, host=host)
     r = session.get(url)
     return r.json()
 
@@ -311,83 +328,72 @@ def get_page_image(document_id: int, page_id: int, session=None, thumbnail: bool
 
 def post_document_annotation(
     document_id: int,
-    project_id: int,
+    spans: List,
     label_id: int,
-    label_set_id: int,
     confidence: Union[float, None] = None,
     revised: bool = False,
     is_correct: bool = False,
-    annotation_set=None,
     session=None,
     **kwargs,
 ):
     """
     Add an Annotation to an existing document.
 
-    For the Annotation Set definition, we can:
-    - define the Annotation Set id_ where the Annotation should belong
-    (annotation_set=x (int), define_annotation_set=True)
-    - pass it as None and a new Annotation Set will be created
-    (annotation_set=None, define_annotation_set=True)
-    - do not pass the Annotation Set field and a new Annotation Set will be created if does not exist any or the
-    Annotation will be added to the previous Annotation Set created (define_annotation_set=False)
+    You must specify either annotation_set_id or label_set_id.
+
+    Use annotation_set_id if an Annotation Set already exists. You can find the list of existing Annotation Sets by
+    using the GET endpoint of the Document.
+
+    Using label_set_id will create a new Annotation Set associated with that Label Set. You can only do this if the
+    Label Set has has_multiple_sections set to True.
 
     :param document_id: ID of the file
-    :param project_id: ID of the project
+    :param spans: Spans that constitute the Annotation
     :param label_id: ID of the Label
-    :param label_set_id: ID of the Label Set where the Annotation belongs
     :param confidence: Confidence of the Annotation still called Accuracy by text-annotation
     :param revised: If the Annotation is revised or not (bool)
     :param is_correct: If the Annotation is corrected or not (bool)
-    :param annotation_set: Annotation Set to connect to the server
     :param session: Konfuzio session with Retry and Timeout policy
     :return: Response status.
     """
     if session is None:
         session = konfuzio_session()
 
-    url = get_document_annotations_url(document_id, project_id=project_id)
+    url = create_annotation_url()
 
-    # bbox = kwargs.get('bbox', None)
-    custom_bboxes = kwargs.get('bboxes', None)
-    # selection_bbox = kwargs.get('selection_bbox', None)
-    # page_number = kwargs.get('page_number', None)
-    # offset_string = kwargs.get('offset_string', None)
-    start_offset = kwargs.get('start_offset', None)
-    end_offset = kwargs.get('end_offset', None)
+    custom_bboxes = kwargs.get('selection_bbox', None)
+    annotation_set_id = kwargs.get('annotation_set_id', None)
+    label_set_id = kwargs.get('label_set_id', None)
+    spans = [
+        {
+            "x0": span.bbox().x0,
+            "x1": span.bbox().x1,
+            "y0": span.bbox().y0,
+            "y1": span.bbox().y1,
+            "page_index": span.page.index,
+            "offset_string": span.offset_string,
+        }
+        for span in spans
+    ]
 
     data = {
-        'start_offset': start_offset,
-        'end_offset': end_offset,
+        'document': document_id,
         'label': label_id,
         'revised': revised,
-        'section_label_id': label_set_id,
         'accuracy': confidence,
+        "set_reference": 0,  # reserved for creating multiple Annotations, not applicable here
         'is_correct': is_correct,
+        "origin": "api.v3",
+        "span": spans,
     }
 
-    if end_offset:
-        data['end_offset'] = end_offset
-
-    if start_offset is not None:
-        data['start_offset'] = start_offset
-
-    data['section'] = annotation_set
-
-    # if page_number is not None:
-    #     data['page_number'] = page_number
-    #
-    # if offset_string is not None:
-    #     data['offset_string'] = offset_string
-    #
-    # if bbox is not None:
-    #     data['bbox'] = bbox
-    #
-    # if selection_bbox is not None:
-    #     data['selection_bbox'] = selection_bbox
+    if annotation_set_id:
+        data['annotation_set'] = annotation_set_id
+    elif label_set_id:
+        data['label_set'] = label_set_id
 
     if custom_bboxes is not None:
-        data['custom_bboxes'] = custom_bboxes
+        data['selection_bbox'] = custom_bboxes
 
     r = session.post(url, json=data)
     if r.status_code != 201:

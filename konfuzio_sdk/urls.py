@@ -20,7 +20,7 @@ def get_auth_token_url(host: str = None) -> str:
     """
     if host is None:
         host = KONFUZIO_HOST
-    return f"{host}/api/token-auth/"
+    return f"{host}/api/v3/auth/"
 
 
 # PROJECTS
@@ -56,12 +56,13 @@ def get_documents_meta_url(project_id: int, limit: int = 10, host: str = None) -
     Generate URL to load meta information about the Documents in the Project.
 
     :param project_id: ID of the Project
+    :param limit: Number of Documents to display meta information about.
     :param host: Konfuzio host
     :return: URL to get all the Documents details.
     """
     if host is None:
         host = KONFUZIO_HOST
-    return f"{host}/api/projects/{project_id}/docs/?limit={limit}"
+    return f"{host}/api/v3/documents/?limit={limit}&project={project_id}"
 
 
 def get_document_segmentation_details_url(
@@ -186,19 +187,30 @@ def get_page_image_url(document_id: int, page_id: int, host: str = None) -> str:
     return f'{host}/api/v3/documents/{document_id}/pages/{page_id}/'
 
 
-def get_document_api_details_url(document_id: int, project_id: int, host: str = None, extra_fields='bbox') -> str:
+def get_document_details_url(document_id: int, host: str = None) -> str:
     """
     Generate URL to access the details of a Document in a Project.
 
     :param document_id: ID of the Document as integer
-    :param project_id: ID of the Project
     :param host: Konfuzio host
-    :param extra_fields: Extra information to include in the response
     :return: URL to get Document details
     """
     if host is None:
         host = KONFUZIO_HOST
-    return f'{host}/api/projects/{project_id}/docs/{document_id}/?extra_fields={extra_fields}'
+    return f'{host}/api/v3/documents/{document_id}/'
+
+
+def get_document_bbox_url(document_id: int, host: str = None) -> str:
+    """
+    Generate URL to access the BBox of a Document in a Project.
+
+    :param document_id: ID of the Document as integer
+    :param host: Konfuzio host
+    :return: URL to get Document Bbox
+    """
+    if host is None:
+        host = KONFUZIO_HOST
+    return f'{host}/api/v3/documents/{document_id}/bbox'
 
 
 def get_annotation_view_url(annotation_id: int, host: str = None) -> str:
@@ -244,18 +256,30 @@ def get_label_url(label_id: int, host: str = None) -> str:
 # ANNOTATIONS
 
 
-def get_document_annotations_url(document_id: int, project_id: int, host: str = None) -> str:
+def get_document_annotations_url(document_id: int, limit: int = 100, host: str = None) -> str:
     """
     Access Annotations of a document.
 
     :param document_id: ID of the Document as integer
-    :param project_id: ID of the project
+    :param limit: How many Annotations from the Document are returned
     :param host: Konfuzio host
     :return: URL to access the Annotations of a document
     """
     if host is None:
         host = KONFUZIO_HOST
-    return f'{host}/api/projects/{project_id}/docs/{document_id}/annotations/'
+    return f'{host}/api/v3/annotations/?document={document_id}&limit={limit}'
+
+
+def create_annotation_url(host: str = None) -> str:
+    """
+    Create a new Annotation.
+
+    :param host: Konfuzio host
+    :return: URL to create a new Annotation.
+    """
+    if host is None:
+        host = KONFUZIO_HOST
+    return f'{host}/api/v3/annotations/'
 
 
 def get_annotation_url(document_id: int, annotation_id: int, project_id: int, host: str = None) -> str:
