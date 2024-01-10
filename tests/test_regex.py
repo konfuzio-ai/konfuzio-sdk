@@ -108,7 +108,7 @@ suggest_regex_for_string_data = [
 ]
 
 
-@pytest.mark.parametrize('input, output, expected_exception', suggest_regex_for_string_data)
+@pytest.mark.parametrize('input_strings, output, expected_exception', suggest_regex_for_string_data)
 def test_suggest_regex_for_string(input_strings, output, expected_exception):
     """Test different strings to represent them as a regex."""
     with expected_exception:
