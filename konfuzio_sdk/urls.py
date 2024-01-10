@@ -69,7 +69,7 @@ def get_document_segmentation_details_url(
     document_id: int, project_id: int, host: str = None, action='segmentation'
 ) -> str:
     """
-    Generate URL to get the segmentation results of a  Document.
+    Generate URL to get the segmentation results of a Document.
 
     :param document_id: ID of the Document as integer
     :param project_id: ID of the Project
@@ -133,7 +133,7 @@ def get_upload_document_url(host: str = None) -> str:
     """
     if host is None:
         host = KONFUZIO_HOST
-    return f"{host}/api/v2/docs/"
+    return f"{host}/api/v3/documents/"
 
 
 def get_document_url(document_id: int, host: str = None) -> str:
@@ -146,7 +146,7 @@ def get_document_url(document_id: int, host: str = None) -> str:
     """
     if host is None:
         host = KONFUZIO_HOST
-    return f"{host}/api/v2/docs/{document_id}/"
+    return f"{host}/api/v3/documents/{document_id}/"
 
 
 def get_document_ocr_file_url(document_id: int, host: str = None) -> str:
@@ -175,16 +175,29 @@ def get_document_original_file_url(document_id: int, host: str = None) -> str:
     return f'{host}/doc/show-original/{document_id}/'
 
 
-def get_page_image_url(document_id: int, page_id: int, host: str = None) -> str:
+def get_page_url(document_id: int, page_id: int, host: str = None) -> str:
     """
-    Generate URL to get Page as Image.
+    Generate URL to get Page.
 
     :param page_id: ID of the Page
-    :return: URL to get Page as PNG
+    :return: URL to get Page
     """
     if host is None:
         host = KONFUZIO_HOST
     return f'{host}/api/v3/documents/{document_id}/pages/{page_id}/'
+
+
+def get_page_image_url(page_url: str, host: str = None) -> str:
+    """
+    Generate URL to get Page as Image.
+
+    :param page_url: A URL of the Page to access.
+    :param host: Konfuzio host.
+    :return: A URL to the Page as Image.
+    """
+    if host is None:
+        host = KONFUZIO_HOST
+    return host + page_url
 
 
 def get_document_details_url(document_id: int, host: str = None) -> str:
@@ -237,7 +250,7 @@ def get_labels_url(host: str = None) -> str:
     """
     if host is None:
         host = KONFUZIO_HOST
-    return f"{host}/api/v2/labels/"
+    return f"{host}/api/v3/labels/"
 
 
 def get_label_url(label_id: int, host: str = None) -> str:
@@ -250,7 +263,7 @@ def get_label_url(label_id: int, host: str = None) -> str:
     """
     if host is None:
         host = KONFUZIO_HOST
-    return f"{host}/api/v2/labels/{label_id}/"
+    return f"{host}/api/v3/labels/{label_id}/"
 
 
 # ANNOTATIONS
@@ -282,19 +295,17 @@ def create_annotation_url(host: str = None) -> str:
     return f'{host}/api/v3/annotations/'
 
 
-def get_annotation_url(document_id: int, annotation_id: int, project_id: int, host: str = None) -> str:
+def get_annotation_url(annotation_id: int, host: str = None) -> str:
     """
     Generate URL to access an annotation.
 
-    :param document_id: ID of the Document as integer
     :param annotation_id: ID of the Annotation as integer
-    :param project_id: ID of the project
     :param host: Konfuzio host
     :return: URL to access an Annotation of a document
     """
     if host is None:
         host = KONFUZIO_HOST
-    return f'{host}/api/projects/{project_id}/docs/{document_id}/annotations/{annotation_id}/'
+    return f'{host}/api/v3/annotations/{annotation_id}/'
 
 
 def get_create_ai_model_url(ai_type: str, host: str = None) -> str:

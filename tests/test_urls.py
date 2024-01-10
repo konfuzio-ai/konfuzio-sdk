@@ -18,6 +18,7 @@ from konfuzio_sdk.urls import (
     get_annotation_url,
     get_document_annotations_url,
     get_annotation_view_url,
+    get_page_url,
     get_page_image_url,
     get_create_ai_model_url,
     get_update_ai_model_url,
@@ -75,12 +76,12 @@ class TestUrls(unittest.TestCase):
 
     def test_get_upload_document_url(self):
         """Test function used to generate url to upload a document."""
-        upload_document_url = f"{KONFUZIO_HOST}/api/v2/docs/"
+        upload_document_url = f"{KONFUZIO_HOST}/api/v3/documents/"
         self.assertEqual(get_upload_document_url(), upload_document_url)
 
     def test_get_document_url(self):
         """Test function used to generate url to access a document."""
-        document_url = f"{KONFUZIO_HOST}/api/v2/docs/{DOCUMENT_ID}/"
+        document_url = f"{KONFUZIO_HOST}/api/v3/documents/{DOCUMENT_ID}/"
         self.assertEqual(get_document_url(document_id=DOCUMENT_ID), document_url)
 
     def test_get_document_details(self):
@@ -105,20 +106,23 @@ class TestUrls(unittest.TestCase):
 
     def test_get_labels_url(self):
         """Test function used to generate url to list all Labels."""
-        labels_url = f"{KONFUZIO_HOST}/api/v2/labels/"
+        labels_url = f"{KONFUZIO_HOST}/api/v3/labels/"
         self.assertEqual(get_labels_url(), labels_url)
 
     def test_get_label_url(self):
         """Test function used to generate url to access a label."""
-        label_url = f"{KONFUZIO_HOST}/api/v2/labels/{LABEL_ID}/"
+        label_url = f"{KONFUZIO_HOST}/api/v3/labels/{LABEL_ID}/"
         self.assertEqual(get_label_url(label_id=LABEL_ID), label_url)
 
     def test_get_annotation_url(self):
         """Test function used to generate url to access an Annotation of a document."""
-        annotation_url = (
-            f'{KONFUZIO_HOST}/api/projects/{TEST_PROJECT_ID}' f'/docs/{DOCUMENT_ID}/' f'annotations/{ANNOTATION_ID}/'
+        annotation_url = f'{KONFUZIO_HOST}/api/v3/annotations/{ANNOTATION_ID}/'
+        self.assertEqual(
+            get_annotation_url(
+                ANNOTATION_ID,
+            ),
+            annotation_url,
         )
-        self.assertEqual(get_annotation_url(DOCUMENT_ID, ANNOTATION_ID, TEST_PROJECT_ID), annotation_url)
 
     def test_create_annotation_url(self):
         """Test function to create a new Annotation."""
@@ -129,11 +133,17 @@ class TestUrls(unittest.TestCase):
         """Test to access Annotation online."""
         self.assertEqual(get_annotation_view_url(ANNOTATION_ID), f'{KONFUZIO_HOST}/a/{ANNOTATION_ID}')
 
-    def test_page_image_url(self):
+    def test_page_url(self):
         """Test to access Page online."""
         self.assertEqual(
-            get_page_image_url(document_id=DOCUMENT_ID, page_id=PAGE_ID),
+            get_page_url(document_id=DOCUMENT_ID, page_id=PAGE_ID),
             f'{KONFUZIO_HOST}/api/v3/documents/{DOCUMENT_ID}/pages/{PAGE_ID}/',
+        )
+
+    def test_page_image_url(self):
+        """Test to access Page's Image."""
+        self.assertEqual(
+            get_page_image_url(page_url='/page/show-image/1923/'), f'{KONFUZIO_HOST}/page/show-image/1923/'
         )
 
     def test_upload_ai_url(self):

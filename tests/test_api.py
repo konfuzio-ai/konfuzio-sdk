@@ -10,7 +10,7 @@ from unittest.mock import patch
 import pytest
 from requests import HTTPError
 
-from konfuzio_sdk import BASE_DIR
+from konfuzio_sdk import BASE_DIR, KONFUZIO_USER
 from konfuzio_sdk.api import (
     get_meta_of_files,
     download_file_konfuzio_api,
@@ -287,7 +287,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         )
         assert response.status_code == 201
         annotation = json.loads(response.text)
-        assert delete_document_annotation(TEST_DOCUMENT_ID, annotation['id'], project_id=TEST_PROJECT_ID)
+        assert delete_document_annotation(TEST_DOCUMENT_ID, annotation['id'])
 
     @unittest.skip(reason='Not supported by Server: https://gitlab.com/konfuzio/objectives/-/issues/8663')
     def test_post_document_annotation_multiline_as_offsets(self):
@@ -333,16 +333,16 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             label_set_id=label_set_id,
             revised=False,
             is_correct=False,
-            spans=[Span(document=document, start_offset=60, end_offset=63)],
+            spans=[Span(document=document, start_offset=1002, end_offset=1004)],
         )
         annotation = json.loads(response.text)
         # check if the update has been received by the server
         annotations = get_document_annotations(TEST_DOCUMENT_ID)['results']
         assert annotation['id'] in [annotation['id'] for annotation in annotations]
         # delete the annotation, i.e. change its status from feedback required to negative
-        negative_id = delete_document_annotation(TEST_DOCUMENT_ID, annotation['id'], project_id=TEST_PROJECT_ID)
+        negative_id = delete_document_annotation(annotation['id'])
         # delete it a second time to remove this Annotation from the feedback stored as negative
-        assert delete_document_annotation(TEST_DOCUMENT_ID, negative_id, project_id=TEST_PROJECT_ID)
+        assert delete_document_annotation(negative_id)
 
     def test_get_project_labels(self):
         """Download Labels from API for a Project."""
@@ -384,9 +384,9 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         assert set([box["label"] for box in result[0]]) == {"text", "figure", "table", "title"}
 
     def test_update_document_konfuzio_api(self):
-        """Update the name and assignee of a document."""
+        """Update the name and assignee of a Document."""
         timestamp = str(datetime.datetime.now())
-        assignee = 1043
+        assignee = KONFUZIO_USER
         result = update_document_konfuzio_api(
             document_id=214414, file_name=timestamp, dataset_status=0, assignee=assignee
         )

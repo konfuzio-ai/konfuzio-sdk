@@ -30,7 +30,7 @@ from konfuzio_sdk.urls import (
     get_document_segmentation_details_url,
     get_labels_url,
     get_create_ai_model_url,
-    get_page_image_url,
+    get_page_url,
     get_ai_model_url,
     get_splitting_ais_list_url,
     get_categorization_ais_list_url,
@@ -297,15 +297,15 @@ def get_page_image(document_id: int, page_id: int, session=None, thumbnail: bool
             host = session.host
         else:
             host = None
-        url = get_page_image_url(document_id=document_id, page_id=page_id, host=host)
+        url = get_page_url(document_id=document_id, page_id=page_id, host=host)
 
     r = session.get(url)
-    image_url = r.json()['image_url']
+    image_url = f"{KONFUZIO_HOST}{r.json()['image_url']}"
     r = session.get(image_url)
 
     content_type = r.headers.get('content-type')
     if content_type != 'image/png':
-        raise TypeError(f'CONTENT TYP of Image {page_id} is {content_type} and no PNG.')
+        raise TypeError(f'CONTENT TYPE of Image {page_id} is {content_type} and no PNG.')
 
     return r.content
 
@@ -402,19 +402,17 @@ def post_document_annotation(
     return r
 
 
-def delete_document_annotation(document_id: int, annotation_id: int, project_id: int, session=None):
+def delete_document_annotation(annotation_id: int, session=None):
     """
     Delete a given Annotation of the given document.
 
-    :param document_id: ID of the document
     :param annotation_id: ID of the annotation
-    :param project_id: ID of the project
     :param session: Konfuzio session with Retry and Timeout policy
     :return: Response status.
     """
     if session is None:
         session = konfuzio_session()
-    url = get_annotation_url(document_id=document_id, annotation_id=annotation_id, project_id=project_id)
+    url = get_annotation_url(annotation_id=annotation_id)
     r = session.delete(url)
     if r.status_code == 200:
         # the text Annotation received negative feedback and copied the Annotation and created a new one
@@ -506,7 +504,9 @@ def upload_file_konfuzio_api(
     session=None,
     category_id: Union[None, int] = None,
     callback_url: str = '',
+    callback_status_code: int = None,
     sync: bool = False,
+    assignee: str = '',
 ):
     """
     Upload Document to Konfuzio API.
@@ -517,7 +517,9 @@ def upload_file_konfuzio_api(
     :param dataset_status: Set data set status of the document.
     :param category_id: Define a Category the Document belongs to
     :param callback_url: Callback URL receiving POST call once extraction is done
+    :param callback_status_code: The HTTP response code of the callback server (in case a callback URL is set)
     :param sync: If True, will run synchronously and only return once the online database is updated
+    :param assignee: The user who is currently assigned to the Document.
     :return: Response status.
     """
     if session is None:
@@ -532,10 +534,14 @@ def upload_file_konfuzio_api(
     data = {
         "project": project_id,
         "dataset_status": dataset_status,
-        "category_template": category_id,
+        "category": category_id,
         "sync": sync,
         "callback_url": callback_url,
+        "callback_status_code": callback_status_code,
     }
+
+    if assignee:
+        data['assignee'] = assignee
 
     r = session.post(url=url, files=files, data=data)
 
