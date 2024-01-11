@@ -35,6 +35,9 @@ from konfuzio_sdk.api import (
     get_all_project_ais,
     export_ai_models,
     get_project_labels,
+    get_project_categories,
+    get_document_annotations,
+    get_document_bbox,
 )
 from konfuzio_sdk.normalize import normalize
 from konfuzio_sdk.regex import get_best_regex, regex_matches, suggest_regex_for_string, merge_regex
@@ -2455,8 +2458,6 @@ class Annotation(Data):
             response = post_document_annotation(
                 project_id=self.document.project.id_,
                 document_id=self.document.id_,
-                # start_offset=self.start_offset,
-                # end_offset=self.end_offset,
                 label_id=self.label.id_,
                 label_set_id=label_set_id,
                 confidence=self.confidence,
@@ -2464,9 +2465,9 @@ class Annotation(Data):
                 revised=self.revised,
                 annotation_set=annotation_set_id,
                 bboxes=self.bboxes,
-                # selection_bbox=self.selection_bbox,
                 page_number=self.page_number,
                 session=self.document.project.session,
+                spans=self.spans,
             )
             if response.status_code == 201:
                 json_response = json.loads(response.text)
@@ -3167,7 +3168,7 @@ class Document(Data):
                     _ = AnnotationSet(
                         id_=raw_annotation_set["id"],
                         document=self,
-                        label_set=self.project.get_label_set_by_id(raw_annotation_set["section_label"]),
+                        label_set=self.project.get_label_set_by_id(raw_annotation_set["label_set"]["id"]),
                     )
             elif self._annotation_sets is None:
                 self._annotation_sets = []  # Annotation sets cannot be loaded from Konfuzio Server
@@ -3343,9 +3344,7 @@ class Document(Data):
         else:
             file_path = self.file_path
 
-        if self.status[0] == Document.DONE and (
-            not file_path or not is_file(file_path, raise_exception=False) or update
-        ):
+        if self.status == Document.DONE and (not file_path or not is_file(file_path, raise_exception=False) or update):
             pdf_content = download_file_konfuzio_api(self.id_, ocr=ocr_version, session=self.project.session)
             with open(file_path, "wb") as f:
                 f.write(pdf_content)
@@ -3364,20 +3363,20 @@ class Document(Data):
     def download_document_details(self):
         """Retrieve data from a Document online in case Document has finished processing."""
         if self.is_online:
-            data = get_document_details(document_id=self.id_, project_id=self.project.id_, session=self.project.session)
-            self.status = data["status"]
+            data = get_document_details(document_id=self.id_, session=self.project.session)
+            self.status = data["status_data"]
             self.file_url = data["file_url"]
             self.name = data["data_file_name"]
             self.updated_at = dateutil.parser.isoparse(data["updated_at"])
-            if data["category_template"]:
-                self._category = self.project.get_category_by_id(data["category_template"])
-            # TODO: update rest of metadata with APIv3
+            if data["category"]:
+                self._category = self.project.get_category_by_id(data["category"])
             # write a file, even there are no annotations to support offline work
+            annotations = get_document_annotations(document_id=self.id_)['results']
             with open(self.annotation_file_path, "w") as f:
-                json.dump(data["annotations"], f, indent=2, sort_keys=True)
+                json.dump(annotations, f, indent=2, sort_keys=True)
 
             with open(self.annotation_set_file_path, "w") as f:
-                json.dump(data["sections"], f, indent=2, sort_keys=True)
+                json.dump(data["annotation_sets"], f, indent=2, sort_keys=True)
 
             with open(self.txt_file_path, "w", encoding="utf-8") as f:
                 if data["text"]:
@@ -3554,12 +3553,10 @@ class Document(Data):
         elif is_file(self.bbox_file_path, raise_exception=False):
             with zipfile.ZipFile(self.bbox_file_path, "r") as archive:
                 bbox = json.loads(archive.read('bbox.json5'))
-        elif self.is_online and self.status and self.status[0] == Document.DONE:
+        elif self.is_online and self.status and self.status == Document.DONE:
             # todo check for self.project.id_ and self.id_ and ?
             logger.info(f'Start downloading bbox files of {len(self.text)} characters for {self}.')
-            bbox = get_document_details(
-                document_id=self.id_, project_id=self.project.id_, extra_fields="bbox", session=self.project.session
-            )['bbox']
+            bbox = get_document_bbox(document_id=self.id_, session=self.project.session)['bbox']
             # Use the `zipfile` module: `compresslevel` was added in Python 3.7
             with zipfile.ZipFile(
                 self.bbox_file_path, mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9
@@ -3582,7 +3579,7 @@ class Document(Data):
             self._pages_char_bboxes: List[Dict[str, Dict]] = [{} for _ in self.pages()]
             for char_index, bbox in self.get_bbox().items():
                 bbox['char_index'] = int(char_index)
-                self._pages_char_bboxes[bbox['page_number'] - 1][char_index] = bbox
+                self._pages_char_bboxes[bbox['page_index']][char_index] = bbox
         return self._pages_char_bboxes[page_index]
 
     @property
@@ -3612,7 +3609,7 @@ class Document(Data):
                 x1 = box.get('x1')
                 y0 = box.get('y0')
                 y1 = box.get('y1')
-                page_index = box.get('page_number') - 1
+                page_index = box.get('page_index')
                 page = self.get_page_by_index(page_index=page_index)
                 box_character = box.get('text')
                 document_character = self.text[int(character_index)]
@@ -3807,9 +3804,17 @@ class Document(Data):
 
             if raw_annotations:
                 for raw_annotation in raw_annotations:
-                    raw_annotation['annotation_set_id'] = raw_annotation.pop('section')
-                    raw_annotation['label_set_id'] = raw_annotation.pop('section_label_id')
-                    _ = Annotation(document=self, id_=raw_annotation['id'], **raw_annotation)
+                    raw_annotation['annotation_set_id'] = raw_annotation.pop('annotation_set')
+                    raw_annotation['label_set_id'] = raw_annotation.pop('label_set')['id']
+                    raw_annotation.pop('document', None)
+                    label = self.project.get_label_by_id(id_=raw_annotation['label']['id'])
+                    raw_annotation.pop('label', None)
+                    raw_spans = raw_annotation['span']
+                    spans = [
+                        Span(start_offset=span['start_offset'], end_offset=span['end_offset']) for span in raw_spans
+                    ]
+                    raw_annotation.pop('span', None)
+                    _ = Annotation(document=self, id_=raw_annotation['id'], label=label, spans=spans, **raw_annotation)
                 self._update = False  # Make sure we don't repeat to load once loaded.
 
         if self._annotations is None:
@@ -4158,8 +4163,6 @@ class Project(Data):
     def get_label_sets(self, reload=False):
         """Get LabelSets in the Project."""
         if not self._label_sets or reload:
-            with open(self.label_sets_file_path, "r") as f:
-                label_sets_data = json.load(f)
 
             self._label_sets = []  # clean up Label Sets to not create duplicates
             self.categories = []  # clean up Labels to not create duplicates
@@ -4167,16 +4170,20 @@ class Project(Data):
             # adding a NO_CATEGORY at this step because we need to preserve it after Project is updated
             if "NO_CATEGORY" not in [category.name for category in self.categories]:
                 self.no_category = Category(project=self, id_=0, name_clean="NO_CATEGORY", name="NO_CATEGORY")
-            for label_set_data in label_sets_data:
-                label_set_data.pop("project", None)
-                label_ids = [label['id'] for label in label_set_data['labels']]
-                label_set_data.pop("labels", None)
-                label_set_data["labels"] = label_ids
-                label_set = LabelSet(project=self, id_=label_set_data['id'], **label_set_data)
-                if label_set.is_default:
-                    category = Category(project=self, id_=label_set_data['id'], **label_set_data)
-                    category.label_sets.append(label_set)
-                    label_set.categories.append(category)  # Konfuzio Server mixes the concepts, we use two instances
+            categories_and_label_data = get_project_categories(project_id=self.id_)
+            for category in categories_and_label_data:
+                cur_category = Category(project=self, id_=category['id'], name=category['name'])
+                for label_set_data in category['schema']:
+                    cur_labels = label_set_data['labels']
+                    label_set_data.pop('labels', None)
+                    label_set = LabelSet(project=self, id_=label_set_data['id'], **label_set_data)
+                    for cur_label in cur_labels:
+                        label_set.labels.append(self.get_label_by_id(cur_label['id']))
+                        self.get_label_by_id(cur_label['id']).label_sets.append(label_set)
+                    if label_set.id_ == cur_category.id_:
+                        label_set.is_default = True
+                    cur_category.label_sets.append(label_set)
+                    label_set.categories.append(cur_category)
 
         return self._label_sets
 
@@ -4187,7 +4194,7 @@ class Project(Data):
             self.get_label_sets()
         return self._label_sets
 
-    def get_labels(self, reload=False) -> Label:
+    def get_labels(self, reload=False) -> List[Label]:
         """Get ID and name of any Label in the Project."""
         if not self._labels or reload:
             with open(self.labels_file_path, "r") as f:
@@ -4197,7 +4204,7 @@ class Project(Data):
                 # Remove the Project from label_data
                 label_data.pop("project", None)
                 label_data.pop("label_sets", None)
-                Label(project=self, id_=label_data['id'], **label_data)
+                Label(project=self, id_=label_data['id'], text=label_data['name'], **label_data)
 
         return self._labels
 
@@ -4233,20 +4240,29 @@ class Project(Data):
             if not new:
                 last_date = local_docs_dict[document_data['id']].updated_at
                 updated = dateutil.parser.isoparse(new_date) > last_date if last_date is not None else True
-
+            doc_category = (
+                self.get_category_by_id(document_data['category']) if document_data['category'] else self.no_category
+            )
+            document_data.pop('category', None)
             if updated:
                 doc = local_docs_dict[document_data['id']]
-                doc.update_meta_data(**document_data)
+                doc.update_meta_data(category=doc_category, **document_data)
                 doc.update()
                 logger.debug(f'{doc} was updated, we will download it again as soon you use it.')
                 n_updated_documents += 1
             elif new:
-                doc = Document(project=self, update=from_online, id_=document_data['id'], **document_data)
+                document_data.pop('project', None)
+                doc = Document(
+                    project=self, update=from_online, id_=document_data['id'], category=doc_category, **document_data
+                )
                 logger.debug(f'{doc} is not available on your machine, we will download it as soon you use it.')
                 n_new_documents += 1
             else:
+
                 doc = local_docs_dict[document_data['id']]
-                doc.update_meta_data(**document_data)  # reset any Document level meta data changes
+                doc.update_meta_data(
+                    category=doc_category, **document_data
+                )  # reset any Document level meta data changes
                 logger.debug(f'Unchanged local version of {doc} from {new_date}.')
                 n_unchanged_documents += 1
             # else:

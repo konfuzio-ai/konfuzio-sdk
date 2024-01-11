@@ -26,6 +26,7 @@ from konfuzio_sdk.urls import (
     get_ai_model_url,
     get_ai_model_download_url,
     get_project_label_sets_url,
+    get_project_categories_url,
 )
 
 
@@ -56,6 +57,11 @@ class TestUrls(unittest.TestCase):
         """Test function used to generate url to access Project details."""
         project_url = f'{KONFUZIO_HOST}/api/v3/projects/{TEST_PROJECT_ID}/'
         self.assertEqual(get_project_url(TEST_PROJECT_ID), project_url)
+
+    def test_get_project_categories_url(self):
+        """Test function used to generate URL to access a Project's Categories."""
+        categories_url = f'{KONFUZIO_HOST}/api/v3/categories/?project={TEST_PROJECT_ID}&limit=1000'
+        self.assertEqual(get_project_categories_url(project_id=TEST_PROJECT_ID), categories_url)
 
     def test_get_documents_meta_url(self):
         """Test function used to generate url to load meta information about Documents."""

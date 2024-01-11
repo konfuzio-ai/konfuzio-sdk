@@ -271,9 +271,9 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             {"page_index": 0, "x0": 198, "x1": 300, "y0": 508, "y1": 517},
             {"page_index": 0, "x0": 197.76, "x1": 233, "y0": 495, "y1": 508},
         ]
-        document = Project(id_=TEST_PROJECT_ID).get_document_by_id(TEST_DOCUMENT_ID)
+        document = Project(id_=TEST_PROJECT_ID, strict_data_validation=False).get_document_by_id(TEST_DOCUMENT_ID + 11)
         response = post_document_annotation(
-            document_id=TEST_DOCUMENT_ID,
+            document_id=TEST_DOCUMENT_ID + 11,
             confidence=None,
             label_id=label_id,
             label_set_id=label_set_id,
@@ -300,7 +300,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         )
         assert response.status_code == 201
         annotation = json.loads(response.text)
-        assert delete_document_annotation(TEST_DOCUMENT_ID, annotation['id'])
+        assert delete_document_annotation(annotation['id'])
 
     @unittest.skip(reason='Not supported by Server: https://gitlab.com/konfuzio/objectives/-/issues/8663')
     def test_post_document_annotation_multiline_as_offsets(self):
@@ -328,9 +328,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
         assert response.status_code == 201
         annotation = json.loads(response.text)
-        assert delete_document_annotation(
-            document_id=TEST_DOCUMENT_ID, project_id=TEST_PROJECT_ID, annotation_id=annotation['id']
-        )
+        assert delete_document_annotation(annotation_id=annotation['id'])
 
     def test_post_document_annotation(self):
         """Create an Annotation via API."""
@@ -338,7 +336,12 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         label_id = 863  # Refers to Label Betrag (863)
         label_set_id = 64  # Refers to LabelSet Brutto-Bezug (allows multiple Annotation Sets)
         # create a revised annotation, so we can verify its existence via get_document_annotations
-        document = Project(id_=TEST_PROJECT_ID).get_document_by_id(TEST_DOCUMENT_ID)
+        project = Project(id_=TEST_PROJECT_ID, update=True)
+        project.init_or_update_document(from_online=True)
+        document = project.get_document_by_id(TEST_DOCUMENT_ID)
+        document.update()
+        span = Span(document=document, start_offset=1002, end_offset=1010)
+        span.bbox()
         response = post_document_annotation(
             document_id=TEST_DOCUMENT_ID,
             confidence=confidence,
@@ -346,7 +349,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             label_set_id=label_set_id,
             revised=False,
             is_correct=False,
-            spans=[Span(document=document, start_offset=1002, end_offset=1004)],
+            spans=[span],
         )
         annotation = json.loads(response.text)
         # check if the update has been received by the server

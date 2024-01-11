@@ -5,7 +5,7 @@ import logging
 import os
 from json import JSONDecodeError
 from operator import itemgetter
-from typing import List, Union, Optional
+from typing import List, Union, Optional, Dict
 
 import requests
 from requests import HTTPError
@@ -38,6 +38,8 @@ from konfuzio_sdk.urls import (
     get_extraction_ais_list_url,
     get_ai_model_download_url,
     get_project_label_sets_url,
+    get_project_categories_url,
+    get_document_bbox_url,
 )
 from konfuzio_sdk.utils import is_file
 
@@ -313,6 +315,25 @@ def get_document_annotations(document_id: int, session=None):
     return r.json()
 
 
+def get_document_bbox(document_id: int, session=None):
+    """
+    Get Bboxes for a Document.
+
+    :param document_id: ID of the Document.
+    :param session: Konfuzio session with Retry and Timeout policy
+    :return: List of Bboxes of characters in the Document
+    """
+    if session is None:
+        session = konfuzio_session()
+    if hasattr(session, 'host'):
+        host = session.host
+    else:
+        host = None
+    url = get_document_bbox_url(document_id=document_id, host=host)
+    r = session.get(url)
+    return r.json()
+
+
 def get_page_image(document_id: int, page_id: int, session=None, thumbnail: bool = False):
     """
     Load image of a Page as Bytes.
@@ -447,7 +468,7 @@ def delete_document_annotation(annotation_id: int, session=None):
     if session is None:
         session = konfuzio_session()
     url = get_annotation_url(annotation_id=annotation_id)
-    r = session.delete(url)
+    r = session.patch(url)
     if r.status_code == 200:
         # the text Annotation received negative feedback and copied the Annotation and created a new one
         return json.loads(r.text)['id']
@@ -681,6 +702,24 @@ def get_results_from_segmentation(doc_id: int, project_id: int, session=None) ->
 
     segmentation_result = response.json()
     return segmentation_result
+
+
+def get_project_categories(project_id: int = None, session=None) -> List[Dict]:
+    """
+    Get a list of Categories of a Project.
+
+    :param project_id: ID of the Project.
+    :param session: Konfuzio session with Retry and Timeout policy
+    """
+    if session is None:
+        session = konfuzio_session()
+    if hasattr(session, 'host'):
+        host = session.host
+    else:
+        host = None
+    url = get_project_categories_url(project_id=project_id, host=host)
+    r = session.get(url=url)
+    return r.json()['results']
 
 
 def upload_ai_model(ai_model_path: str, project_id: int = None, category_id: int = None, session=None):

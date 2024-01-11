@@ -341,7 +341,9 @@ def slugify(value):
     return re.sub(r'[-\s\:\.]+', '-', value).replace('-_', '_')
 
 
-def amend_file_name(file_name: str, append_text: str = '', append_separator: str = '_', new_extension: str = None) -> str:
+def amend_file_name(
+    file_name: str, append_text: str = '', append_separator: str = '_', new_extension: str = None
+) -> str:
     """
     Append text to a filename in front of extension.
 
@@ -382,7 +384,12 @@ def amend_file_path(file_path: str, append_text: str = '', append_separator: str
     :return: extended path to file
     """
     split_file_path, split_file_name = os.path.split(file_path)
-    new_filename = amend_file_name(file_name=split_file_name, append_text=append_text, append_separator=append_separator, new_extension=new_extension)
+    new_filename = amend_file_name(
+        file_name=split_file_name,
+        append_text=append_text,
+        append_separator=append_separator,
+        new_extension=new_extension,
+    )
     return os.path.join(split_file_path, new_filename)
 
 
@@ -876,18 +883,18 @@ def get_spans_from_bbox(selection_bbox: 'Bbox') -> List['Span']:
     ]
     selected_bboxes = sorted(selected_bboxes, key=lambda x: x['char_index'])
 
-    # iterate over each line_number (or bottom, depending on group_by) and all of the character
+    # iterate over each line_number (or bottom, depending on group_by) and all the character
     # bboxes that have the same line_number (or bottom)
     spans = []
-    for _, line_char_bboxes in itertools.groupby(selected_bboxes, lambda x: x['line_number']):
-        # remove space chars from the line selection so they don't interfere with the merging of bboxes
+    for _, line_char_bboxes in itertools.groupby(selected_bboxes, lambda x: x['line_index']):
+        # remove space chars from the line selection, so they don't interfere with the merging of bboxes
         # (a bbox should never start with a space char)
         trimmed_line_char_bboxes = [char for char in line_char_bboxes if not char['text'].isspace()]
 
         if len(trimmed_line_char_bboxes) == 0:
             continue
 
-        # combine all of the found character bboxes on a given line and calculate their combined x0, x1, etc. values
+        # combine all the found character bboxes on a given line and calculate their combined x0, x1, etc. values
         start_offset = min(char_bbox['char_index'] for char_bbox in trimmed_line_char_bboxes)
         end_offset = max(char_bbox['char_index'] for char_bbox in trimmed_line_char_bboxes)
         span = Span(start_offset=start_offset, end_offset=end_offset + 1, document=selection_bbox.page.document)

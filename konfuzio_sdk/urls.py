@@ -336,6 +336,26 @@ def get_annotation_url(annotation_id: int, host: str = None) -> str:
     return f'{host}/api/v3/annotations/{annotation_id}/'
 
 
+# CATEGORIES
+
+
+def get_project_categories_url(project_id: int, limit: int = 1000, host: str = None) -> str:
+    """
+    Get a URL to access a Project's Categories.
+
+    :param project_id: A Project to fetch Categories from.
+    :param limit: A maximum number of Categories to fetch.
+    :param host: Konfuzio host
+    :return: URL to access a Project's Categories
+    """
+    if host is None:
+        host = KONFUZIO_HOST
+    return f'{host}/api/v3/categories/?project={project_id}&limit={limit}'
+
+
+# AI MODELS
+
+
 def get_create_ai_model_url(ai_type: str, host: str = None) -> str:
     """
     Get url to create new AiModel.
