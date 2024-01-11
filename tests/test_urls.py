@@ -11,6 +11,7 @@ from konfuzio_sdk.urls import (
     get_document_original_file_url,
     get_document_bbox_url,
     get_project_url,
+    get_project_labels_url,
     get_document_segmentation_details_url,
     get_document_url,
     get_label_url,
@@ -24,6 +25,7 @@ from konfuzio_sdk.urls import (
     get_update_ai_model_url,
     get_ai_model_url,
     get_ai_model_download_url,
+    get_project_label_sets_url,
 )
 
 
@@ -47,7 +49,7 @@ class TestUrls(unittest.TestCase):
 
     def test_get_projects_list_url(self):
         """Test function used to generate url to list all the Projects available for the user."""
-        projects_list_url = f"{KONFUZIO_HOST}/api/v3/projects/"
+        projects_list_url = f"{KONFUZIO_HOST}/api/v3/projects/?limit=1000"
         self.assertEqual(get_projects_list_url(), projects_list_url)
 
     def test_get_project_url(self):
@@ -109,10 +111,20 @@ class TestUrls(unittest.TestCase):
         labels_url = f"{KONFUZIO_HOST}/api/v3/labels/"
         self.assertEqual(get_labels_url(), labels_url)
 
+    def test_get_project_labels_url(self):
+        """Test function used to generate URL to list all Labels in a Project."""
+        labels_url = f"{KONFUZIO_HOST}/api/v3/labels/?project={TEST_PROJECT_ID}&limit=1000"
+        self.assertEqual(get_project_labels_url(project_id=TEST_PROJECT_ID), labels_url)
+
     def test_get_label_url(self):
         """Test function used to generate url to access a label."""
         label_url = f"{KONFUZIO_HOST}/api/v3/labels/{LABEL_ID}/"
         self.assertEqual(get_label_url(label_id=LABEL_ID), label_url)
+
+    def test_get_project_label_sets_url(self):
+        """Test function used to generate URL to access all Label Sets in a Project."""
+        label_sets_url = f"{KONFUZIO_HOST}/api/v3/label-sets/?project={TEST_PROJECT_ID}&limit=1000"
+        self.assertEqual(get_project_label_sets_url(project_id=TEST_PROJECT_ID), label_sets_url)
 
     def test_get_annotation_url(self):
         """Test function used to generate url to access an Annotation of a document."""

@@ -23,7 +23,7 @@ from konfuzio_sdk.api import (
     konfuzio_session,
     download_file_konfuzio_api,
     get_meta_of_files,
-    get_project_details,
+    get_project_label_sets,
     post_document_annotation,
     get_document_details,
     update_document_konfuzio_api,
@@ -34,6 +34,7 @@ from konfuzio_sdk.api import (
     get_results_from_segmentation,
     get_all_project_ais,
     export_ai_models,
+    get_project_labels,
 )
 from konfuzio_sdk.normalize import normalize
 from konfuzio_sdk.regex import get_best_regex, regex_matches, suggest_regex_for_string, merge_regex
@@ -803,6 +804,9 @@ class LabelSet(Data):
             self.categories = []
         elif not categories and "default_section_labels" in kwargs:
             self._default_of_label_set_ids = kwargs["default_section_labels"]
+            self.categories = []
+        elif isinstance(categories, list) and all(isinstance(category, dict) for category in categories):
+            self._default_of_label_set_ids = [category['id'] for category in categories]
             self.categories = []
         else:
             self._default_of_label_set_ids = []
@@ -4037,11 +4041,12 @@ class Project(Data):
 
     def write_project_files(self):
         """Overwrite files with Project, Label, Label Set information."""
-        data = get_project_details(project_id=self.id_, session=self.session)
+        get_labels = get_project_labels(project_id=self.id_, session=self.session)
+        get_label_sets = get_project_label_sets(project_id=self.id_, session=self.session)
         with open(self.label_sets_file_path, "w") as f:
-            json.dump(data['section_labels'], f, indent=2, sort_keys=True)
+            json.dump(get_label_sets['results'], f, indent=2, sort_keys=True)
         with open(self.labels_file_path, "w") as f:
-            json.dump(data['labels'], f, indent=2, sort_keys=True)
+            json.dump(get_labels['results'], f, indent=2, sort_keys=True)
 
         self.write_meta_of_files()
 
@@ -4163,6 +4168,10 @@ class Project(Data):
             if "NO_CATEGORY" not in [category.name for category in self.categories]:
                 self.no_category = Category(project=self, id_=0, name_clean="NO_CATEGORY", name="NO_CATEGORY")
             for label_set_data in label_sets_data:
+                label_set_data.pop("project", None)
+                label_ids = [label['id'] for label in label_set_data['labels']]
+                label_set_data.pop("labels", None)
+                label_set_data["labels"] = label_ids
                 label_set = LabelSet(project=self, id_=label_set_data['id'], **label_set_data)
                 if label_set.is_default:
                     category = Category(project=self, id_=label_set_data['id'], **label_set_data)
@@ -4187,6 +4196,7 @@ class Project(Data):
             for label_data in labels_data:
                 # Remove the Project from label_data
                 label_data.pop("project", None)
+                label_data.pop("label_sets", None)
                 Label(project=self, id_=label_data['id'], **label_data)
 
         return self._labels

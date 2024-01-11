@@ -31,6 +31,8 @@ from konfuzio_sdk.api import (
     TimeoutHTTPAdapter,
     get_page_image,
     get_all_project_ais,
+    get_project_labels,
+    get_project_label_sets,
 )
 from konfuzio_sdk.data import Project, Bbox, Span
 from konfuzio_sdk.utils import get_spans_from_bbox
@@ -46,15 +48,21 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         """Test to get Document details."""
         data = get_project_list()
         assert TEST_PROJECT_ID in [prj["id"] for prj in data["results"]]
-        assert data["results"].keys() == {
-            'id',
-            'name',
-            'labels',
-            'section_labels',
-            'storage_name',
-            'priority_processing',
-            'ocr_method',
-        }
+        assert set(data["results"][0]) == set(
+            [
+                'id',
+                'name',
+                "storage_name",
+                "priority_processing",
+                "ocr_method",
+                "auto_rotate_documents",
+                "category_ai_model_parameters",
+                "category_ai",
+                "decimal_separator",
+                "auto_delete_documents_after_days",
+                "enable_translated_strings",
+            ]
+        )
 
     def test_project_details(self):
         """Test to get Document details."""
@@ -62,11 +70,15 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         assert data.keys() == {
             'id',
             'name',
-            'labels',
-            'section_labels',
             'storage_name',
             'priority_processing',
             'ocr_method',
+            'auto_rotate_documents',
+            'category_ai_model_parameters',
+            'category_ai',
+            'decimal_separator',
+            'auto_delete_documents_after_days',
+            'enable_translated_strings',
         }
 
     def test_get_meta_of_files_multiple_pages(self):
@@ -210,6 +222,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         """Get meta information from Documents in the Project."""
         sorted_documents = get_meta_of_files(project_id=TEST_PROJECT_ID)
         sorted_dataset_documents = [x for x in sorted_documents if x['dataset_status'] in [2, 3]]
+
         self.assertEqual(26 + 3, len(sorted_dataset_documents))
 
     def test_upload_file_konfuzio_api_1(self):
@@ -346,7 +359,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
     def test_get_project_labels(self):
         """Download Labels from API for a Project."""
-        label_ids = [label["id"] for label in get_project_details(project_id=TEST_PROJECT_ID)['labels']]
+        label_ids = [label["id"] for label in get_project_labels(project_id=TEST_PROJECT_ID)['results']]
         assert set(label_ids) == {
             858,
             859,
@@ -368,14 +381,18 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             12503,
         }
 
+    def test_get_project_label_sets(self):
+        """Test getting all Label Sets of a Project."""
+        label_set_ids = [label_set["id"] for label_set in get_project_label_sets(project_id=TEST_PROJECT_ID)['results']]
+        assert label_set_ids == [64, 3706, 3686, 3707]
+
     def test_download_office_file(self):
         """Test to download the original version of an Office file."""
         download_file_konfuzio_api(257244, ocr=False)
 
     def test_download_image(self):
         """Test to download an image of a Page."""
-        document = Project(id_=TEST_PROJECT_ID).get_document_by_id(44823)
-        assert type(get_page_image(document_id=document.id_, page_id=document.get_page_by_index(0).number)) is bytes
+        assert type(get_page_image(document_id=TEST_DOCUMENT_ID, page_id=1)) is bytes
 
     def test_get_results_from_segmentation(self):
         """Download segmentation results."""

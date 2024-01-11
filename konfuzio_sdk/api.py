@@ -20,6 +20,7 @@ from konfuzio_sdk.urls import (
     get_projects_list_url,
     get_document_details_url,
     get_project_url,
+    get_project_labels_url,
     get_document_ocr_file_url,
     get_document_original_file_url,
     get_documents_meta_url,
@@ -36,6 +37,7 @@ from konfuzio_sdk.urls import (
     get_categorization_ais_list_url,
     get_extraction_ais_list_url,
     get_ai_model_download_url,
+    get_project_label_sets_url,
 )
 from konfuzio_sdk.utils import is_file
 
@@ -189,11 +191,11 @@ def get_project_list(session=None):
 
 def get_project_details(project_id: int, session=None) -> dict:
     """
-    Get Label Sets available in Project.
+    Get Project's metadata.
 
     :param project_id: ID of the Project
     :param session: Konfuzio session with Retry and Timeout policy
-    :return: Sorted Label Sets.
+    :return: Project metadata
     """
     if session is None:
         session = konfuzio_session()
@@ -205,14 +207,46 @@ def get_project_details(project_id: int, session=None) -> dict:
     url = get_project_url(project_id=project_id, host=host)
     r = session.get(url=url)
 
-    if 'section_labels' not in r.json().keys():
-        raise PermissionError(
-            f"You do not have permission to view Label Sets in Project {project_id}. Contact the Project owner."
-        )
-    if 'labels' not in r.json().keys():
-        raise PermissionError(
-            f"You do not have permission to view Labels in Project {project_id}. Contact the Project owner."
-        )
+    return r.json()
+
+
+def get_project_labels(project_id: int, session=None) -> dict:
+    """
+    Get Project's Labels.
+
+    :param project_id: An ID of a Project to get Labels from.
+    :param session: Konfuzio session with Retry and Timeout policy
+    """
+    if session is None:
+        session = konfuzio_session()
+    if hasattr(session, 'host'):
+        host = session.host
+    else:
+        host = None
+
+    url = get_project_labels_url(project_id=project_id, host=host)
+    r = session.get(url=url)
+
+    return r.json()
+
+
+def get_project_label_sets(project_id: int, session=None) -> dict:
+    """
+    Get Project's Label Sets.
+
+    :param project_id: An ID of a Project to get Label Sets from.
+    :param session: Konfuzio session with Retry and Timeout policy
+    """
+    if session is None:
+        session = konfuzio_session()
+    if hasattr(session, 'host'):
+        host = session.host
+    else:
+        host = None
+
+    url = get_project_label_sets_url(project_id=project_id, host=host)
+    r = session.get(url=url)
+
     return r.json()
 
 

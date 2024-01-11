@@ -26,7 +26,7 @@ def get_auth_token_url(host: str = None) -> str:
 # PROJECTS
 
 
-def get_projects_list_url(host: str = None) -> str:
+def get_projects_list_url(limit: int = 1000, host: str = None) -> str:
     """
     Generate URL to list all the Projects available for the user.
 
@@ -35,7 +35,7 @@ def get_projects_list_url(host: str = None) -> str:
     """
     if host is None:
         host = KONFUZIO_HOST
-    return f"{host}/api/v3/projects/"
+    return f"{host}/api/v3/projects/?limit={limit}"
 
 
 def get_project_url(project_id: Union[int, None], host: str = None) -> str:
@@ -251,6 +251,34 @@ def get_labels_url(host: str = None) -> str:
     if host is None:
         host = KONFUZIO_HOST
     return f"{host}/api/v3/labels/"
+
+
+def get_project_labels_url(project_id: int, limit: int = 1000, host: str = None) -> str:
+    """
+    Generate URL to list all Labels within a Project.
+
+    :param project_id: An ID of a Project to list Labels for.
+    :param limit: A number to limit the returned list of Labels.
+    :param host: Konfuzio host
+    :return: URL to list all Labels within a Project.
+    """
+    if host is None:
+        host = KONFUZIO_HOST
+    return f"{host}/api/v3/labels/?project={project_id}&limit={limit}"
+
+
+def get_project_label_sets_url(project_id: int, limit: int = 1000, host: str = None) -> str:
+    """
+    Generate URL to list all Label Sets within a Project.
+
+    :param project_id: An ID of a Project to list Label Sets for.
+    :param limit: A number to limit the returned list of Label Sets.
+    :param host: Konfuzio host
+    :return: URL to list all Label Sets within a Project.
+    """
+    if host is None:
+        host = KONFUZIO_HOST
+    return f"{host}/api/v3/label-sets/?project={project_id}&limit={limit}"
 
 
 def get_label_url(label_id: int, host: str = None) -> str:
