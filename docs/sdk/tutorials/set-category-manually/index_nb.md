@@ -49,6 +49,7 @@ project = Project(id_=YOUR_PROJECT_ID)
 my_category = project.get_category_by_id(YOUR_CATEGORY_ID)
 my_document = Document(text="My text.", project=project, category=my_category)
 assert my_document.category == my_category
+print(my_document.category)
 ```
 
 You can also use `Document.set_category` to set a Document’s Category after it has been initialized. This will count as if a human manually revised it.
@@ -62,6 +63,7 @@ assert document.category == project.no_category
 document.set_category(my_category)
 assert document.category == my_category
 assert document.category_is_revised is True
+print(document.category)
 ```
 
 Each Page's Category will also be changed to a Category set to this Document.
@@ -69,6 +71,7 @@ Each Page's Category will also be changed to a Category set to this Document.
 ```python
 for page in document.pages():
     assert page.category == my_category
+    print(page.category)
 ```
 
 If a Document is initialized with no Category, it will automatically be set to NO_CATEGORY. Another Category can be manually set later.
