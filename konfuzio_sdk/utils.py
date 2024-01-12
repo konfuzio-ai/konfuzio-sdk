@@ -527,6 +527,7 @@ def merge_bboxes(bboxes: list):
     :return: Merged bounding box.
     """
     warn('Method needs testing and revision. Please create a Ticket if you use it.', DeprecationWarning, stacklevel=2)
+    # the issue is there: https://git.konfuzio.com/konfuzio/objectives/-/issues/9333
     merge_bbox = {
         "x0": min([b['x0'] for b in bboxes]),
         "x1": max([b['x1'] for b in bboxes]),

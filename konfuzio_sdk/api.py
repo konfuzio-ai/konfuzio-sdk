@@ -436,15 +436,14 @@ def post_document_annotation(
         'label': label_id,
         'revised': revised,
         'confidence': confidence,
-        "set_reference": 0,  # reserved for creating multiple Annotations, not applicable here
         'is_correct': is_correct,
         "origin": "api.v3",
         "span": spans,
     }
 
-    if annotation_set_id:
+    if annotation_set_id is not None:
         data['annotation_set'] = annotation_set_id
-    elif label_set_id:
+    elif label_set_id is not None:
         data['label_set'] = label_set_id
 
     if custom_bboxes is not None:

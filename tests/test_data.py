@@ -209,7 +209,7 @@ class TestOnlineProject(unittest.TestCase):
             accuracy=1.0,
             is_correct=True,
         )
-        annotation.save()
+        annotation.save(annotation_set_id=annotation.annotation_set.id_)
         assert annotation in doc.annotations()
         doc.update()  # redownload Document information to check that the Annotation was saved online
         assert annotation in doc.annotations()
@@ -343,7 +343,7 @@ class TestOnlineProject(unittest.TestCase):
         assert doc.dataset_status == 1
         assert doc.assignee is None
 
-        with pytest.raises(HTTPError, match="You cannot delete documents which are part of a dataset"):
+        with pytest.raises(HTTPError, match="You cannot delete documents which are part of a dataset."):
             # Cannot delete Document with dataset_status != 0
             doc.delete(delete_online=True)
 

@@ -2423,7 +2423,7 @@ class Annotation(Data):
         else:
             return None
 
-    def save(self, document_annotations: list = None) -> bool:
+    def save(self, label_set_id=None, annotation_set_id=None, document_annotations: list = None) -> bool:
         """
         Save Annotation online.
 
@@ -2437,6 +2437,9 @@ class Annotation(Data):
         The update can be done after the request (per annotation) or the updated Annotations can be passed as input
         of the function (advisable when dealing with big Documents or Documents with many Annotations).
 
+        Specify label_set_id if you want to create an Annotation belonging to a new Annotation Set. Specify
+        annotation_set_id if you want to add an Annotation to an existing Annotation Set. Do not specify both of them.
+
         :param document_annotations: Annotations in the Document (list)
         :return: True if new Annotation was created
         """
@@ -2445,27 +2448,20 @@ class Annotation(Data):
         if self.document.category == self.document.project.no_category:
             raise ValueError(f"You cannot save Annotations of Documents with {self.document.category}.")
         new_annotation_added = False
-        if not self.label_set:
-            label_set_id = None
-        else:
-            label_set_id = self.label_set.id_
+
         if self.is_online:
             raise ValueError(f"You cannot update Annotations once saved online: {self.get_link()}")
             # update_annotation(id_=self.id_, document_id=self.document.id_, project_id=self.project.id_)
 
         if not self.is_online:
-            annotation_set_id = self.annotation_set.id_ if self.annotation_set else None
             response = post_document_annotation(
-                project_id=self.document.project.id_,
                 document_id=self.document.id_,
                 label_id=self.label.id_,
                 label_set_id=label_set_id,
                 confidence=self.confidence,
                 is_correct=self.is_correct,
                 revised=self.revised,
-                annotation_set=annotation_set_id,
-                bboxes=self.bboxes,
-                page_number=self.page_number,
+                annotation_set_id=annotation_set_id,
                 session=self.document.project.session,
                 spans=self.spans,
             )
@@ -2568,9 +2564,7 @@ class Annotation(Data):
         :param delete_online: Whether the Annotation is deleted online or only locally.
         """
         if self.document.is_online and delete_online:
-            delete_document_annotation(
-                self.document.id_, self.id_, self.document.project.id_, session=self.document.project.session
-            )
+            delete_document_annotation(annotation_id=self.id_, session=self.document.project.session)
             self.document.update()
         else:
             del self.document._annotations[(tuple(sorted(self._spans.keys())), self.label.name)]
@@ -2839,18 +2833,22 @@ class Document(Data):
         new_document_id = response['id']
 
         if sync:
-            if response['status'][0] == 2:
-                logger.debug(f"Document status code {response['status'][0]}: {response['status'][1]}")
+            status = [
+                response['status_data'],
+                [status for status in dir(Document) if getattr(Document, status) == response['status_data']][0],
+            ]
+            if status[0] == 2:
+                logger.debug(f"Document status code {status[0]}: DONE")
             else:
-                logger.warning(f"Document status code {response['status'][0]}: {response['status'][1]}")
+                logger.warning(f"Document status code {status[0]}: {status[1]}")
             assert project.id_ == response['project'], "Project id_ of uploaded file does not match"
             document = Document(
                 id_=new_document_id,
                 project=project,
                 update=True,
-                category_template=category_id if category_id else response['category_template'],
+                category_template=category_id if category_id else response['category'],
                 text=response['text'],
-                status=response['status'],
+                status=status,
                 data_file_name=response['data_file_name'],
                 file_url=response['file_url'],
                 dataset_status=dataset_status,
