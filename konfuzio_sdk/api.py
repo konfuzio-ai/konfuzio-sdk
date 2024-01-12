@@ -435,7 +435,7 @@ def post_document_annotation(
         'document': document_id,
         'label': label_id,
         'revised': revised,
-        'accuracy': confidence,
+        'confidence': confidence,
         "set_reference": 0,  # reserved for creating multiple Annotations, not applicable here
         'is_correct': is_correct,
         "origin": "api.v3",
@@ -457,18 +457,34 @@ def post_document_annotation(
     return r
 
 
-def delete_document_annotation(annotation_id: int, session=None):
+def delete_document_annotation(annotation_id: int, session=None, **kwargs):
     """
     Delete a given Annotation of the given document.
+
+    For AI training purposes, we recommend specifying 'revised': true, 'is_correct': false so that the Annotation is
+    not removed permanently. If you wish to remove an Annotation permanently, do not specify them.
 
     :param annotation_id: ID of the annotation
     :param session: Konfuzio session with Retry and Timeout policy
     :return: Response status.
     """
+    is_correct = kwargs.get('is_correct', None)
+    revised = kwargs.get('revised', None)
+
+    data = {'annotation_id': annotation_id}
+
+    if is_correct:
+        data['is_correct'] = is_correct
+    if revised:
+        data['revised'] = revised
+
     if session is None:
         session = konfuzio_session()
     url = get_annotation_url(annotation_id=annotation_id)
-    r = session.patch(url)
+    if is_correct is not None and revised is not None:
+        r = session.patch(url=url, json=data)
+    else:
+        r = session.delete(url=url)
     if r.status_code == 200:
         # the text Annotation received negative feedback and copied the Annotation and created a new one
         return json.loads(r.text)['id']

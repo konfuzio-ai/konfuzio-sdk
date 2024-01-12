@@ -272,32 +272,34 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             {"page_index": 0, "x0": 197.76, "x1": 233, "y0": 495, "y1": 508},
         ]
         document = Project(id_=TEST_PROJECT_ID, strict_data_validation=False).get_document_by_id(TEST_DOCUMENT_ID + 11)
+        document.update()
+        spans = get_spans_from_bbox(
+            selection_bbox=Bbox(
+                x0=bboxes[0]['x0'],
+                x1=bboxes[0]['x1'],
+                y0=bboxes[0]['y0'],
+                y1=bboxes[0]['y1'],
+                page=document.pages()[0],
+            )
+        ) + get_spans_from_bbox(
+            selection_bbox=Bbox(
+                x0=bboxes[1]['x0'],
+                x1=bboxes[1]['x1'],
+                y0=bboxes[1]['y0'],
+                y1=bboxes[1]['y1'],
+                page=document.pages()[0],
+            )
+        )
         response = post_document_annotation(
             document_id=TEST_DOCUMENT_ID + 11,
-            confidence=None,
+            confidence=0.01,
             label_id=label_id,
             label_set_id=label_set_id,
             revised=False,
             is_correct=True,
-            spans=get_spans_from_bbox(
-                selection_bbox=Bbox(
-                    x0=bboxes[0]['x0'],
-                    x1=bboxes[0]['x1'],
-                    y0=bboxes[0]['y0'],
-                    y1=bboxes[0]['y1'],
-                    page=document.pages()[0],
-                )
-            )
-            + get_spans_from_bbox(
-                selection_bbox=Bbox(
-                    x0=bboxes[1]['x0'],
-                    x1=bboxes[1]['x1'],
-                    y0=bboxes[1]['y0'],
-                    y1=bboxes[1]['y1'],
-                    page=document.pages()[0],
-                )
-            ),
+            spans=spans,
         )
+
         assert response.status_code == 201
         annotation = json.loads(response.text)
         assert delete_document_annotation(annotation['id'])
@@ -356,9 +358,9 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         annotations = get_document_annotations(TEST_DOCUMENT_ID)['results']
         assert annotation['id'] in [annotation['id'] for annotation in annotations]
         # delete the annotation, i.e. change its status from feedback required to negative
-        negative_id = delete_document_annotation(annotation['id'])
+        negative_id = delete_document_annotation(annotation['id'], is_correct=False, revised=True)
         # delete it a second time to remove this Annotation from the feedback stored as negative
-        assert delete_document_annotation(negative_id)
+        assert delete_document_annotation(negative_id).status_code == 204
 
     def test_get_project_labels(self):
         """Download Labels from API for a Project."""
