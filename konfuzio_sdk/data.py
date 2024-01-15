@@ -468,6 +468,11 @@ class Page(Data):
                     self.copy_of_id
                 )
 
+    def annotation_sets(self) -> List['AnnotationSet']:
+        """Show all Annotation Sets related to Annotations of the Page."""
+        page_annotations = self.annotations()
+        return list(set([annotation.annotation_set for annotation in page_annotations]))
+
 
 class BboxValidationTypes(Enum):
     """Define validation strictness for bounding boxes.

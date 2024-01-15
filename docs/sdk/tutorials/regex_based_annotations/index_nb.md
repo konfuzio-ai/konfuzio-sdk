@@ -52,6 +52,8 @@ label_name = "Lohnart"
 
 my_label = my_project.get_label_by_name(label_name)
 label_set = my_label.label_sets[0]
+print(my_label)
+print(label_set)
 ```
 
 ### Get a Document and find matches of a string in it
@@ -62,6 +64,7 @@ We fetch the first Document in the Project and search for the matches of the wor
 document = my_project.documents[0]
 
 matches_locations = [(m.start(0), m.end(0)) for m in re.finditer(input_expression, document.text)]
+print(matches_locations)
 ```
 
 ### Create the Annotations

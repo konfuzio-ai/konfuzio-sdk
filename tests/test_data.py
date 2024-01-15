@@ -672,6 +672,13 @@ class TestOfflineExampleData(unittest.TestCase):
         page = document.get_page_by_id(1923)
         assert page == document.pages()[0]
 
+    def test_page_annotation_sets(self):
+        """Test viewing Annotation Sets of Annotations present at the Page."""
+        document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        page = document.pages()[0]
+        annotation_sets = page.annotation_sets()
+        assert len(annotation_sets) == 5
+
 
 class TestEqualityAnnotation(unittest.TestCase):
     """Test the equality of Annotations."""
