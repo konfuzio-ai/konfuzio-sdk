@@ -105,9 +105,10 @@ class TestOnlineProject(unittest.TestCase):
         self.assertEqual(78, doc.annotations()[0].spans[0].end_offset)
         self.assertEqual(159, doc.annotations()[0].spans[1].start_offset)
         self.assertEqual(169, doc.annotations()[0].spans[1].end_offset)
-        self.assertEqual(len(doc.annotations()), 19)
+        self.assertEqual(len(doc.annotations()), 21)
         # helm: 21.06.2022 changed from 21 to 19 as someone added (?) two annotations?
         # todo check this number, the offline project was still working fine for all evaluation tests
+        # 15.01.2024 reverted to 21 because of changes in testing api.py - creation of multiline annotations
         self.assertTrue(doc.annotations()[0].is_online)
         with self.assertRaises(ValueError) as context:
             doc.annotations()[0].save()
