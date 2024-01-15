@@ -23,7 +23,6 @@ from konfuzio_sdk.api import (
     konfuzio_session,
     download_file_konfuzio_api,
     get_meta_of_files,
-    get_project_label_sets,
     post_document_annotation,
     get_document_details,
     update_document_konfuzio_api,
@@ -34,7 +33,6 @@ from konfuzio_sdk.api import (
     get_results_from_segmentation,
     get_all_project_ais,
     export_ai_models,
-    get_project_labels,
     get_project_categories,
     get_document_annotations,
     get_document_bbox,
@@ -477,7 +475,8 @@ class Page(Data):
 
 
 class BboxValidationTypes(Enum):
-    """Define validation strictness for bounding boxes.
+    """
+    Define validation strictness for Bounding Boxes.
 
     For more details see the `Bbox` class.
     """
@@ -2600,14 +2599,13 @@ class Annotation(Data):
         self._tokens = []
 
 
-class Document(Data):
+class DocumentStatuses(Enum):
     """
-    Access the information about one Document, which is available online.
+    Define statuses of a Document's processing.
 
-    For more details see https://dev.konfuzio.com/sdk/explanations.html#document-concept
+    For more details see Document class.
     """
 
-    # Define the status of a Document's processing
     QUEUING_FOR_OCR = 0
     OCR_IN_PROGRESS = 10
     QUEUING_FOR_EXTRACTION = 1
@@ -2619,6 +2617,14 @@ class Document(Data):
     WAITING_FOR_SPLITTING_CONFIRMATION = 41
     DONE = 2
     COULD_NOT_BE_PROCESSED = 111
+
+
+class Document(Data):
+    """
+    Access the information about one Document, which is available online.
+
+    For more details see https://dev.konfuzio.com/sdk/explanations.html#document-concept
+    """
 
     def __init__(
         self,
@@ -2835,10 +2841,10 @@ class Document(Data):
         if sync:
             status = [
                 response['status_data'],
-                [status for status in dir(Document) if getattr(Document, status) == response['status_data']][0],
+                [status.name for status in DocumentStatuses if status.value == response['status_data']][0],
             ]
             if status[0] == 2:
-                logger.debug(f"Document status code {status[0]}: DONE")
+                logger.debug(f"Document status code {status[0]}: {status[1]}")
             else:
                 logger.warning(f"Document status code {status[0]}: {status[1]}")
             assert project.id_ == response['project'], "Project id_ of uploaded file does not match"
@@ -3342,7 +3348,9 @@ class Document(Data):
         else:
             file_path = self.file_path
 
-        if self.status == Document.DONE and (not file_path or not is_file(file_path, raise_exception=False) or update):
+        if self.status == DocumentStatuses.DONE.value and (
+            not file_path or not is_file(file_path, raise_exception=False) or update
+        ):
             pdf_content = download_file_konfuzio_api(self.id_, ocr=ocr_version, session=self.project.session)
             with open(file_path, "wb") as f:
                 f.write(pdf_content)
@@ -3551,7 +3559,7 @@ class Document(Data):
         elif is_file(self.bbox_file_path, raise_exception=False):
             with zipfile.ZipFile(self.bbox_file_path, "r") as archive:
                 bbox = json.loads(archive.read('bbox.json5'))
-        elif self.is_online and self.status and self.status == Document.DONE:
+        elif self.is_online and self.status and self.status == DocumentStatuses.DONE.value:
             # todo check for self.project.id_ and self.id_ and ?
             logger.info(f'Start downloading bbox files of {len(self.text)} characters for {self}.')
             bbox = get_document_bbox(document_id=self.id_, session=self.project.session)['bbox']
@@ -4042,14 +4050,12 @@ class Project(Data):
         """Return maximum memory used by AI models."""
         return self._max_ram
 
-    def write_project_files(self):
+    def write_project_files(self, labels, label_sets):
         """Overwrite files with Project, Label, Label Set information."""
-        get_labels = get_project_labels(project_id=self.id_, session=self.session)
-        get_label_sets = get_project_label_sets(project_id=self.id_, session=self.session)
         with open(self.label_sets_file_path, "w") as f:
-            json.dump(get_label_sets['results'], f, indent=2, sort_keys=True)
+            json.dump(label_sets['results'], f, indent=2, sort_keys=True)
         with open(self.labels_file_path, "w") as f:
-            json.dump(get_labels['results'], f, indent=2, sort_keys=True)
+            json.dump(labels['results'], f, indent=2, sort_keys=True)
 
         self.write_meta_of_files()
 
@@ -4074,10 +4080,10 @@ class Project(Data):
 
         if self.id_ and (not is_file(self.meta_file_path, raise_exception=False) or update):
             self.write_project_files()
+        self.get_categories(reload=True)
         self.get_meta(reload=True)
         self.get_labels(reload=True)
         self.get_label_sets(reload=True)
-        self.get_categories()
         self.init_or_update_document(from_online=False)
         return self
 
@@ -4143,46 +4149,78 @@ class Project(Data):
             self.get_meta()
         return self._meta_data
 
-    def get_categories(self):
+    def get_categories(self, reload: bool = True):
         """Load Categories for all Label Sets in the Project."""
-        for label_set in self.label_sets:
-            if label_set.is_default:
-                # the _default_of_label_set_ids are the Label Sets used by the Category
-                pass
-            else:
-                # the _default_of_label_set_ids are the Categories the Label Set is used in
-                for label_set_id in label_set._default_of_label_set_ids:
-                    category = self.get_category_by_id(label_set_id)
-                    if category not in label_set.categories:
-                        label_set.add_category(category)  # The Label Set is linked to a Category it created
-                    if label_set not in category.label_sets:
-                        category.add_label_set(label_set)
-
-    def get_label_sets(self, reload=False):
-        """Get LabelSets in the Project."""
-        if not self._label_sets or reload:
-
-            self._label_sets = []  # clean up Label Sets to not create duplicates
+        if reload:
             self.categories = []  # clean up Labels to not create duplicates
 
             # adding a NO_CATEGORY at this step because we need to preserve it after Project is updated
             if "NO_CATEGORY" not in [category.name for category in self.categories]:
                 self.no_category = Category(project=self, id_=0, name_clean="NO_CATEGORY", name="NO_CATEGORY")
             categories_and_label_data = get_project_categories(project_id=self.id_)
+
             for category in categories_and_label_data:
                 cur_category = Category(project=self, id_=category['id'], name=category['name'])
-                for label_set_data in category['schema']:
-                    cur_labels = label_set_data['labels']
-                    label_set_data.pop('labels', None)
-                    label_set = LabelSet(project=self, id_=label_set_data['id'], **label_set_data)
+                for label_data in category['schema']:
+                    cur_labels = label_data['labels']
+                    label_data.pop('labels', None)
+                    label_set = LabelSet(project=self, id_=label_data['id'], **label_data)
                     for cur_label in cur_labels:
-                        label_set.labels.append(self.get_label_by_id(cur_label['id']))
-                        self.get_label_by_id(cur_label['id']).label_sets.append(label_set)
+                        if cur_label['name'] not in [label.name for label in self.labels]:
+                            _ = Label(project=self, id_=cur_label['id'], text=cur_label['name'], **cur_label)
+                            label_set.labels.append(_)
+                            _.label_sets.append(label_set)
                     if label_set.id_ == cur_category.id_:
                         label_set.is_default = True
                     cur_category.label_sets.append(label_set)
                     label_set.categories.append(cur_category)
 
+        #
+        # if not self._labels or reload:
+        #     with open(self.labels_file_path, "r") as f:
+        #         labels_data = json.load(f)
+        #     self._labels = []  # clean up Labels to not create duplicates
+        #     for label_data in labels_data:
+        #         # Remove the Project from label_data
+        #         label_data.pop("project", None)
+        #         label_data.pop("label_sets", None)
+        #         Label(project=self, id_=label_data['id'], text=label_data['name'], **label_data)
+        #
+        # if not self._label_sets or reload:
+        #
+        #
+        #
+        #         for label_set_data in category['schema']:
+        #             cur_labels = label_set_data['labels']
+        #             label_set_data.pop('labels', None)
+        #             label_set = LabelSet(project=self, id_=label_set_data['id'], **label_set_data)
+        #             for cur_label in cur_labels:
+        #                 label_set.labels.append(self.get_label_by_id(cur_label['id']))
+        #                 self.get_label_by_id(cur_label['id']).label_sets.append(label_set)
+        #             if label_set.id_ == cur_category.id_:
+        #                 label_set.is_default = True
+        #             cur_category.label_sets.append(label_set)
+        #             label_set.categories.append(cur_category)
+        #
+        # for label_set in self.label_sets:
+        #     if label_set.is_default:
+        #         # the _default_of_label_set_ids are the Label Sets used by the Category
+        #         pass
+        #     else:
+        #         # the _default_of_label_set_ids are the Categories the Label Set is used in
+        #         for label_set_id in label_set._default_of_label_set_ids:
+        #             category = self.get_category_by_id(label_set_id)
+        #             if category not in label_set.categories:
+        #                 label_set.add_category(category)  # The Label Set is linked to a Category it created
+        #             if label_set not in category.label_sets:
+        #                 category.add_label_set(label_set)
+
+    def get_label_sets(self, reload=False):
+        """Get LabelSets in the Project."""
+        if not self._label_sets or reload:
+            self._label_sets = []  # clean up Label Sets to not create duplicates
+            for cur_label_set in [label_set for category in self.categories for label_set in category.label_sets]:
+                self._label_sets.append(cur_label_set)
         return self._label_sets
 
     @property
@@ -4195,15 +4233,11 @@ class Project(Data):
     def get_labels(self, reload=False) -> List[Label]:
         """Get ID and name of any Label in the Project."""
         if not self._labels or reload:
-            with open(self.labels_file_path, "r") as f:
-                labels_data = json.load(f)
             self._labels = []  # clean up Labels to not create duplicates
-            for label_data in labels_data:
-                # Remove the Project from label_data
-                label_data.pop("project", None)
-                label_data.pop("label_sets", None)
-                Label(project=self, id_=label_data['id'], text=label_data['name'], **label_data)
-
+            for cur_label in [
+                label for category in self.categories for label_set in category.label_sets for label in label_set.labels
+            ]:
+                self._labels.append(cur_label)
         return self._labels
 
     @property
