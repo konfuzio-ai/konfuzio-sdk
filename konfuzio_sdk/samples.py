@@ -1,5 +1,5 @@
 """Provide a hardcoded setup for Project data."""
-from konfuzio_sdk.data import Category, Project, LabelSet, Document, Label, Annotation, Span, AnnotationSet, Page, Bbox
+from konfuzio_sdk.data import Annotation, AnnotationSet, Bbox, Category, Document, Label, LabelSet, Page, Project, Span
 
 
 class LocalTextProject(Project):
@@ -11,22 +11,22 @@ class LocalTextProject(Project):
         """Create basic structure of a Project."""
         super().__init__(id_=None, *args, **kwargs)
         self.set_offline()
-        category = Category(project=self, id_=1, name="CategoryName")
-        default_label_set = LabelSet(id_=1, project=self, name="CategoryName", categories=[category])
+        category = Category(project=self, id_=1, name='CategoryName')
+        default_label_set = LabelSet(id_=1, project=self, name='CategoryName', categories=[category])
         default_label = Label(id_=6, text='DefaultLabelName', project=self, label_sets=[default_label_set])
 
-        category_2 = Category(project=self, id_=2, name="CategoryName 2")
-        default_label_set_2 = LabelSet(id_=2, project=self, name="CategoryName 2", categories=[category_2])
+        category_2 = Category(project=self, id_=2, name='CategoryName 2')
+        default_label_set_2 = LabelSet(id_=2, project=self, name='CategoryName 2', categories=[category_2])
         default_label_2 = Label(id_=7, text='DefaultLabelName 2', project=self, label_sets=[default_label_set_2])
 
-        category_3 = Category(project=self, id_=3, name="FileSplittingCategory 1")
+        category_3 = Category(project=self, id_=3, name='FileSplittingCategory 1')
 
-        category_4 = Category(project=self, id_=4, name="FileSplittingCategory 2")
+        category_4 = Category(project=self, id_=4, name='FileSplittingCategory 2')
 
         label_set = LabelSet(
             id_=3,
             project=self,
-            name="LabelSetName",
+            name='LabelSetName',
             categories=[category, category_2],
             has_multiple_annotation_sets=True,
         )
@@ -34,11 +34,11 @@ class LocalTextProject(Project):
         label_new = Label(id_=5, text='LabelName 2', project=self, label_sets=[label_set])
 
         self.local_none_document = Document(
-            id_=1, project=self, category=category, text="Hi all, I like pizza.", dataset_status=0
+            id_=1, project=self, category=category, text='Hi all, I like pizza.', dataset_status=0
         )
 
         self.local_training_document = Document(
-            id_=None, project=self, category=category, text="Hi all, I like fish.", dataset_status=2
+            id_=None, project=self, category=category, text='Hi all, I like fish.', dataset_status=2
         )
         default_annotation_set = AnnotationSet(
             id_=11, document=self.local_training_document, label_set=default_label_set
@@ -74,7 +74,7 @@ class LocalTextProject(Project):
         )
 
         document_test_a = Document(
-            id_=3, project=self, category=category, text="Hi all, I like fish.", dataset_status=3
+            id_=3, project=self, category=category, text='Hi all, I like fish.', dataset_status=3
         )
         default_annotation_set_test_a = AnnotationSet(id_=13, document=document_test_a, label_set=default_label_set)
         _ = Annotation(
@@ -105,7 +105,7 @@ class LocalTextProject(Project):
             spans=[Span(start_offset=11, end_offset=14)],
         )
 
-        document_test_b = Document(id_=4, project=self, category=category, text="Hi all,", dataset_status=3)
+        document_test_b = Document(id_=4, project=self, category=category, text='Hi all,', dataset_status=3)
         default_annotation_set_test_b = AnnotationSet(id_=15, document=document_test_b, label_set=default_label_set)
         _ = Annotation(
             id_=16,
@@ -128,7 +128,7 @@ class LocalTextProject(Project):
         )
 
         # Category 2
-        document_2 = Document(id_=5, project=self, category=category_2, text="Morning.", dataset_status=2)
+        document_2 = Document(id_=5, project=self, category=category_2, text='Morning.', dataset_status=2)
         default_annotation_set_2 = AnnotationSet(id_=17, document=document_2, label_set=default_label_set_2)
         _ = Annotation(
             id_=18,
@@ -150,7 +150,7 @@ class LocalTextProject(Project):
             spans=[Span(start_offset=0, end_offset=7)],
         )
 
-        document_test_2 = Document(id_=6, project=self, category=category_2, text="Morning.", dataset_status=3)
+        document_test_2 = Document(id_=6, project=self, category=category_2, text='Morning.', dataset_status=3)
         default_annotation_set_test_2 = AnnotationSet(id_=19, document=document_test_2, label_set=default_label_set_2)
         _ = Annotation(
             id_=20,
@@ -488,7 +488,7 @@ a2  s4
 
         text_3 = (
             "Hi all,\nI like bread.\n\fI hope to get everything done soon.\n\fMorning,\n\fI'm glad to see you."
-            "\n\fMorning,"
+            '\n\fMorning,'
         )
         document_3 = Document(id_=9, project=self, category=category_3, text=text_3, dataset_status=3)
         _ = Page(
@@ -544,7 +544,7 @@ a2  s4
         )
         _.is_first_page = True
 
-        text_4 = "Morning,\nI like bread.\n\fI hope to get everything done soon."
+        text_4 = 'Morning,\nI like bread.\n\fI hope to get everything done soon.'
         document_4 = Document(id_=10, project=self, category=category_3, text=text_4, dataset_status=2)
         _ = Page(
             id_=None,
@@ -566,7 +566,7 @@ a2  s4
             copy_of_id=7,
         )
 
-        text_5 = "Morning,\nI like bread.\n\fWhat are your plans for today?"
+        text_5 = 'Morning,\nI like bread.\n\fWhat are your plans for today?'
         document_5 = Document(id_=11, project=self, category=category_3, text=text_5, dataset_status=2)
         _ = Page(
             id_=None,
@@ -609,7 +609,7 @@ a2  s4
             copy_of_id=11,
         )
 
-        text_7 = "Evening,\nI like fish.\n\fHow was your day?"
+        text_7 = 'Evening,\nI like fish.\n\fHow was your day?'
         document_7 = Document(id_=13, project=self, category=category_4, text=text_7, dataset_status=2)
         _ = Page(
             id_=None,
@@ -631,7 +631,7 @@ a2  s4
             copy_of_id=13,
         )
 
-        text_8 = "Hi all,\nI like bread.\nWhat are your plans for today?\nEvening,\nI like it.\nHow was your week?"
+        text_8 = 'Hi all,\nI like bread.\nWhat are your plans for today?\nEvening,\nI like it.\nHow was your week?'
         document_8 = Document(id_=14, project=self, category=category_3, text=text_8, dataset_status=3)
         _ = Page(
             id_=None,
@@ -672,8 +672,8 @@ a2  s4
         )
 
         text_9 = (
-            "Hi all,\nI like bread.\nWhat are your plans for today?\nEvening,\nI like it.\nHow was your week? \n"
-            "Evening,"
+            'Hi all,\nI like bread.\nWhat are your plans for today?\nEvening,\nI like it.\nHow was your week? \n'
+            'Evening,'
         )
         document_9 = Document(id_=15, project=self, category=category_4, text=text_9, dataset_status=3)
         _ = Page(
@@ -724,7 +724,7 @@ a2  s4
         )
         _.is_first_page = True
 
-        text_10 = "Hi all,\nI like bread.\nEvening,\nI like fish."
+        text_10 = 'Hi all,\nI like bread.\nEvening,\nI like fish.'
         document_10 = Document(id_=16, project=self, category=category_4, text=text_10, dataset_status=3)
         _ = Page(
             id_=None,
@@ -745,7 +745,7 @@ a2  s4
             copy_of_id=24,
         )
 
-        text_11 = "Hi all,\nI like bread.\nHow was your week?\n "
+        text_11 = 'Hi all,\nI like bread.\nHow was your week?\n '
         document_11 = Document(id_=17, project=self, category=category_4, text=text_11, dataset_status=3)
         _ = Page(
             id_=None,

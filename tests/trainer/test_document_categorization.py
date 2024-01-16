@@ -2,49 +2,49 @@
 """Test to train a Categorization AI."""
 import logging
 import os
-import pytest
 import sys
 import unittest
 from copy import deepcopy
-import parameterized
-from requests import HTTPError
-from typing import List, Dict
+from typing import Dict, List
 
-from konfuzio_sdk.api import upload_ai_model, update_ai_model, delete_ai_model, konfuzio_session
-from konfuzio_sdk.data import Project, Document, Page
-from konfuzio_sdk.extras import torch, FloatTensor, transformers
+import parameterized
+import pytest
+from requests import HTTPError
+
+from konfuzio_sdk.api import delete_ai_model, konfuzio_session, update_ai_model, upload_ai_model
+from konfuzio_sdk.data import Document, Page, Project
+from konfuzio_sdk.extras import FloatTensor, torch, transformers
 from konfuzio_sdk.settings_importer import is_dependency_installed
-from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, ConnectedTextTokenizer
+from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer, WhitespaceTokenizer
 from konfuzio_sdk.trainer.document_categorization import (
-    NameBasedCategorizationAI,
+    BERT,
+    LSTM,
+    NBOW,
+    VGG,
     AbstractCategorizationModel,
     AbstractTextCategorizationModel,
     CategorizationAI,
+    EfficientNet,
+    ImageModel,
+    MultimodalConcatenate,
+    NameBasedCategorizationAI,
+    NBOWSelfAttention,
+    PageImageCategorizationModel,
     PageMultimodalCategorizationModel,
     PageTextCategorizationModel,
-    PageImageCategorizationModel,
-    MultimodalConcatenate,
-    EfficientNet,
-    VGG,
-    NBOWSelfAttention,
-    NBOW,
-    LSTM,
-    BERT,
-    load_categorization_model,
-    ImageModel,
     TextModel,
     build_categorization_ai_pipeline,
+    load_categorization_model,
 )
 from konfuzio_sdk.trainer.tokenization import PhraseMatcherTokenizer
 from konfuzio_sdk.urls import get_create_ai_model_url
 from tests.variables import (
     OFFLINE_PROJECT,
-    TEST_DOCUMENT_ID,
     TEST_CATEGORIZATION_DOCUMENT_ID,
-    TEST_RECEIPTS_CATEGORY_ID,
+    TEST_DOCUMENT_ID,
     TEST_PAYSLIPS_CATEGORY_ID,
+    TEST_RECEIPTS_CATEGORY_ID,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -132,7 +132,7 @@ class TestNameBasedCategorizationAI(unittest.TestCase):
 
     def test_6a_categorize_document_with_no_pages(self):
         """Test extract Category for a Document without a Page."""
-        document_with_no_pages = Document(project=self.project, text="hello")
+        document_with_no_pages = Document(project=self.project, text='hello')
         result = self.categorization_pipeline.categorize(document=document_with_no_pages)
         assert isinstance(result, Document)
         assert result.category == result.project.no_category
@@ -204,7 +204,7 @@ class TestNameBasedCategorizationAI(unittest.TestCase):
 
     def test_9b_categorize_in_place_document_with_no_pages(self):
         """Test extract Category in place for a Document without a Page."""
-        document_with_no_pages = Document(project=self.project, text="hello")
+        document_with_no_pages = Document(project=self.project, text='hello')
         result = self.categorization_pipeline.categorize(document=document_with_no_pages, inplace=True)
         assert isinstance(result, Document)
         assert result.category == self.project.no_category
@@ -241,6 +241,7 @@ class TestAbstractCategorizationModel(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Initialize the classifier and test setup."""
+
         # DummyClassifier definition
         class DummyClassifier(AbstractCategorizationModel):
             def _valid(self) -> None:
@@ -276,6 +277,7 @@ class TestAbstractTextCategorizationModel(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Initialize the classifier and test setup."""
+
         # DummyClassifier definition
         class DummyTextClassifier(AbstractTextCategorizationModel):
             def _valid(self) -> None:
@@ -310,7 +312,7 @@ class TestAbstractTextCategorizationModel(unittest.TestCase):
         """Test number of features."""
         assert self.classifier.n_features == 64
 
-    @pytest.mark.parametrize("uses_attention", [True, False])
+    @pytest.mark.parametrize('uses_attention', [True, False])
     def test_output(self):
         """Test output shape of the text classifier."""
         text = torch.ones([1, self.classifier.input_dim], dtype=torch.int64)
@@ -367,13 +369,13 @@ class TestTextCategorizationModels(unittest.TestCase):
 
     def test_valid(self) -> None:
         """Test _valid method."""
-        if self.test_name == "nbowselfattention-invalid":
-            with pytest.raises(ValueError, match="must be a multiple of n_heads"):
+        if self.test_name == 'nbowselfattention-invalid':
+            with pytest.raises(ValueError, match='must be a multiple of n_heads'):
                 _ = NBOWSelfAttention(input_dim=self.input_dim, emb_dim=self.emb_dim, n_heads=self.n_heads + 1)
 
     def test_n_features(self) -> None:
         """Test n_features."""
-        if "bert" in self.test_name:
+        if 'bert' in self.test_name:
             # The transformers library stores the number of features in the config dict so no need
             # to check the value
             assert self.text_model._feature_size in self.text_model.bert.config.to_dict()
@@ -445,7 +447,7 @@ class TestTextCategorizationModels(unittest.TestCase):
         (transformers.BertTokenizerFast, BERT, None, None),
     ],
 )
-@pytest.mark.skip(reason="Slow testcases training a Categorization AI on full dataset with multiple configurations.")
+@pytest.mark.skip(reason='Slow testcases training a Categorization AI on full dataset with multiple configurations.')
 class TestAllCategorizationConfigurations(unittest.TestCase):
     """Test trainable CategorizationAI."""
 
