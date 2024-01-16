@@ -3,33 +3,33 @@ import importlib.metadata
 import os
 import unittest
 
+import pytest
+
+from konfuzio_sdk import IMAGE_FILE, OFFICE_FILE, PDF_FILE
+from konfuzio_sdk.data import Annotation, AnnotationSet, Bbox, Category, Document, Label, LabelSet, Project, Span
+from konfuzio_sdk.utils import (
+    amend_file_name,
+    amend_file_path,
+    convert_to_bio_scheme,
+    does_not_raise,
+    exception_or_log_error,
+    get_bbox,
+    get_file_type,
+    get_id,
+    get_missing_offsets,
+    get_sdk_version,
+    get_sentences,
+    get_spans_from_bbox,
+    get_timestamp,
+    is_file,
+    iter_before_and_after,
+    load_image,
+    map_offsets,
+    normalize_memory,
+)
 from tests.variables import (
     OFFLINE_PROJECT,
     TEST_DOCUMENT_ID,
-)
-
-import pytest
-from konfuzio_sdk import IMAGE_FILE, PDF_FILE, OFFICE_FILE
-from konfuzio_sdk.data import Project, Document, Annotation, AnnotationSet, Span, Label, LabelSet, Category, Bbox
-from konfuzio_sdk.utils import (
-    get_id,
-    get_timestamp,
-    is_file,
-    get_file_type,
-    load_image,
-    convert_to_bio_scheme,
-    map_offsets,
-    get_sentences,
-    amend_file_name,
-    amend_file_path,
-    does_not_raise,
-    get_missing_offsets,
-    iter_before_and_after,
-    get_bbox,
-    normalize_memory,
-    exception_or_log_error,
-    get_sdk_version,
-    get_spans_from_bbox,
 )
 
 FOLDER_ROOT = os.path.dirname(os.path.realpath(__file__))
@@ -43,9 +43,9 @@ class TestUtils(unittest.TestCase):
 
     def test_exception_or_log_error(self):
         """Test switching to Log error or raise an exception."""
-        with pytest.raises(NotImplementedError, match="test exception msg"):
-            exception_or_log_error(msg="test exception msg", fail_loudly=True, exception_type=NotImplementedError)
-        exception_or_log_error(msg="test log error msg", fail_loudly=False)
+        with pytest.raises(NotImplementedError, match='test exception msg'):
+            exception_or_log_error(msg='test exception msg', fail_loudly=True, exception_type=NotImplementedError)
+        exception_or_log_error(msg='test log error msg', fail_loudly=False)
 
     def test_get_id(self):
         """Test if the returned unique id_ is an instance of String."""
@@ -111,7 +111,7 @@ class TestUtils(unittest.TestCase):
 
         converted_text = convert_to_bio_scheme(doc)
         assert len(converted_text) == 6
-        assert all([annotation[1] == 'O' for annotation in converted_text])
+        assert all(annotation[1] == 'O' for annotation in converted_text)
 
     def test_convert_to_bio_scheme_no_text(self):
         """Test conversion to BIO scheme without text."""
@@ -119,7 +119,7 @@ class TestUtils(unittest.TestCase):
         category = Category(project=project, id_=1)
         label_set = LabelSet(id_=2, project=project, categories=[category])
         label = Label(text='Organization', project=project, label_sets=[label_set])
-        text = ""
+        text = ''
         document = Document(project, text=text, category=category)
         annotation_set = AnnotationSet(id_=1, project=project, document=document, label_set=label_set)
         _ = Annotation(
@@ -277,7 +277,7 @@ file_name_append_data = [
 ]
 
 
-@pytest.mark.parametrize("file_path, expected_result, expected_error", file_name_append_data)
+@pytest.mark.parametrize('file_path, expected_result, expected_error', file_name_append_data)
 def test_append_text_to_filename(file_path, expected_result, expected_error):
     """Test if we detect the correct file name."""
     with expected_error:
@@ -303,7 +303,7 @@ file_path_append_data = [
 ]
 
 
-@pytest.mark.parametrize("file_path, expected_result, expected_error", file_path_append_data)
+@pytest.mark.parametrize('file_path, expected_result, expected_error', file_path_append_data)
 def test_append_text_to_amend_file_path(file_path, expected_result, expected_error):
     """Test if we detect the correct file path."""
     with expected_error:

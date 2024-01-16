@@ -1,13 +1,13 @@
 """Test base tokenizers."""
 import logging
+import time
 import unittest
 from typing import List
 
 import pandas as pd
 import pytest
-import time
 
-from konfuzio_sdk.data import Project, Annotation, Document, Label, AnnotationSet, LabelSet, Span, Category
+from konfuzio_sdk.data import Annotation, AnnotationSet, Category, Document, Label, LabelSet, Project, Span
 from konfuzio_sdk.tokenizer.base import AbstractTokenizer, ListTokenizer, ProcessingStep
 from konfuzio_sdk.tokenizer.regex import RegexTokenizer, WhitespaceTokenizer
 from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
@@ -23,14 +23,14 @@ class TestProcessingStep(unittest.TestCase):
         """Initialize a processing step."""
         cls.project = Project(id_=None)
         cls.category = Category(project=cls.project, id_=1)
-        cls.document = Document(project=cls.project, category=cls.category, text="Good morning.", id_=1)
+        cls.document = Document(project=cls.project, category=cls.category, text='Good morning.', id_=1)
         cls.tokenizer = WhitespaceTokenizer()
         cls.processing_step = ProcessingStep(tokenizer=cls.tokenizer, document=cls.document, runtime=0.1)
 
     def test_eval_dict(self):
         """Test initialization."""
         processing_eval = self.processing_step.eval_dict()
-        assert processing_eval['tokenizer_name'] == 'WhitespaceTokenizer: \'[^ \\\\n\\\\t\\\\f]+\''
+        assert processing_eval['tokenizer_name'] == "WhitespaceTokenizer: '[^ \\\\n\\\\t\\\\f]+'"
         assert processing_eval['document_id'] == 1
         assert processing_eval['number_of_pages'] == 1
         assert processing_eval['runtime'] == 0.1
@@ -65,7 +65,7 @@ class TestAbstractTokenizer(unittest.TestCase):
         label_set = LabelSet(id_=2, project=cls.project, categories=[cls.category_1, cls.category_2])
         label = Label(id_=3, text='LabelName', project=cls.project, label_sets=[label_set])
 
-        cls.document = Document(project=cls.project, category=cls.category_1, text="Good morning.", dataset_status=3)
+        cls.document = Document(project=cls.project, category=cls.category_1, text='Good morning.', dataset_status=3)
         annotation_set = AnnotationSet(id_=4, document=cls.document, label_set=label_set)
         cls.span = Span(start_offset=0, end_offset=4)
         _ = Annotation(
@@ -77,7 +77,7 @@ class TestAbstractTokenizer(unittest.TestCase):
             spans=[cls.span],
         )
 
-        cls.document_2 = Document(project=cls.project, category=cls.category_2, text="Good day.", dataset_status=3)
+        cls.document_2 = Document(project=cls.project, category=cls.category_2, text='Good day.', dataset_status=3)
         annotation_set_2 = AnnotationSet(id_=5, document=cls.document_2, label_set=label_set)
         cls.span_2 = Span(start_offset=0, end_offset=4)
         _ = Annotation(
@@ -96,7 +96,7 @@ class TestAbstractTokenizer(unittest.TestCase):
 
     def test_string_representation(self):
         """Test string representation."""
-        assert str(self.tokenizer) == "DummyTokenizer"
+        assert str(self.tokenizer) == 'DummyTokenizer'
 
     def test_tokenize_input(self):
         """Test input for the tokenize method."""
@@ -121,7 +121,7 @@ class TestAbstractTokenizer(unittest.TestCase):
 
     def test_evaluate_output_results_with_empty_document(self):
         """Test output for the evaluate method with an empty Document."""
-        document = Document(project=self.project, category=self.category_1, text="")
+        document = Document(project=self.project, category=self.category_1, text='')
         result = self.tokenizer.evaluate(document)
         assert result.shape[0] == 1
         assert result.is_correct[0] is None
@@ -129,7 +129,7 @@ class TestAbstractTokenizer(unittest.TestCase):
 
     def test_processing_runtime_with_empty_document(self):
         """Test the information of the processing runtime with a Document without text."""
-        document = Document(project=self.project, category=self.category_1, text="")
+        document = Document(project=self.project, category=self.category_1, text='')
         self.tokenizer.processing_steps = []
         _ = self.tokenizer.evaluate(document)
         processing = self.tokenizer.get_runtime_info()
@@ -177,10 +177,10 @@ class TestAbstractTokenizer(unittest.TestCase):
         """Test evaluate a Category with a test Documents."""
         result = self.tokenizer.evaluate_dataset(self.category_2.test_documents())
         assert len(result.data) == 2
-        assert result.data.loc[0]["category_id"] == self.category_2.id_
+        assert result.data.loc[0]['category_id'] == self.category_2.id_
 
         # an empty span for the NO_LABEL_SET is always created
-        assert result.data.loc[1]["category_id"] is None
+        assert result.data.loc[1]['category_id'] is None
 
     @unittest.skip(reason='removed narrow implementation to evaluate multiple Documents: evaluate_category')
     def test_evaluate_category_input(self):
@@ -220,8 +220,8 @@ class TestListTokenizer(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Initialize the tokenizer and test setup."""
-        cls.tokenizer_1 = RegexTokenizer(regex="Good")
-        cls.tokenizer_2 = RegexTokenizer(regex="morning")
+        cls.tokenizer_1 = RegexTokenizer(regex='Good')
+        cls.tokenizer_2 = RegexTokenizer(regex='morning')
         cls.tokenizer = ListTokenizer(tokenizers=[cls.tokenizer_1, cls.tokenizer_2])
 
         cls.project = Project(id_=None)
@@ -229,7 +229,7 @@ class TestListTokenizer(unittest.TestCase):
         cls.label_set = LabelSet(id_=2, project=cls.project, categories=[cls.category_1])
         cls.label = Label(id_=3, text='LabelName', project=cls.project, label_sets=[cls.label_set])
 
-        cls.document = Document(project=cls.project, category=cls.category_1, text="Good morning.", dataset_status=3)
+        cls.document = Document(project=cls.project, category=cls.category_1, text='Good morning.', dataset_status=3)
         annotation_set = AnnotationSet(id_=4, document=cls.document, label_set=cls.label_set)
         cls.span_1 = Span(start_offset=0, end_offset=4)
         cls.span_2 = Span(start_offset=5, end_offset=12)
@@ -254,7 +254,7 @@ class TestListTokenizer(unittest.TestCase):
 
         This will result in 0 Spans created by the tokenizer.
         """
-        document = Document(project=self.project, category=self.category_1, text="Good morning.")
+        document = Document(project=self.project, category=self.category_1, text='Good morning.')
         annotation_set = AnnotationSet(id_=1, document=document, label_set=self.label_set)
         span_1 = Span(start_offset=0, end_offset=4)
         span_2 = Span(start_offset=5, end_offset=12)
@@ -274,7 +274,7 @@ class TestListTokenizer(unittest.TestCase):
 
     def test_tokenize_document_no_matching_spans(self):
         """Test tokenize a Document with Annotation with Spans that cannot be found by the tokenizer."""
-        document = Document(project=self.project, category=self.category_1, text="Good morning.")
+        document = Document(project=self.project, category=self.category_1, text='Good morning.')
         annotation_set = AnnotationSet(id_=1, document=document, label_set=self.label_set)
         span_1 = Span(start_offset=0, end_offset=3)
         span_2 = Span(start_offset=5, end_offset=11)
@@ -340,34 +340,34 @@ class TestListTokenizer(unittest.TestCase):
 
     def test_equality_check(self):
         """Test Tokenizer comparison method."""
-        whitespace_regex = RegexTokenizer(regex=r"[^ \n\t\f]+")
-        list_tokenizer_1 = ListTokenizer(tokenizers=[WhitespaceTokenizer(), RegexTokenizer(regex="a")])
-        list_tokenizer_2 = ListTokenizer(tokenizers=[whitespace_regex, RegexTokenizer(regex="a")])
-        list_tokenizer_3 = ListTokenizer(tokenizers=[RegexTokenizer(regex="a"), WhitespaceTokenizer()])
+        whitespace_regex = RegexTokenizer(regex=r'[^ \n\t\f]+')
+        list_tokenizer_1 = ListTokenizer(tokenizers=[WhitespaceTokenizer(), RegexTokenizer(regex='a')])
+        list_tokenizer_2 = ListTokenizer(tokenizers=[whitespace_regex, RegexTokenizer(regex='a')])
+        list_tokenizer_3 = ListTokenizer(tokenizers=[RegexTokenizer(regex='a'), WhitespaceTokenizer()])
 
         assert WhitespaceTokenizer() == whitespace_regex
         assert list_tokenizer_1 == list_tokenizer_2
         assert list_tokenizer_1 != list_tokenizer_3
-        assert RegexTokenizer(regex="a") != RegexTokenizer(regex="b")
+        assert RegexTokenizer(regex='a') != RegexTokenizer(regex='b')
 
     def test_duplicate_check(self):
         """Test handling of Tokenizer duplicates in ListTokenizer."""
         test_tokenizer = ListTokenizer(
             tokenizers=[
                 WhitespaceTokenizer(),
-                RegexTokenizer(regex="a"),
-                RegexTokenizer(regex="b"),
+                RegexTokenizer(regex='a'),
+                RegexTokenizer(regex='b'),
                 WhitespaceTokenizer(),
-                RegexTokenizer(regex="a"),
-                RegexTokenizer(regex=r"[^ \n\t\f]+"),
+                RegexTokenizer(regex='a'),
+                RegexTokenizer(regex=r'[^ \n\t\f]+'),
             ]  # equivalent to WhitespaceTokenizer
         )
 
         assert len(test_tokenizer.tokenizers) == 3
         assert test_tokenizer.tokenizers == [
             WhitespaceTokenizer(),
-            RegexTokenizer(regex="a"),
-            RegexTokenizer(regex="b"),
+            RegexTokenizer(regex='a'),
+            RegexTokenizer(regex='b'),
         ]
 
     def test_processing_runtime_of_list_tokenizer(self):

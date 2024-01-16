@@ -3,7 +3,6 @@ import logging
 import time
 from typing import List
 
-
 from konfuzio_sdk.data import Annotation, Document, Span
 from konfuzio_sdk.regex import regex_matches
 from konfuzio_sdk.tokenizer.base import AbstractTokenizer, ProcessingStep
@@ -22,7 +21,7 @@ class RegexTokenizer(AbstractTokenizer):
 
     def __repr__(self):
         """Return string representation of the class."""
-        return f"{self.__class__.__name__}: {repr(self.regex)}"
+        return f'{self.__class__.__name__}: {repr(self.regex)}'
 
     def __hash__(self):
         """Get unique hash for RegexTokenizer."""
@@ -47,7 +46,10 @@ class RegexTokenizer(AbstractTokenizer):
         for span_info in regex_matches(document.text, self.regex, keep_full_match=False):
             span = Span(start_offset=span_info['start_offset'], end_offset=span_info['end_offset'])
             span.regex_matching.append(self)
-            if (span_info['start_offset'], span_info['end_offset']) not in spans:  # do not use duplicated spans  # todo add test
+            if (
+                span_info['start_offset'],
+                span_info['end_offset'],
+            ) not in spans:  # do not use duplicated spans  # todo add test
                 spans[(span_info['start_offset'], span_info['end_offset'])] = span
 
         # Create a revised = False and is_correct = False (defaults) Annotation
