@@ -1,20 +1,19 @@
 """Generic AI model."""
 import abc
 import bz2
-import cloudpickle
 import itertools
 import logging
 import os
 import pathlib
 import shutil
 import sys
-
-import lz4.frame
-
 from typing import Optional, Union
 
+import cloudpickle
+import lz4.frame
+
 from konfuzio_sdk.data import Data
-from konfuzio_sdk.utils import get_sdk_version, normalize_memory, memory_size_of
+from konfuzio_sdk.utils import get_sdk_version, memory_size_of, normalize_memory
 
 logger = logging.getLogger(__name__)
 
@@ -75,10 +74,10 @@ class BaseModel(metaclass=abc.ABCMeta):
         :raises TypeError: When the loaded pickle isn't recognized as a Konfuzio AI model.
         :return: Extraction AI model.
         """
-        logger.info(f"Starting loading AI model with path {pickle_path}")
+        logger.info(f'Starting loading AI model with path {pickle_path}')
 
         if not os.path.isfile(pickle_path):
-            raise FileNotFoundError("Invalid pickle file path:", pickle_path)
+            raise FileNotFoundError('Invalid pickle file path:', pickle_path)
 
         # The current local id iterator might otherwise be overriden
         prev_local_id = next(Data.id_iter)
@@ -95,38 +94,38 @@ class BaseModel(metaclass=abc.ABCMeta):
                 with bz2.open(pickle_path, 'rb') as file:
                     model = cloudpickle.load(file)
         except OSError:
-            raise OSError(f"Pickle file {pickle_path} data is invalid.")
+            raise OSError(f'Pickle file {pickle_path} data is invalid.')
         except AttributeError as err:
-            if "__forward_module__" in str(err) and '3.9' in sys.version:
-                raise AttributeError("Pickle saved with incompatible Python version.") from err
-            elif "__forward_is_class__" in str(err) and '3.8' in sys.version:
-                raise AttributeError("Pickle saved with incompatible Python version.") from err
+            if '__forward_module__' in str(err) and '3.9' in sys.version:
+                raise AttributeError('Pickle saved with incompatible Python version.') from err
+            elif '__forward_is_class__' in str(err) and '3.8' in sys.version:
+                raise AttributeError('Pickle saved with incompatible Python version.') from err
             raise
         except ValueError as err:
-            if "unsupported pickle protocol: 5" in str(err) and '3.7' in sys.version:
-                raise ValueError("Pickle saved with incompatible Python version.") from err
+            if 'unsupported pickle protocol: 5' in str(err) and '3.7' in sys.version:
+                raise ValueError('Pickle saved with incompatible Python version.') from err
             raise
 
         if hasattr(model, 'python_version'):
-            logger.info(f"Loaded AI model trained with Python {model.python_version}")
+            logger.info(f'Loaded AI model trained with Python {model.python_version}')
         if hasattr(model, 'konfuzio_sdk_version'):
-            logger.info(f"Loaded AI model trained with Konfuzio SDK version {model.konfuzio_sdk_version}")
+            logger.info(f'Loaded AI model trained with Konfuzio SDK version {model.konfuzio_sdk_version}')
 
         max_ram = normalize_memory(max_ram)
         if max_ram and memory_size_of(model) > max_ram:
             logger.error(f"Loaded model's memory use ({memory_size_of(model)}) is greater than max_ram ({max_ram})")
 
-        if not hasattr(model, "name"):
-            raise TypeError("Saved model file needs to be a Konfuzio AbstractExtractionAI instance.")
+        if not hasattr(model, 'name'):
+            raise TypeError('Saved model file needs to be a Konfuzio AbstractExtractionAI instance.')
         elif model.name in {
-            "DocumentAnnotationMultiClassModel",
-            "DocumentEntityMulticlassModel",
-            "SeparateLabelsAnnotationMultiClassModel",
-            "SeparateLabelsEntityMultiClassModel",
+            'DocumentAnnotationMultiClassModel',
+            'DocumentEntityMulticlassModel',
+            'SeparateLabelsAnnotationMultiClassModel',
+            'SeparateLabelsEntityMultiClassModel',
         }:
-            logger.warning(f"Loading legacy {model.name} AI model.")
+            logger.warning(f'Loading legacy {model.name} AI model.')
         else:
-            logger.info(f"Loading {model.name} AI model.")
+            logger.info(f'Loading {model.name} AI model.')
 
         curr_local_id = next(Data.id_iter)
         Data.id_iter = itertools.count(max(prev_local_id, curr_local_id))
@@ -137,7 +136,7 @@ class BaseModel(metaclass=abc.ABCMeta):
         self.project.lose_weight()
         if (
             self.tokenizer is not None
-            and hasattr(self.tokenizer, "lose_weight")
+            and hasattr(self.tokenizer, 'lose_weight')
             and callable(self.tokenizer.lose_weight)
         ):
             self.tokenizer.lose_weight()
@@ -156,7 +155,7 @@ class BaseModel(metaclass=abc.ABCMeta):
         max_ram = normalize_memory(max_ram)
 
         if max_ram and memory_size_of(self) > max_ram:
-            raise MemoryError(f"AI model memory use ({memory_size_of(self)}) exceeds maximum ({max_ram=}).")
+            raise MemoryError(f'AI model memory use ({memory_size_of(self)}) exceeds maximum ({max_ram=}).')
 
     def save(
         self,

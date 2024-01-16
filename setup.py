@@ -2,7 +2,7 @@
 import subprocess
 import sys
 import textwrap
-from os import path, getenv
+from os import getenv, path
 
 import setuptools
 
@@ -37,9 +37,9 @@ if getenv('NIGHTLY_BUILD'):
         .decode('ascii')
         .strip()
     )
-    version = f"{version_number}.dev{last_commit}"
+    version = f'{version_number}.dev{last_commit}'
 else:
-    version = f"{version_number}"
+    version = f'{version_number}'
 
 CURRENT_PYTHON = sys.version_info[:2]
 REQUIRED_PYTHON = (3, 7)
@@ -63,14 +63,14 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setuptools.setup(
-    name="konfuzio_sdk",
+    name='konfuzio_sdk',
     version=version,
     author='Helm & Nagel GmbH',
-    author_email="info@helm-nagel.com",
-    description="Konfuzio Software Development Kit",
+    author_email='info@helm-nagel.com',
+    description='Konfuzio Software Development Kit',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url="https://github.com/konfuzio-ai/konfuzio-sdk/",
+    url='https://github.com/konfuzio-ai/konfuzio-sdk/',
     packages=['konfuzio_sdk', 'konfuzio_sdk.tokenizer', 'konfuzio_sdk.trainer'],
     include_package_data=True,
     entry_points={'console_scripts': ['konfuzio_sdk=konfuzio_sdk.cli:main']},

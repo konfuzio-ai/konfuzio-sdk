@@ -1,12 +1,10 @@
 """Test Sentence Tokenizer."""
 import logging
 import unittest
-
 from copy import deepcopy
+
 from konfuzio_sdk.data import Project
-
 from konfuzio_sdk.tokenizer.paragraph_and_sentence import SentenceTokenizer
-
 
 logger = logging.getLogger(__name__)
 

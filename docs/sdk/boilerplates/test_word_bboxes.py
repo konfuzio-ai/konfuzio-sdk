@@ -3,12 +3,13 @@
 
 def test_word_bboxes():
     """Test creation of the word-level Bboxes."""
-    from tests.variables import TEST_PROJECT_ID, TEST_DOCUMENT_ID
+    from tests.variables import TEST_DOCUMENT_ID, TEST_PROJECT_ID
 
     YOUR_PROJECT_ID, YOUR_DOCUMENT_ID = TEST_PROJECT_ID, TEST_DOCUMENT_ID
     # start full word_bboxes
     # start import
     from copy import deepcopy
+
     from konfuzio_sdk.data import Project
     from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
 
