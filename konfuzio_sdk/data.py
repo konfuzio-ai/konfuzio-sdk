@@ -36,6 +36,8 @@ from konfuzio_sdk.api import (
     get_project_categories,
     get_document_annotations,
     get_document_bbox,
+    get_project_labels,
+    get_project_label_sets,
 )
 from konfuzio_sdk.normalize import normalize
 from konfuzio_sdk.regex import get_best_regex, regex_matches, suggest_regex_for_string, merge_regex
@@ -2204,8 +2206,8 @@ class Annotation(Data):
             self.annotation_set = None
 
         # if no label_set_id we check if is passed by section_label_id
-        if label_set_id is None and kwargs.get("section_label_id") is not None:
-            label_set_id = kwargs.get("section_label_id")
+        if label_set_id is None and kwargs.get("label_set_id") is not None:
+            label_set_id = kwargs.get("label_set_id")
 
         # handles association to an Annotation Set if the Annotation belongs to a Category
         if isinstance(label_set_id, int):
@@ -4050,8 +4052,10 @@ class Project(Data):
         """Return maximum memory used by AI models."""
         return self._max_ram
 
-    def write_project_files(self, labels, label_sets):
+    def write_project_files(self):
         """Overwrite files with Project, Label, Label Set information."""
+        labels = get_project_labels(project_id=self.id_, session=self.session)
+        label_sets = get_project_label_sets(project_id=self.id_, session=self.session)
         with open(self.label_sets_file_path, "w") as f:
             json.dump(label_sets['results'], f, indent=2, sort_keys=True)
         with open(self.labels_file_path, "w") as f:
@@ -4168,8 +4172,10 @@ class Project(Data):
                     for cur_label in cur_labels:
                         if cur_label['name'] not in [label.name for label in self.labels]:
                             _ = Label(project=self, id_=cur_label['id'], text=cur_label['name'], **cur_label)
-                            label_set.labels.append(_)
-                            _.label_sets.append(label_set)
+                        else:
+                            _ = self.get_label_by_id(cur_label['id'])
+                        label_set.labels.append(_)
+                        _.label_sets.append(label_set)
                     if label_set.id_ == cur_category.id_:
                         label_set.is_default = True
                     cur_category.label_sets.append(label_set)

@@ -629,9 +629,8 @@ def delete_file_konfuzio_api(document_id: int, session=None):
     if session is None:
         session = konfuzio_session()
     url = get_document_url(document_id)
-    data = {'id': document_id}
 
-    session.delete(url=url, json=data)
+    session.delete(url=url)
 
     return True
 

@@ -343,7 +343,7 @@ class TestOnlineProject(unittest.TestCase):
         assert doc.dataset_status == 1
         assert doc.assignee is None
 
-        with pytest.raises(HTTPError, match="You cannot delete documents which are part of a dataset."):
+        with pytest.raises(HTTPError, match="documents which are part of a dataset"):
             # Cannot delete Document with dataset_status != 0
             doc.delete(delete_online=True)
 
