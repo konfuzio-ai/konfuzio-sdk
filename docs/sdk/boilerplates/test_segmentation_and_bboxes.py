@@ -3,11 +3,12 @@
 
 def test_visualize_bbox():
     """Test visualization of Bboxes."""
-    from tests.variables import TEST_PROJECT_ID, TEST_DOCUMENT_ID
+    from tests.variables import TEST_DOCUMENT_ID, TEST_PROJECT_ID
 
     YOUR_PROJECT_ID, YOUR_DOCUMENT_ID = TEST_PROJECT_ID, TEST_DOCUMENT_ID
     # start document
     from PIL import ImageDraw
+
     from konfuzio_sdk.data import Project
 
     my_project = Project(id_=YOUR_PROJECT_ID)
@@ -29,10 +30,10 @@ def test_visualize_bbox():
     draw = ImageDraw.Draw(image)
     for bbox in image_characters_bbox:
         image_bbox = (
-            int(bbox["x0"]),
-            int((height - bbox["y1"])),
-            int(bbox["x1"]),
-            int((height - bbox["y0"])),
+            int(bbox['x0']),
+            int((height - bbox['y1'])),
+            int(bbox['x1']),
+            int((height - bbox['y0'])),
         )
         draw.rectangle(image_bbox, outline='green', width=1)
 
@@ -48,13 +49,14 @@ def test_visualize_bbox():
 
 def test_segmentation():
     """Test segmentation endpoint."""
-    from tests.variables import TEST_PROJECT_ID, TEST_DOCUMENT_ID
+    from tests.variables import TEST_DOCUMENT_ID, TEST_PROJECT_ID
 
     YOUR_PROJECT_ID, YOUR_DOCUMENT_ID = TEST_PROJECT_ID, TEST_DOCUMENT_ID
     # start segmentation
     from PIL import ImageDraw
-    from konfuzio_sdk.data import Project
+
     from konfuzio_sdk.api import get_results_from_segmentation
+    from konfuzio_sdk.data import Project
 
     my_project = Project(id_=YOUR_PROJECT_ID)
     # first Document uploaded
@@ -69,10 +71,10 @@ def test_segmentation():
 
     for bbox in image_segmentation_bboxes[page_index]:
         image_bbox = (
-            int(bbox["x0"]),
-            int(bbox["y0"]),
-            int(bbox["x1"]),
-            int(bbox["y1"]),
+            int(bbox['x0']),
+            int(bbox['y0']),
+            int(bbox['x1']),
+            int(bbox['y1']),
         )
         draw.rectangle(image_bbox, outline='red', width=1)
 
@@ -82,13 +84,14 @@ def test_segmentation():
 
 def test_segmentation_and_bboxes():
     """Test segmentation and bboxes."""
-    from tests.variables import TEST_PROJECT_ID, TEST_DOCUMENT_ID
+    from tests.variables import TEST_DOCUMENT_ID, TEST_PROJECT_ID
 
     YOUR_PROJECT_ID, YOUR_DOCUMENT_ID = TEST_PROJECT_ID, TEST_DOCUMENT_ID
     # start dimensions
     from PIL import ImageDraw
-    from konfuzio_sdk.data import Project
+
     from konfuzio_sdk.api import get_results_from_segmentation
+    from konfuzio_sdk.data import Project
 
     my_project = Project(id_=YOUR_PROJECT_ID)
     # first Document uploaded
@@ -116,10 +119,10 @@ def test_segmentation_and_bboxes():
 
     for bbox in image_characters_bbox:
         image_bbox = (
-            int(bbox["x0"]),
-            int((height - bbox["y1"])),
-            int(bbox["x1"]),
-            int((height - bbox["y0"])),
+            int(bbox['x0']),
+            int((height - bbox['y1'])),
+            int(bbox['x1']),
+            int((height - bbox['y0'])),
         )
         draw.rectangle(image_bbox, outline='green', width=1)
 
@@ -127,10 +130,10 @@ def test_segmentation_and_bboxes():
 
     for bbox in image_segmentation_bboxes[page_index]:
         image_bbox = (
-            int(bbox["x0"] * factor_x),
-            int(bbox["y0"] * factor_y),
-            int(bbox["x1"] * factor_x),
-            int(bbox["y1"] * factor_y),
+            int(bbox['x0'] * factor_x),
+            int(bbox['y0'] * factor_y),
+            int(bbox['x1'] * factor_x),
+            int(bbox['y1'] * factor_y),
         )
         draw.rectangle(image_bbox, outline='red', width=1)
 
