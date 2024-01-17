@@ -1,15 +1,14 @@
 """Sentence and Paragraph tokenizers."""
 import logging
-from typing import List, Union
 import time
+from typing import List, Union
 
-from konfuzio_sdk.data import Annotation, Document, Span, Bbox, Label
+from konfuzio_sdk.data import Annotation, Bbox, Document, Label, Span
 from konfuzio_sdk.tokenizer.base import AbstractTokenizer, ProcessingStep
-
 from konfuzio_sdk.utils import (
-    sdk_isinstance,
-    get_spans_from_bbox,
     detectron_get_paragraph_bboxes,
+    get_spans_from_bbox,
+    sdk_isinstance,
 )
 
 logger = logging.getLogger(__name__)
@@ -44,7 +43,7 @@ class ParagraphTokenizer(AbstractTokenizer):
 
     def __repr__(self):
         """Return string representation of the class."""
-        return f"{self.__class__.__name__}: {self.mode=}"
+        return f'{self.__class__.__name__}: {self.mode=}'
 
     def __hash__(self):
         """Get unique hash for RegexTokenizer."""
@@ -60,7 +59,7 @@ class ParagraphTokenizer(AbstractTokenizer):
 
         if not document.bboxes_available:
             logger.warning(
-                f"Cannot tokenize Document {document} with tokenizer {self}: Missing Character Bbox " f"information."
+                f'Cannot tokenize Document {document} with tokenizer {self}: Missing Character Bbox ' f'information.'
             )
             return document
 
@@ -115,7 +114,7 @@ class ParagraphTokenizer(AbstractTokenizer):
                         spans=spans,
                         confidence=confidence,
                     )
-                    logger.debug(f"Created new Annotation {annotation}.")
+                    logger.debug(f'Created new Annotation {annotation}.')
                 except ValueError as e:
                     if 'is a duplicate of' in str(e):
                         logger.warning(
@@ -147,7 +146,6 @@ class ParagraphTokenizer(AbstractTokenizer):
             previous_y0 = None
             paragraph_spans = []
             for span in page.lines():
-
                 if not paragraph_spans or previous_y0 - span.bbox().y1 < line_threshold:
                     paragraph_spans.append(span)
                 else:
@@ -209,7 +207,7 @@ class SentenceTokenizer(AbstractTokenizer):
 
     def __repr__(self):
         """Return string representation of the class."""
-        return f"{self.__class__.__name__}: {self.mode=}"
+        return f'{self.__class__.__name__}: {self.mode=}'
 
     def __hash__(self):
         """Get unique hash for RegexTokenizer."""
@@ -225,7 +223,7 @@ class SentenceTokenizer(AbstractTokenizer):
 
         if not document.bboxes_available:
             logger.warning(
-                f"Cannot tokenize Document {document} with tokenizer {self}: Missing Character Bbox " f"information."
+                f'Cannot tokenize Document {document} with tokenizer {self}: Missing Character Bbox ' f'information.'
             )
             return document
 
@@ -281,7 +279,7 @@ class SentenceTokenizer(AbstractTokenizer):
                             category=document.category,
                             spans=spans,
                         )
-                        logger.debug(f"Created new Annotation {annotation}.")
+                        logger.debug(f'Created new Annotation {annotation}.')
                     except ValueError as e:
                         if 'is a duplicate of' in str(e):
                             logger.warning(

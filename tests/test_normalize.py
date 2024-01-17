@@ -1,14 +1,15 @@
 """Test for string normalization."""
 import logging
+
 import pytest
 
 from konfuzio_sdk.normalize import (
-    normalize_to_date,
-    normalize_to_positive_float,
-    normalize_to_float,
-    normalize_to_bool,
-    normalize_to_percentage,
     normalize,
+    normalize_to_bool,
+    normalize_to_date,
+    normalize_to_float,
+    normalize_to_percentage,
+    normalize_to_positive_float,
 )
 
 logger = logging.getLogger(__name__)
@@ -105,7 +106,7 @@ test_data_percentage = [
 ]
 
 
-@pytest.mark.parametrize("test_input, expected, document_id", test_data_percentage)
+@pytest.mark.parametrize('test_input, expected, document_id', test_data_percentage)
 def test_percentage(test_input, expected, document_id):
     """Test to normalize percentages."""
     assert normalize_to_percentage(test_input) == expected
@@ -113,9 +114,9 @@ def test_percentage(test_input, expected, document_id):
 
 test_data_positive_numbers = [
     ('59,00-', 59, 50945),
-    ("585,87/-", 585.87, 50945),
+    ('585,87/-', 585.87, 50945),
     ("'786,71-", 786.71, 51429),
-    ("7,375,009+ ", 7375009, 51429),
+    ('7,375,009+ ', 7375009, 51429),
     (':2.000, 08 ', 2000.08, 51437),
     ('-2.759,7°', 2759.7, 51447),
     ('‚22,95', 22.95, 53920),
@@ -158,7 +159,7 @@ test_data_positive_numbers = [
 ]
 
 
-@pytest.mark.parametrize("test_input, expected, document_id", test_data_positive_numbers)
+@pytest.mark.parametrize('test_input, expected, document_id', test_data_positive_numbers)
 def test_positive_numbers(test_input, expected, document_id):
     """Test to normalize positive numbers."""
     assert normalize_to_positive_float(test_input) == expected
@@ -187,8 +188,8 @@ test_data_numbers = [
     ('(51.901,99)', -51901.99, 0),
     ('2.662| ', 2662, 0),
     ("9'117, 30", 9117.3, 0),
-    ("9’117, 20", 9117.2, 0),
-    ("49’117", 49117, 0),
+    ('9’117, 20', 9117.2, 0),
+    ('49’117', 49117, 0),
     ('9"117,10', 9117.1, 0),
     ('-,-', 0, 0),
     ('-', 0, 0),
@@ -251,7 +252,7 @@ test_data_numbers = [
 ]
 
 
-@pytest.mark.parametrize("test_input, expected, document_id", test_data_numbers)
+@pytest.mark.parametrize('test_input, expected, document_id', test_data_numbers)
 def test_numbers(test_input, expected, document_id):
     """Test to normalize numbers."""
     assert normalize_to_float(test_input) == expected
@@ -305,7 +306,7 @@ test_data_dates = [
 ]
 
 
-@pytest.mark.parametrize("test_input, expected, document_id", test_data_dates)
+@pytest.mark.parametrize('test_input, expected, document_id', test_data_dates)
 def test_dates(test_input, expected, document_id):
     """Test to normalize dates."""
     assert normalize_to_date(test_input) == expected
@@ -326,7 +327,7 @@ test_data_bool = [
 ]
 
 
-@pytest.mark.parametrize("test_input, expected, document_id", test_data_bool)
+@pytest.mark.parametrize('test_input, expected, document_id', test_data_bool)
 def test_bool(test_input, expected, document_id):
     """Test to normalize boolean."""
     assert normalize_to_bool(test_input) == expected

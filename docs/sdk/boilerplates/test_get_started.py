@@ -2,9 +2,8 @@
 import os
 import time
 
-from konfuzio_sdk.data import Project, Document
 from konfuzio_sdk.api import delete_file_konfuzio_api
-
+from konfuzio_sdk.data import Document, Project
 
 FILE_PATH = 'tests/test_data/pdf.pdf'
 ASSIGNEE_ID = None

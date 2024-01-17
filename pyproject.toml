@@ -1,0 +1,23 @@
+[tool.ruff]
+exclude = [".git", "*build", "venv"]
+line-length = 120
+target-version = "py38"
+
+[tool.ruff.format]
+quote-style = "single"
+
+[tool.ruff.lint]
+select = [
+    "F",  # flake8
+    "E", "W",  # pycodestyle
+    "I",  # isort
+    "A",  # flake8-builtins
+    "C4",  # flake8-comprehensions
+    "RSE",  # flake8-raise
+    "RUF100",  # ruff
+]
+ignore = ["E501"]
+extend-safe-fixes = ["C4", "RSE"]
+
+[tool.ruff.lint.isort]
+combine-as-imports = true

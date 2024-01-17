@@ -53,6 +53,7 @@ from konfuzio_sdk.data import Project
 project = Project(id_=YOUR_PROJECT_ID)
 label = project.get_label_by_name(YOUR_LABEL_NAME)
 outliers = label.get_probable_outliers_by_regex(project.categories, top_worst_percentage=TOP_WORST)
+print([annotation.offset_string for annotation in outliers])
 ```
 
 #### Outliers by confidence
@@ -112,6 +113,7 @@ from konfuzio_sdk.evaluate import ExtractionEvaluation
 
 evaluation = ExtractionEvaluation(documents=list(zip(GROUND_TRUTH_DOCUMENTS, PREDICTED_DOCUMENTS)), strict=False)
 outliers = label.get_probable_outliers_by_confidence(evaluation, confidence=CONFIDENCE)
+print([annotation.offset_string for annotation in outliers])
 ```
 
 #### Outliers by normalization
@@ -128,6 +130,7 @@ from konfuzio_sdk.data import Project
 project = Project(id_=YOUR_PROJECT_ID)
 label = project.get_label_by_name(YOUR_LABEL_NAME)
 outliers = label.get_probable_outliers_by_normalization(project.categories)
+print([annotation.offset_string for annotation in outliers])
 ```
 
 ### Conclusion

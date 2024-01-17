@@ -1,9 +1,9 @@
 """URLs to the endpoints of Konfuzio Host."""
 
 import logging
+from typing import Union
 
 from konfuzio_sdk import KONFUZIO_HOST
-from typing import Union
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ def get_auth_token_url(host: str = None) -> str:
     """
     if host is None:
         host = KONFUZIO_HOST
-    return f"{host}/api/token-auth/"
+    return f'{host}/api/token-auth/'
 
 
 # PROJECTS
@@ -35,7 +35,7 @@ def get_projects_list_url(host: str = None) -> str:
     """
     if host is None:
         host = KONFUZIO_HOST
-    return f"{host}/api/projects/"
+    return f'{host}/api/projects/'
 
 
 def get_project_url(project_id: Union[int, None], host: str = None) -> str:
@@ -61,11 +61,11 @@ def get_documents_meta_url(project_id: int, limit: int = 10, host: str = None) -
     """
     if host is None:
         host = KONFUZIO_HOST
-    return f"{host}/api/projects/{project_id}/docs/?limit={limit}"
+    return f'{host}/api/projects/{project_id}/docs/?limit={limit}'
 
 
 def get_document_segmentation_details_url(
-        document_id: int, project_id: int, host: str = None, action='segmentation'
+    document_id: int, project_id: int, host: str = None, action='segmentation'
 ) -> str:
     """
     Generate URL to get the segmentation results of a  Document.
@@ -91,7 +91,7 @@ def get_extraction_ais_list_url(project_id: int, host: str = None) -> str:
     """
     if host is None:
         host = KONFUZIO_HOST
-    return f"{host}/api/v3/extraction-ais/?limit=1000&project_id={project_id}"
+    return f'{host}/api/v3/extraction-ais/?limit=1000&project_id={project_id}'
 
 
 def get_splitting_ais_list_url(project_id: int, host: str = None) -> str:
@@ -104,7 +104,7 @@ def get_splitting_ais_list_url(project_id: int, host: str = None) -> str:
     """
     if host is None:
         host = KONFUZIO_HOST
-    return f"{host}/api/v3/splitting-ais/?limit=1000&project_id={project_id}"
+    return f'{host}/api/v3/splitting-ais/?limit=1000&project_id={project_id}'
 
 
 def get_categorization_ais_list_url(project_id: int, host: str = None) -> str:
@@ -117,7 +117,7 @@ def get_categorization_ais_list_url(project_id: int, host: str = None) -> str:
     """
     if host is None:
         host = KONFUZIO_HOST
-    return f"{host}/api/v3/category-ais/?limit=1000&project_id={project_id}"
+    return f'{host}/api/v3/category-ais/?limit=1000&project_id={project_id}'
 
 
 # DOCUMENTS
@@ -132,7 +132,7 @@ def get_upload_document_url(host: str = None) -> str:
     """
     if host is None:
         host = KONFUZIO_HOST
-    return f"{host}/api/v2/docs/"
+    return f'{host}/api/v2/docs/'
 
 
 def get_document_url(document_id: int, host: str = None) -> str:
@@ -145,7 +145,7 @@ def get_document_url(document_id: int, host: str = None) -> str:
     """
     if host is None:
         host = KONFUZIO_HOST
-    return f"{host}/api/v2/docs/{document_id}/"
+    return f'{host}/api/v2/docs/{document_id}/'
 
 
 def get_document_ocr_file_url(document_id: int, host: str = None) -> str:
@@ -186,9 +186,7 @@ def get_page_image_url(page_id: int, host: str = None) -> str:
     return f'{host}/page/show-image/{page_id}/'
 
 
-def get_document_api_details_url(
-    document_id: int, project_id: int, host: str = None, extra_fields='bbox'
-) -> str:
+def get_document_api_details_url(document_id: int, project_id: int, host: str = None, extra_fields='bbox') -> str:
     """
     Generate URL to access the details of a Document in a Project.
 
@@ -227,7 +225,7 @@ def get_labels_url(host: str = None) -> str:
     """
     if host is None:
         host = KONFUZIO_HOST
-    return f"{host}/api/v2/labels/"
+    return f'{host}/api/v2/labels/'
 
 
 def get_label_url(label_id: int, host: str = None) -> str:
@@ -240,7 +238,7 @@ def get_label_url(label_id: int, host: str = None) -> str:
     """
     if host is None:
         host = KONFUZIO_HOST
-    return f"{host}/api/v2/labels/{label_id}/"
+    return f'{host}/api/v2/labels/{label_id}/'
 
 
 # ANNOTATIONS
@@ -330,4 +328,4 @@ def get_ai_model_download_url(ai_model_id: int, host: str = None) -> str:
     """
     if host is None:
         host = KONFUZIO_HOST
-    return f"{host}/aimodel/file/{ai_model_id}/"
+    return f'{host}/aimodel/file/{ai_model_id}/'
