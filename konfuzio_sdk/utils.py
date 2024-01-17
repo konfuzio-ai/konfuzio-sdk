@@ -4,21 +4,21 @@ import itertools
 import logging
 import operator
 import os
-import pkg_resources
-import regex as re
 import unicodedata
 import uuid
 import zipfile
 from contextlib import contextmanager
 from io import BytesIO
-from pympler import asizeof
-from typing import Union, List, Tuple, Dict, Optional, Type, TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Type, Union
 from warnings import warn
 
 import filetype
+import pkg_resources
+import regex as re
 from PIL import Image
+from pympler import asizeof
 
-from konfuzio_sdk import IMAGE_FILE, PDF_FILE, OFFICE_FILE, SUPPORTED_FILE_TYPES
+from konfuzio_sdk import IMAGE_FILE, OFFICE_FILE, PDF_FILE, SUPPORTED_FILE_TYPES
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +41,7 @@ def sdk_isinstance(instance, klass):
 
 def exception_or_log_error(
     msg: str,
-    handler: str = "sdk",
+    handler: str = 'sdk',
     fail_loudly: Optional[bool] = True,
     exception_type: Optional[Type[Exception]] = ValueError,
 ) -> None:
@@ -61,7 +61,7 @@ def exception_or_log_error(
     """
     # Raise whatever exception while specifying the handler
     if fail_loudly:
-        raise exception_type({"message": msg, "handler": handler})
+        raise exception_type({'message': msg, 'handler': handler})
     else:
         logger.error(msg)
 
@@ -96,7 +96,7 @@ def is_file(file_path, raise_exception=True, maximum_size=100000000, allow_empty
             if file_size > maximum_size:
                 logger.warning(f'Please check your BIG file with size {file_size / 1000000:.2f} MB at {file_path}.')
             with open(file_path, 'rb'):
-                logger.debug(f"File expected and found at {file_path} with ID {get_id()}")
+                logger.debug(f'File expected and found at {file_path} with ID {get_id()}')
             return True
         else:
             if raise_exception:
@@ -118,18 +118,18 @@ def memory_size_of(obj) -> int:
 
 def normalize_memory(memory: Union[None, str]) -> Union[int, None]:
     """
-    Return memory size in human readable form to int of number of bytes.
+    Return memory size in human-readable form to int of number of bytes.
 
     :param memory: Memory size in human readable form (e.g. "50MB").
     :return: int of bytes if valid, else None
     """
     if memory is not None:
-        if type(memory) is int or memory.isdigit():
+        if isinstance(memory, int) or memory.isdigit():
             memory = int(memory)
         else:
             # Check if the first part of the string (before the unit) is numeric
             if not memory[:-3].isdigit() and not memory[:-2].isdigit():
-                logger.error(f"memory value {memory} invalid.")
+                logger.error(f'memory value {memory} invalid.')
                 return None
             else:
                 mem_val = int(memory[:-3] if memory[-3:].isalpha() else memory[:-2])
@@ -148,7 +148,7 @@ def normalize_memory(memory: Union[None, str]) -> Union[int, None]:
             elif memory[-3:].lower() == 'kib':
                 memory = mem_val * 2**10
             else:
-                logger.error(f"memory value {memory} invalid.")
+                logger.error(f'memory value {memory} invalid.')
                 return None
     return memory
 
@@ -215,7 +215,7 @@ def get_file_type_and_extension(input_file: Union[str, BytesIO, bytes] = None) -
 
     def isdir(z, name):
         """Check zip file namelist."""
-        return any(x.startswith("%s/" % name.rstrip("/")) for x in z.namelist())
+        return any(x.startswith('%s/' % name.rstrip('/')) for x in z.namelist())
 
     def isfile(z, name):
         """Check zip file namelist."""
@@ -242,10 +242,10 @@ def get_file_type_and_extension(input_file: Union[str, BytesIO, bytes] = None) -
     elif extension == 'zip':
         r = zipfile.ZipFile(input_file)
         # check for office files
-        if isdir(r, "docProps") or isdir(r, "_rels"):
+        if isdir(r, 'docProps') or isdir(r, '_rels'):
             file_type = OFFICE_FILE
         # check for open office files
-        if isdir(r, "META-INF") and isfile(r, 'meta.xml') and isfile(r, 'settings.xml'):
+        if isdir(r, 'META-INF') and isfile(r, 'meta.xml') and isfile(r, 'settings.xml'):
             file_type = OFFICE_FILE
 
     if file_type not in [PDF_FILE, IMAGE_FILE, OFFICE_FILE]:
@@ -463,7 +463,7 @@ def map_offsets(characters_bboxes: list) -> dict:
     for character_bbox in characters_bboxes:
         character_bbox['string_offset'] = int(character_bbox['string_offset'])
     characters_bboxes.sort(key=lambda k: k['string_offset'])
-    offsets_map = dict((i, x['string_offset']) for i, x in enumerate(characters_bboxes))
+    offsets_map = {i: x['string_offset'] for i, x in enumerate(characters_bboxes)}
 
     return offsets_map
 
@@ -510,10 +510,10 @@ def select_bboxes(selection_bbox: dict, page_bboxes: list, tolerance: int = 10) 
     selected_char_bboxes = [
         char_bbox
         for char_bbox in page_bboxes
-        if int(selection_bbox["x0"]) - tolerance <= char_bbox["x0"]
-        and int(selection_bbox["x1"]) + tolerance >= char_bbox["x1"]
-        and int(selection_bbox["y0"]) - tolerance <= char_bbox["y0"]
-        and int(selection_bbox["y1"]) + tolerance >= char_bbox["y1"]
+        if int(selection_bbox['x0']) - tolerance <= char_bbox['x0']
+        and int(selection_bbox['x1']) + tolerance >= char_bbox['x1']
+        and int(selection_bbox['y0']) - tolerance <= char_bbox['y0']
+        and int(selection_bbox['y1']) + tolerance >= char_bbox['y1']
     ]
 
     return selected_char_bboxes
@@ -529,13 +529,13 @@ def merge_bboxes(bboxes: list):
     warn('Method needs testing and revision. Please create a Ticket if you use it.', DeprecationWarning, stacklevel=2)
     # the issue is there: https://git.konfuzio.com/konfuzio/objectives/-/issues/9333
     merge_bbox = {
-        "x0": min([b['x0'] for b in bboxes]),
-        "x1": max([b['x1'] for b in bboxes]),
-        "y0": min([b['y0'] for b in bboxes]),
-        "y1": max([b['y1'] for b in bboxes]),
-        "top": min([b['top'] for b in bboxes]),
-        "bottom": max([b['bottom'] for b in bboxes]),
-        "page_index": bboxes[0]['page_index'],
+        'x0': min([b['x0'] for b in bboxes]),
+        'x1': max([b['x1'] for b in bboxes]),
+        'y0': min([b['y0'] for b in bboxes]),
+        'y1': max([b['y1'] for b in bboxes]),
+        'top': min([b['top'] for b in bboxes]),
+        'bottom': max([b['bottom'] for b in bboxes]),
+        'page_index': bboxes[0]['page_index'],
     }
 
     return merge_bbox
@@ -558,7 +558,7 @@ def get_bbox(bbox, start_offset: int, end_offset: int) -> Dict:
 
     # exit early if no bboxes are found between the start/end offset
     if not char_bbox_ids:
-        logger.error(f"Between start {start_offset} and {end_offset} we do not find the bboxes of the characters.")
+        logger.error(f'Between start {start_offset} and {end_offset} we do not find the bboxes of the characters.')
         raise ValueError(f'Characters from {start_offset} to {end_offset} do not provide any bounding box.')
 
     # set the default values which we overwrite with the actual character bbox values
@@ -588,7 +588,7 @@ def get_bbox(bbox, start_offset: int, end_offset: int) -> Dict:
             except AssertionError:
                 logger.warning(
                     "We don't support bounding boxes over page breaks yet, and will return the bounding box"
-                    "on the first page of the match."
+                    'on the first page of the match.'
                 )
                 break
         pdf_page_index = bbox[char_bbox_id]['page_number'] - 1
@@ -713,15 +713,15 @@ def get_merged_bboxes(doc_bbox: Dict, bboxes: Union[Dict, List], doc_text: Optio
     for selection_bbox in bboxes:
         selected_bboxes = [
             # the index of the character is its offset, i.e. the number of chars before it in the document's text
-            {"string_offset": index, **char_bbox}
+            {'string_offset': index, **char_bbox}
             for index, char_bbox in doc_bbox.items()
-            if selection_bbox["page_index"] == char_bbox["page_number"] - 1
+            if selection_bbox['page_index'] == char_bbox['page_number'] - 1
             # filter the characters of the document according to their x/y values, so that we only include the
             # characters that are inside the selection
-            and selection_bbox["x0"] <= char_bbox["x0"]
-            and selection_bbox["x1"] >= char_bbox["x1"]
-            and selection_bbox["y0"] <= char_bbox["y0"]
-            and selection_bbox["y1"] >= char_bbox["y1"]
+            and selection_bbox['x0'] <= char_bbox['x0']
+            and selection_bbox['x1'] >= char_bbox['x1']
+            and selection_bbox['y0'] <= char_bbox['y0']
+            and selection_bbox['y1'] >= char_bbox['y1']
         ]
 
         # decide what we are going to group the character bboxes by in order to group those on the same line
@@ -771,7 +771,7 @@ def get_merged_bboxes(doc_bbox: Dict, bboxes: Union[Dict, List], doc_text: Optio
                     except AssertionError:
                         logger.warning(
                             "We don't support bounding boxes over page breaks yet, and will return the bounding box"
-                            "on the first page of the match."
+                            'on the first page of the match.'
                         )
                         break
 
@@ -852,7 +852,7 @@ def get_merged_bboxes(doc_bbox: Dict, bboxes: Union[Dict, List], doc_text: Optio
 
             # if both bboxes have the offset string property, merge them
             if merged_bboxes[-1].get('offset_string') and line_bbox.get('offset_string'):
-                merged_bboxes[-1]['offset_string'] += " " * amount_of_spaces_in_between + line_bbox['offset_string']
+                merged_bboxes[-1]['offset_string'] += ' ' * amount_of_spaces_in_between + line_bbox['offset_string']
 
         # otherwise, just add the bbox to the list
         else:
@@ -872,7 +872,7 @@ def get_merged_bboxes(doc_bbox: Dict, bboxes: Union[Dict, List], doc_text: Optio
 
 def get_sdk_version():
     """Get a version of current Konfuzio SDK used."""
-    return pkg_resources.get_distribution("konfuzio-sdk").version
+    return pkg_resources.get_distribution('konfuzio-sdk').version
 
 
 def get_spans_from_bbox(selection_bbox: 'Bbox') -> List['Span']:

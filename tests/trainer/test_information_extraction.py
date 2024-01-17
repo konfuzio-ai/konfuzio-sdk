@@ -1,53 +1,50 @@
 # -*- coding: utf-8 -*-
 """Test to train an Extraction AI."""
-from copy import deepcopy
 import linecache
 import logging
 import math
-import tracemalloc
-import unittest
-import parameterized
 import os
-import pytest
 import sys
 import time
-
-from requests import HTTPError
-from pkg_resources import get_distribution
+import tracemalloc
+import unittest
+from copy import deepcopy
 
 import pandas as pd
+import parameterized
+import pytest
+from pkg_resources import get_distribution
+from requests import HTTPError
 from sklearn.datasets import make_classification
 from sklearn.ensemble import RandomForestClassifier
 
-from konfuzio_sdk.data import Category, Project, Document, AnnotationSet, Annotation, Span, LabelSet, Page
-
-from konfuzio_sdk.api import upload_ai_model, update_ai_model, delete_ai_model, konfuzio_session
-from konfuzio_sdk.settings_importer import is_dependency_installed
-from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, RegexTokenizer
-from konfuzio_sdk.tokenizer.paragraph_and_sentence import ParagraphTokenizer, SentenceTokenizer
-from konfuzio_sdk.tokenizer.base import ListTokenizer
-from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
+from konfuzio_sdk.api import delete_ai_model, konfuzio_session, update_ai_model, upload_ai_model
+from konfuzio_sdk.data import Annotation, AnnotationSet, Category, Document, LabelSet, Page, Project, Span
 from konfuzio_sdk.samples import LocalTextProject
-from konfuzio_sdk.urls import get_create_ai_model_url
-from konfuzio_sdk.utils import memory_size_of, is_file
-
+from konfuzio_sdk.settings_importer import is_dependency_installed
+from konfuzio_sdk.tokenizer.base import ListTokenizer
+from konfuzio_sdk.tokenizer.paragraph_and_sentence import ParagraphTokenizer, SentenceTokenizer
+from konfuzio_sdk.tokenizer.regex import RegexTokenizer, WhitespaceTokenizer
 from konfuzio_sdk.trainer.information_extraction import (
-    num_count,
+    AbstractExtractionAI,
+    RFExtractionAI,
+    count_string_differences,
     date_count,
     digit_count,
+    duplicate_count,
+    num_count,
     space_count,
     special_count,
-    vowel_count,
-    upper_count,
-    duplicate_count,
+    strip_accents,
     substring_count,
     unique_char_count,
-    strip_accents,
-    count_string_differences,
+    upper_count,
+    vowel_count,
     year_month_day_count,
-    RFExtractionAI,
-    AbstractExtractionAI,
 )
+from konfuzio_sdk.urls import get_create_ai_model_url
+from konfuzio_sdk.utils import is_file, memory_size_of
+from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
 
 logger = logging.getLogger(__name__)
 
@@ -60,18 +57,18 @@ def display_top(snapshot, key_type='lineno', limit=30):
     """Trace memory allocations, see https://docs.python.org/3/library/tracemalloc.html."""
     snapshot = snapshot.filter_traces(
         (
-            tracemalloc.Filter(False, "<frozen importlib._bootstrap>"),
-            tracemalloc.Filter(False, "<unknown>"),
-            tracemalloc.Filter(False, "<logging>"),
-            tracemalloc.Filter(False, "<tracemalloc>"),
+            tracemalloc.Filter(False, '<frozen importlib._bootstrap>'),
+            tracemalloc.Filter(False, '<unknown>'),
+            tracemalloc.Filter(False, '<logging>'),
+            tracemalloc.Filter(False, '<tracemalloc>'),
         )
     )
     top_stats = snapshot.statistics(key_type)
 
-    logger.info("Top %s lines" % limit)
+    logger.info('Top %s lines' % limit)
     for index, stat in enumerate(top_stats[:limit], 1):
         frame = stat.traceback[0]
-        logger.info("#%s: %s:%s: %.1f KiB" % (index, frame.filename, frame.lineno, stat.size / 1024))
+        logger.info('#%s: %s:%s: %.1f KiB' % (index, frame.filename, frame.lineno, stat.size / 1024))
         line = linecache.getline(frame.filename, frame.lineno).strip()
         if line:
             logger.info('    %s' % line)
@@ -79,9 +76,9 @@ def display_top(snapshot, key_type='lineno', limit=30):
     other = top_stats[limit:]
     if other:
         size = sum(stat.size for stat in other)
-        logger.info("%s other: %.1f KiB" % (len(other), size / 1024))
+        logger.info('%s other: %.1f KiB' % (len(other), size / 1024))
     total = sum(stat.size for stat in top_stats)
-    logger.info("Total allocated size: %.1f KiB" % (total / 1024))
+    logger.info('Total allocated size: %.1f KiB' % (total / 1024))
 
 
 entity_results_data = [
@@ -204,23 +201,23 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         )
         cls.pipeline.pipeline_path_no_konfuzio_sdk = None
 
-        cls.tests_annotations_spans = list()
+        cls.tests_annotations_spans = []
 
     def test_01_configure_pipeline(self):
         """Make sure the Data and Pipeline is configured."""
-        with pytest.raises(AttributeError, match="requires a Category"):
+        with pytest.raises(AttributeError, match='requires a Category'):
             self.pipeline.check_is_ready()
 
         self.pipeline.category = self.project.get_category_by_id(id_=63)
 
-        with pytest.raises(AttributeError, match="missing Tokenizer"):
+        with pytest.raises(AttributeError, match='missing Tokenizer'):
             self.pipeline.check_is_ready()
 
         self.pipeline.tokenizer = WhitespaceTokenizer()
 
         assert memory_size_of(self.pipeline.category) < 5e5
 
-        with pytest.raises(AttributeError, match="not provide a Label Classifier"):
+        with pytest.raises(AttributeError, match='not provide a Label Classifier'):
             self.pipeline.check_is_ready()
 
         if not TEST_WITH_FULL_DATASET:
@@ -291,15 +288,15 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
             include_konfuzio=False,
             reduce_weight=True,
             keep_documents=False,
-            max_ram="500KB",
+            max_ram='500KB',
         )
         time.sleep(1)  # If first and second model saved in same second, one overwrites the other
         with pytest.raises(MemoryError):
             self.pipeline.pipeline_path = self.pipeline.save(
-                include_konfuzio=False, reduce_weight=False, keep_documents=True, max_ram="500KB"
+                include_konfuzio=False, reduce_weight=False, keep_documents=True, max_ram='500KB'
             )
 
-        self.project._max_ram = "500KB"
+        self.project._max_ram = '500KB'
         with pytest.raises(MemoryError):
             self.pipeline.pipeline_path = self.pipeline.save(
                 include_konfuzio=False, reduce_weight=False, keep_documents=True
@@ -316,7 +313,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
             include_konfuzio=True,
             reduce_weight=True,
             keep_documents=False,
-            max_ram="500KB",
+            max_ram='500KB',
         )
 
         assert os.path.isfile(self.pipeline.pipeline_path)
@@ -437,7 +434,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         self.pipeline = RFExtractionAI.load_model(self.pipeline.pipeline_path)
 
         assert self.pipeline.python_version == '.'.join([str(v) for v in sys.version_info[:3]])
-        assert self.pipeline.konfuzio_sdk_version == get_distribution("konfuzio_sdk").version
+        assert self.pipeline.konfuzio_sdk_version == get_distribution('konfuzio_sdk').version
 
         assert self.pipeline.documents == []
         assert self.pipeline.test_documents == []
@@ -501,7 +498,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
 
         cls.pipeline.pipeline_path_no_konfuzio_sdk = None
 
-        cls.tests_annotations_spans = list()
+        cls.tests_annotations_spans = []
 
     def test_01_configure_pipeline(self):
         """Make sure the Data and Pipeline is configured."""
@@ -573,16 +570,16 @@ class TestRegexRFExtractionAI(unittest.TestCase):
             include_konfuzio=False,
             reduce_weight=True,
             keep_documents=False,
-            max_ram="500KB",
+            max_ram='500KB',
         )
         assert os.path.isfile(self.pipeline.pipeline_path_no_konfuzio_sdk)
         time.sleep(1)  # If first and second model saved in same second, one overwrites the other
         with pytest.raises(MemoryError):
             self.pipeline.pipeline_path = self.pipeline.save(
-                include_konfuzio=False, max_ram="500KB", keep_documents=True, reduce_weight=False
+                include_konfuzio=False, max_ram='500KB', keep_documents=True, reduce_weight=False
             )
 
-        self.project._max_ram = "500KB"
+        self.project._max_ram = '500KB'
         with pytest.raises(MemoryError):
             self.pipeline.pipeline_path = self.pipeline.save(
                 include_konfuzio=False, keep_documents=True, reduce_weight=False
@@ -599,7 +596,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
             include_konfuzio=True,
             reduce_weight=True,
             keep_documents=False,
-            max_ram="500KB",
+            max_ram='500KB',
         )
 
         assert os.path.isfile(self.pipeline.pipeline_path)
@@ -697,7 +694,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         self.pipeline = RFExtractionAI.load_model(self.pipeline.pipeline_path)
 
         assert self.pipeline.python_version == '.'.join([str(v) for v in sys.version_info[:3]])
-        assert self.pipeline.konfuzio_sdk_version == get_distribution("konfuzio_sdk").version
+        assert self.pipeline.konfuzio_sdk_version == get_distribution('konfuzio_sdk').version
 
         assert self.pipeline.documents == []
         assert self.pipeline.test_documents == []
@@ -715,10 +712,10 @@ class TestRegexRFExtractionAI(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Clear Project files."""
-        dir = cls.project.regex_folder
+        project_dir = cls.project.regex_folder
 
-        for f in os.listdir(dir):
-            os.remove(os.path.join(dir, f))
+        for f in os.listdir(project_dir):
+            os.remove(os.path.join(project_dir, f))
         if os.path.isfile(cls.pipeline.pipeline_path):
             os.remove(cls.pipeline.pipeline_path)  # cleanup
             os.remove(cls.pipeline.pipeline_path_no_konfuzio_sdk)
@@ -745,7 +742,7 @@ class TestParagraphRFExtractionAI(unittest.TestCase):
         category = cls.project.get_category_by_id(16436)
         cls.pipeline = RFExtractionAI(category=category, use_separate_labels=True)
 
-        cls.tests_annotations_spans = list()
+        cls.tests_annotations_spans = []
 
     def test_01_configure_pipeline(self):
         """Make sure the Data and Pipeline is configured."""
@@ -781,7 +778,7 @@ class TestParagraphRFExtractionAI(unittest.TestCase):
             include_konfuzio=True,
             reduce_weight=True,
             keep_documents=False,
-            max_ram="500KB",
+            max_ram='500KB',
         )
 
         assert os.path.isfile(self.pipeline.pipeline_path)
@@ -825,7 +822,7 @@ class TestSentenceRFExtractionAI(unittest.TestCase):
         category = cls.project.get_category_by_id(16587)
         cls.pipeline = RFExtractionAI(category=category, use_separate_labels=True)
 
-        cls.tests_annotations_spans = list()
+        cls.tests_annotations_spans = []
 
     def test_01_configure_pipeline(self):
         """Make sure the Data and Pipeline is configured."""
@@ -856,7 +853,7 @@ class TestSentenceRFExtractionAI(unittest.TestCase):
             include_konfuzio=True,
             reduce_weight=True,
             keep_documents=False,
-            max_ram="500KB",
+            max_ram='500KB',
         )
 
         assert os.path.isfile(self.pipeline.pipeline_path)
@@ -961,7 +958,7 @@ class TestInformationExtraction(unittest.TestCase):
         """Test empty extraction when no spans detected."""
         document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         pipeline = RFExtractionAI(category=document.category)
-        pipeline.tokenizer = RegexTokenizer(r"qwerty")
+        pipeline.tokenizer = RegexTokenizer(r'qwerty')
 
         pipeline.clf = RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1)
         X, y = make_classification(
@@ -976,9 +973,9 @@ class TestInformationExtraction(unittest.TestCase):
     def test_extraction_with_empty_document(self):
         """Test extraction with completely empty document."""
         category = self.project.get_category_by_id(63)
-        document = Document(text="", project=self.project, category=category)
+        document = Document(text='', project=self.project, category=category)
         pipeline = RFExtractionAI(category=category)
-        pipeline.tokenizer = RegexTokenizer(r"qwerty")
+        pipeline.tokenizer = RegexTokenizer(r'qwerty')
 
         pipeline.clf = RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1)
         X, y = make_classification(
@@ -997,10 +994,10 @@ class TestInformationExtraction(unittest.TestCase):
             '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'a'},
             '1': {'x0': 1, 'x1': 2, 'y0': 1, 'y1': 3, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'b'},
         }
-        document = Document(text="ab", bbox=document_bbox, project=self.project, category=category)
+        document = Document(text='ab', bbox=document_bbox, project=self.project, category=category)
         Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
         pipeline = RFExtractionAI(category=category)
-        pipeline.tokenizer = RegexTokenizer(r"ab")
+        pipeline.tokenizer = RegexTokenizer(r'ab')
 
         pipeline.clf = RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1)
         X, y = make_classification(
@@ -1020,7 +1017,7 @@ class TestInformationExtraction(unittest.TestCase):
         """Test that extract_template_with_clf returns empty dictionary when no spans above detection threshold."""
         category = self.project.get_category_by_id(63)
         pipeline = RFExtractionAI(category=category)
-        res_dict = pipeline.extract_template_with_clf("doc text", res_dict={})
+        res_dict = pipeline.extract_template_with_clf('doc text', res_dict={})
         assert res_dict == {}
 
     def test_merge_vertical_1(self):
@@ -1036,12 +1033,12 @@ class TestInformationExtraction(unittest.TestCase):
         assert len(document.spans()) == 4
         assert len(document.annotations(use_correct=False)) == 4
 
-        with pytest.raises(AttributeError, match="merge_vertical requires a Category"):
+        with pytest.raises(AttributeError, match='merge_vertical requires a Category'):
             pipeline.merge_vertical(document, only_multiline_labels=True)
 
         pipeline.category = category
 
-        with pytest.raises(TypeError, match="This value has never been computed."):
+        with pytest.raises(TypeError, match='This value has never been computed.'):
             pipeline.merge_vertical(document)
 
         for category_label in category.labels:
@@ -1082,12 +1079,12 @@ class TestInformationExtraction(unittest.TestCase):
 
         assert len(document.annotations(use_correct=False)) == 6
 
-        with pytest.raises(AttributeError, match="merge_vertical requires a Category"):
+        with pytest.raises(AttributeError, match='merge_vertical requires a Category'):
             pipeline.merge_vertical(document, only_multiline_labels=True)
 
         pipeline.category = category
 
-        with pytest.raises(TypeError, match="This value has never been computed."):
+        with pytest.raises(TypeError, match='This value has never been computed.'):
             pipeline.merge_vertical(document, only_multiline_labels=True)
 
         pipeline.merge_vertical(document, only_multiline_labels=False)
@@ -1112,7 +1109,7 @@ class TestInformationExtraction(unittest.TestCase):
 
     def test_feature_columns(self):
         """Test list of features used and list of columns of feature dataframe excluded."""
-        from tests.trainer.features import FULL_FEATURE_LIST, EXCLUDED_COLUMNS_LIST
+        from tests.trainer.features import EXCLUDED_COLUMNS_LIST, FULL_FEATURE_LIST
 
         document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         pipeline = RFExtractionAI()
@@ -1120,7 +1117,7 @@ class TestInformationExtraction(unittest.TestCase):
         features, feature_names, errors = pipeline.features(document)
 
         assert feature_names == FULL_FEATURE_LIST
-        assert sorted(list(set(list(features)) - set(feature_names))) == EXCLUDED_COLUMNS_LIST
+        assert sorted(set(features) - set(feature_names)) == EXCLUDED_COLUMNS_LIST
 
     def test_feature_function_n_nearest_accross_lines(self):
         """Test to generate features with n_nearest_across_lines=True."""
@@ -1152,7 +1149,7 @@ class TestInformationExtraction(unittest.TestCase):
             pipeline.features(document)
             its.append(time.process_time() - start_t)
 
-        logger.info(f"This took {sum(its)/len(its)}s on average.")
+        logger.info(f'This took {sum(its)/len(its)}s on average.')
 
         assert sum(its) / len(its) < 4
 
@@ -1223,7 +1220,7 @@ class TestInformationExtraction(unittest.TestCase):
         annotations = virtual_doc.annotations(use_correct=False)
 
         assert len(annotations) == 5
-        assert " ".join(ann.offset_string[0] for ann in annotations) == "Hi all, I like fish."
+        assert ' '.join(ann.offset_string[0] for ann in annotations) == 'Hi all, I like fish.'
         assert [ann.label.name for ann in annotations] == [
             'DefaultLabelName',
             'NO_LABEL',
@@ -1281,18 +1278,18 @@ class TestInformationExtraction(unittest.TestCase):
         assert len(merged_res_dict['label1']) == 3
         assert round(merged_res_dict['label1'].iloc[0]['confidence'], 1) == 0.4
         assert merged_res_dict['label1'].iloc[0]['end_offset'] == 17
-        assert merged_res_dict['label1'].iloc[0]['offset_string'] == "a1l1 a2l1    a3l1"
+        assert merged_res_dict['label1'].iloc[0]['offset_string'] == 'a1l1 a2l1    a3l1'
         assert merged_res_dict['label1'].iloc[1]['start_offset'] == 25
         assert merged_res_dict['label1'].iloc[2]['start_offset'] == 32
 
         assert len(merged_res_dict['label2']) == 3
-        assert merged_res_dict['label2'].iloc[0]['offset_string'] == "32"
-        assert merged_res_dict['label2'].iloc[1]['offset_string'] == "22 98"
+        assert merged_res_dict['label2'].iloc[0]['offset_string'] == '32'
+        assert merged_res_dict['label2'].iloc[1]['offset_string'] == '22 98'
         assert round(merged_res_dict['label2'].iloc[1]['confidence'], 1) == 0.8
-        assert merged_res_dict['label2'].iloc[2]['offset_string'] == "760"
+        assert merged_res_dict['label2'].iloc[2]['offset_string'] == '760'
 
         assert len(merged_res_dict['label3']) == 1
-        assert merged_res_dict['label3'].iloc[0]['offset_string'] == "89 76"
+        assert merged_res_dict['label3'].iloc[0]['offset_string'] == '89 76'
         assert merged_res_dict['label3'].iloc[0]['start_offset'] == 53
         assert merged_res_dict['label3'].iloc[0]['end_offset'] == 58
 
@@ -1550,7 +1547,7 @@ class TestAddExtractionAsAnnotation(unittest.TestCase):
         document = deepcopy(self.sample_document)
         annotation_set = AnnotationSet(id_=507, document=document, label_set=self.label_set)
 
-        other_label_set = LabelSet(id_=52, project=self.project, name="TestLabelSet", categories=[document.category])
+        other_label_set = LabelSet(id_=52, project=self.project, name='TestLabelSet', categories=[document.category])
 
         with pytest.raises(AssertionError, match='Conflicting Label Set information provided'):
             RFExtractionAI().add_extractions_as_annotations(
@@ -1565,7 +1562,7 @@ class TestAddExtractionAsAnnotation(unittest.TestCase):
         """Test adding an extraction with invalid Label Set."""
         document = deepcopy(self.sample_document)
 
-        label_set = LabelSet(id_=152, project=self.project, name="TestLabelSet", categories=[])
+        label_set = LabelSet(id_=152, project=self.project, name='TestLabelSet', categories=[])
         label_set.add_label(self.label)
         annotation_set = AnnotationSet(id_=107, document=document, label_set=label_set)
 
@@ -1930,7 +1927,7 @@ class TestExtractionToDocument(unittest.TestCase):
     def test_extraction_result_with_invalid_dataframe(self):
         """Test conversion of an AI output with extractions invalid Dataframe columns."""
         invalid_df = pd.DataFrame(data=[self.extraction_2])
-        invalid_df = invalid_df.drop(columns=["start_offset"])
+        invalid_df = invalid_df.drop(columns=['start_offset'])
         extraction_result = {'LabelSetName': [{'LabelName': invalid_df}]}
         with pytest.raises(ValueError, match='Extraction do not contain all required fields'):
             self.pipeline.extraction_result_to_document(self.sample_document, extraction_result=extraction_result)
@@ -2014,8 +2011,8 @@ class TestGetExtractionResults(unittest.TestCase):
 )
 def test_load_model_no_file():
     """Test loading of model with invalid path."""
-    path = "nhtbgrved"
-    with pytest.raises(FileNotFoundError, match="Invalid pickle file path"):
+    path = 'nhtbgrved'
+    with pytest.raises(FileNotFoundError, match='Invalid pickle file path'):
         RFExtractionAI.load_model(path)
 
 
@@ -2025,8 +2022,8 @@ def test_load_model_no_file():
 )
 def test_load_model_corrupt_file():
     """Test loading of corrupted model file."""
-    path = "tests/trainer/corrupt.pkl"
-    with pytest.raises(OSError, match="data is invalid."):
+    path = 'tests/trainer/corrupt.pkl'
+    with pytest.raises(OSError, match='data is invalid.'):
         RFExtractionAI.load_model(path)
 
 
@@ -2036,8 +2033,8 @@ def test_load_model_corrupt_file():
 )
 def test_load_model_wrong_pickle_data():
     """Test loading of wrong pickle data."""
-    path = "tests/trainer/list_test.pkl"
-    with pytest.raises(TypeError, match="Konfuzio AbstractExtractionAI instance"):
+    path = 'tests/trainer/list_test.pkl'
+    with pytest.raises(TypeError, match='Konfuzio AbstractExtractionAI instance'):
         RFExtractionAI.load_model(path)
 
 
@@ -2048,7 +2045,7 @@ def test_load_model_wrong_pickle_data():
 @unittest.skipIf(sys.version_info[:2] != (3, 8), reason='This AI can only be loaded on Python 3.8.')
 def test_load_old_ai_model():
     """Test loading of an old trained model."""
-    path = "tests/trainer/2022-03-10-15-14-51_lohnabrechnung_old_model.pkl"
+    path = 'tests/trainer/2022-03-10-15-14-51_lohnabrechnung_old_model.pkl'
     with pytest.raises(TypeError, match="Loaded model's interface is not compatible with any AIs"):
         RFExtractionAI.load_model(path)
 
@@ -2060,7 +2057,7 @@ def test_load_old_ai_model():
 @pytest.mark.skipif(sys.version_info[:2] != (3, 8), reason='This AI can only be loaded on Python 3.8.')
 def test_load_ai_model():
     """Test loading trained model."""
-    path = "tests/trainer/2023-05-11-15-44-10_lohnabrechnung_rfextractionai_.pkl"
+    path = 'tests/trainer/2023-05-11-15-44-10_lohnabrechnung_rfextractionai_.pkl'
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
     pipeline = RFExtractionAI.load_model(path)
 
@@ -2091,7 +2088,7 @@ def test_feat_num_count():
 )
 def test_date_count():
     """Test string conversion."""
-    result = date_count("01.01.2010")
+    result = date_count('01.01.2010')
     assert result == 1
 
 
@@ -2101,7 +2098,7 @@ def test_date_count():
 )
 def test_date_count_right_format_wrong_date():
     """Test string conversion."""
-    date_count("aa.dd.dhsfkbhsdf")
+    date_count('aa.dd.dhsfkbhsdf')
 
 
 @pytest.mark.skipif(
@@ -2110,7 +2107,7 @@ def test_date_count_right_format_wrong_date():
 )
 def test_date_count_index_error():
     """Test string conversion."""
-    date_count("ad")
+    date_count('ad')
 
 
 @pytest.mark.skipif(
@@ -2119,7 +2116,7 @@ def test_date_count_index_error():
 )
 def test_digit_count():
     """Test string conversion."""
-    result = digit_count("123456789ABC")
+    result = digit_count('123456789ABC')
     assert result == 9
 
 
@@ -2129,7 +2126,7 @@ def test_digit_count():
 )
 def test_num_count_wrong_format():
     """Test string conversion."""
-    num_count("word")
+    num_count('word')
 
 
 @pytest.mark.skipif(
@@ -2138,7 +2135,7 @@ def test_num_count_wrong_format():
 )
 def test_space_count():
     """Test string conversion."""
-    result = space_count("1 2 3 4 5 ")
+    result = space_count('1 2 3 4 5 ')
     assert result == 5
 
 
@@ -2148,7 +2145,7 @@ def test_space_count():
 )
 def test_space_count_with_tabs():
     """Test string conversion."""
-    result = space_count("\t")
+    result = space_count('\t')
     assert result == 4
 
 
@@ -2158,7 +2155,7 @@ def test_space_count_with_tabs():
 )
 def test_special_count():
     """Test string conversion."""
-    result = special_count("!_:ThreeSpecialChars")
+    result = special_count('!_:ThreeSpecialChars')
     assert result == 3
 
 
@@ -2168,7 +2165,7 @@ def test_special_count():
 )
 def test_vowel_count():
     """Test string conversion."""
-    result = vowel_count("vowel")
+    result = vowel_count('vowel')
     assert result == 2
 
 
@@ -2178,7 +2175,7 @@ def test_vowel_count():
 )
 def test_upper_count():
     """Test string conversion."""
-    result = upper_count("UPPERlower!")
+    result = upper_count('UPPERlower!')
     assert result == 5
 
 
@@ -2188,7 +2185,7 @@ def test_upper_count():
 )
 def test_num_count():
     """Test string conversion."""
-    result = num_count("1.500,34")
+    result = num_count('1.500,34')
     assert result == 1500.34
 
 
@@ -2198,7 +2195,7 @@ def test_num_count():
 )
 def test_duplicate_count():
     """Test string conversion."""
-    result = duplicate_count("AAABBCCDDE")
+    result = duplicate_count('AAABBCCDDE')
     assert result == 9
 
 
@@ -2208,7 +2205,7 @@ def test_duplicate_count():
 )
 def test_substring_count():
     """Test string conversion."""
-    result = substring_count(["Apple", "Annaconda"], "a")
+    result = substring_count(['Apple', 'Annaconda'], 'a')
     assert result == [1, 3]
 
 
@@ -2218,7 +2215,7 @@ def test_substring_count():
 )
 def test_unique_char_count():
     """Test string conversion."""
-    result = unique_char_count("12345678987654321")
+    result = unique_char_count('12345678987654321')
     assert result == 9
 
 
@@ -2278,7 +2275,7 @@ test_data_year_month_day_count = [
     not is_dependency_installed('torch'),
     reason='Required dependencies not installed.',
 )
-@pytest.mark.parametrize("test_input, expected, document_id", test_data_year_month_day_count)
+@pytest.mark.parametrize('test_input, expected, document_id', test_data_year_month_day_count)
 def test_dates(test_input, expected, document_id):
     """Test string conversion."""
     res = year_month_day_count(test_input)
@@ -2306,7 +2303,7 @@ test_data_num = [
     not is_dependency_installed('torch'),
     reason='Required dependencies not installed.',
 )
-@pytest.mark.parametrize("test_input, expected, document_id", test_data_num)
+@pytest.mark.parametrize('test_input, expected, document_id', test_data_num)
 def test_num(test_input, expected, document_id):
     """Test string conversion."""
     assert num_count(test_input) == expected

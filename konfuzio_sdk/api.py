@@ -5,7 +5,7 @@ import logging
 import os
 from json import JSONDecodeError
 from operator import itemgetter
-from typing import List, Union, Optional, Dict
+from typing import Dict, List, Optional, Union
 
 import requests
 from requests import HTTPError
@@ -13,33 +13,32 @@ from requests.adapters import HTTPAdapter
 from urllib3 import Retry
 
 from konfuzio_sdk import KONFUZIO_HOST, KONFUZIO_TOKEN
-
 from konfuzio_sdk.urls import (
     create_annotation_url,
+    get_ai_model_download_url,
+    get_ai_model_url,
+    get_annotation_url,
     get_auth_token_url,
-    get_projects_list_url,
+    get_categorization_ais_list_url,
+    get_create_ai_model_url,
+    get_document_annotations_url,
+    get_document_bbox_url,
     get_document_details_url,
-    get_project_url,
-    get_project_labels_url,
     get_document_ocr_file_url,
     get_document_original_file_url,
-    get_documents_meta_url,
-    get_document_annotations_url,
-    get_annotation_url,
-    get_upload_document_url,
-    get_document_url,
     get_document_segmentation_details_url,
-    get_labels_url,
-    get_create_ai_model_url,
-    get_page_url,
-    get_ai_model_url,
-    get_splitting_ais_list_url,
-    get_categorization_ais_list_url,
+    get_document_url,
+    get_documents_meta_url,
     get_extraction_ais_list_url,
-    get_ai_model_download_url,
-    get_project_label_sets_url,
+    get_labels_url,
+    get_page_url,
     get_project_categories_url,
-    get_document_bbox_url,
+    get_project_label_sets_url,
+    get_project_labels_url,
+    get_project_url,
+    get_projects_list_url,
+    get_splitting_ais_list_url,
+    get_upload_document_url,
 )
 from konfuzio_sdk.utils import is_file
 
@@ -61,13 +60,13 @@ def _get_auth_token(username, password, host=KONFUZIO_HOST) -> str:
     :return: The new generated token.
     """
     url = get_auth_token_url(host)
-    user_credentials = {"username": username, "password": password}
+    user_credentials = {'username': username, 'password': password}
     r = requests.post(url, json=user_credentials)
     if r.status_code == 200:
         token = r.json()['token']
     elif r.status_code in [403, 400]:
         raise PermissionError(
-            "[ERROR] Your credentials are not correct! Please run init again and provide the correct credentials."
+            '[ERROR] Your credentials are not correct! Please run init again and provide the correct credentials.'
         )
     else:
         raise ConnectionError(f'HTTP Status {r.status_code}: {r.text}')
@@ -75,7 +74,7 @@ def _get_auth_token(username, password, host=KONFUZIO_HOST) -> str:
 
 
 def init_env(
-    user: str, password: str, host: str = KONFUZIO_HOST, working_directory=os.getcwd(), file_ending: str = ".env"
+    user: str, password: str, host: str = KONFUZIO_HOST, working_directory=os.getcwd(), file_ending: str = '.env'
 ):
     """
     Add the .env file to the working directory.
@@ -88,12 +87,12 @@ def init_env(
     """
     token = _get_auth_token(user, password, host)
 
-    with open(os.path.join(working_directory, file_ending), "w") as f:
-        f.write(f"KONFUZIO_HOST = {host}\n")
-        f.write(f"KONFUZIO_USER = {user}\n")
-        f.write(f"KONFUZIO_TOKEN = {token}\n")
+    with open(os.path.join(working_directory, file_ending), 'w') as f:
+        f.write(f'KONFUZIO_HOST = {host}\n')
+        f.write(f'KONFUZIO_USER = {user}\n')
+        f.write(f'KONFUZIO_TOKEN = {token}\n')
 
-    print("[SUCCESS] SDK initialized!")
+    print('[SUCCESS] SDK initialized!')
 
     return True
 
@@ -119,16 +118,16 @@ class TimeoutHTTPAdapter(HTTPAdapter):
         """Use timeout policy if not otherwise declared."""
         if request.headers['Authorization'] == 'Token None':
             raise PermissionError(f'Your Token to connect to {KONFUZIO_HOST} is missing, e.g. use "konfuzio_sdk init"')
-        logger.debug(f"Sending request: {request.url}, {request.method}, {request.headers}")
-        timeout = kwargs.get("timeout")
+        logger.debug(f'Sending request: {request.url}, {request.method}, {request.headers}')
+        timeout = kwargs.get('timeout')
         if timeout is None:
-            kwargs["timeout"] = self.timeout
+            kwargs['timeout'] = self.timeout
         return super().send(request, *args, **kwargs)
 
     def build_response(self, req, resp):
         """Throw error for any HTTPError that is not part of the retry strategy."""
         response = super().build_response(req, resp)
-        logger.debug(f"Received response: {response.status_code}, {response.reason}, {response.url}")
+        logger.debug(f'Received response: {response.status_code}, {response.reason}, {response.url}')
         # handle status code one by one as some status codes will cause a retry, see konfuzio_session
         if response.status_code in [403, 404]:
             # Fallback to None if there's no detail, for whatever reason.
@@ -263,12 +262,12 @@ def create_new_project(project_name, session=None):
     if session is None:
         session = konfuzio_session()
     url = get_projects_list_url()
-    new_project_data = {"name": project_name}
+    new_project_data = {'name': project_name}
     r = session.post(url=url, json=new_project_data)
 
     if r.status_code == 201:
-        project_id = r.json()["id"]
-        logger.info(f"Project {project_name} (ID {project_id}) was created successfully!")
+        project_id = r.json()['id']
+        logger.info(f'Project {project_name} (ID {project_id}) was created successfully!')
         return project_id
     else:
         raise PermissionError(
@@ -451,7 +450,7 @@ def post_document_annotation(
 
     r = session.post(url, json=data)
     if r.status_code != 201:
-        logger.error(f"Received response status code {r.status_code}.")
+        logger.error(f'Received response status code {r.status_code}.')
     assert r.status_code == 201
     return r
 
@@ -552,12 +551,12 @@ def create_label(
     label_sets_ids = [label_set.id_ for label_set in label_sets]
 
     data = {
-        "project": project_id,
-        "text": label_name,
-        "description": description,
-        "has_multiple_top_candidates": has_multiple_top_candidates,
-        "get_data_type_display": data_type,
-        "templates": label_sets_ids,
+        'project': project_id,
+        'text': label_name,
+        'description': description,
+        'has_multiple_top_candidates': has_multiple_top_candidates,
+        'get_data_type_display': data_type,
+        'templates': label_sets_ids,
     }
 
     r = session.post(url=url, json=data)
@@ -597,10 +596,10 @@ def upload_file_konfuzio_api(
     url = get_upload_document_url()
     is_file(filepath)
 
-    with open(filepath, "rb") as f:
+    with open(filepath, 'rb') as f:
         file_data = f.read()
 
-    files = {"data_file": (os.path.basename(filepath), file_data, "multipart/form-data")}
+    files = {'data_file': (os.path.basename(filepath), file_data, 'multipart/form-data')}
     data = {
         "project": project_id,
         "dataset_status": dataset_status,
@@ -650,20 +649,20 @@ def update_document_konfuzio_api(document_id: int, session=None, **kwargs):
     data = {}
     file_name = kwargs.get('file_name', None)
     dataset_status = kwargs.get('dataset_status', None)
-    category_id = kwargs.get('category_template_id', None)
+    category_id = kwargs.get('category_id', None)
     assignee = kwargs.get('assignee', None)
 
     if file_name is not None:
-        data.update({"data_file_name": file_name})
+        data.update({'data_file_name': file_name})
 
     if dataset_status is not None:
-        data.update({"dataset_status": dataset_status})
+        data.update({'dataset_status': dataset_status})
 
     if category_id is not None:
-        data.update({"category_template": category_id})
+        data.update({'category': category_id})
 
     if assignee is not None:
-        data.update({"assignee": assignee})
+        data.update({'assignee': assignee})
 
     r = session.patch(url=url, json=data)
 
@@ -768,7 +767,7 @@ def upload_ai_model(ai_model_path: str, project_id: int = None, category_id: int
         model_name = os.path.basename(ai_model_path)
         with open(ai_model_path, 'rb') as f:
             multipart_form_data = {'file': (model_name, f)}
-            headers = {"Prefer": "respond-async"}
+            headers = {'Prefer': 'respond-async'}
             if not ai_type == 'extraction':
                 data = {'project': str(project_id)}
             else:
@@ -832,7 +831,7 @@ def update_ai_model(ai_model_id: int, ai_type: str, patch: bool = True, session=
     description = kwargs.get('description', None)
 
     if description is not None:
-        data.update({"description": description})
+        data.update({'description': description})
     if patch:
         r = session.patch(url=url, json=data)
     else:
@@ -862,9 +861,9 @@ def get_all_project_ais(project_id: int, session=None) -> dict:
         host = None
 
     urls = {
-        "extraction": get_extraction_ais_list_url(project_id, host),
-        "filesplitting": get_splitting_ais_list_url(project_id, host),
-        "categorization": get_categorization_ais_list_url(project_id, host),
+        'extraction': get_extraction_ais_list_url(project_id, host),
+        'filesplitting': get_splitting_ais_list_url(project_id, host),
+        'categorization': get_categorization_ais_list_url(project_id, host),
     }
 
     all_ais = {}
@@ -878,7 +877,7 @@ def get_all_project_ais(project_id: int, session=None) -> dict:
                 all_ais[ai_type] = json.loads(response.text)
         except HTTPError as e:
             all_ais[ai_type] = {'error': e}
-            print(f"[ERROR] while fetching {ai_type} AIs: {e}")
+            print(f'[ERROR] while fetching {ai_type} AIs: {e}')
 
     return all_ais
 
@@ -894,7 +893,7 @@ def export_ai_models(project, session=None) -> int:
     export_count = 0  # Keeping track of how many models were exported
     project_ai_models = project.ai_models
     for model_type, details in project_ai_models.items():
-        count = details.get("count")
+        count = details.get('count')
         if count and count > 0:
             # Only AI types with at least one model will be exported
             ai_types.add(model_type)
@@ -910,13 +909,13 @@ def export_ai_models(project, session=None) -> int:
         variant = ai_type
         folder = os.path.join(project.project_folder, 'models', variant + '_ais')
 
-        for ai_model in project_ai_models.get(variant, {}).get("results", []):
+        for ai_model in project_ai_models.get(variant, {}).get('results', []):
             # Only export fully trained AIs which are set as active
-            if not ai_model.get("status") == "done" or not ai_model.get("active"):
-                logger.error(f"Skip {ai_model} in export.")
+            if not ai_model.get('status') == 'done' or not ai_model.get('active'):
+                logger.error(f'Skip {ai_model} in export.')
                 continue
-            ai_model_id = ai_model.get("id")
-            ai_model_version = ai_model.get("id")
+            ai_model_id = ai_model.get('id')
+            ai_model_version = ai_model.get('id')
 
             if not ai_model_id or not ai_model_version:
                 continue
@@ -928,19 +927,19 @@ def export_ai_models(project, session=None) -> int:
                 response.raise_for_status()
             except HTTPError:
                 logger.error(
-                    f"Skip {ai_model} in export because this AI is corrupted (i.e. it does not have a file associated)."
+                    f'Skip {ai_model} in export because this AI is corrupted (i.e. it does not have a file associated).'
                 )
                 continue
 
             if response.status_code == 200:
-                alternative_name = f"{variant}_ai_{ai_model_id}_version_{ai_model_version}"
+                alternative_name = f'{variant}_ai_{ai_model_id}_version_{ai_model_version}'
 
                 # Current implementation automatically downloads the AI file through the Content-Disposition header
 
-                content_disposition = response.headers.get("Content-Disposition", alternative_name)
-                if "filename=" in content_disposition:
+                content_disposition = response.headers.get('Content-Disposition', alternative_name)
+                if 'filename=' in content_disposition:
                     # Split the string by 'filename=' and get the second part
-                    file_name = content_disposition.split("filename=")[1].strip()
+                    file_name = content_disposition.split('filename=')[1].strip()
 
                     # Remove double quotes from the beginning and end if present
                     file_name = file_name.strip('"')
@@ -954,9 +953,9 @@ def export_ai_models(project, session=None) -> int:
 
                 local_model_path = os.path.join(models_dir, file_name)
 
-                with open(local_model_path, "wb") as f:
+                with open(local_model_path, 'wb') as f:
                     f.write(response.content)
                 export_count += 1
 
-                print(f"[SUCCESS] Exported {variant} AI Model to {file_name}")
+                print(f'[SUCCESS] Exported {variant} AI Model to {file_name}')
             return export_count

@@ -1,8 +1,8 @@
 """Validate API functions."""
 import datetime
+import json
 import logging
 import os
-import json
 import sys
 import unittest
 from unittest.mock import patch
@@ -12,31 +12,31 @@ from requests import HTTPError
 
 from konfuzio_sdk import BASE_DIR, KONFUZIO_USER
 from konfuzio_sdk.api import (
-    get_meta_of_files,
-    download_file_konfuzio_api,
-    upload_file_konfuzio_api,
-    post_document_annotation,
+    TimeoutHTTPAdapter,
+    _get_auth_token,
+    create_label,
+    create_new_project,
     delete_document_annotation,
     delete_file_konfuzio_api,
-    get_document_annotations,
-    get_results_from_segmentation,
-    update_document_konfuzio_api,
-    get_project_list,
-    get_document_details,
-    get_project_details,
-    init_env,
-    _get_auth_token,
-    create_new_project,
-    create_label,
-    TimeoutHTTPAdapter,
-    get_page_image,
+    download_file_konfuzio_api,
     get_all_project_ais,
-    get_project_labels,
+    get_document_annotations,
+    get_document_details,
+    get_meta_of_files,
+    get_page_image,
+    get_project_details,
     get_project_label_sets,
+    get_project_labels,
+    get_project_list,
+    get_results_from_segmentation,
+    init_env,
+    post_document_annotation,
+    update_document_konfuzio_api,
+    upload_file_konfuzio_api,
 )
-from konfuzio_sdk.data import Project, Bbox, Span
+from konfuzio_sdk.data import Bbox, Project, Span
 from konfuzio_sdk.utils import get_spans_from_bbox
-from tests.variables import TEST_PROJECT_ID, TEST_DOCUMENT_ID
+from tests.variables import TEST_DOCUMENT_ID, TEST_PROJECT_ID
 
 FOLDER_ROOT = os.path.dirname(os.path.realpath(__file__))
 
@@ -48,8 +48,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         """Test to get Document details."""
         data = get_project_list()
         assert TEST_PROJECT_ID in [prj["id"] for prj in data["results"]]
-        assert set(data["results"][0]) == set(
-            [
+        assert set(data["results"][0]) == {
                 'id',
                 'name',
                 "storage_name",
@@ -61,8 +60,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
                 "decimal_separator",
                 "auto_delete_documents_after_days",
                 "enable_translated_strings",
-            ]
-        )
+            }
 
     def test_project_details(self):
         """Test to get Document details."""
@@ -85,10 +83,10 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         """Get the meta information of Document in a Project."""
         get_meta_of_files(project_id=TEST_PROJECT_ID, limit=10)
 
-    @patch("requests.post")
+    @patch('requests.post')
     def test_empty_project(self, function):
         """Get the meta information of Documents if the Project is empty."""
-        function.return_value = {"count": 0, "next": None, "previous": None, "results": []}
+        function.return_value = {'count': 0, 'next': None, 'previous': None, 'results': []}
         get_meta_of_files(project_id=TEST_PROJECT_ID, limit=10)
 
     def test_get_meta_of_files_one_page(self):
@@ -98,8 +96,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
     def test_documents_list(self):
         """Test to get Documents details."""
         data = get_meta_of_files(project_id=TEST_PROJECT_ID)
-        assert set(data[0].keys()) == set(
-            [
+        assert set(data[0].keys()) == {
                 "id",
                 "project",
                 "document_set",
@@ -127,8 +124,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
                 "updated_at",
                 "proposed_split",
                 "split_is_revised",
-            ]
-        )
+            }
 
     def test_document_details_document_not_available(self):
         """Test to get Document that does not exist."""
@@ -145,8 +141,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
     def test_document_details(self):
         """Test to get Document details."""
         data = get_document_details(document_id=TEST_DOCUMENT_ID)
-        assert set(data.keys()) == set(
-            [
+        assert set(data.keys()) == {
                 "id",
                 "project",
                 "document_set",
@@ -177,14 +172,12 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
                 "updated_at",
                 "proposed_split",
                 "split_is_revised",
-            ]
-        )
+            }
 
     def test_long_document_details(self):
         """Test to get Document details."""
         data = get_document_details(document_id=216836)
-        assert set(data.keys()) == set(
-            [
+        assert set(data.keys()) == {
                 "id",
                 "project",
                 "document_set",
@@ -215,8 +208,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
                 "updated_at",
                 "proposed_split",
                 "split_is_revised",
-            ]
-        )
+            }
 
     def test_get_list_of_files(self):
         """Get meta information from Documents in the Project."""
@@ -236,7 +228,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
     def test_upload_file_konfuzio_api_invalid_callback_url(self):
         """Test upload of a file through API and its removal."""
         file_path = os.path.join(FOLDER_ROOT, 'test_data', 'pdf.pdf')
-        with pytest.raises(HTTPError, match="Enter a valid URL."):
+        with pytest.raises(HTTPError, match='Enter a valid URL.'):
             _ = upload_file_konfuzio_api(file_path, project_id=TEST_PROJECT_ID, callback_url='invalid url')
 
     def test_download_file_with_ocr(self):
@@ -268,8 +260,8 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         label_set_id = 64  # just for testing
 
         bboxes = [
-            {"page_index": 0, "x0": 198, "x1": 300, "y0": 508, "y1": 517},
-            {"page_index": 0, "x0": 197.76, "x1": 233, "y0": 495, "y1": 508},
+            {'page_index': 0, 'x0': 198, 'x1': 300, 'y0': 508, 'y1': 517},
+            {'page_index': 0, 'x0': 197.76, 'x1': 233, 'y0': 495, 'y1': 508},
         ]
         document = Project(id_=TEST_PROJECT_ID, strict_data_validation=False).get_document_by_id(TEST_DOCUMENT_ID + 11)
         document.update()
@@ -311,8 +303,8 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         label_set_id = 64  # just for testing
 
         bboxes = [
-            {"page_index": 0, "start_offset": 1868, "end_offset": 1883},
-            {"page_index": 0, "start_offset": 1909, "end_offset": 1915},
+            {'page_index': 0, 'start_offset': 1868, 'end_offset': 1883},
+            {'page_index': 0, 'start_offset': 1909, 'end_offset': 1915},
         ]
 
         response = post_document_annotation(
@@ -397,13 +389,13 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
     def test_download_image(self):
         """Test to download an image of a Page."""
-        assert type(get_page_image(document_id=TEST_DOCUMENT_ID, page_id=1)) is bytes
+        assert isinstance(get_page_image(document_id=TEST_DOCUMENT_ID, page_id=1), bytes)
 
     def test_get_results_from_segmentation(self):
         """Download segmentation results."""
         result = get_results_from_segmentation(doc_id=TEST_DOCUMENT_ID, project_id=TEST_PROJECT_ID)
         assert len(result[0]) == 5  # on the first page 5 elements can be found
-        assert set([box["label"] for box in result[0]]) == {"text", "figure", "table", "title"}
+        assert {box['label'] for box in result[0]} == {'text', 'figure', 'table', 'title'}
 
     def test_update_document_konfuzio_api(self):
         """Update the name and assignee of a Document."""
@@ -424,6 +416,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
     def test_create_label(self):
         """Create a label."""
+
         # mock session
         class _Session:
             """Mock requests POST response."""
@@ -433,7 +426,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
             def json(self):
                 """Mock valid return."""
-                return {"id": 420}
+                return {'id': 420}
 
             def post(self, *arg, **kwargs):
                 """Empty return value."""
@@ -443,6 +436,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
     def test_create_new_project(self):
         """Test to create new Project."""
+
         # mock session
         class _Session:
             """Mock requests POST response."""
@@ -451,7 +445,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
             def json(self):
                 """Mock valid return."""
-                return {"id": 420}
+                return {'id': 420}
 
             def post(self, *arg, **kwargs):
                 """Empty return value."""
@@ -461,6 +455,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
     def test_create_new_project_permission_error(self):
         """Test to create new Project."""
+
         # mock session
         class _Session:
             """Mock requests POST response."""
@@ -469,7 +464,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
             def json(self):
                 """Mock valid return."""
-                return {"id": 420}
+                return {'id': 420}
 
             def post(self, *arg, **kwargs):
                 """Empty return value."""
@@ -483,9 +478,10 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         """Test to download a file which includes a whitespace in the name."""
         download_file_konfuzio_api(document_id=44860)
 
-    @patch("requests.post")
+    @patch('requests.post')
     def test_get_auth_token(self, function):
         """Test to run CLI."""
+
         # mock response
         class _Response:
             """Mock requests POST response."""
@@ -494,7 +490,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
             def json(self):
                 """Mock valid return."""
-                return {"token": "faketoken"}
+                return {'token': 'faketoken'}
 
         function.return_value = _Response()
         _get_auth_token('test', 'test')
@@ -510,12 +506,13 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             headers = {'Authorization': 'Token None'}
 
         with self.assertRaises(PermissionError) as context:
-            adapter.send(request=_Request())  # NOQA
+            adapter.send(request=_Request())
             assert 'is missing' in context.exception
 
-    @patch("requests.post")
+    @patch('requests.post')
     def test_get_auth_token_connection_error(self, function):
         """Test to run CLI."""
+
         # mock response
         class _Response:
             """Mock requests POST response."""
@@ -524,20 +521,21 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
             def json(self):
                 """Mock valid return."""
-                return {"token": "faketoken"}
+                return {'token': 'faketoken'}
 
             def text(self):
                 """Mock the text in the response."""
-                return "Error"
+                return 'Error'
 
         function.return_value = _Response()
         with self.assertRaises(ConnectionError) as context:
             _get_auth_token('test', 'test')
             assert 'HTTP Status 500' in context.exception
 
-    @patch("requests.post")
+    @patch('requests.post')
     def test_patched_init_env(self, function):
         """Test to run CLI."""
+
         # mock response
         class _Response:
             """Mock requests POST response."""
@@ -546,10 +544,10 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
             def json(self):
                 """Mock valid return."""
-                return {"token": "faketoken"}
+                return {'token': 'faketoken'}
 
         function.return_value = _Response()
-        env_file = ".testenv"
+        env_file = '.testenv'
         assert init_env(user='me', password='pw', file_ending=env_file)
         os.remove(os.path.join(os.getcwd(), env_file))
 
@@ -568,7 +566,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
     ):
         """Retrieve all AIs from a Project."""
         # Setup
-        sample_data = {"AI_DATA": "AI_SAMPLE_DATA"}
+        sample_data = {'AI_DATA': 'AI_SAMPLE_DATA'}
 
         mock_session.return_value.get.return_value.status_code = 200
         mock_json_loads.return_value = sample_data
@@ -624,5 +622,5 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
 def test_init_env():
     """Test to write env file."""
-    with pytest.raises(PermissionError, match="Your credentials are not correct"):
-        init_env(user="user", password="ABCD", working_directory=BASE_DIR, file_ending="x.env")
+    with pytest.raises(PermissionError, match='Your credentials are not correct'):
+        init_env(user='user', password='ABCD', working_directory=BASE_DIR, file_ending='x.env')

@@ -1,9 +1,9 @@
 """URLs to the endpoints of Konfuzio Host."""
 
 import logging
+from typing import Union
 
 from konfuzio_sdk import KONFUZIO_HOST
-from typing import Union
 
 logger = logging.getLogger(__name__)
 
@@ -92,7 +92,7 @@ def get_extraction_ais_list_url(project_id: int, host: str = None) -> str:
     """
     if host is None:
         host = KONFUZIO_HOST
-    return f"{host}/api/v3/extraction-ais/?limit=1000&project_id={project_id}"
+    return f'{host}/api/v3/extraction-ais/?limit=1000&project_id={project_id}'
 
 
 def get_splitting_ais_list_url(project_id: int, host: str = None) -> str:
@@ -105,7 +105,7 @@ def get_splitting_ais_list_url(project_id: int, host: str = None) -> str:
     """
     if host is None:
         host = KONFUZIO_HOST
-    return f"{host}/api/v3/splitting-ais/?limit=1000&project_id={project_id}"
+    return f'{host}/api/v3/splitting-ais/?limit=1000&project_id={project_id}'
 
 
 def get_categorization_ais_list_url(project_id: int, host: str = None) -> str:
@@ -118,7 +118,7 @@ def get_categorization_ais_list_url(project_id: int, host: str = None) -> str:
     """
     if host is None:
         host = KONFUZIO_HOST
-    return f"{host}/api/v3/category-ais/?limit=1000&project_id={project_id}"
+    return f'{host}/api/v3/category-ais/?limit=1000&project_id={project_id}'
 
 
 # DOCUMENTS
@@ -411,4 +411,4 @@ def get_ai_model_download_url(ai_model_id: int, host: str = None) -> str:
     """
     if host is None:
         host = KONFUZIO_HOST
-    return f"{host}/aimodel/file/{ai_model_id}/"
+    return f'{host}/aimodel/file/{ai_model_id}/'

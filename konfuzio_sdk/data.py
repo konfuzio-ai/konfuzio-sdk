@@ -5,51 +5,51 @@ import json
 import logging
 import os
 import pathlib
-import regex as re
 import shutil
 import time
 import zipfile
 from copy import deepcopy
-from typing import Optional, List, Union, Tuple, Dict, Iterable
-from warnings import warn
-from requests import HTTPError
 from enum import Enum
+from typing import Dict, Iterable, List, Optional, Tuple, Union
+from warnings import warn
 
 import dateutil.parser
+import regex as re
 from PIL import Image, ImageDraw, ImageFont
+from requests import HTTPError
 from tqdm import tqdm
 
 from konfuzio_sdk.api import (
-    konfuzio_session,
-    download_file_konfuzio_api,
-    get_meta_of_files,
-    post_document_annotation,
-    get_document_details,
-    update_document_konfuzio_api,
-    get_page_image,
     delete_document_annotation,
     delete_file_konfuzio_api,
-    upload_file_konfuzio_api,
-    get_results_from_segmentation,
-    get_all_project_ais,
+    download_file_konfuzio_api,
     export_ai_models,
-    get_project_categories,
+    get_all_project_ais,
     get_document_annotations,
     get_document_bbox,
-    get_project_labels,
+    get_document_details,
+    get_meta_of_files,
+    get_page_image,
+    get_project_categories,
     get_project_label_sets,
+    get_project_labels,
+    get_results_from_segmentation,
+    konfuzio_session,
+    post_document_annotation,
+    update_document_konfuzio_api,
+    upload_file_konfuzio_api,
 )
 from konfuzio_sdk.normalize import normalize
-from konfuzio_sdk.regex import get_best_regex, regex_matches, suggest_regex_for_string, merge_regex
+from konfuzio_sdk.regex import get_best_regex, merge_regex, regex_matches, suggest_regex_for_string
 from konfuzio_sdk.urls import get_annotation_view_url
 from konfuzio_sdk.utils import (
-    is_file,
-    convert_to_bio_scheme,
     amend_file_name,
-    sdk_isinstance,
+    convert_to_bio_scheme,
     exception_or_log_error,
-    get_missing_offsets,
     get_file_type_and_extension,
+    get_missing_offsets,
+    is_file,
+    sdk_isinstance,
 )
 
 logger = logging.getLogger(__name__)
@@ -197,7 +197,7 @@ class Page(Data):
 
     def __repr__(self):
         """Return the name of the Document incl. the ID."""
-        return f"Page {self.index} in {self.document}"
+        return f'Page {self.index} in {self.document}'
 
     def get_image(self, update: bool = False) -> Image.Image:
         """
@@ -241,7 +241,7 @@ class Page(Data):
         try:
             # We try to get a ttf font to be able to change bounding box label text size
             font = ImageFont.truetype(
-                "/usr/share/fonts/truetype/liberation/LiberationSerif-Bold.ttf", 24, encoding="unic"
+                '/usr/share/fonts/truetype/liberation/LiberationSerif-Bold.ttf', 24, encoding='unic'
             )
         except OSError:
             logger.warning('Font not found. Loading default.')
@@ -316,7 +316,6 @@ class Page(Data):
         # iterate over each line_number and all of the character bboxes with that line number
 
         for _, line_char_bboxes in itertools.groupby(char_bboxes, lambda x: x['line_number']):
-
             # (a line should never start with a space char)
             trimmed_line_char_bboxes = [char for char in line_char_bboxes if not char['text'].isspace()]
 
@@ -475,6 +474,11 @@ class Page(Data):
                     self.copy_of_id
                 )
 
+    def annotation_sets(self) -> List['AnnotationSet']:
+        """Show all Annotation Sets related to Annotations of the Page."""
+        page_annotations = self.annotations()
+        return list({annotation.annotation_set for annotation in page_annotations})
+
 
 class BboxValidationTypes(Enum):
     """
@@ -538,7 +542,7 @@ class Bbox:
         """Define that one Bounding Box on the same page is identical."""
         return self.__hash__() == other.__hash__()
 
-    def _valid(self, validation=BboxValidationTypes.ALLOW_ZERO_SIZE, handler="sdk_validation"):
+    def _valid(self, validation=BboxValidationTypes.ALLOW_ZERO_SIZE, handler='sdk_validation'):
         """
         Validate the coordinates of the Bounding Box contained in the Bbox, raising a ValueError exception in case.
 
@@ -547,22 +551,22 @@ class Bbox:
         round_decimals = 2
 
         if round(self.x0, round_decimals) == round(self.x1, round_decimals):
-            logger.warning(f"{self} has no width in {self.page}.")
+            logger.warning(f'{self} has no width in {self.page}.')
 
         if round(self.x0, round_decimals) > round(self.x1, round_decimals):
             exception_or_log_error(
-                msg=f"{self} has negative width in {self.page}.",
+                msg=f'{self} has negative width in {self.page}.',
                 fail_loudly=str(validation) != str(BboxValidationTypes.DISABLED),
                 exception_type=ValueError,
                 handler=handler,
             )
 
         if round(self.y0, round_decimals) == round(self.y1, round_decimals):
-            logger.warning(f"{self} has no height in {self.page}.")
+            logger.warning(f'{self} has no height in {self.page}.')
 
         if round(self.y0, round_decimals) > round(self.y1, round_decimals):
             exception_or_log_error(
-                msg=f"{self} has negative height in {self.page}.",
+                msg=f'{self} has negative height in {self.page}.',
                 fail_loudly=str(validation) != str(BboxValidationTypes.DISABLED),
                 exception_type=ValueError,
                 handler=handler,
@@ -570,9 +574,9 @@ class Bbox:
 
         if round(self.y1, round_decimals) > round(self.page.height, round_decimals):
             exception_or_log_error(
-                msg=f"{self} exceeds height of {self.page} by "
-                f"{round(self.y1, round_decimals) - round(self.page.height, round_decimals)} "
-                f"with validation {validation}.",
+                msg=f'{self} exceeds height of {self.page} by '
+                f'{round(self.y1, round_decimals) - round(self.page.height, round_decimals)} '
+                f'with validation {validation}.',
                 fail_loudly=str(validation) != str(BboxValidationTypes.DISABLED),
                 exception_type=ValueError,
                 handler=handler,
@@ -580,9 +584,9 @@ class Bbox:
 
         if round(self.x1, round_decimals) > round(self.page.width, round_decimals):
             exception_or_log_error(
-                msg=f"{self} exceeds width of {self.page} by "
-                f"{round(self.x1, round_decimals) - round(self.page.width, round_decimals)} "
-                f"with validation {validation}.",
+                msg=f'{self} exceeds width of {self.page} by '
+                f'{round(self.x1, round_decimals) - round(self.page.width, round_decimals)} '
+                f'with validation {validation}.',
                 fail_loudly=str(validation) != str(BboxValidationTypes.DISABLED),
                 exception_type=ValueError,
                 handler=handler,
@@ -590,7 +594,7 @@ class Bbox:
 
         if round(self.y0, round_decimals) < 0:
             exception_or_log_error(
-                msg=f"{self} has negative y coordinate in {self.page}.",
+                msg=f'{self} has negative y coordinate in {self.page}.',
                 fail_loudly=str(validation) != str(BboxValidationTypes.DISABLED),
                 exception_type=ValueError,
                 handler=handler,
@@ -598,7 +602,7 @@ class Bbox:
 
         if round(self.x0, round_decimals) < 0:
             exception_or_log_error(
-                msg=f"{self} has negative x coordinate in {self.page}.",
+                msg=f'{self} has negative x coordinate in {self.page}.',
                 fail_loudly=str(validation) != str(BboxValidationTypes.DISABLED),
                 exception_type=ValueError,
                 handler=handler,
@@ -606,7 +610,7 @@ class Bbox:
 
     def check_overlap(self, bbox: Union['Bbox', Dict]) -> bool:
         """Verify if there's overlap between two Bboxes."""
-        if type(bbox) is dict and (
+        if isinstance(bbox, dict) and (
             bbox['x0'] <= self.x1 and bbox['x1'] >= self.x0 and bbox['y0'] <= self.y1 and bbox['y1'] >= self.y0
         ):
             return True
@@ -699,7 +703,7 @@ class AnnotationSet(Data):
 
     def __repr__(self):
         """Return string representation of the Annotation Set."""
-        return f"{self.__class__.__name__}({self.id_}) of {self.label_set} in {self.document}."
+        return f'{self.__class__.__name__}({self.id_}) of {self.label_set} in {self.document}.'
 
     def __lt__(self, other: 'AnnotationSet'):
         """Sort AnnotationSets by their first Annotation."""
@@ -803,8 +807,8 @@ class LabelSet(Data):
         self.name_clean = name_clean
         self.is_default = is_default
 
-        if not categories and "default_label_sets" in kwargs:
-            self._default_of_label_set_ids = kwargs["default_label_sets"]
+        if not categories and 'default_label_sets' in kwargs:
+            self._default_of_label_set_ids = kwargs['default_label_sets']
             self.categories = []
         elif not categories and "default_section_labels" in kwargs:
             self._default_of_label_set_ids = kwargs["default_section_labels"]
@@ -818,8 +822,8 @@ class LabelSet(Data):
 
         self.has_multiple_annotation_sets = has_multiple_annotation_sets
 
-        if "has_multiple_sections" in kwargs:
-            self.has_multiple_annotation_sets = kwargs["has_multiple_sections"]
+        if 'has_multiple_sections' in kwargs:
+            self.has_multiple_annotation_sets = kwargs['has_multiple_sections']
 
         self.project: Project = project
         self._force_offline = project._force_offline
@@ -845,7 +849,7 @@ class LabelSet(Data):
 
     def __repr__(self):
         """Return string representation of the Label Set."""
-        return f"LabelSet: {self.name} ({self.id_})"
+        return f'LabelSet: {self.name} ({self.id_})'
 
     def add_category(self, category: 'Category'):
         """
@@ -914,7 +918,7 @@ class Category(Data):
     def fallback_name(self) -> str:
         """Turn the Category name to lowercase, remove parentheses along with their contents, and trim spaces."""
         parentheses_removed = re.sub(r'\([^)]*\)', '', self.name.lower()).strip()
-        single_spaces = parentheses_removed.replace("  ", " ")
+        single_spaces = parentheses_removed.replace('  ', ' ')
         return single_spaces
 
     def documents(self):
@@ -987,9 +991,9 @@ class Category(Data):
         if self._exclusive_span_tokenizer is not None:
             if tokenizer != self._exclusive_span_tokenizer:
                 logger.warning(
-                    "Assigned tokenizer does not correspond to the one previously used within this instance."
-                    "All previously found exclusive first-page strings within each Category will be removed "
-                    "and replaced with the newly generated ones."
+                    'Assigned tokenizer does not correspond to the one previously used within this instance.'
+                    'All previously found exclusive first-page strings within each Category will be removed '
+                    'and replaced with the newly generated ones.'
                 )
                 self._collect_exclusive_first_page_strings(tokenizer)
         if not self._exclusive_first_page_strings:
@@ -1006,7 +1010,7 @@ class Category(Data):
 
     def __repr__(self):
         """Return string representation of the Category."""
-        return f"Category: {self.name} ({self.id_})"
+        return f'Category: {self.name} ({self.id_})'
 
 
 class CategoryAnnotation(Data):
@@ -1041,9 +1045,9 @@ class CategoryAnnotation(Data):
         if page is not None:
             if (document is not None) and (page.document != document):
                 raise ValueError(
-                    f"The provided {page} comes from {page.document} but the provided {document} does not correspond. "
-                    f"You can provide just the Document argument if this CategoryAnnotation is not linked to a Page, "
-                    f"otherwise only provide the Page argument; the corresponding Document will be found automatically."
+                    f'The provided {page} comes from {page.document} but the provided {document} does not correspond. '
+                    f'You can provide just the Document argument if this CategoryAnnotation is not linked to a Page, '
+                    f'otherwise only provide the Page argument; the corresponding Document will be found automatically.'
                 )
             self.document = self.page.document
         self._confidence = confidence
@@ -1053,7 +1057,7 @@ class CategoryAnnotation(Data):
 
     def __repr__(self):
         """Return string representation."""
-        return f"Category Annotation: ({self.category}, {self.confidence}) in {self.page or self.document}"
+        return f'Category Annotation: ({self.category}, {self.confidence}) in {self.page or self.document}'
 
     def __eq__(self, other):
         """Define equality condition for CategoryAnnotations.
@@ -1193,7 +1197,7 @@ class Label(Data):
             raise TypeError(
                 "This value has never been computed. Please provide a value for keyword argument: 'categories'"
             )
-        elif type(categories) is list:
+        elif isinstance(categories, list):
             self._has_multiline_annotations = False
             for category in categories:
                 for document in category.documents():
@@ -1204,7 +1208,7 @@ class Label(Data):
 
         return self._has_multiline_annotations
 
-    def add_label_set(self, label_set: "LabelSet"):
+    def add_label_set(self, label_set: 'LabelSet'):
         """
         Add Label Set to label, if it does not exist.
 
@@ -1304,7 +1308,7 @@ class Label(Data):
         if category.id_ in self._tokens:
             return self._tokens[category.id_]
 
-        logger.info(f"Beginning base regex search for Label {self.name}.")
+        logger.info(f'Beginning base regex search for Label {self.name}.')
 
         if annotations is None:
             all_annotations = self.annotations(categories=[category])  # default is use_correct = True
@@ -1418,7 +1422,7 @@ class Label(Data):
         """Find the best combination of regex for Label with before and after context."""
         all_annotations = self.annotations(categories=[category])  # default is use_correct = True
         if all_annotations == []:
-            logger.error(f"We cannot find annotations for Label {self} and Category {category}.")
+            logger.error(f'We cannot find annotations for Label {self} and Category {category}.')
             return []
         label_regex_token = self.base_regex(category=category, annotations=all_annotations)
         found_regex = self._find_regexes(all_annotations, label_regex_token, category, max_findings_per_page)
@@ -1535,9 +1539,9 @@ class Label(Data):
                     else:
                         true_positives[regex] = document.evaluate_regex(regex, self)['count_correct_annotations']
             if not true_positives:
-                logger.warning(f"No regex was found for {self} in {category}.")
+                logger.warning(f'No regex was found for {self} in {category}.')
             elif not sum(true_positives.values()):
-                logger.warning(f"No resultative regexes found for {self} in {category}.")
+                logger.warning(f'No resultative regexes found for {self} in {category}.')
             else:
                 regexes_with_percentages = {k: v / sum(true_positives.values()) for k, v in true_positives.items()}
                 sorted_regexes = dict(sorted(regexes_with_percentages.items(), key=lambda item: item[1]))
@@ -1682,7 +1686,7 @@ class Label(Data):
         :raises ValueError: When all search options are disabled.
         """
         if not regex_search and not confidence_search and not normalization_search:
-            raise ValueError("All search modes disabled, search is impossible. Enable at least one search mode.")
+            raise ValueError('All search modes disabled, search is impossible. Enable at least one search mode.')
         results = []
         if regex_search:
             results.append(
@@ -1767,7 +1771,7 @@ class Span(Data):
         annotation and annotation.add_span(self)  # only add if Span has access to an Annotation
         self._valid(strict_validation)
 
-    def _valid(self, strict: bool = True, handler: str = "sdk_validation"):
+    def _valid(self, strict: bool = True, handler: str = 'sdk_validation'):
         """
         Validate containted data.
 
@@ -1775,31 +1779,31 @@ class Span(Data):
         details see https://dev.konfuzio.com/sdk/tutorials/data_validation/index.html
         """
         if self.end_offset == self.start_offset == 0:
-            logger.warning(f"{self} is intentionally left empty.")
+            logger.warning(f'{self} is intentionally left empty.')
         elif self.start_offset < 0 or self.end_offset < 0:
             exception_or_log_error(
-                msg=f"{self} must span text.",
+                msg=f'{self} must span text.',
                 fail_loudly=strict,
                 exception_type=ValueError,
                 handler=handler,
             )
         elif self.start_offset == self.end_offset:
             exception_or_log_error(
-                msg=f"{self} must span text: Start {self.start_offset} equals end.",
+                msg=f'{self} must span text: Start {self.start_offset} equals end.',
                 fail_loudly=strict,
                 exception_type=ValueError,
                 handler=handler,
             )
         elif self.end_offset < self.start_offset:
             exception_or_log_error(
-                msg=f"{self} length must be positive.",
+                msg=f'{self} length must be positive.',
                 fail_loudly=strict,
                 exception_type=ValueError,
                 handler=handler,
             )
-        elif self.offset_string and ("\n" in self.offset_string or "\f" in self.offset_string):
+        elif self.offset_string and ('\n' in self.offset_string or '\f' in self.offset_string):
             exception_or_log_error(
-                msg=f"{self} must not span more than one visual line.",
+                msg=f'{self} must not span more than one visual line.',
                 fail_loudly=strict,
                 exception_type=ValueError,
                 handler=handler,
@@ -1847,16 +1851,14 @@ class Span(Data):
         if self.offset_string and len(self.offset_string) < 16:
             offset_string_repr = self.offset_string
         elif self.offset_string:
-            offset_string_repr = f"{self.offset_string[:14]}[...]"
+            offset_string_repr = f'{self.offset_string[:14]}[...]'
         else:
             offset_string_repr = ''
 
         if not self.annotation:
-            return (
-                f"Virtual {self.__class__.__name__} ({self.start_offset}, {self.end_offset}): \"{offset_string_repr}\""
-            )
+            return f'Virtual {self.__class__.__name__} ({self.start_offset}, {self.end_offset}): "{offset_string_repr}"'
         else:
-            return f"{self.__class__.__name__} ({self.start_offset}, {self.end_offset}): \"{offset_string_repr}\""
+            return f'{self.__class__.__name__} ({self.start_offset}, {self.end_offset}): "{offset_string_repr}"'
 
     def __hash__(self):
         """Make any online or local concept hashable. See https://stackoverflow.com/a/7152650."""
@@ -1891,7 +1893,7 @@ class Span(Data):
             document = self.document
             characters = {key: document.bboxes.get(key) for key in character_range if document.text[key] != ' '}
             if not all(characters.values()):
-                logger.error(f'{self} in {self.document} contains Characters that don\'t provide a Bounding Box.')
+                logger.error(f"{self} in {self.document} contains Characters that don't provide a Bounding Box.")
             self._bbox = Bbox(
                 x0=min([ch.x0 for c, ch in characters.items() if ch is not None]),
                 x1=max([ch.x1 for c, ch in characters.items() if ch is not None]),
@@ -1937,97 +1939,97 @@ class Span(Data):
         """Return any information needed to evaluate the Span."""
         if self.start_offset == self.end_offset == 0:
             span_dict = {
-                "id_local": None,
-                "id_": None,
-                "confidence": None,
-                "offset_string": None,
-                "normalized": None,
-                "start_offset": 0,  # to support compare function to evaluate True and False
-                "end_offset": 0,  # to support compare function to evaluate True and False
-                "is_correct": None,
-                "created_by": None,
-                "revised_by": None,
-                "custom_offset_string": None,
-                "revised": None,
-                "label_threshold": None,
-                "label_id": 0,
-                "label_has_multiple_top_candidates": None,
-                "label_set_id": 0,
-                "annotation_id": None,
-                "annotation_set_id": 0,  # to allow grouping to compare boolean
-                "document_id": 0,
-                "document_id_local": 0,
-                "category_id": 0,
-                "x0": 0,
-                "x1": 0,
-                "y0": 0,
-                "y1": 0,
-                "line_index": 0,
-                "page_index": None,
-                "page_width": 0,
-                "page_height": 0,
-                "x0_relative": None,
-                "x1_relative": None,
-                "y0_relative": None,
-                "y1_relative": None,
-                "page_index_relative": None,
-                "area_quadrant_two": 0,
-                "area": 0,
-                "label_name": None,
-                "label_set_name": None,
-                "data_type": None,
+                'id_local': None,
+                'id_': None,
+                'confidence': None,
+                'offset_string': None,
+                'normalized': None,
+                'start_offset': 0,  # to support compare function to evaluate True and False
+                'end_offset': 0,  # to support compare function to evaluate True and False
+                'is_correct': None,
+                'created_by': None,
+                'revised_by': None,
+                'custom_offset_string': None,
+                'revised': None,
+                'label_threshold': None,
+                'label_id': 0,
+                'label_has_multiple_top_candidates': None,
+                'label_set_id': 0,
+                'annotation_id': None,
+                'annotation_set_id': 0,  # to allow grouping to compare boolean
+                'document_id': 0,
+                'document_id_local': 0,
+                'category_id': 0,
+                'x0': 0,
+                'x1': 0,
+                'y0': 0,
+                'y1': 0,
+                'line_index': 0,
+                'page_index': None,
+                'page_width': 0,
+                'page_height': 0,
+                'x0_relative': None,
+                'x1_relative': None,
+                'y0_relative': None,
+                'y1_relative': None,
+                'page_index_relative': None,
+                'area_quadrant_two': 0,
+                'area': 0,
+                'label_name': None,
+                'label_set_name': None,
+                'data_type': None,
             }
         else:
             span_dict = {
-                "id_local": self.annotation.id_local,
-                "id_": self.annotation.id_,
-                "confidence": self.annotation.confidence,
-                "offset_string": self.offset_string,
-                "normalized": self.normalized,
-                "start_offset": self.start_offset,  # to support multiline
-                "end_offset": self.end_offset,  # to support multiline
-                "is_correct": self.annotation.is_correct,
-                "created_by": self.annotation.created_by,
-                "revised_by": self.annotation.revised_by,
-                "custom_offset_string": self.annotation.custom_offset_string,
-                "revised": self.annotation.revised,
-                "label_threshold": self.annotation.label.threshold,  # todo: allow to optimize threshold
-                "label_id": self.annotation.label.id_,
-                "label_has_multiple_top_candidates": self.annotation.label.has_multiple_top_candidates,
-                "label_set_id": self.annotation.label_set.id_,
-                "annotation_id": self.annotation.id_,
-                "annotation_set_id": self.annotation.annotation_set.id_,
-                "document_id": self.document.id_ if self.document.id_ else self.document.copy_of_id,
-                "document_id_local": self.document.id_local,
-                "category_id": self.document.category.id_,
-                "line_index": self.line_index,
-                "data_type": self.annotation.label.data_type,
+                'id_local': self.annotation.id_local,
+                'id_': self.annotation.id_,
+                'confidence': self.annotation.confidence,
+                'offset_string': self.offset_string,
+                'normalized': self.normalized,
+                'start_offset': self.start_offset,  # to support multiline
+                'end_offset': self.end_offset,  # to support multiline
+                'is_correct': self.annotation.is_correct,
+                'created_by': self.annotation.created_by,
+                'revised_by': self.annotation.revised_by,
+                'custom_offset_string': self.annotation.custom_offset_string,
+                'revised': self.annotation.revised,
+                'label_threshold': self.annotation.label.threshold,  # todo: allow to optimize threshold
+                'label_id': self.annotation.label.id_,
+                'label_has_multiple_top_candidates': self.annotation.label.has_multiple_top_candidates,
+                'label_set_id': self.annotation.label_set.id_,
+                'annotation_id': self.annotation.id_,
+                'annotation_set_id': self.annotation.annotation_set.id_,
+                'document_id': self.document.id_ if self.document.id_ else self.document.copy_of_id,
+                'document_id_local': self.document.id_local,
+                'category_id': self.document.category.id_,
+                'line_index': self.line_index,
+                'data_type': self.annotation.label.data_type,
             }
 
             if self.bbox():
-                span_dict["x0"] = self.bbox().x0
-                span_dict["x1"] = self.bbox().x1
-                span_dict["y0"] = self.bbox().y0
-                span_dict["y1"] = self.bbox().y1
+                span_dict['x0'] = self.bbox().x0
+                span_dict['x1'] = self.bbox().x1
+                span_dict['y0'] = self.bbox().y0
+                span_dict['y1'] = self.bbox().y1
 
                 # https://www.cuemath.com/geometry/quadrant/
-                span_dict["area_quadrant_two"] = self.bbox().x0 * self.bbox().y0
-                span_dict["area"] = self.bbox().area
+                span_dict['area_quadrant_two'] = self.bbox().x0 * self.bbox().y0
+                span_dict['area'] = self.bbox().area
 
             if self.page:  # todo separate as eval_dict on Page level
-                span_dict["page_index"] = self.page.index
-                span_dict["page_width"] = self.page.width
-                span_dict["page_height"] = self.page.height
-                span_dict["x0_relative"] = self.bbox().x0 / self.page.width
-                span_dict["x1_relative"] = self.bbox().x1 / self.page.width
-                span_dict["y0_relative"] = self.bbox().y0 / self.page.height
-                span_dict["y1_relative"] = self.bbox().y1 / self.page.height
-                span_dict["page_index_relative"] = self.page.index / self.document.number_of_pages
+                span_dict['page_index'] = self.page.index
+                span_dict['page_width'] = self.page.width
+                span_dict['page_height'] = self.page.height
+                span_dict['x0_relative'] = self.bbox().x0 / self.page.width
+                span_dict['x1_relative'] = self.bbox().x1 / self.page.width
+                span_dict['y0_relative'] = self.bbox().y0 / self.page.height
+                span_dict['y1_relative'] = self.bbox().y1 / self.page.height
+                span_dict['page_index_relative'] = self.page.index / self.document.number_of_pages
 
             document_id = self.document.id_ if self.document.id_ is not None else self.document.copy_of_id
-            span_dict["document_id"] = document_id
-            span_dict["label_name"] = self.annotation.label.name if self.annotation.label else None
-            span_dict["label_set_name"] = self.annotation.label_set.name if self.annotation.label_set else None
+            span_dict['document_id'] = document_id
+            span_dict['label_name'] = self.annotation.label.name if self.annotation.label else None
+            span_dict['label_set_name'] = self.annotation.label_set.name if self.annotation.label_set else None
 
         return span_dict
 
@@ -2217,14 +2219,12 @@ class Annotation(Data):
 
         if sdk_isinstance(label_set, LabelSet):
             if self.annotation_set is not None:
-                assert (
-                    label_set == self.annotation_set.label_set
-                ), f"Conflicting Label Set information provided\
-                    {label_set=} and {self.annotation_set.label_set=}"
+                assert label_set == self.annotation_set.label_set, f'Conflicting Label Set information provided\
+                    {label_set=} and {self.annotation_set.label_set=}'
             elif label_set.has_multiple_annotation_sets:
                 raise ValueError(
-                    f"Cannot assign {self} to AnnotationSet. {label_set} can have multiple Annotation Sets. "
-                    f"Please provide the Annotation Set or AnnotationSet ID."
+                    f'Cannot assign {self} to AnnotationSet. {label_set} can have multiple Annotation Sets. '
+                    f'Please provide the Annotation Set or AnnotationSet ID.'
                 )
             else:
                 matching_annotation_sets = [
@@ -2236,8 +2236,8 @@ class Annotation(Data):
                     annotation_set = AnnotationSet(label_set=label_set, document=self.document)
                 else:
                     raise ValueError(
-                        f"Found multiple Annotation Sets for {label_set} in {self.document}. "
-                        f"This should not happen because {label_set.has_multiple_annotation_sets=}."
+                        f'Found multiple Annotation Sets for {label_set} in {self.document}. '
+                        f'This should not happen because {label_set.has_multiple_annotation_sets=}.'
                     )
                 self.annotation_set = annotation_set
 
@@ -2245,38 +2245,38 @@ class Annotation(Data):
             # for legacy reasons, we allow all Annotations to be in the NO_LABEL_SET Annotation Set
             assert (
                 self.label in self.annotation_set.label_set.labels
-            ), f"{self.label} is not in {self.annotation_set.label_set.labels} of {self.annotation_set}."
+            ), f'{self.label} is not in {self.annotation_set.label_set.labels} of {self.annotation_set}.'
 
         for span in spans or []:
             self.add_span(span)
 
-        self.selection_bbox = kwargs.get("selection_bbox", None)
+        self.selection_bbox = kwargs.get('selection_bbox', None)
         if isinstance(self.selection_bbox, dict):
-            page = self.document.get_page_by_index(self.selection_bbox["page_index"])
+            page = self.document.get_page_by_index(self.selection_bbox['page_index'])
             x0, x1, y0, y1 = (
-                self.selection_bbox["x0"],
-                self.selection_bbox["x1"],
-                self.selection_bbox["y0"],
-                self.selection_bbox["y1"],
+                self.selection_bbox['x0'],
+                self.selection_bbox['x1'],
+                self.selection_bbox['y0'],
+                self.selection_bbox['y1'],
             )
             self.selection_bbox = Bbox(x0=x0, x1=x1, y0=y0, y1=y1, page=page)
 
         # TODO START LEGACY to support multiline Annotations
-        bboxes = kwargs.get("bboxes", None)
+        bboxes = kwargs.get('bboxes', None)
         if bboxes and len(bboxes) > 0:
             for bbox in bboxes:
-                if "start_offset" in bbox.keys() and "end_offset" in bbox.keys():
-                    Span(start_offset=bbox["start_offset"], end_offset=bbox["end_offset"], annotation=self)
+                if 'start_offset' in bbox.keys() and 'end_offset' in bbox.keys():
+                    Span(start_offset=bbox['start_offset'], end_offset=bbox['end_offset'], annotation=self)
                 else:
                     raise ValueError(f'SDK cannot read bbox of Annotation {self.id_} in {self.document}: {bbox}')
         elif (
             bboxes is None
-            and kwargs.get("start_offset", None) is not None
-            and kwargs.get("end_offset", None) is not None
+            and kwargs.get('start_offset', None) is not None
+            and kwargs.get('end_offset', None) is not None
         ):
             # Legacy support for creating Annotations with a single offset
             bbox = kwargs.get('bbox', {})
-            _ = Span(start_offset=kwargs.get("start_offset"), end_offset=kwargs.get("end_offset"), annotation=self)
+            _ = Span(start_offset=kwargs.get('start_offset'), end_offset=kwargs.get('end_offset'), annotation=self)
             logger.warning(f'{self} is empty')
 
         self.top = None
@@ -2325,11 +2325,11 @@ class Annotation(Data):
         """Return string representation."""
         if self.label and self.document:
             span_str = ', '.join(f'{x.start_offset, x.end_offset}' for x in self.spans)
-            return f"Annotation ({self.get_link()}) {self.label.name} {span_str}"
+            return f'Annotation ({self.get_link()}) {self.label.name} {span_str}'
         elif self.label:
-            return f"Annotation ({self.get_link()}) {self.label.name} ({self.spans})"
+            return f'Annotation ({self.get_link()}) {self.label.name} ({self.spans})'
         else:
-            return f"Annotation ({self.get_link()}) without Label ({self.start_offset}, {self.end_offset})"
+            return f'Annotation ({self.get_link()}) without Label ({self.start_offset}, {self.end_offset})'
 
     def __eq__(self, other):
         """We compare an Annotation based on it's Label, Label-Sets if it's online otherwise on the id_local."""
@@ -2445,13 +2445,13 @@ class Annotation(Data):
         :return: True if new Annotation was created
         """
         if self.label == self.document.project.no_label:
-            raise ValueError("You cannot save Annotations with Label NO_LABEL.")
+            raise ValueError('You cannot save Annotations with Label NO_LABEL.')
         if self.document.category == self.document.project.no_category:
-            raise ValueError(f"You cannot save Annotations of Documents with {self.document.category}.")
+            raise ValueError(f'You cannot save Annotations of Documents with {self.document.category}.')
         new_annotation_added = False
 
         if self.is_online:
-            raise ValueError(f"You cannot update Annotations once saved online: {self.get_link()}")
+            raise ValueError(f'You cannot update Annotations once saved online: {self.get_link()}')
             # update_annotation(id_=self.id_, document_id=self.document.id_, project_id=self.project.id_)
 
         if not self.is_online:
@@ -2468,12 +2468,12 @@ class Annotation(Data):
             )
             if response.status_code == 201:
                 json_response = json.loads(response.text)
-                self.id_ = json_response["id"]
+                self.id_ = json_response['id']
                 new_annotation_added = True
             elif response.status_code == 403:
                 logger.error(response.text)
                 try:
-                    if "In one Project you cannot label the same text twice." in response.text:
+                    if 'In one Project you cannot label the same text twice.' in response.text:
                         if document_annotations is None:
                             # get the Annotation
                             self.document.update()
@@ -2486,7 +2486,7 @@ class Annotation(Data):
                                 and annotation.end_offset == self.end_offset
                                 and annotation.label == self.label
                             ):
-                                logger.error(f"ID of annotation online: {annotation.id_}")
+                                logger.error(f'ID of annotation online: {annotation.id_}')
                                 self.id_ = annotation.id_
                                 is_duplicated = True
                                 break
@@ -2497,9 +2497,9 @@ class Annotation(Data):
 
                         new_annotation_added = False
                     else:
-                        logger.exception(f"Unknown issue to create Annotation {self} in {self.document}")
+                        logger.exception(f'Unknown issue to create Annotation {self} in {self.document}')
                 except KeyError:
-                    logger.error(f"Not able to save Annotation online: {response}")
+                    logger.error(f'Not able to save Annotation online: {response}')
         return new_annotation_added
 
     def regex_annotation_generator(self, regex_list) -> List[Span]:
@@ -2511,7 +2511,7 @@ class Annotation(Data):
         spans: List[Span] = []
         for regex in regex_list:
             dict_spans = regex_matches(doctext=self.document.text, regex=regex)
-            for offset in list(set((x['start_offset'], x['end_offset']) for x in dict_spans)):
+            for offset in list({(x['start_offset'], x['end_offset']) for x in dict_spans}):
                 try:
                     span = Span(start_offset=offset[0], end_offset=offset[1], annotation=self)
                     spans.append(span)
@@ -2605,7 +2605,7 @@ class DocumentStatuses(Enum):
     """
     Define statuses of a Document's processing.
 
-    For more details see Document class.
+    For more details see https://dev.konfuzio.com/sdk/explanations.html#document-concept
     """
 
     QUEUING_FOR_OCR = 0
@@ -2728,12 +2728,12 @@ class Document(Data):
         # prepare local setup for Document
         if self.is_online:
             pathlib.Path(self.document_folder).mkdir(parents=True, exist_ok=True)
-        self.annotation_file_path = os.path.join(self.document_folder, "annotations.json5")
-        self.annotation_set_file_path = os.path.join(self.document_folder, "annotation_sets.json5")
-        self.txt_file_path = os.path.join(self.document_folder, "document.txt")
-        self.pages_file_path = os.path.join(self.document_folder, "pages.json5")
-        self.bbox_file_path = os.path.join(self.document_folder, "bbox.zip")
-        self.bio_scheme_file_path = os.path.join(self.document_folder, "bio_scheme.txt")
+        self.annotation_file_path = os.path.join(self.document_folder, 'annotations.json5')
+        self.annotation_set_file_path = os.path.join(self.document_folder, 'annotation_sets.json5')
+        self.txt_file_path = os.path.join(self.document_folder, 'document.txt')
+        self.pages_file_path = os.path.join(self.document_folder, 'pages.json5')
+        self.bbox_file_path = os.path.join(self.document_folder, 'bbox.zip')
+        self.bio_scheme_file_path = os.path.join(self.document_folder, 'bio_scheme.txt')
 
         bbox_file_exists = is_file(self.bbox_file_path, raise_exception=False)
         self.bboxes_available: bool = self.is_online or self._bbox_json or bbox_file_exists
@@ -2744,9 +2744,9 @@ class Document(Data):
     def __repr__(self):
         """Return the name of the Document incl. the ID."""
         if self.id_ is None:
-            return f"Virtual Document {self.name} ({self.copy_of_id})"
+            return f'Virtual Document {self.name} ({self.copy_of_id})'
         else:
-            return f"Document {self.name} ({self.id_})"
+            return f'Document {self.name} ({self.id_})'
 
     @property
     def ocr_ready(self):
@@ -2867,7 +2867,7 @@ class Document(Data):
                 project=project,
                 update=True,
                 category_template=category_id,
-                status=[0, "Queuing for OCR"],
+                status=[0, 'Queuing for OCR'],
                 data_file_name=response['data_file_name'],
                 dataset_status=dataset_status,
             )
@@ -2941,9 +2941,7 @@ class Document(Data):
         """
         if not self.pages():
             return self._category
-        all_pages_have_same_category = (
-            len(set([page.category for page in self.pages()]) - {self.project.no_category}) == 1
-        )
+        all_pages_have_same_category = len({page.category for page in self.pages()} - {self.project.no_category}) == 1
         if all_pages_have_same_category:
             self._category = self.pages()[0].category
         else:
@@ -2976,14 +2974,14 @@ class Document(Data):
         """Set the Category of the Document and the Category of all of its Pages as revised."""
         if not category:
             category = self.project.no_category
-        logger.info(f"Setting Category of {self} to {category}.")
+        logger.info(f'Setting Category of {self} to {category}.')
         if category not in [self._category, self.project.no_category] and (
             self._category and self._category.name != self.project.no_category.name
         ):
             raise ValueError(
-                "We forbid changing Category when already existing, because this requires some validations that are "
-                "currently implemented in the Konfuzio Server. We recommend changing the Category of a Document via "
-                "the Konfuzio Server."
+                'We forbid changing Category when already existing, because this requires some validations that are '
+                'currently implemented in the Konfuzio Server. We recommend changing the Category of a Document via '
+                'the Konfuzio Server.'
             )
         for page in self.pages():
             page.set_category(category)
@@ -2993,7 +2991,7 @@ class Document(Data):
     @property
     def ocr_file_path(self):
         """Return path to OCR PDF file."""
-        return os.path.join(self.document_folder, amend_file_name(self.name, append_text="ocr", new_extension=".pdf"))
+        return os.path.join(self.document_folder, amend_file_name(self.name, append_text='ocr', new_extension='.pdf'))
 
     @property
     def number_of_pages(self) -> int:
@@ -3044,7 +3042,7 @@ class Document(Data):
         fill: bool = False,
     ) -> List[Span]:
         """Return all Spans of the Document."""
-        spans = dict()
+        spans = {}
 
         annotations = self.annotations(
             label=label, use_correct=use_correct, start_offset=start_offset, end_offset=end_offset, fill=fill
@@ -3133,11 +3131,11 @@ class Document(Data):
         except ValueError as error_message:
             valid = False
 
-            if "is a duplicate of" in str(error_message):
+            if 'is a duplicate of' in str(error_message):
                 logger.error(f'{self} has duplicated Annotations.')
                 assignee = 1101  # duplicated-annotation@konfuzio.com
 
-            elif "related to" in str(error_message):
+            elif 'related to' in str(error_message):
                 logger.error(f'{self} has Annotations from an incorrect Category.')
                 assignee = 1118  # category-issue@konfuzio.com
 
@@ -3167,12 +3165,12 @@ class Document(Data):
             if self.is_online and not is_file(self.annotation_set_file_path, raise_exception=False):
                 self.download_document_details()
             if is_file(self.annotation_set_file_path, raise_exception=False):
-                with open(self.annotation_set_file_path, "r") as f:
+                with open(self.annotation_set_file_path, 'r') as f:
                     raw_annotation_sets = json.load(f)
                 # first load all Annotation Sets before we create Annotations
                 for raw_annotation_set in raw_annotation_sets:
                     _ = AnnotationSet(
-                        id_=raw_annotation_set["id"],
+                        id_=raw_annotation_set['id'],
                         document=self,
                         label_set=self.project.get_label_set_by_id(raw_annotation_set["label_set"]["id"]),
                     )
@@ -3354,7 +3352,7 @@ class Document(Data):
             not file_path or not is_file(file_path, raise_exception=False) or update
         ):
             pdf_content = download_file_konfuzio_api(self.id_, ocr=ocr_version, session=self.project.session)
-            with open(file_path, "wb") as f:
+            with open(file_path, 'wb') as f:
                 f.write(pdf_content)
 
         return file_path
@@ -3386,12 +3384,12 @@ class Document(Data):
             with open(self.annotation_set_file_path, "w") as f:
                 json.dump(data["annotation_sets"], f, indent=2, sort_keys=True)
 
-            with open(self.txt_file_path, "w", encoding="utf-8") as f:
-                if data["text"]:
-                    f.write(data["text"])
+            with open(self.txt_file_path, 'w', encoding='utf-8') as f:
+                if data['text']:
+                    f.write(data['text'])
 
-            with open(self.pages_file_path, "w") as f:
-                json.dump(data["pages"], f, indent=2, sort_keys=True)
+            with open(self.pages_file_path, 'w') as f:
+                json.dump(data['pages'], f, indent=2, sort_keys=True)
         else:
             raise NotImplementedError
 
@@ -3472,7 +3470,7 @@ class Document(Data):
         if result:
             return result
         else:
-            raise IndexError(f"Annotation {annotation_id} is not part of {self}.")
+            raise IndexError(f'Annotation {annotation_id} is not part of {self}.')
 
     def add_annotation_set(self, annotation_set: AnnotationSet):
         """Add the Annotation Sets to the Document."""
@@ -3506,7 +3504,7 @@ class Document(Data):
         if result:
             return result
         else:
-            raise IndexError(f"Annotation Set {id_} is not part of Document {self.id_}.")
+            raise IndexError(f'Annotation Set {id_} is not part of Document {self.id_}.')
 
     @property
     def default_annotation_set(self) -> AnnotationSet:
@@ -3534,12 +3532,12 @@ class Document(Data):
         converted_text = []
         if not is_file(self.bio_scheme_file_path, raise_exception=False) or update:
             converted_text = convert_to_bio_scheme(self)
-            with open(self.bio_scheme_file_path, "w", encoding="utf-8") as f:
+            with open(self.bio_scheme_file_path, 'w', encoding='utf-8') as f:
                 for word, tag in converted_text:
-                    f.writelines(word + " " + tag + "\n")
-                f.writelines("\n")
+                    f.writelines(word + ' ' + tag + '\n')
+                f.writelines('\n')
         else:
-            with open(self.bio_scheme_file_path, "r", encoding="utf-8") as f:
+            with open(self.bio_scheme_file_path, 'r', encoding='utf-8') as f:
                 for line in f.readlines():
                     if not line.strip():
                         continue
@@ -3559,7 +3557,7 @@ class Document(Data):
         if self._bbox_json:
             bbox = self._bbox_json
         elif is_file(self.bbox_file_path, raise_exception=False):
-            with zipfile.ZipFile(self.bbox_file_path, "r") as archive:
+            with zipfile.ZipFile(self.bbox_file_path, 'r') as archive:
                 bbox = json.loads(archive.read('bbox.json5'))
         elif self.is_online and self.status and self.status == DocumentStatuses.DONE.value:
             # todo check for self.project.id_ and self.id_ and ?
@@ -3567,7 +3565,7 @@ class Document(Data):
             bbox = get_document_bbox(document_id=self.id_, session=self.project.session)['bbox']
             # Use the `zipfile` module: `compresslevel` was added in Python 3.7
             with zipfile.ZipFile(
-                self.bbox_file_path, mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9
+                self.bbox_file_path, mode='w', compression=zipfile.ZIP_DEFLATED, compresslevel=9
             ) as zip_file:
                 # Dump JSON data
                 dumped: str = json.dumps(bbox, indent=2, sort_keys=True)
@@ -3652,7 +3650,7 @@ class Document(Data):
         if self.is_online and not is_file(self.txt_file_path, raise_exception=False):
             self.download_document_details()
         if is_file(self.txt_file_path, raise_exception=False):
-            with open(self.txt_file_path, "r", encoding="utf-8") as f:
+            with open(self.txt_file_path, 'r', encoding='utf-8') as f:
                 self._text = f.read()
         return self._text
 
@@ -3678,7 +3676,7 @@ class Document(Data):
             self.download_document_details()
             is_file(self.pages_file_path)
         if is_file(self.pages_file_path, raise_exception=False):
-            with open(self.pages_file_path, "r") as f:
+            with open(self.pages_file_path, 'r') as f:
                 pages_data = json.loads(f.read())
 
             page_texts = self.text.split('\f')
@@ -3729,7 +3727,7 @@ class Document(Data):
             doctext=self.text,
             regex=regex,
             keep_full_match=False,
-            filtered_group=f'Label_{label.id_}'
+            filtered_group=f'Label_{label.id_}',
             # filter by name of Label: one regex can match multiple Labels
         )
         processing_time = time.time() - start_time
@@ -3792,7 +3790,6 @@ class Document(Data):
         annotation_set_file_exists = is_file(self.annotation_set_file_path, raise_exception=False)
 
         if self._update or (self.is_online and (self._annotations is None or self._annotation_sets is None)):
-
             if self.is_online and (not annotation_file_exists or not annotation_set_file_exists or self._update):
                 self.update()  # delete the meta of the Document details and download them again
                 self._update = False  # Make sure we don't repeat to load once updated.
@@ -3962,14 +3959,14 @@ class Project(Data):
             setattr(self, key, value)
 
         # paths
-        self.meta_file_path = os.path.join(self.project_folder, "documents_meta.json5")
-        self.labels_file_path = os.path.join(self.project_folder, "labels.json5")
-        self.label_sets_file_path = os.path.join(self.project_folder, "label_sets.json5")
+        self.meta_file_path = os.path.join(self.project_folder, 'documents_meta.json5')
+        self.labels_file_path = os.path.join(self.project_folder, 'labels.json5')
+        self.label_sets_file_path = os.path.join(self.project_folder, 'label_sets.json5')
 
         if self.id_ or self._project_folder:
             self.get(update=update)
         else:
-            self.no_category = Category(project=self, id_=0, name_clean="NO_CATEGORY", name="NO_CATEGORY")
+            self.no_category = Category(project=self, id_=0, name_clean='NO_CATEGORY', name='NO_CATEGORY')
         # todo: list of Categories related to NO LABEL SET can be outdated, i.e. if the number of Categories changes
         self.no_label_set = LabelSet(
             project=self, id_=0, categories=self.categories, has_multiple_annotation_sets=False
@@ -3982,7 +3979,7 @@ class Project(Data):
 
     def __repr__(self):
         """Return string representation."""
-        return f"Project {self.id_}"
+        return f'Project {self.id_}'
 
     @property
     def ai_models(self):
@@ -4030,22 +4027,22 @@ class Project(Data):
         if self._project_folder is not None:
             return self._project_folder
         else:
-            return f"data_{self.id_}"
+            return f'data_{self.id_}'
 
     @property
     def regex_folder(self) -> str:
         """Calculate the regex folder of the Project."""
-        return os.path.join(self.project_folder, "regex")
+        return os.path.join(self.project_folder, 'regex')
 
     @property
     def documents_folder(self) -> str:
         """Calculate the regex folder of the Project."""
-        return os.path.join(self.project_folder, "documents")
+        return os.path.join(self.project_folder, 'documents')
 
     @property
     def model_folder(self) -> str:
         """Calculate the model folder of the Project."""
-        return os.path.join(self.project_folder, "models")
+        return os.path.join(self.project_folder, 'models')
 
     @property
     def max_ram(self):
@@ -4068,7 +4065,7 @@ class Project(Data):
     def write_meta_of_files(self):
         """Overwrite meta-data of Documents in Project."""
         meta_data = get_meta_of_files(project_id=self.id_, session=self.session)
-        with open(self.meta_file_path, "w") as f:
+        with open(self.meta_file_path, 'w') as f:
             json.dump(meta_data, f, indent=2, sort_keys=True)
 
     def get(self, update=False):
@@ -4108,7 +4105,7 @@ class Project(Data):
 
         :param category: Category to add in the Project
         """
-        if category.name != "NO_CATEGORY":
+        if category.name != 'NO_CATEGORY':
             if category not in self.categories:
                 self.categories.append(category)
             else:
@@ -4141,7 +4138,7 @@ class Project(Data):
         if not self._meta_data or reload:
             if self._meta_data:
                 self.old_meta_data = self._meta_data
-            with open(self.meta_file_path, "r") as f:
+            with open(self.meta_file_path, 'r') as f:
                 self._meta_data = json.load(f)
 
         return self._meta_data
@@ -4259,7 +4256,7 @@ class Project(Data):
 
         :param from_online: If True, all Document metadata info is first reloaded with latest changes in the server
         """
-        logger.info(f"Running init_or_update_document({from_online=}) on {self}")
+        logger.info(f'Running init_or_update_document({from_online=}) on {self}')
         local_docs_dict = self.online_documents_dict
         if from_online:
             self.write_meta_of_files()
@@ -4270,11 +4267,11 @@ class Project(Data):
         n_unchanged_documents = 0
         for document_data in self.meta_data:
             updated_docs_ids_set.add(document_data['id'])
-            # if document_data['status'][0] == 2:  # NOQA - hotfix for Text Annotation Server # todo add test
+            # if document_data['status'][0] == 2:  # - hotfix for Text Annotation Server # todo add test
 
-            new_date = document_data["updated_at"]
+            new_date = document_data['updated_at']
             updated = False
-            new = document_data["id"] not in local_docs_dict
+            new = document_data['id'] not in local_docs_dict
             if not new:
                 last_date = local_docs_dict[document_data['id']].updated_at
                 updated = dateutil.parser.isoparse(new_date) > last_date if last_date is not None else True
@@ -4312,10 +4309,10 @@ class Project(Data):
             local_docs_dict[to_del_id].delete(delete_online=False)
 
         logger.info(
-            f"{n_updated_documents} Documents were updated,"
-            f" {n_new_documents} Documents are new,"
-            f" {n_unchanged_documents} Documents are unchanged,"
-            f" and {n_deleted_documents} Documents were deleted."
+            f'{n_updated_documents} Documents were updated,'
+            f' {n_new_documents} Documents are new,'
+            f' {n_unchanged_documents} Documents are unchanged,'
+            f' and {n_deleted_documents} Documents were deleted.'
         )
 
     def get_document_by_id(self, document_id: int) -> Document:
@@ -4432,7 +4429,7 @@ class Project(Data):
 
         """
         if len(self.documents + self.test_documents) == 0:
-            raise ValueError("No Documents in the training or test set. Please add them.")
+            raise ValueError('No Documents in the training or test set. Please add them.')
         for document in tqdm(self.documents + self.test_documents):
             document.download_document_details()
             document.get_file()
@@ -4440,7 +4437,7 @@ class Project(Data):
             document.get_bbox()
             document.get_images()
 
-        print("[SUCCESS] Data exporting finished successfully!")
+        print('[SUCCESS] Data exporting finished successfully!')
 
     def export_project_data(self, include_ais=False, training_and_test_documents=True) -> None:
         """
@@ -4451,19 +4448,19 @@ class Project(Data):
         """
         if training_and_test_documents:
             try:
-                print("[INFO] Starting Training and Test Document export!")
+                print('[INFO] Starting Training and Test Document export!')
                 self.download_training_and_test_data()
             except Exception as error:
-                print("[ERROR] Something went wrong while downloading Document data!")
+                print('[ERROR] Something went wrong while downloading Document data!')
                 raise error
         if include_ais:
             try:
-                print("[INFO] Starting AI Model file export!")
+                print('[INFO] Starting AI Model file export!')
                 exported_ais = export_ai_models(self)
                 if exported_ais:
-                    print(f"[INFO] Export finished. {exported_ais} AIs were available for export.")
+                    print(f'[INFO] Export finished. {exported_ais} AIs were available for export.')
                 else:
-                    print("[INFO] No AIs available for export.")
+                    print('[INFO] No AIs available for export.')
             except Exception as error:
-                print("[ERROR] Something went wrong while downloading AIs or AI metadata!")
+                print('[ERROR] Something went wrong while downloading AIs or AI metadata!')
                 raise error

@@ -1,36 +1,35 @@
 """Validate urls functions."""
 import unittest
-from konfuzio_sdk.urls import (
-    create_annotation_url,
-    get_auth_token_url,
-    get_projects_list_url,
-    get_document_details_url,
-    get_documents_meta_url,
-    get_upload_document_url,
-    get_document_ocr_file_url,
-    get_document_original_file_url,
-    get_document_bbox_url,
-    get_project_url,
-    get_project_labels_url,
-    get_document_segmentation_details_url,
-    get_document_url,
-    get_label_url,
-    get_labels_url,
-    get_annotation_url,
-    get_document_annotations_url,
-    get_annotation_view_url,
-    get_page_url,
-    get_page_image_url,
-    get_create_ai_model_url,
-    get_update_ai_model_url,
-    get_ai_model_url,
-    get_ai_model_download_url,
-    get_project_label_sets_url,
-    get_project_categories_url,
-)
-
 
 from konfuzio_sdk import KONFUZIO_HOST
+from konfuzio_sdk.urls import (
+    create_annotation_url,
+    get_ai_model_download_url,
+    get_ai_model_url,
+    get_annotation_url,
+    get_annotation_view_url,
+    get_auth_token_url,
+    get_create_ai_model_url,
+    get_document_annotations_url,
+    get_document_bbox_url,
+    get_document_details_url,
+    get_document_ocr_file_url,
+    get_document_original_file_url,
+    get_document_segmentation_details_url,
+    get_document_url,
+    get_documents_meta_url,
+    get_label_url,
+    get_labels_url,
+    get_page_image_url,
+    get_page_url,
+    get_project_categories_url,
+    get_project_label_sets_url,
+    get_project_labels_url,
+    get_project_url,
+    get_projects_list_url,
+    get_update_ai_model_url,
+    get_upload_document_url,
+)
 from tests.variables import TEST_PROJECT_ID
 
 DOCUMENT_ID = 3346

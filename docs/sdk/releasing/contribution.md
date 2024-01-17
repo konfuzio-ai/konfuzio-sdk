@@ -5,46 +5,56 @@ If you would like to contribute, please use the development installation and ope
 
 * clone the project in your working directory
 
-  `git clone https://github.com/konfuzio-ai/document-ai-python-sdk.git`
+  `git clone https://github.com/konfuzio-ai/konfuzio-sdk.git`
 
 * go inside the project folder
 
-  `cd document-ai-python-sdk`
+  `cd konfuzio-sdk`
 
-* Install a project in editable mode (i.e. setuptools “develop mode”) from the current project path.
+* Install a project in editable mode (i.e. setuptools “develop mode”) from the current project path. If you want to 
+install a lightweight instance of the SDK, use the following command:
 
   `pip install -e .[dev]`
 
-* initialize the connection to create an `.env` file that stores your credentials to later connect to the host of the
-  Konfuzio Server
+If you want to install a full instance, add `ai` to the list of extras:
+ 
+ `pip install -e .[ai,dev]`
+
+* Initialize the connection to create an `.env` file that stores your credentials to later connect to the host of the
+  Konfuzio Server:
 
   `konfuzio_sdk init`
 
-* create a branch to work that allows you to create a pull request later on
+* Create a branch to work that allows you to create a pull request later on:
 
   `git checkout -b new_branch`
 
-* use pre-commit
+* We're using pre-commit hooks to ensure all code is properly formatted with Ruff. To use the hooks that are default to 
+the SDK's repository, run:
 
   `pre-commit install`
 
-  Automatic inspections will run in your commits ensuring they match the code formatting of the repository.
+  Automatic inspections will run in your commits ensuring they match the code formatting of the repository. 
+
+  It's also recommended to integrate Ruff directly within your editor so that it runs on every save and highlights 
+  potential issues. You can find the instructions [here](https://docs.astral.sh/ruff/integrations/).
 
 * Make sure your upstream repo is the original konfuzio-sdk repo:
 
-  `https://github.com/konfuzio-ai/document-ai-python-sdk.git`
+  `https://github.com/konfuzio-ai/konfuzio-sdk.git`
 
-* otherwise add it
+* Otherwise, add it:
 
-  `git remote add upstream https://github.com/konfuzio-ai/document-ai-python-sdk.git`
+  `git remote add upstream https://github.com/konfuzio-ai/konfuzio-sdk.git`
 
 Now you can start to make changes.
 
-* commit your changes
+* Commit your changes. Keep the message short but informative; use prefixes like "Added:", "Changed:" and proceed with
+the exact matter that has been altered in your commit.
 
   `git commit -m "message"`
 
-* push your changes to your remote branch
+* Push your changes to your remote branch:
 
   `git push`
 

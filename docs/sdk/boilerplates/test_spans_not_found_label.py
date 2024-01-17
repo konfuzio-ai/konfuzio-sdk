@@ -20,6 +20,6 @@ def test_spans_not_found_label():
     spans_not_found = label.spans_not_found_by_tokenizer(tokenizer, categories=[category])
 
     for span in spans_not_found:
-        print(f"{span}: {span.offset_string}")
+        print(f'{span}: {span.offset_string}')
     # end spans
     assert len(spans_not_found) == 1
