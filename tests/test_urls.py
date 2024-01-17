@@ -153,8 +153,8 @@ class TestUrls(unittest.TestCase):
     def test_page_url(self):
         """Test to access Page online."""
         self.assertEqual(
-            get_page_url(document_id=DOCUMENT_ID, page_id=PAGE_ID),
-            f'{KONFUZIO_HOST}/api/v3/documents/{DOCUMENT_ID}/pages/{PAGE_ID}/',
+            get_page_url(document_id=DOCUMENT_ID, page_number=1),
+            f'{KONFUZIO_HOST}/api/v3/documents/{DOCUMENT_ID}/pages/1/',
         )
 
     def test_page_image_url(self):

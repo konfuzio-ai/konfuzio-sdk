@@ -175,16 +175,16 @@ def get_document_original_file_url(document_id: int, host: str = None) -> str:
     return f'{host}/doc/show-original/{document_id}/'
 
 
-def get_page_url(document_id: int, page_id: int, host: str = None) -> str:
+def get_page_url(document_id: int, page_number: int, host: str = None) -> str:
     """
     Generate URL to get Page.
 
-    :param page_id: ID of the Page
+    :param page_number: Number of the Page
     :return: URL to get Page
     """
     if host is None:
         host = KONFUZIO_HOST
-    return f'{host}/api/v3/documents/{document_id}/pages/{page_id}/'
+    return f'{host}/api/v3/documents/{document_id}/pages/{page_number}/'
 
 
 def get_page_image_url(page_url: str, host: str = None) -> str:

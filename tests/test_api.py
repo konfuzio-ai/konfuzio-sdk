@@ -389,7 +389,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
     def test_download_image(self):
         """Test to download an image of a Page."""
-        assert isinstance(get_page_image(document_id=TEST_DOCUMENT_ID, page_id=1), bytes)
+        assert isinstance(get_page_image(document_id=TEST_DOCUMENT_ID, page_number=1), bytes)
 
     def test_get_results_from_segmentation(self):
         """Download segmentation results."""

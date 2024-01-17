@@ -333,11 +333,11 @@ def get_document_bbox(document_id: int, session=None):
     return r.json()
 
 
-def get_page_image(document_id: int, page_id: int, session=None, thumbnail: bool = False):
+def get_page_image(document_id: int, page_number: int, session=None, thumbnail: bool = False):
     """
     Load image of a Page as Bytes.
 
-    :param page_id: ID of the Page
+    :param page_number: Number of the Page
     :param thumbnail: Download Page image as thumbnail
     :param session: Konfuzio session with Retry and Timeout policy
     :return: Bytes of the Image.
@@ -351,7 +351,7 @@ def get_page_image(document_id: int, page_id: int, session=None, thumbnail: bool
             host = session.host
         else:
             host = None
-        url = get_page_url(document_id=document_id, page_id=page_id, host=host)
+        url = get_page_url(document_id=document_id, page_number=page_number, host=host)
 
     r = session.get(url)
     image_url = f"{KONFUZIO_HOST}{r.json()['image_url']}"
@@ -359,7 +359,7 @@ def get_page_image(document_id: int, page_id: int, session=None, thumbnail: bool
 
     content_type = r.headers.get('content-type')
     if content_type != 'image/png':
-        raise TypeError(f'CONTENT TYPE of Image {page_id} is {content_type} and no PNG.')
+        raise TypeError(f'CONTENT TYPE of Image {page_number} is {content_type} and no PNG.')
 
     return r.content
 
@@ -492,7 +492,7 @@ def delete_document_annotation(annotation_id: int, session=None, **kwargs):
         raise ConnectionError(f'Error{r.status_code}: {r.content} {r.url}')
 
 
-def get_meta_of_files(project_id: int, limit: int = 1000, session=None) -> List[dict]:
+def get_meta_of_files(project_id: int, limit: int = 100, session=None) -> List[dict]:
     """
     Get meta information of Documents in a Project.
 
@@ -502,7 +502,7 @@ def get_meta_of_files(project_id: int, limit: int = 1000, session=None) -> List[
     :return: Sorted Documents names in the format {id_: 'pdf_name'}.
     """
     if session is None:
-        session = konfuzio_session()
+        session = konfuzio_session(timeout=300)
     if hasattr(session, 'host'):
         host = session.host
     else:

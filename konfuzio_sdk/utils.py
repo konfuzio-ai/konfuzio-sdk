@@ -887,7 +887,7 @@ def get_spans_from_bbox(selection_bbox: 'Bbox') -> List['Span']:
     # iterate over each line_number (or bottom, depending on group_by) and all the character
     # bboxes that have the same line_number (or bottom)
     spans = []
-    for _, line_char_bboxes in itertools.groupby(selected_bboxes, lambda x: x['line_index']):
+    for _, line_char_bboxes in itertools.groupby(selected_bboxes, lambda x: x['line_number']):
         # remove space chars from the line selection, so they don't interfere with the merging of bboxes
         # (a bbox should never start with a space char)
         trimmed_line_char_bboxes = [char for char in line_char_bboxes if not char['text'].isspace()]
