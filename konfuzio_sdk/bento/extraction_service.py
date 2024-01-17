@@ -1,5 +1,4 @@
 import bentoml
-import jsonpickle
 from pydantic import BaseModel
 from typing import Optional, List, Tuple
 from konfuzio_sdk.data import Document, Project, Category, Page
@@ -9,7 +8,7 @@ extraction_runner = bentoml.picklable_model.get("extraction:latest").to_runner()
 svc = bentoml.Service("extraction_svc", runners=[extraction_runner])
 
 
-class ExtractRequest(BaseModel):
+class ExtractRequest20240117(BaseModel):
     text: str
     bboxes: Optional[dict]
 
@@ -21,8 +20,19 @@ class ExtractRequest(BaseModel):
     pages: Optional[List[Page]]
 
 
-@svc.api(input=bentoml.io.JSON(pydantic_model=ExtractRequest), output=bentoml.io.JSON())
-async def extract(request: ExtractRequest) -> dict:
+class ExtractResponse20240117(BaseModel):
+    class Annotation(BaseModel):
+        label: int
+        annotation_set: int
+
+    annotations: List[Annotation]
+
+
+@svc.api(
+    input=bentoml.io.JSON(pydantic_model=ExtractRequest20240117),
+    output=bentoml.io.JSON(pydantic_model=ExtractResponse20240117),
+)
+async def extract(request: ExtractRequest20240117) -> ExtractResponse20240117:
     project = Project(id_=None)
     project.set_offline()
     category = Category(project=project)
@@ -36,4 +46,9 @@ async def extract(request: ExtractRequest) -> dict:
         Page(id_=page.number, document=document, number=page.number, original_size=page.original_size)
 
     result = await extraction_runner.extract.async_run(document)
-    return result.annotation_sets()
+    # return result.annotation_sets()
+    res = []
+    for annotation_set in result.annotation_sets():
+        for annotation in annotation_set.annotations():
+            res.append({"label": annotation.label.id, "annotation_set": annotation_set.id})
+    return res
