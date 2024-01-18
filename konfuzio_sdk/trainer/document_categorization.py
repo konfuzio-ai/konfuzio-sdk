@@ -4,42 +4,40 @@ import abc
 import collections
 import functools
 import io
-
-import lz4.frame
-import os
-import math
 import logging
+import math
+import os
 import pathlib
 import tempfile
 import uuid
 from copy import deepcopy
-from inspect import signature
-from typing import Union, List, Dict, Tuple, Optional
 from enum import Enum
+from inspect import signature
+from typing import Dict, List, Optional, Tuple, Union
 
+import lz4.frame
 import numpy as np
 import pandas as pd
 import tqdm
 
-from konfuzio_sdk.tokenizer.base import AbstractTokenizer
-from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
-from konfuzio_sdk.data import Document, Page, Category, CategoryAnnotation
+from konfuzio_sdk.data import Category, CategoryAnnotation, Document, Page
+from konfuzio_sdk.evaluate import CategorizationEvaluation
 from konfuzio_sdk.extras import (
+    DataLoader,
+    FloatTensor,
+    LongTensor,
+    Module,
+    Optimizer,
+    Tensor,
     evaluate,
     timm,
     torch,
+    torch_no_grad,
     torchvision,
     transformers,
-    Module,
-    Tensor,
-    FloatTensor,
-    Optimizer,
-    DataLoader,
-    LongTensor,
-    torch_no_grad,
 )
-from konfuzio_sdk.evaluate import CategorizationEvaluation
-from konfuzio_sdk.tokenizer.base import Vocab
+from konfuzio_sdk.tokenizer.base import AbstractTokenizer, Vocab
+from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
 from konfuzio_sdk.trainer.base import BaseModel
 from konfuzio_sdk.trainer.image import ImagePreProcessing, ImageDataAugmentation
 from konfuzio_sdk.trainer.tokenization import TransformersTokenizer
@@ -124,7 +122,7 @@ class AbstractCategorizationAI(BaseModel, metaclass=abc.ABCMeta):
             virtual_doc = deepcopy(document)
         if (document.category not in [None, document.project.no_category]) and (not recategorize):
             logger.info(
-                f'In {document}, the Category was already specified as {document.category}, so it wasn\'t categorized '
+                f"In {document}, the Category was already specified as {document.category}, so it wasn't categorized "
                 f'again. Please use recategorize=True to force running the Categorization AI again on this Document.'
             )
             return virtual_doc
@@ -210,7 +208,7 @@ class AbstractCategorizationAI(BaseModel, metaclass=abc.ABCMeta):
         if not AbstractCategorizationAI.has_compatible_interface(model):
             raise TypeError(
                 "Loaded model's interface is not compatible with any AIs. Please provide a model that has all the "
-                "abstract methods implemented."
+                'abstract methods implemented.'
             )
         return model
 
@@ -304,7 +302,7 @@ class AbstractTextCategorizationModel(AbstractCategorizationModel, metaclass=abc
         # text = [batch, seq len]
         outs = self._output(text)
         if len(outs) not in [1, 2]:
-            raise TypeError(f"NN architecture of {self} returned {len(outs)} outputs, 1 or 2 expected.")
+            raise TypeError(f'NN architecture of {self} returned {len(outs)} outputs, 1 or 2 expected.')
         output = {'features': outs[0]}
         if len(outs) == 2:
             output['attention'] = outs[1]
@@ -1023,16 +1021,16 @@ class CategorizationAI(AbstractCategorizationAI):
 
         # create dictionary to save all necessary model data
         data_to_save = {
-            "tokenizer": self.tokenizer,
-            "image_preprocessing": self.image_preprocessing,
-            "image_augmentation": self.image_augmentation,
-            "text_vocab": self.text_vocab,
-            "category_vocab": self.category_vocab,
-            "classifier": self.classifier,
-            "eval_transforms": self.eval_transforms,
-            "train_transforms": self.train_transforms,
-            "categories": self.categories,
-            "model_type": "CategorizationAI",
+            'tokenizer': self.tokenizer,
+            'image_preprocessing': self.image_preprocessing,
+            'image_augmentation': self.image_augmentation,
+            'text_vocab': self.text_vocab,
+            'category_vocab': self.category_vocab,
+            'classifier': self.classifier,
+            'eval_transforms': self.eval_transforms,
+            'train_transforms': self.train_transforms,
+            'categories': self.categories,
+            'model_type': 'CategorizationAI',
         }
 
         # Save only the necessary parts of the model for extraction/inference.
@@ -1137,7 +1135,7 @@ class CategorizationAI(AbstractCategorizationAI):
           - the id of the document
           - the page number
         """
-        logger.debug("build_document_classifier_iterator")
+        logger.debug('build_document_classifier_iterator')
 
         # todo move this validation to the Categorization AI config
         assert use_image or use_text, 'One of either `use_image` or `use_text` needs to be `True`!'
@@ -1295,8 +1293,8 @@ class CategorizationAI(AbstractCategorizationAI):
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=0, factor=lr_decay)
         temp_dir = tempfile.gettempdir()
         temp_filename = os.path.join(temp_dir, f'temp_{uuid.uuid4().hex}.pt')
-        f1_metric = evaluate.load("f1")
-        acc_metric = evaluate.load("accuracy")
+        f1_metric = evaluate.load('f1')
+        acc_metric = evaluate.load('accuracy')
         logger.info('Begin fitting')
         best_valid_loss = float('inf')
         train_loss = float('inf')
@@ -1304,11 +1302,11 @@ class CategorizationAI(AbstractCategorizationAI):
             train_loss, predictions_list, ground_truth_list = self._train(
                 train_examples, loss_fn, optimizer
             )  # train epoch
-            f1_score = f1_metric.compute(predictions=predictions_list, references=ground_truth_list, average="macro")[
-                "f1"
+            f1_score = f1_metric.compute(predictions=predictions_list, references=ground_truth_list, average='macro')[
+                'f1'
             ]  # compute f1 score
             acc_score = acc_metric.compute(predictions=predictions_list, references=ground_truth_list)[
-                "accuracy"
+                'accuracy'
             ]  # compute accuracy score
             train_losses.extend(train_loss)  # keep track of all the losses/accs
             logger.info(
@@ -1357,8 +1355,8 @@ class CategorizationAI(AbstractCategorizationAI):
         if hasattr(self.classifier, 'text_model') and isinstance(self.classifier.text_model, BERT):
             max_len = self.classifier.text_model.get_max_length()
 
-        assert self.documents is not None, "Training documents need to be specified"
-        assert self.test_documents is not None, "Test documents need to be specified"
+        assert self.documents is not None, 'Training documents need to be specified'
+        assert self.test_documents is not None, 'Test documents need to be specified'
         # get document classifier example iterators
         train_iterator = self.build_document_classifier_iterator(
             self.documents,
@@ -1497,7 +1495,7 @@ class CategorizationAI(AbstractCategorizationAI):
         if not math.isclose(sum(mean_prediction), 1.0, abs_tol=1e-4):
             logger.error(f'[ERROR] Sum of the predictions ({sum(mean_prediction)}) is not 1.0.')
 
-        category_preds = dict()
+        category_preds = {}
 
         # store the prediction confidence per label
         for idx, label in enumerate(categories):
@@ -1630,9 +1628,9 @@ def build_categorization_ai_pipeline(
         else:
             image_model = image_model_name
         image_model_class = None
-        if "efficientnet" in image_model.value:
+        if 'efficientnet' in image_model.value:
             image_model_class = EfficientNet
-        elif "vgg" in image_model.value:
+        elif 'vgg' in image_model.value:
             image_model_class = VGG
         # Configure image model
         image_model = image_model_class(name=image_model.value)
@@ -1721,7 +1719,7 @@ def _load_categorization_model(path: str):
     # load model dict
     loaded_data = torch.load(path)
 
-    model_type = "CategorizationAI"
+    model_type = 'CategorizationAI'
     # if 'model_type' not in loaded_data.keys():
     #    model_type = path.split('_')[-1].split('.')[0]
     # else:
@@ -1738,7 +1736,7 @@ def _load_categorization_model(path: str):
     # Verify if loaded data has all necessary components
     missing_components = [arg for arg in model_args if arg not in loaded_data.keys() and arg not in optional_components]
     if missing_components:
-        raise TypeError(f"Incomplete model parameters. Missing: {missing_components}")
+        raise TypeError(f'Incomplete model parameters. Missing: {missing_components}')
 
     # create instance of the model class
     model = model_class(

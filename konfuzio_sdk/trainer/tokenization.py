@@ -3,9 +3,8 @@ import collections
 import logging
 from typing import Any, List
 
-from konfuzio_sdk.data import Category, Span, Document
-from konfuzio_sdk.extras import transformers
-from konfuzio_sdk.extras import spacy, SpacyLanguage, SpacyPhraseMatcher
+from konfuzio_sdk.data import Category, Document, Span
+from konfuzio_sdk.extras import SpacyLanguage, SpacyPhraseMatcher, spacy, transformers
 from konfuzio_sdk.tokenizer.base import AbstractTokenizer, Vocab
 from konfuzio_sdk.utils import sdk_isinstance
 
@@ -32,7 +31,7 @@ class Tokenizer(AbstractTokenizer):
 
     def __repr__(self):
         """Return string representation of the class."""
-        return f"{self.__class__.__name__}: {repr(self.tokenizer_name)}"
+        return f'{self.__class__.__name__}: {repr(self.tokenizer_name)}'
 
     def __hash__(self):
         """Get unique hash for RegexTokenizer."""

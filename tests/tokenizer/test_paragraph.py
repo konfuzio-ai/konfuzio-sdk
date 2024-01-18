@@ -1,15 +1,14 @@
 """Test Paragraph Tokenizer."""
 import logging
-import pytest
 import unittest
-
 from copy import deepcopy
-from konfuzio_sdk.data import Project, Span, Annotation
 
+import pytest
+
+from konfuzio_sdk.data import Annotation, Project, Span
+from konfuzio_sdk.settings_importer import is_dependency_installed
 from konfuzio_sdk.tokenizer.paragraph_and_sentence import ParagraphTokenizer
 from konfuzio_sdk.trainer.information_extraction import RFExtractionAI
-from konfuzio_sdk.settings_importer import is_dependency_installed
-
 
 logger = logging.getLogger(__name__)
 
