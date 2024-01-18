@@ -155,6 +155,7 @@ test_data_positive_numbers = [
     ('NoNe', 0, None),
     ('StringThatIncludesnone', None, None),
     ('54³', None, None),
+    ('165a', None, None),
 ]
 
 
@@ -234,6 +235,15 @@ test_data_numbers = [
     ('123 Mio', 123000000, None),
     ('123 Mio.', 123000000, None),
     ('100 Millionen', 100000000, None),
+    ('12412..', None, None),
+    ('165..', None, None),
+    ('165,,', None, None),
+    ('165,,,', None, None),
+    (',,,23424,2,,,', None, None),
+    ('...12124,123412,.12', None, None),
+    ('..1..2.3..3333.', None, None),
+    ('114433,8,60', None, None),
+    ('165a', None, None)
     # ('12.', 12.0, 0), undefined test cases:
     # ('1.', 1.0, 0),
     # ('.', None, 0),
