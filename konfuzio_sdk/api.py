@@ -502,7 +502,7 @@ def get_meta_of_files(project_id: int, limit: int = 100, session=None) -> List[d
     :return: Sorted Documents names in the format {id_: 'pdf_name'}.
     """
     if session is None:
-        session = konfuzio_session(timeout=300)
+        session = konfuzio_session()
     if hasattr(session, 'host'):
         host = session.host
     else:
