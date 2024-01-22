@@ -4113,7 +4113,8 @@ class Project(Data):
         pathlib.Path(self.regex_folder).mkdir(parents=True, exist_ok=True)
         pathlib.Path(self.model_folder).mkdir(parents=True, exist_ok=True)
 
-        # todo check the consistency between reload and update + explain what is the difference where applicable
+        # reload means re-add to the Project what is currently available in the Project's folder
+        # update means download information from server to keep up with the updates made online
         if self.id_ and (not is_file(self.meta_file_path, raise_exception=False) or update):
             self.write_project_files()
         # order of adding data into the project has changed after migration from v2 to v3 API - the endpoint used for
@@ -4123,7 +4124,7 @@ class Project(Data):
         # in an "old" way, with labels.json5 and label_sets.json5
         self.get_labels(reload=True)
         self.get_label_sets(reload=True)
-        self.get_categories(reload=True, update=update)
+        self.get_categories(reload=True)
         self.get_meta(reload=True)
         self.init_or_update_document(from_online=False)
         return self
@@ -4190,10 +4191,10 @@ class Project(Data):
             self.get_meta()
         return self._meta_data
 
-    def get_categories(self, reload: bool = True, update: bool = False):
+    def get_categories(self, reload: bool = True):
         """Load Categories for all Label Sets in the Project."""
 
-        # backwards compatibility loading
+        # backward compatibility loading
         if is_file(self.label_sets_file_path, raise_exception=False):
             with open(self.label_sets_file_path, 'r') as f:
                 label_sets_data = json.load(f)
@@ -4219,7 +4220,7 @@ class Project(Data):
                         category = self.get_category_by_id(label_set_id)
                         if category not in label_set.categories:
                             label_set.add_category(category)  # The Label Set is linked to a Category it created
-                        if label_set.name not in [label_set.name for label_set in category.label_sets]:
+                        if label_set.name not in [cur_label_set.name for cur_label_set in category.label_sets]:
                             category.add_label_set(label_set)
 
         if reload and (not is_file(self.labels_file_path, raise_exception=False) and
@@ -4323,7 +4324,7 @@ class Project(Data):
                 last_date = local_docs_dict[document_data['id']].updated_at
                 updated = dateutil.parser.isoparse(new_date) > last_date if last_date is not None else True
             category_id = None
-            # todo check that there are only 'category' fields in documents and remove if-else
+            # backward compatibility
             if 'category' in document_data.keys():
                 category_id = document_data['category']
             elif 'category_template' in document_data.keys():
