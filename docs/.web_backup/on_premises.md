@@ -418,7 +418,8 @@ redis-cli -u redis://default:PASSWORD@HOST:PORT
 ```
 
 ### 3. Setup the environment variable file
-Copy the /code/.env.example file from the container and adapt it to your settings. The .env file can be saved anywhere on the host VM. In this example we use "/konfuzio-vm/text-annotation.env".
+
+Copy the code from the env.example [here](https://dev.konfuzio.com/web/on_premises.html#example-env-file-for-konfuzio-server) and fill in the required values. The .env file can be saved anywhere on the host VM. In this example we use "/konfuzio-vm/text-annotation.env".
 
 ### 4. Init the database, create first superuser via cli and prefill e-mail templates
 In this example we store the files on the host VM and mount the directory "/konfuzio-vm/text-annotation/data" into the container. In the first step we create a container with a shell to then start the initialization scripts within the container.
