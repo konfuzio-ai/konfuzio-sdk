@@ -1,7 +1,7 @@
 """Tokenizers that use byte pair encoding or spaCy NLP package, and various utility functions for Tokenizers."""
 import collections
 import logging
-from typing import List
+from typing import Any, List
 
 from konfuzio_sdk.data import Category, Document, Span
 from konfuzio_sdk.extras import SpacyLanguage, SpacyPhraseMatcher, spacy, transformers
@@ -11,6 +11,14 @@ from konfuzio_sdk.utils import sdk_isinstance
 logger = logging.getLogger(__name__)
 
 # these modules are WIP and do not have testing yet.
+
+HF_ALLOWED_TOKENIZERS = [
+    transformers.BertTokenizerFast,  # tokenizer for BERT
+    transformers.DistilBertTokenizerFast,  # tokenizer for DistilBERT
+    transformers.AlbertTokenizerFast,  # tokenizer for ALBERT
+    transformers.MobileBertTokenizerFast,  # tokenizer for MobileBERT
+    transformers.ElectraTokenizerFast,  # tokenizer for ELECTRA
+]
 
 
 class Tokenizer(AbstractTokenizer):
@@ -233,3 +241,73 @@ class PhraseMatcherTokenizer(SpacyTokenizer):
             _ = Span(start_offset=span.start_offset, end_offset=span.end_offset, document=document)
 
         return document
+
+
+class TransformersTokenizer:
+    """
+    SDK Wrapper for transformers.AutoTokenizer.
+
+    Tokenizes text using the tokenizer returned
+    from transformers.AutoTokenizer (must be in the allowed_tokenizers list).
+
+    :param tokenizer_name: The name or path of the pre-trained tokenizer. Default is 'bert-base-german-cased'.
+
+    :return: None
+
+    :raises ValueError: If the provided tokenizer is not in the allowed_tokenizers list.
+    """
+
+    def __init__(
+        self,
+        tokenizer_name: str = 'bert-base-german-cased',
+    ) -> None:
+        """Initialize the TransformersTokenizer."""
+        # Initialize the tokenizer using transformers.AutoTokenizer.from_pretrained()
+        try:
+            self.tokenizer = transformers.AutoTokenizer.from_pretrained(
+                pretrained_model_name_or_path=tokenizer_name,
+            )
+        except Exception:
+            raise ValueError(f'Could not load Transformers Tokenizer {self.name}.')
+
+        # Check if the provided tokenizer is in the allowed_tokenizers list
+        if not isinstance(self.tokenizer, tuple(HF_ALLOWED_TOKENIZERS)):
+            raise ValueError(
+                f'The tokenizer {tokenizer_name} is not supported.  \
+                Please use a tokenizer that belongs to one of the following classes: {HF_ALLOWED_TOKENIZERS}'
+            )
+
+    def __call__(
+        self,
+        *args,
+        max_length: int = 512,
+        padding: str = 'max_length',
+        truncation: bool = True,
+        return_tensors: str = None,
+        **kwargs: Any,
+    ) -> Any:
+        """
+        Call method to invoke the tokenizer.
+
+        :param max_length: Maximum sequence length after tokenization. Default is 512.
+
+        :param padding: 'max_length' pads to the maximum sequence length;
+        'longest' pads to the length of the longest sequence. Default is 'max_length'.
+
+        :param truncation: If True, truncate sequences longer than max_length. Default is True.
+
+        :param return_tensors: The type of PyTorch tensors to be returned.
+        Default is None so it returns a python list (since we already transform to tensor).
+
+        :param kwargs: Additional keyword arguments to be passed to the tokenizer.
+
+        :return: The result of calling the underlying tokenizer with the provided arguments.
+        """
+        return self.tokenizer(
+            *args,
+            max_length=max_length,
+            padding=padding,
+            truncation=truncation,
+            return_tensors=return_tensors,
+            **kwargs,
+        )
