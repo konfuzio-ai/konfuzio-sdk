@@ -7,6 +7,7 @@ from konfuzio_sdk import KONFUZIO_HOST
 
 logger = logging.getLogger(__name__)
 
+# todo replace "limit" with explanation that it's pagination and introduce offset
 
 # TOKEN-AUTH
 
@@ -25,7 +26,7 @@ def get_auth_token_url(host: str = None) -> str:
 
 # PROJECTS
 
-
+# todo reuse pagination logic for fetching the projects
 def get_projects_list_url(limit: int = 1000, host: str = None) -> str:
     """
     Generate URL to list all the Projects available for the user.
@@ -51,17 +52,20 @@ def get_project_url(project_id: Union[int, None], host: str = None) -> str:
     return f'{host}/api/v3/projects/{project_id}/'
 
 
-def get_documents_meta_url(project_id: int, limit: int = 10, host: str = None) -> str:
+def get_documents_meta_url(project_id: int, offset: int = None, limit: int = 10, host: str = None) -> str:
     """
     Generate URL to load meta information about the Documents in the Project.
 
     :param project_id: ID of the Project
+    :param offset: A starting index to count Documents from.
     :param limit: Number of Documents to display meta information about.
     :param host: Konfuzio host
     :return: URL to get all the Documents details.
     """
     if host is None:
         host = KONFUZIO_HOST
+    if offset is not None:
+        return f"{host}/api/v3/documents/?limit={limit}&project={project_id}&offset={offset}"
     return f"{host}/api/v3/documents/?limit={limit}&project={project_id}"
 
 

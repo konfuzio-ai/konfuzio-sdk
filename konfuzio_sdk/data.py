@@ -1448,7 +1448,7 @@ class Label(Data):
 
         return best_regex
 
-    def regex(self, categories: List[Category], update=False) -> List:
+    def regex(self, categories: List[Category], update=False) -> Dict:
         """Calculate regex to be used in the Extraction AI."""
         # if not is_file(self.regex_file_path, raise_exception=False) or update:
         logger.info(f'Build regexes for Label {self.name}.')
@@ -2565,7 +2565,7 @@ class Annotation(Data):
         :param delete_online: Whether the Annotation is deleted online or only locally.
         """
         if self.document.is_online and delete_online:
-            delete_document_annotation(annotation_id=self.id_, session=self.document.project.session)
+            delete_document_annotation(annotation_id=self.id_, session=self.document.project.session, delete_from_database=True)
             self.document.update()
         else:
             del self.document._annotations[(tuple(sorted(self._spans.keys())), self.label.name)]
@@ -3372,7 +3372,13 @@ class Document(Data):
         return [page.get_image(update=update) for page in self.pages()]
 
     def download_document_details(self):
-        """Retrieve data from a Document online in case Document has finished processing."""
+        """
+        Retrieve data from a Document online in case Document has finished processing.
+
+        Data includes Document's status, URL of its file, name of its file, date of
+        las update, its text and pagination, Annotations and Annotation Sets; optionally,
+        Category information.
+        """
         if self.is_online:
             data = get_document_details(document_id=self.id_, session=self.project.session)
             self.status = data["status_data"]
@@ -3817,6 +3823,8 @@ class Document(Data):
 
             if self.category == self.project.no_category:
                 # for backwards compatibility
+                # todo: not send no_label label to the server / see how it is handled now
+                # they are ignored now
                 no_label_raw_annotations = []
                 for raw_annotation in raw_annotations:
                     if 'label_text' in raw_annotation.keys() and raw_annotation['label_text'] == 'NO_LABEL':
@@ -3828,10 +3836,14 @@ class Document(Data):
 
             if raw_annotations:
                 for raw_annotation in raw_annotations:
+                    # remove the 'annotation_set' because we specify its id explicitly when creating the Annotation
                     raw_annotation['annotation_set_id'] = raw_annotation.pop('annotation_set')
+                    # same with the 'label_set_id'
                     raw_annotation['label_set_id'] = raw_annotation.pop('label_set')['id']
+                    # same with 'document'
                     raw_annotation.pop('document', None)
                     label = self.project.get_label_by_id(id_=raw_annotation['label']['id'])
+                    # same with 'label'
                     raw_annotation.pop('label', None)
                     raw_spans = raw_annotation['span']
                     spans = [
@@ -3839,7 +3851,6 @@ class Document(Data):
                     ]
                     raw_annotation.pop('span', None)
                     _ = Annotation(document=self, id_=raw_annotation['id'], label=label, spans=spans, **raw_annotation)
-                    _.label.annotations
                 self._update = False  # Make sure we don't repeat to load once loaded.
 
         if self._annotations is None:
@@ -4102,8 +4113,14 @@ class Project(Data):
         pathlib.Path(self.regex_folder).mkdir(parents=True, exist_ok=True)
         pathlib.Path(self.model_folder).mkdir(parents=True, exist_ok=True)
 
+        # todo check the consistency between reload and update + explain what is the difference where applicable
         if self.id_ and (not is_file(self.meta_file_path, raise_exception=False) or update):
             self.write_project_files()
+        # order of adding data into the project has changed after migration from v2 to v3 API - the endpoint used for
+        # fetching categories, labels and label sets returns them in a nested structure:
+        # Categories -> Label Sets -> Labels.
+        # order of methods is pertained for backward compatibility in case there is project information that is stored
+        # in an "old" way, with labels.json5 and label_sets.json5
         self.get_labels(reload=True)
         self.get_label_sets(reload=True)
         self.get_categories(reload=True, update=update)
@@ -4306,6 +4323,7 @@ class Project(Data):
                 last_date = local_docs_dict[document_data['id']].updated_at
                 updated = dateutil.parser.isoparse(new_date) > last_date if last_date is not None else True
             category_id = None
+            # todo check that there are only 'category' fields in documents and remove if-else
             if 'category' in document_data.keys():
                 category_id = document_data['category']
             elif 'category_template' in document_data.keys():

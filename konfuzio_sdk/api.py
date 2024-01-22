@@ -455,31 +455,28 @@ def post_document_annotation(
     return r
 
 
-def delete_document_annotation(annotation_id: int, session=None, **kwargs):
+def delete_document_annotation(annotation_id: int, session=None, delete_from_database: bool = False, **kwargs):
     """
     Delete a given Annotation of the given document.
 
-    For AI training purposes, we recommend specifying 'revised': true, 'is_correct': false so that the Annotation is
-    not removed permanently. If you wish to remove an Annotation permanently, do not specify them.
+    For AI training purposes, we recommend setting `delete_from_database` to False if you don't want to remove
+    Annotation permanently. This creates a negative feedback Annotation and does not remove it from the database.
 
     :param annotation_id: ID of the annotation
     :param session: Konfuzio session with Retry and Timeout policy
     :return: Response status.
     """
-    is_correct = kwargs.get('is_correct', None)
-    revised = kwargs.get('revised', None)
 
     data = {'annotation_id': annotation_id}
 
-    if is_correct:
-        data['is_correct'] = is_correct
-    if revised:
-        data['revised'] = revised
+    if not delete_from_database:
+        data['is_correct'] = False
+        data['revised'] = True
 
     if session is None:
         session = konfuzio_session()
     url = get_annotation_url(annotation_id=annotation_id)
-    if is_correct is not None and revised is not None:
+    if not delete_from_database:
         r = session.patch(url=url, json=data)
     else:
         r = session.delete(url=url)
@@ -492,12 +489,13 @@ def delete_document_annotation(annotation_id: int, session=None, **kwargs):
         raise ConnectionError(f'Error{r.status_code}: {r.content} {r.url}')
 
 
-def get_meta_of_files(project_id: int, limit: int = 100, session=None) -> List[dict]:
+def get_meta_of_files(project_id: int, pagination_limit: int = 100, limit: int = None, session=None) -> List[dict]:
     """
     Get meta information of Documents in a Project.
 
     :param project_id: ID of the Project
-    :param limit: Number of Documents per Page
+    :param pagination_limit: Number of Documents returned in a single paginated response
+    :param limit: Number of Documents returned in general
     :param session: Konfuzio session with Retry and Timeout policy
     :return: Sorted Documents names in the format {id_: 'pdf_name'}.
     """
@@ -507,18 +505,22 @@ def get_meta_of_files(project_id: int, limit: int = 100, session=None) -> List[d
         host = session.host
     else:
         host = None
-    url = get_documents_meta_url(project_id=project_id, limit=limit, host=host)
+    if limit:
+        url = get_documents_meta_url(project_id=project_id, offset=0, limit=limit)
+    else:
+        url = get_documents_meta_url(project_id=project_id, limit=pagination_limit, host=host)
     result = []
     r = session.get(url)
     data = r.json()
     result += data['results']
 
-    while 'next' in data.keys() and data['next']:
-        logger.info(f'Iterate on paginated {url}.')
-        url = data['next']
-        r = session.get(url)
-        data = r.json()
-        result += data['results']
+    if not limit:
+        while 'next' in data.keys() and data['next']:
+            logger.info(f'Iterate on paginated {url}.')
+            url = data['next']
+            r = session.get(url)
+            data = r.json()
+            result += data['results']
 
     sorted_documents = sorted(result, key=itemgetter('id'))
     return sorted_documents
@@ -608,7 +610,8 @@ def upload_file_konfuzio_api(
         "callback_url": callback_url,
         "callback_status_code": callback_status_code,
     }
-
+    # todo make it possible to set assignee to ''
+    # issue https://git.konfuzio.com/konfuzio/objectives/-/issues/12225
     if assignee:
         data['assignee'] = assignee
 

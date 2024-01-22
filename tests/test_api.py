@@ -81,17 +81,22 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
     def test_get_meta_of_files_multiple_pages(self):
         """Get the meta information of Document in a Project."""
-        get_meta_of_files(project_id=TEST_PROJECT_ID, limit=10)
+        get_meta_of_files(project_id=TEST_PROJECT_ID, pagination_limit=10)
 
     @patch('requests.post')
     def test_empty_project(self, function):
         """Get the meta information of Documents if the Project is empty."""
         function.return_value = {'count': 0, 'next': None, 'previous': None, 'results': []}
-        get_meta_of_files(project_id=TEST_PROJECT_ID, limit=10)
+        get_meta_of_files(project_id=TEST_PROJECT_ID, pagination_limit=10)
 
     def test_get_meta_of_files_one_page(self):
         """Get the meta information of Documents in a Project."""
-        get_meta_of_files(project_id=TEST_PROJECT_ID, limit=1000000000)
+        get_meta_of_files(project_id=TEST_PROJECT_ID, pagination_limit=1000000000)
+
+    def test_get_meta_of_files_limited(self):
+        """Get the meta information of a limited number of Documents."""
+        meta = get_meta_of_files(project_id=TEST_PROJECT_ID, limit=10)
+        assert len(meta) == 10
 
     def test_documents_list(self):
         """Test to get Documents details."""
@@ -350,9 +355,9 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         annotations = get_document_annotations(TEST_DOCUMENT_ID)['results']
         assert annotation['id'] in [annotation['id'] for annotation in annotations]
         # delete the annotation, i.e. change its status from feedback required to negative
-        negative_id = delete_document_annotation(annotation['id'], is_correct=False, revised=True)
+        negative_id = delete_document_annotation(annotation['id'])
         # delete it a second time to remove this Annotation from the feedback stored as negative
-        assert delete_document_annotation(negative_id).status_code == 204
+        assert delete_document_annotation(negative_id, delete_from_database=True).status_code == 204
 
     def test_get_project_labels(self):
         """Download Labels from API for a Project."""
