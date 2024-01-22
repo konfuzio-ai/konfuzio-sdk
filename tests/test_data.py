@@ -226,7 +226,6 @@ class TestOnlineProject(unittest.TestCase):
 
     def test_get_sentence_spans_from_bbox(self):
         """Test to get sentence Spans in a bounding box."""
-        # todo ensure the call to large projects does not break a project's initialization
         project = Project(id_=458)
         document = project.get_document_by_id(615403)
         page = document.get_page_by_index(0)

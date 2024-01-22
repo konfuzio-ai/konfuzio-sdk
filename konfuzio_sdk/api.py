@@ -489,7 +489,8 @@ def delete_document_annotation(annotation_id: int, session=None, delete_from_dat
         raise ConnectionError(f'Error{r.status_code}: {r.content} {r.url}')
 
 
-def get_meta_of_files(project_id: int, pagination_limit: int = 100, limit: int = None, session=None) -> List[dict]:
+# todo proper pagination
+def get_meta_of_files(project_id: int, pagination_limit: int = 1, limit: int = None, session=None) -> List[dict]:
     """
     Get meta information of Documents in a Project.
 
@@ -512,15 +513,24 @@ def get_meta_of_files(project_id: int, pagination_limit: int = 100, limit: int =
     result = []
     r = session.get(url)
     data = r.json()
+    count = data['count']
     result += data['results']
 
     if not limit:
         while 'next' in data.keys() and data['next']:
-            logger.info(f'Iterate on paginated {url}.')
-            url = data['next']
-            r = session.get(url)
-            data = r.json()
-            result += data['results']
+            if len(result) + pagination_limit < count:
+                logger.info(f'Iterate on paginated {url}.')
+                url = data['next']
+                r = session.get(url)
+                data = r.json()
+                result += data['results']
+            else:
+                remaining_documents = count - len(result)
+                url = get_documents_meta_url(project_id=project_id, limit=remaining_documents, offset=len(result),
+                                             host=host)
+                r = session.get(url)
+                data = r.json()
+                result += data['results']
 
     sorted_documents = sorted(result, key=itemgetter('id'))
     return sorted_documents

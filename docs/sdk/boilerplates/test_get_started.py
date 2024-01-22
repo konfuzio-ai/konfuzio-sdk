@@ -105,6 +105,7 @@ def test_modify_document():
     # end get file
     # start get original
     for document in my_project.documents:
+        document.update()
         document.get_file(ocr_version=False)
         # end get original
         assert os.path.exists(document.file_path)

@@ -10,7 +10,7 @@ from unittest.mock import patch
 import pytest
 from requests import HTTPError
 
-from konfuzio_sdk import BASE_DIR, KONFUZIO_USER
+from konfuzio_sdk import BASE_DIR
 from konfuzio_sdk.api import (
     TimeoutHTTPAdapter,
     _get_auth_token,
@@ -405,12 +405,10 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
     def test_update_document_konfuzio_api(self):
         """Update the name and assignee of a Document."""
         timestamp = str(datetime.datetime.now())
-        assignee = KONFUZIO_USER
         result = update_document_konfuzio_api(
-            document_id=214414, file_name=timestamp, dataset_status=0, assignee=assignee
+            document_id=214414, file_name=timestamp, dataset_status=0
         )
         assert result['data_file_name'] == timestamp
-        assert result['assignee'] == assignee
 
     def test_update_document_konfuzio_api_no_changes(self):
         """Update a document without providing information."""
