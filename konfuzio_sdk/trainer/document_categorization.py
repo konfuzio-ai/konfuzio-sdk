@@ -1345,7 +1345,10 @@ class CategorizationAI(AbstractCategorizationAI):
 
     def fit(self, max_len: bool = None, batch_size: int = 1, **kwargs) -> Dict[str, List[float]]:
         """Fit the CategorizationAI classifier."""
-        logger.info('getting document classifier iterators')
+        logger.info(f"Fitting Categorization AI classifier using: "
+            f"\n\tmax_len: {max_len} "
+            f"\n\tbatch_size: {batch_size}"
+            f"\n\tkwargs: {kwargs}")
 
         # figure out if we need images and/or text depending on if the classifier
         # has an image and/or text module
@@ -1601,7 +1604,8 @@ def build_categorization_ai_pipeline(
     test_documents: List[Document],
     tokenizer: Optional[AbstractTokenizer] = None,
     image_model_name: Optional[ImageModel] = None,
-    text_model_name: Optional[TextModel] = None,
+    text_model_name: Optional[TextModel] = TextModel.NBOW,
+    **kwargs
 ) -> CategorizationAI:
     """
 
@@ -1609,6 +1613,9 @@ def build_categorization_ai_pipeline(
 
     See an in-depth tutorial at https://dev.konfuzio.com/sdk/tutorials/data_validation/index.html
     """
+    logger.info(f'Building categorization AI pipeline using: \
+                \n\timage_model_name: {image_model_name} \
+                \n\ttext_model_name: {text_model_name}')
     # Configure Categories, with training and test Documents for the Categorization AI
     categorization_pipeline = CategorizationAI(categories)
     categorization_pipeline.documents = documents
