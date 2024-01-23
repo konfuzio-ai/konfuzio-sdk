@@ -512,24 +512,15 @@ def get_meta_of_files(project_id: int, pagination_limit: int = 1000, limit: int 
     result = []
     r = session.get(url)
     data = r.json()
-    count = data['count']
     result += data['results']
 
     if not limit:
         while 'next' in data.keys() and data['next']:
-            if len(result) + pagination_limit < count:
-                logger.info(f'Iterate on paginated {url}.')
-                url = data['next']
-                r = session.get(url)
-                data = r.json()
-                result += data['results']
-            else:
-                remaining_documents = count - len(result)
-                url = get_documents_meta_url(project_id=project_id, limit=remaining_documents, offset=len(result),
-                                             host=host)
-                r = session.get(url)
-                data = r.json()
-                result += data['results']
+            logger.info(f'Iterate on paginated {url}.')
+            url = data['next']
+            r = session.get(url)
+            data = r.json()
+            result += data['results']
 
     sorted_documents = sorted(result, key=itemgetter('id'))
     return sorted_documents
