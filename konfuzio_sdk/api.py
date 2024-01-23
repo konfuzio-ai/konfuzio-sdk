@@ -489,8 +489,7 @@ def delete_document_annotation(annotation_id: int, session=None, delete_from_dat
         raise ConnectionError(f'Error{r.status_code}: {r.content} {r.url}')
 
 
-# todo proper pagination
-def get_meta_of_files(project_id: int, pagination_limit: int = 1, limit: int = None, session=None) -> List[dict]:
+def get_meta_of_files(project_id: int, pagination_limit: int = 1000, limit: int = None, session=None) -> List[dict]:
     """
     Get meta information of Documents in a Project.
 
