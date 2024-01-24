@@ -418,7 +418,7 @@ def post_document_annotation(
     custom_bboxes = kwargs.get('selection_bbox', None)
     annotation_set_id = kwargs.get('annotation_set_id', None)
     label_set_id = kwargs.get('label_set_id', None)
-    if not isinstance(spans, List[Dict]):
+    if not all(isinstance(span, dict) for span in spans):
         spans = [
             {
                 "x0": span.bbox().x0,
@@ -490,7 +490,7 @@ def delete_document_annotation(annotation_id: int, session=None, delete_from_dat
         raise ConnectionError(f'Error{r.status_code}: {r.content} {r.url}')
 
 
-def get_meta_of_files(project_id: int, pagination_limit: int = 1000, limit: int = None, session=None) -> List[dict]:
+def get_meta_of_files(project_id: int, pagination_limit: int = 100, limit: int = None, session=None) -> List[dict]:
     """
     Get meta information of Documents in a Project.
 

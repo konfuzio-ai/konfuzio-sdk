@@ -38,18 +38,22 @@ request using the methods from `konfuzio_sdk.api` which serves as a wrapper arou
 Let's start by making necessary imports:
 ```python tags=["remove-cell"]
 import logging
-from tests.variables import TEST_DOCUMENT_ID
+from konfuzio_sdk.api import get_document_annotations
+from konfuzio_sdk.data import Project
 
 logging.getLogger("konfuzio_sdk").setLevel(logging.ERROR)
-YOUR_DOCUMENT_ID = TEST_DOCUMENT_ID
+YOUR_DOCUMENT_ID = 44823
 YOUR_LABEL_ID = 12503
 YOUR_LABEL_SET_ID = 63
+YOUR_PROJECT_ID = 46
+project = Project(id_=YOUR_PROJECT_ID)
+project.get_document_by_id(YOUR_DOCUMENT_ID).get_bbox()
 ```
 ```python
 import json 
 
-from konfuzio_sdk.api import post_document_annotation
-from konfuzio_sdk.data import Span
+from konfuzio_sdk.api import post_document_annotation, delete_document_annotation
+from konfuzio_sdk.data import Span, Project
 ```
 
 To create any Annotation, it is necessary to provide several fields to `post_document_annotation`:
@@ -63,26 +67,27 @@ new Annotation Set.
 
 ### Creating a textual Annotation
 
-To create an Annotation that is based on existing text of a Document, let's firstly define the Span that will be 
-passed as the `spans` argument. You can define one or more Spans.
+To create an Annotation that is based on existing text of a Document, let's firstly define the test Document and the 
+Span that will be passed as the `spans` argument. You can define one or more Spans.
 ```python
-spans = [Span(start_offset=3056, end_offset=3064)]
+test_document = Project(id_=YOUR_PROJECT_ID).get_document_by_id(YOUR_DOCUMENT_ID)
+spans = [Span(document=test_document, start_offset=3056, end_offset=3064)]
 ```
 
 Next, let's specify arguments for a POST request that creates Annotations and send it to the server. We want to create
-an Annotation within a new Annotation Set so we specify `label_set`.
+an Annotation within a new Annotation Set so we specify `label_set_id`.
 ```python
 response = post_document_annotation(document_id=YOUR_DOCUMENT_ID, spans=spans, label_id=YOUR_LABEL_ID, confidence=100.0,
-                                    label_set=YOUR_LABEL_SET_ID)
+                                    label_set_id=YOUR_LABEL_SET_ID)
 ```
-Let's check if an Annotation has been created successfully:
+Let's check if an Annotation has been created successfully and has a Span coinciding with the one created by us above:
 ```python
 response = json.loads(response.text)
-print(response)
+print(response['span'])
 ```
 ```python tags=['remove-cell']
 annotations = get_document_annotations(YOUR_DOCUMENT_ID)['results']
-negative_id = delete_document_annotation(annotation['id'])
+negative_id = delete_document_annotation(response['id'])
 assert delete_document_annotation(negative_id, delete_from_database=True).status_code == 204
 ```
 
@@ -102,18 +107,18 @@ bboxes = [
 ]
 ```
 Next, we specify arguments for a POST request to create an Annotation and send it to the server. We want to create
-an Annotation within a new Annotation Set so we specify `label_set`.
+an Annotation within a new Annotation Set so we specify `label_set_id`.
 ```python
 response = post_document_annotation(document_id=YOUR_DOCUMENT_ID, spans=bboxes, label_id=YOUR_LABEL_ID, confidence=100.0,
-                                    label_set=YOUR_LABEL_SET_ID)
+                                    label_set_id=YOUR_LABEL_SET_ID)
 ```
 Let's check if an Annotation has been created successfully:
 ```python
 response = json.loads(response.text)
-print(response)
+print(response['span'])
 ```
 ```python tags=['remove-cell']
-assert delete_document_annotation(response['id'], delete_from_database=True)
+assert delete_document_annotation(response['id'])
 ```
 ### Conclusion
 
@@ -122,23 +127,24 @@ around the API calls to the server. Here is the full code for the tutorial:
 ```python tags=['skip-execution', 'nbval-skip']
 import json 
 
-from konfuzio_sdk.api import post_document_annotation
-from konfuzio_sdk.data import Span
+from konfuzio_sdk.api import post_document_annotation, delete_document_annotation
+from konfuzio_sdk.data import Span, Project
 
-spans = [Span(start_offset=3056, end_offset=3064)]
+test_document = Project(id_=YOUR_PROJECT_ID).get_document_by_id(YOUR_DOCUMENT_ID)
+spans = [Span(document=test_document, start_offset=3056, end_offset=3064)]
 response = post_document_annotation(document_id=YOUR_DOCUMENT_ID, spans=spans, label_id=YOUR_LABEL_ID, confidence=100.0,
-                                    label_set=YOUR_LABEL_SET_ID)
+                                    label_set_id=YOUR_LABEL_SET_ID)
 response = json.loads(response.text)
-print(response)
+print(response['span'])
 
 bboxes = [
         {'page_index': 0, 'x0': 198, 'x1': 300, 'y0': 508, 'y1': 517},
         {'page_index': 0, 'x0': 197.76, 'x1': 233, 'y0': 495, 'y1': 508},
 ]
 response = post_document_annotation(document_id=YOUR_DOCUMENT_ID, spans=bboxes, label_id=YOUR_LABEL_ID, confidence=100.0,
-                                    label_set=YOUR_LABEL_SET_ID)
+                                    label_set_id=YOUR_LABEL_SET_ID)
 response = json.loads(response.text)
-print(response)
+print(response['span'])
 ```
 
 ### What's next?
