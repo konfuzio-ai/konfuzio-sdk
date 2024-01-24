@@ -418,17 +418,18 @@ def post_document_annotation(
     custom_bboxes = kwargs.get('selection_bbox', None)
     annotation_set_id = kwargs.get('annotation_set_id', None)
     label_set_id = kwargs.get('label_set_id', None)
-    spans = [
-        {
-            "x0": span.bbox().x0,
-            "x1": span.bbox().x1,
-            "y0": span.bbox().y0,
-            "y1": span.bbox().y1,
-            "page_index": span.page.index,
-            "offset_string": span.offset_string,
-        }
-        for span in spans
-    ]
+    if not isinstance(spans, List[Dict]):
+        spans = [
+            {
+                "x0": span.bbox().x0,
+                "x1": span.bbox().x1,
+                "y0": span.bbox().y0,
+                "y1": span.bbox().y1,
+                "page_index": span.page.index,
+                "offset_string": span.offset_string,
+            }
+            for span in spans
+        ]
 
     data = {
         'document': document_id,

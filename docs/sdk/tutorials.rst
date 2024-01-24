@@ -10,9 +10,14 @@ Getting Started
 
 Learn how to efficiently prepare your data for optimal processing. This tutorial covers data organization, cleaning, and formatting to ensure seamless integration with our AI models.
 
+2. :doc:`Create Annotations via API <tutorials/create-annotations-api/index>`
+
+Get to know how to create different types of Annotations using methods from `konfuzio_sdk.api`.
+
 .. toctree::
    :maxdepth: 1
    tutorials/data-preparation/index
+   tutorials/create-annotations-api/index
 
 Document Processing Essentials
 ------------------------------
