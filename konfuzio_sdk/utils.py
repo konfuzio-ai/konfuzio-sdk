@@ -571,16 +571,20 @@ def get_bbox(bbox, start_offset: int, end_offset: int) -> Dict:
     pdf_page_index = None
     line_indexes = []  # todo create one bounding box per line.
 
-    # combine all of the found character bboxes and calculate their combined x0, x1, etc. values
+    # combine all the found character bboxes and calculate their combined x0, x1, etc. values
     for char_bbox_id in char_bbox_ids:
+        # conditions for backward compatibility
         x0 = min(bbox[char_bbox_id]['x0'], x0)
-        top = min(bbox[char_bbox_id]['top'], top)
+        if 'top' in bbox[char_bbox_id].keys():
+            top = min(bbox[char_bbox_id]['top'], top)
         y0 = min(bbox[char_bbox_id]['y0'], y0)
 
         x1 = max(bbox[char_bbox_id]['x1'], x1)
-        bottom = max(bbox[char_bbox_id]['bottom'], bottom)
+        if 'bottom' in bbox[char_bbox_id].keys():
+            bottom = max(bbox[char_bbox_id]['bottom'], bottom)
         y1 = max(bbox[char_bbox_id]['y1'], y1)
-        line_indexes.append(bbox[char_bbox_id]['page_number'])
+        if 'page_number' in bbox[char_bbox_id]:
+            line_indexes.append(bbox[char_bbox_id]['page_number'])
 
         if pdf_page_index is not None:
             try:
@@ -591,7 +595,8 @@ def get_bbox(bbox, start_offset: int, end_offset: int) -> Dict:
                     'on the first page of the match.'
                 )
                 break
-        pdf_page_index = bbox[char_bbox_id]['page_number'] - 1
+        if 'page_number' in bbox[char_bbox_id]:
+            pdf_page_index = bbox[char_bbox_id]['page_number'] - 1
 
     res = {'bottom': bottom, 'page_index': pdf_page_index, 'top': top, 'x0': x0, 'x1': x1, 'y0': y0, 'y1': y1}
     if len(set(line_indexes)) == 1:

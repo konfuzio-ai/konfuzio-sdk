@@ -48,7 +48,7 @@ class TestOnlineProject(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Initialize the test Project."""
-        cls.project = Project(id_=TEST_PROJECT_ID)
+        cls.project = Project(id_=TEST_PROJECT_ID, update=True)
 
     def test_document(self):
         """Test properties of a specific Documents in the test Project."""

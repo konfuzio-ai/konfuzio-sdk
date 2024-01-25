@@ -3863,9 +3863,11 @@ class Document(Data):
                     raw_annotations = json.load(f)
 
                 if self.category == self.project.no_category:
+                    # conditions for backward compatibility
                     raw_annotations = [
                         annotation for annotation in raw_annotations if (('label_text' in annotation.keys() and annotation['label_text'] == 'NO_LABEL')
-                                                                    or ('label' in annotation.keys() and annotation['label']['name'] == 'NO_LABEL'))
+                                                                    or ('label' in annotation.keys() and isinstance(annotation['label'], dict)
+                                                                        and annotation['label']['name'] == 'NO_LABEL'))
                     ]
 
                 if raw_annotations:
