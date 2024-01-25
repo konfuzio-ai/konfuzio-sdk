@@ -8,7 +8,7 @@ from konfuzio_sdk.tokenizer.paragraph_and_sentence import SentenceTokenizer
 
 logger = logging.getLogger(__name__)
 
-
+@unittest.skip(reason='Project 458 is under maintentance now and switching to another Project requires major changes.')
 class TestDetectronSentenceTokenizer(unittest.TestCase):
     """Test Detectron Sentence Tokenizer."""
 
@@ -57,7 +57,7 @@ class TestDetectronSentenceTokenizer(unittest.TestCase):
         assert virtual_doc.annotations(use_correct=False)[1].label.name == 'text'
         assert virtual_doc.annotations(use_correct=False)[5].label.name == 'title'
 
-
+@unittest.skip(reason='Project 458 is under maintentance now and switching to another Project requires major changes.')
 class TestLineDistanceSentenceTokenizer(unittest.TestCase):
     """Test Line Distance Sentence Tokenizer."""
 
@@ -84,7 +84,7 @@ class TestLineDistanceSentenceTokenizer(unittest.TestCase):
         assert len(pages[0].annotations(use_correct=False)) == 35
         assert len(pages[1].annotations(use_correct=False)) == 62
 
-
+@unittest.skip(reason='Project 458 is under maintentance now and switching to another Project requires major changes.')
 def test_no_bbox_document(caplog):
     """Test processing a Document with no Bboxes."""
     project = Project(id_=458)

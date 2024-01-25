@@ -887,19 +887,21 @@ def get_spans_from_bbox(selection_bbox: 'Bbox') -> List['Span']:
     # iterate over each line_number (or bottom, depending on group_by) and all the character
     # bboxes that have the same line_number (or bottom)
     spans = []
-    # condition for backward compatibility
-    for _, line_char_bboxes in itertools.groupby(selected_bboxes, lambda x: x['line_number'] if 'line_number' in x.keys() else lambda x: x['line_index']):
-        # remove space chars from the line selection, so they don't interfere with the merging of bboxes
-        # (a bbox should never start with a space char)
-        trimmed_line_char_bboxes = [char for char in line_char_bboxes if not char['text'].isspace()]
+    if selected_bboxes:
+        # condition for backward compatibility
+        line_key = 'line_index' if 'line_index' in selected_bboxes[0].keys() else 'line_number'
+        for _, line_char_bboxes in itertools.groupby(selected_bboxes, lambda x: x[line_key]):
+            # remove space chars from the line selection, so they don't interfere with the merging of bboxes
+            # (a bbox should never start with a space char)
+            trimmed_line_char_bboxes = [char for char in line_char_bboxes if not char['text'].isspace()]
 
-        if len(trimmed_line_char_bboxes) == 0:
-            continue
+            if len(trimmed_line_char_bboxes) == 0:
+                continue
 
-        # combine all the found character bboxes on a given line and calculate their combined x0, x1, etc. values
-        start_offset = min(char_bbox['char_index'] for char_bbox in trimmed_line_char_bboxes)
-        end_offset = max(char_bbox['char_index'] for char_bbox in trimmed_line_char_bboxes)
-        span = Span(start_offset=start_offset, end_offset=end_offset + 1, document=selection_bbox.page.document)
-        spans.append(span)
+            # combine all the found character bboxes on a given line and calculate their combined x0, x1, etc. values
+            start_offset = min(char_bbox['char_index'] for char_bbox in trimmed_line_char_bboxes)
+            end_offset = max(char_bbox['char_index'] for char_bbox in trimmed_line_char_bboxes)
+            span = Span(start_offset=start_offset, end_offset=end_offset + 1, document=selection_bbox.page.document)
+            spans.append(span)
 
     return spans

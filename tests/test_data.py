@@ -172,6 +172,7 @@ class TestOnlineProject(unittest.TestCase):
     def test_create_annotation_offline(self):
         """Test to add an Annotation to the Document offline, and that it does not persist after updating the doc."""
         doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        doc.update()
         assert Span(start_offset=1590, end_offset=1602) not in doc.spans()
         label = self.project.get_label_by_name('Lohnart')
         label_set = label.label_sets[0]
@@ -226,11 +227,11 @@ class TestOnlineProject(unittest.TestCase):
 
     def test_get_sentence_spans_from_bbox(self):
         """Test to get sentence Spans in a bounding box."""
-        project = Project(id_=458)
-        document = project.get_document_by_id(615403)
+        document = self.project.get_document_by_id(5679477)
+        document = WhitespaceTokenizer().tokenize(deepcopy(document))
         page = document.get_page_by_index(0)
 
-        bbox = Bbox(x0=50, y0=77, x1=288, y1=125, page=page)
+        bbox = Bbox(x0=39, y0=728, x1=512, y1=742, page=page)
 
         assert bbox.document is document
 
@@ -238,11 +239,10 @@ class TestOnlineProject(unittest.TestCase):
 
         sentences_spans = Span.get_sentence_from_spans(spans=spans)
 
-        assert len(sentences_spans) == 3
+        assert len(sentences_spans) == 1
         first_sentence = sentences_spans[0]
-        assert len(first_sentence) == 2
-        assert first_sentence[0].offset_string == 'We would like detection to scale to level of object clas-'
-        assert first_sentence[1].offset_string == 'siﬁcation.'
+        assert len(first_sentence) == 1
+        assert first_sentence[0].offset_string == 'Deep Neural Networks for Page Stream Segmentation and Classiﬁcation'
 
     def test_merge_documents(self):
         """Merge documents into a new document."""
@@ -2564,7 +2564,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         self.assertTrue(is_file(doc.annotation_file_path))
         prj.delete()
 
-    @unittest.skip(reason='Server Issue https://gitlab.com/konfuzio/objectives/-/issues/9286')
+    # @unittest.skip(reason='Server Issue https://gitlab.com/konfuzio/objectives/-/issues/9286')
     def test_make_sure_annotation_sets_are_downloaded_automatically(self):
         """Test if Annotation Sets are downloaded automatically."""
         prj = Project(id_=TEST_PROJECT_ID, project_folder='another2')
