@@ -3353,8 +3353,12 @@ class Document(Data):
             file_path = self.ocr_file_path
         else:
             file_path = self.file_path
-
-        if self.status[0] == DocumentStatuses.DONE.value and (
+        # backward compatibility check
+        if isinstance(self.status, int):
+            status = self.status
+        else:
+            status = self.status[0]
+        if status == DocumentStatuses.DONE.value and (
             not file_path or not is_file(file_path, raise_exception=False) or update
         ):
             pdf_content = download_file_konfuzio_api(self.id_, ocr=ocr_version, session=self.project.session)
