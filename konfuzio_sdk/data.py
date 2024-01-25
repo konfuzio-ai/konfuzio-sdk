@@ -3354,7 +3354,7 @@ class Document(Data):
         else:
             file_path = self.file_path
         # backward compatibility check
-        if isinstance(self.status, int):
+        if isinstance(self.status, int) or not self.status:
             status = self.status
         else:
             status = self.status[0]
