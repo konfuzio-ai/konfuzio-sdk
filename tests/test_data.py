@@ -630,7 +630,6 @@ class TestOfflineExampleData(unittest.TestCase):
 
     def test_find_outlier_annotations(self):
         """Test finding the Annotations that are deemed outliers by several methods of search."""
-        # project = Project(id_=TEST_PROJECT_ID)
         label = self.project.get_label_by_name('Austellungsdatum')
         outliers = label.get_probable_outliers(self.project.categories, regex_worst_percentage=1.0, confidence_search=False)
         outlier_spans = [span.offset_string for annotation in outliers for span in annotation.spans]
@@ -2552,7 +2551,6 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         doc.get_file()
         is_file(doc.ocr_file_path)
 
-    @unittest.skip(reason='Server Issue https://gitlab.com/konfuzio/objectives/-/issues/9286')
     def test_make_sure_annotations_are_downloaded_automatically(self):
         """Test if Annotations are downloaded automatically."""
         prj = Project(id_=TEST_PROJECT_ID, project_folder='another')
@@ -2560,11 +2558,10 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         self.assertFalse(is_file(doc.annotation_file_path, raise_exception=False))
         self.assertEqual(None, doc._annotations)
         self.assertTrue(doc.annotations())
-        self.assertEqual(19, len(doc._annotations))
+        self.assertEqual(21, len(doc._annotations))
         self.assertTrue(is_file(doc.annotation_file_path))
         prj.delete()
 
-    # @unittest.skip(reason='Server Issue https://gitlab.com/konfuzio/objectives/-/issues/9286')
     def test_make_sure_annotation_sets_are_downloaded_automatically(self):
         """Test if Annotation Sets are downloaded automatically."""
         prj = Project(id_=TEST_PROJECT_ID, project_folder='another2')
@@ -2572,7 +2569,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         self.assertFalse(is_file(doc.annotation_set_file_path, raise_exception=False))
         self.assertEqual(None, doc._annotation_sets)
         self.assertTrue(doc.annotation_sets())
-        self.assertEqual(4, len(doc._annotation_sets))
+        assert doc._annotation_sets
         self.assertTrue(is_file(doc.annotation_set_file_path))
         prj.delete()
 

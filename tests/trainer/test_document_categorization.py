@@ -8,13 +8,12 @@ from copy import deepcopy
 from typing import Dict, List
 
 import parameterized
-from requests import HTTPError, ReadTimeout
-from typing import List, Dict
-
-from konfuzio_sdk.api import upload_ai_model, update_ai_model, delete_ai_model, konfuzio_session
-from konfuzio_sdk.data import Project, Document, Page
 import pytest
-from konfuzio_sdk.extras import FloatTensor, torch, transformers
+from requests import HTTPError, ReadTimeout
+
+from konfuzio_sdk.api import delete_ai_model, konfuzio_session, update_ai_model, upload_ai_model
+from konfuzio_sdk.data import Document, Page, Project
+from konfuzio_sdk.extras import FloatTensor, torch
 from konfuzio_sdk.settings_importer import is_dependency_installed
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer, WhitespaceTokenizer
 from konfuzio_sdk.trainer.document_categorization import (
@@ -35,9 +34,7 @@ from konfuzio_sdk.trainer.document_categorization import (
     PageTextCategorizationModel,
     TextModel,
     build_categorization_ai_pipeline,
-    load_categorization_model,
 )
-
 from konfuzio_sdk.urls import get_create_ai_model_url
 from tests.variables import (
     OFFLINE_PROJECT,
@@ -580,7 +577,7 @@ class TestCategorizationConfigurations(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Set up the Data and Categorization Pipeline."""
-        cls.training_prj = Project(id_=14392)
+        cls.training_prj = Project(id_=14392, update=True)
         cls.categorization_pipeline = CategorizationAI(cls.training_prj.categories)
         cls.category_1 = cls.training_prj.get_category_by_id(19827)
         cls.category_2 = cls.training_prj.get_category_by_id(19828)

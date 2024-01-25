@@ -220,8 +220,9 @@ class Page(Data):
             elif is_file(self.image_path, raise_exception=False) and not update:
                 self.image = Image.open(self.image_path)
             elif (not is_file(self.image_path, raise_exception=False) or update) and page_id:
+                document_id = self.document.id_ if self.document.id_ else self.document.copy_of_id
                 png_content = get_page_image(
-                    document_id=self.document.id_, page_number=self.number, session=self.document.project.session
+                    document_id=document_id, page_number=self.number, session=self.document.project.session
                 )
                 with open(self.image_path, "wb") as f:
                     f.write(png_content)
@@ -3863,7 +3864,8 @@ class Document(Data):
 
                 if self.category == self.project.no_category:
                     raw_annotations = [
-                        annotation for annotation in raw_annotations if annotation['label_text'] == 'NO_LABEL'
+                        annotation for annotation in raw_annotations if (('label_text' in annotation.keys() and annotation['label_text'] == 'NO_LABEL')
+                                                                    or ('label' in annotation.keys() and annotation['label']['name'] == 'NO_LABEL'))
                     ]
 
                 if raw_annotations:

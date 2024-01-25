@@ -451,7 +451,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         res_doc = no_konfuzio_sdk_pipeline.extract(document=test_document)
         assert len(res_doc.view_annotations()) == 17
 
-        prj46 = Project(id_=46, update=True)
+        prj46 = Project(id_=46)
         doc = prj46.get_document_by_id(570129)
         res_doc = self.pipeline.extract(document=doc)
 
@@ -721,6 +721,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
             os.remove(cls.pipeline.pipeline_path_no_konfuzio_sdk)
 
 
+@unittest.skip(reason='Project 458 is under maintentance now and switching to another Project requires major changes.')
 @pytest.mark.skipif(
     not is_dependency_installed('torch'),
     reason='Required dependencies not installed.',
@@ -800,7 +801,7 @@ class TestParagraphRFExtractionAI(unittest.TestCase):
         assert evaluation.f1() >= 0.97
         assert evaluation.fp() == self.fp  # 2 lines are unannotated
 
-
+@unittest.skip(reason='Project 458 is under maintentance now and switching to another Project requires major changes.')
 @pytest.mark.skipif(
     not is_dependency_installed('torch'),
     reason='Required dependencies not installed.',
