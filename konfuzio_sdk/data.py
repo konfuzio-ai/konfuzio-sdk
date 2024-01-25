@@ -3354,7 +3354,7 @@ class Document(Data):
         else:
             file_path = self.file_path
 
-        if self.status == DocumentStatuses.DONE.value and (
+        if self.status[0] == DocumentStatuses.DONE.value and (
             not file_path or not is_file(file_path, raise_exception=False) or update
         ):
             pdf_content = download_file_konfuzio_api(self.id_, ocr=ocr_version, session=self.project.session)
