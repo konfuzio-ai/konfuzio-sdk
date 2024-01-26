@@ -436,6 +436,7 @@ class TestTextCategorizationModels(unittest.TestCase):
 )
 class TestBertCategorizationModels(unittest.TestCase):
     """Test BERT models with different names."""
+
     @classmethod
     def setUpClass(cls) -> None:
         """Set up the Data and Categorization Pipeline."""
@@ -552,12 +553,12 @@ class TestBertCategorizationModels(unittest.TestCase):
 
 
 @parameterized.parameterized_class(
-    ("text_class", "tokenizer", "image_class", "image_class_version", "n_epochs", "test_quality"),
+    ('text_class', 'tokenizer', 'image_class', 'image_class_version', 'n_epochs', 'test_quality'),
     [
         (NBOW, WhitespaceTokenizer, None, None, 20, True),
         (NBOWSelfAttention, WhitespaceTokenizer, None, None, 20, True),
         (LSTM, WhitespaceTokenizer, None, None, 1, False),
-        (NBOW, ConnectedTextTokenizer, EfficientNet, "efficientnet_b0", 1, False),
+        (NBOW, ConnectedTextTokenizer, EfficientNet, 'efficientnet_b0', 1, False),
         # (None, None, EfficientNet, "efficientnet_b3", 5),  # commented out because of length of execution
         # (NBOWSelfAttention, ConnectedTextTokenizer, VGG, "vgg11", 2),
         # (LSTM, ConnectedTextTokenizer, VGG, "vgg13", 3),
@@ -744,7 +745,7 @@ def test_bert_in_multimodal_categorization_ai():
     bert_config = text_model.bert.config
     assert hasattr(bert_config, '_name_or_path')
     assert bert_config._name_or_path == 'prajjwal1/bert-tiny'
-    image_model = VGG(name="vgg11")
+    image_model = VGG(name='vgg11')
     multimodal_model = MultimodalConcatenate(
         n_image_features=image_model.n_features,
         n_text_features=text_model.n_features,
