@@ -298,9 +298,9 @@ class AbstractTextCategorizationModel(AbstractCategorizationModel, metaclass=abc
     def _output(self, text: Tensor) -> List[FloatTensor]:
         """Collect output of NN architecture."""
 
-    def forward(self, _input: Dict[str, Tensor]) -> Dict[str, FloatTensor]:
+    def forward(self, input: Dict[str, Tensor]) -> Dict[str, FloatTensor]:
         """Define the computation performed at every call."""
-        text = _input['text']
+        text = input['text']
         # text = [batch, seq len]
         outs = self._output(text)
         if len(outs) not in [1, 2]:
@@ -378,12 +378,7 @@ class NBOWSelfAttention(AbstractTextCategorizationModel):
         **kwargs,
     ):
         """Init and set parameters."""
-        super().__init__(
-            input_dim=input_dim,
-            emb_dim=emb_dim,
-            n_heads=n_heads,
-            dropout_rate=dropout_rate,
-        )
+        super().__init__(input_dim=input_dim, emb_dim=emb_dim, n_heads=n_heads, dropout_rate=dropout_rate)
         self.uses_attention = True
 
     def _valid(self) -> None:
@@ -457,11 +452,7 @@ class LSTM(AbstractTextCategorizationModel):
         """Load NN architecture."""
         self.embedding = torch.nn.Embedding(self.input_dim, self.emb_dim)
         self.lstm = torch.nn.LSTM(
-            self.emb_dim,
-            self.hid_dim,
-            self.n_layers,
-            dropout=self.dropout_rate,
-            bidirectional=self.bidirectional,
+            self.emb_dim, self.hid_dim, self.n_layers, dropout=self.dropout_rate, bidirectional=self.bidirectional
         )
         self.dropout = torch.nn.Dropout(self.dropout_rate)
 
@@ -563,7 +554,7 @@ class BERT(AbstractTextCategorizationModel):
 class PageCategorizationModel(Module):
     """Container for Categorization Models."""
 
-    def forward(self, _input: Dict[str, Tensor]) -> Dict[str, FloatTensor]:
+    def forward(self, input: Dict[str, Tensor]) -> Dict[str, FloatTensor]:
         """Forward pass."""
         raise NotImplementedError
 
@@ -572,11 +563,7 @@ class PageTextCategorizationModel(PageCategorizationModel):
     """Container for Text Categorization Models."""
 
     def __init__(
-        self,
-        text_model: AbstractTextCategorizationModel,
-        output_dim: int,
-        dropout_rate: float = 0.0,
-        **kwargs,
+        self, text_model: AbstractTextCategorizationModel, output_dim: int, dropout_rate: float = 0.0, **kwargs
     ):
         """Initialize the Model."""
         super().__init__()
@@ -590,9 +577,9 @@ class PageTextCategorizationModel(PageCategorizationModel):
         self.fc_out = torch.nn.Linear(text_model.n_features, output_dim)
         self.dropout = torch.nn.Dropout(dropout_rate)
 
-    def forward(self, _input: Dict[str, Tensor]) -> Dict[str, FloatTensor]:
+    def forward(self, input: Dict[str, Tensor]) -> Dict[str, FloatTensor]:
         """Forward pass."""
-        encoded_text = self.text_model(_input)
+        encoded_text = self.text_model(input)
         text_features = encoded_text['features']
         # text_features = [batch, seq len, n text features]
         # !TODO here features of the [CLS] token must be extracted and not an average pooling on all tokens !!
@@ -638,9 +625,9 @@ class AbstractImageCategorizationModel(AbstractCategorizationModel, metaclass=ab
     def _output(self, image: Tensor) -> List[FloatTensor]:
         """Collect output of NN architecture."""
 
-    def forward(self, _input: Dict[str, Tensor]) -> Dict[str, FloatTensor]:
+    def forward(self, input: Dict[str, Tensor]) -> Dict[str, FloatTensor]:
         """Define the computation performed at every call."""
-        image = _input['image']
+        image = input['image']
         # image = [batch, channels, height, width]
         image_features = self._output(image)
         # image_features = [batch, n_features]
@@ -768,11 +755,7 @@ class PageImageCategorizationModel(PageCategorizationModel):
     """Container for Image Categorization Models."""
 
     def __init__(
-        self,
-        image_model: AbstractImageCategorizationModel,
-        output_dim: int,
-        dropout_rate: float = 0.0,
-        **kwargs,
+        self, image_model: AbstractImageCategorizationModel, output_dim: int, dropout_rate: float = 0.0, **kwargs
     ):
         """Initialize the Model."""
         super().__init__()
@@ -786,9 +769,9 @@ class PageImageCategorizationModel(PageCategorizationModel):
         self.fc_out = torch.nn.Linear(image_model.n_features, output_dim)
         self.dropout = torch.nn.Dropout(dropout_rate)
 
-    def forward(self, _input: Dict[str, Tensor]) -> Dict[str, FloatTensor]:
+    def forward(self, input: Dict[str, Tensor]) -> Dict[str, FloatTensor]:
         """Forward pass."""
-        encoded_image = self.image_model(_input)
+        encoded_image = self.image_model(input)
         image_features = encoded_image['features']
         # image_features = [batch, n image features]
         prediction = self.fc_out(self.dropout(image_features))
@@ -824,11 +807,11 @@ class AbstractMultimodalCategorizationModel(AbstractCategorizationModel, metacla
     def _output(self, image_features: Tensor, text_features: Tensor) -> FloatTensor:
         """Collect output of NN architecture."""
 
-    def forward(self, _input: Dict[str, Tensor]) -> Dict[str, FloatTensor]:
+    def forward(self, input: Dict[str, Tensor]) -> Dict[str, FloatTensor]:
         """Define the computation performed at every call."""
-        image_features = _input['image_features']
+        image_features = input['image_features']
         # image_features = [batch, n_image_features]
-        text_features = _input['text_features']
+        text_features = input['text_features']
         # text_features = [batch, n_text_features]
         x = self._output(image_features, text_features)
         # x = [batch size, hid dim]
@@ -909,21 +892,18 @@ class PageMultimodalCategorizationModel(PageCategorizationModel):
         self.fc_out = torch.nn.Linear(multimodal_model.n_features, output_dim)
         self.dropout = torch.nn.Dropout(dropout_rate)
 
-    def forward(self, _input: Dict[str, Tensor]) -> Dict[str, FloatTensor]:
+    def forward(self, input: Dict[str, Tensor]) -> Dict[str, FloatTensor]:
         """Define the computation performed at every call."""
-        encoded_image = self.image_model(_input)
+        encoded_image = self.image_model(input)
         image_features = encoded_image['features']
         # image_features = [batch, n image features]
-        encoded_text = self.text_model(_input)
+        encoded_text = self.text_model(input)
         text_features = encoded_text['features']
         # text_features = [batch, seq length, n text features]
         pooled_text_features = text_features.mean(dim=1)  # mean pool across sequence length
         # text_features = [batch, n text features]
-        _input = {
-            'image_features': image_features,
-            'text_features': pooled_text_features,
-        }
-        multimodal_features = self.multimodal_model(_input)['features']
+        input = {'image_features': image_features, 'text_features': pooled_text_features}
+        multimodal_features = self.multimodal_model(input)['features']
         # prediction = [batch, n multimodal features]
         prediction = self.fc_out(self.dropout(multimodal_features))
         output = {'prediction': prediction}
@@ -1086,8 +1066,7 @@ class CategorizationAI(AbstractCategorizationAI):
             preprocessing_ops = preprocessing.pre_processing_operations
             # get data augmentation
             augmentation = ImageDataAugmentation(
-                transforms=image_augmentation,
-                pre_processing_operations=preprocessing_ops,
+                transforms=image_augmentation, pre_processing_operations=preprocessing_ops
             )
             # evaluation transforms are just the preprocessing
             # training transforms are the preprocessing + augmentation
@@ -1113,14 +1092,7 @@ class CategorizationAI(AbstractCategorizationAI):
 
         counter.update([str(category.id_) for category in self.categories])
 
-        template_vocab = Vocab(
-            counter,
-            min_freq=1,
-            max_size=None,
-            unk_token=None,
-            pad_token=None,
-            special_tokens=['0'],
-        )
+        template_vocab = Vocab(counter, min_freq=1, max_size=None, unk_token=None, pad_token=None, special_tokens=['0'])
         assert template_vocab.stoi('0') == 0, '0 category should be mapped to 0 index!'
 
         return template_vocab
@@ -1238,13 +1210,7 @@ class CategorizationAI(AbstractCategorizationAI):
                 doc_id = tokenized_doc.id_ or tokenized_doc.copy_of_id
                 document_ids.append(torch.LongTensor([doc_id]))
                 document_page_numbers.append(torch.LongTensor([page.index]))
-            doc_info = zip(
-                document_images,
-                document_tokens,
-                document_labels,
-                document_ids,
-                document_page_numbers,
-            )
+            doc_info = zip(document_images, document_tokens, document_labels, document_ids, document_page_numbers)
             data.extend(doc_info)
 
         def collate(batch, transforms) -> Dict[str, LongTensor]:
@@ -1272,13 +1238,7 @@ class CategorizationAI(AbstractCategorizationAI):
             doc_id = torch.cat(doc_id)
             page_num = torch.cat(page_num)
             # pack everything up in a batch dictionary
-            batch = {
-                'image': image,
-                'text': text,
-                'label': label,
-                'doc_id': doc_id,
-                'page_num': page_num,
-            }
+            batch = {'image': image, 'text': text, 'label': label, 'doc_id': doc_id, 'page_num': page_num}
             return batch
 
         # get the collate functions with the appropriate transforms
@@ -1330,10 +1290,7 @@ class CategorizationAI(AbstractCategorizationAI):
         validation loss decrease), whichever comes first.
         """
         if optimizer is None:
-            optimizer = {
-                'name': 'Adam',
-                'lr': 1e-4,
-            }  # default learning rate of Adam is 1e-3
+            optimizer = {'name': 'Adam', 'lr': 1e-4}  # default learning rate of Adam is 1e-3
         train_losses = []
         patience_counter = 0
         loss_fn = torch.nn.CrossEntropyLoss()
@@ -1558,10 +1515,7 @@ class CategorizationAI(AbstractCategorizationAI):
 
         # store prediction confidences in a df
         predictions_df = pd.DataFrame(
-            data={
-                'category': list(category_preds.keys()),
-                'confidence': list(category_preds.values()),
-            }
+            data={'category': list(category_preds.keys()), 'confidence': list(category_preds.values())}
         )
 
         # which class did we predict?

@@ -402,7 +402,7 @@ class TestTextCategorizationModels(unittest.TestCase):
         """Test the computation performed at every call."""
         text = torch.ones([1, self.text_model.input_dim], dtype=torch.int64)
         _input = {'text': text}
-        res: Dict[str, FloatTensor] = self.text_model(_input=_input)
+        res: Dict[str, FloatTensor] = self.text_model(input=_input)
         assert 'features' in res
         assert res['features'].shape == (1, self.text_model.input_dim, self.text_model.n_features)
         if self.text_model.uses_attention:
