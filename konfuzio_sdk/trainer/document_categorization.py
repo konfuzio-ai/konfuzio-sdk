@@ -1,3 +1,5 @@
+# ruff: noqa: A001, A002
+
 """Implements a Categorization Model."""
 
 import abc
