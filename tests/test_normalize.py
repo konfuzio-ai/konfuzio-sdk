@@ -243,7 +243,7 @@ test_data_numbers = [
     ('...12124,123412,.12', None, None),
     ('..1..2.3..3333.', None, None),
     ('114433,8,60', None, None),
-    ('165a', None, None)
+    ('165a', None, None),
     # ('12.', 12.0, 0), undefined test cases:
     # ('1.', 1.0, 0),
     # ('.', None, 0),
