@@ -1287,6 +1287,11 @@ class CategorizationAI(AbstractCategorizationAI):
                         page.text_encoded = self.tokenizer(
                             page.text, max_length=max_len
                         )["input_ids"]
+                        # for TransformersTokenizer you need to squeeze the first dimension since
+                        # the output of the tokenizer has an extra dimension if return_tensors is set to 'pt'
+                        document_tokens.append(
+                            torch.LongTensor(page.text_encoded).squeeze(0)
+                        )
                     else:
                         # REPLACE page_tokens = tokenizer.get_tokens(page_text)[:max_len]
                         # page_encoded = [text_vocab.stoi(span.offset_string) for span in
@@ -1294,9 +1299,9 @@ class CategorizationAI(AbstractCategorizationAI):
                         # document_tokens.append(torch.LongTensor(page_encoded))
                         # if using a text module, tokenize the page, trim to max length and then numericalize
                         self.text_vocab.numericalize(page)
-                    document_tokens.append(
-                        torch.LongTensor(page.text_encoded).squeeze(0)
-                    )
+                        document_tokens.append(
+                            torch.LongTensor(page.text_encoded)
+                        )
                 else:
                     # if not using text module then don't need the tokens
                     # so we just have a list of None to keep the lists the same length
@@ -1706,12 +1711,13 @@ class CategorizationAI(AbstractCategorizationAI):
                 page.text_encoded = self.tokenizer(page.text, max_length=max_length)[
                     "input_ids"
                 ]
+                text_coded = [torch.LongTensor(page.text_encoded).squeeze(0)]
             else:
                 if not page.spans():
                     self.tokenizer.tokenize(page.document)
                 max_length = None
                 self.text_vocab.numericalize(page, max_length)
-            text_coded = [torch.LongTensor(page.text_encoded).squeeze(0)]
+                text_coded = [torch.LongTensor(page.text_encoded)]
 
         (predicted_category_id, predicted_confidence), _ = self._predict(
             page_images=docs_data_images, text=text_coded
@@ -1777,7 +1783,7 @@ def build_categorization_ai_pipeline(
     test_documents: List[Document],
     tokenizer: Optional[AbstractTokenizer] = None,
     image_model_name: Optional[ImageModel] = None,
-    text_model_name: Optional[TextModel] = 'prajjwal1/bert-tiny',
+    text_model_name: Optional[TextModel] = TextModel.NBOW,
     **kwargs,
 ) -> CategorizationAI:
     """
