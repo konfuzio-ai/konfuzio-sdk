@@ -1307,11 +1307,9 @@ class CategorizationAI(AbstractCategorizationAI):
             train_loss, predictions_list, ground_truth_list = self._train(
                 train_examples, loss_fn, optimizer
             )  # train epoch
-            f1_score = f1_metric.compute(
-                predictions=predictions_list,
-                references=ground_truth_list,
-                average='macro',
-            )['f1']  # compute f1 score
+            f1_score = f1_metric.compute(predictions=predictions_list, references=ground_truth_list, average='macro')[
+                'f1'
+            ]  # compute f1 score
             acc_score = acc_metric.compute(predictions=predictions_list, references=ground_truth_list)[
                 'accuracy'
             ]  # compute accuracy score
