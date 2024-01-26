@@ -8,13 +8,12 @@ from copy import deepcopy
 from typing import Dict, List
 
 import parameterized
-from requests import HTTPError, ReadTimeout
-from typing import List, Dict
-
-from konfuzio_sdk.api import upload_ai_model, update_ai_model, delete_ai_model, konfuzio_session
-from konfuzio_sdk.data import Project, Document, Page
 import pytest
-from konfuzio_sdk.extras import FloatTensor, torch, transformers
+from requests import HTTPError, ReadTimeout
+
+from konfuzio_sdk.api import delete_ai_model, konfuzio_session, update_ai_model, upload_ai_model
+from konfuzio_sdk.data import Document, Page, Project
+from konfuzio_sdk.extras import FloatTensor, torch
 from konfuzio_sdk.settings_importer import is_dependency_installed
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer, WhitespaceTokenizer
 from konfuzio_sdk.trainer.document_categorization import (
@@ -35,9 +34,7 @@ from konfuzio_sdk.trainer.document_categorization import (
     PageTextCategorizationModel,
     TextModel,
     build_categorization_ai_pipeline,
-    load_categorization_model,
 )
-
 from konfuzio_sdk.urls import get_create_ai_model_url
 from tests.variables import (
     OFFLINE_PROJECT,
@@ -404,8 +401,8 @@ class TestTextCategorizationModels(unittest.TestCase):
     def test_forward(self) -> None:
         """Test the computation performed at every call."""
         text = torch.ones([1, self.text_model.input_dim], dtype=torch.int64)
-        input_ = {'text': text}
-        res: Dict[str, FloatTensor] = self.text_model(input=input_)
+        _input = {'text': text}
+        res: Dict[str, FloatTensor] = self.text_model(_input=_input)
         assert 'features' in res
         assert res['features'].shape == (1, self.text_model.input_dim, self.text_model.n_features)
         if self.text_model.uses_attention:
