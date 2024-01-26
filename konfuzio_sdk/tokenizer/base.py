@@ -161,7 +161,7 @@ class Vocab:
         # todo assert we have a valid token (e.g '\n\n\n' results in tok = [])
         # if not tok:
         #    logger.info(f'[WARNING] The token resultant from page {i} is empty. Page text: {txt}.')
-        text_encoded: List[int]
+        _text_encoded: List[int]
         if isinstance(page_or_document, Document):
             document = page_or_document
             document.text_encoded = [self.stoi(span.offset_string) for span in document.spans()][:max_length]
