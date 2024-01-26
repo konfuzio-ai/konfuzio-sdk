@@ -1,3 +1,5 @@
+# ruff: noqa: A001, A002
+
 """Implements a Categorization Model."""
 
 import abc
@@ -39,7 +41,7 @@ from konfuzio_sdk.extras import (
 from konfuzio_sdk.tokenizer.base import AbstractTokenizer, Vocab
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
 from konfuzio_sdk.trainer.base import BaseModel
-from konfuzio_sdk.trainer.image import ImagePreProcessing, ImageDataAugmentation
+from konfuzio_sdk.trainer.image import ImageDataAugmentation, ImagePreProcessing
 from konfuzio_sdk.trainer.tokenization import TransformersTokenizer
 from konfuzio_sdk.utils import get_timestamp
 
