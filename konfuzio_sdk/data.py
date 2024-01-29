@@ -2313,7 +2313,7 @@ class Annotation(Data):
                 fail_loudly=self.document.project._strict_data_validation,
                 exception_type=NotImplementedError,
             )
-        
+
         # Adding a new Attribute containing the metadata of the Annotation (for example omr etc...)
         # self.metadata = {
         #     "omr":{
