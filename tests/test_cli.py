@@ -1,3 +1,5 @@
+# ruff: noqa: A002
+
 """Validate CLI functions."""
 import sys
 from unittest import TestCase, mock
