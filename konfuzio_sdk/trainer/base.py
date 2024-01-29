@@ -1,12 +1,13 @@
 """Generic AI model."""
 import abc
+import bentoml
 import bz2
 import cloudpickle
+import inspect
 import itertools
 import logging
 import os
 import pathlib
-import shutil
 import sys
 
 import lz4.frame
@@ -44,15 +45,9 @@ class BaseModel(metaclass=abc.ABCMeta):
     def check_is_ready(self):
         """Check if the Model is ready for inference."""
 
-    @property
     @abc.abstractmethod
-    def temp_pkl_file_path(self):
-        """Generate a path for temporary pickle file."""
-
-    @property
-    @abc.abstractmethod
-    def pkl_file_path(self):
-        """Generate a path for a resulting pickle file."""
+    def file_path(self):
+        """Generate a path for a resulting BentoML file."""
 
     @staticmethod
     @abc.abstractmethod
@@ -209,8 +204,7 @@ class BaseModel(metaclass=abc.ABCMeta):
         # make sure output dir exists
         pathlib.Path(self.output_dir).mkdir(parents=True, exist_ok=True)
 
-        temp_pkl_file_path = self.temp_pkl_file_path
-        pkl_file_path = self.pkl_file_path
+        file_path = self.file_path
 
         project_docs = self.project._documents  # to restore project documents after save
         restore_credentials = self.project.credentials
@@ -252,34 +246,15 @@ class BaseModel(metaclass=abc.ABCMeta):
         if hasattr(self, 'client'):
             self.client = None
 
-        logger.info('Saving model with cloudpickle')
-        # first save with cloudpickle
-        with open(temp_pkl_file_path, 'wb') as f:  # see: https://stackoverflow.com/a/9519016/5344492
-            cloudpickle.dump(self, f)
+        signatures = {}
+        for name, method in inspect.getmembers(self, inspect.ismethod):
+            signature = inspect.signature(method)
+            signatures[signature] = signature.parameters
 
-        if compression == 'lz4':
-            logger.info('Compressing model with lz4')
-            pkl_file_path += '.lz4'
-            # then save to lz4 in chunks
-            with open(temp_pkl_file_path, 'rb') as input_f:
-                with lz4.frame.open(pkl_file_path, 'wb') as output_f:
-                    shutil.copyfileobj(input_f, output_f)
-        elif compression == 'bz2':
-            logger.info('Compressing model with bz2')
-            pkl_file_path += '.bz2'
-            # then save to bz2 in chunks
-            with open(temp_pkl_file_path, 'rb') as input_f:
-                with bz2.open(pkl_file_path, 'wb') as output_f:
-                    shutil.copyfileobj(input_f, output_f)
-        else:
-            raise ValueError(f'Unknown compression algorithm: {compression}')
+        saved_model = bentoml.picklable_model.save_model('my_python_model', self, signatures=signatures)
 
-        logger.info('Deleting temporary cloudpickle file')
-        # then delete cloudpickle file
-        os.remove(temp_pkl_file_path)
-
-        size_string = f'{os.path.getsize(pkl_file_path) / 1_000_000} MB'
-        logger.info(f'Model ({size_string}) {self.name_lower()} was saved to {pkl_file_path}')
+        size_string = f'{os.path.getsize(file_path) / 1_000_000} MB'
+        logger.info(f'Model ({size_string}) {self.name_lower()} was saved to {file_path}')
 
         # restore Documents of the Category and Model so that we can continue using them as before
         if not keep_documents:
@@ -288,4 +263,4 @@ class BaseModel(metaclass=abc.ABCMeta):
         self.project._documents = project_docs
         self.project.credentials = restore_credentials
 
-        return pkl_file_path
+        return saved_model
