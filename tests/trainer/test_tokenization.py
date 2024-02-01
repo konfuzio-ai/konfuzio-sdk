@@ -1,12 +1,13 @@
 """Test tokenizers created for AI models."""
+import unittest
+
 import parameterized
 import pytest
-import unittest
 
 from konfuzio_sdk.data import Project
 from konfuzio_sdk.extras import torch
 from konfuzio_sdk.settings_importer import is_dependency_installed
-from konfuzio_sdk.trainer.tokenization import TransformersTokenizer, HF_ALLOWED_TOKENIZERS
+from konfuzio_sdk.trainer.tokenization import HF_ALLOWED_TOKENIZERS, TransformersTokenizer
 
 
 @pytest.mark.skipif(
@@ -43,7 +44,7 @@ class TestTransformersTokenizer(unittest.TestCase):
 
     def test_padding_max_length(self):
         """Test that padding happens to a text shorter than the selected max_length, if enabled."""
-        test_text = "This is the text to be padded."
+        test_text = 'This is the text to be padded.'
         padded = self.tokenizer(test_text, padding='max_length')
         assert len(padded['input_ids']) == 512
         if self.tokenizer_name != 'vinai/phobert-base':
@@ -53,7 +54,7 @@ class TestTransformersTokenizer(unittest.TestCase):
 
     def test_no_padding(self):
         """Test that padding does not happen if it is turned off."""
-        test_text = "This is the text to not be padded."
+        test_text = 'This is the text to not be padded.'
         not_padded = self.tokenizer(test_text, padding='do_not_pad')
         assert len(not_padded['input_ids']) <= 15
 
@@ -71,13 +72,13 @@ class TestTransformersTokenizer(unittest.TestCase):
 
     def test_return_tensors(self):
         """Test that the tokenizer returns tensors if return_tensors is set to pt."""
-        test_text = "This is the text to be returned as tensors after tokenization."
+        test_text = 'This is the text to be returned as tensors after tokenization.'
         tensors = self.tokenizer(test_text, return_tensors='pt')
         assert isinstance(tensors['input_ids'], torch.Tensor)
 
     def test_return_list(self):
         """Test that the tokenizer returns list if return_tensors is set to None."""
-        test_text = "This is the text to be returned as list of encoded tokens after tokenization."
+        test_text = 'This is the text to be returned as list of encoded tokens after tokenization.'
         tokens = self.tokenizer(test_text, return_tensors=None)
         assert isinstance(tokens['input_ids'], list)
 
@@ -91,5 +92,5 @@ class TestTransformersTokenizer(unittest.TestCase):
 )
 def test_no_supported_tokenizer_error():
     """Test that a non-supported tokenizer is not possible to use with the class."""
-    with pytest.raises(ValueError, match="is not supported"):
+    with pytest.raises(ValueError, match='is not supported'):
         TransformersTokenizer('t5-small')
