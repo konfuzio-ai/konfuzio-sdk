@@ -27,6 +27,7 @@ from heapq import nsmallest
 from inspect import signature
 from typing import Tuple, Optional, List, Union, Dict
 
+import bentoml
 import numpy
 import pandas
 from sklearn.ensemble import RandomForestClassifier
@@ -827,24 +828,16 @@ class AbstractExtractionAI(BaseModel):
 
         self.evaluation = None
 
-    def save(self, *args, **kwargs):
-        import bentoml
+    def build_bento(self, bento_model):
+        """Build BentoML service for the model."""
 
-        model = bentoml.picklable_model.save_model(
-            "extraction",
-            self,
-            signatures={
-                'extract': {'batchable': False},
-                'evaluate': {'batchable': False},
-            },
-        )
-        bentoml.bentos.build(
-            service='extraction_service.py:svc',
-            include=['extraction_service.py'],
-            python={'packages': ['konfuzio_sdk', 'konfuzio_sdk[ai]', 'jsonpickle'], 'lock_packages': True},
-            # set file dir (build_ctx) to ../bento (relative to this file)
-            build_ctx=os.path.dirname(os.path.abspath(__file__)) + '/../bento',
-            models=[str(model.tag)],
+        return bentoml.bentos.build(
+            name=f"extraction_{self.category.id_ if self.category else '0'}",
+            service=f'{self.name_lower()}_service.py:svc',
+            include=[f'{self.name_lower()}_service.py', 'schemas.py'],
+            python={'packages': ['konfuzio_sdk', 'konfuzio_sdk[ai]'], 'lock_packages': True},
+            build_ctx=os.path.dirname(os.path.abspath(__file__)) + '/../bento/extraction',
+            models=[str(bento_model.tag)],
         )
 
     @property
@@ -853,6 +846,13 @@ class AbstractExtractionAI(BaseModel):
         if not self.category:
             raise AttributeError(f'{self} has no Category.')
         return self.category.project
+
+    @property
+    def entrypoint_methods(self) -> dict:
+        return {
+            'extract': {'batchable': False},
+            'evaluate': {'batchable': False},
+        }
 
     def check_is_ready(self):
         """

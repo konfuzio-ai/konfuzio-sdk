@@ -1,41 +1,13 @@
 """Run extraction service for a dockerized AI."""
 
 import bentoml
-from pydantic import BaseModel
-from typing import Optional, List, Tuple
-from konfuzio_sdk.data import Document, Project, Page
 
-extraction_runner = bentoml.picklable_model.get("extraction:latest").to_runner()
+from konfuzio_sdk.data import Document, Project, Page
+from konfuzio_sdk.bento.extraction.schemas import ExtractRequest20240117, ExtractResponse20240117
+
+extraction_runner = bentoml.picklable_model.get("rfextractionai:latest").to_runner(embedded=True)
 
 svc = bentoml.Service("extraction_svc", runners=[extraction_runner])
-
-
-class ExtractRequest20240117(BaseModel):
-    """Describe a scheme for the extraction request on 17/01/2024."""
-
-    text: str
-    bboxes: Optional[dict]
-
-    class Page(BaseModel):
-        """Describe a scheme for the Page class on 17/01/2024."""
-
-        number: int
-        image: Optional[bytes]
-        original_size: Tuple[float, float]
-
-    pages: Optional[List[Page]]
-
-
-class ExtractResponse20240117(BaseModel):
-    """Describe a scheme for the extraction response on 17/01/2024."""
-
-    class Annotation(BaseModel):
-        """Describe a scheme for the Annotation class on 17/01/2024."""
-
-        label: int
-        annotation_set: int
-
-    annotations: List[Annotation]
 
 
 @svc.api(
@@ -60,9 +32,9 @@ async def extract(request: ExtractRequest20240117) -> ExtractResponse20240117:
 
     annotations_result = []
     for annotation_set in result.annotation_sets():
-        current_annotation_set = {'label_set_id': annotation_set.label_set.id_, 'annotations': []}
+        current_annotation_set = {"label_set_id": annotation_set.label_set.id_, "annotations": []}
         for annotation in annotation_set.annotations():
-            current_annotation_set['annotations'].append(
+            current_annotation_set["annotations"].append(
                 {
                     "id": annotation.id_,
                     "document": annotation.document.id_,
