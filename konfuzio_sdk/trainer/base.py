@@ -1,21 +1,21 @@
 """Generic AI model."""
 import abc
-import bentoml
 import bz2
-import cloudpickle
 import inspect
 import itertools
 import logging
 import os
 import pathlib
+import shutil
 import sys
-
-import lz4.frame
-
 from typing import Optional, Union
 
+import bentoml
+import cloudpickle
+import lz4.frame
+
 from konfuzio_sdk.data import Data
-from konfuzio_sdk.utils import get_sdk_version, normalize_memory, memory_size_of
+from konfuzio_sdk.utils import get_sdk_version, memory_size_of, normalize_memory
 
 logger = logging.getLogger(__name__)
 
@@ -45,9 +45,15 @@ class BaseModel(metaclass=abc.ABCMeta):
     def check_is_ready(self):
         """Check if the Model is ready for inference."""
 
+    @property
     @abc.abstractmethod
-    def file_path(self):
-        """Generate a path for a resulting BentoML file."""
+    def temp_pkl_file_path(self):
+        """Generate a path for temporary pickle file."""
+
+    @property
+    @abc.abstractmethod
+    def pkl_file_path(self):
+        """Generate a path for a resulting pickle file."""
 
     @staticmethod
     @abc.abstractmethod
@@ -70,10 +76,10 @@ class BaseModel(metaclass=abc.ABCMeta):
         :raises TypeError: When the loaded pickle isn't recognized as a Konfuzio AI model.
         :return: Extraction AI model.
         """
-        logger.info(f"Starting loading AI model with path {pickle_path}")
+        logger.info(f'Starting loading AI model with path {pickle_path}')
 
         if not os.path.isfile(pickle_path):
-            raise FileNotFoundError("Invalid pickle file path:", pickle_path)
+            raise FileNotFoundError('Invalid pickle file path:', pickle_path)
 
         # The current local id iterator might otherwise be overriden
         prev_local_id = next(Data.id_iter)
@@ -90,38 +96,38 @@ class BaseModel(metaclass=abc.ABCMeta):
                 with bz2.open(pickle_path, 'rb') as file:
                     model = cloudpickle.load(file)
         except OSError:
-            raise OSError(f"Pickle file {pickle_path} data is invalid.")
+            raise OSError(f'Pickle file {pickle_path} data is invalid.')
         except AttributeError as err:
-            if "__forward_module__" in str(err) and '3.9' in sys.version:
-                raise AttributeError("Pickle saved with incompatible Python version.") from err
-            elif "__forward_is_class__" in str(err) and '3.8' in sys.version:
-                raise AttributeError("Pickle saved with incompatible Python version.") from err
+            if '__forward_module__' in str(err) and '3.9' in sys.version:
+                raise AttributeError('Pickle saved with incompatible Python version.') from err
+            elif '__forward_is_class__' in str(err) and '3.8' in sys.version:
+                raise AttributeError('Pickle saved with incompatible Python version.') from err
             raise
         except ValueError as err:
-            if "unsupported pickle protocol: 5" in str(err) and '3.7' in sys.version:
-                raise ValueError("Pickle saved with incompatible Python version.") from err
+            if 'unsupported pickle protocol: 5' in str(err) and '3.7' in sys.version:
+                raise ValueError('Pickle saved with incompatible Python version.') from err
             raise
 
         if hasattr(model, 'python_version'):
-            logger.info(f"Loaded AI model trained with Python {model.python_version}")
+            logger.info(f'Loaded AI model trained with Python {model.python_version}')
         if hasattr(model, 'konfuzio_sdk_version'):
-            logger.info(f"Loaded AI model trained with Konfuzio SDK version {model.konfuzio_sdk_version}")
+            logger.info(f'Loaded AI model trained with Konfuzio SDK version {model.konfuzio_sdk_version}')
 
         max_ram = normalize_memory(max_ram)
         if max_ram and memory_size_of(model) > max_ram:
             logger.error(f"Loaded model's memory use ({memory_size_of(model)}) is greater than max_ram ({max_ram})")
 
-        if not hasattr(model, "name"):
-            raise TypeError("Saved model file needs to be a Konfuzio AbstractExtractionAI instance.")
+        if not hasattr(model, 'name'):
+            raise TypeError('Saved model file needs to be a Konfuzio AbstractExtractionAI instance.')
         elif model.name in {
-            "DocumentAnnotationMultiClassModel",
-            "DocumentEntityMulticlassModel",
-            "SeparateLabelsAnnotationMultiClassModel",
-            "SeparateLabelsEntityMultiClassModel",
+            'DocumentAnnotationMultiClassModel',
+            'DocumentEntityMulticlassModel',
+            'SeparateLabelsAnnotationMultiClassModel',
+            'SeparateLabelsEntityMultiClassModel',
         }:
-            logger.warning(f"Loading legacy {model.name} AI model.")
+            logger.warning(f'Loading legacy {model.name} AI model.')
         else:
-            logger.info(f"Loading {model.name} AI model.")
+            logger.info(f'Loading {model.name} AI model.')
 
         curr_local_id = next(Data.id_iter)
         Data.id_iter = itertools.count(max(prev_local_id, curr_local_id))
@@ -132,7 +138,7 @@ class BaseModel(metaclass=abc.ABCMeta):
         self.project.lose_weight()
         if (
             self.tokenizer is not None
-            and hasattr(self.tokenizer, "lose_weight")
+            and hasattr(self.tokenizer, 'lose_weight')
             and callable(self.tokenizer.lose_weight)
         ):
             self.tokenizer.lose_weight()
@@ -151,7 +157,7 @@ class BaseModel(metaclass=abc.ABCMeta):
         max_ram = normalize_memory(max_ram)
 
         if max_ram and memory_size_of(self) > max_ram:
-            raise MemoryError(f"AI model memory use ({memory_size_of(self)}) exceeds maximum ({max_ram=}).")
+            raise MemoryError(f'AI model memory use ({memory_size_of(self)}) exceeds maximum ({max_ram=}).')
 
     def save(
         self,
@@ -204,7 +210,8 @@ class BaseModel(metaclass=abc.ABCMeta):
         # make sure output dir exists
         pathlib.Path(self.output_dir).mkdir(parents=True, exist_ok=True)
 
-        file_path = self.file_path
+        temp_pkl_file_path = self.temp_pkl_file_path
+        pkl_file_path = self.pkl_file_path
 
         project_docs = self.project._documents  # to restore project documents after save
         restore_credentials = self.project.credentials
@@ -246,15 +253,34 @@ class BaseModel(metaclass=abc.ABCMeta):
         if hasattr(self, 'client'):
             self.client = None
 
-        signatures = {}
-        for name, method in inspect.getmembers(self, inspect.ismethod):
-            signature = inspect.signature(method)
-            signatures[signature] = signature.parameters
+        logger.info('Saving model with cloudpickle')
+        # first save with cloudpickle
+        with open(temp_pkl_file_path, 'wb') as f:  # see: https://stackoverflow.com/a/9519016/5344492
+            cloudpickle.dump(self, f)
 
-        saved_model = bentoml.picklable_model.save_model('my_python_model', self, signatures=signatures)
+        if compression == 'lz4':
+            logger.info('Compressing model with lz4')
+            pkl_file_path += '.lz4'
+            # then save to lz4 in chunks
+            with open(temp_pkl_file_path, 'rb') as input_f:
+                with lz4.frame.open(pkl_file_path, 'wb') as output_f:
+                    shutil.copyfileobj(input_f, output_f)
+        elif compression == 'bz2':
+            logger.info('Compressing model with bz2')
+            pkl_file_path += '.bz2'
+            # then save to bz2 in chunks
+            with open(temp_pkl_file_path, 'rb') as input_f:
+                with bz2.open(pkl_file_path, 'wb') as output_f:
+                    shutil.copyfileobj(input_f, output_f)
+        else:
+            raise ValueError(f'Unknown compression algorithm: {compression}')
 
-        size_string = f'{os.path.getsize(file_path) / 1_000_000} MB'
-        logger.info(f'Model ({size_string}) {self.name_lower()} was saved to {file_path}')
+        logger.info('Deleting temporary cloudpickle file')
+        # then delete cloudpickle file
+        os.remove(temp_pkl_file_path)
+
+        size_string = f'{os.path.getsize(pkl_file_path) / 1_000_000} MB'
+        logger.info(f'Model ({size_string}) {self.name_lower()} was saved to {pkl_file_path}')
 
         # restore Documents of the Category and Model so that we can continue using them as before
         if not keep_documents:
@@ -263,4 +289,18 @@ class BaseModel(metaclass=abc.ABCMeta):
         self.project._documents = project_docs
         self.project.credentials = restore_credentials
 
-        return saved_model
+        return pkl_file_path
+
+
+def save_bento_ml(model):
+    """Save AI as a Bento ML instance."""
+    signatures = {}
+    for name, method in inspect.getmembers(model, inspect.ismethod):
+        signature = inspect.signature(method).parameters
+        signature_keys = list(signature.keys())
+        signature_values = {value.name: value.default for value in list(signature.values())}
+        signatures_dict = {{key: value} for key, value in zip(signature_keys, signature_values)}
+        signatures[name] = signatures_dict
+    print(signatures)
+    saved_model = bentoml.picklable_model.save_model(model.name, model, signatures=signatures)
+    print(f"Model saved: {saved_model}")
