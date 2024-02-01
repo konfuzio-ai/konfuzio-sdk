@@ -297,10 +297,12 @@ def save_bento_ml(model):
     signatures = {}
     for name, method in inspect.getmembers(model, inspect.ismethod):
         signature = inspect.signature(method).parameters
-        signature_keys = list(signature.keys())
         signature_values = {value.name: value.default for value in list(signature.values())}
-        signatures_dict = {{key: value} for key, value in zip(signature_keys, signature_values)}
-        signatures[name] = signatures_dict
-    print(signatures)
-    saved_model = bentoml.picklable_model.save_model(model.name, model, signatures=signatures)
+        signatures[name] = signature_values
+    saved_model = bentoml.picklable_model.save_model(name=model.name, model=model, signatures=signatures)
     print(f"Model saved: {saved_model}")
+
+
+def load_bento_ml(model_name):
+    """Load AI as a Bento ML instance."""
+    return bentoml.picklable_model.load_model(model_name)
