@@ -1,7 +1,6 @@
 """Generic AI model."""
 import abc
 import bz2
-import inspect
 import itertools
 import logging
 import os
@@ -58,7 +57,7 @@ class BaseModel(metaclass=abc.ABCMeta):
     @property
     @abc.abstractmethod
     def entrypoint_methods(self) -> dict:
-        """A dict of methods for this class that are exposed via API."""
+        """Create a dict of methods for this class that are exposed via API."""
 
     @staticmethod
     @abc.abstractmethod
@@ -309,16 +308,14 @@ class BaseModel(metaclass=abc.ABCMeta):
             raise ValueError("Cannot specify output_dir without build=True")
 
         saved_model = bentoml.picklable_model.save_model(
-            name=self.name_lower(),
-            model=self,
-            signatures=self.entrypoint_methods,
+            name=self.name_lower(), model=self, signatures=self.entrypoint_methods, metadata=self.bento_metadata
         )
         logger.info(f"Model saved in the local BentoML store: {saved_model}")
 
         if not build:
             return
 
-        saved_bento = self.build_bento(saved_model)
+        saved_bento = self.build_bento(bento_model=saved_model)
         logger.info(f"Bento created: {saved_bento}")
 
         if not output_dir:
