@@ -44,6 +44,7 @@ jobs:
       - name: Install dependencies
         if: matrix.extra-set == 'ai'
         run: |
+          sudo apt-get update
           sudo apt-get -y install python3-pandas-lib
           python -m pip install --upgrade pip
           pip install --upgrade --upgrade-strategy eager -e .[dev,ai]
