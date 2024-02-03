@@ -1,13 +1,43 @@
 """Run extraction service for a dockerized AI."""
 
-import bentoml
+from typing import List, Optional, Tuple
 
-from konfuzio_sdk.bento.extraction.schemas import ExtractRequest20240117, ExtractResponse20240117
+import bentoml
+from pydantic import BaseModel
+
 from konfuzio_sdk.data import Document, Page, Project
 
 extraction_runner = bentoml.picklable_model.get('rfextractionai:latest').to_runner(embedded=True)
 
 svc = bentoml.Service('extraction_svc', runners=[extraction_runner])
+
+
+class ExtractRequest20240117(BaseModel):
+    """Describe a scheme for the extraction request on 17/01/2024."""
+
+    text: str
+    bboxes: Optional[dict]
+
+    class Page(BaseModel):
+        """Describe a scheme for the Page class on 17/01/2024."""
+
+        number: int
+        image: Optional[bytes]
+        original_size: Tuple[float, float]
+
+    pages: Optional[List[Page]]
+
+
+class ExtractResponse20240117(BaseModel):
+    """Describe a scheme for the extraction response on 17/01/2024."""
+
+    class Annotation(BaseModel):
+        """Describe a scheme for the Annotation class on 17/01/2024."""
+
+        label: int
+        annotation_set: int
+
+    annotations: List[Annotation]
 
 
 @svc.api(
