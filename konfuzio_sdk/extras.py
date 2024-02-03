@@ -2,7 +2,6 @@
 import abc
 import functools
 import logging
-
 from typing import List
 
 from konfuzio_sdk.settings_importer import OPTIONAL_IMPORT_ERROR
@@ -38,8 +37,8 @@ class PackageWrapper:
                 raise logging.error(
                     OPTIONAL_IMPORT_ERROR.replace('*modulename*', self.package_name)
                     + (
-                        f" This library is required for modules: \
-                                    {self.required_for_modules}."
+                        f' This library is required for modules: \
+                                    {self.required_for_modules}.'
                         if self.required_for_modules
                         else ''
                     )
@@ -67,9 +66,11 @@ class ModuleWrapper:
 
     def _replace(self, module):
         """Replace the original class with the placeholder."""
-        self.replaced = type(module, (object,), {"__metaclass__": abc.ABCMeta})
+        self.replaced = type(module, (object,), {'__metaclass__': abc.ABCMeta})
 
 
+datasets = PackageWrapper('datasets', ['File Splitting AI'])
+evaluate = PackageWrapper('evaluate', ['File Splitting AI'])
 spacy = PackageWrapper('spacy', ['Document Categorization AI'])
 if spacy.package:
     SpacyPhraseMatcher = spacy.matcher.PhraseMatcher
@@ -96,6 +97,12 @@ else:
     LongTensor = ModuleWrapper('LongTensor').replaced
 torchvision = PackageWrapper('torchvision', ['Document Categorization AI'])
 transformers = PackageWrapper('transformers', ['Document Categorization AI, File Splitting AI'])
+if transformers.package:
+    Trainer = transformers.Trainer
+    TrainerCallback = transformers.TrainerCallback
+else:
+    Trainer = ModuleWrapper('Trainer').replaced
+    TrainerCallback = ModuleWrapper('TrainerCallback').replaced
 
 
 def torch_no_grad(method):

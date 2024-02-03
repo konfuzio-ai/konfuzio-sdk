@@ -1,5 +1,6 @@
+from typing import List, Optional, Tuple
+
 from pydantic import BaseModel
-from typing import Optional, List, Tuple
 
 
 class ExtractRequest20240117(BaseModel):

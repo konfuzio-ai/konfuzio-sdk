@@ -1,9 +1,9 @@
 """Convert the Span according to the data_type of the Annotation."""
 import logging
-import numpy as np
 from typing import Dict, Optional
-import regex as re
 
+import numpy as np
+import regex as re
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ def _get_is_negative(offset_string: str) -> bool:
             is_negative = True
 
     if offset_string.count('S') > 0:
-        if offset_string.count('S') == 1 and offset_string[-1] == "S" and is_negative is False:
+        if offset_string.count('S') == 1 and offset_string[-1] == 'S' and is_negative is False:
             is_negative = True
 
     if (
@@ -109,17 +109,45 @@ def _normalize_string_to_absolute_float(offset_string: str) -> Optional[float]:
     if offset_string.lower() in ['zwölf', 'twelve']:
         return 12.0
 
+    if 'Mio' in offset_string:
+        value = _normalize_string_to_absolute_float(offset_string.split('Mio')[0])
+        if value is None:
+            return None
+        else:
+            return 1000000 * value
+
+    if 'Million' in offset_string:
+        value = _normalize_string_to_absolute_float(offset_string.split('Million')[0])
+        if value is None:
+            return None
+        else:
+            return 1000000 * value
+
     # check for major spaces
     if re.search(r'(\d)[ ]{3,}(\d)', offset_string):
         return None
 
-    offset_string = re.sub(r"(\d)[ ]{1,2}(\d)", r'\1.\2', offset_string)
+    offset_string = re.sub(r'(\d)[ ]{1,2}(\d)', r'\1.\2', offset_string)
 
     if offset_string.count('*') > 1:
         return None
 
     if offset_string.count('*') == 1 and offset_string[0] == '*' and offset_string.count('(') == 0:
         return None
+
+    if offset_string.count('.') > 1:  # for cases like '0.22.1', '12.123.1111.3', '123.1.34'
+        split = offset_string.split('.')
+        # Check if middle parts have invalid length.
+        for chunk in split[1:-1]:
+            if len(chunk) != 3:
+                return None
+
+    if offset_string.count(',') > 1:  # for cases like '11111,12,3'
+        split = offset_string.split(',')
+        # Check if middle parts have invalid length.
+        for chunk in split[1:-1]:
+            if len(chunk.strip(' ')) != 3:
+                return None
 
     offset_string = (
         offset_string.replace('O', '0')
@@ -210,6 +238,14 @@ def _normalize_string_to_absolute_float(offset_string: str) -> Optional[float]:
     elif offset_string.count('.') == 1 and (len(offset_string) - offset_string.index('.')) == 3:
         if all(x.isdecimal() for x in offset_string.split('.')):
             _float = float(offset_string)  # => 12.34
+    # check for 123,, or 2141,,,, (trailing commas that are not separators)
+    elif (
+        offset_string.count(',') > 1
+        and offset_string.replace(',', '').isdecimal()
+        and offset_string.endswith(',')
+        and '' in offset_string.split(',')
+    ):
+        _float = None
     # check for 12,3 (comma is second last char).
     elif (
         ',' in offset_string
@@ -217,6 +253,15 @@ def _normalize_string_to_absolute_float(offset_string: str) -> Optional[float]:
         and offset_string.replace(',', '').isdecimal()
     ):
         _float = float(offset_string.replace(',', '.'))  # => 12.3
+    # check for 123,4567 (comma and 4 decimals, no thousand separators).
+    elif (
+        ',' in offset_string
+        and (len(offset_string) - offset_string.index(',')) == 5
+        and offset_string.replace(',', '').isdecimal()
+    ):
+        offset_string = offset_string.replace(',', '.')  # => 123.4567
+        if all(x.isdecimal() for x in offset_string.split('.')):
+            _float = float(offset_string)
     # check for 12.3 (dot is second last char).
     elif offset_string.count('.') == 1 and (len(offset_string) - offset_string.index('.')) == 2:
         if all(x.isdecimal() for x in offset_string.split('.')):
@@ -653,15 +698,15 @@ def normalize_to_bool(offset_string: str):
 
 def roman_to_float(offset_string: str) -> Optional[float]:
     """Convert a Roman numeral to an integer."""
-    input = offset_string.upper()
+    input_string = offset_string.upper()
     if len(offset_string) == 0:
         return None
     roman_sum = 0
     for i, char in enumerate(offset_string):
         try:
-            value = ROMAN_NUMS[input[i]]
+            value = ROMAN_NUMS[input_string[i]]
             # If the next place holds a larger number, this value is negative
-            if i + 1 < len(input) and ROMAN_NUMS[input[i + 1]] > value:
+            if i + 1 < len(input_string) and ROMAN_NUMS[input_string[i + 1]] > value:
                 roman_sum -= value
             else:
                 roman_sum += value

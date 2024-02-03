@@ -2,12 +2,12 @@
 
 import bentoml
 
-from konfuzio_sdk.data import Document, Project, Page
 from konfuzio_sdk.bento.extraction.schemas import ExtractRequest20240117, ExtractResponse20240117
+from konfuzio_sdk.data import Document, Page, Project
 
-extraction_runner = bentoml.picklable_model.get("rfextractionai:latest").to_runner(embedded=True)
+extraction_runner = bentoml.picklable_model.get('rfextractionai:latest').to_runner(embedded=True)
 
-svc = bentoml.Service("extraction_svc", runners=[extraction_runner])
+svc = bentoml.Service('extraction_svc', runners=[extraction_runner])
 
 
 @svc.api(
@@ -32,32 +32,32 @@ async def extract(request: ExtractRequest20240117) -> ExtractResponse20240117:
 
     annotations_result = []
     for annotation_set in result.annotation_sets():
-        current_annotation_set = {"label_set_id": annotation_set.label_set.id_, "annotations": []}
+        current_annotation_set = {'label_set_id': annotation_set.label_set.id_, 'annotations': []}
         for annotation in annotation_set.annotations():
-            current_annotation_set["annotations"].append(
+            current_annotation_set['annotations'].append(
                 {
-                    "id": annotation.id_,
-                    "document": annotation.document.id_,
-                    "offset_string": annotation.offset_string,
-                    "offset_string_original": annotation.offset_string_original,
-                    "translated_string": annotation.translated_string,
-                    "normalized": annotation.normalized,
-                    "label": {
-                        "id": annotation.label.id_,
-                        "name": annotation.label.name,
-                        "has_multiple_top_candidates": annotation.label.has_multiple_top_candidates,
-                        "data_type": annotation.label.data_type,
-                        "threshold": annotation.label.threshold,
+                    'id': annotation.id_,
+                    'document': annotation.document.id_,
+                    'offset_string': annotation.offset_string,
+                    'offset_string_original': annotation.offset_string_original,
+                    'translated_string': annotation.translated_string,
+                    'normalized': annotation.normalized,
+                    'label': {
+                        'id': annotation.label.id_,
+                        'name': annotation.label.name,
+                        'has_multiple_top_candidates': annotation.label.has_multiple_top_candidates,
+                        'data_type': annotation.label.data_type,
+                        'threshold': annotation.label.threshold,
                     },
-                    "confidence": annotation.confidence,
-                    "is_correct": annotation.is_correct,
-                    "revised": annotation.is_revised,
-                    "origin": annotation.orgign,
-                    "created_by": annotation.created_by,
-                    "revised_by": annotation.revised_by,
-                    "span": annotation.spans,
-                    "selection_bbox": annotation.selection_bbox,
-                    "custom_offset_string": annotation.custom_offset_string,
+                    'confidence': annotation.confidence,
+                    'is_correct': annotation.is_correct,
+                    'revised': annotation.is_revised,
+                    'origin': annotation.orgign,
+                    'created_by': annotation.created_by,
+                    'revised_by': annotation.revised_by,
+                    'span': annotation.spans,
+                    'selection_bbox': annotation.selection_bbox,
+                    'custom_offset_string': annotation.custom_offset_string,
                 }
             )
         annotations_result.append(current_annotation_set)

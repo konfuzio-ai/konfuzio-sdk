@@ -33,11 +33,14 @@ settings.py
 *.tar.gz
 
 # Ignore files containing 'data_'
-*data_*
+*data_[0-9]*
 
 # Ignore Jupyter Notebook checkpoints
 *.ipynb_checkpoints/
 *.ipynb~
+
+# Ignore any Jupyter Notebook in the tutorials folder at any depth
+docs/sdk/tutorials/**/*.ipynb
 
 # Ignore distribution and build directories
 dist/
@@ -52,3 +55,14 @@ tests/example_project_data/
 
 # Ignore Python cache
 __pycache__/
+
+# Ignore training logs
+training_logs
+
+# Ignore mlflow artifacts
+mlruns
+mlartifacts
+*.db
+
+# Ignore any file or folder that starts with "draft"
+draft*

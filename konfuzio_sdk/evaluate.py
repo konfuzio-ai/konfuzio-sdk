@@ -1,54 +1,54 @@
 """Calculate the accuracy on any level in a  Document."""
 import logging
-from typing import Dict, Tuple, List, Optional, Union
+from typing import Dict, List, Optional, Tuple, Union
 
-import pandas
 import numpy
+import pandas
+from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.utils.extmath import weighted_mode
-from sklearn.metrics import confusion_matrix, classification_report
 
-from konfuzio_sdk.utils import sdk_isinstance, memory_size_of
 from konfuzio_sdk.data import Category, Document
+from konfuzio_sdk.utils import memory_size_of, sdk_isinstance
 
 logger = logging.getLogger(__name__)
 
 RELEVANT_FOR_EVALUATION = [
-    "is_matched",  # needed to group spans in Annotations
-    "id_local",  # needed to group spans in Annotations
-    "id_",  # even we won't care of the id_, as the ID is defined by the start and end span
+    'is_matched',  # needed to group spans in Annotations
+    'id_local',  # needed to group spans in Annotations
+    'id_',  # even we won't care of the id_, as the ID is defined by the start and end span
     # "confidence", we don't care about the confidence of doc_a
-    "start_offset",  # only relevant for the merge but allows to track multiple sequences per annotation
-    "end_offset",  # only relevant for the merge but allows to track multiple sequences per annotation
-    "is_correct",  # we care if it is correct, humans create Annotations without confidence
-    "label_id",
-    "label_threshold",
-    "above_predicted_threshold",
-    "revised",  # we need it to filter feedback required Annotations
-    "annotation_set_id",
-    "label_set_id",
-    "document_id",
-    "document_id_local",
-    "category_id",  # Identify the Category to be able to run an evaluation across categories
+    'start_offset',  # only relevant for the merge but allows to track multiple sequences per annotation
+    'end_offset',  # only relevant for the merge but allows to track multiple sequences per annotation
+    'is_correct',  # we care if it is correct, humans create Annotations without confidence
+    'label_id',
+    'label_threshold',
+    'above_predicted_threshold',
+    'revised',  # we need it to filter feedback required Annotations
+    'annotation_set_id',
+    'label_set_id',
+    'document_id',
+    'document_id_local',
+    'category_id',  # Identify the Category to be able to run an evaluation across categories
     # "id__predicted", we don't care of the id_ see "id_"
-    "id_local_predicted",
-    "confidence_predicted",  # we care about the confidence of the prediction
-    "start_offset_predicted",
-    "end_offset_predicted",
+    'id_local_predicted',
+    'confidence_predicted',  # we care about the confidence of the prediction
+    'start_offset_predicted',
+    'end_offset_predicted',
     # "is_correct_predicted", # it's a prediction so we don't know if it is correct
-    "label_id_predicted",
-    "label_has_multiple_top_candidates_predicted",
-    "label_threshold_predicted",  # we keep a flexibility to be able to predict the threshold
+    'label_id_predicted',
+    'label_has_multiple_top_candidates_predicted',
+    'label_threshold_predicted',  # we keep a flexibility to be able to predict the threshold
     # "revised_predicted",  # it's a prediction so we ignore if it is revised
-    "annotation_set_id_predicted",
-    "label_set_id_predicted",
-    "document_id_predicted",
-    "document_id_local_predicted",
-    "is_correct_label",
-    "is_correct_label_set",
-    "is_correct_annotation_set_id",
-    "is_correct_id_",
-    "duplicated",
-    "duplicated_predicted",
+    'annotation_set_id_predicted',
+    'label_set_id_predicted',
+    'document_id_predicted',
+    'document_id_local_predicted',
+    'is_correct_label',
+    'is_correct_label_set',
+    'is_correct_annotation_set_id',
+    'is_correct_id_',
+    'duplicated',
+    'duplicated_predicted',
 ]
 
 logger = logging.getLogger(__name__)
@@ -56,7 +56,7 @@ logger = logging.getLogger(__name__)
 
 def grouped(group, target: str):
     """Define which of the correct element in the predicted group defines the "correct" group id_."""
-    verbose_validation_column_name = f"defined_to_be_correct_{target}"
+    verbose_validation_column_name = f'defined_to_be_correct_{target}'
     # all rows where is_correct is nan relate to an element which has no correct element partner
     eligible_to_vote = group['above_predicted_threshold'].fillna(False) & group['is_matched'].fillna(False)
     if not eligible_to_vote.any():  # no Spans provide confidence above Threshold of Label
@@ -76,7 +76,7 @@ def grouped(group, target: str):
                     0
                 ]
             )
-    validation_column_name = f"is_correct_{target}"
+    validation_column_name = f'is_correct_{target}'
     group[validation_column_name] = group[target] == group[verbose_validation_column_name]
     return group
 
@@ -111,125 +111,125 @@ def compare(
     if doc_a.category != doc_b.category:
         raise ValueError(f'Categories of {doc_a} with {doc_a.category} and {doc_b} with {doc_a.category} do not match.')
     if strict:  # many to many inner join to keep all Spans of both Documents
-        spans = pandas.merge(df_a, df_b, how="outer", on=["start_offset", "end_offset"], suffixes=('', '_predicted'))
+        spans = pandas.merge(df_a, df_b, how='outer', on=['start_offset', 'end_offset'], suffixes=('', '_predicted'))
         # add criteria to evaluate Spans
-        spans["is_matched"] = spans['id_local'].notna()  # start and end offset are identical
-        spans["start_offset_predicted"] = spans['start_offset']  # start and end offset are identical
-        spans["end_offset_predicted"] = spans['end_offset']  # start and end offset are identical
+        spans['is_matched'] = spans['id_local'].notna()  # start and end offset are identical
+        spans['start_offset_predicted'] = spans['start_offset']  # start and end offset are identical
+        spans['end_offset_predicted'] = spans['end_offset']  # start and end offset are identical
 
-        spans["above_predicted_threshold"] = spans["confidence_predicted"] >= spans["label_threshold_predicted"]
+        spans['above_predicted_threshold'] = spans['confidence_predicted'] >= spans['label_threshold_predicted']
 
-        spans["is_correct_label"] = spans["label_id"] == spans["label_id_predicted"]
-        spans["is_correct_label_set"] = spans["label_set_id"] == spans["label_set_id_predicted"]
+        spans['is_correct_label'] = spans['label_id'] == spans['label_id_predicted']
+        spans['is_correct_label_set'] = spans['label_set_id'] == spans['label_set_id_predicted']
         spans['duplicated'] = False
         spans['duplicated_predicted'] = False
 
         # add check to evaluate multiline Annotations
-        spans = spans.groupby("id_local", dropna=False).apply(lambda group: grouped(group, "id_"))
+        spans = spans.groupby('id_local', dropna=False).apply(lambda group: grouped(group, 'id_'))
         # add check to evaluate Annotation Sets
-        spans = spans.groupby("annotation_set_id_predicted", dropna=False).apply(
-            lambda group: grouped(group, "annotation_set_id")
+        spans = spans.groupby('annotation_set_id_predicted', dropna=False).apply(
+            lambda group: grouped(group, 'annotation_set_id')
         )
     else:
         # allows  start_offset_predicted <= end_offset and end_offset_predicted >= start_offset
-        spans = pandas.merge(df_a, df_b, how="outer", on=["label_id", "label_set_id"], suffixes=('', '_predicted'))
+        spans = pandas.merge(df_a, df_b, how='outer', on=['label_id', 'label_set_id'], suffixes=('', '_predicted'))
         # add criteria to evaluate Spans
-        spans["is_matched"] = (spans["start_offset_predicted"] <= spans["end_offset"]) & (
-            spans["end_offset_predicted"] >= spans["start_offset"]
+        spans['is_matched'] = (spans['start_offset_predicted'] <= spans['end_offset']) & (
+            spans['end_offset_predicted'] >= spans['start_offset']
         )
-        spans["above_predicted_threshold"] = spans["confidence_predicted"] >= spans["label_threshold_predicted"]
-        spans["is_correct_label"] = True
-        spans["is_correct_label_set"] = True
-        spans["label_id_predicted"] = spans["label_id"]
-        spans["label_set_id_predicted"] = spans["label_set_id"]
+        spans['above_predicted_threshold'] = spans['confidence_predicted'] >= spans['label_threshold_predicted']
+        spans['is_correct_label'] = True
+        spans['is_correct_label_set'] = True
+        spans['label_id_predicted'] = spans['label_id']
+        spans['label_set_id_predicted'] = spans['label_set_id']
 
         spans = spans.sort_values(by='is_matched', ascending=False)
         spans['duplicated'] = spans.duplicated(subset=['id_local'], keep='first')
         spans['duplicated_predicted'] = spans.duplicated(subset=['id_local_predicted'], keep='first')
         spans = spans.drop(spans[(spans['duplicated']) & (spans['duplicated_predicted'])].index)
         # add check to evaluate multiline Annotations
-        spans = spans.groupby("id_local", dropna=False).apply(lambda group: grouped(group, "id_"))
+        spans = spans.groupby('id_local', dropna=False).apply(lambda group: grouped(group, 'id_'))
         # add check to evaluate Annotation Sets
-        spans = spans.groupby("annotation_set_id_predicted", dropna=False).apply(
-            lambda group: grouped(group, "annotation_set_id")
+        spans = spans.groupby('annotation_set_id_predicted', dropna=False).apply(
+            lambda group: grouped(group, 'annotation_set_id')
         )
     spans = spans[RELEVANT_FOR_EVALUATION]
 
     assert not spans.empty  # this function must be able to evaluate any two docs even without annotations
 
-    spans["tokenizer_true_positive"] = (
-        (spans["is_correct"])
-        & (spans["is_matched"])
-        & (spans["start_offset_predicted"] == spans['start_offset'])
-        & (spans["end_offset_predicted"] == spans['end_offset'])
-        & (spans["document_id_local_predicted"].notna())
+    spans['tokenizer_true_positive'] = (
+        (spans['is_correct'])
+        & (spans['is_matched'])
+        & (spans['start_offset_predicted'] == spans['start_offset'])
+        & (spans['end_offset_predicted'] == spans['end_offset'])
+        & (spans['document_id_local_predicted'].notna())
     )
 
-    spans["tokenizer_false_negative"] = (
-        (spans["is_correct"]) & (spans["is_matched"]) & (spans["document_id_local_predicted"].isna())
+    spans['tokenizer_false_negative'] = (
+        (spans['is_correct']) & (spans['is_matched']) & (spans['document_id_local_predicted'].isna())
     )
 
-    spans["tokenizer_false_positive"] = (
-        (~spans["tokenizer_false_negative"])
-        & (~spans["tokenizer_true_positive"])
-        & (spans["document_id_local_predicted"].notna())
-        & (spans["end_offset"] != 0)  # ignore placeholder
+    spans['tokenizer_false_positive'] = (
+        (~spans['tokenizer_false_negative'])
+        & (~spans['tokenizer_true_positive'])
+        & (spans['document_id_local_predicted'].notna())
+        & (spans['end_offset'] != 0)  # ignore placeholder
     )
 
-    spans["clf_true_positive"] = (
-        (spans["is_correct"])
-        & (spans["is_matched"])
-        & (spans["document_id_local_predicted"].notna())
-        & (spans["above_predicted_threshold"])
-        & (spans["is_correct_label"])
+    spans['clf_true_positive'] = (
+        (spans['is_correct'])
+        & (spans['is_matched'])
+        & (spans['document_id_local_predicted'].notna())
+        & (spans['above_predicted_threshold'])
+        & (spans['is_correct_label'])
     )
 
-    spans["clf_false_negative"] = (
-        (spans["is_correct"])
-        & (spans["is_matched"])
-        & (spans["document_id_local_predicted"].notna())
-        & (~spans["above_predicted_threshold"])
-        & (spans["is_correct_label"])
+    spans['clf_false_negative'] = (
+        (spans['is_correct'])
+        & (spans['is_matched'])
+        & (spans['document_id_local_predicted'].notna())
+        & (~spans['above_predicted_threshold'])
+        & (spans['is_correct_label'])
     )
 
-    spans["clf_false_positive"] = (
-        (spans["is_correct"])
-        & (spans["is_matched"])
-        & (spans["document_id_local_predicted"].notna())
-        & (~spans["is_correct_label"])
+    spans['clf_false_positive'] = (
+        (spans['is_correct'])
+        & (spans['is_matched'])
+        & (spans['document_id_local_predicted'].notna())
+        & (~spans['is_correct_label'])
     )
 
     # Evaluate which **spans** are TN, TP, FP and keep RELEVANT_FOR_MAPPING to allow grouping of confidence measures
-    spans["true_positive"] = (
-        (spans["is_matched"])
-        & (spans["is_correct"])
-        & (spans["above_predicted_threshold"])
-        & (~spans["duplicated"])
+    spans['true_positive'] = (
+        (spans['is_matched'])
+        & (spans['is_correct'])
+        & (spans['above_predicted_threshold'])
+        & (~spans['duplicated'])
         & (  # Everything is correct
-            (spans["is_correct_label"])
-            & (spans["is_correct_label_set"])
-            & (spans["is_correct_annotation_set_id"])
-            & (spans["is_correct_id_"])
+            (spans['is_correct_label'])
+            & (spans['is_correct_label_set'])
+            & (spans['is_correct_annotation_set_id'])
+            & (spans['is_correct_id_'])
         )
     )
 
-    spans["false_negative"] = (
-        (spans["is_correct"])
-        & (~spans["duplicated"])
-        & ((~spans["is_matched"]) | (~spans["above_predicted_threshold"]) | (spans["label_id_predicted"].isna()))
+    spans['false_negative'] = (
+        (spans['is_correct'])
+        & (~spans['duplicated'])
+        & ((~spans['is_matched']) | (~spans['above_predicted_threshold']) | (spans['label_id_predicted'].isna()))
     )
 
-    spans["false_positive"] = (  # commented out on purpose (spans["is_correct"]) &
-        (spans["above_predicted_threshold"])
-        & (~spans["false_negative"])
-        & (~spans["true_positive"])
-        & (~spans["duplicated_predicted"])
+    spans['false_positive'] = (  # commented out on purpose (spans["is_correct"]) &
+        (spans['above_predicted_threshold'])
+        & (~spans['false_negative'])
+        & (~spans['true_positive'])
+        & (~spans['duplicated_predicted'])
         & (  # Something is wrong
-            (~spans["is_correct_label"])
-            | (~spans["is_correct_label_set"])
-            | (~spans["is_correct_annotation_set_id"])
-            | (~spans["is_correct_id_"])
-            | (~spans["is_matched"])
+            (~spans['is_correct_label'])
+            | (~spans['is_correct_label_set'])
+            | (~spans['is_correct_annotation_set_id'])
+            | (~spans['is_correct_id_'])
+            | (~spans['is_matched'])
         )
     )
 
@@ -291,7 +291,7 @@ class EvaluationCalculator:
         self.fn = fn
         self.tn = tn
         assert zero_division in ['warn', 'error', 0, None], (
-            "The value of zero_division has to be 'warn', 'error', 0 " "or None"
+            "The value of zero_division has to be 'warn', 'error', 0 " 'or None'
         )
         self.zero_division = zero_division
 
@@ -354,13 +354,13 @@ class EvaluationCalculator:
 
     def metrics_logging(self):
         """Log metrics."""
-        logger.info(f"true positives: {self.tp}")
-        logger.info(f"false negatives: {self.fn}")
-        logger.info(f"true negatives: {self.tn}")
-        logger.info(f"false positives: {self.fp}")
-        logger.info(f"precision: {self.precision}")
-        logger.info(f"recall: {self.recall}")
-        logger.info(f"F1: {self.f1}")
+        logger.info(f'true positives: {self.tp}')
+        logger.info(f'false negatives: {self.fn}')
+        logger.info(f'true negatives: {self.tn}')
+        logger.info(f'false positives: {self.fp}')
+        logger.info(f'precision: {self.precision}')
+        logger.info(f'recall: {self.recall}')
+        logger.info(f'F1: {self.f1}')
 
 
 class ExtractionEvaluation:
@@ -392,7 +392,7 @@ class ExtractionEvaluation:
             If true, will ignore all Annotations below the Label detection threshold. Only affects True Negatives.
             Leads to faster evaluation.
         """
-        logger.info(f"Initializing Evaluation object with {len(documents)} documents. Evaluation mode {strict=}.")
+        logger.info(f'Initializing Evaluation object with {len(documents)} documents. Evaluation mode {strict=}.')
         self.documents = documents
         self.strict = strict
         self.use_view_annotations = use_view_annotations
@@ -401,7 +401,7 @@ class ExtractionEvaluation:
         self.data = None
         self.zero_division = zero_division
         self.calculate()
-        logger.info(f"Size of evaluation DataFrame: {memory_size_of(self.data)/1000} KB.")
+        logger.info(f'Size of evaluation DataFrame: {memory_size_of(self.data)/1000} KB.')
 
     def calculate(self):
         """Calculate and update the data stored within this Evaluation."""
@@ -424,7 +424,7 @@ class ExtractionEvaluation:
 
         :param search: use a search query in pandas
         """
-        from konfuzio_sdk.data import Label, Document, LabelSet
+        from konfuzio_sdk.data import Document, Label, LabelSet
 
         if search is None:
             return self.data
@@ -443,15 +443,15 @@ class ExtractionEvaluation:
 
     def tp(self, search=None) -> int:
         """Return the True Positives of all Spans."""
-        return self._query(search=search)["true_positive"].sum()
+        return self._query(search=search)['true_positive'].sum()
 
     def fp(self, search=None) -> int:
         """Return the False Positives of all Spans."""
-        return self._query(search=search)["false_positive"].sum()
+        return self._query(search=search)['false_positive'].sum()
 
     def fn(self, search=None) -> int:
         """Return the False Negatives of all Spans."""
-        return self._query(search=search)["false_negative"].sum()
+        return self._query(search=search)['false_negative'].sum()
 
     def tn(self, search=None) -> int:
         """Return the True Negatives of all Spans."""
@@ -461,27 +461,27 @@ class ExtractionEvaluation:
 
     def tokenizer_tp(self, search=None) -> int:
         """Return the tokenizer True Positives of all Spans."""
-        return self._query(search=search)["tokenizer_true_positive"].sum()
+        return self._query(search=search)['tokenizer_true_positive'].sum()
 
     def tokenizer_fp(self, search=None) -> int:
         """Return the tokenizer False Positives of all Spans."""
-        return self._query(search=search)["tokenizer_false_positive"].sum()
+        return self._query(search=search)['tokenizer_false_positive'].sum()
 
     def tokenizer_fn(self, search=None) -> int:
         """Return the tokenizer False Negatives of all Spans."""
-        return self._query(search=search)["tokenizer_false_negative"].sum()
+        return self._query(search=search)['tokenizer_false_negative'].sum()
 
     def clf_tp(self, search=None) -> int:
         """Return the Label classifier True Positives of all Spans."""
-        return self._query(search=search)["clf_true_positive"].sum()
+        return self._query(search=search)['clf_true_positive'].sum()
 
     def clf_fp(self, search=None) -> int:
         """Return the Label classifier False Positives of all Spans."""
-        return self._query(search=search)["clf_false_positive"].sum()
+        return self._query(search=search)['clf_false_positive'].sum()
 
     def clf_fn(self, search=None) -> int:
         """Return the Label classifier False Negatives of all Spans."""
-        return self._query(search=search)["clf_false_negative"].sum()
+        return self._query(search=search)['clf_false_negative'].sum()
 
     def get_evaluation_data(self, search, allow_zero: bool = True) -> EvaluationCalculator:
         """Get precision, recall, f1, based on TP, FP, FN."""
@@ -705,19 +705,19 @@ class CategorizationEvaluation:
 
     def tp(self, category: Optional[Category] = None) -> int:
         """Return the True Positives of all Documents."""
-        return self._base_metric("tp", category)
+        return self._base_metric('tp', category)
 
     def fp(self, category: Optional[Category] = None) -> int:
         """Return the False Positives of all Documents."""
-        return self._base_metric("fp", category)
+        return self._base_metric('fp', category)
 
     def fn(self, category: Optional[Category] = None) -> int:
         """Return the False Negatives of all Documents."""
-        return self._base_metric("fn", category)
+        return self._base_metric('fn', category)
 
     def tn(self, category: Optional[Category] = None) -> int:
         """Return the True Negatives of all Documents."""
-        return self._base_metric("tn", category)
+        return self._base_metric('tn', category)
 
     def get_evaluation_data(self, search: Category = None, allow_zero: bool = True) -> EvaluationCalculator:
         """
@@ -792,7 +792,7 @@ class FileSplittingEvaluation:
 
         """
         if len(ground_truth_documents) != len(prediction_documents):
-            raise ValueError("ground_truth_documents and prediction_documents must be same length.")
+            raise ValueError('ground_truth_documents and prediction_documents must be same length.')
         for document in ground_truth_documents:
             for page in document.pages():
                 if page.is_first_page is None:
@@ -807,15 +807,19 @@ class FileSplittingEvaluation:
         for ground_truth, prediction in zip(ground_truth_documents, prediction_documents):
             if ground_truth.id_ not in [prediction.copy_of_id, prediction.id_]:
                 raise ValueError(
-                    f"Incorrect prediction passed for {ground_truth}. Prediction has to be a copy of a "
-                    f"ground truth Document."
+                    f'Incorrect prediction passed for {ground_truth}. Prediction has to be a copy of a '
+                    f'ground truth Document.'
                 )
-        projects = list(set([document.project for document in ground_truth_documents]))
+        projects = list({document.project for document in ground_truth_documents})
         if len(projects) > 1:
-            raise ValueError("All Documents have to belong to the same Project.")
+            raise ValueError('All Documents have to belong to the same Project.')
+        print(
+            f'ground_truth_documents: {len(ground_truth_documents)}, prediction_documents: {len(prediction_documents)}'
+        )
         self.document_pairs = [
             [document[0], document[1]] for document in zip(ground_truth_documents, prediction_documents)
         ]
+        print(f'project:{projects}')
         self.project = projects[0]  # because we check that exactly one Project exists across the Documents
         self.zero_division = zero_division
         self.evaluation_results = None
@@ -841,7 +845,11 @@ class FileSplittingEvaluation:
         else:
             evaluation_documents = self.document_pairs
         for ground_truth, prediction in evaluation_documents:
+            print(f'gr_id: {ground_truth.id_}, pr_id: {prediction.id_}, pages_len: {len(ground_truth.pages())}')
             for page_gt, page_pr in zip(ground_truth.pages(), prediction.pages()):
+                print(
+                    f'gt: {page_gt.is_first_page}, pr: {page_pr.is_first_page}, pr_confidence: {page_pr.is_first_page_confidence:.2f}, is_correct: {page_gt.is_first_page == page_pr.is_first_page}, document: {page_gt.document.id_}'
+                )
                 if page_gt.is_first_page and page_pr.is_first_page:
                     tp += 1
                 elif not page_gt.is_first_page and page_pr.is_first_page:
@@ -871,7 +879,7 @@ class FileSplittingEvaluation:
 
     def calculate_metrics_by_category(self):
         """Calculate metrics by Category independently."""
-        categories = list(set([doc_pair[0].category for doc_pair in self.document_pairs]))
+        categories = list({doc_pair[0].category for doc_pair in self.document_pairs})
         self.evaluation_results_by_category = {}
         for category in categories:
             self.evaluation_results_by_category[category.id_] = {}
