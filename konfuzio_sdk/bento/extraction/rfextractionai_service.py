@@ -5,7 +5,7 @@ from typing import List, Optional, Tuple
 import bentoml
 from pydantic import BaseModel
 
-from konfuzio_sdk.data import Document, Page, Project
+from konfuzio_sdk.data import Category, Document, Page, Project
 
 extraction_runner = bentoml.picklable_model.get('rfextractionai:latest').to_runner(embedded=True)
 
@@ -48,7 +48,7 @@ async def extract(request: ExtractRequest20240117) -> ExtractResponse20240117:
     """Send an asynchronous call to the Extraction AI and process the response."""
     project = Project(id_=None)
     project.set_offline()
-    category = project.no_category
+    category = Category(project=project)
     document = Document(
         text=request.text,
         bbox=request.bboxes,
@@ -56,14 +56,14 @@ async def extract(request: ExtractRequest20240117) -> ExtractResponse20240117:
         category=category,
     )
     for page in request.pages:
-        Page(document=document, number=page.number, original_size=page.original_size)
+        Page(id_=page.number, document=document, number=page.number, original_size=page.original_size)
 
     result = await extraction_runner.extract.async_run(document)
 
     annotations_result = []
     for annotation_set in result.annotation_sets():
         current_annotation_set = {'label_set_id': annotation_set.label_set.id_, 'annotations': []}
-        for annotation in annotation_set.annotations():
+        for annotation in annotation_set.annotations() + annotation_set.annotations(use_correct=False):
             current_annotation_set['annotations'].append(
                 {
                     'id': annotation.id_,

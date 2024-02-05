@@ -1,1 +1,62 @@
 """Test interfaces created for containerization of Information Extraction AIs."""
+import subprocess
+import unittest
+
+import requests
+
+from konfuzio_sdk.data import Project
+from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
+from konfuzio_sdk.trainer.information_extraction import RFExtractionAI
+from tests.variables import OFFLINE_PROJECT
+
+
+class TestExtractionAIBento(unittest.TestCase):
+    """Test that Bento-based Extraction AI works."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Create a model and its Bento instance of Extraction AI."""
+        cls.pipeline = RFExtractionAI()
+        cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
+        cls.pipeline.tokenizer = WhitespaceTokenizer()
+        cls.pipeline.category = cls.project.get_category_by_id(id_=63)
+        cls.pipeline.documents = cls.pipeline.category.documents()
+        cls.pipeline.test_documents = cls.pipeline.category.test_documents()
+        cls.pipeline.df_train, cls.pipeline.label_feature_list = cls.pipeline.feature_function(
+            documents=cls.pipeline.documents, require_revised_annotations=False
+        )
+        cls.pipeline.fit()
+        cls.test_document = cls.project.get_document_by_id(44823)
+        bento, path = cls.pipeline.save_bento()
+        bento_name = bento.tag.name + ':' + bento.tag.version
+        cls.bento_process = subprocess.Popen(['bentoml', 'serve', bento_name])
+        cls.request_url = 'http://0.0.0.0:3000/extract'
+
+    def test_extract(self):
+        """Test that only a schema-adhering response is accepted by extract method of service."""
+        data = {
+            'text': self.test_document.text,
+            'pages': [
+                {
+                    'number': 1,
+                    'original_size': [self.test_document.pages()[0].width, self.test_document.pages()[0].height],
+                    'image': None,
+                }
+            ],
+            'bboxes': self.test_document.get_bbox(),
+        }
+        response = requests.post(url=self.request_url, json=data)
+        assert len(response) == 2
+        assert response[0]['annotations']
+
+    def test_wrong_input(self):
+        """Test that it's impossible to send a request with a structure not adhering to schema."""
+        # data = {}
+        # with pytest.raises(, match=''):
+        #     requests.post(url=self.request_url, data=data)
+        pass
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        """Kill process."""
+        cls.bento_process.kill()
