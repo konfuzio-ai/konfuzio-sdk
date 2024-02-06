@@ -29,7 +29,7 @@ sys.path.append(os.path.abspath('sphinx_custom_extensions'))
 # -- Project information -----------------------------------------------------
 year = str(datetime.now().year)
 project = 'Konfuzio'
-copyright = f'{year}, Helm und Nagel GmbH'
+copyright = f'{year}, Helm und Nagel GmbH'  # noqa
 author = 'Helm und Nagel GmbH'
 
 

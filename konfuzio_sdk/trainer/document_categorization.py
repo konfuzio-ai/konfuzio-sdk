@@ -1,3 +1,5 @@
+# ruff: noqa: A001, A002
+
 """Implements a Categorization Model."""
 
 import abc
@@ -39,7 +41,7 @@ from konfuzio_sdk.extras import (
 from konfuzio_sdk.tokenizer.base import AbstractTokenizer, Vocab
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
 from konfuzio_sdk.trainer.base import BaseModel
-from konfuzio_sdk.trainer.image import ImagePreProcessing, ImageDataAugmentation
+from konfuzio_sdk.trainer.image import ImageDataAugmentation, ImagePreProcessing
 from konfuzio_sdk.trainer.tokenization import TransformersTokenizer
 from konfuzio_sdk.utils import get_timestamp
 
@@ -1186,6 +1188,9 @@ class CategorizationAI(AbstractCategorizationAI):
                     if self.classifier.text_model.__class__.__name__ == 'BERT':
                         self.tokenizer = TransformersTokenizer(tokenizer_name=self.classifier.text_model.name)
                         page.text_encoded = self.tokenizer(page.text, max_length=max_len)['input_ids']
+                        # for TransformersTokenizer you need to squeeze the first dimension since
+                        # the output of the tokenizer has an extra dimension if return_tensors is set to 'pt'
+                        document_tokens.append(torch.LongTensor(page.text_encoded).squeeze(0))
                     else:
                         # REPLACE page_tokens = tokenizer.get_tokens(page_text)[:max_len]
                         # page_encoded = [text_vocab.stoi(span.offset_string) for span in
@@ -1193,7 +1198,7 @@ class CategorizationAI(AbstractCategorizationAI):
                         # document_tokens.append(torch.LongTensor(page_encoded))
                         # if using a text module, tokenize the page, trim to max length and then numericalize
                         self.text_vocab.numericalize(page)
-                    document_tokens.append(torch.LongTensor(page.text_encoded).squeeze(0))
+                        document_tokens.append(torch.LongTensor(page.text_encoded))
                 else:
                     # if not using text module then don't need the tokens
                     # so we just have a list of None to keep the lists the same length
@@ -1345,7 +1350,12 @@ class CategorizationAI(AbstractCategorizationAI):
 
     def fit(self, max_len: bool = None, batch_size: int = 1, **kwargs) -> Dict[str, List[float]]:
         """Fit the CategorizationAI classifier."""
-        logger.info('getting document classifier iterators')
+        logger.info(
+            f'Fitting Categorization AI classifier using: '
+            f'\n\tmax_len: {max_len} '
+            f'\n\tbatch_size: {batch_size}'
+            f'\n\tkwargs: {kwargs}'
+        )
 
         # figure out if we need images and/or text depending on if the classifier
         # has an image and/or text module
@@ -1534,12 +1544,13 @@ class CategorizationAI(AbstractCategorizationAI):
             if isinstance(self.classifier.text_model, BERT):
                 max_length = self.classifier.text_model.get_max_length()
                 page.text_encoded = self.tokenizer(page.text, max_length=max_length)['input_ids']
+                text_coded = [torch.LongTensor(page.text_encoded).squeeze(0)]
             else:
                 if not page.spans():
                     self.tokenizer.tokenize(page.document)
                 max_length = None
                 self.text_vocab.numericalize(page, max_length)
-            text_coded = [torch.LongTensor(page.text_encoded).squeeze(0)]
+                text_coded = [torch.LongTensor(page.text_encoded)]
 
         (predicted_category_id, predicted_confidence), _ = self._predict(page_images=docs_data_images, text=text_coded)
 
@@ -1601,7 +1612,8 @@ def build_categorization_ai_pipeline(
     test_documents: List[Document],
     tokenizer: Optional[AbstractTokenizer] = None,
     image_model_name: Optional[ImageModel] = None,
-    text_model_name: Optional[TextModel] = None,
+    text_model_name: Optional[TextModel] = TextModel.NBOW,
+    **kwargs,
 ) -> CategorizationAI:
     """
 
@@ -1609,6 +1621,11 @@ def build_categorization_ai_pipeline(
 
     See an in-depth tutorial at https://dev.konfuzio.com/sdk/tutorials/data_validation/index.html
     """
+    logger.info(
+        f'Building categorization AI pipeline using: \
+                \n\timage_model_name: {image_model_name} \
+                \n\ttext_model_name: {text_model_name}'
+    )
     # Configure Categories, with training and test Documents for the Categorization AI
     categorization_pipeline = CategorizationAI(categories)
     categorization_pipeline.documents = documents
