@@ -121,21 +121,57 @@ SV-Nummer       |Krankenkasse                       KK%®|PGRS Bars  jum.SV-Tg. 
 ]
 ```
 
-**annotation_sets.json5** - Contains information of each section in the Document (for example, their ids and Label Sets).
+**annotation_sets.json5** - Contains information of each Annotation Set in the Document and Annotations that constitute
+it.
 
 ```
-[
-  {
+{
     "id": 78730,
-    "position": 1,
-    "section_label": 63
-  },
-  {
-    "id": 292092,
-    "position": 1,
-    "section_label": 64
-  }
-]
+    "label_set": {
+      "api_name": "Lohnabrechnung",
+      "description": "",
+      "has_multiple_annotation_sets": false,
+      "id": 63,
+      "name": "Lohnabrechnung"
+    },
+    "labels": [
+      {
+        "annotations": [
+          {
+            "confidence": 0.93,
+            "created_by": "user@konfuzio.com",
+            "custom_offset_string": false,
+            "document": 44823,
+            "id": 4420351,
+            "is_correct": true,
+            "normalized": 2189.07,
+            "offset_string": "2.189,07",
+            "offset_string_original": "2.189,07",
+            "origin": "api.v2",
+            "revised": false,
+            "revised_by": null,
+            "selection_bbox": {
+              "page_index": 0,
+              "x0": 516.48,
+              "x1": 562.8,
+              "y0": 76.829,
+              "y1": 87.829
+            },
+            "span": [
+              {
+                "end_offset": 3785,
+                "offset_string": "2.189,07",
+                "offset_string_original": "2.189,07",
+                "page_index": 0,
+                "start_offset": 3777,
+                "x0": 516.48,
+                "x1": 562.8,
+                "y0": 76.829,
+                "y1": 87.829
+              }
+            ],
+            "translated_string": null
+          }
 ```
 
 **annotations.json5** - Contains information of each Annotation in the Document (for example, their Labels and Bounding 
