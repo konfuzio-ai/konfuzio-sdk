@@ -149,6 +149,10 @@ def _normalize_string_to_absolute_float(offset_string: str) -> Optional[float]:
             if len(chunk.strip(' ')) != 3:
                 return None
 
+    # for cases like '0-3', '0,0-0,3
+    if offset_string.count('-') == 1 and offset_string[0] != '-' and offset_string[-1] != '-':
+        return None
+
     offset_string = (
         offset_string.replace('O', '0')
         .replace('°', '')
