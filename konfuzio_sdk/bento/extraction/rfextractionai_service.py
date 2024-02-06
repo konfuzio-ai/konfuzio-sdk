@@ -1,7 +1,6 @@
 """Run extraction service for a dockerized AI."""
 import logging
-
-from typing import List, Optional, Tuple, Union, Dict
+from typing import Dict, List, Optional, Tuple, Union
 
 import bentoml
 from pydantic import BaseModel
@@ -13,6 +12,7 @@ extraction_runner = bentoml.picklable_model.get('rfextractionai:latest').to_runn
 svc = bentoml.Service('extraction_svc', runners=[extraction_runner])
 
 logger = logging.getLogger(__name__)
+
 
 class ExtractRequest20240117(BaseModel):
     """Describe a scheme for the extraction request on 17/01/2024."""
@@ -33,62 +33,68 @@ class ExtractRequest20240117(BaseModel):
 class ExtractResponse20240117(BaseModel):
     """Describe a scheme for the extraction response on 17/01/2024."""
 
-    class LabelSet(BaseModel):
-        """Describe a scheme for the Label Set class on 17/01/2024."""
-        id: int
-        name: str
-        api_name: Optional[str]
-    class Label(BaseModel):
-        """Describe a scheme for the Label class on 17/01/2024."""
-        id: int
-        name: str
-        has_multiple_top_candidates: bool
-        data_type: str
-        threshold: int
-
-    class Span(BaseModel):
-        """Describe a scheme for the Span class on 17/01/2024."""
-        x0: int
-        x1: int
-        y0: int
-        y1: int
-        page_index: int
-        start_offset: int
-        end_offset: int
-        offset_string: Optional[str]
-        offset_string_original: str
-
-    class SelectionBbox(BaseModel):
-        """Describe a scheme for the Selection Bbox class on 17/01/2024."""
-        x0: int
-        x1: int
-        y0: int
-        y1: int
-        page_index: int
-
-    class Annotation(BaseModel):
-        """Describe a scheme for the Annotation class on 17/01/2024."""
-        id: int
-        document: int
-        offset_string: Optional[str]
-        offset_string_original: Optional[str]
-        translated_string: Optional[str]
-        normalized: Union[str, int, None]
-        label: Dict[Label]
-        label_set: Dict[LabelSet]
-        annotation_set: int
-        confidence: Union[int, float]
-        is_correct: bool
-        revised: bool
-        origin: str
-        created_by: str
-        revised_by: str
-        span: List[Span]
-        selection_bbox: Dict[SelectionBbox]
-        custom_offset_string: bool
-
     class AnnotationSet(BaseModel):
         """Describe a scheme for the AnnotationSet class on 17/01/2024."""
+
+        class Annotation(BaseModel):
+            """Describe a scheme for the Annotation class on 17/01/2024."""
+
+            class LabelSet(BaseModel):
+                """Describe a scheme for the Label Set class on 17/01/2024."""
+
+                id: int
+                name: str
+                api_name: Optional[str]
+
+            class Label(BaseModel):
+                """Describe a scheme for the Label class on 17/01/2024."""
+
+                id: int
+                name: str
+                has_multiple_top_candidates: bool
+                data_type: str
+                threshold: int
+
+            class Span(BaseModel):
+                """Describe a scheme for the Span class on 17/01/2024."""
+
+                x0: int
+                x1: int
+                y0: int
+                y1: int
+                page_index: int
+                start_offset: int
+                end_offset: int
+                offset_string: Optional[str]
+                offset_string_original: str
+
+            class SelectionBbox(BaseModel):
+                """Describe a scheme for the Selection Bbox class on 17/01/2024."""
+
+                x0: int
+                x1: int
+                y0: int
+                y1: int
+                page_index: int
+
+            id: int
+            document: int
+            offset_string: Optional[str]
+            offset_string_original: Optional[str]
+            translated_string: Optional[str]
+            normalized: Union[str, int, None]
+            label: Dict[Label]
+            label_set: Dict[LabelSet]
+            annotation_set: int
+            confidence: Union[int, float]
+            is_correct: bool
+            revised: bool
+            origin: str
+            created_by: str
+            revised_by: str
+            span: List[Span]
+            selection_bbox: Dict[SelectionBbox]
+            custom_offset_string: bool
 
         label_set_id: int
         annotations: List[Annotation]
@@ -118,7 +124,9 @@ async def extract(request: ExtractRequest20240117) -> ExtractResponse20240117:
     annotations_result = []
     for annotation_set in result.annotation_sets():
         current_annotation_set = {'label_set_id': annotation_set.label_set.id_, 'annotations': []}
-        for annotation in annotation_set.annotations() + annotation_set.annotations(use_correct=False, ignore_below_threshold=True):
+        for annotation in annotation_set.annotations() + annotation_set.annotations(
+            use_correct=False, ignore_below_threshold=True
+        ):
             current_annotation_set['annotations'].append(
                 {
                     'id': annotation.id_,
