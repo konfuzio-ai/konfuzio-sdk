@@ -1,5 +1,6 @@
 """Test interfaces created for containerization of Information Extraction AIs."""
 import subprocess
+import time
 import unittest
 
 import requests
@@ -29,7 +30,11 @@ class TestExtractionAIBento(unittest.TestCase):
         cls.test_document = cls.project.get_document_by_id(44823)
         bento, path = cls.pipeline.save_bento()
         bento_name = bento.tag.name + ':' + bento.tag.version
-        cls.bento_process = subprocess.Popen(['bentoml', 'serve', bento_name])
+        cls.bento_process = subprocess.Popen(
+            ['bentoml', 'serve', bento_name], stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+        )
+        print('served bento')
+        time.sleep(5)
         cls.request_url = 'http://0.0.0.0:3000/extract'
 
     def test_extract(self):
@@ -46,7 +51,7 @@ class TestExtractionAIBento(unittest.TestCase):
             'bboxes': self.test_document.get_bbox(),
         }
         response = requests.post(url=self.request_url, json=data)
-        assert len(response) == 2
+        assert len(response.text) == 2
         assert response[0]['annotations']
 
     def test_wrong_input(self):
