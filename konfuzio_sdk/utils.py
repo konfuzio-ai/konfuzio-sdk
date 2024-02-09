@@ -901,3 +901,16 @@ def get_spans_from_bbox(selection_bbox: 'Bbox') -> List['Span']:
         spans.append(span)
 
     return spans
+
+
+def log_subprocess_output(pipe, breaking_point: str = None):
+    for line in iter(pipe.readline, b''):  # b'\n'-separated lines
+        logging.info('got line from subprocess: %r', line)
+        if breaking_point in str(line):
+            break
+
+
+def logging_from_subprocess(process, breaking_point: str = None):
+    """Get detailed logs from the subprocess for easier debugging."""
+    with process.stdout:
+        log_subprocess_output(pipe=process.stdout, breaking_point=breaking_point)

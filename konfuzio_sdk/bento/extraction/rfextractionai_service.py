@@ -85,13 +85,13 @@ class ExtractResponse20240117(BaseModel):
             normalized: Union[str, int, None]
             label: Label
             # label_set: Dict[LabelSet]
-            # annotation_set: int
-            # confidence: Union[int, float]
-            # is_correct: bool
-            # revised: bool
-            # origin: str
-            # created_by: str
-            # revised_by: str
+            annotation_set: int
+            confidence: Union[int, float]
+            is_correct: bool
+            revised: bool
+            origin: str
+            created_by: str
+            revised_by: str
             # span: List[Span]
             # selection_bbox: Dict[SelectionBbox]
             # custom_offset_string: bool
@@ -134,19 +134,20 @@ async def extract(request: ExtractRequest20240117) -> ExtractResponse20240117:
                     'offset_string': annotation.offset_string,
                     'translated_string': annotation.translated_string,
                     'normalized': annotation.normalized,
-                    # 'label': {
-                    #     'id': annotation.label.id_,
-                    #     'name': annotation.label.name,
-                    #     'has_multiple_top_candidates': annotation.label.has_multiple_top_candidates,
-                    #     'data_type': annotation.label.data_type,
-                    #     'threshold': annotation.label.threshold,
-                    # },
-                    # 'confidence': annotation.confidence,
-                    # 'is_correct': annotation.is_correct,
-                    # 'revised': annotation.is_revised,
-                    # 'origin': annotation.orgign,
-                    # 'created_by': annotation.created_by,
-                    # 'revised_by': annotation.revised_by,
+                    'label': {
+                        'id': annotation.label.id_,
+                        'name': annotation.label.name,
+                        'has_multiple_top_candidates': annotation.label.has_multiple_top_candidates,
+                        'data_type': annotation.label.data_type,
+                        'threshold': annotation.label.threshold,
+                    },
+                    'confidence': annotation.confidence,
+                    'is_correct': annotation.is_correct,
+                    'revised': annotation.revised,
+                    'origin': annotation.origin,
+                    'created_by': annotation.created_by,
+                    'revised_by': annotation.revised_by,
+                    'annotation_set': annotation.annotation_set.id_,
                     # 'span': annotation.spans,
                     # 'selection_bbox': annotation.selection_bbox,
                     # 'custom_offset_string': annotation.custom_offset_string,

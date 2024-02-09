@@ -1,6 +1,5 @@
 """Test interfaces created for containerization of Information Extraction AIs."""
 import subprocess
-import time
 import unittest
 
 import requests
@@ -8,6 +7,7 @@ import requests
 from konfuzio_sdk.data import Project
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
 from konfuzio_sdk.trainer.information_extraction import RFExtractionAI
+from konfuzio_sdk.utils import logging_from_subprocess
 from tests.variables import OFFLINE_PROJECT
 
 
@@ -34,7 +34,6 @@ class TestExtractionAIBento(unittest.TestCase):
             ['bentoml', 'serve', bento_name], stdout=subprocess.PIPE, stderr=subprocess.STDOUT
         )
         print('served bento')
-        time.sleep(5)
         cls.request_url = 'http://0.0.0.0:3000/extract'
 
     def test_extract(self):
@@ -51,8 +50,9 @@ class TestExtractionAIBento(unittest.TestCase):
             'bboxes': self.test_document.get_bbox(),
         }
         response = requests.post(url=self.request_url, json=data)
-        assert len(response.text) == 2
-        assert response[0]['annotations']
+        logging_from_subprocess(process=self.bento_process, breaking_point='status=')
+        assert len(response.json()) == 5
+        assert sum([len(element['annotations']) for element in response.json()]) == 19
 
     def test_wrong_input(self):
         """Test that it's impossible to send a request with a structure not adhering to schema."""
