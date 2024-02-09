@@ -2317,8 +2317,8 @@ class Annotation(Data):
         # Adding a new Attribute containing the metadata of the Annotation (for example omr etc...)
         # self.metadata = {
         #     "omr":{
-        #         "is_checked": true/false
-        #         "checkbox_bbox": [int, int, int, int]
+        #         "is_checked": True | False
+        #         "checkbox_bbox": [x0, x1, y0, y1] type: list(float), document coordinates
         #     }
         # }
         self.metadata = None
