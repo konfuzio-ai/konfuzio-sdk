@@ -19,7 +19,6 @@ Text Annotation        | :heavy_check_mark:                        |  :heavy_che
 PDF Annotation         | :heavy_check_mark:                        |  :heavy_check_mark: |
 Image Annotation       | :heavy_check_mark:                        |  :heavy_check_mark: |
 Table Annotation       | :heavy_check_mark:                        |  :heavy_check_mark: |
-Download HOCR          | :heavy_check_mark:                        |  :heavy_check_mark: |
 Download Images        | :heavy_check_mark:                        |  :heavy_check_mark: |
 Download PDF with OCR  | :heavy_check_mark:                        |  :heavy_check_mark: |
 Deploy AI models       | :heavy_multiplication_x:                  |  :heavy_check_mark: |
