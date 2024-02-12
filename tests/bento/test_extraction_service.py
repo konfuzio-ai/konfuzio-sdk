@@ -3,15 +3,21 @@ import subprocess
 import time
 import unittest
 
+import pytest
 import requests
 
 from konfuzio_sdk.data import Project
+from konfuzio_sdk.settings_importer import is_dependency_installed
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
 from konfuzio_sdk.trainer.information_extraction import RFExtractionAI
 from konfuzio_sdk.utils import logging_from_subprocess
 from tests.variables import OFFLINE_PROJECT
 
 
+@pytest.mark.skipif(
+    not is_dependency_installed('torch'),
+    reason='Required dependencies not installed.',
+)
 class TestExtractionAIBento(unittest.TestCase):
     """Test that Bento-based Extraction AI works."""
 
