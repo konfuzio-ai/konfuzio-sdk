@@ -149,7 +149,7 @@ it.
         "annotations": [
           {
             "confidence": 0.93,
-            "created_by": "user@konfuzio.com",
+            "created_by": "user@mail.com",
             "custom_offset_string": false,
             "document": 44823,
             "id": 4420351,
@@ -220,7 +220,7 @@ Boxes).
     "created_by": 59,
     "custom_offset_string": false,
     "end_offset": 169,
-    "get_created_by": "user@konfuzio.com",
+    "get_created_by": "user@mail.com",
     "get_revised_by": "n/a",
     "id": 4419937,
     "is_correct": true,
