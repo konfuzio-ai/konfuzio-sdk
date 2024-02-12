@@ -27,6 +27,8 @@ logging.getLogger("konfuzio_sdk").setLevel(logging.ERROR)
 YOUR_PROJECT_ID = 46
 ```
 ```python 
+from konfuzio_sdk.data import Project
+
 my_project = Project(id_=YOUR_PROJECT_ID)
 ```
 
