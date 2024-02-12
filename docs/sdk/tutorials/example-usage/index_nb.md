@@ -151,7 +151,7 @@ it.
             "confidence": 0.93,
             "created_by": "user@mail.com",
             "custom_offset_string": false,
-            "document": 44823,
+            "Document": 44823,
             "id": 4420351,
             "is_correct": true,
             "normalized": 2189.07,
@@ -253,7 +253,7 @@ Boxes).
 ]
 ```
 
-When needed, upon calling `document.get_bbox()`, an additional file will be downloaded to the Document folder containing the Bounding Boxes information of the characters of the Document: **bbox.zip**. This file can be quite large, and therefore it will be compressed in the Zip format. The decompressed file is a JSON file where the keys correspond to the indices of the characters in the Document text. The value associated with each key contains the Bounding Box information of the character. For example, for character 1000 and 1002 we would have:
+When needed, upon calling `Document.get_bbox()`, an additional file will be downloaded to the Document folder containing the Bounding Boxes information of the characters of the Document: **bbox.zip**. This file can be quite large, and therefore it will be compressed in the Zip format. The decompressed file is a JSON file where the keys correspond to the indices of the characters in the Document text. The value associated with each key contains the Bounding Box information of the character. For example, for character 1000 and 1002 we would have:
    
 ```
 {
@@ -313,7 +313,7 @@ And you can get the path to the file with the Document text with:
 document.txt_file_path
 ```
 
-.. _upload-document:
+.. _upload-Document:
 
 #### Upload Document
 
@@ -365,10 +365,10 @@ uploading a large file or a large number of files, as it doesn't require waiting
 document = Document.from_file(FILE_PATH, project=my_project, sync=False)
 ```
 
-After asynchronous upload, you can check the status of the Document processing using the `document.update()` method on 
+After asynchronous upload, you can check the status of the Document processing using the `Document.update()` method on 
 the returned Document object. If the Document is ready, this method will update the Document object with the OCR information.
 
-It's important to note that if the Document is not ready, you may need to call `document.update()` again at a later time. 
+It's important to note that if the Document is not ready, you may need to call `Document.update()` again at a later time. 
 This could be done manually or by setting up a looping mechanism depending on your application's workflow.
 
 To check if the Document is ready and update it with the OCR information, you can implement a custom pulling strategy 
@@ -420,7 +420,7 @@ document.update()
 ```
 
 If a Document is part of the Training or Test set, you can also update it by updating the entire Project via
-`project.get(update=True)`. However, for Projects with many Documents it can be faster to update only the relevant Documents.
+`Project.get(update=True)`. However, for Projects with many Documents it can be faster to update only the relevant Documents.
 
 #### Download PDFs
 To get the PDFs of the Documents, you can use `get_file()`.
@@ -457,7 +457,7 @@ You will get one png image named "page_number_of_page.png" for each Page in the 
 #### Download bounding boxes of the characters
 To get the Bounding Boxes information of the characters, you can use `get_bbox()`.
 
-```
+```python 
 for document in my_project.documents:
     document.get_bbox()
 ```
@@ -490,4 +490,4 @@ document.delete(delete_online=True)
 ```
 
 If `delete_online` is set to False (the default), the Document will only be deleted on your local machine, and will be 
-reloaded next time you load the Project, or if you run the `Project.init_or_update_document` method directly.
+reloaded next time you load the Project.
