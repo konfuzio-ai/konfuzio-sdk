@@ -14,6 +14,7 @@ from konfuzio_sdk.utils import logging_from_subprocess
 from tests.variables import OFFLINE_PROJECT
 
 
+@pytest.mark.skip(reason='Testing of the components requires starting a subprocess')
 @pytest.mark.skipif(
     not is_dependency_installed('torch'),
     reason='Required dependencies not installed.',
