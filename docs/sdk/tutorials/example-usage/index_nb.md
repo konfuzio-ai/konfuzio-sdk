@@ -27,7 +27,7 @@ logging.getLogger("konfuzio_sdk").setLevel(logging.ERROR)
 YOUR_PROJECT_ID = 46
 ```
 ```python 
-from konfuzio_sdk.data import Project
+from konfuzio_sdk.data import Project, Document
 
 my_project = Project(id_=YOUR_PROJECT_ID)
 ```
@@ -310,12 +310,12 @@ my_project.documents_folder
 ```
 
 And you can get the path to the file with the Document text with:
-
+```python tags=['remove-cell']
+document = my_project.get_document_by_id(44823)
+```
 ```python
 document.txt_file_path
 ```
-
-.. _upload-Document:
 
 #### Upload Document
 
@@ -345,10 +345,11 @@ to start working with the Document immediately after the OCR processing is compl
 
    Here's an example of how to use the `from_file` method with `sync` set to `True`:
 ```python tags=['remove-cell']
+import time
 FILE_PATH = 'tests/test_data/pdf.pdf'
 ASSIGNEE_ID = None
 ```
-```python
+```python tags=["skip-execution", "nbval-skip"]
 document = Document.from_file(FILE_PATH, project=my_project, sync=True)
 ```
 ```python tags=['remove-cell']
@@ -363,7 +364,7 @@ uploading a large file or a large number of files, as it doesn't require waiting
 
    Here is how to use the asynchronous method:
 
-```python
+```python tags=["skip-execution", "nbval-skip"]
 document = Document.from_file(FILE_PATH, project=my_project, sync=False)
 ```
 
@@ -376,7 +377,7 @@ This could be done manually or by setting up a looping mechanism depending on yo
 To check if the Document is ready and update it with the OCR information, you can implement a custom pulling strategy 
 like this:
 
-```python
+```python tags=["skip-execution", "nbval-skip"]
 for i in range(2):
     document.update()
     if document.ocr_ready is True:
@@ -384,9 +385,7 @@ for i in range(2):
         break
     time.sleep(i * 10 + 3)
 ```
-```python tags=['remove-cell']
-document.delete(delete_online=True)
-```
+
 For a more sophisticated pulling method for asynchronously uploaded Documents using the callback function, you can 
 checkout our :ref:`tutorial on how to use ngrok to receive callbacks from the Konfuzio Server<async_upload_with_callback>`.
 
@@ -397,7 +396,7 @@ within 2 minutes, the operation will stop waiting for a response and return an e
 it might take more time to process, and the default timeout value might not be sufficient. In such a case, you can 
 increase the timeout by setting the timeout parameter to a higher value.
 
-```python
+```python tags=["skip-execution", "nbval-skip"]
 document = Document.from_file(FILE_PATH, project=my_project, timeout=300, sync=True)
 ```
 
@@ -407,7 +406,7 @@ document = Document.from_file(FILE_PATH, project=my_project, timeout=300, sync=T
 If you would like to use the SDK to modify some Document's meta-data like the dataset status or the assignee, you can do
 it like this:
 
-```python
+```python tags=["skip-execution", "nbval-skip"]
 document.assignee = ASSIGNEE_ID
 document.dataset_status = 2
 
@@ -417,7 +416,7 @@ document.save_meta_data()
 #### Update Document
 If there are changes in the Document in the Konfuzio Server, you can update your local version of the Document with:
 
-```python
+```python tags=["skip-execution", "nbval-skip"]
 document.update()
 ```
 
@@ -427,7 +426,7 @@ If a Document is part of the Training or Test set, you can also update it by upd
 #### Download PDFs
 To get the PDFs of the Documents, you can use `get_file()`.
 
-```python
+```python tags=["skip-execution", "nbval-skip"]
 for document in my_project.documents:
     document.get_file()
 ```
@@ -439,7 +438,7 @@ In the Document folder, you will see a new file with the original name followed 
 
 If you want to original version of the Document (without OCR) you can use `ocr_version=False`.
 
-```python
+```python tags=["skip-execution", "nbval-skip"]
 for document in my_project.documents:
     document.get_file(ocr_version=False)
 ```
@@ -449,7 +448,7 @@ In the Document folder, you will see a new file with the original name.
 #### Download pages as images
 To get the Pages of the Document as png images, you can use `get_images()`.
 
-```python
+```python tags=["skip-execution", "nbval-skip"]
 for document in my_project.documents:
     document.get_images()
 ```
@@ -459,7 +458,7 @@ You will get one png image named "page_number_of_page.png" for each Page in the 
 #### Download bounding boxes of the characters
 To get the Bounding Boxes information of the characters, you can use `get_bbox()`.
 
-```python 
+```python tags=["skip-execution", "nbval-skip"]
 for document in my_project.documents:
     document.get_bbox()
 ```
@@ -467,7 +466,7 @@ for document in my_project.documents:
 You will get a file named "bbox.zip" in the Document folder. This file contains the "bbox.json5" file. You can find the
 path to the zip file in the Document instance with:
 
-```python
+```python tags=["skip-execution", "nbval-skip"]
 document.bbox_file_path
 ```
 
