@@ -94,6 +94,14 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
         )
         return pkl_file_path
 
+    @property
+    def entrypoint_methods(self) -> dict:
+        """Methods that will be exposed in a bento-saved instance of a model."""
+        return {
+            'predict': {'batchable': False},
+            'evaluate': {'batchable': False},
+        }
+
     @staticmethod
     def has_compatible_interface(other) -> bool:
         """
