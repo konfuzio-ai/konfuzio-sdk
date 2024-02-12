@@ -1,5 +1,6 @@
 """Test interfaces created for containerization of Information Extraction AIs."""
 import subprocess
+import time
 import unittest
 
 import requests
@@ -29,10 +30,11 @@ class TestExtractionAIBento(unittest.TestCase):
         cls.pipeline.fit()
         cls.test_document = cls.project.get_document_by_id(44823)
         bento, path = cls.pipeline.save_bento()
-        bento_name = bento.tag.name + ':' + bento.tag.version
+        cls.bento_name = bento.tag.name + ':' + bento.tag.version
         cls.bento_process = subprocess.Popen(
-            ['bentoml', 'serve', bento_name], stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+            ['bentoml', 'serve', cls.bento_name], stdout=subprocess.PIPE, stderr=subprocess.STDOUT
         )
+        time.sleep(5)
         print('served bento')
         cls.request_url = 'http://0.0.0.0:3000/extract'
 
@@ -56,10 +58,10 @@ class TestExtractionAIBento(unittest.TestCase):
 
     def test_wrong_input(self):
         """Test that it's impossible to send a request with a structure not adhering to schema."""
-        # data = {}
-        # with pytest.raises(, match=''):
-        #     requests.post(url=self.request_url, data=data)
-        pass
+        data = {'pages': 1234, 'new_field': 'ffff'}
+        responses = requests.post(url=self.request_url, data=data)
+        assert responses.status_code == 400
+        assert 'Invalid JSON' in responses.text
 
     @classmethod
     def tearDownClass(cls) -> None:

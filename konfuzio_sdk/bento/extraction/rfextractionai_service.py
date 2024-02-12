@@ -39,13 +39,13 @@ class ExtractResponse20240117(BaseModel):
         class Annotation(BaseModel):
             """Describe a scheme for the Annotation class on 17/01/2024."""
 
-            # class LabelSet(BaseModel):
-            #     """Describe a scheme for the Label Set class on 17/01/2024."""
-            #
-            #     id: int
-            #     name: str
-            #     api_name: Optional[str]
-            #
+            class LabelSet(BaseModel):
+                """Describe a scheme for the Label Set class on 17/01/2024."""
+
+                id: int
+                name: str
+                api_name: Optional[str]
+
             class Label(BaseModel):
                 """Describe a scheme for the Label class on 17/01/2024."""
 
@@ -55,28 +55,27 @@ class ExtractResponse20240117(BaseModel):
                 data_type: str
                 threshold: int
 
-            #
-            # class Span(BaseModel):
-            #     """Describe a scheme for the Span class on 17/01/2024."""
-            #
-            #     x0: int
-            #     x1: int
-            #     y0: int
-            #     y1: int
-            #     page_index: int
-            #     start_offset: int
-            #     end_offset: int
-            #     offset_string: Optional[str]
-            #     offset_string_original: str
-            #
-            # class SelectionBbox(BaseModel):
-            #     """Describe a scheme for the Selection Bbox class on 17/01/2024."""
-            #
-            #     x0: int
-            #     x1: int
-            #     y0: int
-            #     y1: int
-            #     page_index: int
+            class Span(BaseModel):
+                """Describe a scheme for the Span class on 17/01/2024."""
+
+                x0: int
+                x1: int
+                y0: int
+                y1: int
+                page_index: int
+                start_offset: int
+                end_offset: int
+                offset_string: Optional[str]
+                offset_string_original: str
+
+            class SelectionBbox(BaseModel):
+                """Describe a scheme for the Selection Bbox class on 17/01/2024."""
+
+                x0: int
+                x1: int
+                y0: int
+                y1: int
+                page_index: int
 
             id: int
             document: int
@@ -84,17 +83,16 @@ class ExtractResponse20240117(BaseModel):
             translated_string: Optional[str]
             normalized: Union[str, int, None]
             label: Label
-            # label_set: Dict[LabelSet]
+            label_set: LabelSet
             annotation_set: int
             confidence: Union[int, float]
             is_correct: bool
             revised: bool
-            origin: str
             created_by: str
             revised_by: str
-            # span: List[Span]
-            # selection_bbox: Dict[SelectionBbox]
-            # custom_offset_string: bool
+            span: List[Span]
+            selection_bbox: SelectionBbox
+            custom_offset_string: bool
 
         label_set_id: int
         annotations: List[Annotation]
@@ -127,6 +125,21 @@ async def extract(request: ExtractRequest20240117) -> ExtractResponse20240117:
         for annotation in annotation_set.annotations() + annotation_set.annotations(
             use_correct=False, ignore_below_threshold=True
         ):
+            spans = list(annotation.spans)
+            spans_list_of_dicts = [
+                {
+                    'x0': span.bbox().x0,
+                    'x1': span.bbox().x1,
+                    'y0': span.bbox().y0,
+                    'y1': span.bbox().y1,
+                    'page_index': span.page.index,
+                    'start_offset': span.start_offset,
+                    'end_offset': span.end_offset,
+                    'offset_string': span.offset_string,
+                    'offset_string_original': span.offset_string,
+                }
+                for span in spans
+            ]
             current_annotation_set['annotations'].append(
                 {
                     'id': annotation.id_,
@@ -144,13 +157,12 @@ async def extract(request: ExtractRequest20240117) -> ExtractResponse20240117:
                     'confidence': annotation.confidence,
                     'is_correct': annotation.is_correct,
                     'revised': annotation.revised,
-                    'origin': annotation.origin,
                     'created_by': annotation.created_by,
                     'revised_by': annotation.revised_by,
                     'annotation_set': annotation.annotation_set.id_,
-                    # 'span': annotation.spans,
-                    # 'selection_bbox': annotation.selection_bbox,
-                    # 'custom_offset_string': annotation.custom_offset_string,
+                    'span': spans_list_of_dicts,
+                    'selection_bbox': annotation.selection_bbox,
+                    'custom_offset_string': annotation.custom_offset_string,
                 }
             )
         annotations_result.append(current_annotation_set)
