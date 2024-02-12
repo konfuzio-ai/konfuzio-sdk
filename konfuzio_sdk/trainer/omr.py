@@ -3,7 +3,7 @@
 import abc
 import logging
 import pathlib
-from typing import Any, Dict, Tuple
+from typing import Any, List, Tuple, Union
 
 import numpy as np
 import torch
@@ -12,9 +12,12 @@ from PIL import Image
 from scipy.optimize import linear_sum_assignment
 
 from konfuzio_sdk.data import Bbox, Document
-from konfuzio_sdk.extras import FloatTensor, Module
+from konfuzio_sdk.extras import Module
 
 logger = logging.getLogger(__name__)
+
+# Define a type alias for clarity
+Box = Union[List[Tuple[int, int, int, int]], np.ndarray]
 
 
 class OMRAbstractModel(Module, metaclass=abc.ABCMeta):
@@ -44,26 +47,53 @@ class OMRAbstractModel(Module, metaclass=abc.ABCMeta):
 
 
 class CheckboxDetector(OMRAbstractModel):
-    """Detects checkboxes in images using a pre-trained model."""
+    """Detect checkboxes in images using a pre-trained model."""
 
-    def __init__(
-        self,
-        **kwargs,
-    ):
-        """Initializes the CheckboxDetector with a pre-trained model and default parameters."""
+    def __init__(self, **kwargs: Any) -> None:
+        """
+        Initializes the CheckboxDetector with a pre-trained model and default parameters.
+
+        :param kwargs: Arbitrary keyword arguments.
+        :type kwargs: :class:`Any`
+        :raises FileNotFoundError: If the model weights file is not found.
+        :return: None
+        :rtype: :class:`NoneType`
+        """
         super().__init__()
-        path = str(pathlib.Path(__file__).parent / 'ckpt_best.pt')
-        self.detector = torch.jit.load(path)
+        model_path = str(pathlib.Path(__file__).parent / 'ckpt_best.pt')
+        if not pathlib.Path(model_path).exists():
+            raise FileNotFoundError(f'Model weights file not found at {model_path}')
+        self.detector = torch.jit.load(model_path)
         self.input_shape = (1280, 1280)
         self.threshold = 0.7
 
-    def _threshold(self, cls_conf, bboxes):
+    def _threshold(self, cls_conf: np.ndarray, bboxes: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Filters detections based on confidence threshold.
+
+        :param cls_conf: Confidence scores for each detection.
+        :type cls_conf: :class:`numpy.ndarray`
+        :param bboxes: Bounding boxes for each detection.
+        :type bboxes: :class:`numpy.ndarray`
+        :return: Filtered confidence scores and bounding boxes.
+        :rtype: :class:`tuple`
+        """
         idx = np.argwhere(cls_conf > self.threshold)
         cls_conf = cls_conf[idx[:, 0]]
         bboxes = bboxes[idx[:, 0]]
         return cls_conf, bboxes
 
-    def _nms(self, cls_conf, bboxes):
+    def _nms(self, cls_conf: np.ndarray, bboxes: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Applies Non-Maximum Suppression to detections.
+
+        :param cls_conf: Confidence scores for each detection.
+        :type cls_conf: :class:`numpy.ndarray`
+        :param bboxes: Bounding boxes for each detection.
+        :type bboxes: :class:`numpy.ndarray`
+        :return: Detections after applying NMS.
+        :rtype: :class:`tuple`
+        """
         indices = torchvision.ops.nms(
             torch.from_numpy(bboxes), torch.from_numpy(cls_conf.max(1)), iou_threshold=0.5
         ).numpy()
@@ -71,7 +101,99 @@ class CheckboxDetector(OMRAbstractModel):
         bboxes = bboxes[indices]
         return cls_conf, bboxes
 
+    def _rescale(self, image: np.ndarray, output_shape: Tuple[int, int]) -> np.ndarray:
+        """
+        Rescales an image to a specified output shape.
+
+        :param image: The input image.
+        :type image: :class:`numpy.ndarray`
+        :param output_shape: Desired output shape.
+        :type output_shape: :class:`tuple`
+        :return: Rescaled image.
+        :rtype: :class:`numpy.ndarray`
+        """
+        height, width = image.shape[:2]
+        scale_factor = min(output_shape[0] / height, output_shape[1] / width)
+        if scale_factor != 1.0:
+            new_height, new_width = round(height * scale_factor), round(width * scale_factor)
+            image = Image.fromarray(image)
+            image = image.resize((new_width, new_height), Image.LANCZOS)
+            image = np.array(image)
+        return image
+
+    def _bottom_right_pad(
+        self, image: np.ndarray, output_shape: Tuple[int, int], pad_value: Tuple[int, int, int] = (114, 114, 114)
+    ) -> np.ndarray:
+        """
+        Pads the image on the bottom and right to reach the output shape.
+
+        :param image: The input image.
+        :type image: :class:`numpy.ndarray`
+        :param output_shape: Desired output shape.
+        :type output_shape: :class:`tuple`
+        :param pad_value: Padding value.
+        :type pad_value: :class:`tuple`
+        :return: Padded image.
+        :rtype: :class:`numpy.ndarray`
+        """
+
+        height, width = image.shape[:2]
+        pad_height = output_shape[0] - height
+        pad_width = output_shape[1] - width
+
+        pad_h = (0, pad_height)  # top=0, bottom=pad_height
+        pad_w = (0, pad_width)  # left=0, right=pad_width
+
+        constant_values = ((pad_value, pad_value), (pad_value, pad_value), (0, 0))
+        # Fixes issue with numpy deprecation warning since constant_values is ragged array (Have to explicitly specify object dtype)
+        constant_values = np.array(constant_values, dtype=np.object_)
+
+        padding_values = (pad_h, pad_w, (0, 0))
+        processed_image = np.pad(image, pad_width=padding_values, mode='constant', constant_values=constant_values)
+
+        return processed_image
+
+    def _permute(self, image: np.ndarray, permutation: Tuple[int, int, int] = (2, 0, 1)) -> np.ndarray:
+        """
+        Permutes the image channels.
+
+        :param image: The input image.
+        :type image: :class:`numpy.ndarray`
+        :param permutation: Channel permutation.
+        :type permutation: :class:`tuple`
+        :return: Permuted image.
+        :rtype: :class:`numpy.ndarray`
+        """
+        processed_image = np.ascontiguousarray(image.transpose(permutation))
+        return processed_image
+
+    def _standardize(self, image: np.ndarray, max_value=255) -> np.ndarray:
+        """
+        Standardizes the pixel values of the image.
+
+        :param image: The input image.
+        :type image: :class:`numpy.ndarray`
+        :param max_value: The maximum pixel value.
+        :type max_value: :class:`int`
+        :return: Standardized image.
+        :rtype: :class:`numpy.ndarray`
+        """
+        processed_image = (image / max_value).astype(np.float32)
+        return processed_image
+
     def _preprocess(self, image: np.ndarray, out_shape: Tuple[int, int]) -> np.ndarray:
+        """
+        Preprocesses the image before passing it to the model.
+        The preprocessing is done as during training, so do not change anything.
+
+        :param image: The input image.
+        :type image: :class:`numpy.ndarray`
+        :param out_shape: Desired output shape.
+        :type out_shape: :class:`tuple`
+        :return: Preprocessed image.
+        :rtype: :class:`numpy.ndarray`
+        """
+        logger.info('Run checkbox detection preprocessing.')
         if image.mode == 'P':
             image = image.convert('RGB')
         image = np.array(image)[:, :, ::-1]  # convert to np and BGR as during training
@@ -83,12 +205,21 @@ class CheckboxDetector(OMRAbstractModel):
         image = torch.from_numpy(image)
         return image
 
-    def _postprocess(self, outputs, image_shape: Tuple[int, int]):
+    def _postprocess(self, outputs: torch.Tensor, image_shape: Tuple[int, int]) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Postprocesses the model's outputs to obtain final detections.
+
+        :param outputs: Model's raw outputs.
+        :type outputs: :class:`torch.Tensor`
+        :param image_shape: Original image shape.
+        :type image_shape: :class:`tuple`
+        :return: Confidence scores and bounding boxes after postprocessing.
+        :rtype: :class:`tuple`
+        """
+        logger.info('Run checkbox detection postprocessing.')
         cls_conf = outputs[1][0].cpu().detach().numpy()
         bboxes = outputs[0][0].cpu().detach().numpy()
-
         cls_conf, bboxes = self._threshold(cls_conf, bboxes)
-
         cls_conf, bboxes = self._nms(cls_conf, bboxes)
 
         # Define and apply scale for the bounding boxes to the original image size
@@ -97,55 +228,20 @@ class CheckboxDetector(OMRAbstractModel):
         bboxes = np.array([(int(b[0]), int(b[1]), int(b[2]), int(b[3])) for b in bboxes])
         return cls_conf, bboxes
 
-    def _rescale(self, image: np.ndarray, output_shape: Tuple[int, int]) -> np.ndarray:
-        height, width = image.shape[:2]
-        scale_factor = min(output_shape[0] / height, output_shape[1] / width)
+    def forward(self, image: Image.Image) -> Tuple[np.ndarray, List[bool], np.ndarray]:
+        """
+        Runs the detection pipeline on an input image.
 
-        if scale_factor != 1.0:
-            new_height, new_width = round(height * scale_factor), round(width * scale_factor)
-            image = Image.fromarray(image)
-            image = image.resize((new_width, new_height), Image.LANCZOS)
-            image = np.array(image)
-
-        return image
-
-    def _bottom_right_pad(
-        self, image: np.ndarray, output_shape: Tuple[int, int], pad_value: Tuple[int, int, int] = (114, 114, 114)
-    ) -> np.ndarray:
-        input_shape = image.shape[:2]
-
-        pad_height = output_shape[0] - input_shape[0]
-        pad_width = output_shape[1] - input_shape[1]
-
-        pad_h = (0, pad_height)  # top=0, bottom=pad_height
-        pad_w = (0, pad_width)  # left=0, right=pad_width
-
-        _, _, num_channels = image.shape
-
-        constant_values = ((pad_value, pad_value), (pad_value, pad_value), (0, 0))
-        # Fixes issue with numpy deprecation warning since constant_values is ragged array (Have to explicitly specify object dtype)
-        constant_values = np.array(constant_values, dtype=np.object_)
-
-        padding_values = (pad_h, pad_w, (0, 0))
-
-        processed_image = np.pad(image, pad_width=padding_values, mode='constant', constant_values=constant_values)
-
-        return processed_image
-
-    def _permute(self, image: np.ndarray, permutation: Tuple[int, int, int] = (2, 0, 1)) -> np.ndarray:
-        processed_image = np.ascontiguousarray(image.transpose(permutation))
-        return processed_image
-
-    def _standardize(self, image: np.ndarray, max_value=255) -> np.ndarray:
-        processed_image = (image / max_value).astype(np.float32)
-        return processed_image
-
-    def forward(self, image: Image.Image) -> Dict[str, FloatTensor]:
-        input = self._preprocess(image, self.input_shape)
-        outputs = self.detector(input)
+        :param image: The input image.
+        :type image: :class:`PIL.Image.Image`
+        :return: Bounding boxes, detection flags, and confidence scores.
+        :rtype: :class:`tuple`
+        """
+        logger.info('Run checkbox detection.')
+        input_image = self._preprocess(image, self.input_shape)
+        outputs = self.detector(input_image)
         cls_conf, bboxes = self._postprocess(outputs, image.size)
         checked = [True if c[0] > c[1] else False for c in cls_conf]
-
         return bboxes, checked, cls_conf
 
 
@@ -178,7 +274,7 @@ class BboxPairing:
 
     """
 
-    def _mid_points(self, boxes):
+    def _mid_points(self, boxes: Box) -> np.ndarray:
         """
         For each box, calculate the middle points of its edges.
 
@@ -198,7 +294,7 @@ class BboxPairing:
             ]
         return middle_points
 
-    def _pair_distances(self, middle_points1, middle_points2):
+    def _pair_distances(self, middle_points1: np.ndarray, middle_points2: np.ndarray) -> np.ndarray:
         """
         Calculate distances between all pairs of middle points from two sets of bounding boxes.
         `middle_points1` and `middle_points2` are arrays of middle points precomputed.
@@ -218,7 +314,7 @@ class BboxPairing:
         distances = np.sqrt(np.sum((expanded_points1 - expanded_points2) ** 2, axis=2))
         return distances
 
-    def _min_edge_distances(self, class1_boxes, class2_boxes):
+    def _min_edge_distances(self, class1_boxes: Box, class2_boxes: Box) -> np.ndarray:
         """
         Calculate the minimum edge-to-edge distance between boxes in class 1 and class 2.
 
@@ -246,7 +342,7 @@ class BboxPairing:
                 distance_matrix[i, j] = min_distance
         return distance_matrix
 
-    def find_pairs(self, class1_boxes, class2_boxes):
+    def find_pairs(self, class1_boxes: Box, class2_boxes: Box) -> Tuple[np.ndarray, np.ndarray]:
         """
         Find the optimal pairing of boxes from from two classes that minimizes
         the total edge-to-edge distance using the Hungarian algorithm.
@@ -255,23 +351,17 @@ class BboxPairing:
         :type class1_boxes: list[tuple[float, float, float, float]]
         :param class2_boxes: Bounding boxes of the second class in format (x0, y0, x1, y1).
         :type class2_boxes: list[tuple[float, float, float, float]]
-        :return: Indices of boxes in class 1 and class 2 that form the optimal pairing.
+        :return: Indices of boxes (class1_ind, class2_ind) for class 1 and class 2 that form the optimal pairing.
         :rtype: (np.ndarray, np.ndarray)
         """
+        logger.info('Find bounding box pairs.')
         distance_matrix = self._min_edge_distances(class1_boxes, class2_boxes)
         class1_ind, class2_ind = linear_sum_assignment(distance_matrix)
         return class1_ind, class2_ind
 
 
 def map_annotations_to_checkboxes(document: Document) -> Document:
-    """Map the annotations to the checkboxes.
-
-    Args:
-        document: Document object containing the annotations and the page image.
-
-    Returns:
-        Document object containing the annotations and the page image with the mapped checkboxes.
-    """
+    """Map the annotations to the checkboxes."""
 
     bbox_pairing = BboxPairing()
     checkbox_detector = CheckboxDetector()
@@ -295,17 +385,17 @@ def map_annotations_to_checkboxes(document: Document) -> Document:
 
         # just evaluate for annotations with label.is_linked_to_checkbox == True
         annotations = [annotation for annotation in annotations if annotation.label.is_linked_to_checkbox]
-        annotation_boxes = {
-            a.id_: (int(a.bbox().x0_image), int(a.bbox().y0_image), int(a.bbox().x1_image), int(a.bbox().y1_image))
-            for a in annotations
-        }
+        annotation_boxes = np.array(
+            [
+                (int(a.bbox().x0_image), int(a.bbox().y0_image), int(a.bbox().x1_image), int(a.bbox().y1_image))
+                for a in annotations
+            ]
+        )
 
         checkboxes, checked, _ = checkbox_detector(image)
 
         # link the checkboxes to the annotations
-        annotation_boxes_list = list(annotation_boxes.values())
-        checkbox_list = list(checkboxes)
-        ann_boxes_ind, checkbox_ind = bbox_pairing.find_pairs(annotation_boxes_list, checkbox_list)
+        ann_boxes_ind, checkbox_ind = bbox_pairing.find_pairs(annotation_boxes, checkboxes)
 
         # convert the checkboxes from image coordinates to document coordinates
         checkboxes = [
