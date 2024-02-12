@@ -6,4 +6,4 @@ Get Started
 
 .. mdinclude:: configuration_reference.md
 
-.. mdinclude:: tutorials/example_usage.md
+.. mdinclude:: tutorials/example-usage/index_nb.md
