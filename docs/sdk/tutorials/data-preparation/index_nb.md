@@ -56,10 +56,10 @@ We import the id of the default test Project, as well as the libraries we need:
 # This is necessary to make sure we can import from 'tests'
 import sys
 sys.path.insert(0, '../../../../')
+from tests.variables import TEST_PROJECT_ID
 ```
 
 ```python
-from tests.variables import TEST_PROJECT_ID
 from konfuzio_sdk.data import Project, Document
 ```
 
@@ -96,7 +96,6 @@ A Document in the Konfuzio Server can be assigned a Status defining if the Docum
 In this tutorial, we have walked through the essential steps for programmatically uploading PDFs to the Konfuzio Server. Below is the full code to accomplish this task:
 
 ```python tags=["skip-execution", "nbval-skip"]
-from tests.variables import TEST_PROJECT_ID
 from konfuzio_sdk.data import Project, Document
 
 FILE_PATH_1 = 'path/to/pdf_file1.pdf'

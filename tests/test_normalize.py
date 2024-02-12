@@ -244,6 +244,10 @@ test_data_numbers = [
     ('..1..2.3..3333.', None, None),
     ('114433,8,60', None, None),
     ('165a', None, None),
+    ('0,0-3,0', None, None),
+    ('3,6-4.8', None, None),
+    ('0,1–1,112', None, None),
+    ('21231.41–124.4124,52', None, None),
     # ('12.', 12.0, 0), undefined test cases:
     # ('1.', 1.0, 0),
     # ('.', None, 0),
