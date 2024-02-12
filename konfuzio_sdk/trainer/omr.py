@@ -15,8 +15,6 @@ from konfuzio_sdk.data import Bbox, Document
 from konfuzio_sdk.extras import FloatTensor, Module
 
 logger = logging.getLogger(__name__)
-logger.info('Creating phrase matcher')
-logger.error('[ERROR] Creating phrase matcher')
 
 
 class OMRAbstractModel(Module, metaclass=abc.ABCMeta):
@@ -152,16 +150,42 @@ class CheckboxDetector(OMRAbstractModel):
 
 
 class BboxPairing:
-    """Handles bounding box pairing in the format of (x1, y1, x2, y2)."""
+    """
+    Pair two sets of bounding boxes, ensuring the closest bounding boxes are matched together.
 
-    def __init__(self):
-        pass
+    The algorithm calculates the minimum edge-to-edge distance between all pairs of boxes from two classes.
+    It then uses the Hungarian algorithm to find the optimal pairing of boxes that minimizes the total edge-to-edge distance.
+    The points used to calculate the distances are the middle points of the edges of the bounding boxes.
+
+    In case one set of boxes has more elements than the other, the algorithm will pair the closest boxes and leave the remaining ones unpaired.
+
+    The following example shows how you can use the `BboxPairing` class to find pairs.
+
+    .. testcode::
+
+        class1_boxes = [(0, 0, 1, 1), (10, 10, 12, 12)]
+        class2_boxes = [(2, 0, 3, 1), (14, 14, 16, 16)]
+        bbox_pairing = BboxPairing()
+        class1_ind, class2_ind = bbox_pairing.find_pairs(class1_boxes, class2_boxes)
+
+        for i, j in zip(class1_ind, class2_ind):
+            print(f"Class 1 Box {i} is paired with Class 2 Box {j}.")
+
+    .. testoutput::
+
+        Class 1 Box 0 is paired with Class 2 Box 0.
+        Class 1 Box 1 is paired with Class 2 Box 1.
+
+    """
 
     def _mid_points(self, boxes):
         """
         For each box, calculate the middle points of its edges.
-        Each box is defined as (x1, y1, x2, y2).
-        Returns a list of arrays, each containing four points (top, bottom, left, right) for each box.
+
+        :param boxes: A list of bounding boxes, each defined as a tuple in format (x0, y0, x1, y1).
+        :type boxes: list[tuple[float, float, float, float]]
+        :return: A list of arrays, with each array containing four middle points (top, bottom, left, right) for each box.
+        :rtype: list[np.ndarray]
         """
         middle_points = np.zeros((len(boxes), 4, 2))  # 4 edges, 2 coordinates (x, y) each
         for i, box in enumerate(boxes):
@@ -176,8 +200,15 @@ class BboxPairing:
 
     def _pair_distances(self, middle_points1, middle_points2):
         """
-        Calculate distances between all pairs of middle points from two sets of boxes.
+        Calculate distances between all pairs of middle points from two sets of bounding boxes.
         `middle_points1` and `middle_points2` are arrays of middle points precomputed.
+
+        :param middle_points1: Array of middle points for the first set of boxes.
+        :type middle_points1: np.ndarray
+        :param middle_points2: Array of middle points for the second set of boxes.
+        :type middle_points2: np.ndarray
+        :return: Distance matrix between all pairs of points.
+        :rtype: np.ndarray
         """
         # Expand dimensions to enable broadcasting: (n_points1, 1, 2) and (1, n_points2, 2)
         expanded_points1 = np.expand_dims(middle_points1, 1)
@@ -190,6 +221,13 @@ class BboxPairing:
     def _min_edge_distances(self, class1_boxes, class2_boxes):
         """
         Calculate the minimum edge-to-edge distance between boxes in class 1 and class 2.
+
+        :param class1_boxes: Bounding boxes of the first class in format (x0, y0, x1, y1).
+        :type class1_boxes: list[tuple[float, float, float, float]]
+        :param class2_boxes: Bounding boxes of the second class in format (x0, y0, x1, y1).
+        :type class2_boxes: list[tuple[float, float, float, float]]
+        :return: A matrix containing the minimum distances between each pair of boxes.
+        :rtype: np.ndarray
         """
         # Precompute middle points for all boxes
         points1 = self._mid_points(class1_boxes)
@@ -198,23 +236,27 @@ class BboxPairing:
         # Initialize an empty distance matrix
         num_class1 = len(class1_boxes)
         num_class2 = len(class2_boxes)
-
         distance_matrix = np.full((num_class1, num_class2), np.inf)
 
-        # For each box in class 1, calculate distance to each box in class 2
+        # Calculate the minimum distance and fill the distance matrix
         for i in range(num_class1):
             for j in range(num_class2):
-                # Calculate pairwise distances between edges of the two boxes
                 distances = self._pair_distances(points1[i], points2[j])
-                # Find the minimum distance for this box pair
                 min_distance = np.min(distances)
                 distance_matrix[i, j] = min_distance
         return distance_matrix
 
     def find_pairs(self, class1_boxes, class2_boxes):
         """
-        Find the optimal pairing of boxes from class 2 to class 1 that minimizes
+        Find the optimal pairing of boxes from from two classes that minimizes
         the total edge-to-edge distance using the Hungarian algorithm.
+
+        :param class1_boxes: Bounding boxes of the first class in format (x0, y0, x1, y1).
+        :type class1_boxes: list[tuple[float, float, float, float]]
+        :param class2_boxes: Bounding boxes of the second class in format (x0, y0, x1, y1).
+        :type class2_boxes: list[tuple[float, float, float, float]]
+        :return: Indices of boxes in class 1 and class 2 that form the optimal pairing.
+        :rtype: (np.ndarray, np.ndarray)
         """
         distance_matrix = self._min_edge_distances(class1_boxes, class2_boxes)
         class1_ind, class2_ind = linear_sum_assignment(distance_matrix)
