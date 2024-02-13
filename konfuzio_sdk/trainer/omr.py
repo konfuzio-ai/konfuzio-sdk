@@ -372,7 +372,7 @@ def map_annotations_to_checkboxes(document: Document) -> Document:
         image = page.get_image()
         annotations = page.view_annotations()  # not sure why page.annotations is returning an empty list.
 
-        # simulate labels that are linked to checkboxes
+        # simulate labels that should be paired to checkboxes
         labels_with_checkboxes = [
             'Geschlecht_Person1',
             'Geschlecht_Person2',
@@ -394,7 +394,7 @@ def map_annotations_to_checkboxes(document: Document) -> Document:
 
         checkboxes, checked, _ = checkbox_detector(image)
 
-        # link the checkboxes to the annotations
+        # pair the checkboxes to the annotations
         ann_boxes_ind, checkbox_ind = bbox_pairing.find_pairs(annotation_boxes, checkboxes)
 
         # convert the checkboxes from image coordinates to document coordinates
@@ -440,7 +440,7 @@ if __name__ == '__main__':
         check_color = (0, 255, 0)
         uncheck_color = (0, 255, 255)
         label_color = (255, 0, 0)
-        link_colors = (255, 0, 255)
+        pair_colors = (255, 0, 255)
 
         scaler = max((image.size[0] / page.width, image.size[1] / page.height))
 
@@ -474,6 +474,6 @@ if __name__ == '__main__':
                 ed_y0 = max(y0, an_y0)
                 ed_y1 = min(y1, an_y1)
                 ed_y_ave = (ed_y0 + ed_y1) / 2
-                img_draw.line((ed_x0, ed_y_ave, ed_x1, ed_y_ave), fill=link_colors, width=2)
+                img_draw.line((ed_x0, ed_y_ave, ed_x1, ed_y_ave), fill=pair_colors, width=2)
 
-        image.save(str(f'./{page.document.name}_linked.png'))
+        image.save(str(f'./{page.document.name}_paired.png'))
