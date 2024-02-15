@@ -1,0 +1,91 @@
+"""Utility functions for adapting Konfuzio concepts to be used with Pydantic models."""
+from konfuzio_sdk.bento.extraction.schemas import ExtractRequest20240117, ExtractResponse20240117
+from konfuzio_sdk.data import Category, Document, Page, Project
+
+
+def prepare_request(request) -> Document:
+    """
+    Receive a request and prepare it for the extraction runner.
+
+    :param request: Unprocessed request.
+    :returns: An instance of a Document class.
+    """
+    project = Project(id_=None)
+    project.set_offline()
+    category = Category(project=project)
+    document = Document(
+        text=request.text,
+        bbox=request.bboxes,
+        project=project,
+        category=category,
+    )
+    for page in request.pages:
+        Page(id_=page.number, document=document, number=page.number, original_size=page.original_size)
+    return document
+
+
+def convert_document_to_request(document: Document, schema=ExtractRequest20240117):
+    """
+    Receive a Document and convert it into a request in accordance to a passed schema.
+
+    :param document: A Document to be converted.
+    :param schema: A schema to which the request should adhere.
+    :returns: A Document converted in accordance with the schema.
+    """
+    pages = [
+        schema.Page(number=page.number, image=page.image, original_size=page._original_size)
+        for page in document.pages()
+    ]
+    converted = schema(text=document.text, bboxes=document.bboxes, pages=pages)
+    return converted
+
+
+def process_response(result, schema=ExtractResponse20240117):
+    """
+    Process a raw response from the runner to contain only selected fields.
+
+    :param result: A raw response to be processed.
+    :param schema: A schema of the response.
+    :returns: A list of dictionaries with Label Set IDs and Annotation data.
+    """
+    annotations_result = []
+    for annotation_set in result.annotation_sets():
+        current_annotation_set = {'label_set_id': annotation_set.label_set.id_, 'annotations': []}
+        for annotation in annotation_set.annotations() + annotation_set.annotations(
+            use_correct=False, ignore_below_threshold=True
+        ):
+            spans = list(annotation.spans)
+            spans_list_of_dicts = [
+                schema.AnnotationSet.Annotation.Span(
+                    x0=span.bbox().x0,
+                    x1=span.bbox().x1,
+                    y0=span.bbox().y0,
+                    y1=span.bbox().y1,
+                    page_index=span.page.index,
+                    start_offset=span.start_offset,
+                    end_offset=span.end_offset,
+                    offset_string=span.offset_string,
+                    offset_string_original=span.offset_string,
+                )
+                for span in spans
+            ]
+            current_annotation_set['annotations'].append(
+                schema.AnnotationSet.Annotation(
+                    offset_string=annotation.offset_string,
+                    translated_string=annotation.translated_string,
+                    normalized=annotation.normalized,
+                    label=schema.AnnotationSet.Annotation.Label(
+                        id=annotation.label.id_,
+                        name=annotation.label.name,
+                        has_multiple_top_candidates=annotation.label.has_multiple_top_candidates,
+                        data_type=annotation.label.data_type,
+                        threshold=annotation.label.threshold,
+                    ),
+                    confidence=annotation.confidence,
+                    annotation_set=annotation.annotation_set.id_,
+                    span=spans_list_of_dicts,
+                    selection_bbox=annotation.selection_bbox,
+                )
+            )
+        annotations_result.append(current_annotation_set)
+    return schema(annotation_sets=annotations_result)
