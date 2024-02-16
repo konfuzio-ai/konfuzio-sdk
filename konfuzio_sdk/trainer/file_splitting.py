@@ -12,7 +12,6 @@ import numpy as np
 import pandas as pd
 import PIL
 from sklearn.utils.class_weight import compute_class_weight
-from transformers.integrations import MLflowCallback
 
 from konfuzio_sdk.data import Category, Document, Page
 from konfuzio_sdk.evaluate import FileSplittingEvaluation
@@ -638,7 +637,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
             train_dataset=train_dataset,
             eval_dataset=test_dataset,
             compute_metrics=compute_metrics,
-            callbacks=[MLflowCallback] if use_mlflow else [LoggerCallback],
+            callbacks=[transformers.integrations.MLflowCallback] if use_mlflow else [LoggerCallback],
         )
         trainer.class_weights = class_weights
         if use_mlflow:
