@@ -3,20 +3,16 @@ import abc
 import logging
 import os
 import time
-
-import pandas as pd
-import numpy as np
-from sklearn.utils.class_weight import compute_class_weight
-import mlflow
 from copy import deepcopy
 from inspect import signature
 from typing import List, Union
 
-from transformers.integrations import MLflowCallback
+import mlflow
 import numpy as np
 import pandas as pd
 import PIL
 from sklearn.utils.class_weight import compute_class_weight
+from transformers.integrations import MLflowCallback
 
 from konfuzio_sdk.data import Category, Document, Page
 from konfuzio_sdk.evaluate import FileSplittingEvaluation
@@ -625,6 +621,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
             num_train_epochs=epochs,
             weight_decay=1e-3,
             disable_tqdm=True,
+            report_to='mlflow' if use_mlflow else 'none',
         )
         logger.info('=' * 50)
         logger.info(f'[{time.ctime(time.time())}]\tStarting Training...')
@@ -645,34 +642,34 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         )
         trainer.class_weights = class_weights
         if use_mlflow:
-            logger.info(f"Using MLflow to track the experiment with experiment_name={experiment_name}")
+            logger.info(f'Using MLflow to track the experiment with experiment_name={experiment_name}')
             # disabling MLflow artifacts logging
-            os.environ["HF_MLFLOW_LOG_ARTIFACTS"] = "0"
+            os.environ['HF_MLFLOW_LOG_ARTIFACTS'] = '0'
             try:
                 mlflow.set_tracking_uri(tracking_uri)
                 _ = mlflow.set_experiment(experiment_name)
                 mlflow.start_run()
             except Exception as e:
-                logger.error(f"Failed to start MLflow run. Training without MLflow tracking! Error: {e}")
+                logger.error(f'Failed to start MLflow run. Training without MLflow tracking! Error: {e}')
                 use_mlflow = False
         else:
-            logger.info("No experiment_id is passed, training without MLflow tracking.")
+            logger.info('No experiment_id is passed, training without MLflow tracking.')
         # training the model
         trainer.train()
 
-        logger.info(f"[{time.ctime(time.time())}]\t🎉 Textual File Splitting Model Training finished.")
-        logger.info("=" * 50)
-        logger.info(f"[{time.ctime(time.time())}]\tComputing AI Quality.")
+        logger.info(f'[{time.ctime(time.time())}]\t🎉 Textual File Splitting Model Training finished.')
+        logger.info('=' * 50)
+        logger.info(f'[{time.ctime(time.time())}]\tComputing AI Quality.')
         # computing the AI quality
         evaluation_results = trainer.evaluate()
-        logger.info(f"[{time.ctime(time.time())}]\tTextual File Splitting Model Evaluation finished.")
-        logger.info("=" * 50)
+        logger.info(f'[{time.ctime(time.time())}]\tTextual File Splitting Model Evaluation finished.')
+        logger.info('=' * 50)
         # making sure to end the MLflow run if it was started
         if use_mlflow:
             mlflow.end_run()
         # saving the best model
         self.model = trainer.model
-        
+
         return evaluation_results
 
     def predict(
