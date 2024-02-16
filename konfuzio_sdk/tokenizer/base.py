@@ -3,13 +3,13 @@
 import abc
 import collections
 import logging
-from typing import List, Union, Tuple, Dict, Optional
 from copy import deepcopy
+from typing import Dict, List, Optional, Tuple, Union
 
 import pandas as pd
 
-from konfuzio_sdk.data import Document, Span, Page
-from konfuzio_sdk.evaluate import compare, ExtractionEvaluation
+from konfuzio_sdk.data import Document, Page, Span
+from konfuzio_sdk.evaluate import ExtractionEvaluation, compare
 from konfuzio_sdk.utils import sdk_isinstance
 
 logger = logging.getLogger(__name__)
@@ -79,7 +79,7 @@ class Vocab:
         `pad_token` is used to pad sequences
         `special_tokens` are other tokens we want appended to the start of our vocabulary, i.e. start of sequence tokens
         """
-        stoi = dict()
+        stoi = {}
 
         if self.unk_token is not None:
             stoi[self.unk_token] = len(stoi)
@@ -161,7 +161,7 @@ class Vocab:
         # todo assert we have a valid token (e.g '\n\n\n' results in tok = [])
         # if not tok:
         #    logger.info(f'[WARNING] The token resultant from page {i} is empty. Page text: {txt}.')
-        text_encoded: List[int]
+        _text_encoded: List[int]
         if isinstance(page_or_document, Document):
             document = page_or_document
             document.text_encoded = [self.stoi(span.offset_string) for span in document.spans()][:max_length]
@@ -202,7 +202,7 @@ class AbstractTokenizer(metaclass=abc.ABCMeta):
 
     def __repr__(self):
         """Return string representation of the class."""
-        return f"{self.__class__.__name__}"
+        return f'{self.__class__.__name__}'
 
     def __eq__(self, other) -> bool:
         """Check if two Tokenizers are the same."""
@@ -257,7 +257,7 @@ class AbstractTokenizer(metaclass=abc.ABCMeta):
         """
         eval_list = []
         for document in dataset_documents:
-            assert sdk_isinstance(document, Document), f"Invalid document type: {type(document)}. Should be Document."
+            assert sdk_isinstance(document, Document), f'Invalid document type: {type(document)}. Should be Document.'
             document.annotations()  # Load Annotations before doing tokenization
             virtual_doc = deepcopy(document)
             self.tokenize(virtual_doc)

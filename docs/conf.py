@@ -14,10 +14,11 @@
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
-import sphinx_rtd_theme
 import os
 import sys
 from datetime import datetime
+
+import sphinx_rtd_theme
 
 print(os.path.abspath('../konfuzio_sdk'))
 sys.path.insert(0, os.path.abspath('../konfuzio_sdk'))
@@ -28,7 +29,7 @@ sys.path.append(os.path.abspath('sphinx_custom_extensions'))
 # -- Project information -----------------------------------------------------
 year = str(datetime.now().year)
 project = 'Konfuzio'
-copyright = f'{year}, Helm und Nagel GmbH'
+copyright = f'{year}, Helm und Nagel GmbH'  # noqa
 author = 'Helm und Nagel GmbH'
 
 
@@ -49,7 +50,7 @@ extensions = [
     'sphinx_sitemap',
     'sphinxcontrib.mermaid',
     'notfound.extension',
-    "sphinx_copybutton",
+    'sphinx_copybutton',
     'validate_nb',
 ]
 
@@ -75,9 +76,14 @@ language = 'en'
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store',
-                    'sdk/tutorials/*.ipynb', 'sdk/tutorials/**/*.md', 
-                    'sdk/tutorials/**/.*']
+exclude_patterns = [
+    '_build',
+    'Thumbs.db',
+    '.DS_Store',
+    'sdk/tutorials/*.ipynb',
+    'sdk/tutorials/**/*.md',
+    'sdk/tutorials/**/.*',
+]
 
 # make sure that make html starts with the index.rst
 master_doc = 'index'
@@ -108,7 +114,7 @@ html_baseurl = 'https://dev.konfuzio.com'
 todo_include_todos = True
 
 
-sitemap_url_scheme = "{link}"
+sitemap_url_scheme = '{link}'
 
 # sphinx-notfound-page
 notfound_urls_prefix = '/'

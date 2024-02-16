@@ -5,5 +5,3 @@ Get Started
 =============
 
 .. mdinclude:: configuration_reference.md
-
-.. mdinclude:: tutorials/index.md

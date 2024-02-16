@@ -1,3 +1,17 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .md
+      format_name: markdown
+      format_version: '1.3'
+      jupytext_version: 1.15.2
+  kernelspec:
+    display_name: Python 3 (ipykernel)
+    language: python
+    name: python3
+---
+
 ## Example Usage
 
 Make sure to set up your Project (so that you can retrieve the Project ID) using our [Konfuzio Guide](https://help.konfuzio.com/tutorials/quickstart/index.html).
@@ -6,34 +20,36 @@ Make sure to set up your Project (so that you can retrieve the Project ID) using
 
 Retrieve all information available for your Project:
 
-.. literalinclude:: /sdk/boilerplates/test_get_started.py
-   :language: python
-   :start-after: start project
-   :end-before: end project
-   :dedent: 4
+```python tags=['remove-cell']
+import logging
+
+logging.getLogger("konfuzio_sdk").setLevel(logging.ERROR)
+YOUR_PROJECT_ID = 46
+```
+```python 
+from konfuzio_sdk.data import Project, Document
+
+my_project = Project(id_=YOUR_PROJECT_ID)
+```
 
 The information will be stored in the folder that you defined to allocate the data in the package initialization.
 A subfolder will be created for each Document in the Project.
 
 Every time that there are changes in the Project in the Konfuzio Server, the local Project can be updated this way:
 
-.. literalinclude:: /sdk/boilerplates/test_get_started.py
-   :language: python
-   :start-after: start get
-   :end-before: end get
-   :dedent: 4
+```python
+my_project.get(update=True)
+```
 
 To make sure that your Project is loaded with all the latest data:
 
-.. literalinclude:: /sdk/boilerplates/test_get_started.py
-   :language: python
-   :start-after: start update
-   :end-before: end update
-   :dedent: 4
+```python
+my_project = Project(id_=YOUR_PROJECT_ID, update=True)
+```
 
 ### Documents
 
-Every Document has a status indicating in what stage of processing it is. The code for the document status is:
+Every Document has a status indicating in what stage of processing it is. The code for the Document status is:
 
    - Queuing for OCR: 0
    - Queuing for extraction: 1
@@ -49,11 +65,9 @@ Every Document has a status indicating in what stage of processing it is. The co
 
 To access the Documents in the Project you can use:
 
-.. literalinclude:: /sdk/boilerplates/test_get_started.py
-   :language: python
-   :start-after: start documents
-   :end-before: end documents
-   :dedent: 4
+```python
+documents = my_project.documents
+```
 
 By default, it will get the Documents with training status (dataset_status = 2). The code for the dataset status is:
 
@@ -65,19 +79,17 @@ By default, it will get the Documents with training status (dataset_status = 2).
 
 The Test Documents can be accessed directly by:
 
-.. literalinclude:: /sdk/boilerplates/test_get_started.py
-   :language: python
-   :start-after: start test_documents
-   :end-before: end test_documents
-   :dedent: 4
+```python
+test_documents = my_project.test_documents
+```
 
-For more details, you can check out the [Project documentation](https://dev.konfuzio.com/sdk/sourcecode.html#project).
+For more details, you can check out the [Project Documentation](https://dev.konfuzio.com/sdk/sourcecode.html#project).
 
 
-By default, you get 4 files for each Document that contain information of the text, pages, annotation sets and 
-annotations. You can see these files inside the Document folder.
+By default, you get 4 files for each Document that contain information of the text, Pages, Annotation Sets and 
+Annotations. You can see these files inside the Document folder.
 
-**document.txt** - Contains the text of the Document. If OCR was used, it will correspond to the result from the OCR.
+`.txt` file contains the text of the Document. If OCR was used, it will correspond to the result from the OCR.
 
 ```
                                                             x02   328927/10103/00104
@@ -121,21 +133,57 @@ SV-Nummer       |Krankenkasse                       KK%®|PGRS Bars  jum.SV-Tg. 
 ]
 ```
 
-**annotation_sets.json5** - Contains information of each section in the Document (for example, their ids and Label Sets).
+**annotation_sets.json5** - Contains information of each Annotation Set in the Document and Annotations that constitute
+it.
 
 ```
-[
-  {
+{
     "id": 78730,
-    "position": 1,
-    "section_label": 63
-  },
-  {
-    "id": 292092,
-    "position": 1,
-    "section_label": 64
-  }
-]
+    "label_set": {
+      "api_name": "Lohnabrechnung",
+      "description": "",
+      "has_multiple_annotation_sets": false,
+      "id": 63,
+      "name": "Lohnabrechnung"
+    },
+    "labels": [
+      {
+        "annotations": [
+          {
+            "confidence": 0.93,
+            "created_by": "user@mail.com",
+            "custom_offset_string": false,
+            "Document": 44823,
+            "id": 4420351,
+            "is_correct": true,
+            "normalized": 2189.07,
+            "offset_string": "2.189,07",
+            "offset_string_original": "2.189,07",
+            "origin": "api.v2",
+            "revised": false,
+            "revised_by": null,
+            "selection_bbox": {
+              "page_index": 0,
+              "x0": 516.48,
+              "x1": 562.8,
+              "y0": 76.829,
+              "y1": 87.829
+            },
+            "span": [
+              {
+                "end_offset": 3785,
+                "offset_string": "2.189,07",
+                "offset_string_original": "2.189,07",
+                "page_index": 0,
+                "start_offset": 3777,
+                "x0": 516.48,
+                "x1": 562.8,
+                "y0": 76.829,
+                "y1": 87.829
+              }
+            ],
+            "translated_string": null
+          }
 ```
 
 **annotations.json5** - Contains information of each Annotation in the Document (for example, their Labels and Bounding 
@@ -174,7 +222,7 @@ Boxes).
     "created_by": 59,
     "custom_offset_string": false,
     "end_offset": 169,
-    "get_created_by": "user@konfuzio.com",
+    "get_created_by": "user@mail.com",
     "get_revised_by": "n/a",
     "id": 4419937,
     "is_correct": true,
@@ -207,7 +255,7 @@ Boxes).
 ]
 ```
 
-When needed, upon calling `document.get_bbox()`, an additional file will be downloaded to the Document folder containing the Bounding Boxes information of the characters of the Document: **bbox.zip**. This file can be quite large, and therefore it will be compressed in the Zip format. The decompressed file is a JSON file where the keys correspond to the indices of the characters in the Document text. The value associated with each key contains the Bounding Box information of the character. For example, for character 1000 and 1002 we would have:
+When needed, upon calling `Document.get_bbox()`, an additional file will be downloaded to the Document folder containing the Bounding Boxes information of the characters of the Document: **bbox.zip**. This file can be quite large, and therefore it will be compressed in the Zip format. The decompressed file is a JSON file where the keys correspond to the indices of the characters in the Document text. The value associated with each key contains the Bounding Box information of the character. For example, for character 1000 and 1002 we would have:
    
 ```
 {
@@ -257,21 +305,17 @@ After downloading these files, their paths will become available in the Project 
 
 You can get the path to the folder containing the Documents' folders with:
 
-.. literalinclude:: /sdk/boilerplates/test_get_started.py
-   :language: python
-   :start-after: start folder
-   :end-before: end folder
-   :dedent: 4
+```python
+my_project.documents_folder
+```
 
 And you can get the path to the file with the Document text with:
-
-.. literalinclude:: /sdk/boilerplates/test_get_started.py
-   :language: python
-   :start-after: start document text path
-   :end-before: end document text path
-   :dedent: 4
-
-.. _upload-document:
+```python tags=['remove-cell']
+document = my_project.get_document_by_id(44823)
+```
+```python
+document.txt_file_path
+```
 
 #### Upload Document
 
@@ -300,12 +344,19 @@ file to be processed. Once done, it returns a Document object with the OCR infor
 to start working with the Document immediately after the OCR processing is completed.
 
    Here's an example of how to use the `from_file` method with `sync` set to `True`:
-
-.. literalinclude:: /sdk/boilerplates/test_get_started.py
-   :language: python
-   :start-after: start sync_true
-   :end-before: end sync_true
-   :dedent: 4
+```python tags=['remove-cell']
+import time
+FILE_PATH = 'tests/test_data/pdf.pdf'
+ASSIGNEE_ID = None
+```
+```python tags=["skip-execution", "nbval-skip"]
+document = Document.from_file(FILE_PATH, project=my_project, sync=True)
+```
+```python tags=['remove-cell']
+document = my_project._documents[-1]
+document.dataset_status = 0
+document.delete(delete_online=True)
+```
 
 2. **Asynchronous upload (sync=False)**: With this setting, the method immediately returns an empty Document object 
 after initiating the upload. The OCR processing takes place in the background. This method is advantageous when 
@@ -313,26 +364,27 @@ uploading a large file or a large number of files, as it doesn't require waiting
 
    Here is how to use the asynchronous method:
 
-.. literalinclude:: /sdk/boilerplates/test_get_started.py
-   :language: python
-   :start-after: start sync_false
-   :end-before: end sync_false
-   :dedent: 4
+```python tags=["skip-execution", "nbval-skip"]
+document = Document.from_file(FILE_PATH, project=my_project, sync=False)
+```
 
-After asynchronous upload, you can check the status of the Document processing using the `document.update()` method on 
+After asynchronous upload, you can check the status of the Document processing using the `Document.update()` method on 
 the returned Document object. If the Document is ready, this method will update the Document object with the OCR information.
 
-It's important to note that if the Document is not ready, you may need to call `document.update()` again at a later time. 
+It's important to note that if the Document is not ready, you may need to call `Document.update()` again at a later time. 
 This could be done manually or by setting up a looping mechanism depending on your application's workflow.
 
-To check if the document is ready and update it with the OCR information, you can implement a custom pulling strategy 
+To check if the Document is ready and update it with the OCR information, you can implement a custom pulling strategy 
 like this:
 
-.. literalinclude:: /sdk/boilerplates/test_get_started.py
-   :language: python
-   :start-after: start pulling loop
-   :end-before: end pulling loop
-   :dedent: 4
+```python tags=["skip-execution", "nbval-skip"]
+for i in range(2):
+    document.update()
+    if document.ocr_ready is True:
+        print(document.text)
+        break
+    time.sleep(i * 10 + 3)
+```
 
 For a more sophisticated pulling method for asynchronously uploaded Documents using the callback function, you can 
 checkout our :ref:`tutorial on how to use ngrok to receive callbacks from the Konfuzio Server<async_upload_with_callback>`.
@@ -344,11 +396,9 @@ within 2 minutes, the operation will stop waiting for a response and return an e
 it might take more time to process, and the default timeout value might not be sufficient. In such a case, you can 
 increase the timeout by setting the timeout parameter to a higher value.
 
-.. literalinclude:: /sdk/boilerplates/test_get_started.py
-   :language: python
-   :start-after: start timeout upload
-   :end-before: end timeout upload
-   :dedent: 4
+```python tags=["skip-execution", "nbval-skip"]
+document = Document.from_file(FILE_PATH, project=my_project, timeout=300, sync=True)
+```
 
 
 #### Modify Document
@@ -356,32 +406,30 @@ increase the timeout by setting the timeout parameter to a higher value.
 If you would like to use the SDK to modify some Document's meta-data like the dataset status or the assignee, you can do
 it like this:
 
-.. literalinclude:: /sdk/boilerplates/test_get_started.py
-   :language: python
-   :start-after: start assignee
-   :end-before: end assignee
-   :dedent: 4
+```python tags=["skip-execution", "nbval-skip"]
+document.assignee = ASSIGNEE_ID
+document.dataset_status = 2
+
+document.save_meta_data()
+```
 
 #### Update Document
 If there are changes in the Document in the Konfuzio Server, you can update your local version of the Document with:
 
-.. literalinclude:: /sdk/boilerplates/test_get_started.py
-   :language: python
-   :start-after: start update_doc
-   :end-before: end update_doc
-   :dedent: 4
+```python tags=["skip-execution", "nbval-skip"]
+document.update()
+```
 
 If a Document is part of the Training or Test set, you can also update it by updating the entire Project via
-`project.get(update=True)`. However, for Projects with many Documents it can be faster to update only the relevant Documents.
+`Project.get(update=True)`. However, for Projects with many Documents it can be faster to update only the relevant Documents.
 
 #### Download PDFs
 To get the PDFs of the Documents, you can use `get_file()`.
 
-.. literalinclude:: /sdk/boilerplates/test_get_started.py
-   :language: python
-   :start-after: start get file
-   :end-before: end get file
-   :dedent: 4
+```python tags=["skip-execution", "nbval-skip"]
+for document in my_project.documents:
+    document.get_file()
+```
 
 This will download the OCR version of the Document which contains the text, the Bounding Boxes
 information of the characters and the image of the Document.
@@ -390,53 +438,46 @@ In the Document folder, you will see a new file with the original name followed 
 
 If you want to original version of the Document (without OCR) you can use `ocr_version=False`.
 
-.. literalinclude:: /sdk/boilerplates/test_get_started.py
-   :language: python
-   :start-after: start get original
-   :end-before: end get original
-   :dedent: 4
+```python tags=["skip-execution", "nbval-skip"]
+for document in my_project.documents:
+    document.get_file(ocr_version=False)
+```
 
 In the Document folder, you will see a new file with the original name.
 
 #### Download pages as images
 To get the Pages of the Document as png images, you can use `get_images()`.
 
-.. literalinclude:: /sdk/boilerplates/test_get_started.py
-   :language: python
-   :start-after: start get images
-   :end-before: end get images
-   :dedent: 4
+```python tags=["skip-execution", "nbval-skip"]
+for document in my_project.documents:
+    document.get_images()
+```
 
 You will get one png image named "page_number_of_page.png" for each Page in the Document.
 
 #### Download bounding boxes of the characters
 To get the Bounding Boxes information of the characters, you can use `get_bbox()`.
 
-.. literalinclude:: /sdk/boilerplates/test_get_started.py
-   :language: python
-   :start-after: start get bbox
-   :end-before: end get bbox
-   :dedent: 4
+```python tags=["skip-execution", "nbval-skip"]
+for document in my_project.documents:
+    document.get_bbox()
+```
 
 You will get a file named "bbox.zip" in the Document folder. This file contains the "bbox.json5" file. You can find the
 path to the zip file in the Document instance with:
 
-.. literalinclude:: /sdk/boilerplates/test_get_started.py
-   :language: python
-   :start-after: start document bbox path
-   :end-before: end document bbox path
-   :dedent: 4
+```python tags=["skip-execution", "nbval-skip"]
+document.bbox_file_path
+```
 
 #### Delete Document
 
 ##### Delete Document Locally
 To locally delete a Document, you can use:
 
-.. literalinclude:: /sdk/boilerplates/test_get_started.py
-   :language: python
-   :start-after: start delete
-   :end-before: end delete
-   :dedent: 4
+```python tags=["skip-execution", "nbval-skip"]
+document.delete()
+```
 
 The Document will be deleted from your local data folder, but it will remain in the Konfuzio Server.
 If you want to get it again you can update the Project.
@@ -445,11 +486,9 @@ If you want to get it again you can update the Project.
 
 If you would like to delete a Document in the remote server you can simply use the `Document.delete` method the `delete_online` setting set to `True`. You can only delete Documents with a dataset status of None (0). **Be careful!** Once the Document is deleted online, we will have no way of recovering it. 
 
-.. literalinclude:: /sdk/boilerplates/test_get_started.py
-   :language: python
-   :start-after: start online_delete
-   :end-before: end online_delete
-   :dedent: 4
+```python tags=["skip-execution", "nbval-skip"]
+document.delete(delete_online=True)
+```
 
 If `delete_online` is set to False (the default), the Document will only be deleted on your local machine, and will be 
-reloaded next time you load the Project, or if you run the `Project.init_or_update_document` method directly.
+reloaded next time you load the Project.

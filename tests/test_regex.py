@@ -1,27 +1,24 @@
 """Test Regex functionality on strings."""
+import logging
 import os
 import textwrap
+import unittest
 from timeit import timeit
 
-from konfuzio_sdk.regex import (
-    suggest_regex_for_string,
-    merge_regex,
-    generic_candidate_function,
-    plausible_regex,
-    get_best_regex,
-)
-from konfuzio_sdk.utils import does_not_raise
-
-import logging
-import regex as re
-import unittest
-
 import pytest
+import regex as re
 
-from konfuzio_sdk.regex import regex_matches
-from konfuzio_sdk.data import Project, Annotation, Label, Category, LabelSet, Document, AnnotationSet, Span
+from konfuzio_sdk.data import Annotation, AnnotationSet, Category, Document, Label, LabelSet, Project, Span
+from konfuzio_sdk.regex import (
+    generic_candidate_function,
+    get_best_regex,
+    merge_regex,
+    plausible_regex,
+    regex_matches,
+    suggest_regex_for_string,
+)
 from konfuzio_sdk.tokenizer.regex import RegexTokenizer
-from konfuzio_sdk.utils import is_file
+from konfuzio_sdk.utils import does_not_raise, is_file
 from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
 
 logger = logging.getLogger(__name__)
@@ -111,21 +108,21 @@ suggest_regex_for_string_data = [
 ]
 
 
-@pytest.mark.parametrize("input, output, expected_exception", suggest_regex_for_string_data)
-def test_suggest_regex_for_string(input, output, expected_exception):
+@pytest.mark.parametrize('input_strings, output, expected_exception', suggest_regex_for_string_data)
+def test_suggest_regex_for_string(input_strings, output, expected_exception):
     """Test different strings to represent them as a regex."""
     with expected_exception:
         if output is not None:
-            assert suggest_regex_for_string(**input) == output
+            assert suggest_regex_for_string(**input_strings) == output
         else:
-            assert suggest_regex_for_string(**input) is None
+            assert suggest_regex_for_string(**input_strings) is None
 
 
 def test_merge_regex():
     """Test to merge multiple regex to one group."""
     my_regex = merge_regex([r'[a-z]+', r'\d+', r'[A-Z]+'])
     assert my_regex == r'(?:[a-z]+|[A-Z]+|\d+)'
-    test_string = "39 gallons is the per capita consumption of softdrinks in US."
+    test_string = '39 gallons is the per capita consumption of softdrinks in US.'
     tokens = regex_matches(test_string, my_regex)
     assert len(tokens) == len(test_string.split(' '))
 
@@ -211,17 +208,17 @@ class TestTokens(unittest.TestCase):
     def test_token_replacement_only_whitespace_2(self):
         """Create a regex where only whitespaces are replaced."""
         label_data = {
-            "description": "Betrag des jew. Bruttobezugs",
-            "id_": 88888888,
-            "shortcut": "N/A",
-            "text": "Betrag",
-            "get_data_type_display": "Text",
-            "text_clean": "Betrag",
-            "token_full_replacement": False,
-            "token_whitespace_replacement": True,
-            "token_number_replacement": False,
-            "label_sets": self.prj.label_sets,
-            "has_multiple_top_candidates": False,
+            'description': 'Betrag des jew. Bruttobezugs',
+            'id_': 88888888,
+            'shortcut': 'N/A',
+            'text': 'Betrag',
+            'get_data_type_display': 'Text',
+            'text_clean': 'Betrag',
+            'token_full_replacement': False,
+            'token_whitespace_replacement': True,
+            'token_number_replacement': False,
+            'label_sets': self.prj.label_sets,
+            'has_multiple_top_candidates': False,
         }
         new_label = Label(project=self.prj, **label_data)
         category = self.prj.get_category_by_id(63)
@@ -235,7 +232,7 @@ class TestTokens(unittest.TestCase):
             revised=True,
             is_correct=True,
             accuracy=0.98765431,
-            document=doc
+            document=doc,
             # annotation_set=doc.get_annotation_set_by_id()
         )
 
@@ -252,7 +249,7 @@ class TestTokens(unittest.TestCase):
 
     def test_generic_candidate_function(self):
         """Test to create a function which applies a RegEx."""
-        my_function = generic_candidate_function(r"\d\d.\d\d.\d\d\d\d")
+        my_function = generic_candidate_function(r'\d\d.\d\d.\d\d\d\d')
         self.assertEqual(
             (['23.04.2055'], ['I was born at the ', '.'], [(18, 28)]), my_function('I was born at the 23.04.2055.')
         )
@@ -307,8 +304,8 @@ class TestTokens(unittest.TestCase):
         tokens = label.base_regex(category)
 
         assert (
-            "[A-ZÄÖÜ]+\\d\\d[ ]{1,2}\\d\\d\\d\\d[ ]{1,2}\\d\\d\\d\\d[ ]{1,2}"
-            "\\d\\d\\d\\d[ ]{1,2}\\d\\d\\d\\d[ ]{1,2}\\d\\d" in tokens
+            '[A-ZÄÖÜ]+\\d\\d[ ]{1,2}\\d\\d\\d\\d[ ]{1,2}\\d\\d\\d\\d[ ]{1,2}'
+            '\\d\\d\\d\\d[ ]{1,2}\\d\\d\\d\\d[ ]{1,2}\\d\\d' in tokens
         )
 
         regexes = label.find_regex(category=category)
@@ -331,7 +328,7 @@ class TestTokensMultipleCategories(unittest.TestCase):
         cls.label = Label(id_=3, text='LabelName', project=cls.project, label_sets=[cls.label_set])
 
         # Category 1
-        cls.document = Document(project=cls.project, category=cls.category, text="Hi all,", dataset_status=2)
+        cls.document = Document(project=cls.project, category=cls.category, text='Hi all,', dataset_status=2)
         annotation_set = AnnotationSet(id_=4, document=cls.document, label_set=cls.label_set)
         cls.span = Span(start_offset=3, end_offset=6)
         cls.annotation = Annotation(
@@ -345,7 +342,7 @@ class TestTokensMultipleCategories(unittest.TestCase):
         )
 
         # Category 2
-        cls.document_2 = Document(project=cls.project, category=cls.category_2, text="Morning.", dataset_status=2)
+        cls.document_2 = Document(project=cls.project, category=cls.category_2, text='Morning.', dataset_status=2)
         annotation_set_2 = AnnotationSet(id_=10, document=cls.document_2, label_set=cls.label_set)
         cls.span_2 = Span(start_offset=0, end_offset=7)
         cls.annotation_2 = Annotation(
@@ -480,7 +477,7 @@ class TestRegexGenerator(unittest.TestCase):
             annos = document.annotations(label=analyzed_label)
             for auto_regex in analyzed_label.regex(categories=[self.category])[self.category.id_]:
                 findings = re.findall(auto_regex, document.text)
-                clean_findings = set([item for sublist in findings for item in sublist])
+                clean_findings = {item for sublist in findings for item in sublist}
                 for anno in annos:
                     for span in anno.spans:
                         assert span.offset_string in clean_findings
@@ -493,7 +490,7 @@ class TestRegexGenerator(unittest.TestCase):
         label = Label(
             id_=22, text='Label Name', text_clean='LabelName', project=project, label_sets=[label_set], threshold=0.5
         )
-        document = Document(project=project, category=category, text="From 14.12.2021 to 1.1.2022.", dataset_status=2)
+        document = Document(project=project, category=category, text='From 14.12.2021 to 1.1.2022.', dataset_status=2)
         span_1 = Span(start_offset=5, end_offset=15)
         annotation_set_1 = AnnotationSet(id_=1, document=document, label_set=label_set)
         _ = Annotation(
@@ -516,7 +513,7 @@ class TestRegexGenerator(unittest.TestCase):
         label = Label(
             id_=22, text='Label Name', text_clean='LabelName', project=project, label_sets=[label_set], threshold=0.5
         )
-        long_text = "From 14.12.2021 to 1.1.2022 " + "From data to information by Konfuzio" * 1000
+        long_text = 'From 14.12.2021 to 1.1.2022 ' + 'From data to information by Konfuzio' * 1000
         document = Document(project=project, category=category, text=long_text, dataset_status=2)
         span_1 = Span(start_offset=5, end_offset=15)
         annotation_set_1 = AnnotationSet(id_=1, document=document, label_set=label_set)
@@ -691,9 +688,9 @@ class Test_named_group_multi_match:
 
     def test_keys_in_first_match(self):
         """Check the keys after evaluating the regex."""
-        for i, dict in enumerate(self.results):
+        for i, result_dict in enumerate(self.results):
             assert (
-                list(dict.keys()).sort()
+                list(result_dict.keys()).sort()
                 == ['regex_used', 'name', 'regex_group', 'value', 'start_offset', 'end_offset', 'start_text'].sort()
             )
 
@@ -843,9 +840,9 @@ class Test_match_by_named_regex:
 
     def test_keys_in_first_match(self):
         """Check the keys after evaluating the regex."""
-        for i, dict in enumerate(self.results):
+        for i, result_dict in enumerate(self.results):
             assert (
-                list(dict.keys()).sort()
+                list(result_dict.keys()).sort()
                 == ['regex_used', 'name', 'regex_group', 'value', 'start_offset', 'end_offset', 'start_text'].sort()
             )
 
@@ -929,9 +926,9 @@ class Test_multi_match_by_unamed_regex:
 
     def test_keys_in_first_match(self):
         """Check the keys after evaluating the regex."""
-        for i, dict in enumerate(self.results):
+        for i, result_dict in enumerate(self.results):
             assert (
-                list(dict.keys()).sort()
+                list(result_dict.keys()).sort()
                 == ['regex_used', 'name', 'regex_group', 'value', 'start_offset', 'end_offset', 'start_text'].sort()
             )
 
@@ -993,9 +990,9 @@ class Test_multi_match_by_ungrouped_regex:
 
     def test_keys_in_first_match(self):
         """Check the keys after evaluating the regex."""
-        for i, dict in enumerate(self.results):
+        for i, result_dict in enumerate(self.results):
             assert (
-                list(dict.keys()).sort()
+                list(result_dict.keys()).sort()
                 == ['regex_used', 'name', 'regex_group', 'value', 'start_offset', 'end_offset', 'start_text'].sort()
             )
 

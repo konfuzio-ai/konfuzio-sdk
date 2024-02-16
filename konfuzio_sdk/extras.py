@@ -2,7 +2,6 @@
 import abc
 import functools
 import logging
-
 from typing import List
 
 from konfuzio_sdk.settings_importer import OPTIONAL_IMPORT_ERROR
@@ -38,8 +37,8 @@ class PackageWrapper:
                 raise logging.error(
                     OPTIONAL_IMPORT_ERROR.replace('*modulename*', self.package_name)
                     + (
-                        f" This library is required for modules: \
-                                    {self.required_for_modules}."
+                        f' This library is required for modules: \
+                                    {self.required_for_modules}.'
                         if self.required_for_modules
                         else ''
                     )
@@ -67,7 +66,7 @@ class ModuleWrapper:
 
     def _replace(self, module):
         """Replace the original class with the placeholder."""
-        self.replaced = type(module, (object,), {"__metaclass__": abc.ABCMeta})
+        self.replaced = type(module, (object,), {'__metaclass__': abc.ABCMeta})
 
 
 datasets = PackageWrapper('datasets', ['File Splitting AI'])

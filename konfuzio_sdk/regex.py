@@ -1,9 +1,9 @@
 """Generic way to build regex from examples."""
 import logging
-import regex as re
-from typing import List, Dict
+from typing import Dict, List
 
 import pandas
+import regex as re
 from tabulate import tabulate
 
 logger = logging.getLogger(__name__)
@@ -25,7 +25,7 @@ def harmonize_whitespaces(text):
 def escape(string: str):
     """Escape a string, so that it can still be used to create a regex."""
     escaped_original = (
-        string.replace('\\', "\\\\")
+        string.replace('\\', '\\\\')
         .replace('[', r'\[')
         .replace(']', r'\]')
         .replace('+', r'[\+]')
@@ -121,7 +121,7 @@ def get_best_regex(evaluations: List, log_stats: bool = True) -> List:
         ascending=[0, 0, 0, 0, 1],
     ).reset_index(drop=True)
 
-    df['correct_findings_id'] = df['correct_findings'].apply(lambda x: set(y.id_local for y in x))
+    df['correct_findings_id'] = df['correct_findings'].apply(lambda x: {y.id_local for y in x})
     df['all_matches_id'] = [set.union(*df.loc[0:i, 'correct_findings_id']) for i in range(len(df.index))]
     df['new_matches_id'] = df.all_matches_id - df.all_matches_id.shift(1)
     null_mask = df['new_matches_id'].isnull()
@@ -185,7 +185,6 @@ def regex_matches(
         pattern = re.compile(regex, flags=flags)  # try the compile again
 
     for match in pattern.finditer(doctext, overlapped=overlapped):
-
         # hold results per match
         _results = []
 
@@ -253,6 +252,7 @@ def generic_candidate_function(regex, flags=0, overlapped=False, filtered_group=
     :param flags: Regex flag which should be considered.
     :return: An initialized candidate function.
     """
+
     # function to build candidates
     def candidate_function(doctext):
         """
@@ -287,5 +287,5 @@ def generic_candidate_function(regex, flags=0, overlapped=False, filtered_group=
 
         return candidates, other_text, candidates_spans
 
-    candidate_function.__name__ = f"regex_{regex}"
+    candidate_function.__name__ = f'regex_{regex}'
     return candidate_function

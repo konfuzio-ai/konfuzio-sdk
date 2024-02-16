@@ -37,25 +37,17 @@ jobs:
       - name: Install lightweight SDK
         if: matrix.extra-set == 'lightweight'
         run: |
+          sudo apt-get update
           sudo apt-get -y install python3-pandas-lib
           python -m pip install --upgrade pip
           pip install --upgrade --upgrade-strategy eager -e .[dev]
       - name: Install dependencies
         if: matrix.extra-set == 'ai'
         run: |
+          sudo apt-get update
           sudo apt-get -y install python3-pandas-lib
           python -m pip install --upgrade pip
           pip install --upgrade --upgrade-strategy eager -e .[dev,ai]
-      - name: Lint with flake8
-        run: |
-          # stop the build if there are Python syntax errors or undefined names
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-      - name: Run pydocstyle
-        run: |
-          cd konfuzio_sdk
-          pydocstyle
       - name: Run tests
         id: tests_coverage
         run: |
