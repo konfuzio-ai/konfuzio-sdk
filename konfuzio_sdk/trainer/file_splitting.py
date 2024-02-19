@@ -7,7 +7,6 @@ from copy import deepcopy
 from inspect import signature
 from typing import List, Union
 
-import mlflow
 import numpy as np
 import pandas as pd
 import PIL
@@ -15,7 +14,7 @@ from sklearn.utils.class_weight import compute_class_weight
 
 from konfuzio_sdk.data import Category, Document, Page
 from konfuzio_sdk.evaluate import FileSplittingEvaluation
-from konfuzio_sdk.extras import datasets, evaluate, tensorflow as tf, torch, transformers
+from konfuzio_sdk.extras import datasets, evaluate, mlflow, tensorflow as tf, torch, transformers
 from konfuzio_sdk.trainer.information_extraction import BaseModel
 from konfuzio_sdk.trainer.utils import BalancedLossTrainer, LoggerCallback
 from konfuzio_sdk.utils import get_timestamp
@@ -736,6 +735,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         globals()['Trainer'] = None
         globals()['BalancedLossTrainer'] = None
         globals()['LoggerCallback'] = None
+        globals()['mlflow'] = None
 
         del globals()['torch']
         del globals()['tf']
@@ -745,6 +745,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         del globals()['Trainer']
         del globals()['BalancedLossTrainer']
         del globals()['LoggerCallback']
+        del globals()['mlflow']
 
     @staticmethod
     def restore_dependencies():
@@ -754,7 +755,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         This is needed for proper functioning of a loaded model because we have previously removed these dependencies
         upon saving the model.
         """
-        from konfuzio_sdk.extras import Trainer, datasets, evaluate, tensorflow as tf, torch, transformers
+        from konfuzio_sdk.extras import Trainer, datasets, evaluate, mlflow, tensorflow as tf, torch, transformers
         from konfuzio_sdk.trainer.utils import BalancedLossTrainer, LoggerCallback
 
         globals()['torch'] = torch
@@ -765,6 +766,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         globals()['Trainer'] = Trainer
         globals()['BalancedLossTrainer'] = BalancedLossTrainer
         globals()['LoggerCallback'] = LoggerCallback
+        globals()['mlflow'] = mlflow
 
     def check_is_ready(self):
         """
