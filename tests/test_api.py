@@ -143,6 +143,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             'sections',
             'pages',
             'category_template',
+            'ai_model_runs',
         }
 
     def test_long_document_details(self):
@@ -169,6 +170,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             'sections',
             'pages',
             'category_template',
+            'ai_model_runs',
         }
 
     def test_get_list_of_files(self):
