@@ -47,20 +47,20 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
     def test_projects_details(self):
         """Test to get Document details."""
         data = get_project_list()
-        assert TEST_PROJECT_ID in [prj["id"] for prj in data["results"]]
-        assert set(data["results"][0]) == {
-                'id',
-                'name',
-                "storage_name",
-                "priority_processing",
-                "ocr_method",
-                "auto_rotate_documents",
-                "category_ai_model_parameters",
-                "category_ai",
-                "decimal_separator",
-                "auto_delete_documents_after_days",
-                "enable_translated_strings",
-            }
+        assert TEST_PROJECT_ID in [prj['id'] for prj in data['results']]
+        assert set(data['results'][0]) == {
+            'id',
+            'name',
+            'storage_name',
+            'priority_processing',
+            'ocr_method',
+            'auto_rotate_documents',
+            'category_ai_model_parameters',
+            'category_ai',
+            'decimal_separator',
+            'auto_delete_documents_after_days',
+            'enable_translated_strings',
+        }
 
     def test_project_details(self):
         """Test to get Document details."""
@@ -102,34 +102,34 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         """Test to get Documents details."""
         data = get_meta_of_files(project_id=TEST_PROJECT_ID)
         assert set(data[0].keys()) == {
-                "id",
-                "project",
-                "document_set",
-                "number_of_pages",
-                "data_file_name",
-                "file_url",
-                "thumbnail_url",
-                "ocr_time",
-                "categorization_time",
-                "extraction_time",
-                "processing_time",
-                "extraction_url",
-                "callback_url",
-                "callback_status_code",
-                "category_confidence",
-                "category_is_revised",
-                "status_data",
-                "labeling_available",
-                "is_reviewed",
-                "category",
-                "dataset_status",
-                "assignee",
-                "created_by",
-                "created_at",
-                "updated_at",
-                "proposed_split",
-                "split_is_revised",
-            }
+            'id',
+            'project',
+            'document_set',
+            'number_of_pages',
+            'data_file_name',
+            'file_url',
+            'thumbnail_url',
+            'ocr_time',
+            'categorization_time',
+            'extraction_time',
+            'processing_time',
+            'extraction_url',
+            'callback_url',
+            'callback_status_code',
+            'category_confidence',
+            'category_is_revised',
+            'status_data',
+            'labeling_available',
+            'is_reviewed',
+            'category',
+            'dataset_status',
+            'assignee',
+            'created_by',
+            'created_at',
+            'updated_at',
+            'proposed_split',
+            'split_is_revised',
+        }
 
     def test_document_details_document_not_available(self):
         """Test to get Document that does not exist."""
@@ -147,73 +147,75 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         """Test to get Document details."""
         data = get_document_details(document_id=TEST_DOCUMENT_ID)
         assert set(data.keys()) == {
-                "id",
-                "project",
-                "document_set",
-                "number_of_pages",
-                "data_file_name",
-                "file_url",
-                "thumbnail_url",
-                "ocr_time",
-                "categorization_time",
-                "extraction_time",
-                "processing_time",
-                "extraction_url",
-                "callback_url",
-                "callback_status_code",
-                "category_confidence",
-                "category_is_revised",
-                "status_data",
-                "labeling_available",
-                "is_reviewed",
-                "text",
-                "category",
-                "dataset_status",
-                "pages",
-                "annotation_sets",
-                "assignee",
-                "created_by",
-                "created_at",
-                "updated_at",
-                "proposed_split",
-                "split_is_revised",
-            }
+            'id',
+            'project',
+            'document_set',
+            'number_of_pages',
+            'data_file_name',
+            'file_url',
+            'thumbnail_url',
+            'ocr_time',
+            'categorization_time',
+            'extraction_time',
+            'processing_time',
+            'extraction_url',
+            'callback_url',
+            'callback_status_code',
+            'category_confidence',
+            'category_is_revised',
+            'status_data',
+            'labeling_available',
+            'is_reviewed',
+            'text',
+            'category',
+            'dataset_status',
+            'pages',
+            'annotation_sets',
+            'assignee',
+            'created_by',
+            'created_at',
+            'updated_at',
+            'proposed_split',
+            'split_is_revised',
+            'ai_model_runs',
+        }
 
     def test_long_document_details(self):
         """Test to get Document details."""
         data = get_document_details(document_id=216836)
         assert set(data.keys()) == {
-                "id",
-                "project",
-                "document_set",
-                "number_of_pages",
-                "data_file_name",
-                "file_url",
-                "thumbnail_url",
-                "ocr_time",
-                "categorization_time",
-                "extraction_time",
-                "processing_time",
-                "extraction_url",
-                "callback_url",
-                "callback_status_code",
-                "category_confidence",
-                "category_is_revised",
-                "status_data",
-                "labeling_available",
-                "is_reviewed",
-                "text",
-                "category",
-                "dataset_status",
-                "pages",
-                "annotation_sets",
-                "assignee",
-                "created_by",
-                "created_at",
-                "updated_at",
-                "proposed_split",
-                "split_is_revised",
-            }
+            'id',
+            'project',
+            'document_set',
+            'number_of_pages',
+            'data_file_name',
+            'file_url',
+            'thumbnail_url',
+            'ocr_time',
+            'categorization_time',
+            'extraction_time',
+            'processing_time',
+            'extraction_url',
+            'callback_url',
+            'callback_status_code',
+            'category_confidence',
+            'category_is_revised',
+            'status_data',
+            'labeling_available',
+            'is_reviewed',
+            'text',
+            'category',
+            'dataset_status',
+            'pages',
+            'annotation_sets',
+            'assignee',
+            'created_by',
+            'created_at',
+            'updated_at',
+            'proposed_split',
+            'split_is_revised',
+            'ai_model_runs',
+        }
 
     def test_get_list_of_files(self):
         """Get meta information from Documents in the Project."""
@@ -361,7 +363,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
     def test_get_project_labels(self):
         """Download Labels from API for a Project."""
-        label_ids = [label["id"] for label in get_project_labels(project_id=TEST_PROJECT_ID)['results']]
+        label_ids = [label['id'] for label in get_project_labels(project_id=TEST_PROJECT_ID)['results']]
         assert set(label_ids) == {
             858,
             859,
@@ -385,7 +387,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
     def test_get_project_label_sets(self):
         """Test getting all Label Sets of a Project."""
-        label_set_ids = [label_set["id"] for label_set in get_project_label_sets(project_id=TEST_PROJECT_ID)['results']]
+        label_set_ids = [label_set['id'] for label_set in get_project_label_sets(project_id=TEST_PROJECT_ID)['results']]
         assert label_set_ids == [64, 3706, 3686, 3707]
 
     def test_download_office_file(self):
@@ -405,9 +407,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
     def test_update_document_konfuzio_api(self):
         """Update the name and assignee of a Document."""
         timestamp = str(datetime.datetime.now())
-        result = update_document_konfuzio_api(
-            document_id=214414, file_name=timestamp, dataset_status=0
-        )
+        result = update_document_konfuzio_api(document_id=214414, file_name=timestamp, dataset_status=0)
         assert result['data_file_name'] == timestamp
 
     def test_update_document_konfuzio_api_no_changes(self):
@@ -581,9 +581,9 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         self.assertEqual(
             result,
             {
-                "extraction": sample_data,
-                "filesplitting": sample_data,
-                "categorization": sample_data,
+                'extraction': sample_data,
+                'filesplitting': sample_data,
+                'categorization': sample_data,
             },
         )
 

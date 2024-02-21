@@ -6,7 +6,11 @@ Welcome to the Developer's Guide Tutorials section, where you'll find a comprehe
 Getting Started
 ---------------
 
-1. :doc:`Data Preparation <tutorials/data-preparation/index>`
+1. :doc:`Example usage of main Konfuzio concepts <tutorials/example-usage/index>`
+
+Get to know how to operate main Konfuzio concepts like Documents and Project, as well as learn structure of a Project folder.
+
+2. :doc:`Data Preparation <tutorials/data-preparation/index>`
 
 Learn how to efficiently prepare your data for optimal processing. This tutorial covers data organization, cleaning, and formatting to ensure seamless integration with our AI models.
 
@@ -16,6 +20,7 @@ Get to know how to create different types of Annotations using methods from `kon
 
 .. toctree::
    :maxdepth: 1
+   tutorials/example-usage/index
    tutorials/data-preparation/index
    tutorials/create-annotations-api/index
 
@@ -119,7 +124,7 @@ Ensure the accuracy and integrity of your data with effective validation techniq
 
 Discover how to identify and handle outliers in your Document processing pipeline. This tutorial offers strategies for accurate Annotations.
 
-19. :doc:`Async Upload with Callback <tutorials/async_upload_with_callback/index>`
+20. :doc:`Async Upload with Callback <tutorials/async_upload_with_callback/index>`
 
 Optimize your Document processing workflow with asynchronous upload and callback functionality. This tutorial enhances the efficiency of large-scale operations.
 
