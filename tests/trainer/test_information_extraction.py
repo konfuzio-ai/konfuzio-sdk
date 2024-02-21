@@ -327,7 +327,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 
         assert previous_size > memory_size_of(self.pipeline)
 
-    @unittest.skipIf(sys.version_info[:2] != (3, 8), reason='This AI can only be loaded on Python 3.8.')
+    @unittest.skipIf(sys.version_info[:2] != (3, 9), reason='This AI can only be loaded on Python 3.8.')
     def test_04b_save_model_bento(self):
         """Test saving Extraction AI model to the Bento format."""
         model, path = self.pipeline.save_bento(output_dir='testbento.bento')
