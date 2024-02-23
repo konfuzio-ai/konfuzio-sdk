@@ -3,9 +3,11 @@ import bz2
 import os
 import pathlib
 import shutil
+import subprocess
 import sys
 import unittest
 from copy import deepcopy
+from unittest.mock import MagicMock
 
 import cloudpickle
 import numpy
@@ -315,6 +317,26 @@ class TestTextualFileSplittingModel(unittest.TestCase):
             cls.file_splitting_model.documents = cls.file_splitting_model.categories[0].documents()
             cls.file_splitting_model.test_documents = cls.file_splitting_model.categories[0].test_documents()
         cls.test_document = cls.file_splitting_model.test_documents[-1]
+
+    def test_no_mlflow_integration(self):
+        # Call the fit method without MLflow parameters
+        with MagicMock() as mlflow_mock:
+            self.file_splitting_model.fit(epochs=1)
+            mlflow_mock.assert_not_called()
+
+    def test_fit_method_calls_mlflow(self):
+        import random
+
+        # defining mlflow variables
+        mlflow_host = '127.0.0.1'
+        mlflow_port = random.randint(1024, 65535)
+        mlflow_url = f'http://{mlflow_host}:{mlflow_port}'
+
+        # create mlflow server as a separate process
+        with subprocess.Popen(['python', '-m', 'mlflow', 'server', '--port', str(mlflow_port), '--host', mlflow_host]):
+            # Call the fit method with desired arguments
+            self.file_splitting_model.fit(experiment_name='test_experiment', tracking_uri=mlflow_url, epochs=1)
+            assert self.file_splitting_model.use_mlflow is True
 
     def test_model_training(self):
         """Test model's fit() method."""

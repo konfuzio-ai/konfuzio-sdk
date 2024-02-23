@@ -603,7 +603,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         experiment_name = kwargs.get('experiment_name', None)
         tracking_uri = kwargs.get('tracking_uri', None)
         # check if both are not None then use MLflow
-        use_mlflow = experiment_name is not None and tracking_uri is not None
+        self.use_mlflow = experiment_name is not None and tracking_uri is not None
         # defining the training arguments
         training_args = transformers.TrainingArguments(
             output_dir='training_logs/textual_file_splitting_model_trainer',
@@ -619,7 +619,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
             num_train_epochs=epochs,
             weight_decay=1e-3,
             disable_tqdm=True,
-            report_to='mlflow' if use_mlflow else 'none',
+            report_to='mlflow' if self.use_mlflow else 'none',
         )
         logger.info('=' * 50)
         logger.info(f'[{time.ctime(time.time())}]\tStarting Training...')
@@ -636,10 +636,10 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
             train_dataset=train_dataset,
             eval_dataset=test_dataset,
             compute_metrics=compute_metrics,
-            callbacks=[transformers.integrations.MLflowCallback] if use_mlflow else [LoggerCallback],
+            callbacks=[transformers.integrations.MLflowCallback] if self.use_mlflow else [LoggerCallback],
         )
         trainer.class_weights = class_weights
-        if use_mlflow:
+        if self.use_mlflow:
             logger.info(f'Using MLflow to track the experiment with experiment_name={experiment_name}')
             # disabling MLflow artifacts logging
             os.environ['HF_MLFLOW_LOG_ARTIFACTS'] = '0'
@@ -649,7 +649,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
                 mlflow.start_run()
             except Exception as e:
                 logger.error(f'Failed to start MLflow run. Training without MLflow tracking! Error: {e}')
-                use_mlflow = False
+                self.use_mlflow = False
         else:
             logger.info('No experiment_id is passed, training without MLflow tracking.')
         # training the model
@@ -663,7 +663,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         logger.info(f'[{time.ctime(time.time())}]\tTextual File Splitting Model Evaluation finished.')
         logger.info('=' * 50)
         # making sure to end the MLflow run if it was started
-        if use_mlflow:
+        if self.use_mlflow:
             mlflow.end_run()
         # saving the best model
         self.model = trainer.model
