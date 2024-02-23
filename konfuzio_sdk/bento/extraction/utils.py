@@ -15,7 +15,8 @@ def prepare_request(request: BaseModel) -> Document:
     project = Project(id_=None)
     project.set_offline()
     category = Category(project=project)
-    if request.__class__.__name__ == 'ExtractRequest20240117':
+    print(request.__class__.__name__ == 'ExtractRequest20240117')
+    if 'ExtractRequest20240117' in request.__class__.__name__:
         document = Document(
             text=request.text,
             bbox=request.bboxes,

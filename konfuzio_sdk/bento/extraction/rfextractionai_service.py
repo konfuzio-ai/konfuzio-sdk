@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 )
 async def extract(request: ExtractRequest20240117) -> ExtractResponse20240117:
     """Send an asynchronous call to the Extraction AI and process the response."""
+    logger.info(request.__class__.__name__)
     document = prepare_request(request=request)
     result = await extraction_runner.extract.async_run(document)
     annotations_result = process_response(result)
