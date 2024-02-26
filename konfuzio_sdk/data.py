@@ -3858,19 +3858,41 @@ class Document(Data):
             if raw_annotations:
                 for raw_annotation in raw_annotations:
                     # remove the 'annotation_set' because we specify its id explicitly when creating the Annotation
-                    raw_annotation['annotation_set_id'] = raw_annotation.pop('annotation_set')
+                    # conditions for backward compatibility
+                    if 'annotation_set' in raw_annotation:
+                        raw_annotation['annotation_set_id'] = raw_annotation.pop('annotation_set')
+                    else:
+                        raw_annotation['annotation_set_id'] = raw_annotation.pop('section')
                     # same with the 'label_set_id'
-                    raw_annotation['label_set_id'] = raw_annotation.pop('label_set')['id']
+                    if 'label_set' in raw_annotation:
+                        raw_annotation['label_set_id'] = raw_annotation.pop('label_set')['id']
+                    else:
+                        raw_annotation['label_set_id'] = raw_annotation.pop('section_label_id')
                     # same with 'document'
                     raw_annotation.pop('document', None)
-                    label = self.project.get_label_by_id(id_=raw_annotation['label']['id'])
+                    if isinstance(raw_annotation['label'], int):
+                        label = self.project.get_label_by_id(id_=raw_annotation['label'])
+                    else:
+                        label = self.project.get_label_by_id(id_=raw_annotation['label']['id'])
                     # same with 'label'
                     raw_annotation.pop('label', None)
-                    raw_spans = raw_annotation['span']
+                    # same with 'span'/'bboxes'
+                    if 'span' in raw_annotation:
+                        raw_spans = raw_annotation['span']
+                        raw_annotation.pop('span', None)
+                    else:
+                        raw_spans = raw_annotation['bboxes']
                     spans = [
                         Span(start_offset=span['start_offset'], end_offset=span['end_offset']) for span in raw_spans
                     ]
-                    raw_annotation.pop('span', None)
+                    # same with 'annotation_set'
+                    if (
+                        raw_annotation['annotation_set_id']
+                        and not self.project.get_label_set_by_id(
+                            raw_annotation['label_set_id']
+                        ).has_multiple_annotation_sets
+                    ):
+                        raw_annotation.pop('annotation_set_id', None)
                     _ = Annotation(document=self, id_=raw_annotation['id'], label=label, spans=spans, **raw_annotation)
                 self._update = False  # Make sure we don't repeat to load once loaded.
 
