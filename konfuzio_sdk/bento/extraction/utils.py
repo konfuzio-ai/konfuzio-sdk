@@ -5,18 +5,18 @@ from konfuzio_sdk.bento.extraction.schemas import ExtractResponse20240117
 from konfuzio_sdk.data import Category, Document, Page, Project
 
 
-def prepare_request(request: BaseModel) -> Document:
+def prepare_request(request) -> Document:
     """
     Receive a request and prepare it for the extraction runner.
 
     :param request: Unprocessed request.
     :returns: An instance of a Document class.
     """
+
     project = Project(id_=None)
     project.set_offline()
     category = Category(project=project)
-    print(request.__class__.__name__ == 'ExtractRequest20240117')
-    if 'ExtractRequest20240117' in request.__class__.__name__:
+    if isinstance(request, ExtractResponse20240117):
         document = Document(
             text=request.text,
             bbox=request.bboxes,
@@ -42,10 +42,10 @@ def convert_document_to_request(document: Document, schema: BaseModel):
     :returns: A Document converted in accordance with the schema.
     """
     pages = [
-        schema.Page(number=page.number, image=page.image, original_size=page._original_size)
+        schema.Bbox.Page(number=page.number, image=page.image, original_size=page._original_size)
         for page in document.pages()
     ]
-    if schema.__class__.__name__ == 'ExtractRequest20240117':
+    if 'ExtractRequest20240117' in str(schema):
         converted = schema(text=document.text, bboxes=document.bboxes, pages=pages)
     else:
         raise NotImplementedError(
@@ -64,7 +64,7 @@ def process_response(result, schema=ExtractResponse20240117):
     :returns: A list of dictionaries with Label Set IDs and Annotation data.
     """
     annotations_result = []
-    if schema.__class__.__name__ == 'ExtractRequest20240117':
+    if 'ExtractResponse20240117' in str(schema):
         for annotation_set in result.annotation_sets():
             current_annotation_set = {'label_set_id': annotation_set.label_set.id_, 'annotations': []}
             for annotation in annotation_set.annotations(use_correct=False, ignore_below_threshold=True):
