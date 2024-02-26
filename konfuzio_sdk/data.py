@@ -224,7 +224,7 @@ class Page(Data):
                 png_content = get_page_image(
                     document_id=document_id, page_number=self.number, session=self.document.project.session
                 )
-                with open(self.image_path, "wb") as f:
+                with open(self.image_path, 'wb') as f:
                     f.write(png_content)
                     self.image = Image.open(io.BytesIO(png_content))
 
@@ -809,8 +809,8 @@ class LabelSet(Data):
         if not categories and 'default_label_sets' in kwargs:
             self._default_of_label_set_ids = kwargs['default_label_sets']
             self.categories = []
-        elif not categories and "default_section_labels" in kwargs:
-            self._default_of_label_set_ids = kwargs["default_section_labels"]
+        elif not categories and 'default_section_labels' in kwargs:
+            self._default_of_label_set_ids = kwargs['default_section_labels']
             self.categories = []
         elif isinstance(categories, list) and all(isinstance(category, dict) for category in categories):
             self._default_of_label_set_ids = [category['id'] for category in categories]
@@ -2209,8 +2209,8 @@ class Annotation(Data):
             self.annotation_set = None
 
         # if no label_set_id we check if is passed by section_label_id
-        if label_set_id is None and kwargs.get("label_set_id") is not None:
-            label_set_id = kwargs.get("label_set_id")
+        if label_set_id is None and kwargs.get('label_set_id') is not None:
+            label_set_id = kwargs.get('label_set_id')
 
         # handles association to an Annotation Set if the Annotation belongs to a Category
         if isinstance(label_set_id, int):
@@ -2456,17 +2456,31 @@ class Annotation(Data):
             # update_annotation(id_=self.id_, document_id=self.document.id_, project_id=self.project.id_)
 
         if not self.is_online:
-            response = post_document_annotation(
-                document_id=self.document.id_,
-                label_id=self.label.id_,
-                label_set_id=label_set_id,
-                confidence=self.confidence,
-                is_correct=self.is_correct,
-                revised=self.revised,
-                annotation_set_id=annotation_set_id,
-                session=self.document.project.session,
-                spans=self.spans,
-            )
+            if self.spans:
+                response = post_document_annotation(
+                    document_id=self.document.id_,
+                    label_id=self.label.id_,
+                    label_set_id=label_set_id,
+                    confidence=self.confidence,
+                    is_correct=self.is_correct,
+                    revised=self.revised,
+                    annotation_set_id=annotation_set_id,
+                    session=self.document.project.session,
+                    spans=self.spans,
+                )
+            else:
+                # bbox_dictionary = []
+                response = post_document_annotation(
+                    document_id=self.document.id_,
+                    label_id=self.label.id_,
+                    label_set_id=label_set_id,
+                    confidence=self.confidence,
+                    is_correct=self.is_correct,
+                    revised=self.revised,
+                    annotation_set_id=annotation_set_id,
+                    session=self.document.project.session,
+                    spans=self.spans,
+                )
             if response.status_code == 201:
                 json_response = json.loads(response.text)
                 self.id_ = json_response['id']
@@ -2566,7 +2580,9 @@ class Annotation(Data):
         :param delete_online: Whether the Annotation is deleted online or only locally.
         """
         if self.document.is_online and delete_online:
-            delete_document_annotation(annotation_id=self.id_, session=self.document.project.session, delete_from_database=True)
+            delete_document_annotation(
+                annotation_id=self.id_, session=self.document.project.session, delete_from_database=True
+            )
             self.document.update()
         else:
             del self.document._annotations[(tuple(sorted(self._spans.keys())), self.label.name)]
@@ -2847,10 +2863,10 @@ class Document(Data):
                 [status.name for status in DocumentStatuses if status.value == response['status_data']][0],
             ]
             if status[0] == 2:
-                logger.debug(f"Document status code {status[0]}: {status[1]}")
+                logger.debug(f'Document status code {status[0]}: {status[1]}')
             else:
-                logger.warning(f"Document status code {status[0]}: {status[1]}")
-            assert project.id_ == response['project'], "Project id_ of uploaded file does not match"
+                logger.warning(f'Document status code {status[0]}: {status[1]}')
+            assert project.id_ == response['project'], 'Project id_ of uploaded file does not match'
             document = Document(
                 id_=new_document_id,
                 project=project,
@@ -3386,19 +3402,19 @@ class Document(Data):
         """
         if self.is_online:
             data = get_document_details(document_id=self.id_, session=self.project.session)
-            self.status = data["status_data"]
-            self.file_url = data["file_url"]
-            self.name = data["data_file_name"]
-            self.updated_at = dateutil.parser.isoparse(data["updated_at"])
-            if data["category"]:
-                self._category = self.project.get_category_by_id(data["category"])
+            self.status = data['status_data']
+            self.file_url = data['file_url']
+            self.name = data['data_file_name']
+            self.updated_at = dateutil.parser.isoparse(data['updated_at'])
+            if data['category']:
+                self._category = self.project.get_category_by_id(data['category'])
             # write a file, even there are no annotations to support offline work
             annotations = get_document_annotations(document_id=self.id_)['results']
-            with open(self.annotation_file_path, "w") as f:
+            with open(self.annotation_file_path, 'w') as f:
                 json.dump(annotations, f, indent=2, sort_keys=True)
 
-            with open(self.annotation_set_file_path, "w") as f:
-                json.dump(data["annotation_sets"], f, indent=2, sort_keys=True)
+            with open(self.annotation_set_file_path, 'w') as f:
+                json.dump(data['annotation_sets'], f, indent=2, sort_keys=True)
 
             with open(self.txt_file_path, 'w', encoding='utf-8') as f:
                 if data['text']:
@@ -3869,9 +3885,16 @@ class Document(Data):
                 if self.category == self.project.no_category:
                     # conditions for backward compatibility
                     raw_annotations = [
-                        annotation for annotation in raw_annotations if (('label_text' in annotation.keys() and annotation['label_text'] == 'NO_LABEL')
-                                                                    or ('label' in annotation.keys() and isinstance(annotation['label'], dict)
-                                                                        and annotation['label']['name'] == 'NO_LABEL'))
+                        annotation
+                        for annotation in raw_annotations
+                        if (
+                            ('label_text' in annotation.keys() and annotation['label_text'] == 'NO_LABEL')
+                            or (
+                                'label' in annotation.keys()
+                                and isinstance(annotation['label'], dict)
+                                and annotation['label']['name'] == 'NO_LABEL'
+                            )
+                        )
                     ]
 
                 if raw_annotations:
@@ -4097,7 +4120,7 @@ class Project(Data):
     def write_project_files(self):
         """Overwrite files with Project, Label, Label Set information."""
         categories_labels_label_sets = get_project_categories(project_id=self.id_, session=self.session)
-        with open(self.categories_and_label_data_file_path, "w") as f:
+        with open(self.categories_and_label_data_file_path, 'w') as f:
             json.dump(categories_labels_label_sets, f, indent=2, sort_keys=True)
 
         self.write_meta_of_files()
@@ -4231,12 +4254,14 @@ class Project(Data):
                         if label_set.name not in [cur_label_set.name for cur_label_set in category.label_sets]:
                             category.add_label_set(label_set)
 
-        if reload and (not is_file(self.labels_file_path, raise_exception=False) and
-                not is_file(self.label_sets_file_path, raise_exception=False)):
+        if reload and (
+            not is_file(self.labels_file_path, raise_exception=False)
+            and not is_file(self.label_sets_file_path, raise_exception=False)
+        ):
             self.categories = []
 
-            if "NO_CATEGORY" not in [category.name for category in self.categories]:
-                self.no_category = Category(project=self, id_=0, name_clean="NO_CATEGORY", name="NO_CATEGORY")
+            if 'NO_CATEGORY' not in [category.name for category in self.categories]:
+                self.no_category = Category(project=self, id_=0, name_clean='NO_CATEGORY', name='NO_CATEGORY')
             with open(self.categories_and_label_data_file_path, 'r') as f:
                 categories_and_label_data = json.load(f)
             for category in categories_and_label_data:
@@ -4293,7 +4318,10 @@ class Project(Data):
                     Label(project=self, id_=label_data['id'], **label_data)
             else:
                 for cur_label in [
-                    label for category in self.categories for label_set in category.label_sets for label in label_set.labels
+                    label
+                    for category in self.categories
+                    for label_set in category.label_sets
+                    for label in label_set.labels
                 ]:
                     if cur_label not in self._labels:
                         self._labels.append(cur_label)
@@ -4337,9 +4365,7 @@ class Project(Data):
                 category_id = document_data['category']
             elif 'category_template' in document_data.keys():
                 category_id = document_data['category_template']
-            doc_category = (
-                self.get_category_by_id(category_id) if category_id else self.no_category
-            )
+            doc_category = self.get_category_by_id(category_id) if category_id else self.no_category
             document_data.pop('category', None)
             if updated:
                 doc = local_docs_dict[document_data['id']]
@@ -4355,7 +4381,6 @@ class Project(Data):
                 logger.debug(f'{doc} is not available on your machine, we will download it as soon you use it.')
                 n_new_documents += 1
             else:
-
                 doc = local_docs_dict[document_data['id']]
                 doc.update_meta_data(
                     category=doc_category, **document_data
