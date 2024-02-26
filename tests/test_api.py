@@ -177,7 +177,6 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             'updated_at',
             'proposed_split',
             'split_is_revised',
-            'ai_model_runs',
         }
 
     def test_long_document_details(self):
@@ -214,7 +213,6 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             'updated_at',
             'proposed_split',
             'split_is_revised',
-            'ai_model_runs',
         }
 
     def test_get_list_of_files(self):
