@@ -6,7 +6,7 @@ from konfuzio_sdk.data import Category, Document, Page, Project
 from .schemas import ExtractResponse20240117
 
 
-def prepare_request(request) -> Document:
+def prepare_request(request: BaseModel) -> Document:
     """
     Receive a request and prepare it for the extraction runner.
 
@@ -65,7 +65,7 @@ def process_response(result, schema=ExtractResponse20240117):
     :returns: A list of dictionaries with Label Set IDs and Annotation data.
     """
     annotations_result = []
-    if 'ExtractResponse20240117' in str(schema):
+    if schema.__class__.__name__ == 'ExtractRequest20240117':
         for annotation_set in result.annotation_sets():
             current_annotation_set = {'label_set_id': annotation_set.label_set.id_, 'annotations': []}
             for annotation in annotation_set.annotations(use_correct=False, ignore_below_threshold=True):

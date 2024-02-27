@@ -1,15 +1,10 @@
 """Run extraction service for a dockerized AI."""
 import logging
-import sys
-from os import path
 
 import bentoml
 
 from .schemas import ExtractRequest20240117, ExtractResponse20240117
 from .utils import prepare_request, process_response
-
-ROOT_DIR = path.dirname(path.dirname(path.abspath(__file__)))
-sys.path.append(ROOT_DIR)
 
 extraction_runner = bentoml.picklable_model.get('rfextractionai:latest').to_runner(embedded=True)
 

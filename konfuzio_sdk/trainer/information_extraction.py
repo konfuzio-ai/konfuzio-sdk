@@ -825,17 +825,12 @@ class AbstractExtractionAI(BaseModel):
 
     def build_bento(self, bento_model):
         """Build BentoML service for the model."""
-        import sys
-
-        ROOT_DIR = os.path.dirname(os.path.abspath(__file__)) + '/../bento/extraction'
-        sys.path.append(ROOT_DIR)
-
         return bentoml.bentos.build(
             name=f"extraction_{self.category.id_ if self.category else '0'}",
-            service=f'{self.name_lower()}_service.py:svc',
+            service=f'extraction/{self.name_lower()}_service.py:svc',
+            include=['extraction/*.py'],
             python={'packages': ['konfuzio_sdk[ai]'], 'lock_packages': True},
-            include=['__init__.py', f'{self.name_lower()}_service.py', 'schemas.py', 'utils.py', '../__init__.py'],
-            build_ctx=ROOT_DIR,
+            build_ctx=os.path.dirname(os.path.abspath(__file__)) + '/../bento',
             models=[str(bento_model.tag)],
         )
 
