@@ -47,7 +47,6 @@ from konfuzio_sdk.utils import (
     get_file_type_and_extension,
     get_merged_bboxes,
     get_missing_offsets,
-    get_spans_from_bbox,
     is_file,
     sdk_isinstance,
 )
@@ -2146,6 +2145,9 @@ class Annotation(Data):
         """
         Initialize the Annotation.
 
+        An Annotation can be created either using Spans or using Bboxes. Make sure that Bboxes supplied actually contain
+        text inside; supplying empty Bboxes will cause an error.
+
         :param label: ID of the Annotation
         :param is_correct: If the Annotation is correct or not (bool)
         :param revised: If the Annotation is revised or not (bool)
@@ -2289,6 +2291,7 @@ class Annotation(Data):
             _ = Span(start_offset=kwargs.get('start_offset'), end_offset=kwargs.get('end_offset'), annotation=self)
             logger.warning(f'{self} is empty')
 
+        # checking that Bboxes provided as input contain text inside
         if self._bboxes:
             bbox_dicts = [
                 {
@@ -2302,19 +2305,40 @@ class Annotation(Data):
                 }
                 for bbox in self._bboxes
             ]
+            document_bbox_dicts = {
+                key: {
+                    'x0': value['x0'],
+                    'x1': value['x1'],
+                    'y0': value['y0'],
+                    'y1': value['y1'],
+                    'page_index': value['page_index'],
+                    'page_number': value['page_index'] + 1,
+                    'line_index': value['line_index'],
+                    'text': value['text'],
+                    'top': self.document.get_page_by_index(value['page_index']).height - value['y1'],
+                    'bottom': self.document.get_page_by_index(value['page_index']).height - value['y0'],
+                }
+                for key, value in self.document.get_bbox().items()
+            }
             for bbox in bbox_dicts:
-                merged = get_merged_bboxes(doc_bbox=self.document.bboxes, bboxes=[bbox])
-                _ = Bbox(
-                    page=self.document.get_page_by_index(merged['page_index']),
-                    x0=merged['x0'],
-                    x1=merged['x1'],
-                    y0=merged['y0'],
-                    y1=merged['y1'],
-                )
-            converted = get_spans_from_bbox(selection_bbox=_)
-            if converted:
-                for span in converted:
-                    self.add_span(span)
+                merged = get_merged_bboxes(doc_bbox=document_bbox_dicts, bboxes=[bbox], doc_text=self.document.text)
+                for merged_bbox in merged:
+                    _ = Bbox(
+                        page=self.document.get_page_by_index(merged_bbox['page_index']),
+                        x0=merged_bbox['x0'],
+                        x1=merged_bbox['x1'],
+                        y0=merged_bbox['y0'],
+                        y1=merged_bbox['y1'],
+                    )
+                    try:
+                        span = Span(start_offset=merged_bbox['start_offset'], end_offset=merged_bbox['end_offset'])
+                        self.add_span(span)
+                    except KeyError:
+                        raise KeyError(
+                            f'Cannot add {self} because Bbox {bbox} does not have any text inside and '
+                            f'it is not possible create Spans from the selected area. Please provide Bboxes'
+                            f'that have text inside them or Spans to create an Annotation.'
+                        )
 
         self.top = None
         self.bottom = None
@@ -2351,9 +2375,9 @@ class Annotation(Data):
             raise NotImplementedError(f'{self} has no Annotation Set and cannot be created.')
         if not self.label:
             raise NotImplementedError(f'{self} has no Label and cannot be created.')
-        if not self.spans and not self.bbox:
+        if not self.spans:
             exception_or_log_error(
-                msg=f'{self} has no Spans nor Bboxes and cannot be created.',
+                msg=f'{self} has no Spans and cannot be created.',
                 fail_loudly=self.document.project._strict_data_validation,
                 exception_type=NotImplementedError,
             )
@@ -2371,8 +2395,7 @@ class Annotation(Data):
     def __eq__(self, other):
         """We compare an Annotation based on its Label, Label Sets if it's online otherwise on the id_local."""
         return (
-            # ID comparison is a hotfix until we fix merge_bbox and start comparing Bboxes
-            ((self._spans.keys() == other._spans.keys()) or (self.id_ and other.id_ and self.id_ == other.id_))
+            (self._spans.keys() == other._spans.keys())
             and self.label
             and other.label
             and (self.label == other.label)
@@ -2383,11 +2406,7 @@ class Annotation(Data):
 
     def __lt__(self, other):
         """If we sort Annotations we do so by start offset."""
-        if self._spans.keys() and other._spans.keys():
-            return min(self._spans.keys()) < min(other._spans.keys())
-        else:
-            # to not compare Span-based and Bbox-based textless Annotations together
-            return False
+        return min(self._spans.keys()) < min(other._spans.keys())
 
     def __hash__(self):
         """Identity of Annotation that does not change over time."""
@@ -2396,10 +2415,7 @@ class Annotation(Data):
     @property
     def page(self) -> Page:
         """Return Page of Annotation."""
-        if self.spans:
-            return self.spans[0].page
-        else:
-            return self.bbox().page
+        return self.spans[0].page
 
     @property
     def is_multiline(self) -> int:
@@ -2625,24 +2641,13 @@ class Annotation(Data):
 
     def bbox(self) -> Bbox:
         """Get Bbox encompassing all Annotation Spans."""
-        if self._bbox is None:
-            if self.spans:
-                self._bbox = Bbox(
-                    x0=min([span.bbox().x0 for span in self.spans]),
-                    x1=max([span.bbox().x1 for span in self.spans]),
-                    y0=min([span.bbox().y0 for span in self.spans]),
-                    y1=max([span.bbox().y1 for span in self.spans]),
-                    page=self.page,
-                )
-            elif self._bboxes:
-                self._bbox = Bbox(
-                    page=self._bboxes[0].page,
-                    x0=min([bbox.x0 for bbox in self._bboxes]),
-                    x1=min([bbox.x1 for bbox in self._bboxes]),
-                    y0=min([bbox.y0 for bbox in self._bboxes]),
-                    y1=min([bbox.y1 for bbox in self._bboxes]),
-                )
-        return self._bbox
+        self._bbox = Bbox(
+            x0=min([span.bbox().x0 for span in self.spans]),
+            x1=max([span.bbox().x1 for span in self.spans]),
+            y0=min([span.bbox().y0 for span in self.spans]),
+            y1=max([span.bbox().y1 for span in self.spans]),
+            page=self.page,
+        )
 
     @property
     def spans(self) -> List[Span]:
@@ -2655,21 +2660,7 @@ class Annotation(Data):
 
         This is useful for external integration (e.g. Konfuzio Server)."
         """
-        if self.spans:
-            return [span.bbox_dict() for span in self.spans]
-        elif self._bboxes:
-            return [
-                {
-                    'page_index': bbox.page.index,
-                    'top': bbox.page.height - bbox.y1,
-                    'bottom': bbox.page.height - bbox.y0,
-                    'x0': bbox.x0,
-                    'x1': bbox.x1,
-                    'y0': bbox.y0,
-                    'y1': bbox.y1,
-                }
-                for bbox in self._bboxes
-            ]
+        return [span.bbox_dict() for span in self.spans]
 
     def lose_weight(self):
         """Delete data of the instance."""
@@ -3295,29 +3286,22 @@ class Document(Data):
                     not annotation.confidence or annotation.confidence < annotation.label.threshold
                 ):
                     continue
-            if annotation.spans:
-                for span in annotation.spans:
-                    if (use_correct and annotation.is_correct) or not use_correct:
-                        # todo: add option to filter for overruled Annotations where mult.=F
-                        # todo: add option to filter for overlapping Annotations, `add_annotation` just checks for identical
-                        # filter by start and end offset, include Annotations that extend into the offset
-                        if (
-                            start_offset is not None and end_offset is not None
-                        ):  # if the start and end offset are specified
-                            latest_start = max(span.start_offset, start_offset)
-                            earliest_end = min(span.end_offset, end_offset)
-                            is_overlapping = latest_start - earliest_end < 0
-                        else:
-                            is_overlapping = True
-
-                        if label is not None:  # filter by Label
-                            if label == annotation.label and is_overlapping:
-                                add = True
-                        elif is_overlapping:
-                            add = True
-            elif not annotation.spans and annotation.bboxes:
+            for span in annotation.spans:
                 if (use_correct and annotation.is_correct) or not use_correct:
-                    add = True
+                    # todo: add option to filter for overruled Annotations where mult.=F
+                    # todo: add option to filter for overlapping Annotations, `add_annotation` just checks for identical
+                    # filter by start and end offset, include Annotations that extend into the offset
+                    if start_offset is not None and end_offset is not None:  # if the start and end offset are specified
+                        latest_start = max(span.start_offset, start_offset)
+                        earliest_end = min(span.end_offset, end_offset)
+                        is_overlapping = latest_start - earliest_end < 0
+                    else:
+                        is_overlapping = True
+                    if label is not None:  # filter by Label
+                        if label == annotation.label and is_overlapping:
+                            add = True
+                    elif is_overlapping:
+                        add = True
 
             # as multiline Annotations will be added twice
             if add:

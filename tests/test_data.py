@@ -228,6 +228,8 @@ class TestOnlineProject(unittest.TestCase):
     def test_create_bbox_annotation(self):
         """Test creating a Bbox-based Annotation."""
         doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        doc.status = 2
+        doc.get_bbox()
         label = self.project.get_label_by_id(862)
         bbox = {'page_index': 0, 'x0': 198, 'x1': 300, 'y0': 508, 'y1': 517}
         annotation_set = AnnotationSet(document=doc, label_set=self.project.get_label_set_by_id(64))
@@ -252,7 +254,7 @@ class TestOnlineProject(unittest.TestCase):
         label = self.project.get_label_by_id(862)
         bbox = {'page_index': 0, 'x0': 1, 'x1': 4, 'y0': 1, 'y1': 4}
         annotation_set = AnnotationSet(document=doc, label_set=self.project.get_label_set_by_id(64))
-        with pytest.raises(KeyError):
+        with pytest.raises(NotImplementedError):
             Annotation(
                 document=doc,
                 annotation_set=annotation_set,
