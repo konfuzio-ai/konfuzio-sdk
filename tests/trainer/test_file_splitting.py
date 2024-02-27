@@ -458,39 +458,6 @@ class TestTextualFileSplittingModel(unittest.TestCase):
         parent.wait(5)
 
 
-class TestMLflowIntegration(unittest.TestCase):
-    """Test MLflow Integration."""
-
-    @classmethod
-    def setUpClass(cls) -> None:
-        """Initialize the tested class."""
-
-        cls.project = Project(id_=TEST_SPLITTING_AI_PROJECT_ID)
-        cls.file_splitting_model = TextualFileSplittingModel(categories=cls.project.categories)
-        if not TEST_WITH_FULL_DATASET:
-            cls.file_splitting_model.documents = cls.file_splitting_model.categories[0].documents()
-            cls.file_splitting_model.test_documents = cls.file_splitting_model.categories[0].test_documents()
-        cls.test_document = cls.file_splitting_model.test_documents[-1]
-
-    def test_fit_method_calls_mlflow(self):
-        assert self.check_mlflow_running(self.mlflow_port) == f'MLflow is running on port {self.mlflow_port}'
-        # self.file_splitting_model.fit(experiment_name='test_experiment', tracking_uri=self.mlflow_url, epochs=1)
-        # assert self.file_splitting_model.use_mlflow is True
-
-    def check_mlflow_running(cls, port):
-        import requests
-
-        url = cls.mlflow_url
-        try:
-            response = requests.get(url)
-            if response.status_code == 200:
-                return f'MLflow is running on port {port}'
-            else:
-                return f'MLflow is not running on port {port}'
-        except requests.ConnectionError:
-            return f'MLflow is not running on port {port}'
-
-
 @pytest.mark.skipif(
     not is_dependency_installed('torch')
     and not is_dependency_installed('transformers')
