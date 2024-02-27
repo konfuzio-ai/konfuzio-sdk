@@ -46,7 +46,9 @@ from konfuzio_sdk.utils import (
     exception_or_log_error,
     get_file_type_and_extension,
     get_missing_offsets,
+    get_spans_from_bbox,
     is_file,
+    merge_bboxes,
     sdk_isinstance,
 )
 
@@ -2262,14 +2264,20 @@ class Annotation(Data):
             )
             self.selection_bbox = Bbox(x0=x0, x1=x1, y0=y0, y1=y1, page=page)
 
+        self._bboxes = []
+
         # TODO START LEGACY to support multiline Annotations
         bboxes = kwargs.get('bboxes', None)
         if bboxes and len(bboxes) > 0:
             for bbox in bboxes:
                 if 'start_offset' in bbox.keys() and 'end_offset' in bbox.keys():
                     Span(start_offset=bbox['start_offset'], end_offset=bbox['end_offset'], annotation=self)
+                elif 'x0' in bbox.keys() and 'x1' in bbox.keys() and 'y0' in bbox.keys() and 'y1' in bbox.keys():
+                    page = self.document.get_page_by_index(bbox['page_index'])
+                    _ = Bbox(page=page, x0=bbox['x0'], x1=bbox['x1'], y0=bbox['y0'], y1=bbox['y1'])
+                    self._bboxes.append(_)
                 else:
-                    raise ValueError(f'SDK cannot read bbox of Annotation {self.id_} in {self.document}: {bbox}')
+                    raise ValueError(f'SDK cannot read Bbox of Annotation {self.id_} in {self.document}: {bbox}')
         elif (
             bboxes is None
             and kwargs.get('start_offset', None) is not None
@@ -2280,8 +2288,37 @@ class Annotation(Data):
             _ = Span(start_offset=kwargs.get('start_offset'), end_offset=kwargs.get('end_offset'), annotation=self)
             logger.warning(f'{self} is empty')
 
+        # TODO add step for checking if Spans can be generated from supplied Bboxes - rework of get_merged_bbox and
+        # TODO get_spans_from_bbox needed first
+
+        if self._bboxes:
+            bbox_dicts = [
+                {
+                    'page_index': bbox.page.index,
+                    'top': bbox.page.height - bbox.y1,
+                    'bottom': bbox.page.height - bbox.y0,
+                    'x0': bbox.x0,
+                    'x1': bbox.x1,
+                    'y0': bbox.y0,
+                    'y1': bbox.y1,
+                }
+                for bbox in self._bboxes
+            ]
+            merged = merge_bboxes(bboxes=bbox_dicts)
+            _ = Bbox(
+                page=self.document.get_page_by_index(merged['page_index']),
+                x0=merged['x0'],
+                x1=merged['x1'],
+                y0=merged['y0'],
+                y1=merged['y1'],
+            )
+            converted = get_spans_from_bbox(selection_bbox=_)
+            if converted:
+                for span in converted:
+                    self.add_span(span)
+
         self.top = None
-        self.top = None
+        self.bottom = None
         self.x0 = None
         self.x1 = None
         self.y0 = None
@@ -2315,9 +2352,9 @@ class Annotation(Data):
             raise NotImplementedError(f'{self} has no Annotation Set and cannot be created.')
         if not self.label:
             raise NotImplementedError(f'{self} has no Label and cannot be created.')
-        if not self.spans:
+        if not self.spans and not self.bbox:
             exception_or_log_error(
-                msg=f'{self} has no Spans and cannot be created.',
+                msg=f'{self} has no Spans nor Bboxes and cannot be created.',
                 fail_loudly=self.document.project._strict_data_validation,
                 exception_type=NotImplementedError,
             )
@@ -2333,9 +2370,10 @@ class Annotation(Data):
             return f'Annotation ({self.get_link()}) without Label ({self.start_offset}, {self.end_offset})'
 
     def __eq__(self, other):
-        """We compare an Annotation based on it's Label, Label-Sets if it's online otherwise on the id_local."""
+        """We compare an Annotation based on its Label, Label Sets if it's online otherwise on the id_local."""
         return (
-            (self._spans.keys() == other._spans.keys())
+            # ID comparison is a hotfix until we fix merge_bbox and start comparing Bboxes
+            ((self._spans.keys() == other._spans.keys()) or (self.id_ == other.id_))
             and self.label
             and other.label
             and (self.label == other.label)
@@ -2346,7 +2384,11 @@ class Annotation(Data):
 
     def __lt__(self, other):
         """If we sort Annotations we do so by start offset."""
-        return min(self._spans.keys()) < min(other._spans.keys())
+        if self._spans.keys() and other._spans.keys():
+            return min(self._spans.keys()) < min(other._spans.keys())
+        else:
+            # to not compare Span-based and Bbox-based textless Annotations together
+            return False
 
     def __hash__(self):
         """Identity of Annotation that does not change over time."""
@@ -2355,7 +2397,10 @@ class Annotation(Data):
     @property
     def page(self) -> Page:
         """Return Page of Annotation."""
-        return self.spans[0].page
+        if self.spans:
+            return self.spans[0].page
+        else:
+            return self.bbox().page
 
     @property
     def is_multiline(self) -> int:
@@ -2456,17 +2501,32 @@ class Annotation(Data):
             # update_annotation(id_=self.id_, document_id=self.document.id_, project_id=self.project.id_)
 
         if not self.is_online:
-            response = post_document_annotation(
-                document_id=self.document.id_,
-                label_id=self.label.id_,
-                label_set_id=label_set_id,
-                confidence=self.confidence,
-                is_correct=self.is_correct,
-                revised=self.revised,
-                annotation_set_id=annotation_set_id,
-                session=self.document.project.session,
-                spans=self.spans,
-            )
+            if self.spans:
+                response = post_document_annotation(
+                    document_id=self.document.id_,
+                    label_id=self.label.id_,
+                    label_set_id=label_set_id,
+                    confidence=self.confidence,
+                    is_correct=self.is_correct,
+                    revised=self.revised,
+                    annotation_set_id=annotation_set_id,
+                    session=self.document.project.session,
+                    spans=self.spans,
+                )
+            elif self.bboxes:
+                response = post_document_annotation(
+                    document_id=self.document.id_,
+                    label_id=self.label.id_,
+                    label_set_id=label_set_id,
+                    confidence=self.confidence,
+                    is_correct=self.is_correct,
+                    revised=self.revised,
+                    annotation_set_id=annotation_set_id,
+                    session=self.document.project.session,
+                    spans=self.bboxes,
+                )
+            else:
+                raise ValueError('Cannot save an Annotation without Spans and Bboxes.')
             if response.status_code == 201:
                 json_response = json.loads(response.text)
                 self.id_ = json_response['id']
@@ -2576,13 +2636,22 @@ class Annotation(Data):
     def bbox(self) -> Bbox:
         """Get Bbox encompassing all Annotation Spans."""
         if self._bbox is None:
-            self._bbox = Bbox(
-                x0=min([span.bbox().x0 for span in self.spans]),
-                x1=max([span.bbox().x1 for span in self.spans]),
-                y0=min([span.bbox().y0 for span in self.spans]),
-                y1=max([span.bbox().y1 for span in self.spans]),
-                page=self.page,
-            )
+            if self.spans:
+                self._bbox = Bbox(
+                    x0=min([span.bbox().x0 for span in self.spans]),
+                    x1=max([span.bbox().x1 for span in self.spans]),
+                    y0=min([span.bbox().y0 for span in self.spans]),
+                    y1=max([span.bbox().y1 for span in self.spans]),
+                    page=self.page,
+                )
+            elif self._bboxes:
+                self._bbox = Bbox(
+                    page=self._bboxes[0].page,
+                    x0=min([bbox.x0 for bbox in self._bboxes]),
+                    x1=min([bbox.x1 for bbox in self._bboxes]),
+                    y0=min([bbox.y0 for bbox in self._bboxes]),
+                    y1=min([bbox.y1 for bbox in self._bboxes]),
+                )
         return self._bbox
 
     @property
@@ -2596,7 +2665,21 @@ class Annotation(Data):
 
         This is useful for external integration (e.g. Konfuzio Server)."
         """
-        return [span.bbox_dict() for span in self.spans]
+        if self.spans:
+            return [span.bbox_dict() for span in self.spans]
+        elif self._bboxes:
+            return [
+                {
+                    'page_index': bbox.page.index,
+                    'top': bbox.page.height - bbox.y1,
+                    'bottom': bbox.page.height - bbox.y0,
+                    'x0': bbox.x0,
+                    'x1': bbox.x1,
+                    'y0': bbox.y0,
+                    'y1': bbox.y1,
+                }
+                for bbox in self._bboxes
+            ]
 
     def lose_weight(self):
         """Delete data of the instance."""
@@ -3222,23 +3305,30 @@ class Document(Data):
                     not annotation.confidence or annotation.confidence < annotation.label.threshold
                 ):
                     continue
-            for span in annotation.spans:
-                if (use_correct and annotation.is_correct) or not use_correct:
-                    # todo: add option to filter for overruled Annotations where mult.=F
-                    # todo: add option to filter for overlapping Annotations, `add_annotation` just checks for identical
-                    # filter by start and end offset, include Annotations that extend into the offset
-                    if start_offset is not None and end_offset is not None:  # if the start and end offset are specified
-                        latest_start = max(span.start_offset, start_offset)
-                        earliest_end = min(span.end_offset, end_offset)
-                        is_overlapping = latest_start - earliest_end < 0
-                    else:
-                        is_overlapping = True
+            if annotation.spans:
+                for span in annotation.spans:
+                    if (use_correct and annotation.is_correct) or not use_correct:
+                        # todo: add option to filter for overruled Annotations where mult.=F
+                        # todo: add option to filter for overlapping Annotations, `add_annotation` just checks for identical
+                        # filter by start and end offset, include Annotations that extend into the offset
+                        if (
+                            start_offset is not None and end_offset is not None
+                        ):  # if the start and end offset are specified
+                            latest_start = max(span.start_offset, start_offset)
+                            earliest_end = min(span.end_offset, end_offset)
+                            is_overlapping = latest_start - earliest_end < 0
+                        else:
+                            is_overlapping = True
 
-                    if label is not None:  # filter by Label
-                        if label == annotation.label and is_overlapping:
+                        if label is not None:  # filter by Label
+                            if label == annotation.label and is_overlapping:
+                                add = True
+                        elif is_overlapping:
                             add = True
-                    elif is_overlapping:
-                        add = True
+            elif not annotation.spans and annotation.bboxes:
+                if (use_correct and annotation.is_correct) or not use_correct:
+                    add = True
+
             # as multiline Annotations will be added twice
             if add:
                 annotations.append(annotation)

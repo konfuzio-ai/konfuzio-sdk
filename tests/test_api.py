@@ -359,6 +359,31 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         # delete it a second time to remove this Annotation from the feedback stored as negative
         assert delete_document_annotation(negative_id, delete_from_database=True).status_code == 204
 
+    def post_document_annotation_as_bboxes(self):
+        """Test creating an Annotation that is based only on Bbox coordinates."""
+        label_id = 862
+        label_set_id = 64
+
+        bboxes = [
+            {'page_index': 0, 'x0': 198, 'x1': 300, 'y0': 508, 'y1': 517},
+        ]
+        document = Project(id_=TEST_PROJECT_ID, strict_data_validation=False).get_document_by_id(TEST_DOCUMENT_ID + 11)
+        document.update()
+
+        response = post_document_annotation(
+            document_id=TEST_DOCUMENT_ID + 11,
+            confidence=0.01,
+            label_id=label_id,
+            label_set_id=label_set_id,
+            revised=False,
+            is_correct=True,
+            spans=bboxes,
+        )
+
+        assert response.status_code == 201
+        annotation = json.loads(response.text)
+        assert delete_document_annotation(annotation['id'])
+
     def test_get_project_labels(self):
         """Download Labels from API for a Project."""
         label_ids = [label['id'] for label in get_project_labels(project_id=TEST_PROJECT_ID)['results']]

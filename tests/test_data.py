@@ -225,6 +225,27 @@ class TestOnlineProject(unittest.TestCase):
         annotation.delete()  # doc.update() performed internally when delete_online=True, which is default
         assert annotation not in doc.get_annotations()
 
+    def test_create_bbox_annotation(self):
+        """Test creating a Bbox-based Annotation."""
+        doc = self.project.get_document_by_id(TEST_DOCUMENT_ID + 11)
+        label = self.project.get_label_by_id(862)
+        bbox = {'page_index': 0, 'x0': 198, 'x1': 300, 'y0': 508, 'y1': 517}
+        annotation_set = AnnotationSet(document=doc, label_set=self.project.get_label_set_by_id(64))
+        annotation = Annotation(
+            document=doc,
+            annotation_set=annotation_set,
+            label=label,
+            label_set_id=64,
+            accuracy=1.0,
+            is_correct=True,
+            bboxes=[bbox],
+        )
+        annotation.save(label_set_id=64)
+        assert annotation in doc.annotations()
+        doc.update()
+        assert annotation in doc.annotations()
+        annotation.delete(delete_online=True)
+
     def test_get_sentence_spans_from_bbox(self):
         """Test to get sentence Spans in a bounding box."""
         document = self.project.get_document_by_id(5679477)
@@ -335,7 +356,7 @@ class TestOnlineProject(unittest.TestCase):
         assert doc.dataset_status == 1
         assert doc.assignee is None
 
-        with pytest.raises(HTTPError, match="documents which are part of a dataset"):
+        with pytest.raises(HTTPError, match='documents which are part of a dataset'):
             # Cannot delete Document with dataset_status != 0
             doc.delete(delete_online=True)
 
@@ -631,7 +652,9 @@ class TestOfflineExampleData(unittest.TestCase):
     def test_find_outlier_annotations(self):
         """Test finding the Annotations that are deemed outliers by several methods of search."""
         label = self.project.get_label_by_name('Austellungsdatum')
-        outliers = label.get_probable_outliers(self.project.categories, regex_worst_percentage=1.0, confidence_search=False)
+        outliers = label.get_probable_outliers(
+            self.project.categories, regex_worst_percentage=1.0, confidence_search=False
+        )
         outlier_spans = [span.offset_string for annotation in outliers for span in annotation.spans]
         assert len(outliers) == 1
         assert '328927/10103' in outlier_spans
