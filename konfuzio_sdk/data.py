@@ -45,10 +45,10 @@ from konfuzio_sdk.utils import (
     convert_to_bio_scheme,
     exception_or_log_error,
     get_file_type_and_extension,
+    get_merged_bboxes,
     get_missing_offsets,
     get_spans_from_bbox,
     is_file,
-    merge_bboxes,
     sdk_isinstance,
 )
 
@@ -2270,6 +2270,7 @@ class Annotation(Data):
         bboxes = kwargs.get('bboxes', None)
         if bboxes and len(bboxes) > 0:
             for bbox in bboxes:
+                # todo add comment about why we have _bboxes and why we have the checks below
                 if 'start_offset' in bbox.keys() and 'end_offset' in bbox.keys():
                     Span(start_offset=bbox['start_offset'], end_offset=bbox['end_offset'], annotation=self)
                 elif 'x0' in bbox.keys() and 'x1' in bbox.keys() and 'y0' in bbox.keys() and 'y1' in bbox.keys():
@@ -2288,9 +2289,6 @@ class Annotation(Data):
             _ = Span(start_offset=kwargs.get('start_offset'), end_offset=kwargs.get('end_offset'), annotation=self)
             logger.warning(f'{self} is empty')
 
-        # TODO add step for checking if Spans can be generated from supplied Bboxes - rework of get_merged_bbox and
-        # TODO get_spans_from_bbox needed first
-
         if self._bboxes:
             bbox_dicts = [
                 {
@@ -2304,14 +2302,15 @@ class Annotation(Data):
                 }
                 for bbox in self._bboxes
             ]
-            merged = merge_bboxes(bboxes=bbox_dicts)
-            _ = Bbox(
-                page=self.document.get_page_by_index(merged['page_index']),
-                x0=merged['x0'],
-                x1=merged['x1'],
-                y0=merged['y0'],
-                y1=merged['y1'],
-            )
+            for bbox in bbox_dicts:
+                merged = get_merged_bboxes(doc_bbox=self.document.bboxes, bboxes=[bbox])
+                _ = Bbox(
+                    page=self.document.get_page_by_index(merged['page_index']),
+                    x0=merged['x0'],
+                    x1=merged['x1'],
+                    y0=merged['y0'],
+                    y1=merged['y1'],
+                )
             converted = get_spans_from_bbox(selection_bbox=_)
             if converted:
                 for span in converted:
@@ -2502,31 +2501,22 @@ class Annotation(Data):
 
         if not self.is_online:
             if self.spans:
-                response = post_document_annotation(
-                    document_id=self.document.id_,
-                    label_id=self.label.id_,
-                    label_set_id=label_set_id,
-                    confidence=self.confidence,
-                    is_correct=self.is_correct,
-                    revised=self.revised,
-                    annotation_set_id=annotation_set_id,
-                    session=self.document.project.session,
-                    spans=self.spans,
-                )
+                spans_bboxes = self.spans
             elif self.bboxes:
-                response = post_document_annotation(
-                    document_id=self.document.id_,
-                    label_id=self.label.id_,
-                    label_set_id=label_set_id,
-                    confidence=self.confidence,
-                    is_correct=self.is_correct,
-                    revised=self.revised,
-                    annotation_set_id=annotation_set_id,
-                    session=self.document.project.session,
-                    spans=self.bboxes,
-                )
+                spans_bboxes = self.bboxes
             else:
                 raise ValueError('Cannot save an Annotation without Spans and Bboxes.')
+            response = post_document_annotation(
+                document_id=self.document.id_,
+                label_id=self.label.id_,
+                label_set_id=label_set_id,
+                confidence=self.confidence,
+                is_correct=self.is_correct,
+                revised=self.revised,
+                annotation_set_id=annotation_set_id,
+                session=self.document.project.session,
+                spans=spans_bboxes,
+            )
             if response.status_code == 201:
                 json_response = json.loads(response.text)
                 self.id_ = json_response['id']

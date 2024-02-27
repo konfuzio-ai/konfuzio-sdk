@@ -246,6 +246,23 @@ class TestOnlineProject(unittest.TestCase):
         assert annotation in doc.annotations()
         annotation.delete(delete_online=True)
 
+    def test_create_empty_bbox_annotation(self):
+        """Test creating an empty Annotation using empty Bbox is impossible."""
+        doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        label = self.project.get_label_by_id(862)
+        bbox = {'page_index': 0, 'x0': 1, 'x1': 4, 'y0': 1, 'y1': 4}
+        annotation_set = AnnotationSet(document=doc, label_set=self.project.get_label_set_by_id(64))
+        with pytest.raises(KeyError):
+            Annotation(
+                document=doc,
+                annotation_set=annotation_set,
+                label=label,
+                label_set_id=64,
+                accuracy=1.0,
+                is_correct=True,
+                bboxes=[bbox],
+            )
+
     def test_get_sentence_spans_from_bbox(self):
         """Test to get sentence Spans in a bounding box."""
         document = self.project.get_document_by_id(5679477)
