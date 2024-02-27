@@ -1,8 +1,9 @@
 """Utility functions for adapting Konfuzio concepts to be used with Pydantic models."""
 from pydantic import BaseModel
 
-from konfuzio_sdk.bento.extraction.schemas import ExtractResponse20240117
 from konfuzio_sdk.data import Category, Document, Page, Project
+
+from .schemas import ExtractResponse20240117
 
 
 def prepare_request(request) -> Document:
