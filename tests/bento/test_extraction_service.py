@@ -58,7 +58,6 @@ class TestExtractionAIBento(unittest.TestCase):
             ],
             'bboxes': self.test_document.get_bbox(),
         }
-        # prepared = convert_document_to_request(document=self.test_document, schema=ExtractRequest20240117)
         response = requests.post(url=self.request_url, json=data)
         logging_from_subprocess(process=self.bento_process, breaking_point='status=')
         assert len(response.json()['annotation_sets']) == 5

@@ -7,6 +7,8 @@ from pydantic import BaseModel
 class ExtractRequest20240117(BaseModel):
     """Describe a scheme for the extraction request on 17/01/2024."""
 
+    name: str = 'ExtractRequest20240117'
+
     class Bbox(BaseModel):
         """Describe a scheme for the Bbox class on 17/01/2024."""
 
@@ -30,6 +32,8 @@ class ExtractRequest20240117(BaseModel):
 
 class ExtractResponse20240117(BaseModel):
     """Describe a scheme for the extraction response on 17/01/2024."""
+
+    name: str = 'ExtractResponse20240117'
 
     class AnnotationSet(BaseModel):
         """Describe a scheme for the AnnotationSet class on 17/01/2024."""
