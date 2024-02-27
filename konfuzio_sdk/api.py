@@ -354,7 +354,7 @@ def get_page_image(document_id: int, page_number: int, session=None, thumbnail: 
     url = get_page_url(document_id=document_id, page_number=page_number, host=host)
 
     r = session.get(url)
-    image_url = f"{KONFUZIO_HOST}{r.json()['image_url']}"
+    image_url = f"{host}{r.json()['image_url']}"
     r = session.get(image_url)
 
     content_type = r.headers.get('content-type')
@@ -421,12 +421,12 @@ def post_document_annotation(
     if not all(isinstance(span, dict) for span in spans):
         spans = [
             {
-                "x0": span.bbox().x0,
-                "x1": span.bbox().x1,
-                "y0": span.bbox().y0,
-                "y1": span.bbox().y1,
-                "page_index": span.page.index,
-                "offset_string": span.offset_string,
+                'x0': span.bbox().x0,
+                'x1': span.bbox().x1,
+                'y0': span.bbox().y0,
+                'y1': span.bbox().y1,
+                'page_index': span.page.index,
+                'offset_string': span.offset_string,
             }
             for span in spans
         ]
@@ -437,8 +437,8 @@ def post_document_annotation(
         'revised': revised,
         'confidence': confidence,
         'is_correct': is_correct,
-        "origin": "api.v3",
-        "span": spans,
+        'origin': 'api.v3',
+        'span': spans,
     }
 
     if annotation_set_id is not None:
@@ -604,12 +604,12 @@ def upload_file_konfuzio_api(
 
     files = {'data_file': (os.path.basename(filepath), file_data, 'multipart/form-data')}
     data = {
-        "project": project_id,
-        "dataset_status": dataset_status,
-        "category": category_id,
-        "sync": sync,
-        "callback_url": callback_url,
-        "callback_status_code": callback_status_code,
+        'project': project_id,
+        'dataset_status': dataset_status,
+        'category': category_id,
+        'sync': sync,
+        'callback_url': callback_url,
+        'callback_status_code': callback_status_code,
     }
     # todo make it possible to set assignee to ''
     # issue https://git.konfuzio.com/konfuzio/objectives/-/issues/12225
