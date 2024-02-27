@@ -2373,7 +2373,7 @@ class Annotation(Data):
         """We compare an Annotation based on its Label, Label Sets if it's online otherwise on the id_local."""
         return (
             # ID comparison is a hotfix until we fix merge_bbox and start comparing Bboxes
-            ((self._spans.keys() == other._spans.keys()) or (self.id_ == other.id_))
+            ((self._spans.keys() == other._spans.keys()) or (self.id_ and other.id_ and self.id_ == other.id_))
             and self.label
             and other.label
             and (self.label == other.label)

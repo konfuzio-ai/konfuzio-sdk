@@ -1133,7 +1133,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         # In the latter case, the minimum information required is the start and end offsets corresponding
         # to the characters of each bbox.
         annotation_bboxes = [{'start_offset': 0, 'end_offset': 1}, {'start_offset': 3}]
-        with pytest.raises(ValueError, match='cannot read bbox'):
+        with pytest.raises(ValueError, match='cannot read Bbox'):
             Annotation(document=document, bboxes=annotation_bboxes, label=self.label, label_set=self.label_set)
 
     def test_add_annotation_with_label_set_none(self):
