@@ -354,7 +354,7 @@ def get_page_image(document_id: int, page_number: int, session=None, thumbnail: 
     url = get_page_url(document_id=document_id, page_number=page_number, host=host)
 
     r = session.get(url)
-    image_url = f"{host}{r.json()['image_url']}"
+    image_url = f"{host or KONFUZIO_HOST}{r.json()['image_url']}"
     r = session.get(image_url)
 
     content_type = r.headers.get('content-type')
