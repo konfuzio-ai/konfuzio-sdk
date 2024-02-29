@@ -14,7 +14,7 @@ from konfuzio_sdk.utils import logging_from_subprocess
 from tests.variables import OFFLINE_PROJECT
 
 
-@pytest.mark.skip(reason='Testing of the components requires starting a subprocess')
+@pytest.mark.skip(reason='Too lengthy for regular test pipelines')
 @pytest.mark.skipif(
     not is_dependency_installed('torch'),
     reason='Required dependencies not installed.',
@@ -60,8 +60,8 @@ class TestExtractionAIBento(unittest.TestCase):
         }
         response = requests.post(url=self.request_url, json=data)
         logging_from_subprocess(process=self.bento_process, breaking_point='status=')
-        assert len(response.json()) == 5
-        assert sum([len(element['annotations']) for element in response.json()]) == 19
+        assert len(response.json()['annotation_sets']) == 5
+        assert sum([len(element['annotations']) for element in response.json()['annotation_sets']]) == 19
 
     def test_wrong_input(self):
         """Test that it's impossible to send a request with a structure not adhering to schema."""
