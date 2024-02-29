@@ -63,3 +63,70 @@ class ExtractResponse20240117(BaseModel):
         annotations: List[Annotation]
 
     annotation_sets: List[AnnotationSet]
+
+
+class OMRRequest20240215(BaseModel):
+    """
+    Describe a scheme for the Optical Mark Recognition (OMR) request on 15/02/2024.
+
+    Info:
+    Just Annotations with the attribute is_linked_to_checkbox set to True are allowed.
+    The Page images need to be str-base64 encoded.
+    """
+
+    class Annotation(BaseModel):
+        """Describe a scheme for the Annotation info needed for OMR on 15/02/2024."""
+
+        class Box(BaseModel):
+            """Describe a scheme for BBox on 15/02/2024."""
+
+            x0: int
+            x1: int
+            y0: int
+            y1: int
+
+        page_id: int
+        annotation_id: str
+        bbox: Box
+
+    class Page(BaseModel):
+        """Describe a scheme for the Page info needed for OMR on 15/02/2024."""
+
+        page_id: int
+        width: int
+        height: int
+        image: str
+
+    pages: List[Page]
+    annotations: List[Annotation]
+
+
+class OMRResponse20240215(BaseModel):
+    """Describe a scheme for the Optical Mark Recognition (OMR) response on 15/02/2024."""
+
+    class MetaData(BaseModel):
+        """Describe a scheme for OMR meta data on 15/02/2024."""
+
+        class Meta(BaseModel):
+            """Describe a scheme for OMR meta data instance on 15/02/2024."""
+
+            class OMR(BaseModel):
+                """Describe a scheme for OMR checkbox data on 15/02/2024."""
+
+                class Box(BaseModel):
+                    """Describe a scheme for BBox on 15/02/2024."""
+
+                    x0: int
+                    x1: int
+                    y0: int
+                    y1: int
+
+                is_checked: Union[bool, None]  # None if undetermined or invalid
+                checkbox_bbox: Box
+                confidence: float
+
+            omr: OMR
+
+        annotation_id: Meta
+
+    metadata: MetaData
