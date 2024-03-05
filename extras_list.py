@@ -31,5 +31,6 @@ EXTRAS = {
         'transformers==4.30.2',
         'tensorflow-cpu==2.12.0',
         'timm==0.6.7',
+        'mlflow==2.9.2',
     ],
 }
