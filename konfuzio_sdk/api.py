@@ -31,6 +31,7 @@ from konfuzio_sdk.urls import (
     get_documents_meta_url,
     get_extraction_ais_list_url,
     get_labels_url,
+    get_page_image_url,
     get_page_url,
     get_project_categories_url,
     get_project_label_sets_url,
@@ -354,7 +355,7 @@ def get_page_image(document_id: int, page_number: int, session=None, thumbnail: 
     url = get_page_url(document_id=document_id, page_number=page_number, host=host)
 
     r = session.get(url)
-    image_url = f"{host}{r.json()['image_url']}"
+    image_url = get_page_image_url(page_url=r.json()['image_url'], host=host)
     r = session.get(image_url)
 
     content_type = r.headers.get('content-type')
@@ -611,8 +612,6 @@ def upload_file_konfuzio_api(
         'callback_url': callback_url,
         'callback_status_code': callback_status_code,
     }
-    # todo make it possible to set assignee to ''
-    # issue https://git.konfuzio.com/konfuzio/objectives/-/issues/12225
     if assignee:
         data['assignee'] = assignee
 

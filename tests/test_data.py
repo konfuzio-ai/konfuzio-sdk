@@ -280,7 +280,6 @@ class TestOnlineProject(unittest.TestCase):
         with pytest.raises(HTTPError, match='Invalid user'):
             doc.save_meta_data()
 
-        # todo add test for assignee change
         doc.assignee = None
         doc.dataset_status = 2
         doc.save_meta_data()
@@ -335,7 +334,7 @@ class TestOnlineProject(unittest.TestCase):
         assert doc.dataset_status == 1
         assert doc.assignee is None
 
-        with pytest.raises(HTTPError, match="documents which are part of a dataset"):
+        with pytest.raises(HTTPError, match='documents which are part of a dataset'):
             # Cannot delete Document with dataset_status != 0
             doc.delete(delete_online=True)
 
@@ -631,7 +630,9 @@ class TestOfflineExampleData(unittest.TestCase):
     def test_find_outlier_annotations(self):
         """Test finding the Annotations that are deemed outliers by several methods of search."""
         label = self.project.get_label_by_name('Austellungsdatum')
-        outliers = label.get_probable_outliers(self.project.categories, regex_worst_percentage=1.0, confidence_search=False)
+        outliers = label.get_probable_outliers(
+            self.project.categories, regex_worst_percentage=1.0, confidence_search=False
+        )
         outlier_spans = [span.offset_string for annotation in outliers for span in annotation.spans]
         assert len(outliers) == 1
         assert '328927/10103' in outlier_spans
