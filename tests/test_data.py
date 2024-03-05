@@ -320,7 +320,6 @@ class TestOnlineProject(unittest.TestCase):
         with pytest.raises(HTTPError, match='Invalid user'):
             doc.save_meta_data()
 
-        # todo add test for assignee change
         doc.assignee = None
         doc.dataset_status = 2
         doc.save_meta_data()

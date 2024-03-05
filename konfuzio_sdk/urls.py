@@ -7,8 +7,6 @@ from konfuzio_sdk import KONFUZIO_HOST
 
 logger = logging.getLogger(__name__)
 
-# todo replace "limit" with explanation that it's pagination and introduce offset
-
 # TOKEN-AUTH
 
 
@@ -21,12 +19,12 @@ def get_auth_token_url(host: str = None) -> str:
     """
     if host is None:
         host = KONFUZIO_HOST
-    return f"{host}/api/v3/auth/"
+    return f'{host}/api/v3/auth/'
 
 
 # PROJECTS
 
-# todo reuse pagination logic for fetching the projects
+
 def get_projects_list_url(limit: int = 1000, host: str = None) -> str:
     """
     Generate URL to list all the Projects available for the user.
@@ -36,7 +34,7 @@ def get_projects_list_url(limit: int = 1000, host: str = None) -> str:
     """
     if host is None:
         host = KONFUZIO_HOST
-    return f"{host}/api/v3/projects/?limit={limit}"
+    return f'{host}/api/v3/projects/?limit={limit}'
 
 
 def get_project_url(project_id: Union[int, None], host: str = None) -> str:
@@ -65,8 +63,8 @@ def get_documents_meta_url(project_id: int, offset: int = None, limit: int = 10,
     if host is None:
         host = KONFUZIO_HOST
     if offset is not None:
-        return f"{host}/api/v3/documents/?limit={limit}&project={project_id}&offset={offset}"
-    return f"{host}/api/v3/documents/?limit={limit}&project={project_id}"
+        return f'{host}/api/v3/documents/?limit={limit}&project={project_id}&offset={offset}'
+    return f'{host}/api/v3/documents/?limit={limit}&project={project_id}'
 
 
 def get_document_segmentation_details_url(
@@ -137,7 +135,7 @@ def get_upload_document_url(host: str = None) -> str:
     """
     if host is None:
         host = KONFUZIO_HOST
-    return f"{host}/api/v3/documents/"
+    return f'{host}/api/v3/documents/'
 
 
 def get_document_url(document_id: int, host: str = None) -> str:
@@ -150,7 +148,7 @@ def get_document_url(document_id: int, host: str = None) -> str:
     """
     if host is None:
         host = KONFUZIO_HOST
-    return f"{host}/api/v3/documents/{document_id}/"
+    return f'{host}/api/v3/documents/{document_id}/'
 
 
 def get_document_ocr_file_url(document_id: int, host: str = None) -> str:
@@ -254,7 +252,7 @@ def get_labels_url(host: str = None) -> str:
     """
     if host is None:
         host = KONFUZIO_HOST
-    return f"{host}/api/v3/labels/"
+    return f'{host}/api/v3/labels/'
 
 
 def get_project_labels_url(project_id: int, limit: int = 1000, host: str = None) -> str:
@@ -268,7 +266,7 @@ def get_project_labels_url(project_id: int, limit: int = 1000, host: str = None)
     """
     if host is None:
         host = KONFUZIO_HOST
-    return f"{host}/api/v3/labels/?project={project_id}&limit={limit}"
+    return f'{host}/api/v3/labels/?project={project_id}&limit={limit}'
 
 
 def get_project_label_sets_url(project_id: int, limit: int = 1000, host: str = None) -> str:
@@ -282,7 +280,7 @@ def get_project_label_sets_url(project_id: int, limit: int = 1000, host: str = N
     """
     if host is None:
         host = KONFUZIO_HOST
-    return f"{host}/api/v3/label-sets/?project={project_id}&limit={limit}"
+    return f'{host}/api/v3/label-sets/?project={project_id}&limit={limit}'
 
 
 def get_label_url(label_id: int, host: str = None) -> str:
@@ -295,7 +293,7 @@ def get_label_url(label_id: int, host: str = None) -> str:
     """
     if host is None:
         host = KONFUZIO_HOST
-    return f"{host}/api/v3/labels/{label_id}/"
+    return f'{host}/api/v3/labels/{label_id}/'
 
 
 # ANNOTATIONS
