@@ -71,6 +71,7 @@ class ModuleWrapper:
 
 datasets = PackageWrapper('datasets', ['File Splitting AI'])
 evaluate = PackageWrapper('evaluate', ['File Splitting AI'])
+mlflow = PackageWrapper('mlflow', ['File Splitting AI'])  #!TODO: Add to other AI types when needed
 spacy = PackageWrapper('spacy', ['Document Categorization AI'])
 if spacy.package:
     SpacyPhraseMatcher = spacy.matcher.PhraseMatcher

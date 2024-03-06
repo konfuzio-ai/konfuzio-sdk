@@ -2,7 +2,6 @@
 import abc
 import logging
 import os
-import time
 from copy import deepcopy
 from inspect import signature
 from typing import List, Union
@@ -14,7 +13,7 @@ from sklearn.utils.class_weight import compute_class_weight
 
 from konfuzio_sdk.data import Category, Document, Page
 from konfuzio_sdk.evaluate import FileSplittingEvaluation
-from konfuzio_sdk.extras import datasets, evaluate, tensorflow as tf, torch, transformers
+from konfuzio_sdk.extras import datasets, evaluate, mlflow, tensorflow as tf, torch, transformers
 from konfuzio_sdk.trainer.information_extraction import BaseModel
 from konfuzio_sdk.trainer.utils import BalancedLossTrainer, LoggerCallback
 from konfuzio_sdk.utils import get_timestamp
@@ -488,6 +487,8 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         self.model_name = 'distilbert-base-uncased'
         self.tokenizer = None
         self.transformers_tokenizer = None
+        self.use_mlflow = False
+        self.mlflow_run_id = None
 
     def reduce_model_weight(self):
         """Remove all non-strictly necessary parameters before saving."""
@@ -578,8 +579,8 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         try:
             class_weights = compute_class_weight('balanced', classes=[0, 1], y=train_labels)
         except ValueError:
-            logger.error(
-                'Your Dataset is composed of only first pages, no Splitting AI is needed! \
+            logger.warning(
+                'Your Dataset is composed of only first pages! \
                 You are about to train a Splitting AI for a one class classification task!'
             )
             class_weights = [1, 1]
@@ -607,12 +608,19 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         self.model = transformers.AutoModelForSequenceClassification.from_pretrained(self.model_name, num_labels=2)
         # move model to device
         self.model.to(device)
+        # getting MLflow variables
+        experiment_name = kwargs.get('experiment_name', None)
+        tracking_uri = kwargs.get('tracking_uri', None)
+        # check if both are not None then use MLflow
+        self.use_mlflow = experiment_name is not None and tracking_uri is not None
         # defining the training arguments
         training_args = transformers.TrainingArguments(
             output_dir='training_logs/textual_file_splitting_model_trainer',
             evaluation_strategy='epoch',
             save_strategy='epoch',
             load_best_model_at_end=True,
+            logging_steps=0.05,
+            save_total_limit=1,
             push_to_hub=False,
             learning_rate=3e-5,
             per_device_train_batch_size=train_batch_size,
@@ -620,9 +628,11 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
             num_train_epochs=epochs,
             weight_decay=1e-3,
             disable_tqdm=True,
+            report_to='mlflow' if self.use_mlflow else 'none',
+            no_cuda='cuda' not in device,
         )
         logger.info('=' * 50)
-        logger.info(f'[{time.ctime(time.time())}]\tStarting Training...')
+        logger.info(f'[{get_timestamp()}]\tStarting Training...')
         logger.info('\nConfiguration to be used for Training:')
         logger.info(f"Class weights for the training dataset: {[f'{weight:.2e}' for weight in class_weights]}")
         logger.info(f'Number of epochs: {epochs}')
@@ -636,20 +646,39 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
             train_dataset=train_dataset,
             eval_dataset=test_dataset,
             compute_metrics=compute_metrics,
-            callbacks=[LoggerCallback],
+            callbacks=[transformers.integrations.MLflowCallback] if self.use_mlflow else [LoggerCallback],
         )
         trainer.class_weights = class_weights
+        if self.use_mlflow:
+            logger.info(f'Using MLflow to track the experiment with experiment_name={experiment_name}')
+            # disabling MLflow artifacts logging
+            os.environ['HF_MLFLOW_LOG_ARTIFACTS'] = '0'
+            try:
+                mlflow.set_tracking_uri(tracking_uri)
+                _ = mlflow.set_experiment(experiment_name)
+                mlflow.start_run(run_name=f'splitting_run_{get_timestamp()}')
+                self.mlflow_run_id = mlflow.active_run().info.run_id
+            except Exception as e:
+                logger.error(f'Failed to start MLflow run. Training without MLflow tracking! Error: {e}')
+                self.use_mlflow = False
+        else:
+            logger.info('No experiment_id is passed, training without MLflow tracking.')
         # training the model
         trainer.train()
-        logger.info(f'[{time.ctime(time.time())}]\t🎉 Textual File Splitting Model fitting finished.')
+
+        logger.info(f'[{get_timestamp()}]\t🎉 Textual File Splitting Model Training finished.')
         logger.info('=' * 50)
-        logger.info(f'[{time.ctime(time.time())}]\tComputing AI Quality.')
+        logger.info(f'[{get_timestamp()}]\tComputing AI Quality.')
         # computing the AI quality
         evaluation_results = trainer.evaluate()
-        self.model = trainer.model
-        logger.info(f'[{time.ctime(time.time())}]\tTextual File Splitting Model Evaluation finished.')
-
+        logger.info(f'[{get_timestamp()}]\tTextual File Splitting Model Evaluation finished.')
         logger.info('=' * 50)
+        # making sure to end the MLflow run if it was started
+        if self.use_mlflow:
+            mlflow.end_run()
+        # saving the best model
+        self.model = trainer.model
+
         return evaluation_results
 
     def predict(
@@ -717,6 +746,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         globals()['Trainer'] = None
         globals()['BalancedLossTrainer'] = None
         globals()['LoggerCallback'] = None
+        globals()['mlflow'] = None
 
         del globals()['torch']
         del globals()['tf']
@@ -726,6 +756,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         del globals()['Trainer']
         del globals()['BalancedLossTrainer']
         del globals()['LoggerCallback']
+        del globals()['mlflow']
 
     @staticmethod
     def restore_dependencies():
@@ -735,7 +766,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         This is needed for proper functioning of a loaded model because we have previously removed these dependencies
         upon saving the model.
         """
-        from konfuzio_sdk.extras import Trainer, datasets, evaluate, tensorflow as tf, torch, transformers
+        from konfuzio_sdk.extras import Trainer, datasets, evaluate, mlflow, tensorflow as tf, torch, transformers
         from konfuzio_sdk.trainer.utils import BalancedLossTrainer, LoggerCallback
 
         globals()['torch'] = torch
@@ -746,6 +777,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         globals()['Trainer'] = Trainer
         globals()['BalancedLossTrainer'] = BalancedLossTrainer
         globals()['LoggerCallback'] = LoggerCallback
+        globals()['mlflow'] = mlflow
 
     def check_is_ready(self):
         """
