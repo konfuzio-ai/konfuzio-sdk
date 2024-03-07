@@ -809,7 +809,9 @@ def export_ai_models(project, session=None) -> int:
         variant = ai_type
         folder = os.path.join(project.project_folder, 'models', variant + '_ais')
 
-        for ai_model in project_ai_models.get(variant, {}).get('results', []):
+        ai_models = project_ai_models.get(variant, {}).get('results', [])
+
+        for ai_model in ai_models:
             # Only export fully trained AIs which are set as active
             if not ai_model.get('status') == 'done' or not ai_model.get('active'):
                 logger.error(f'Skip {ai_model} in export.')
@@ -858,4 +860,4 @@ def export_ai_models(project, session=None) -> int:
                 export_count += 1
 
                 print(f'[SUCCESS] Exported {variant} AI Model to {file_name}')
-            return export_count
+        return export_count
