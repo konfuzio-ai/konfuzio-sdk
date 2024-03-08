@@ -812,7 +812,7 @@ def export_ai_models(project, session=None) -> int:
 
         ai_models = project_ai_models.get(variant, {}).get('results', [])
 
-        for ai_model in ai_models:
+        for index, ai_model in enumerate(ai_models):
             # Only export fully trained AIs which are set as active
             if not ai_model.get('status') == 'done' or not ai_model.get('active'):
                 logger.error(f'Skip {ai_model} in export.')
@@ -858,8 +858,8 @@ def export_ai_models(project, session=None) -> int:
 
                 with open(local_model_path, 'wb') as f:
                     f.write(response.content)
-                exported_ais[variant] = local_model_path
 
+                exported_ais[variant + "_" + str(index)] = local_model_path
                 print(f'[SUCCESS] Exported {variant} AI Model to {file_name}')
 
     return exported_ais.keys().__len__()
