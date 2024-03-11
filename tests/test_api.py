@@ -14,6 +14,7 @@ from konfuzio_sdk import BASE_DIR
 from konfuzio_sdk.api import (
     TimeoutHTTPAdapter,
     _get_auth_token,
+    change_document_annotation,
     create_label,
     create_new_project,
     delete_document_annotation,
@@ -358,7 +359,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         negative_id = delete_document_annotation(annotation['id'])
         # delete it a second time to remove this Annotation from the feedback stored as negative
         assert delete_document_annotation(negative_id, delete_from_database=True).status_code == 204
-
+        
     def post_document_annotation_as_bboxes(self):
         """Test creating an Annotation that is based only on Bbox coordinates."""
         label_id = 862
@@ -383,6 +384,12 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         assert response.status_code == 201
         annotation = json.loads(response.text)
         assert delete_document_annotation(annotation['id'])
+        
+    def test_change_annotation(self):
+        """Test modifying an existing Annotation."""
+        r = change_document_annotation(annotation_id=4420022, label=860)
+        assert r.status_code == 200
+
 
     def test_get_project_labels(self):
         """Download Labels from API for a Project."""

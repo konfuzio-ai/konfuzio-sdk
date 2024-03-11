@@ -14,9 +14,9 @@ Get to know how to operate main Konfuzio concepts like Documents and Project, as
 
 Learn how to efficiently prepare your data for optimal processing. This tutorial covers data organization, cleaning, and formatting to ensure seamless integration with our AI models.
 
-2. :doc:`Create Annotations via API <tutorials/create-annotations-api/index>`
+2. :doc:`Create, change and delete Annotations via API <tutorials/create-annotations-api/index>`
 
-Get to know how to create different types of Annotations using methods from `konfuzio_sdk.api`.
+Get to know how to create, change and delete different types of Annotations using methods from `konfuzio_sdk.api`.
 
 .. toctree::
    :maxdepth: 1

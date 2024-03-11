@@ -456,6 +456,47 @@ def post_document_annotation(
     return r
 
 
+def change_document_annotation(annotation_id: int, session=None, **kwargs):
+    """
+    Change something about an Annotation.
+
+    :param annotation_id: ID of an Annotation to be changed
+    :param session: Konfuzio session with Retry and Timeout policy
+    :return: Response status.
+    """
+    if session is None:
+        session = konfuzio_session()
+
+    url = get_annotation_url(annotation_id=annotation_id)
+    label = kwargs.get('label', None)
+    is_correct = kwargs.get('is_correct', None)
+    revised = kwargs.get('revised', None)
+    span = kwargs.get('span', None)
+    label_set = kwargs.get('label_set', None)
+    annotation_set = kwargs.get('annotation_set', None)
+    selection_bbox = kwargs.get('selection_bbox', None)
+    data = {}
+    if label is not None:
+        data['label'] = label
+    if is_correct is not None:
+        data['is_correct'] = is_correct
+    if revised is not None:
+        data['revised'] = revised
+    if span is not None:
+        data['span'] = span
+    if label_set is not None:
+        data['label_set'] = label_set
+    if annotation_set is not None:
+        data['annotation_set'] = annotation_set
+    if selection_bbox is not None:
+        data['selection_bbox'] = selection_bbox
+    r = session.patch(url, json=data)
+    if r.status_code != 200:
+        logger.error(f'Received response status code {r.status_code}.')
+    assert r.status_code == 200
+    return r
+
+
 def delete_document_annotation(annotation_id: int, session=None, delete_from_database: bool = False, **kwargs):
     """
     Delete a given Annotation of the given document.
@@ -892,7 +933,8 @@ def export_ai_models(project, session=None) -> int:
     :return: Number of exported AIs
     """
     ai_types = set()  # Using a set to store unique AI types
-    export_count = 0  # Keeping track of how many models were exported
+    exported_ais = {} # Keeping track of the AIs that have been exported
+
     project_ai_models = project.ai_models
     for model_type, details in project_ai_models.items():
         count = details.get('count')
@@ -911,7 +953,9 @@ def export_ai_models(project, session=None) -> int:
         variant = ai_type
         folder = os.path.join(project.project_folder, 'models', variant + '_ais')
 
-        for ai_model in project_ai_models.get(variant, {}).get('results', []):
+        ai_models = project_ai_models.get(variant, {}).get('results', [])
+
+        for index, ai_model in enumerate(ai_models):
             # Only export fully trained AIs which are set as active
             if not ai_model.get('status') == 'done' or not ai_model.get('active'):
                 logger.error(f'Skip {ai_model} in export.')
@@ -957,7 +1001,8 @@ def export_ai_models(project, session=None) -> int:
 
                 with open(local_model_path, 'wb') as f:
                     f.write(response.content)
-                export_count += 1
 
+                exported_ais[variant + "_" + str(index)] = local_model_path
                 print(f'[SUCCESS] Exported {variant} AI Model to {file_name}')
-            return export_count
+
+    return exported_ais.keys().__len__()
