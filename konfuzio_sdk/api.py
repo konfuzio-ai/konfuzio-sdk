@@ -790,7 +790,8 @@ def export_ai_models(project, session=None) -> int:
     :return: Number of exported AIs
     """
     ai_types = set()  # Using a set to store unique AI types
-    export_count = 0  # Keeping track of how many models were exported
+    exported_ais = {} # Keeping track of the AIs that have been exported
+
     project_ai_models = project.ai_models
     for model_type, details in project_ai_models.items():
         count = details.get('count')
@@ -809,7 +810,9 @@ def export_ai_models(project, session=None) -> int:
         variant = ai_type
         folder = os.path.join(project.project_folder, 'models', variant + '_ais')
 
-        for ai_model in project_ai_models.get(variant, {}).get('results', []):
+        ai_models = project_ai_models.get(variant, {}).get('results', [])
+
+        for index, ai_model in enumerate(ai_models):
             # Only export fully trained AIs which are set as active
             if not ai_model.get('status') == 'done' or not ai_model.get('active'):
                 logger.error(f'Skip {ai_model} in export.')
@@ -855,7 +858,8 @@ def export_ai_models(project, session=None) -> int:
 
                 with open(local_model_path, 'wb') as f:
                     f.write(response.content)
-                export_count += 1
 
+                exported_ais[variant + "_" + str(index)] = local_model_path
                 print(f'[SUCCESS] Exported {variant} AI Model to {file_name}')
-            return export_count
+
+    return exported_ais.keys().__len__()
