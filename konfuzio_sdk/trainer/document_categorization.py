@@ -214,6 +214,13 @@ class AbstractCategorizationAI(BaseModel, metaclass=abc.ABCMeta):
             )
         return model
 
+    @property
+    def entrypoint_methods(self) -> dict:
+        """Methods that will be exposed in a bento-saved instance of a model."""
+        return {
+            'categorize': {'batchable': False},
+        }
+
 
 class NameBasedCategorizationAI(AbstractCategorizationAI):
     """A simple, non-trainable model that predicts a Category for a given Document based on a predefined rule.

@@ -1,6 +1,5 @@
 .. meta::
-   :description: Documentation of the coordinates system of the bounding boxes used in Konfuzio and some simple 
-examples of how to use it for visualization, for example.
+   :description: Documentation of the coordinates system of the bounding boxes used in Konfuzio and some simple examples of how to use it for visualization, for example.
 
 ## Coordinates System
 

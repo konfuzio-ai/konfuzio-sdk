@@ -26,6 +26,7 @@ from heapq import nsmallest
 from inspect import signature
 from typing import Dict, List, Optional, Tuple, Union
 
+import bentoml
 import numpy
 import pandas
 from sklearn.ensemble import RandomForestClassifier
@@ -822,12 +823,36 @@ class AbstractExtractionAI(BaseModel):
 
         self.evaluation = None
 
+    def build_bento(self, bento_model):
+        """Build BentoML service for the model."""
+        return bentoml.bentos.build(
+            name=f"extraction_{self.category.id_ if self.category else '0'}",
+            service=f'extraction/{self.name_lower()}_service.py:svc',
+            include=['extraction/*.py'],
+            python={'packages': ['konfuzio_sdk[ai]'], 'lock_packages': True},
+            build_ctx=os.path.dirname(os.path.abspath(__file__)) + '/../bento',
+            models=[str(bento_model.tag)],
+        )
+
     @property
     def project(self):
         """Get RFExtractionAI Project."""
         if not self.category:
             raise AttributeError(f'{self} has no Category.')
         return self.category.project
+
+    @property
+    def entrypoint_methods(self) -> dict:
+        """Methods that will be exposed in a bento-saved instance of a model."""
+        return {
+            'extract': {'batchable': False},
+            'evaluate': {'batchable': False},
+        }
+
+    @property
+    def bento_metadata(self) -> dict:
+        """Metadata to include into the bento-saved instance of a model."""
+        return {'requires_images': self.requires_images, 'requires_segmentation': self.requires_text}
 
     def check_is_ready(self):
         """
