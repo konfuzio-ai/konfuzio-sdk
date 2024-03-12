@@ -615,7 +615,7 @@ def download_file_konfuzio_api(document_id: int, ocr: bool = True, session=None)
     if content_type not in ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg']:
         logger.info(f'CONTENT TYP of {document_id} is {content_type} and no PDF or image.')
 
-    logger.info(f'Downloaded file {document_id} from {KONFUZIO_HOST}.')
+    logger.info(f'Downloaded file {document_id} from {url}.')
     return r.content
 
 
