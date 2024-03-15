@@ -4394,7 +4394,7 @@ class Project(Data):
         if include_ais:
             try:
                 print('[INFO] Starting AI Model file export!')
-                exported_ais = export_ai_models(self)
+                exported_ais = export_ai_models(self, category_ids=category_ids)
                 if exported_ais:
                     print(f'[INFO] Export finished. {exported_ais} AIs were available for export.')
                 else:
