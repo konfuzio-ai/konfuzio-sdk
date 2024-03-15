@@ -782,7 +782,7 @@ def get_all_project_ais(project_id: int, session=None) -> dict:
     return all_ais
 
 
-def export_ai_models(project, session=None) -> int:
+def export_ai_models(project, session=None, category_ids=None) -> int:
     """
     Export all AI Model files for a specific Project.
 
@@ -813,6 +813,8 @@ def export_ai_models(project, session=None) -> int:
         ai_models = project_ai_models.get(variant, {}).get('results', [])
 
         for index, ai_model in enumerate(ai_models):
+            # TODO add filter by categor_ids
+
             # Only export fully trained AIs which are set as active
             if not ai_model.get('status') == 'done' or not ai_model.get('active'):
                 logger.error(f'Skip {ai_model} in export.')
