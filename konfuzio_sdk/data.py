@@ -45,6 +45,7 @@ from konfuzio_sdk.utils import (
     convert_to_bio_scheme,
     exception_or_log_error,
     get_file_type_and_extension,
+    get_merged_bboxes,
     get_missing_offsets,
     is_file,
     sdk_isinstance,
@@ -2144,6 +2145,9 @@ class Annotation(Data):
         """
         Initialize the Annotation.
 
+        An Annotation can be created either using Spans or using Bboxes. Make sure that Bboxes supplied actually contain
+        text inside; supplying empty Bboxes will cause an error.
+
         :param label: ID of the Annotation
         :param is_correct: If the Annotation is correct or not (bool)
         :param revised: If the Annotation is revised or not (bool)
@@ -2262,14 +2266,21 @@ class Annotation(Data):
             )
             self.selection_bbox = Bbox(x0=x0, x1=x1, y0=y0, y1=y1, page=page)
 
+        self._bboxes = []
+
         # TODO START LEGACY to support multiline Annotations
         bboxes = kwargs.get('bboxes', None)
         if bboxes and len(bboxes) > 0:
             for bbox in bboxes:
+                # todo add comment about why we have _bboxes and why we have the checks below
                 if 'start_offset' in bbox.keys() and 'end_offset' in bbox.keys():
                     Span(start_offset=bbox['start_offset'], end_offset=bbox['end_offset'], annotation=self)
+                elif 'x0' in bbox.keys() and 'x1' in bbox.keys() and 'y0' in bbox.keys() and 'y1' in bbox.keys():
+                    page = self.document.get_page_by_index(bbox['page_index'])
+                    _ = Bbox(page=page, x0=bbox['x0'], x1=bbox['x1'], y0=bbox['y0'], y1=bbox['y1'])
+                    self._bboxes.append(_)
                 else:
-                    raise ValueError(f'SDK cannot read bbox of Annotation {self.id_} in {self.document}: {bbox}')
+                    raise ValueError(f'SDK cannot read Bbox of Annotation {self.id_} in {self.document}: {bbox}')
         elif (
             bboxes is None
             and kwargs.get('start_offset', None) is not None
@@ -2280,8 +2291,57 @@ class Annotation(Data):
             _ = Span(start_offset=kwargs.get('start_offset'), end_offset=kwargs.get('end_offset'), annotation=self)
             logger.warning(f'{self} is empty')
 
+        # checking that Bboxes provided as input contain text inside
+        if self._bboxes:
+            bbox_dicts = [
+                {
+                    'page_index': bbox.page.index,
+                    'top': bbox.page.height - bbox.y1,
+                    'bottom': bbox.page.height - bbox.y0,
+                    'x0': bbox.x0,
+                    'x1': bbox.x1,
+                    'y0': bbox.y0,
+                    'y1': bbox.y1,
+                }
+                for bbox in self._bboxes
+            ]
+            document_bbox_dicts = {
+                key: {
+                    'x0': value['x0'],
+                    'x1': value['x1'],
+                    'y0': value['y0'],
+                    'y1': value['y1'],
+                    'page_index': value['page_index'],
+                    'page_number': value['page_index'] + 1,
+                    'line_index': value['line_index'],
+                    'text': value['text'],
+                    'top': self.document.get_page_by_index(value['page_index']).height - value['y1'],
+                    'bottom': self.document.get_page_by_index(value['page_index']).height - value['y0'],
+                }
+                for key, value in self.document.get_bbox().items()
+            }
+            for bbox in bbox_dicts:
+                merged = get_merged_bboxes(doc_bbox=document_bbox_dicts, bboxes=[bbox], doc_text=self.document.text)
+                for merged_bbox in merged:
+                    _ = Bbox(
+                        page=self.document.get_page_by_index(merged_bbox['page_index']),
+                        x0=merged_bbox['x0'],
+                        x1=merged_bbox['x1'],
+                        y0=merged_bbox['y0'],
+                        y1=merged_bbox['y1'],
+                    )
+                    try:
+                        span = Span(start_offset=merged_bbox['start_offset'], end_offset=merged_bbox['end_offset'])
+                        self.add_span(span)
+                    except KeyError:
+                        raise KeyError(
+                            f'Cannot add {self} because Bbox {bbox} does not have any text inside and '
+                            f'it is not possible create Spans from the selected area. Please provide Bboxes'
+                            f'that have text inside them or Spans to create an Annotation.'
+                        )
+
         self.top = None
-        self.top = None
+        self.bottom = None
         self.x0 = None
         self.x1 = None
         self.y0 = None
@@ -2333,7 +2393,7 @@ class Annotation(Data):
             return f'Annotation ({self.get_link()}) without Label ({self.start_offset}, {self.end_offset})'
 
     def __eq__(self, other):
-        """We compare an Annotation based on it's Label, Label-Sets if it's online otherwise on the id_local."""
+        """We compare an Annotation based on its Label, Label Sets if it's online otherwise on the id_local."""
         return (
             (self._spans.keys() == other._spans.keys())
             and self.label
@@ -2456,6 +2516,12 @@ class Annotation(Data):
             # update_annotation(id_=self.id_, document_id=self.document.id_, project_id=self.project.id_)
 
         if not self.is_online:
+            if self.spans:
+                spans_bboxes = self.spans
+            elif self.bboxes:
+                spans_bboxes = self.bboxes
+            else:
+                raise ValueError('Cannot save an Annotation without Spans and Bboxes.')
             response = post_document_annotation(
                 document_id=self.document.id_,
                 label_id=self.label.id_,
@@ -2465,7 +2531,7 @@ class Annotation(Data):
                 revised=self.revised,
                 annotation_set_id=annotation_set_id,
                 session=self.document.project.session,
-                spans=self.spans,
+                spans=spans_bboxes,
             )
             if response.status_code == 201:
                 json_response = json.loads(response.text)
@@ -2575,15 +2641,13 @@ class Annotation(Data):
 
     def bbox(self) -> Bbox:
         """Get Bbox encompassing all Annotation Spans."""
-        if self._bbox is None:
-            self._bbox = Bbox(
-                x0=min([span.bbox().x0 for span in self.spans]),
-                x1=max([span.bbox().x1 for span in self.spans]),
-                y0=min([span.bbox().y0 for span in self.spans]),
-                y1=max([span.bbox().y1 for span in self.spans]),
-                page=self.page,
-            )
-        return self._bbox
+        self._bbox = Bbox(
+            x0=min([span.bbox().x0 for span in self.spans]),
+            x1=max([span.bbox().x1 for span in self.spans]),
+            y0=min([span.bbox().y0 for span in self.spans]),
+            y1=max([span.bbox().y1 for span in self.spans]),
+            page=self.page,
+        )
 
     @property
     def spans(self) -> List[Span]:
@@ -3233,12 +3297,12 @@ class Document(Data):
                         is_overlapping = latest_start - earliest_end < 0
                     else:
                         is_overlapping = True
-
                     if label is not None:  # filter by Label
                         if label == annotation.label and is_overlapping:
                             add = True
                     elif is_overlapping:
                         add = True
+
             # as multiline Annotations will be added twice
             if add:
                 annotations.append(annotation)

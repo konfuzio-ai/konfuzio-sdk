@@ -123,6 +123,16 @@ access the text under the Annotation, call `annotation.offset_string`.
 
 To see the Annotation in the Smartview, you can call `annotation.get_link()` and open the returned URL. 
 
+Annotation can be created in two ways: using Spans and using Bboxes. 
+
+To create an Annotation using Spans, generate all Spans you want to include into the Annotation using `Span` class and 
+supply a list of Spans into `spans` argument of `Annotation` class. 
+
+To create an Annotation using Bboxes, generate all Bboxes you want to include into the Annotation using `Bbox` class. 
+**Note**: make sure that all Bboxes you create actually contain OCR-recognized text inside them; otherwise, an Annotation 
+will not be created and an error will be raised. After creating the Bboxes, supply a list of them into `bboxes` keyword
+argument of `Annotation` class.
+
 .. _annotation-set-concept:
 
 ### Annotation Set
