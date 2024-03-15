@@ -1,7 +1,7 @@
 ## Install SDK
 
 To test our SDK you need to have an account in the Konfuzio Server and initialize the package before using it. \
-If you are using PyCharm have a look at [Quickstart with Pycharm](quickstart_pycharm.html) and if you like to get started within a Google Colab, checkout the getting started notebook here. <a href="https://colab.research.google.com/github/konfuzio-ai/konfuzio-sdk/blob/main/notebooks/Get_started_with_the_Konfuzio_SDK.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+If you are using PyCharm have a look at [Quickstart with Pycharm](quickstart_pycharm.html) and if you like to get started within a Google Colab, checkout the getting started notebook here. <a href="https://colab.research.google.com/github/konfuzio-ai/konfuzio-sdk/blob/master/notebooks/Get_started_with_the_Konfuzio_SDK.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
 
 ### 1. Sign up in Konfuzio Server
@@ -19,7 +19,7 @@ taking up more disk space). By default, the SDK is installed as a lightweight in
 
   `pip install konfuzio_sdk[ai]`
   
-  Currently, the full instance cannot be installed on MacOS machines with an ARM-based chip from the M-series. The `konfuzio_sdk` package can only be installed on MacOS on machines with an ARM chip if the lightweight instance is installed. However the Konfuzio SDK can be used on a hosted environment such as [Google Colab](https://colab.research.google.com/). For the installation and usage within colab, you can follow the getting started notebook here. <a href="https://colab.research.google.com/github/konfuzio-ai/konfuzio-sdk/blob/main/notebooks/Get_started_with_the_Konfuzio_SDK.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+  Currently, the full instance cannot be installed on MacOS machines with an ARM-based chip from the M-series. The `konfuzio_sdk` package can only be installed on MacOS on machines with an ARM chip if the lightweight instance is installed. However the Konfuzio SDK can be used on a hosted environment such as [Google Colab](https://colab.research.google.com/). For the installation and usage within colab, you can follow the getting started notebook here. <a href="https://colab.research.google.com/github/konfuzio-ai/konfuzio-sdk/blob/master/notebooks/Get_started_with_the_Konfuzio_SDK.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
 ---
 
