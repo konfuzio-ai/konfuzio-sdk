@@ -1144,6 +1144,9 @@ class Label(Data):
 
         self._has_multiline_annotations = None
 
+        # Attribute used to know if a Label is linked to a Checkbox or not
+        self.is_linked_to_checkbox = None
+
     def __repr__(self):
         """Return string representation."""
         return f'Label: {self.name}'
@@ -2310,6 +2313,9 @@ class Annotation(Data):
                 fail_loudly=self.document.project._strict_data_validation,
                 exception_type=NotImplementedError,
             )
+
+        # Meta date attribute containing information about e.g. omr
+        self.metadata = None
 
     def __repr__(self):
         """Return string representation."""
