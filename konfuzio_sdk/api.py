@@ -933,7 +933,7 @@ def export_ai_models(project, session=None) -> int:
     :return: Number of exported AIs
     """
     ai_types = set()  # Using a set to store unique AI types
-    exported_ais = {} # Keeping track of the AIs that have been exported
+    exported_ais = {}  # Keeping track of the AIs that have been exported
 
     project_ai_models = project.ai_models
     for model_type, details in project_ai_models.items():
@@ -1002,7 +1002,7 @@ def export_ai_models(project, session=None) -> int:
                 with open(local_model_path, 'wb') as f:
                     f.write(response.content)
 
-                exported_ais[variant + "_" + str(index)] = local_model_path
+                exported_ais[variant + '_' + str(index)] = local_model_path
                 print(f'[SUCCESS] Exported {variant} AI Model to {file_name}')
 
     return exported_ais.keys().__len__()
