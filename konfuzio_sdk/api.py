@@ -967,9 +967,9 @@ def export_ai_models(project, session=None) -> int:
                 continue
 
             model_url = get_ai_model_download_url(ai_model_id=ai_model_id, host=host)
-            response = project.session.get(model_url)
 
             try:
+                response = project.session.get(model_url)
                 response.raise_for_status()
             except HTTPError:
                 logger.error(
