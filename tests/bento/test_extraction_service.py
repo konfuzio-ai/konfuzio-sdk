@@ -25,8 +25,9 @@ class TestExtractionAIBento(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Create a model and its Bento instance of Extraction AI."""
-        cls.pipeline = RFExtractionAI()
         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
+        cls.test_document = cls.project.get_document_by_id(44823)
+        cls.pipeline = RFExtractionAI()
         cls.pipeline.tokenizer = WhitespaceTokenizer()
         cls.pipeline.category = cls.project.get_category_by_id(id_=63)
         cls.pipeline.documents = cls.pipeline.category.documents()
@@ -35,7 +36,6 @@ class TestExtractionAIBento(unittest.TestCase):
             documents=cls.pipeline.documents, require_revised_annotations=False
         )
         cls.pipeline.fit()
-        cls.test_document = cls.project.get_document_by_id(44823)
         bento, path = cls.pipeline.save_bento()
         cls.bento_name = bento.tag.name + ':' + bento.tag.version
         cls.bento_process = subprocess.Popen(
@@ -49,14 +49,27 @@ class TestExtractionAIBento(unittest.TestCase):
         """Test that only a schema-adhering response is accepted by extract method of service."""
         data = {
             'text': self.test_document.text,
-            'pages': [
-                {
-                    'number': 1,
-                    'original_size': [self.test_document.pages()[0].width, self.test_document.pages()[0].height],
-                    'image': None,
+            'bboxes': {
+                str(bbox_id): {
+                    'x0': bbox['x0'],
+                    'x1': bbox['x1'],
+                    'y0': bbox['y0'],
+                    'y1': bbox['y1'],
+                    'page': {
+                        'number': bbox['page_number'],
+                        'original_size': tuple(
+                            self.test_document.get_page_by_index(bbox['page_number'] - 1)._original_size
+                        ),
+                        'image': self.test_document.get_page_by_index(bbox['page_number'] - 1).image_bytes,
+                    },
+                    'text': bbox['text'],
                 }
+                for bbox_id, bbox in self.test_document.get_bbox().items()
+            },
+            'pages': [
+                {'number': page.number, 'original_size': page._original_size, 'image': page.image_bytes}
+                for page in self.test_document.pages()
             ],
-            'bboxes': self.test_document.get_bbox(),
         }
         response = requests.post(url=self.request_url, json=data)
         logging_from_subprocess(process=self.bento_process, breaking_point='status=')

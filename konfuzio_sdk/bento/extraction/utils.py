@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 from konfuzio_sdk.data import Category, Document, Page, Project
 
-from .schemas import ExtractResponse20240117
+from .schemas import ExtractRequest20240117Page, ExtractResponse20240117
 
 
 def prepare_request(request: BaseModel) -> Document:
@@ -17,10 +17,21 @@ def prepare_request(request: BaseModel) -> Document:
     project = Project(id_=None)
     project.set_offline()
     category = Category(project=project)
-    if 'ExtractResponse20240117' == request.name:
+    if 'ExtractRequest20240117' in str(request):
+        bboxes = {
+            bbox_id: {
+                'x0': bbox.x0,
+                'x1': bbox.x1,
+                'y0': bbox.y0,
+                'y1': bbox.y1,
+                'page_number': bbox.page.number,
+                'text': bbox.text,
+            }
+            for bbox_id, bbox in request.bboxes.items()
+        }
         document = Document(
             text=request.text,
-            bbox=request.bboxes,
+            bbox=bboxes,
             project=project,
             category=category,
         )
@@ -43,11 +54,23 @@ def convert_document_to_request(document: Document, schema: BaseModel):
     :returns: A Document converted in accordance with the schema.
     """
     pages = [
-        schema.Bbox.Page(number=page.number, image=page.image, original_size=page._original_size)
+        ExtractRequest20240117Page(number=page.number, image=page.image, original_size=page._original_size)
         for page in document.pages()
     ]
+    bboxes = {
+        str(bbox_id): schema.Bbox(
+            x0=bbox.x0,
+            x1=bbox.x1,
+            y0=bbox.y0,
+            y1=bbox.y1,
+            page=ExtractRequest20240117Page(
+                number=bbox.page.number, image=bbox.page.image, original_size=bbox.page._original_size
+            ),
+        )
+        for bbox_id, bbox in document.bboxes.items()
+    }
     if 'ExtractRequest20240117' in str(schema):
-        converted = schema(text=document.text, bboxes=document.bboxes, pages=pages)
+        converted = schema(text=document.text, bboxes=bboxes, pages=pages)
     else:
         raise NotImplementedError(
             'The request does not adhere to any version of schema. Please, modify the request to '
@@ -65,7 +88,7 @@ def process_response(result, schema=ExtractResponse20240117):
     :returns: A list of dictionaries with Label Set IDs and Annotation data.
     """
     annotations_result = []
-    if schema.__class__.__name__ == 'ExtractRequest20240117':
+    if schema.__class__.__name__ == 'ExtractResponse20240117':
         for annotation_set in result.annotation_sets():
             current_annotation_set = {'label_set_id': annotation_set.label_set.id_, 'annotations': []}
             for annotation in annotation_set.annotations(use_correct=False, ignore_below_threshold=True):
