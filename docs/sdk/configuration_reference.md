@@ -19,7 +19,7 @@ taking up more disk space). By default, the SDK is installed as a lightweight in
 
   `pip install konfuzio_sdk[ai]`
   
-  Currently, the full instance cannot be installed on MacOS machines with an ARM-based chip from the M-series. The `konfuzio_sdk` package can only be installed on MacOS on machines with an ARM chip if the lightweight instance is installed. However the Konfuzio SDK can be used on a hosted environment such as [Google Colab](https://colab.research.google.com/). For the installation and usage within colab, you can follow the getting started notebook here. <a href="https://colab.research.google.com/github/konfuzio-ai/konfuzio-sdk/blob/master/notebooks/Get_started_with_the_Konfuzio_SDK.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+  Currently, the full instance cannot be installed on MacOS machines with an ARM-based chip from the M-series. The `konfuzio_sdk` package can only be installed on MacOS on machines with an ARM chip if the lightweight instance is installed. However the Konfuzio SDK can be used on a hosted environment such as [Google Colab](https://colab.research.google.com/). For the installation and usage within Colab, you can follow the "Getting started" notebook here. <a href="https://colab.research.google.com/github/konfuzio-ai/konfuzio-sdk/blob/master/notebooks/Get_started_with_the_Konfuzio_SDK.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
 ---
 
@@ -50,7 +50,7 @@ konfuzio_sdk init --user your.email@konfuzio-server.com --password YourPassword 
 
 ### 4. Usage
 
-The following code snipped serves as a quick example for the SDK usage.
+The following code snippet serves as a quick example for the SDK usage.
 
 ```python
 from konfuzio_sdk.data import Project
