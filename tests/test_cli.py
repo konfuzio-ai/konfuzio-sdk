@@ -8,7 +8,7 @@ from unittest.mock import patch
 from io import StringIO
 import argparse
 
-from konfuzio_sdk.cli import credentials, main
+from konfuzio_sdk.cli import credentials, main, parse_args
 
 
 class TestCLI(TestCase):
@@ -38,7 +38,8 @@ class TestCLI(TestCase):
     @patch('konfuzio_sdk.cli.getpass', side_effect=['pw'])
     def test_username_password_custom_host(self, input, getpass):
         """Test to init with custom Host. See https://stackoverflow.com/a/55580216 and 56401696 for patches."""
-        args = argparse.ArgumentParser().parse_args()  # empty args namespace
+        parser = argparse.ArgumentParser()
+        args = parse_args(parser)
         assert credentials(args) == ('myuser', 'pw', 'https://konfuzio.yourcompany.com')
 
     @patch('builtins.input', side_effect=['myuser', ''])
