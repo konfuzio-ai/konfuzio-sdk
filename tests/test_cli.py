@@ -5,15 +5,11 @@ import sys
 from unittest import TestCase, mock
 from unittest.mock import patch
 
-from konfuzio_sdk.cli import CLI_ERROR, credentials, main
+from konfuzio_sdk.cli import credentials, main
 
 
 class TestCLI(TestCase):
     """Test the konfuzio_sdk CLI."""
-
-    def test_cli_error(self):
-        """Test if CLI print is available."""
-        assert 'Please enter a valid command line option.' in CLI_ERROR
 
     def test_help(self):
         """Test to run CLI."""
