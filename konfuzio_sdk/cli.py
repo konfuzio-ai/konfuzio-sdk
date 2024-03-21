@@ -18,9 +18,8 @@ A bug report can be filed at https://github.com/konfuzio-ai/konfuzio-sdk/issues.
 """
 
 
-def parse_args():
+def parse_args(parser):
     """Parse command line arguments using sub-parsers for each command."""
-    parser = argparse.ArgumentParser(description='CLI for Konfuzio SDK', epilog=CLI_EPILOG)
     subparsers = parser.add_subparsers(dest='command')
 
     # Sub-parser for init command
@@ -57,7 +56,8 @@ def credentials(args):
 
 def main():
     """CLI of Konfuzio SDK."""
-    args = parse_args()
+    parser = argparse.ArgumentParser(description='CLI for Konfuzio SDK', epilog=CLI_EPILOG)
+    args = parse_args(parser)
     if args.command == 'init':
         user, password, host = credentials(args)
         init_env(user=user, password=password, host=host)
@@ -67,9 +67,7 @@ def main():
     elif args.command == 'create_project':
         create_new_project(args.name)
     else:
-        sys.argv.append('--help')
-        return -1
-    return 0
+        parser.print_help()
 
 
 if __name__ == '__main__':
