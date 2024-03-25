@@ -219,19 +219,34 @@ def compare(
         & ((~spans['is_matched']) | (~spans['above_predicted_threshold']) | (spans['label_id_predicted'].isna()))
     )
 
-    spans['false_positive'] = (  # commented out on purpose (spans["is_correct"]) &
-        (spans['above_predicted_threshold'])
-        & (~spans['false_negative'])
-        & (~spans['true_positive'])
-        & (~spans['duplicated_predicted'])
-        & (  # Something is wrong
-            (~spans['is_correct_label'])
-            | (~spans['is_correct_label_set'])
-            | (~spans['is_correct_annotation_set_id'])
-            | (~spans['is_correct_id_'])
-            | (~spans['is_matched'])
+    if strict:
+        spans['false_positive'] = (  # commented out on purpose (spans["is_correct"]) &
+            (spans['above_predicted_threshold'])
+            & (~spans['true_positive'])
+            & (~spans['duplicated_predicted'])
+            & (  # Something is wrong
+                (~spans['is_correct_label'])
+                | (~spans['is_correct_label_set'])
+                | (~spans['is_correct_annotation_set_id'])
+                | (~spans['is_correct_id_'])
+                | (~spans['is_matched'])
+            )
         )
-    )
+
+    else:
+        spans['false_positive'] = (
+            (spans['above_predicted_threshold'])
+            & (~spans['false_negative'])
+            & (~spans['true_positive'])
+            & (~spans['duplicated_predicted'])
+            & (
+                (~spans['is_correct_label'])
+                | (~spans['is_correct_label_set'])
+                | (~spans['is_correct_annotation_set_id'])
+                | (~spans['is_correct_id_'])
+                | (~spans['is_matched'])
+            )
+        )
 
     if not strict:
 
