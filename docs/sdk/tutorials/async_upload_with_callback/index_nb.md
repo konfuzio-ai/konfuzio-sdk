@@ -36,6 +36,13 @@ This tutorial aims to guide users in efficiently uploading a large number of fil
 - Automated Update of Files
 ---
 
+### Environment
+You need to install the Konfuzio SDK before diving into the tutorial. \
+To get up and running quickly, you can use our Colab Quick Start notebook. \
+<a href="https://colab.research.google.com/github/konfuzio-ai/konfuzio-sdk/blob/master/notebooks/Get_started_with_the_Konfuzio_SDK.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+
+As an alternative you can follow the [installation section](get_started.html#install-sdk) to install and initialize the Konfuzio SDK locally or on an environment of your choice.
+
 ### Introduction
 
 Uploading a large number of files to Konfuzio can be made highly convenient by employing the `Document.from_file` method in asynchronous mode. This approach allows for the simultaneous upload of multiple files without the need to wait for backend processing. However, a drawback of this method is the lack of real-time updates on processing status. This tutorial outlines a solution using a webhook callback URL to receive notifications once processing is complete, allowing for timely access to results.

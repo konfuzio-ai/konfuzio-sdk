@@ -27,6 +27,13 @@ jupyter:
 
 ---
 
+### Environment
+You need to install the Konfuzio SDK before diving into the tutorial. \
+To get up and running quickly, you can use our Colab Quick Start notebook. \
+<a href="https://colab.research.google.com/github/konfuzio-ai/konfuzio-sdk/blob/master/notebooks/Get_started_with_the_Konfuzio_SDK.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+
+As an alternative you can follow the [installation section](get_started.html#install-sdk) to install and initialize the Konfuzio SDK locally or on an environment of your choice.
+
 ### Introduction
 
 Konfuzio SDK offers several approaches for automatically splitting a multi-Document file into several Documents. One of them is Context-Aware File Splitting AI that uses a context-aware logic. By context-aware we mean a rule-based approach that looks for common strings between the first Pages of all Category's Documents. Upon predicting whether a Page is a potential splitting point (meaning whether it is 
