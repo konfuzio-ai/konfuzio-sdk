@@ -32,7 +32,7 @@ You need to install the Konfuzio SDK before diving into the tutorial. \
 To get up and running quickly, you can use our Colab Quick Start notebook. \
 <a href="https://colab.research.google.com/github/konfuzio-ai/konfuzio-sdk/blob/master/notebooks/Get_started_with_the_Konfuzio_SDK.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
-As an alternative you can follow the [installation section](get_started.html#install-sdk) to install and initialize the Konfuzio SDK locally or on an environment of your choice.
+As an alternative you can follow the [installation section](../get_started.html#install-sdk) to install and initialize the Konfuzio SDK locally or on an environment of your choice.
 
 ### Introduction
 In this tutorial, we will explore the concept of tokenization and the various tokenization strategies available in the Konfuzio SDK. Tokenization is a foundational tool in natural language processing (NLP) that involves breaking text into smaller units called tokens. We will focus on the <a href="#whitespace-tokenization">WhitespaceTokenizer</a>, <a href="#regex-tokenization-for-specific-labels">Label-Specific RegexTokenizer</a>, <a href="#paragraph-tokenization">ParagraphTokenizer</a>, and <a href="#sentence-tokenization">SentenceTokenizer</a> as different tools for different tokenization tasks. Additionally, we will discuss <a href="#choosing-the-right-tokenizer">how to choose</a> the right tokenizer and <a href="#verify-that-a-tokenizer-finds-all-labels">how to verify</a> that a tokenizer has found all Labels.
