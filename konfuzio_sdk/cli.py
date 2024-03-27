@@ -1,5 +1,6 @@
 """Command Line interface to the konfuzio_sdk package."""
 
+import argparse
 import logging
 import sys
 from getpass import getpass
@@ -11,54 +12,62 @@ sys.tracebacklimit = 0
 
 logger = logging.getLogger(__name__)
 
-CLI_ERROR = """
-Please enter a valid command line option.
-----------------------------------------
-
-konfuzio_sdk init
-    add the API Token as .env file to connect to the Konfuzio Server, i.e. Host
-konfuzio_sdk create_Project >NAME<
-    Create a new Project on the Konfuzio Server. Returns the ID of the new Project.
-konfuzio_sdk export_project >ID<
-    Download the data from a Project by ID to migrate it to another Host.
-konfuzio_sdk export_project >ID< include_ai
-    Download the data of a Project by ID to migrate it to another Host, including the (status) Done & Activated AI
-    models
-
-These commands should be run inside of your working directory.
-
-A bug report can be filed at https://github.com/konfuzio-ai/document-ai-python-sdk/issues. Thanks!
+CLI_EPILOG = """
+These commands should be run inside of your working directory.\n
+A bug report can be filed at https://github.com/konfuzio-ai/konfuzio-sdk/issues. Thanks!
 """
 
 
-def credentials():
-    """Retrieve user input."""
-    user = input('Username you use to login to Konfuzio Server: ')
-    password = getpass('Password you use to login to Konfuzio Server: ')
-    host = str(
-        input('Server Host URL (press [ENTER] for https://app.konfuzio.com): ') or 'https://app.konfuzio.com'
-    ).rstrip('/')
+def parse_args(parser):
+    """Parse command line arguments using sub-parsers for each command."""
+    subparsers = parser.add_subparsers(dest='command')
+
+    # Sub-parser for init command
+    init_parser = subparsers.add_parser('init', help='Initialize the SDK with user credentials')
+    init_parser.add_argument('--user', help='Username for Konfuzio Server', default=None)
+    init_parser.add_argument('--password', help='Password for Konfuzio Server', default=None)
+    init_parser.add_argument('--host', help='Server Host URL', default=None)
+
+    # Sub-parser for create_project command
+    create_project_parser = subparsers.add_parser('create_project', help='Create a new project')
+    create_project_parser.add_argument('name', help='Name of the new project')
+
+    # Sub-parser for export_project command
+    export_project_parser = subparsers.add_parser('export_project', help='Export project data')
+    export_project_parser.add_argument('id', help='ID of the project to export', type=int)
+    export_project_parser.add_argument('--include_ai', action='store_true', help='Include AI models in the export')
+
+    return parser.parse_args()
+
+
+def credentials(args):
+    """Retrieve user input or use CLI arguments."""
+    user = args.user if args.user else input('Username you use to login to Konfuzio Server: ')
+    password = args.password if args.password else getpass('Password you use to login to Konfuzio Server: ')
+    host = (
+        args.host
+        if args.host
+        else str(
+            input('Server Host URL (press [ENTER] for https://app.konfuzio.com): ') or 'https://app.konfuzio.com'
+        ).rstrip('/')
+    )
     return user, password, host
 
 
 def main():
     """CLI of Konfuzio SDK."""
-    _cli_file_path = sys.argv.pop(0)
-    if len(sys.argv) == 1 and sys.argv[0] == 'init':
-        user, password, host = credentials()
+    parser = argparse.ArgumentParser(description='CLI for Konfuzio SDK', epilog=CLI_EPILOG)
+    args = parse_args(parser)
+    if args.command == 'init':
+        user, password, host = credentials(args)
         init_env(user=user, password=password, host=host)
-    elif len(sys.argv) in range(2, 4) and sys.argv[0] == 'export_project' and sys.argv[1].isdigit():
-        include_ais = False
-        if len(sys.argv) == 3:
-            include_ais = True if sys.argv[2] == 'include_ai' else False
-        project = Project(id_=int(sys.argv[1]))
-        project.export_project_data(include_ais=include_ais)
-    elif len(sys.argv) == 2 and sys.argv[0] == 'create_project' and sys.argv[1]:
-        create_new_project(sys.argv[1])
+    elif args.command == 'export_project':
+        project = Project(id_=args.id)
+        project.export_project_data(include_ais=args.include_ai)
+    elif args.command == 'create_project':
+        create_new_project(args.name)
     else:
-        print(CLI_ERROR)
-        return -1
-    return 0
+        parser.print_help()
 
 
 if __name__ == '__main__':
