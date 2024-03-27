@@ -312,21 +312,36 @@ class Page(Data):
         char_bboxes = self.get_bbox().values()
         char_bboxes = sorted(char_bboxes, key=lambda x: x['char_index'])
 
-        # iterate over each line_number and all of the character bboxes with that line number
+        # iterate over each line_number and all the character bboxes with that line number
 
-        for _, line_char_bboxes in itertools.groupby(char_bboxes, lambda x: x['line_number']):
-            # (a line should never start with a space char)
-            trimmed_line_char_bboxes = [char for char in line_char_bboxes if not char['text'].isspace()]
+        if 'line_number' in [bbox.keys() for bbox in char_bboxes][0]:
+            for _, line_char_bboxes in itertools.groupby(char_bboxes, lambda x: x['line_number']):
+                # (a line should never start with a space char)
+                trimmed_line_char_bboxes = [char for char in line_char_bboxes if not char['text'].isspace()]
 
-            if len(trimmed_line_char_bboxes) == 0:
-                continue
+                if len(trimmed_line_char_bboxes) == 0:
+                    continue
 
-            # create Span from the line characters bboxes
-            start_offset = min((char_bbox['char_index'] for char_bbox in trimmed_line_char_bboxes))
-            end_offset = max((char_bbox['char_index'] for char_bbox in trimmed_line_char_bboxes)) + 1
-            span = Span(start_offset=start_offset, end_offset=end_offset, document=self.document)
+                # create Span from the line characters bboxes
+                start_offset = min((char_bbox['char_index'] for char_bbox in trimmed_line_char_bboxes))
+                end_offset = max((char_bbox['char_index'] for char_bbox in trimmed_line_char_bboxes)) + 1
+                span = Span(start_offset=start_offset, end_offset=end_offset, document=self.document)
 
-            lines_spans.append(span)
+                lines_spans.append(span)
+        elif 'line_index' in [bbox.keys() for bbox in char_bboxes][0]:
+            for _, line_char_bboxes in itertools.groupby(char_bboxes, lambda x: x['line_index'] + 1):
+                # (a line should never start with a space char)
+                trimmed_line_char_bboxes = [char for char in line_char_bboxes if not char['text'].isspace()]
+
+                if len(trimmed_line_char_bboxes) == 0:
+                    continue
+
+                # create Span from the line characters bboxes
+                start_offset = min((char_bbox['char_index'] for char_bbox in trimmed_line_char_bboxes))
+                end_offset = max((char_bbox['char_index'] for char_bbox in trimmed_line_char_bboxes)) + 1
+                span = Span(start_offset=start_offset, end_offset=end_offset, document=self.document)
+
+                lines_spans.append(span)
 
         return lines_spans
 
@@ -1769,7 +1784,8 @@ class Span(Data):
         self._page: Union[Page, None] = None
         self._bbox: Union[Bbox, None] = None
         self.regex_matching = []
-        annotation and annotation.add_span(self)  # only add if Span has access to an Annotation
+        if annotation and self not in annotation.spans:  # only add if Span has access to an Annotation
+            annotation.add_span(self)
         self._valid(strict_validation)
 
     def _valid(self, strict: bool = True, handler: str = 'sdk_validation'):
@@ -3834,10 +3850,12 @@ class Document(Data):
                 # they are ignored now
                 no_label_raw_annotations = []
                 for raw_annotation in raw_annotations:
-                    if 'label_text' in raw_annotation.keys() and raw_annotation['label_text'] == 'NO_LABEL':
-                        no_label_raw_annotations.append(raw_annotation)
-                    elif raw_annotation['label']['name'] == 'NO_LABEL':
-                        no_label_raw_annotations.append(raw_annotation)
+                    if 'label_text' in raw_annotation.keys():
+                        if raw_annotation['label_text'] == 'NO_LABEL':
+                            no_label_raw_annotations.append(raw_annotation)
+                    elif isinstance(raw_annotation['label'], dict):
+                        if raw_annotation['label']['name'] == 'NO_LABEL':
+                            no_label_raw_annotations.append(raw_annotation)
 
                 raw_annotations = no_label_raw_annotations
 
@@ -4375,16 +4393,29 @@ class Project(Data):
                 category_id = document_data['category_template']
             doc_category = self.get_category_by_id(category_id) if category_id else self.no_category
             document_data.pop('category', None)
+            status = document_data['status_data']
+            document_data.pop('status_data', None)
+            dataset_status = document_data['dataset_status']
+            document_data.pop('dataset_status', None)
             if updated:
                 doc = local_docs_dict[document_data['id']]
-                doc.update_meta_data(category=doc_category, **document_data)
+                doc.update_meta_data(
+                    category=doc_category, status=status, dataset_status=dataset_status, **document_data
+                )
                 doc.update()
                 logger.debug(f'{doc} was updated, we will download it again as soon you use it.')
                 n_updated_documents += 1
             elif new:
                 document_data.pop('project', None)
+                document_data.pop('status', None)
                 doc = Document(
-                    project=self, update=from_online, id_=document_data['id'], category=doc_category, **document_data
+                    project=self,
+                    update=from_online,
+                    id_=document_data['id'],
+                    category=doc_category,
+                    status=status,
+                    dataset_status=dataset_status,
+                    **document_data,
                 )
                 logger.debug(f'{doc} is not available on your machine, we will download it as soon you use it.')
                 n_new_documents += 1

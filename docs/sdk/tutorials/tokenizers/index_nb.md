@@ -59,7 +59,7 @@ from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
 Next, initialize a Project and a Document instance. The variables `TEST_PROJECT_ID` and `TEST_DOCUMENT_ID` are placeholders that need to be replaced with actual values when running these steps. Make sure to use a Project and a Document to which you have access.
 
 ```python tags=["remove-output"]
-project = Project(id_=TEST_PROJECT_ID)
+project = Project(id_=TEST_PROJECT_ID, update=True)
 document = project.get_document_by_id(TEST_DOCUMENT_ID)
 ```
 
