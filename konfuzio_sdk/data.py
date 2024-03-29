@@ -4418,6 +4418,9 @@ class Project(Data):
                 n_new_documents += 1
             else:
                 doc = local_docs_dict[document_data['id']]
+                if 'status' in document_data:
+                    status = document_data['status']
+                document_data.pop('status', None)
                 doc.update_meta_data(
                     category=doc_category, status=status, **document_data
                 )  # reset any Document level meta data changes
