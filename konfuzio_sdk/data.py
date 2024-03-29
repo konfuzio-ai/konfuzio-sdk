@@ -2875,7 +2875,7 @@ class Document(Data):
                 update=True,
                 category_template=category_id if category_id else response['category'],
                 text=response['text'],
-                status=status,
+                status=status[0],
                 data_file_name=response['data_file_name'],
                 file_url=response['file_url'],
                 dataset_status=dataset_status,
@@ -2886,7 +2886,7 @@ class Document(Data):
                 project=project,
                 update=True,
                 category_template=category_id,
-                status=[0, 'Queuing for OCR'],
+                status=[0],
                 data_file_name=response['data_file_name'],
                 dataset_status=dataset_status,
             )
@@ -4395,18 +4395,16 @@ class Project(Data):
             document_data.pop('category', None)
             status = document_data['status_data']
             document_data.pop('status_data', None)
-            dataset_status = document_data['dataset_status']
-            document_data.pop('dataset_status', None)
             if updated:
                 doc = local_docs_dict[document_data['id']]
-                doc.update_meta_data(
-                    category=doc_category, status=status, dataset_status=dataset_status, **document_data
-                )
+                doc.update_meta_data(category=doc_category, status=status, **document_data)
                 doc.update()
                 logger.debug(f'{doc} was updated, we will download it again as soon you use it.')
                 n_updated_documents += 1
             elif new:
                 document_data.pop('project', None)
+                if 'status' in document_data:
+                    status = document_data['status']
                 document_data.pop('status', None)
                 doc = Document(
                     project=self,
@@ -4414,7 +4412,6 @@ class Project(Data):
                     id_=document_data['id'],
                     category=doc_category,
                     status=status,
-                    dataset_status=dataset_status,
                     **document_data,
                 )
                 logger.debug(f'{doc} is not available on your machine, we will download it as soon you use it.')
@@ -4422,7 +4419,7 @@ class Project(Data):
             else:
                 doc = local_docs_dict[document_data['id']]
                 doc.update_meta_data(
-                    category=doc_category, **document_data
+                    category=doc_category, status=status, **document_data
                 )  # reset any Document level meta data changes
                 logger.debug(f'Unchanged local version of {doc} from {new_date}.')
                 n_unchanged_documents += 1
