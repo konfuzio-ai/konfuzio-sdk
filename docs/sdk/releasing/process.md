@@ -3,7 +3,7 @@
 
 Every day when there is a verified and approved change a new pre-release of the SDK (master branch) is released to <https://pypi.org/project/konfuzio-sdk/#history> at 5:19 AM UTC (3:19 AM UTC+2, see code [here](https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/.github/workflows/nightly.yml)).
 
-Every day when there is a verified and approved change a new pre-release of the DVUI (master branch) is released to <https://www.npmjs.com/package/@konfuzio/document-validation-ui?activeTab=versions> at 5:19 AM UTC (3:19 AM UTC+2, see code [here](https://github.com/konfuzio-ai/document-validation-ui/blob/main/.github/workflows/dvui-prerelease.yml)).
+Every day when there is a verified and approved change a new pre-release of the DVUI (main branch) is released to <https://www.npmjs.com/package/@konfuzio/document-validation-ui?activeTab=versions> at 5:19 AM UTC (3:19 AM UTC+2, see code [here](https://github.com/konfuzio-ai/document-validation-ui/blob/main/.github/workflows/dvui-prerelease.yml)).
 
 Every day at 6:13 AM UTC a new nightly internal release of the Server using the latest pre-release of the SDK and the DVUI is deployed at <https://testing.konfuzio.com/> as a Gitlab schedule from our Server repository.
 
