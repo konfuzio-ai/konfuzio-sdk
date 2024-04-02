@@ -314,6 +314,8 @@ class Page(Data):
 
         # iterate over each line_number and all the character bboxes with that line number
 
+        # condition for backward compatibility that checks if bbox file structure includes 'line_number' or
+        # 'line_index' and parses the file accordingly.
         if 'line_number' in [bbox.keys() for bbox in char_bboxes][0]:
             for _, line_char_bboxes in itertools.groupby(char_bboxes, lambda x: x['line_number']):
                 # (a line should never start with a space char)
@@ -329,6 +331,7 @@ class Page(Data):
 
                 lines_spans.append(span)
         elif 'line_index' in [bbox.keys() for bbox in char_bboxes][0]:
+            # line index is always less than line_index by 1, e.g. if line_index is 0, line_number is 1
             for _, line_char_bboxes in itertools.groupby(char_bboxes, lambda x: x['line_index'] + 1):
                 # (a line should never start with a space char)
                 trimmed_line_char_bboxes = [char for char in line_char_bboxes if not char['text'].isspace()]
@@ -1784,6 +1787,7 @@ class Span(Data):
         self._page: Union[Page, None] = None
         self._bbox: Union[Bbox, None] = None
         self.regex_matching = []
+        # check because we don't want to add a Span multiple times to the Annotation
         if annotation and self not in annotation.spans:  # only add if Span has access to an Annotation
             annotation.add_span(self)
         self._valid(strict_validation)
@@ -2875,7 +2879,7 @@ class Document(Data):
                 update=True,
                 category_template=category_id if category_id else response['category'],
                 text=response['text'],
-                status=status[0],
+                status=status[0],  # we want a numeric representation of status, e.g. 2, not the textual, e.g. "Done"
                 data_file_name=response['data_file_name'],
                 file_url=response['file_url'],
                 dataset_status=dataset_status,
@@ -2886,7 +2890,7 @@ class Document(Data):
                 project=project,
                 update=True,
                 category_template=category_id,
-                status=[0],
+                status=[0],  # numeric representation of a status that means "queueing for ocr"
                 data_file_name=response['data_file_name'],
                 dataset_status=dataset_status,
             )
@@ -3850,6 +3854,9 @@ class Document(Data):
                 # they are ignored now
                 no_label_raw_annotations = []
                 for raw_annotation in raw_annotations:
+                    # we want to ensure that both label files of old structure that have 'label_text' field and label
+                    # files of a new structure that have 'label' field that is a dict with nested elements are properly
+                    # parsed
                     if 'label_text' in raw_annotation.keys():
                         if raw_annotation['label_text'] == 'NO_LABEL':
                             no_label_raw_annotations.append(raw_annotation)
@@ -4393,6 +4400,8 @@ class Project(Data):
                 category_id = document_data['category_template']
             doc_category = self.get_category_by_id(category_id) if category_id else self.no_category
             document_data.pop('category', None)
+            # ensuring we store document status in a variable and don't pass it multiple times by not removing it from
+            # document_data
             status = document_data['status_data']
             document_data.pop('status_data', None)
             if updated:
@@ -4403,6 +4412,8 @@ class Project(Data):
                 n_updated_documents += 1
             elif new:
                 document_data.pop('project', None)
+                # ensuring we store dataset status in a variable and don't pass it multiple times by not removing it
+                # from document_data
                 if 'status' in document_data:
                     status = document_data['status']
                 document_data.pop('status', None)
