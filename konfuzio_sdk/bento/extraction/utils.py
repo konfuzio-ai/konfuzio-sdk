@@ -103,7 +103,19 @@ def convert_document_to_request(document: Document, schema: BaseModel = ExtractR
     if schema.__name__ == 'ExtractRequest20240117':
         converted = schema(
             text=document.text,
-            bboxes={k: {'x0': v.x0, 'x1': v.x1, 'y0': v.y0, 'y1': v.y1} for k, v in document.bboxes.items()},
+            bboxes={
+                k: {
+                    'x0': v.x0,
+                    'x1': v.x1,
+                    'y0': v.y0,
+                    'y1': v.y1,
+                    'page_number': v.page.number,
+                    'top': v.top,
+                    'bottom': v.bottom,
+                    'text': document.text[k],
+                }
+                for k, v in document.bboxes.items()
+            },
             pages=pages,
         )
     else:
@@ -114,7 +126,7 @@ def convert_document_to_request(document: Document, schema: BaseModel = ExtractR
     return converted
 
 
-def convert_response_to_annotations(annotation_sets: BaseModel, document: Document, schema: BaseModel):
+def convert_response_to_annotations(response: BaseModel, document: Document):
     """
     Receive an ExtractResponse and convert it into a list of Annotations to be added to the Document.
 
@@ -123,10 +135,10 @@ def convert_response_to_annotations(annotation_sets: BaseModel, document: Docume
     :param schema: A schema to which the annotations should adhere.
     :returns: The original Document with added Annotations.
     """
-    if schema.__name__ == 'ExtractResponse20240117':
-        for annotation_set in annotation_sets:
+    if response.__class__.__name__ == 'ExtractResponse20240117':
+        for annotation_set in response.annotation_sets:
             sdk_annotation_set = AnnotationSet(
-                document=document, label_set_id=document.project.get_label_set_by_id(annotation_set.label_set_id)
+                document=document, label_set=document.project.get_label_set_by_id(annotation_set.label_set_id)
             )
             for annotation in annotation_set.annotations:
                 Annotation(
