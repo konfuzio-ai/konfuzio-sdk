@@ -529,6 +529,12 @@ class Bbox:
         if self.page:
             return round(self.page.height - self.y1, 3)
 
+    @property
+    def bottom(self):
+        """Calculate the distance to the bottom of the Page."""
+        if self.page:
+            return round(self.page.height - self.y0, 3)
+
     def __repr__(self):
         """Represent the Box."""
         return f'{self.__class__.__name__}: x0: {self.x0} x1: {self.x1} y0: {self.y0} y1: {self.y1} on Page {self.page}'
