@@ -1,9 +1,10 @@
 """Utility functions for adapting Konfuzio concepts to be used with Pydantic models."""
+
 from pydantic import BaseModel
 
-from konfuzio_sdk.data import Category, Document, Page, Project
+from konfuzio_sdk.data import Annotation, AnnotationSet, Category, Document, Page, Project, Span
 
-from .schemas import ExtractResponse20240117
+from .schemas import ExtractRequest20240117, ExtractResponse20240117
 
 
 def prepare_request(request: BaseModel) -> Document:
@@ -33,28 +34,6 @@ def prepare_request(request: BaseModel) -> Document:
     return document
 
 
-def convert_document_to_request(document: Document, schema: BaseModel):
-    """
-    Receive a Document and convert it into a request in accordance to a passed schema.
-
-    :param document: A Document to be converted.
-    :param schema: A schema to which the request should adhere.
-    :returns: A Document converted in accordance with the schema.
-    """
-    pages = [
-        schema.Page(number=page.number, image=page.image, original_size=page._original_size)
-        for page in document.pages()
-    ]
-    if schema.__class__.__name__ == 'ExtractRequest20240117':
-        converted = schema(text=document.text, bboxes=document.bboxes, pages=pages)
-    else:
-        raise NotImplementedError(
-            'The request does not adhere to any version of schema. Please, modify the request to '
-            'fit one of the schemas from bento/extraction/schemas.py.'
-        )
-    return converted
-
-
 def process_response(result, schema=ExtractResponse20240117):
     """
     Process a raw response from the runner to contain only selected fields.
@@ -64,7 +43,7 @@ def process_response(result, schema=ExtractResponse20240117):
     :returns: A list of dictionaries with Label Set IDs and Annotation data.
     """
     annotations_result = []
-    if schema.__class__.__name__ == 'ExtractRequest20240117':
+    if schema.__name__ == 'ExtractResponse20240117':
         for annotation_set in result.annotation_sets():
             current_annotation_set = {'label_set_id': annotation_set.label_set.id_, 'annotations': []}
             for annotation in annotation_set.annotations(use_correct=False, ignore_below_threshold=True):
@@ -80,7 +59,7 @@ def process_response(result, schema=ExtractResponse20240117):
                         offset_string=span.offset_string,
                         offset_string_original=span.offset_string,
                     )
-                    for span in annotation.spans()
+                    for span in annotation.spans
                 ]
                 current_annotation_set['annotations'].append(
                     schema.AnnotationSet.Annotation(
@@ -107,3 +86,68 @@ def process_response(result, schema=ExtractResponse20240117):
             'fit one of the schemas from bento/extraction/schemas.py.'
         )
     return schema(annotation_sets=annotations_result)
+
+
+def convert_document_to_request(document: Document, schema: BaseModel = ExtractRequest20240117):
+    """
+    Receive a Document and convert it into a request in accordance to a passed schema.
+
+    :param document: A Document to be converted.
+    :param schema: A schema to which the request should adhere.
+    :returns: A Document converted in accordance with the schema.
+    """
+    pages = [
+        schema.Page(number=page.number, image=page.image, original_size=page._original_size)
+        for page in document.pages()
+    ]
+    if schema.__name__ == 'ExtractRequest20240117':
+        converted = schema(
+            text=document.text,
+            bboxes={k: {'x0': v.x0, 'x1': v.x1, 'y0': v.y0, 'y1': v.y1} for k, v in document.bboxes.items()},
+            pages=pages,
+        )
+    else:
+        raise NotImplementedError(
+            'The request does not adhere to any version of schema. Please, modify the request to '
+            'fit one of the schemas from bento/extraction/schemas.py.'
+        )
+    return converted
+
+
+def convert_response_to_annotations(annotation_sets: BaseModel, document: Document, schema: BaseModel):
+    """
+    Receive an ExtractResponse and convert it into a list of Annotations to be added to the Document.
+
+    :param annotations: An ExtractResponse to be converted.
+    :param document: A Document to which the annotations should be added.
+    :param schema: A schema to which the annotations should adhere.
+    :returns: The original Document with added Annotations.
+    """
+    if schema.__name__ == 'ExtractResponse20240117':
+        for annotation_set in annotation_sets:
+            sdk_annotation_set = AnnotationSet(
+                document=document, label_set_id=document.project.get_label_set_by_id(annotation_set.label_set_id)
+            )
+            for annotation in annotation_set.annotations:
+                Annotation(
+                    document=document,
+                    annotation_set=sdk_annotation_set,
+                    label=document.project.get_label_by_id(annotation.label.id),
+                    offset_string=annotation.offset_string,
+                    translated_string=annotation.translated_string,
+                    normalized=annotation.normalized,
+                    confidence=annotation.confidence,
+                    spans=[
+                        Span(
+                            start_offset=span.start_offset,
+                            end_offset=span.end_offset,
+                        )
+                        for span in annotation.span
+                    ],
+                )
+        return document
+    else:
+        raise NotImplementedError(
+            'The request does not adhere to any version of schema. Please, modify the request to '
+            'fit one of the schemas from bento/extraction/schemas.py.'
+        )
