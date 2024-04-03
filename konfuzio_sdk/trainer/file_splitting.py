@@ -452,7 +452,18 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
 
 
 class TextualFileSplittingModel(AbstractFileSplittingModel):
-    """Split a multi-Document file into a list of shorter Documents based on model's prediction."""
+    """
+    This model operates by taking input a multi-Document file and utilizing the DistilBERT model to make predictions regarding the segmentation of this document.
+    Specifically, it aims to identify boundaries within the text where one document ends and another begins, effectively splitting the input into a list of shorter documents.
+
+    DistilBERT serves as the backbone of this model. DistilBERT offers a computationally efficient alternative to BERT,
+    achieved through knowledge distillation while preserving much of BERT's language understanding capabilities.
+
+
+    Sanh, V., Debut, L., Chaumond, J., & Wolf, T. (2019).
+    DistilBERT, a distilled version of BERT: smaller, faster, cheaper and lighter
+    https://arxiv.org/abs/1910.01108.
+    """
 
     def __init__(
         self,
@@ -548,14 +559,27 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
     def fit(
         self,
         epochs: int = 5,
-        use_gpu: bool = False,
         eval_batch_size: int = 8,
         train_batch_size: int = 8,
         device: str = 'cpu',
         *args,
         **kwargs,
     ):
-        """Process the train and test data, initialize and fit the model."""
+        """
+        Process the train and test data, initialize and fit the model.
+
+        :param epochs: A number of epochs to train a model on.
+        :type epochs: int
+        :param eval_batch_size: A batch size for evaluation.
+        :type eval_batch_size: int
+        :param train_batch_size: A batch size for training.
+        :type train_batch_size: int
+        :param device: A device to run the prediction on. Possible values are 'mps', 'cuda', 'cpu'.
+        :type device: str
+
+        :return: A dictionary with evaluation results.
+
+        """
         logger.info('Fitting Textual File Splitting Model.')
         logger.info('training documents:')
         logger.info([doc.id_ for doc in self.documents])
@@ -694,10 +718,10 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
 
         :param page: A Page to be predicted as first or non-first.
         :type page: Page
-        :param use_gpu: Run prediction on GPU if available.
-        :type use_gpu: bool
         :param previous_page: The previous Page which would help give more context to the model
         :type page: Page
+        :param device: A device to run the prediction on. Possible values are 'mps', 'cuda', 'cpu'.
+        :type device: str
         :return: A Page with possible changes in is_first_page attribute value.
         """
         self.check_is_ready()

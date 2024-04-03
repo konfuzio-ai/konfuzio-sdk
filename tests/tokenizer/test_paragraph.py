@@ -12,7 +12,7 @@ from konfuzio_sdk.trainer.information_extraction import RFExtractionAI
 
 logger = logging.getLogger(__name__)
 
-
+@unittest.skip(reason='Project 458 is under maintentance now and switching to another Project requires major changes.')
 class TestDetectronParagraphTokenizer(unittest.TestCase):
     """Test Detectron Paragraph Tokenizer."""
 
@@ -96,7 +96,7 @@ class TestDetectronParagraphTokenizer(unittest.TestCase):
         assert len(pages[5].annotations(use_correct=False)) == 10
         assert len(pages[6].annotations(use_correct=False)) == 4
 
-
+@unittest.skip(reason='Project 458 is under maintentance now and switching to another Project requires major changes.')
 class TestLineDistanceParagraphTokenizer(unittest.TestCase):
     """Test Line Distance Paragraph Tokenizer."""
 
@@ -169,7 +169,7 @@ class TestLineDistanceParagraphTokenizer(unittest.TestCase):
         assert len(pages[2].annotations(use_correct=False)) == len(virtual_doc_pages[2].annotations(use_correct=False))
         assert len(pages[2].annotations(use_correct=False)) == 9
 
-
+@unittest.skip(reason='Project 458 is under maintentance now and switching to another Project requires major changes.')
 def test_no_bbox_document(caplog):
     """Test processing a Document with no Bboxes."""
     project = Project(id_=458)

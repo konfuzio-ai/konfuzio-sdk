@@ -578,7 +578,7 @@ class TestCategorizationConfigurations(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Set up the Data and Categorization Pipeline."""
-        cls.training_prj = Project(id_=14392)
+        cls.training_prj = Project(id_=14392, update=True)
         cls.categorization_pipeline = CategorizationAI(cls.training_prj.categories)
         cls.category_1 = cls.training_prj.get_category_by_id(19827)
         cls.category_2 = cls.training_prj.get_category_by_id(19828)
