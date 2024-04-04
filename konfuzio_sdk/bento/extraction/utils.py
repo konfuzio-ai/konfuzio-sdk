@@ -18,7 +18,7 @@ def prepare_request(request: BaseModel) -> Document:
     category = Category(project=project)
     if request.__class__.__name__ == 'ExtractRequest20240117':
         bboxes = {
-            bbox_id: {
+            str(bbox_id): {
                 'x0': bbox.x0,
                 'x1': bbox.x1,
                 'y0': bbox.y0,

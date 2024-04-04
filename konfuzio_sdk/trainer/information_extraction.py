@@ -829,6 +829,7 @@ class AbstractExtractionAI(BaseModel):
             name=f"extraction_{self.category.id_ if self.category else '0'}",
             service=f'extraction/{self.name_lower()}_service.py:svc',
             include=['extraction/*.py'],
+            labels={'request': 'ExtractRequest20240117', 'response': 'ExtractResponse20240117'},
             python={'packages': ['konfuzio_sdk[ai]'], 'lock_packages': True},
             build_ctx=os.path.dirname(os.path.abspath(__file__)) + '/../bento',
             models=[str(bento_model.tag)],
