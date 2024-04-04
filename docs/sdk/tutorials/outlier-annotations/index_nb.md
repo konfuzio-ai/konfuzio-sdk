@@ -50,7 +50,7 @@ Initialize the Project, select the Label you want to assess and run the method, 
 ```python editable=true slideshow={"slide_type": ""} vscode={"languageId": "plaintext"}
 from konfuzio_sdk.data import Project
 
-project = Project(id_=YOUR_PROJECT_ID)
+project = Project(id_=YOUR_PROJECT_ID, update=True)
 label = project.get_label_by_name(YOUR_LABEL_NAME)
 outliers = label.get_probable_outliers_by_regex(project.categories, top_worst_percentage=TOP_WORST)
 print([annotation.offset_string for annotation in outliers])
@@ -83,6 +83,7 @@ pipeline = RFExtractionAI()
 pipeline.tokenizer = ListTokenizer(tokenizers=[])
 pipeline.category = label.project.get_category_by_id(id_=63)
 train_doc_ids = {44823}
+project.get_document_by_id(44823).get_bbox()
 pipeline.documents = [doc for doc in pipeline.category.documents() if doc.id_ in train_doc_ids]
 for cur_label in pipeline.category.labels:
     for regex in cur_label.find_regex(category=pipeline.category):
