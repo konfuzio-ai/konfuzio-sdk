@@ -830,7 +830,13 @@ class AbstractExtractionAI(BaseModel):
             service=f'extraction/{self.name_lower()}_service.py:svc',
             include=['extraction/*.py'],
             labels={'request': 'ExtractRequest20240117', 'response': 'ExtractResponse20240117'},
-            python={'packages': ['konfuzio_sdk[ai]'], 'lock_packages': True},
+            # TODO replace with latest version after release
+            python={
+                'packages': [
+                    'https://github.com/konfuzio-ai/konfuzio-sdk/archive/refs/heads/bentoml-experiments.zip#egg=konfuzio-sdk[ai]'
+                ],
+                'lock_packages': True,
+            },
             build_ctx=os.path.dirname(os.path.abspath(__file__)) + '/../bento',
             models=[str(bento_model.tag)],
         )
