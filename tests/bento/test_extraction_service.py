@@ -6,6 +6,8 @@ import unittest
 import pytest
 import requests
 
+from konfuzio_sdk.bento.extraction.schemas import ExtractRequest20240117
+from konfuzio_sdk.bento.extraction.utils import convert_document_to_request
 from konfuzio_sdk.data import Project
 from konfuzio_sdk.settings_importer import is_dependency_installed
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
@@ -72,6 +74,14 @@ class TestExtractionAIBento(unittest.TestCase):
             ],
         }
         response = requests.post(url=self.request_url, json=data)
+        # logging_from_subprocess(process=self.bento_process, breaking_point='status=')
+        assert len(response.json()['annotation_sets']) == 5
+        assert sum([len(element['annotations']) for element in response.json()['annotation_sets']]) == 19
+
+    def test_extract_converted(self):
+        """Test that only a schema-adhering response is accepted by extract method of service."""
+        prepared = convert_document_to_request(document=self.test_document, schema=ExtractRequest20240117)
+        response = requests.post(url=self.request_url, json=prepared.dict())
         logging_from_subprocess(process=self.bento_process, breaking_point='status=')
         assert len(response.json()['annotation_sets']) == 5
         assert sum([len(element['annotations']) for element in response.json()['annotation_sets']]) == 19
