@@ -1,21 +1,21 @@
 """Utility functions for adapting Konfuzio concepts to be used with Pydantic models."""
 from pydantic import BaseModel
 
-from konfuzio_sdk.data import Annotation, AnnotationSet, Category, Document, Page, Project, Span
+from konfuzio_sdk.data import Annotation, AnnotationSet, Document, Page, Project, Span
 
 from .schemas import ExtractRequest20240117, ExtractRequest20240117Page, ExtractResponse20240117
 
 
-def prepare_request(request: BaseModel) -> Document:
+def prepare_request(request: BaseModel, project: Project) -> Document:
     """
     Receive a request and prepare it for the extraction runner.
 
     :param request: Unprocessed request.
+    :param project: A Project instance.
     :returns: An instance of a Document class.
     """
-    project = Project(id_=None)
-    project.set_offline()
-    category = Category(project=project)
+    # Extraction AIs include only one Category per Project.
+    category = project.categories[0]
     if request.__class__.__name__ == 'ExtractRequest20240117':
         bboxes = {
             str(bbox_id): {
