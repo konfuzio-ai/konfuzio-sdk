@@ -5,6 +5,11 @@ from konfuzio_sdk.data import Annotation, AnnotationSet, Document, Page, Project
 
 from .schemas import ExtractRequest20240117, ExtractRequest20240117Page, ExtractResponse20240117
 
+NOT_IMPLEMENTED_ERROR_MESSAGE = (
+    'The request does not adhere to any schema version. Please modify the request to fit one of the schemas from '
+    'bento/extraction/schemas.py.'
+)
+
 
 def prepare_request(request: BaseModel, project: Project) -> Document:
     """
@@ -37,10 +42,7 @@ def prepare_request(request: BaseModel, project: Project) -> Document:
         for page in request.pages:
             Page(id_=page.number, document=document, number=page.number, original_size=page.original_size)
     else:
-        raise NotImplementedError(
-            'The request does not adhere to any version of schema. Please, modify the request to '
-            'fit one of the schemas from bento/extraction/schemas.py.'
-        )
+        raise NotImplementedError(NOT_IMPLEMENTED_ERROR_MESSAGE)
     return document
 
 
@@ -91,10 +93,7 @@ def process_response(result, schema=ExtractResponse20240117):
                 )
             annotations_result.append(current_annotation_set)
     else:
-        raise NotImplementedError(
-            'The request does not adhere to any version of schema. Please, modify the request to '
-            'fit one of the schemas from bento/extraction/schemas.py.'
-        )
+        raise NotImplementedError(NOT_IMPLEMENTED_ERROR_MESSAGE)
     return schema(annotation_sets=annotations_result)
 
 
@@ -132,10 +131,7 @@ def convert_document_to_request(document: Document, schema: BaseModel = ExtractR
             pages=pages,
         )
     else:
-        raise NotImplementedError(
-            'The request does not adhere to any version of schema. Please, modify the request to '
-            'fit one of the schemas from bento/extraction/schemas.py.'
-        )
+        raise NotImplementedError(NOT_IMPLEMENTED_ERROR_MESSAGE)
     return converted
 
 
@@ -172,7 +168,4 @@ def convert_response_to_annotations(response: BaseModel, document: Document):
                 )
         return document
     else:
-        raise NotImplementedError(
-            'The request does not adhere to any version of schema. Please, modify the request to '
-            'fit one of the schemas from bento/extraction/schemas.py.'
-        )
+        raise NotImplementedError(NOT_IMPLEMENTED_ERROR_MESSAGE)
