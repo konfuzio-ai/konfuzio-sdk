@@ -71,7 +71,7 @@ To create an Annotation that is based on existing text of a Document, let's firs
 Span that will be passed as the `spans` argument. You can define one or more Spans.
 ```python
 test_document = Project(id_=YOUR_PROJECT_ID).get_document_by_id(YOUR_DOCUMENT_ID)
-spans = [Span(document=test_document, start_offset=3056, end_offset=3064)]
+spans = [Span(document=test_document, start_offset=3067, end_offset=3074)]
 ```
 
 Next, let's specify arguments for a POST request that creates Annotations and send it to the server. We want to create
@@ -159,7 +159,7 @@ from konfuzio_sdk.api import post_document_annotation, delete_document_annotatio
 from konfuzio_sdk.data import Span, Project
 
 test_document = Project(id_=YOUR_PROJECT_ID).get_document_by_id(YOUR_DOCUMENT_ID)
-spans = [Span(document=test_document, start_offset=3056, end_offset=3064)]
+spans = [Span(document=test_document, start_offset=3067, end_offset=3074)]
 response = post_document_annotation(document_id=YOUR_DOCUMENT_ID, spans=spans, label_id=YOUR_LABEL_ID, confidence=100.0,
                                     label_set_id=YOUR_LABEL_SET_ID)
 response = json.loads(response.text)
