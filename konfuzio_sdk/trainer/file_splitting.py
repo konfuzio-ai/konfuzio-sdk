@@ -629,6 +629,22 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         tracking_uri = kwargs.get('tracking_uri', None)
         # check if both are not None then use MLflow
         self.use_mlflow = experiment_name is not None and tracking_uri is not None
+        if self.use_mlflow:
+            logger.info(
+                f'Checking MLflow connection using the provided tracking URI: {tracking_uri} and experiment_name: {experiment_name}'
+            )
+            try:
+                # Attempt to connect to the specified MLflow tracking server
+                mlflow.set_tracking_uri(tracking_uri)
+                mlflow_client = mlflow.tracking.MlflowClient()
+                # Check if the connection is successful by listing experiments
+                _ = mlflow_client.list_experiments()
+                # If listing experiments succeeds, MLflow is running and connected to the specified tracking URI
+                logger.info('MLflow is running and connected to the specified tracking URI.')
+            except Exception:
+                self.use_mlflow = False
+                # If an exception occurs, MLflow is not running or not connected to the specified tracking URI
+                logger.info('MLflow is not running or not connected to the specified tracking URI.')
         # defining the training arguments
         training_args = transformers.TrainingArguments(
             output_dir='training_logs/textual_file_splitting_model_trainer',
@@ -678,7 +694,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
                 logger.error(f'Failed to start MLflow run. Training without MLflow tracking! Error: {e}')
                 self.use_mlflow = False
         else:
-            logger.info('No experiment_id is passed, training without MLflow tracking.')
+            logger.info('MLflow tracking is disabled. Training without MLflow tracking.')
         # training the model
         trainer.train()
 
