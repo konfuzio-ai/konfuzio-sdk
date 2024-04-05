@@ -66,7 +66,7 @@ class ExtractResponse20240117(BaseModel):
             normalized: Union[str, int, None]
             label: Label
             annotation_set: int
-            confidence: Union[int, float]
+            confidence: float
             span: List[Span]
 
         label_set_id: int
