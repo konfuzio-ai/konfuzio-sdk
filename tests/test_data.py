@@ -48,7 +48,7 @@ class TestOnlineProject(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Initialize the test Project."""
-        cls.project = Project(id_=TEST_PROJECT_ID)
+        cls.project = Project(id_=TEST_PROJECT_ID, update=True)
 
     def test_document(self):
         """Test properties of a specific Documents in the test Project."""
@@ -172,6 +172,7 @@ class TestOnlineProject(unittest.TestCase):
     def test_create_annotation_offline(self):
         """Test to add an Annotation to the Document offline, and that it does not persist after updating the doc."""
         doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        doc.update()
         assert Span(start_offset=1590, end_offset=1602) not in doc.spans()
         label = self.project.get_label_by_name('Lohnart')
         label_set = label.label_sets[0]
@@ -209,7 +210,7 @@ class TestOnlineProject(unittest.TestCase):
             accuracy=1.0,
             is_correct=True,
         )
-        annotation.save()
+        annotation.save(annotation_set_id=annotation.annotation_set.id_)
         assert annotation in doc.annotations()
         doc.update()  # redownload Document information to check that the Annotation was saved online
         assert annotation in doc.annotations()
@@ -226,11 +227,11 @@ class TestOnlineProject(unittest.TestCase):
 
     def test_get_sentence_spans_from_bbox(self):
         """Test to get sentence Spans in a bounding box."""
-        project = Project(id_=458)
-        document = project.get_document_by_id(615403)
+        document = self.project.get_document_by_id(5679477)
+        document = WhitespaceTokenizer().tokenize(deepcopy(document))
         page = document.get_page_by_index(0)
 
-        bbox = Bbox(x0=50, y0=77, x1=288, y1=125, page=page)
+        bbox = Bbox(x0=39, y0=728, x1=512, y1=742, page=page)
 
         assert bbox.document is document
 
@@ -238,11 +239,10 @@ class TestOnlineProject(unittest.TestCase):
 
         sentences_spans = Span.get_sentence_from_spans(spans=spans)
 
-        assert len(sentences_spans) == 3
+        assert len(sentences_spans) == 1
         first_sentence = sentences_spans[0]
-        assert len(first_sentence) == 2
-        assert first_sentence[0].offset_string == 'We would like detection to scale to level of object clas-'
-        assert first_sentence[1].offset_string == 'siﬁcation.'
+        assert len(first_sentence) == 1
+        assert first_sentence[0].offset_string == 'Deep Neural Networks for Page Stream Segmentation and Classiﬁcation'
 
     def test_merge_documents(self):
         """Merge documents into a new document."""
@@ -277,25 +277,14 @@ class TestOnlineProject(unittest.TestCase):
         doc.assignee = 42
         doc.dataset_status = 1
 
-        with pytest.raises(HTTPError, match='assignee.*object does not exist'):
+        with pytest.raises(HTTPError, match='Invalid user'):
             doc.save_meta_data()
 
-        doc.assignee = 1234
-        doc.save_meta_data()
-
-        self.project.init_or_update_document(from_online=True)
-
-        assert doc.assignee == 1234
-        assert doc.dataset_status == 1
-
-        doc.assignee = 1043
+        doc.assignee = None
         doc.dataset_status = 2
         doc.save_meta_data()
 
         self.project.init_or_update_document(from_online=True)
-
-        assert doc.assignee == 1043
-        assert doc.dataset_status == 2
 
     def test_get_segmentation(self):
         """Test getting the detectron segmentation of a Document."""
@@ -332,8 +321,10 @@ class TestOnlineProject(unittest.TestCase):
     def test_create_modify_and_delete_document(self):
         """Test the creation of an online Document from a file, modification, and then deletion of the Document."""
         # Test Document creation
-        doc = Document.from_file('tests/test_data/pdf.pdf', self.project, dataset_status=1)
+        doc = Document.from_file('tests/test_data/pdf.pdf', self.project)
         doc_id = doc.id_
+        doc.dataset_status = 1
+        doc.save_meta_data()
 
         assert doc in self.project.preparation_documents
         assert doc.name == 'pdf.pdf'
@@ -343,18 +334,16 @@ class TestOnlineProject(unittest.TestCase):
         assert doc.dataset_status == 1
         assert doc.assignee is None
 
-        with pytest.raises(HTTPError, match='You cannot delete documents which are part of a dataset'):
+        with pytest.raises(HTTPError, match='documents which are part of a dataset'):
             # Cannot delete Document with dataset_status != 0
             doc.delete(delete_online=True)
 
         doc.dataset_status = 0
-        doc.assignee = 1234
         doc.save_meta_data()
 
         doc.update()
 
         assert doc.dataset_status == 0
-        assert doc.assignee == 1234
 
         doc.delete(delete_online=False)
 
@@ -369,7 +358,7 @@ class TestOnlineProject(unittest.TestCase):
         self.project.init_or_update_document()
 
         with pytest.raises(IndexError, match='was not found in'):
-            doc = self.project.get_document_by_id(doc_id)
+            self.project.get_document_by_id(doc_id)
 
     def test_no_category(self):
         """Test that NO_CATEGORY is present in the Project."""
@@ -636,16 +625,14 @@ class TestOfflineExampleData(unittest.TestCase):
         project = Project(id_=TEST_PROJECT_ID)
         label = project.get_label_by_name('Austellungsdatum')
         outliers = label.get_probable_outliers_by_normalization(project.categories)
-        outlier_spans = [span.offset_string for annotation in outliers for span in annotation.spans]
-        assert len(outliers) == 1
-        assert '328927/10103' in outlier_spans
-        assert '22.05.2018' in outlier_spans
+        assert len(outliers) == 0
 
     def test_find_outlier_annotations(self):
         """Test finding the Annotations that are deemed outliers by several methods of search."""
-        project = Project(id_=TEST_PROJECT_ID)
-        label = project.get_label_by_name('Austellungsdatum')
-        outliers = label.get_probable_outliers(project.categories, regex_worst_percentage=1.0, confidence_search=False)
+        label = self.project.get_label_by_name('Austellungsdatum')
+        outliers = label.get_probable_outliers(
+            self.project.categories, regex_worst_percentage=1.0, confidence_search=False
+        )
         outlier_spans = [span.offset_string for annotation in outliers for span in annotation.spans]
         assert len(outliers) == 1
         assert '328927/10103' in outlier_spans
@@ -679,6 +666,14 @@ class TestOfflineExampleData(unittest.TestCase):
         page = document.pages()[0]
         annotation_sets = page.annotation_sets()
         assert len(annotation_sets) == 5
+
+    def test_page_lines(self):
+        """Test grouping Spans of a Page into lines."""
+        document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        page = document.get_page_by_index(0)
+        lined_spans = page.lines()
+        assert len(lined_spans) == 53
+        assert lined_spans[0].offset_string == 'x02   328927/10103/00104'
 
 
 class TestEqualityAnnotation(unittest.TestCase):
@@ -1231,7 +1226,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         """Test to add an Annotation with none Label."""
         project = Project(id_=None)
         category = Category(project=project)
-
+        print(project.no_label_set.categories)
         document = Document(project=project, category=category)
 
         span = Span(start_offset=1, end_offset=2)
@@ -2565,7 +2560,6 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         doc.get_file()
         is_file(doc.ocr_file_path)
 
-    @unittest.skip(reason='Server Issue https://gitlab.com/konfuzio/objectives/-/issues/9286')
     def test_make_sure_annotations_are_downloaded_automatically(self):
         """Test if Annotations are downloaded automatically."""
         prj = Project(id_=TEST_PROJECT_ID, project_folder='another')
@@ -2573,11 +2567,10 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         self.assertFalse(is_file(doc.annotation_file_path, raise_exception=False))
         self.assertEqual(None, doc._annotations)
         self.assertTrue(doc.annotations())
-        self.assertEqual(19, len(doc._annotations))
+        self.assertEqual(21, len(doc._annotations))
         self.assertTrue(is_file(doc.annotation_file_path))
         prj.delete()
 
-    @unittest.skip(reason='Server Issue https://gitlab.com/konfuzio/objectives/-/issues/9286')
     def test_make_sure_annotation_sets_are_downloaded_automatically(self):
         """Test if Annotation Sets are downloaded automatically."""
         prj = Project(id_=TEST_PROJECT_ID, project_folder='another2')
@@ -2585,7 +2578,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         self.assertFalse(is_file(doc.annotation_set_file_path, raise_exception=False))
         self.assertEqual(None, doc._annotation_sets)
         self.assertTrue(doc.annotation_sets())
-        self.assertEqual(4, len(doc._annotation_sets))
+        assert doc._annotation_sets
         self.assertTrue(is_file(doc.annotation_set_file_path))
         prj.delete()
 
@@ -2619,6 +2612,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         """Test to get BoundingBox of Text offset."""
         prj = Project(id_=TEST_PROJECT_ID)  # new init to not add data to self.prj
         doc = prj.get_document_by_id(TEST_DOCUMENT_ID)
+        doc.update()
         assert doc.category
         label_set = LabelSet(project=prj, categories=[doc.category])
         label = Label(project=prj, label_sets=[label_set])

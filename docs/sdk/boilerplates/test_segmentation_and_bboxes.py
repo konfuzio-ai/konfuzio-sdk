@@ -14,6 +14,8 @@ def test_visualize_bbox():
     my_project = Project(id_=YOUR_PROJECT_ID)
     # first Document uploaded
     document = my_project.get_document_by_id(YOUR_DOCUMENT_ID)
+    document.update()
+    document.get_bbox()
     # index of the Page to test
     page_index = 0
     width = document.pages()[page_index].width
