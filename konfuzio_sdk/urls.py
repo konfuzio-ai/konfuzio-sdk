@@ -50,7 +50,7 @@ def get_project_url(project_id: Union[int, None], host: str = None) -> str:
     return f'{host}/api/v3/projects/{project_id}/'
 
 
-def get_documents_meta_url(project_id: int, offset: int = None, limit: int = 10, host: str = None) -> str:
+def get_documents_meta_url(project_id: int, offset: int = None, limit: int = 10, host: str = None, *args, **kwargs) -> str:
     """
     Generate URL to load meta information about the Documents in the Project.
 
@@ -58,13 +58,22 @@ def get_documents_meta_url(project_id: int, offset: int = None, limit: int = 10,
     :param offset: A starting index to count Documents from.
     :param limit: Number of Documents to display meta information about.
     :param host: Konfuzio host
+    :param category_id: Filter by Category ID
     :return: URL to get all the Documents details.
     """
+    category_id = kwargs.get('category_id', None)
+
     if host is None:
         host = KONFUZIO_HOST
-    if offset is not None:
-        return f'{host}/api/v3/documents/?limit={limit}&project={project_id}&offset={offset}'
-    return f'{host}/api/v3/documents/?limit={limit}&project={project_id}'
+    if category_id is None:
+        category_id_filter = ''
+    else:
+        category_id_filter = f'&category={category_id}'
+    if offset is None:
+        offset_filter = ''
+    else:
+        offset_filter = f'&offset={offset}'
+    return f'{host}/api/v3/documents/?limit={limit}&project={project_id}' + offset_filter + category_id_filter
 
 
 def get_document_segmentation_details_url(
