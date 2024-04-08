@@ -1,4 +1,5 @@
 """Central place to collect settings from Projects and make them available in the konfuzio_sdk package."""
+
 import logging
 import os
 import sys
@@ -53,7 +54,7 @@ for extra in extras:
     extra = extra.split()[0].split('>=')[0].split('==')[0]
     is_installed = is_dependency_installed(extra)
     if not is_installed:
-        logging.error(OPTIONAL_IMPORT_ERROR.replace('*modulename*', extra))
+        logging.warning(OPTIONAL_IMPORT_ERROR.replace('*modulename*', extra))
 
 DO_NOT_LOG_IMPORT_ERRORS = True
 
