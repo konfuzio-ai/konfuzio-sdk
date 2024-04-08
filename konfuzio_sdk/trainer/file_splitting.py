@@ -633,18 +633,29 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
             logger.info(
                 f'Checking MLflow connection using the provided tracking URI: {tracking_uri} and experiment_name: {experiment_name}'
             )
+            # disabling MLflow artifacts logging
+            os.environ['HF_MLFLOW_LOG_ARTIFACTS'] = '0'
             try:
-                # Attempt to connect to the specified MLflow tracking server
+                # setting the MLflow tracking URI
                 mlflow.set_tracking_uri(tracking_uri)
+                # connecting to the MLflow server
                 mlflow_client = mlflow.tracking.MlflowClient()
-                # Check if the connection is successful by listing experiments
-                _ = mlflow_client.list_experiments()
-                # If listing experiments succeeds, MLflow is running and connected to the specified tracking URI
-                logger.info('MLflow is running and connected to the specified tracking URI.')
-            except Exception:
+                # checking if the experiment exists
+                mlflow_experiment = mlflow_client.get_experiment_by_name(experiment_name)
+                if mlflow_experiment is None:
+                    raise ValueError(
+                        f'Tracking URI `{tracking_uri}` does not have an Experiment with name `{experiment_name}`'
+                    )
+                _ = mlflow.set_experiment(experiment_name)
+                # starting the MLflow run
+                mlflow.start_run(run_name=f'splitting_run_{get_timestamp()}')
+                self.mlflow_run_id = mlflow.active_run().info.run_id
+                logger.info(f'MLflow run started with run_id: {self.mlflow_run_id}')
+            except Exception as e:
+                logger.warning(f'Failed to start MLflow run. Training without MLflow tracking! Error: {e}')
                 self.use_mlflow = False
-                # If an exception occurs, MLflow is not running or not connected to the specified tracking URI
-                logger.info('MLflow is not running or not connected to the specified tracking URI.')
+        else:
+            logger.info('MLflow tracking is disabled. Training without it.')
         # defining the training arguments
         training_args = transformers.TrainingArguments(
             output_dir='training_logs/textual_file_splitting_model_trainer',
@@ -681,20 +692,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
             callbacks=[transformers.integrations.MLflowCallback] if self.use_mlflow else [LoggerCallback],
         )
         trainer.class_weights = class_weights
-        if self.use_mlflow:
-            logger.info(f'Using MLflow to track the experiment with experiment_name={experiment_name}')
-            # disabling MLflow artifacts logging
-            os.environ['HF_MLFLOW_LOG_ARTIFACTS'] = '0'
-            try:
-                mlflow.set_tracking_uri(tracking_uri)
-                _ = mlflow.set_experiment(experiment_name)
-                mlflow.start_run(run_name=f'splitting_run_{get_timestamp()}')
-                self.mlflow_run_id = mlflow.active_run().info.run_id
-            except Exception as e:
-                logger.error(f'Failed to start MLflow run. Training without MLflow tracking! Error: {e}')
-                self.use_mlflow = False
-        else:
-            logger.info('MLflow tracking is disabled. Training without MLflow tracking.')
+        
         # training the model
         trainer.train()
 
