@@ -6,9 +6,9 @@ import unittest
 import pytest
 import requests
 
-from konfuzio_sdk.bento.extraction.schemas import ExtractRequest20240117
-from konfuzio_sdk.bento.extraction.utils import convert_document_to_request
-from konfuzio_sdk.data import Project
+from konfuzio_sdk.bento.extraction.schemas import ExtractRequest20240117, ExtractResponse20240117
+from konfuzio_sdk.bento.extraction.utils import convert_document_to_request, convert_response_to_annotations
+from konfuzio_sdk.data import Document, Project
 from konfuzio_sdk.settings_importer import is_dependency_installed
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
 from konfuzio_sdk.trainer.information_extraction import RFExtractionAI
@@ -85,6 +85,10 @@ class TestExtractionAIBento(unittest.TestCase):
         logging_from_subprocess(process=self.bento_process, breaking_point='status=')
         assert len(response.json()['annotation_sets']) == 5
         assert sum([len(element['annotations']) for element in response.json()['annotation_sets']]) == 19
+        response_schema = ExtractResponse20240117(annotation_sets=response.json()['annotation_sets'])
+        empty_document = Document(project=self.project, category=self.pipeline.category)
+        document_with_annotations = convert_response_to_annotations(response=response_schema, document=empty_document)
+        assert len(document_with_annotations.annotations(use_correct=False)) == 19
 
     def test_wrong_input(self):
         """Test that it's impossible to send a request with a structure not adhering to schema."""
