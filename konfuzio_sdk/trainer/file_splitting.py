@@ -652,7 +652,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
                 self.mlflow_run_id = mlflow.active_run().info.run_id
                 logger.info(f'MLflow run started with run_id: {self.mlflow_run_id}')
             except Exception as e:
-                logger.error(f'Failed to start MLflow run. Training without MLflow tracking! Error: {e}')
+                logger.warning(f'Failed to start MLflow run. Training without MLflow tracking! Error: {e}')
                 self.use_mlflow = False
         else:
             logger.info('MLflow tracking is disabled. Training without it.')
