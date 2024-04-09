@@ -1,4 +1,5 @@
 """Validate data functions."""
+import json
 import logging
 import os
 import unittest
@@ -674,6 +675,14 @@ class TestOfflineExampleData(unittest.TestCase):
         lined_spans = page.lines()
         assert len(lined_spans) == 53
         assert lined_spans[0].offset_string == 'x02   328927/10103/00104'
+
+    def test_create_project_metadata_json(self):
+        """Test creating a JSON with a Project's metadata."""
+        metadata_json = self.project.create_project_metadata_json()
+        loaded = json.loads(metadata_json)
+        assert len(loaded) == 1
+        assert len(loaded['categories'][0]['schema']) == 6
+        assert len(loaded['categories'][0]['schema'][0]['labels']) == 10
 
 
 class TestEqualityAnnotation(unittest.TestCase):
