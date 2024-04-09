@@ -29,6 +29,13 @@ jupyter:
 
 ---
 
+### Environment
+You need to install the Konfuzio SDK before diving into the tutorial. \
+To get up and running quickly, you can use our Colab Quick Start notebook. \
+<a href="https://colab.research.google.com/github/konfuzio-ai/konfuzio-sdk/blob/master/notebooks/Quick_start_template_for_Konfuzio_SDK.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+
+As an alternative you can follow the [installation section](../get_started.html#install-sdk) to install and initialize the Konfuzio SDK locally or on an environment of your choice.
+
 ### Introduction
 
 Having data in a structured and organized way enables deeper analysis and understanding of information. An example, is the analysis of specific keywords in annual reports to know the subjects in which companies focus their attention and investments along the time.
