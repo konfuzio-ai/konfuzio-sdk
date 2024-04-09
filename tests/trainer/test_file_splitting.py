@@ -6,7 +6,6 @@ import shutil
 import sys
 import unittest
 from copy import deepcopy
-from unittest.mock import MagicMock
 
 import cloudpickle
 import numpy
@@ -344,11 +343,10 @@ class TestTextualFileSplittingModel(unittest.TestCase):
 
     def test_model_training_without_mlflow(self):
         """Test model's fit() method without Mlflow arguments."""
-        with MagicMock() as mlflow_mock:
-            self.file_splitting_model.fit(device=DEVICE, epochs=3, eval_batch_size=1, train_batch_size=1)
-            assert self.file_splitting_model.model is not None
-            assert self.file_splitting_model.use_mlflow is False
-            mlflow_mock.assert_not_called()
+
+        self.file_splitting_model.fit(device=DEVICE, epochs=3, eval_batch_size=1, train_batch_size=1)
+        assert self.file_splitting_model.model is not None
+        assert self.file_splitting_model.use_mlflow is False
 
     def test_model_training_with_mlflow(self):
         """Test model's fit() method with Mlflow arguments."""
@@ -356,7 +354,10 @@ class TestTextualFileSplittingModel(unittest.TestCase):
 
         # creating mlflow client
         mlflow_client = MlflowClient(self.mlflow_url)
-        # setting up experiment
+        # if experiment with experiment_name does not exist, create it
+        if not mlflow_client.get_experiment_by_name('test_experiment'):
+            _ = mlflow_client.create_experiment('test_experiment')
+        # training the model
         self.file_splitting_model.fit(
             device=DEVICE,
             epochs=3,
