@@ -238,15 +238,13 @@ mixed up in order. The ground-truth first Page of each Document should go first 
 goes second and so on. This is needed because the Splitting AI operates on the idea that the splitting points in a 
 stream of Pages are the starting Pages of each Sub-Document in the stream.
 
-For that purpose, there are several tools in the SDK that enable processing Documents that consist of multiple files and propose splitting them 
-into the Sub-Documents accordingly:
+For the purpose of processing documents consisting of multiple files, the SDK offers several tools that facilitate splitting them into sub-documents:
 
-- A [Context Aware File Splitting Model](https://dev.konfuzio.com/sdk/tutorials/context-aware-file-splitting-model/index.html) that uses a simple logic based on scanning Category's Documents and finding
-strings exclusive for first Pages of all Documents within the Category. An instance of the Context Aware File Splitting Model can be used to initially build a File Splitting pipeline and can
-later be replaced with more complex solutions.
+- A [Context Aware File Splitting Model](https://dev.konfuzio.com/sdk/sourcecode.html#context-aware-file-splitting-model) Utilizes a straightforward logic based on scanning documents within a category and identifying strings exclusive to the first pages of each document. An instance of the Context Aware File Splitting Model can be employed to establish an initial file splitting pipeline, which can later be substituted with more intricate and advanced solutions as needed.
 
-- A File Splitting model that is based on BERT. Model's output is also a prediction of a Page being first or
-non-first.
+- A [Textual File Splitting Model](https://dev.konfuzio.com/sdk/sourcecode.html#textual-file-splitting-model) The Textual File Splitting Model is a key component of the SDK, leveraging state-of-the-art *Transformers* architecture to efficiently split multi-document files into shorter documents while maintaining high accuracy and minimizing latency. The model is based on the popular *DistilBERT* architecture which is a distilled version of *BERT*, that offers a compelling blend of accuracy and computational efficiency. By compressing the original *BERT* model, *DistilBERT* reduces the number of parameters by *40%* while keeping *97%* same performance.
+
+- A [Multimodal File Splitting Model](https://dev.konfuzio.com/sdk/sourcecode.html#multimodal-file-splitting-model) This model incorporates both textual and visual data from documents, making it suitable for various document types and average-sized datasets. However, it may operate at a slower speed compared to the Textual File Splitting Model and is more prune to overfitting.
 
 For developing a custom File Splitting approach, we propose an abstract class `AbstractFileSplittingModel`.
 

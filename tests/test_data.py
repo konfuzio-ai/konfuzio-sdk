@@ -707,6 +707,14 @@ class TestOfflineExampleData(unittest.TestCase):
         annotation_sets = page.annotation_sets()
         assert len(annotation_sets) == 5
 
+    def test_page_lines(self):
+        """Test grouping Spans of a Page into lines."""
+        document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        page = document.get_page_by_index(0)
+        lined_spans = page.lines()
+        assert len(lined_spans) == 53
+        assert lined_spans[0].offset_string == 'x02   328927/10103/00104'
+
 
 class TestEqualityAnnotation(unittest.TestCase):
     """Test the equality of Annotations."""

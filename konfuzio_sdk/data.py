@@ -1,4 +1,5 @@
 """Handle data from the API."""
+
 import io
 import itertools
 import json
@@ -313,21 +314,39 @@ class Page(Data):
         char_bboxes = self.get_bbox().values()
         char_bboxes = sorted(char_bboxes, key=lambda x: x['char_index'])
 
-        # iterate over each line_number and all of the character bboxes with that line number
+        # iterate over each line_number and all the character bboxes with that line number
 
-        for _, line_char_bboxes in itertools.groupby(char_bboxes, lambda x: x['line_number']):
-            # (a line should never start with a space char)
-            trimmed_line_char_bboxes = [char for char in line_char_bboxes if not char['text'].isspace()]
+        # condition for backward compatibility that checks if bbox file structure includes 'line_number' or
+        # 'line_index' and parses the file accordingly.
+        if 'line_number' in [bbox.keys() for bbox in char_bboxes][0]:
+            for _, line_char_bboxes in itertools.groupby(char_bboxes, lambda x: x['line_number']):
+                # (a line should never start with a space char)
+                trimmed_line_char_bboxes = [char for char in line_char_bboxes if not char['text'].isspace()]
 
-            if len(trimmed_line_char_bboxes) == 0:
-                continue
+                if len(trimmed_line_char_bboxes) == 0:
+                    continue
 
-            # create Span from the line characters bboxes
-            start_offset = min((char_bbox['char_index'] for char_bbox in trimmed_line_char_bboxes))
-            end_offset = max((char_bbox['char_index'] for char_bbox in trimmed_line_char_bboxes)) + 1
-            span = Span(start_offset=start_offset, end_offset=end_offset, document=self.document)
+                # create Span from the line characters bboxes
+                start_offset = min((char_bbox['char_index'] for char_bbox in trimmed_line_char_bboxes))
+                end_offset = max((char_bbox['char_index'] for char_bbox in trimmed_line_char_bboxes)) + 1
+                span = Span(start_offset=start_offset, end_offset=end_offset, document=self.document)
 
-            lines_spans.append(span)
+                lines_spans.append(span)
+        elif 'line_index' in [bbox.keys() for bbox in char_bboxes][0]:
+            # line index is always less than line_index by 1, e.g. if line_index is 0, line_number is 1
+            for _, line_char_bboxes in itertools.groupby(char_bboxes, lambda x: x['line_index'] + 1):
+                # (a line should never start with a space char)
+                trimmed_line_char_bboxes = [char for char in line_char_bboxes if not char['text'].isspace()]
+
+                if len(trimmed_line_char_bboxes) == 0:
+                    continue
+
+                # create Span from the line characters bboxes
+                start_offset = min((char_bbox['char_index'] for char_bbox in trimmed_line_char_bboxes))
+                end_offset = max((char_bbox['char_index'] for char_bbox in trimmed_line_char_bboxes)) + 1
+                span = Span(start_offset=start_offset, end_offset=end_offset, document=self.document)
+
+                lines_spans.append(span)
 
         return lines_spans
 
@@ -1770,7 +1789,9 @@ class Span(Data):
         self._page: Union[Page, None] = None
         self._bbox: Union[Bbox, None] = None
         self.regex_matching = []
-        annotation and annotation.add_span(self)  # only add if Span has access to an Annotation
+        # check because we don't want to add a Span multiple times to the Annotation
+        if annotation and self not in annotation.spans:  # only add if Span has access to an Annotation
+            annotation.add_span(self)
         self._valid(strict_validation)
 
     def _valid(self, strict: bool = True, handler: str = 'sdk_validation'):
@@ -2637,7 +2658,13 @@ class Annotation(Data):
             )
             self.document.update()
         else:
-            del self.document._annotations[(tuple(sorted(self._spans.keys())), self.label.name)]
+            try:
+                del self.document._annotations[(tuple(sorted(self._spans.keys())), self.label.name)]
+            except KeyError as e:
+                logger.warning(
+                    f'Could not delete annotation with key {(tuple(sorted(self._spans.keys())), self.label.name)} in {self.document}: {e}'
+                )
+                # See also: https://git.konfuzio.com/konfuzio/objectives/-/issues/12402
 
     def bbox(self) -> Bbox:
         """Get Bbox encompassing all Annotation Spans."""
@@ -2923,7 +2950,7 @@ class Document(Data):
                 update=True,
                 category_template=category_id if category_id else response['category'],
                 text=response['text'],
-                status=status,
+                status=status[0],  # we want a numeric representation of status, e.g. 2, not the textual, e.g. "Done"
                 data_file_name=response['data_file_name'],
                 file_url=response['file_url'],
                 dataset_status=dataset_status,
@@ -2934,7 +2961,7 @@ class Document(Data):
                 project=project,
                 update=True,
                 category_template=category_id,
-                status=[0, 'Queuing for OCR'],
+                status=[0],  # numeric representation of a status that means "queueing for ocr"
                 data_file_name=response['data_file_name'],
                 dataset_status=dataset_status,
             )
@@ -3898,10 +3925,15 @@ class Document(Data):
                 # they are ignored now
                 no_label_raw_annotations = []
                 for raw_annotation in raw_annotations:
-                    if 'label_text' in raw_annotation.keys() and raw_annotation['label_text'] == 'NO_LABEL':
-                        no_label_raw_annotations.append(raw_annotation)
-                    elif raw_annotation['label']['name'] == 'NO_LABEL':
-                        no_label_raw_annotations.append(raw_annotation)
+                    # we want to ensure that both label files of old structure that have 'label_text' field and label
+                    # files of a new structure that have 'label' field that is a dict with nested elements are properly
+                    # parsed
+                    if 'label_text' in raw_annotation.keys():
+                        if raw_annotation['label_text'] == 'NO_LABEL':
+                            no_label_raw_annotations.append(raw_annotation)
+                    elif isinstance(raw_annotation['label'], dict):
+                        if raw_annotation['label']['name'] == 'NO_LABEL':
+                            no_label_raw_annotations.append(raw_annotation)
 
                 raw_annotations = no_label_raw_annotations
 
@@ -4439,23 +4471,40 @@ class Project(Data):
                 category_id = document_data['category_template']
             doc_category = self.get_category_by_id(category_id) if category_id else self.no_category
             document_data.pop('category', None)
+            # ensuring we store document status in a variable and don't pass it multiple times by not removing it from
+            # document_data
+            status = document_data['status_data']
+            document_data.pop('status_data', None)
             if updated:
                 doc = local_docs_dict[document_data['id']]
-                doc.update_meta_data(category=doc_category, **document_data)
+                doc.update_meta_data(category=doc_category, status=status, **document_data)
                 doc.update()
                 logger.debug(f'{doc} was updated, we will download it again as soon you use it.')
                 n_updated_documents += 1
             elif new:
                 document_data.pop('project', None)
+                # ensuring we store dataset status in a variable and don't pass it multiple times by not removing it
+                # from document_data
+                if 'status' in document_data:
+                    status = document_data['status']
+                document_data.pop('status', None)
                 doc = Document(
-                    project=self, update=from_online, id_=document_data['id'], category=doc_category, **document_data
+                    project=self,
+                    update=from_online,
+                    id_=document_data['id'],
+                    category=doc_category,
+                    status=status,
+                    **document_data,
                 )
                 logger.debug(f'{doc} is not available on your machine, we will download it as soon you use it.')
                 n_new_documents += 1
             else:
                 doc = local_docs_dict[document_data['id']]
+                if 'status' in document_data:
+                    status = document_data['status']
+                document_data.pop('status', None)
                 doc.update_meta_data(
-                    category=doc_category, **document_data
+                    category=doc_category, status=status, **document_data
                 )  # reset any Document level meta data changes
                 logger.debug(f'Unchanged local version of {doc} from {new_date}.')
                 n_unchanged_documents += 1

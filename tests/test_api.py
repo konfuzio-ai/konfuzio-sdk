@@ -14,6 +14,7 @@ from konfuzio_sdk import BASE_DIR
 from konfuzio_sdk.api import (
     TimeoutHTTPAdapter,
     _get_auth_token,
+    change_document_annotation,
     create_label,
     create_new_project,
     delete_document_annotation,
@@ -383,6 +384,11 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         assert response.status_code == 201
         annotation = json.loads(response.text)
         assert delete_document_annotation(annotation['id'])
+
+    def test_change_annotation(self):
+        """Test modifying an existing Annotation."""
+        r = change_document_annotation(annotation_id=4420022, label=860)
+        assert r.status_code == 200
 
     def test_get_project_labels(self):
         """Download Labels from API for a Project."""

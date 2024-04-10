@@ -444,7 +444,18 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
 
 
 class TextualFileSplittingModel(AbstractFileSplittingModel):
-    """Split a multi-Document file into a list of shorter Documents based on model's prediction."""
+    """
+    This model operates by taking input a multi-Document file and utilizing the DistilBERT model to make predictions regarding the segmentation of this document.
+    Specifically, it aims to identify boundaries within the text where one document ends and another begins, effectively splitting the input into a list of shorter documents.
+
+    DistilBERT serves as the backbone of this model. DistilBERT offers a computationally efficient alternative to BERT,
+    achieved through knowledge distillation while preserving much of BERT's language understanding capabilities.
+
+
+    Sanh, V., Debut, L., Chaumond, J., & Wolf, T. (2019).
+    DistilBERT, a distilled version of BERT: smaller, faster, cheaper and lighter
+    https://arxiv.org/abs/1910.01108.
+    """
 
     def __init__(
         self,
@@ -540,14 +551,27 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
     def fit(
         self,
         epochs: int = 5,
-        use_gpu: bool = False,
         eval_batch_size: int = 8,
         train_batch_size: int = 8,
         device: str = 'cpu',
         *args,
         **kwargs,
     ):
-        """Process the train and test data, initialize and fit the model."""
+        """
+        Process the train and test data, initialize and fit the model.
+
+        :param epochs: A number of epochs to train a model on.
+        :type epochs: int
+        :param eval_batch_size: A batch size for evaluation.
+        :type eval_batch_size: int
+        :param train_batch_size: A batch size for training.
+        :type train_batch_size: int
+        :param device: A device to run the prediction on. Possible values are 'mps', 'cuda', 'cpu'.
+        :type device: str
+
+        :return: A dictionary with evaluation results.
+
+        """
         logger.info('Fitting Textual File Splitting Model.')
         logger.info('training documents:')
         logger.info([doc.id_ for doc in self.documents])
@@ -605,6 +629,33 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         tracking_uri = kwargs.get('tracking_uri', None)
         # check if both are not None then use MLflow
         self.use_mlflow = experiment_name is not None and tracking_uri is not None
+        if self.use_mlflow:
+            logger.info(
+                f'Checking MLflow connection using the provided tracking URI: {tracking_uri} and experiment_name: {experiment_name}'
+            )
+            # disabling MLflow artifacts logging
+            os.environ['HF_MLFLOW_LOG_ARTIFACTS'] = '0'
+            try:
+                # setting the MLflow tracking URI
+                mlflow.set_tracking_uri(tracking_uri)
+                # connecting to the MLflow server
+                mlflow_client = mlflow.tracking.MlflowClient()
+                # checking if the experiment exists
+                mlflow_experiment = mlflow_client.get_experiment_by_name(experiment_name)
+                if mlflow_experiment is None:
+                    raise ValueError(
+                        f'Tracking URI `{tracking_uri}` does not have an Experiment with name `{experiment_name}`'
+                    )
+                _ = mlflow.set_experiment(experiment_name)
+                # starting the MLflow run
+                mlflow.start_run(run_name=f'splitting_run_{get_timestamp()}')
+                self.mlflow_run_id = mlflow.active_run().info.run_id
+                logger.info(f'MLflow run started with run_id: {self.mlflow_run_id}')
+            except Exception as e:
+                logger.warning(f'Failed to start MLflow run. Training without MLflow tracking! Error: {e}')
+                self.use_mlflow = False
+        else:
+            logger.info('MLflow tracking is disabled. Training without it.')
         # defining the training arguments
         training_args = transformers.TrainingArguments(
             output_dir='training_logs/textual_file_splitting_model_trainer',
@@ -641,20 +692,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
             callbacks=[transformers.integrations.MLflowCallback] if self.use_mlflow else [LoggerCallback],
         )
         trainer.class_weights = class_weights
-        if self.use_mlflow:
-            logger.info(f'Using MLflow to track the experiment with experiment_name={experiment_name}')
-            # disabling MLflow artifacts logging
-            os.environ['HF_MLFLOW_LOG_ARTIFACTS'] = '0'
-            try:
-                mlflow.set_tracking_uri(tracking_uri)
-                _ = mlflow.set_experiment(experiment_name)
-                mlflow.start_run(run_name=f'splitting_run_{get_timestamp()}')
-                self.mlflow_run_id = mlflow.active_run().info.run_id
-            except Exception as e:
-                logger.error(f'Failed to start MLflow run. Training without MLflow tracking! Error: {e}')
-                self.use_mlflow = False
-        else:
-            logger.info('No experiment_id is passed, training without MLflow tracking.')
+        
         # training the model
         trainer.train()
 
@@ -686,10 +724,10 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
 
         :param page: A Page to be predicted as first or non-first.
         :type page: Page
-        :param use_gpu: Run prediction on GPU if available.
-        :type use_gpu: bool
         :param previous_page: The previous Page which would help give more context to the model
         :type page: Page
+        :param device: A device to run the prediction on. Possible values are 'mps', 'cuda', 'cpu'.
+        :type device: str
         :return: A Page with possible changes in is_first_page attribute value.
         """
         self.check_is_ready()

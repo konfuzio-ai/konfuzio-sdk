@@ -12,7 +12,7 @@ jupyter:
     name: python3
 ---
 
-## Create Annotations using the wrapped API call
+## Create, change and delete Annotations using the wrapped API call
 
 ---
 
@@ -23,9 +23,16 @@ jupyter:
 **Difficulty:** Medium
 
 **Goal:** Explain how to create different types of Annotation (textual, visual) using the methods from the SDK listed in
-`konfuzio_sdk.api`
+`konfuzio_sdk.api`, how to change or delete them.
 
 ---
+
+### Environment
+You need to install the Konfuzio SDK before diving into the tutorial. \
+To get up and running quickly, you can use our Colab Quick Start notebook. \
+<a href="https://colab.research.google.com/github/konfuzio-ai/konfuzio-sdk/blob/master/notebooks/Quick_start_template_for_Konfuzio_SDK.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+
+As an alternative you can follow the [installation section](../get_started.html#install-sdk) to install and initialize the Konfuzio SDK locally or on an environment of your choice.
 
 ### Introduction
 
@@ -46,6 +53,7 @@ YOUR_DOCUMENT_ID = 44823
 YOUR_LABEL_ID = 12503
 YOUR_LABEL_SET_ID = 63
 YOUR_PROJECT_ID = 46
+NEW_LABEL_ID = YOUR_LABEL_ID
 project = Project(id_=YOUR_PROJECT_ID)
 project.get_document_by_id(YOUR_DOCUMENT_ID).get_bbox()
 ```
@@ -71,7 +79,7 @@ To create an Annotation that is based on existing text of a Document, let's firs
 Span that will be passed as the `spans` argument. You can define one or more Spans.
 ```python
 test_document = Project(id_=YOUR_PROJECT_ID).get_document_by_id(YOUR_DOCUMENT_ID)
-spans = [Span(document=test_document, start_offset=3056, end_offset=3064)]
+spans = [Span(document=test_document, start_offset=3067, end_offset=3074)]
 ```
 
 Next, let's specify arguments for a POST request that creates Annotations and send it to the server. We want to create
@@ -89,6 +97,7 @@ print(response['span'])
 annotations = get_document_annotations(YOUR_DOCUMENT_ID)['results']
 negative_id = delete_document_annotation(response['id'])
 assert delete_document_annotation(negative_id, delete_from_database=True).status_code == 204
+YOUR_ANNOTATION_ID = response['id']
 ```
 
 ### Creating a visual Annotation
@@ -107,7 +116,7 @@ bboxes = [
 ]
 ```
 Next, we specify arguments for a POST request to create an Annotation and send it to the server. We want to create
-an Annotation within a new Annotation Set so we specify `label_set_id`.
+an Annotation within a new Annotation Set, so we specify `label_set_id`.
 ```python
 response = post_document_annotation(document_id=YOUR_DOCUMENT_ID, spans=bboxes, label_id=YOUR_LABEL_ID, confidence=100.0,
                                     label_set_id=YOUR_LABEL_SET_ID)
@@ -118,8 +127,38 @@ response = json.loads(response.text)
 print(response['span'])
 ```
 ```python tags=['remove-cell']
-assert delete_document_annotation(response['id'])
+assert delete_document_annotation(response['id'], delete_from_database=True)
 ```
+
+### Change an Annotation
+To update details of an Annotation, use `change_document_annotation` method from `konfuzio_sdk.api`. You can specify 
+a Label, a Label Set, an Annotation Set, `is_correct` and `revised` statuses, Span list and selection Bbox to be 
+updated to a new value.
+```python
+from konfuzio_sdk.api import change_document_annotation
+
+response = change_document_annotation(annotation_id=YOUR_ANNOTATION_ID, label=NEW_LABEL_ID)
+```
+Let's check if an Annotation's Label was changed successfully:
+```python
+print(response.json()['label'])
+```
+
+### Delete an Annotation
+To delete an Annotation, use `delete_document_annotation` method from `konfuzio_sdk.api`. This method runs in two modes:
+soft deletion (does not delete from the database, just deletes from approved Annotations viewed in the Document, 
+creating a negative Annotation instead) and hard deletion (deletes Annotations permanently from the database). For AI 
+training purposes, we recommend setting `delete_from_database` to False if you don't want to remove an Annotation 
+permanently.
+```python
+from konfuzio_sdk.api import delete_document_annotation
+
+# soft-delete and create a negative Annotation
+negative_id = delete_document_annotation(annotation_id=YOUR_ANNOTATION_ID)
+# hard-delete and remove a negative Annotation from DB permanently
+assert delete_document_annotation(negative_id, delete_from_database=True).status_code == 204
+```
+
 ### Conclusion
 
 In this tutorial, we have explained how to create different types of Annotations using native Konfuzio SDK's wrappers
@@ -127,11 +166,11 @@ around the API calls to the server. Here is the full code for the tutorial:
 ```python tags=['skip-execution', 'nbval-skip']
 import json 
 
-from konfuzio_sdk.api import post_document_annotation, delete_document_annotation
+from konfuzio_sdk.api import post_document_annotation, delete_document_annotation, change_document_annotation
 from konfuzio_sdk.data import Span, Project
 
 test_document = Project(id_=YOUR_PROJECT_ID).get_document_by_id(YOUR_DOCUMENT_ID)
-spans = [Span(document=test_document, start_offset=3056, end_offset=3064)]
+spans = [Span(document=test_document, start_offset=3067, end_offset=3074)]
 response = post_document_annotation(document_id=YOUR_DOCUMENT_ID, spans=spans, label_id=YOUR_LABEL_ID, confidence=100.0,
                                     label_set_id=YOUR_LABEL_SET_ID)
 response = json.loads(response.text)
@@ -145,6 +184,14 @@ response = post_document_annotation(document_id=YOUR_DOCUMENT_ID, spans=bboxes, 
                                     label_set_id=YOUR_LABEL_SET_ID)
 response = json.loads(response.text)
 print(response['span'])
+
+response = change_document_annotation(annotation_id=YOUR_ANNOTATION_ID, label=NEW_LABEL_ID)
+print(response.json()['label'])
+
+# soft-delete and create a negative Annotation
+negative_id = delete_document_annotation(annotation_id=YOUR_ANNOTATION_ID)
+# hard-delete and remove a negative Annotation from DB permanently
+assert delete_document_annotation(negative_id, delete_from_database=True).status_code == 204
 ```
 
 ### What's next?

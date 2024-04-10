@@ -27,6 +27,13 @@ jupyter:
 
 ---
 
+### Environment
+You need to install the Konfuzio SDK before diving into the tutorial. \
+To get up and running quickly, you can use our Colab Quick Start notebook. \
+<a href="https://colab.research.google.com/github/konfuzio-ai/konfuzio-sdk/blob/master/notebooks/Quick_start_template_for_Konfuzio_SDK.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+
+As an alternative you can follow the [installation section](../get_started.html#install-sdk) to install and initialize the Konfuzio SDK locally or on an environment of your choice.
+
 ### Introduction
 
 If you want to ensure that Annotations of a Label are consistent and check for possible outliers, you can use one of the `Label` class's methods. There are three of them available.
@@ -50,7 +57,7 @@ Initialize the Project, select the Label you want to assess and run the method, 
 ```python editable=true slideshow={"slide_type": ""} vscode={"languageId": "plaintext"}
 from konfuzio_sdk.data import Project
 
-project = Project(id_=YOUR_PROJECT_ID)
+project = Project(id_=YOUR_PROJECT_ID, update=True)
 label = project.get_label_by_name(YOUR_LABEL_NAME)
 outliers = label.get_probable_outliers_by_regex(project.categories, top_worst_percentage=TOP_WORST)
 print([annotation.offset_string for annotation in outliers])
@@ -83,6 +90,7 @@ pipeline = RFExtractionAI()
 pipeline.tokenizer = ListTokenizer(tokenizers=[])
 pipeline.category = label.project.get_category_by_id(id_=63)
 train_doc_ids = {44823}
+project.get_document_by_id(44823).get_bbox()
 pipeline.documents = [doc for doc in pipeline.category.documents() if doc.id_ in train_doc_ids]
 for cur_label in pipeline.category.labels:
     for regex in cur_label.find_regex(category=pipeline.category):

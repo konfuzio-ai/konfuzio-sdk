@@ -27,6 +27,13 @@ jupyter:
 
 ---
 
+### Environment
+You need to install the Konfuzio SDK before diving into the tutorial. \
+To get up and running quickly, you can use our Colab Quick Start notebook. \
+<a href="https://colab.research.google.com/github/konfuzio-ai/konfuzio-sdk/blob/master/notebooks/Quick_start_template_for_Konfuzio_SDK.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+
+As an alternative you can follow the [installation section](../get_started.html#install-sdk) to install and initialize the Konfuzio SDK locally or on an environment of your choice.
+
 ### Introduction
 In this tutorial, we will explore the concept of tokenization and the various tokenization strategies available in the Konfuzio SDK. Tokenization is a foundational tool in natural language processing (NLP) that involves breaking text into smaller units called tokens. We will focus on the <a href="#whitespace-tokenization">WhitespaceTokenizer</a>, <a href="#regex-tokenization-for-specific-labels">Label-Specific RegexTokenizer</a>, <a href="#paragraph-tokenization">ParagraphTokenizer</a>, and <a href="#sentence-tokenization">SentenceTokenizer</a> as different tools for different tokenization tasks. Additionally, we will discuss <a href="#choosing-the-right-tokenizer">how to choose</a> the right tokenizer and <a href="#verify-that-a-tokenizer-finds-all-labels">how to verify</a> that a tokenizer has found all Labels.
 
@@ -59,7 +66,7 @@ from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
 Next, initialize a Project and a Document instance. The variables `TEST_PROJECT_ID` and `TEST_DOCUMENT_ID` are placeholders that need to be replaced with actual values when running these steps. Make sure to use a Project and a Document to which you have access.
 
 ```python tags=["remove-output"]
-project = Project(id_=TEST_PROJECT_ID)
+project = Project(id_=TEST_PROJECT_ID, update=True)
 document = project.get_document_by_id(TEST_DOCUMENT_ID)
 ```
 

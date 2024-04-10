@@ -271,6 +271,12 @@ Multimodal File Splitting Model
    :members:
    :noindex:
 
+Textual File Splitting Model
+---------------------
+.. autoclass:: TextualFileSplittingModel
+   :members:
+   :noindex:
+
 Splitting AI
 ---------------------
 .. autoclass:: SplittingAI
