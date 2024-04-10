@@ -1,4 +1,5 @@
 """Handle data from the API."""
+
 import io
 import itertools
 import json
@@ -2591,7 +2592,13 @@ class Annotation(Data):
             )
             self.document.update()
         else:
-            del self.document._annotations[(tuple(sorted(self._spans.keys())), self.label.name)]
+            try:
+                del self.document._annotations[(tuple(sorted(self._spans.keys())), self.label.name)]
+            except Exception as e:
+                logger.warning(
+                    f'Could not delete annotation with key {(tuple(sorted(self._spans.keys())), self.label.name)} in {self.document}: {e}'
+                )
+                # See also: https://git.konfuzio.com/konfuzio/objectives/-/issues/12402
 
     def bbox(self) -> Bbox:
         """Get Bbox encompassing all Annotation Spans."""
