@@ -168,6 +168,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             'labeling_available',
             'is_reviewed',
             'text',
+            'data_file_producer',
             'category',
             'dataset_status',
             'pages',
