@@ -45,7 +45,6 @@ request using the methods from `konfuzio_sdk.api` which serves as a wrapper arou
 Let's start by making necessary imports:
 ```python tags=["remove-cell"]
 import logging
-from konfuzio_sdk.api import get_document_annotations
 from konfuzio_sdk.data import Project
 
 logging.getLogger("konfuzio_sdk").setLevel(logging.ERROR)
