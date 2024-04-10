@@ -1,4 +1,5 @@
 """Validate API functions."""
+
 import datetime
 import json
 import logging
@@ -108,6 +109,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             'document_set',
             'number_of_pages',
             'data_file_name',
+            'data_file_producer',
             'file_url',
             'thumbnail_url',
             'ocr_time',
@@ -205,6 +207,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             'labeling_available',
             'is_reviewed',
             'text',
+            'data_file_producer',
             'category',
             'dataset_status',
             'pages',
