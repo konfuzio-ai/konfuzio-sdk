@@ -1,7 +1,7 @@
 """Schemas for validating the structure of Konfuzio-related objects."""
 from typing import List, Union
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class CategoriesLabelData20240409(BaseModel):
@@ -32,7 +32,7 @@ class CategoriesLabelData20240409(BaseModel):
         name: str
         id: int
         project: Union[int, None]
-        schema: List[LabelSetSchema]
+        schema_: List[LabelSetSchema] = Field(alias='schema')
 
     categories: List[CategorySchema]
 
