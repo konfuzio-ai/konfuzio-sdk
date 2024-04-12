@@ -21,22 +21,22 @@ Image Annotation       | ✔️                | ✔️ ️            |
 Table Annotation       | ✔️                | ✔️             |
 Download Images        | ✔️                | ✔️             |
 Download PDF with OCR  | ✔️                | ✔️             |
-Deploy AI models       | ✖️                  | ✔️             |
+Deploy AI models       | ✖️                | ✔️             |
 
 `*` Under fair use policy: We will impose 10 pages/hour throttling eventually.
 
 
-|                                                                                             |                                                               |
-|---------------------------------------------------------------------------------------------|---------------------------------------------------------------|
-| 📒 [Docs](https://dev.konfuzio.com/sdk/index.html)                                          | Read the docs                                                 |
-| 💾 [Installation](https://github.com/konfuzio-ai/konfuzio-sdk#installation)                 | How to install the Konfuzio SDK                               |
-| 🎓 [Tutorials](https://dev.konfuzio.com/sdk/examples/examples.html)                         | See what the Konfuzio SDK can do with our Notebooks & Scripts |
-| 💡 [Explanations](https://dev.konfuzio.com/sdk/explanations.html)                           | Here are links to teaching material about the Konfuzio SDK.   |
-| ⚙️ [API Reference](https://dev.konfuzio.com/sdk/sourcecode.html)                            | Python classes, methods, and functions                        |
-| ❤️ [Contributing](https://dev.konfuzio.com/sdk/contribution.html)                           | Learn how to contribute!                                      |
-| 🐛 [Issue Tracker](https://github.com/konfuzio-ai/konfuzio-sdk/issues)                      | Report and monitor Konfuzio SDK issues                        |
-| 🔭 [Changelog](https://github.com/konfuzio-ai/konfuzio-sdk/releases)                        | Review the release notes                                      |
-| 📰 [MIT License](https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/LICENSE.md)        | Review the license                                            |
+|                                                                                      |                                                               |
+|--------------------------------------------------------------------------------------|---------------------------------------------------------------|
+| 📒 [Docs](https://dev.konfuzio.com/sdk/index.html)                                   | Read the docs                                                 |
+| 💾 [Installation](https://github.com/konfuzio-ai/konfuzio-sdk#installation)          | How to install the Konfuzio SDK                               |
+| 🎓 [Tutorials](https://dev.konfuzio.com/sdk/examples/examples.html)                  | See what the Konfuzio SDK can do with our Notebooks & Scripts |
+| 💡 [Explanations](https://dev.konfuzio.com/sdk/explanations.html)                    | Here are links to teaching material about the Konfuzio SDK.   |
+| ⚙️ [API Reference](https://dev.konfuzio.com/sdk/sourcecode.html)                     | Python classes, methods, and functions                        |
+| ❤️ [Contributing](https://dev.konfuzio.com/sdk/contribution.html)                    | Learn how to contribute!                                      |
+| 🐛 [Issue Tracker](https://github.com/konfuzio-ai/konfuzio-sdk/issues)               | Report and monitor Konfuzio SDK issues                        |
+| 🔭 [Changelog](https://github.com/konfuzio-ai/konfuzio-sdk/releases)                 | Review the release notes                                      |
+| 📰 [MIT License](https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/LICENSE.md) | Review the license                                            |
 
 ## Installation
 
