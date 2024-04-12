@@ -21,7 +21,7 @@ Image Annotation       | ✔️                | ✔️ ️            |
 Table Annotation       | ✔️                | ✔️             |
 Download Images        | ✔️                | ✔️             |
 Download PDF with OCR  | ✔️                | ✔️             |
-Deploy AI models       | ✖                 | ✔️             |
+Deploy AI models       | ✖️                  | ✔️             |
 
 `*` Under fair use policy: We will impose 10 pages/hour throttling eventually.
 
