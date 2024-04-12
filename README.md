@@ -11,17 +11,17 @@ The Konfuzio Software Development Kit (Konfuzio SDK) provides a
 The SDK allows you to retrieve visual and text features to build your own document models. Konfuzio Server serves as an
 UI to define the data structure, manage training/test data and to deploy your models as API.
 
-Function               | Public Host Free*                         | On-Site (Paid)      |
-:--------------------- | :---------------------------------------- | :-------------------|
-OCR Text               | :heavy_check_mark:                        |  :heavy_check_mark: |
-OCR Handwriting        | :heavy_check_mark:                        |  :heavy_check_mark: |
-Text Annotation        | :heavy_check_mark:                        |  :heavy_check_mark: |
-PDF Annotation         | :heavy_check_mark:                        |  :heavy_check_mark: |
-Image Annotation       | :heavy_check_mark:                        |  :heavy_check_mark: |
-Table Annotation       | :heavy_check_mark:                        |  :heavy_check_mark: |
-Download Images        | :heavy_check_mark:                        |  :heavy_check_mark: |
-Download PDF with OCR  | :heavy_check_mark:                        |  :heavy_check_mark: |
-Deploy AI models       | :heavy_multiplication_x:                  |  :heavy_check_mark: |
+Function               | Public Host Free*        | On-Site (Paid) |
+:--------------------- |:-------------------------|:---------------|
+OCR Text               | ✔️                       | ✔️             |
+OCR Handwriting        | ✔️                       | ✔️             |
+Text Annotation        | ✔️                       | ✔️             |
+PDF Annotation         | ✔️                       | ✔️             |
+Image Annotation       | ✔️                       | ✔️ ️            |
+Table Annotation       | ✔️                       | ✔️             |
+Download Images        | ✔️                       | ✔️             |
+Download PDF with OCR  | ✔️                       | ✔️             |
+Deploy AI models       | :heavy_multiplication_x: | ✔️             |
 
 `*` Under fair use policy: We will impose 10 pages/hour throttling eventually.
 
