@@ -927,11 +927,12 @@ def get_all_project_ais(project_id: int, session=None) -> dict:
     return all_ais
 
 
-def export_ai_models(project, session=None, category_ids=None) -> int:
+def export_ai_models(project, session=None, category_id=None) -> int:
     """
     Export all AI Model files for a specific Project.
 
     :param: project: Konfuzio Project
+    :param: category_id: Only select AIs for a specific Category of a Project
     :return: Number of exported AIs
     """
     ai_types = set()  # Using a set to store unique AI types
@@ -958,7 +959,10 @@ def export_ai_models(project, session=None, category_ids=None) -> int:
         ai_models = project_ai_models.get(variant, {}).get('results', [])
 
         for index, ai_model in enumerate(ai_models):
-            # TODO add filter by categor_ids
+            # For Extraction AI.
+            if category_id and ai_model.get('category') and category_id != ai_model.get('category'):
+                logger.error(f'Skip {ai_model} in export.')
+                continue
 
             # Only export fully trained AIs which are set as active
             if not ai_model.get('status') == 'done' or not ai_model.get('active'):

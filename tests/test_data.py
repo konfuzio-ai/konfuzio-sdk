@@ -3440,10 +3440,11 @@ class TestData(unittest.TestCase):
         self.assertFalse(a.is_online)
 
 
-def test_download_training_and_test_data():
+def test_export_project_data():
     """Test downloading of data from training and test documents."""
     project = Project(id_=1249, update=True)
-    project.download_training_and_test_data()
+    category_id = project.categories[0].id_
+    project.export_project_data(include_ais=True, training_and_test_documents=True, category_id=category_id)
 
 
 def test_to_init_prj_from_folder():

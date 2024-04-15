@@ -4590,7 +4590,7 @@ class Project(Data):
 
     def export_project_data(self, include_ais=False, training_and_test_documents=True, *args, **kwargs) -> None:
         """
-        "Export the Project data including Training, Test Documents and AI models.
+        Export the Project data including Training, Test Documents and AI models.
 
         :include_ais: Whether to include AI models in the export
         :training_and_test_documents: Whether to include training & test documents in the export.
