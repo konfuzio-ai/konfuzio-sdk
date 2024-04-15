@@ -12,7 +12,6 @@ from konfuzio_sdk.data import Document, Project
 from konfuzio_sdk.settings_importer import is_dependency_installed
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
 from konfuzio_sdk.trainer.information_extraction import RFExtractionAI
-from konfuzio_sdk.utils import logging_from_subprocess
 from tests.variables import OFFLINE_PROJECT
 
 
@@ -57,19 +56,18 @@ class TestExtractionAIBento(unittest.TestCase):
                     'x1': bbox['x1'],
                     'y0': bbox['y0'],
                     'y1': bbox['y1'],
-                    'page': {
-                        'number': bbox['page_number'],
-                        'original_size': tuple(
-                            self.test_document.get_page_by_index(bbox['page_number'] - 1)._original_size
-                        ),
-                        'image': self.test_document.get_page_by_index(bbox['page_number'] - 1).image_bytes,
-                    },
+                    'page_number': bbox['page_number'],
                     'text': bbox['text'],
                 }
                 for bbox_id, bbox in self.test_document.get_bbox().items()
             },
             'pages': [
-                {'number': page.number, 'original_size': page._original_size, 'image': page.image_bytes}
+                {
+                    'number': page.number,
+                    'original_size': page._original_size,
+                    'image': page.image_bytes,
+                    'segmentation': page._segmentation,
+                }
                 for page in self.test_document.pages()
             ],
         }
@@ -82,7 +80,7 @@ class TestExtractionAIBento(unittest.TestCase):
         """Test that only a schema-adhering response is accepted by extract method of service."""
         prepared = convert_document_to_request(document=self.test_document, schema=ExtractRequest20240117)
         response = requests.post(url=self.request_url, json=prepared.dict())
-        logging_from_subprocess(process=self.bento_process, breaking_point='status=')
+        # logging_from_subprocess(process=bento_process, breaking_point='status=')
         assert len(response.json()['annotation_sets']) == 5
         assert sum([len(element['annotations']) for element in response.json()['annotation_sets']]) == 19
         response_schema = ExtractResponse20240117(annotation_sets=response.json()['annotation_sets'])
