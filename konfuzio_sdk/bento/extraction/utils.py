@@ -28,7 +28,7 @@ def prepare_request(request: BaseModel, project: Project) -> Document:
                 'x1': bbox.x1,
                 'y0': bbox.y0,
                 'y1': bbox.y1,
-                'page_number': bbox.page.number,
+                'page_number': bbox.page_number,
                 'text': bbox.text,
             }
             for bbox_id, bbox in request.bboxes.items()
@@ -108,7 +108,9 @@ def convert_document_to_request(document: Document, schema: BaseModel = ExtractR
     :returns: A Document converted in accordance with the schema.
     """
     pages = [
-        ExtractRequest20240117Page(number=page.number, image=page.image, original_size=page._original_size)
+        ExtractRequest20240117Page(
+            number=page.number, image=page.image, original_size=page._original_size, segmentation=page._segmentation
+        )
         for page in document.pages()
     ]
     if schema.__name__ == 'ExtractRequest20240117':
@@ -124,9 +126,6 @@ def convert_document_to_request(document: Document, schema: BaseModel = ExtractR
                     'top': v.top,
                     'bottom': v.bottom,
                     'text': document.text[k],
-                    'page': ExtractRequest20240117Page(
-                        number=v.page.number, image=v.page.image, original_size=v.page._original_size
-                    ),
                 }
                 for k, v in document.bboxes.items()
             },
