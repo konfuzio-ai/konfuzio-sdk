@@ -859,7 +859,11 @@ class AbstractExtractionAI(BaseModel):
     @property
     def bento_metadata(self) -> dict:
         """Metadata to include into the bento-saved instance of a model."""
-        return {'requires_images': self.requires_images, 'requires_segmentation': self.requires_text}
+        return {
+            'requires_images': getattr(self, 'requires_images', False),
+            'requires_segmentation': getattr(self, 'requires_segmentation', False),
+            'requires_text': getattr(self, 'requires_text', False),
+        }
 
     def check_is_ready(self):
         """
