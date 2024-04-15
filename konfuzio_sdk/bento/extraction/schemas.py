@@ -10,6 +10,7 @@ class ExtractRequest20240117Page(BaseModel):
     number: int
     image: Optional[bytes]
     original_size: Tuple[float, float]
+    segmentation: Optional[list]
 
 
 class ExtractRequest20240117(BaseModel):

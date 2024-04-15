@@ -40,7 +40,9 @@ def prepare_request(request: BaseModel, project: Project) -> Document:
             category=category,
         )
         for page in request.pages:
-            Page(id_=page.number, document=document, number=page.number, original_size=page.original_size)
+            p = Page(id_=page.number, document=document, number=page.number, original_size=page.original_size)
+            if page.segmentation:
+                p._segmentation = page.segmentation
     else:
         raise NotImplementedError(NOT_IMPLEMENTED_ERROR_MESSAGE)
     return document
