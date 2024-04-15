@@ -40,7 +40,6 @@ from konfuzio_sdk.api import (
 )
 from konfuzio_sdk.normalize import normalize
 from konfuzio_sdk.regex import get_best_regex, merge_regex, regex_matches, suggest_regex_for_string
-from konfuzio_sdk.schemas import CategoriesLabelData20240409
 from konfuzio_sdk.urls import get_annotation_view_url
 from konfuzio_sdk.utils import (
     amend_file_name,
@@ -4616,37 +4615,39 @@ class Project(Data):
                 print('[ERROR] Something went wrong while downloading AIs or AI metadata!')
                 raise error
 
-    def create_project_metadata_json(self) -> str:
+    def create_project_metadata_dict(self) -> Dict:
         """
         Create a dictionary that mimics the file categories_label_sets.json5 saved in the Project folder
         for restoring Projects within Bento containers.
         """
-        categories = [
-            CategoriesLabelData20240409.CategorySchema(
-                api_name=category.name,
-                name=category.name,
-                id=category.id_,
-                project=self.id_,
-                schema=[
-                    CategoriesLabelData20240409.CategorySchema.LabelSetSchema(
-                        api_name=label_set.name,
-                        has_multiple_annotation_sets=label_set.has_multiple_annotation_sets,
-                        id=label_set.id_,
-                        labels=[
-                            CategoriesLabelData20240409.CategorySchema.LabelSetSchema.LabelSchema(
-                                name=label.name,
-                                data_type=label.data_type,
-                                has_multiple_top_candidates=label.has_multiple_top_candidates,
-                                id=label.id_,
-                                api_name=label.name,
-                                threshold=label.threshold,
-                            )
-                            for label in label_set.labels
-                        ],
-                    )
-                    for label_set in category.label_sets
-                ],
-            )
-            for category in self.categories
-        ]
-        return CategoriesLabelData20240409(categories=categories).model_dump_json()
+        categories = {
+            'categories': [
+                {
+                    'api_name': category.name,
+                    'name': category.name,
+                    'id': category.id_,
+                    'project': self.id_,
+                    'schema_': [
+                        {
+                            'api_name': label_set.name,
+                            'has_multiple_annotation_sets': label_set.has_multiple_annotation_sets,
+                            'id': label_set.id_,
+                            'labels': [
+                                {
+                                    'name': label.name,
+                                    'data_type': label.data_type,
+                                    'has_multiple_top_candidates': label.has_multiple_top_candidates,
+                                    'id': label.id_,
+                                    'api_name': label.name,
+                                    'threshold': label.threshold,
+                                }
+                                for label in label_set.labels
+                            ],
+                        }
+                        for label_set in category.label_sets
+                    ],
+                }
+                for category in self.categories
+            ]
+        }
+        return categories
