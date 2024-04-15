@@ -23,7 +23,7 @@ class ExtractRequest20240117(BaseModel):
         x1: float
         y0: float
         y1: float
-        page: ExtractRequest20240117Page
+        page_number: int
         text: Optional[str]
 
     text: str
