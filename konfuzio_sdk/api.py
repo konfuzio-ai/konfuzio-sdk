@@ -538,7 +538,6 @@ def get_meta_of_files(project_id: int, pagination_limit: int = 100, limit: int =
     :param project_id: ID of the Project
     :param pagination_limit: Number of Documents returned in a single paginated response
     :param limit: Number of Documents returned in general
-    :param category_id: Filter by Category ID
     :param session: Konfuzio session with Retry and Timeout policy
     :return: Sorted Documents names in the format {id_: 'pdf_name'}.
     """
