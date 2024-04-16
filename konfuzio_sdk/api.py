@@ -958,14 +958,14 @@ def export_ai_models(project, session=None, category_id=None) -> int:
         ai_models = project_ai_models.get(variant, {}).get('results', [])
 
         for index, ai_model in enumerate(ai_models):
-            # For Extraction AI.
+            # Filter Extraction AI by selected category.
             if category_id and ai_model.get('category') and category_id != ai_model.get('category'):
-                logger.error(f'Skip {ai_model} in export.')
+                logger.warning(f'Skip {ai_model} in export.')
                 continue
 
             # Only export fully trained AIs which are set as active
             if not ai_model.get('status') == 'done' or not ai_model.get('active'):
-                logger.error(f'Skip {ai_model} in export.')
+                logger.warning(f'Skip {ai_model} in export.')
                 continue
             ai_model_id = ai_model.get('id')
             ai_model_version = ai_model.get('id')
