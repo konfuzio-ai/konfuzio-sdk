@@ -3,7 +3,7 @@ import logging
 from typing import Dict, List, Optional, Tuple, Union
 
 import numpy
-import pandas
+import pandas as pd
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.utils.extmath import weighted_mode
 
@@ -83,7 +83,7 @@ def grouped(group, target: str):
 
 def compare(
     doc_a, doc_b, only_use_correct=False, use_view_annotations=False, ignore_below_threshold=False, strict=True
-) -> pandas.DataFrame:
+) -> pd.DataFrame:
     """Compare the Annotations of two potentially empty Documents wrt. to **all** Annotations.
 
     :param doc_a: Document which is assumed to be correct
@@ -100,8 +100,8 @@ def compare(
     :raises ValueError: When the Category differs.
     :return: Evaluation DataFrame
     """
-    df_a = pandas.DataFrame(doc_a.eval_dict(use_correct=only_use_correct))
-    df_b = pandas.DataFrame(
+    df_a = pd.DataFrame(doc_a.eval_dict(use_correct=only_use_correct))
+    df_b = pd.DataFrame(
         doc_b.eval_dict(
             use_view_annotations=strict and use_view_annotations,  # view_annotations only available for strict=True
             use_correct=False,
@@ -111,7 +111,7 @@ def compare(
     if doc_a.category != doc_b.category:
         raise ValueError(f'Categories of {doc_a} with {doc_a.category} and {doc_b} with {doc_a.category} do not match.')
     if strict:  # many to many inner join to keep all Spans of both Documents
-        spans = pandas.merge(df_a, df_b, how='outer', on=['start_offset', 'end_offset'], suffixes=('', '_predicted'))
+        spans = pd.merge(df_a, df_b, how='outer', on=['start_offset', 'end_offset'], suffixes=('', '_predicted'))
         # add criteria to evaluate Spans
         spans['is_matched'] = spans['id_local'].notna()  # start and end offset are identical
         spans['start_offset_predicted'] = spans['start_offset']  # start and end offset are identical
@@ -132,7 +132,7 @@ def compare(
         )
     else:
         # allows  start_offset_predicted <= end_offset and end_offset_predicted >= start_offset
-        spans = pandas.merge(df_a, df_b, how='outer', on=['label_id', 'label_set_id'], suffixes=('', '_predicted'))
+        spans = pd.merge(df_a, df_b, how='outer', on=['label_id', 'label_set_id'], suffixes=('', '_predicted'))
         # add criteria to evaluate Spans
         spans['is_matched'] = (spans['start_offset_predicted'] <= spans['end_offset']) & (
             spans['end_offset_predicted'] >= spans['start_offset']
@@ -220,6 +220,7 @@ def compare(
     )
 
     if strict:
+        # a span can be false positive and false negative simultaneously under the strict evaluation
         spans['false_positive'] = (  # commented out on purpose (spans["is_correct"]) &
             (spans['above_predicted_threshold'])
             & (~spans['true_positive'])
@@ -277,10 +278,98 @@ def compare(
         spans = spans.groupby(['annotation_set_id_predicted', 'label_id_predicted']).apply(prioritize_rows)
 
     spans = spans.replace({numpy.nan: None})
-    # one Span must not be defined as TP or FP or FN more than once
-    quality = (spans[['true_positive', 'false_positive', 'false_negative']].sum(axis=1) <= 1).all()
-    assert quality
+    if not strict:
+        # one Span must not be defined as TP or FP or FN more than once
+        quality = (spans[['true_positive', 'false_positive', 'false_negative']].sum(axis=1) <= 1).all()
+        assert quality
     return spans
+
+
+class EvaluationConfusionMatrix:
+    def __init__(
+        self,
+        documents: List[Tuple[Document, Document]],
+        strict: bool = True,
+        ignore_below_threshold: bool = True,
+        use_view_annotations: bool = True,
+        zero_division='warn',
+    ):
+        self.documents = documents
+        self.strict = strict
+        self.ignore_below_threshold = ignore_below_threshold
+        self.only_use_correct = True
+        self.use_view_annotations = use_view_annotations
+        self.data = None
+        self.zero_division = zero_division
+        self.calculate()
+
+    def calculate(self):
+        evaluations = []  # start anew, the configuration of the Evaluation might have changed.
+        for ground_truth, predicted in self.documents:
+            evaluation = self._calculate_matrices(
+                doc_a=ground_truth,
+                doc_b=predicted,
+                only_use_correct=self.only_use_correct,
+                strict=self.strict,
+                use_view_annotations=self.use_view_annotations,
+                ignore_below_threshold=self.ignore_below_threshold,
+            )
+            evaluations.append(evaluation)
+
+        self.data = pd.concat(evaluations)
+
+    def _calculate_matrices(
+        self,
+        doc_a,
+        doc_b,
+        only_use_correct=False,
+        use_view_annotations=False,
+        ignore_below_threshold=False,
+        strict=True,
+    ):
+        doc_a_eval_dict = doc_a.eval_dict(use_correct=only_use_correct)
+        doc_b_eval_dict = doc_b.eval_dict(
+            use_view_annotations=strict and use_view_annotations,
+            use_correct=False,
+            ignore_below_threshold=ignore_below_threshold,
+        )
+        df_merged = pd.DataFrame(doc_a.eval_dict(use_correct=only_use_correct))
+        for annotation in doc_a_eval_dict:
+            for predicted in doc_b_eval_dict:
+                if (
+                    annotation['start_offset'] == predicted['start_offset']
+                    and annotation['end_offset'] == predicted['end_offset']
+                ):
+                    if (
+                        annotation['is_correct']
+                        and predicted['confidence'] >= annotation['label_threshold']
+                        and annotation['label_id'] == predicted['label_id']
+                        and annotation['label_set_id'] == predicted['label_set_id']
+                        and annotation['annotation_set_id'] == predicted['annotation_set_id']
+                        and annotation['id_'] == predicted['id_']
+                    ):
+                        df_merged.loc[df_merged['id_'] == predicted['id_'], predicted['id_']] = 'TP'
+                    else:
+                        df_merged[predicted['id_']] = None
+
+        df_a = pd.DataFrame(doc_a.eval_dict(use_correct=only_use_correct))
+        df_b = pd.DataFrame(
+            doc_b.eval_dict(
+                use_view_annotations=strict and use_view_annotations,
+                use_correct=False,
+                ignore_below_threshold=ignore_below_threshold,
+            )
+        )
+        df_a_ids = df_a[['id_']]
+        duplicated_ids = df_a_ids['id_'].duplicated(keep=False)
+        df_a_ids['disambiguated_id'] = df_a_ids['id_'].astype(str)
+        df_a_ids.loc[duplicated_ids, 'disambiguated_id'] += '_' + (df_a_ids.groupby('id_').cumcount() + 1).astype(str)
+        df_b_ids = df_b[['id_']]
+        duplicated_ids = df_b_ids['id_'].duplicated(keep=False)
+        df_b_ids['disambiguated_id'] = df_b_ids['id_'].astype(str)
+        df_b_ids.loc[duplicated_ids, 'disambiguated_id'] += '_' + (df_b_ids.groupby('id_').cumcount() + 1).astype(str)
+        confusion_matrix = pd.DataFrame(index=df_a_ids['disambiguated_id'], columns=df_b_ids['disambiguated_id'])
+        confusion_matrix
 
 
 class EvaluationCalculator:
@@ -432,7 +521,7 @@ class ExtractionEvaluation:
             )
             evaluations.append(evaluation)
 
-        self.data = pandas.concat(evaluations)
+        self.data = pd.concat(evaluations)
 
     def _query(self, search=None):
         """Query the comparison data.
@@ -640,7 +729,7 @@ class CategorizationEvaluation:
             for ground_truth, predicted in self.documents
         ]
 
-    def confusion_matrix(self) -> pandas.DataFrame:
+    def confusion_matrix(self) -> pd.DataFrame:
         """Confusion matrix."""
         return confusion_matrix(self.actual_classes, self.predicted_classes, labels=self.category_ids + [0])
 
