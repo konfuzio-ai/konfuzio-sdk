@@ -17,6 +17,7 @@ Extraction. arXiv. https://doi.org/10.48550/ARXIV.2103.14470
 import collections
 import difflib
 import functools
+import json
 import logging
 import os
 import time
@@ -825,6 +826,9 @@ class AbstractExtractionAI(BaseModel):
 
     def build_bento(self, bento_model):
         """Build BentoML service for the model."""
+        dict_metadata = self.project.create_project_metadata_dict()
+        with open('categories_labels_data.json5', 'w') as f:
+            json.dump(dict_metadata, f, indent=2, sort_keys=True)
         return bentoml.bentos.build(
             name=f"extraction_{self.category.id_ if self.category else '0'}",
             service=f'extraction/{self.name_lower()}_service.py:svc',

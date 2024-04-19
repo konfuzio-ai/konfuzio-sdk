@@ -836,6 +836,7 @@ class TestParagraphRFExtractionAI(unittest.TestCase):
         assert evaluation.f1() >= 0.97
         assert evaluation.fp() == self.fp  # 2 lines are unannotated
 
+
 @unittest.skip(reason='Project 458 is under maintentance now and switching to another Project requires major changes.')
 @pytest.mark.skipif(
     not is_dependency_installed('torch'),
@@ -1180,7 +1181,8 @@ class TestInformationExtraction(unittest.TestCase):
         assert feature_names[65] == 'r_pos1'
 
     @unittest.skip(
-        reason='Project 458 is under maintentance now and switching to another Project requires major changes.')
+        reason='Project 458 is under maintentance now and switching to another Project requires major changes.'
+    )
     def test_time_feature_extraction(self):
         """Test time it takes to extract the features from a Document."""
         project = Project(id_=458)
@@ -1469,6 +1471,7 @@ class TestCustomExtractionAI(unittest.TestCase):
         cls.category = cls.project.get_category_by_id(1)
         cls.sample_document = cls.project.local_none_document
         cls.pipeline = ToyCustomExtractionAI(category=cls.category)
+        cls.pipeline.output_dir = '/'
 
     def test_01_toy_custom_extraction_ai(self):
         """Test creation of a toy Custom ExtractionAI."""
