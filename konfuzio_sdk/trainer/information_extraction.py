@@ -20,6 +20,8 @@ import functools
 import json
 import logging
 import os
+import shutil
+import tempfile
 import time
 import unicodedata
 from copy import deepcopy
@@ -826,24 +828,40 @@ class AbstractExtractionAI(BaseModel):
 
     def build_bento(self, bento_model):
         """Build BentoML service for the model."""
+        bento_module_dir = os.path.dirname(os.path.abspath(__file__)) + '/../bento/extraction'
         dict_metadata = self.project.create_project_metadata_dict()
-        with open('categories_labels_data.json5', 'w') as f:
-            json.dump(dict_metadata, f, indent=2, sort_keys=True)
-        return bentoml.bentos.build(
-            name=f"extraction_{self.category.id_ if self.category else '0'}",
-            service=f'extraction/{self.name_lower()}_service.py:svc',
-            include=['extraction/*.py'],
-            labels={'request': 'ExtractRequest20240117', 'response': 'ExtractResponse20240117'},
-            # TODO replace with latest version after release
-            python={
-                'packages': [
-                    'https://github.com/konfuzio-ai/konfuzio-sdk/archive/refs/heads/bentoml-experiments.zip#egg=konfuzio-sdk[ai]'
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # copy bento_module_dir to temp_dir
+            shutil.copytree(bento_module_dir, temp_dir + '/extraction')
+            # include metadata
+            with open(f'{temp_dir}/categories_labels_data.json5', 'w') as f:
+                json.dump(dict_metadata, f, indent=2, sort_keys=True)
+            # include the AI model name so the service can load it correctly
+            with open(f'{temp_dir}/AI_MODEL_NAME', 'w') as f:
+                f.write(self._pkl_name)
+
+            built_bento = bentoml.bentos.build(
+                name=f"extraction_{self.category.id_ if self.category else '0'}",
+                service=f'extraction/{self.name_lower()}_service.py:svc',
+                include=[
+                    'extraction/*.py',
+                    'categories_labels_data.json5',
+                    'AI_MODEL_NAME',
                 ],
-                'lock_packages': True,
-            },
-            build_ctx=os.path.dirname(os.path.abspath(__file__)) + '/../bento',
-            models=[str(bento_model.tag)],
-        )
+                labels={'request': 'ExtractRequest20240117', 'response': 'ExtractResponse20240117'},
+                # TODO replace with latest version after release
+                python={
+                    'packages': [
+                        'https://github.com/konfuzio-ai/konfuzio-sdk/archive/refs/heads/bentoml-experiments.zip#egg=konfuzio-sdk[ai]'
+                    ],
+                    'lock_packages': True,
+                },
+                build_ctx=temp_dir,
+                models=[str(bento_model.tag)],
+            )
+
+        return built_bento
 
     @property
     def project(self):
@@ -1157,19 +1175,20 @@ class AbstractExtractionAI(BaseModel):
             return False
 
     @property
+    def pkl_name(self) -> str:
+        """Generate a name for the pickle file."""
+        return f'{self.name_lower()}_{self.category.id_ if self.category.id_ else 0}_{self.category.fallback_name}_{get_timestamp()}'
+
+    @property
     def temp_pkl_file_path(self) -> str:
         """Generate a path for temporary pickle file."""
-        temp_pkl_file_path = os.path.join(
-            self.output_dir, f'{get_timestamp()}_{self.category.name.lower()}_{self.name_lower()}_tmp.cloudpickle'
-        )
+        temp_pkl_file_path = os.path.join(self.output_dir, f'{self.pkl_name}_tmp.cloudpickle')
         return temp_pkl_file_path
 
     @property
     def pkl_file_path(self) -> str:
         """Generate a path for a resulting pickle file."""
-        pkl_file_path = os.path.join(
-            self.output_dir, f'{get_timestamp()}_{self.category.name.lower()}_' f'{self.name_lower()}_.pkl'
-        )
+        pkl_file_path = os.path.join(self.output_dir, f'{self.pkl_name}.pkl')
         return pkl_file_path
 
     @staticmethod

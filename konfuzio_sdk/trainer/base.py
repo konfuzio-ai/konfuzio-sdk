@@ -46,6 +46,11 @@ class BaseModel(metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
+    def pkl_name(self):
+        """Generate a unique extension-less name for a resulting pickle file."""
+
+    @property
+    @abc.abstractmethod
     def temp_pkl_file_path(self):
         """Generate a path for temporary pickle file."""
 
@@ -307,8 +312,11 @@ class BaseModel(metaclass=abc.ABCMeta):
         if output_dir and not build:
             raise ValueError('Cannot specify output_dir without build=True')
 
+        # cache the pickle name to avoid changing it during the save process (as it includes timestamps)
+        self._pkl_name = self.pkl_name
+
         saved_model = bentoml.picklable_model.save_model(
-            name=self.name_lower(), model=self, signatures=self.entrypoint_methods, metadata=self.bento_metadata
+            name=self._pkl_name, model=self, signatures=self.entrypoint_methods, metadata=self.bento_metadata
         )
         logger.info(f'Model saved in the local BentoML store: {saved_model}')
 
