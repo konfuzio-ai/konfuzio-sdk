@@ -11,32 +11,32 @@ The Konfuzio Software Development Kit (Konfuzio SDK) provides a
 The SDK allows you to retrieve visual and text features to build your own document models. Konfuzio Server serves as an
 UI to define the data structure, manage training/test data and to deploy your models as API.
 
-Function               | Public Host Free*                         | On-Site (Paid)      |
-:--------------------- | :---------------------------------------- | :-------------------|
-OCR Text               | :heavy_check_mark:                        |  :heavy_check_mark: |
-OCR Handwriting        | :heavy_check_mark:                        |  :heavy_check_mark: |
-Text Annotation        | :heavy_check_mark:                        |  :heavy_check_mark: |
-PDF Annotation         | :heavy_check_mark:                        |  :heavy_check_mark: |
-Image Annotation       | :heavy_check_mark:                        |  :heavy_check_mark: |
-Table Annotation       | :heavy_check_mark:                        |  :heavy_check_mark: |
-Download Images        | :heavy_check_mark:                        |  :heavy_check_mark: |
-Download PDF with OCR  | :heavy_check_mark:                        |  :heavy_check_mark: |
-Deploy AI models       | :heavy_multiplication_x:                  |  :heavy_check_mark: |
+Function               | Public Host Free* | On-Site (Paid) |
+:--------------------- |:------------------|:---------------|
+OCR Text               | ✔️                | ✔️             |
+OCR Handwriting        | ✔️                | ✔️             |
+Text Annotation        | ✔️                | ✔️             |
+PDF Annotation         | ✔️                | ✔️             |
+Image Annotation       | ✔️                | ✔️ ️            |
+Table Annotation       | ✔️                | ✔️             |
+Download Images        | ✔️                | ✔️             |
+Download PDF with OCR  | ✔️                | ✔️             |
+Deploy AI models       | ✖️                | ✔️             |
 
 `*` Under fair use policy: We will impose 10 pages/hour throttling eventually.
 
 
-|                                                                                               |                                                               |
-|-----------------------------------------------------------------------------------------------|---------------------------------------------------------------|
-| :ledger: [Docs](https://dev.konfuzio.com/sdk/index.html)                                                    | Read the docs                                                 |
-| :floppy_disk: [Installation](https://github.com/konfuzio-ai/konfuzio-sdk#installation)        | How to install the Konfuzio SDK                               |
-| :mortar_board: [Tutorials](https://dev.konfuzio.com/sdk/examples/examples.html)               | See what the Konfuzio SDK can do with our Notebooks & Scripts |
-| :bulb: [Explanations](https://dev.konfuzio.com/sdk/explanations.html)                         | Here are links to teaching material about the Konfuzio SDK.   |
-| :gear: [API Reference](https://dev.konfuzio.com/sdk/sourcecode.html)                          | Python classes, methods, and functions                        |
-| :heart: [Contributing](https://dev.konfuzio.com/sdk/contribution.html)                        | Learn how to contribute!                                      |
-| :bug: [Issue Tracker](https://github.com/konfuzio-ai/konfuzio-sdk/issues)                     | Report and monitor Konfuzio SDK issues                        |
-| :telescope: [Changelog](https://github.com/konfuzio-ai/konfuzio-sdk/releases)                 | Review the release notes                                      |
-| :newspaper: [MIT License](https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/LICENSE.md) | Review the license                                            |
+|                                                                                      |                                                            |
+|--------------------------------------------------------------------------------------|------------------------------------------------------------|
+| 📒 [Docs](https://dev.konfuzio.com/sdk/index.html)                                   | Read the docs                                              |
+| 💾 [Installation](https://github.com/konfuzio-ai/konfuzio-sdk#installation)          | How to install the Konfuzio SDK                            |
+| 🎓 [Tutorials](https://dev.konfuzio.com/sdk/tutorials.html)                          | See what the Konfuzio SDK can do with our tutorials        |
+| 💡 [Explanations](https://dev.konfuzio.com/sdk/explanations.html)                    | Here are links to teaching material about the Konfuzio SDK. |
+| ⚙️ [API Reference](https://dev.konfuzio.com/sdk/sourcecode.html)                     | Python classes, methods, and functions                     |
+| ❤️ [Contributing](https://dev.konfuzio.com/sdk/contribution.html)                    | Learn how to contribute!                                   |
+| 🐛 [Issue Tracker](https://github.com/konfuzio-ai/konfuzio-sdk/issues)               | Report and monitor Konfuzio SDK issues                     |
+| 🔭 [Changelog](https://github.com/konfuzio-ai/konfuzio-sdk/releases)                 | Review the release notes                                   |
+| 📰 [MIT License](https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/LICENSE.md) | Review the license                                         |
 
 ## Installation
 
@@ -58,8 +58,8 @@ run the following command:
   pip install konfuzio_sdk[ai]
   ```
 
-Find the full installation guide [here](https://dev.konfuzio.com/sdk/get_started.html#install-sdk)
-or setup PyCharm as described [here](https://dev.konfuzio.com/sdk/quickstart_pycharm.html).
+Find the full installation guide [here](https://dev.konfuzio.com/sdk/get_started.html#install-sdk).
+To configure a PyCharm setup, follow the instructions [here](https://dev.konfuzio.com/sdk/quickstart_pycharm.html).
 
 ## CLI
 
@@ -77,9 +77,9 @@ And download any project via the id:
 
 You can find detailed examples about how to set up and run document AI pipelines in our 
 [Tutorials](https://dev.konfuzio.com/sdk/tutorials.html), including:
-- [Split a file into separate Documents](https://dev.konfuzio.com/sdk/tutorials.html#split-a-file-into-separate-documents)
-- [Document Categorization](https://dev.konfuzio.com/sdk/tutorials.html#document-categorization)
-- [Train a Konfuzio SDK Model to Extract Information From Payslip Documents](https://dev.konfuzio.com/sdk/tutorials.html#train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents)
+- [Split a file into separate Documents](https://dev.konfuzio.com/sdk/tutorials/context-aware-file-splitting-model/index.html)
+- [Document Categorization](https://dev.konfuzio.com/sdk/tutorials/document_categorization/index.html)
+- [Train a Konfuzio SDK model to get insights from annual reports](https://dev.konfuzio.com/sdk/tutorials/annual-reports/index.html)
 
 ### Basics
 
@@ -92,7 +92,7 @@ from konfuzio_sdk.data import Project, Document
 YOUR_PROJECT_ID: int
 my_project = Project(id_=YOUR_PROJECT_ID)
 
-# Get any Document online
+# Get any online Document
 DOCUMENT_ID_ONLINE: int
 doc: Document = my_project.get_document_by_id(DOCUMENT_ID_ONLINE)
 
