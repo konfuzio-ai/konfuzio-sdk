@@ -68,6 +68,11 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
         """
 
     @property
+    def pkl_name(self):
+        """Generate a unique extension-less name for a resulting pickle file."""
+        return f'{self.name_lower()}_{get_timestamp()}'
+
+    @property
     def temp_pkl_file_path(self) -> str:
         """
         Generate a path for temporary pickle file.
@@ -700,7 +705,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
             callbacks=[transformers.integrations.MLflowCallback] if self.use_mlflow else [LoggerCallback],
         )
         trainer.class_weights = class_weights
-        
+
         # training the model
         trainer.train()
 

@@ -67,6 +67,11 @@ class AbstractCategorizationAI(BaseModel, metaclass=abc.ABCMeta):
         return f'{self.name.lower().strip()}'
 
     @property
+    def pkl_name(self):
+        """Generate a unique extension-less name for a resulting pickle file."""
+        return f'{self.name_lower()}_{get_timestamp()}'
+
+    @property
     def temp_pkl_file_path(self) -> str:
         """
         Generate a path for temporary pickle file.
