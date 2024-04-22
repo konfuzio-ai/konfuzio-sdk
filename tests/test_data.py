@@ -246,6 +246,10 @@ class TestOnlineProject(unittest.TestCase):
         assert annotation in doc.annotations()
         doc.update()
         assert annotation in doc.annotations()
+        assert round(annotation.bbox().x0) == 199
+        assert round(annotation.bbox().x1) == 287
+        assert round(annotation.bbox().y0) == 509
+        assert round(annotation.bbox().y1) == 517
         annotation.delete(delete_online=True)
 
     def test_create_empty_bbox_annotation(self):
