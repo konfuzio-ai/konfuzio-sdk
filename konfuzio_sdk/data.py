@@ -695,6 +695,19 @@ class Bbox:
         """Get the y1 coordinate in the context of the Page image, in a top-down coordinate system."""
         return self.page.image_height - self.y0 * (self.page.image_height / self.page.height)
 
+    @property
+    def dict_format(self) -> Dict:
+        """Obtain Bbox data as a dictionary."""
+        return {
+            'page_index': self.page.index,
+            'top': self.page.height - self.y1,
+            'bottom': self.page.height - self.y0,
+            'x0': self.x0,
+            'x1': self.x1,
+            'y0': self.y0,
+            'y1': self.y1,
+        }
+
 
 class AnnotationSet(Data):
     """
@@ -2291,50 +2304,11 @@ class Annotation(Data):
         self._document_bboxes = None
 
         # TODO START LEGACY to support multiline Annotations
-        bboxes = kwargs.get('bboxes', None)
-        if bboxes and len(bboxes) > 0:
-            for bbox in bboxes:
-                if 'start_offset' in bbox.keys() and 'end_offset' in bbox.keys():
-                    Span(start_offset=bbox['start_offset'], end_offset=bbox['end_offset'], annotation=self)
-                elif 'x0' in bbox.keys() and 'x1' in bbox.keys() and 'y0' in bbox.keys() and 'y1' in bbox.keys():
-                    page = self.document.get_page_by_index(bbox['page_index'])
-                    cur_bbox = Bbox(page=page, x0=bbox['x0'], x1=bbox['x1'], y0=bbox['y0'], y1=bbox['y1'])
-                    if not self._document_bboxes:
-                        self._document_bboxes = self.document.bbox_dict
-                    bbox_dict = {
-                        'page_index': cur_bbox.page.index,
-                        'top': cur_bbox.page.height - cur_bbox.y1,
-                        'bottom': cur_bbox.page.height - cur_bbox.y0,
-                        'x0': cur_bbox.x0,
-                        'x1': cur_bbox.x1,
-                        'y0': cur_bbox.y0,
-                        'y1': cur_bbox.y1,
-                    }
-                    # checking that Bboxes provided as input contain text inside
-                    merged = get_merged_bboxes(
-                        doc_bbox=self._document_bboxes, bboxes=[bbox_dict], doc_text=self.document.text
-                    )
-                    for merged_bbox in merged:
-                        _ = Bbox(
-                            page=self.document.get_page_by_index(merged_bbox['page_index']),
-                            x0=merged_bbox['x0'],
-                            x1=merged_bbox['x1'],
-                            y0=merged_bbox['y0'],
-                            y1=merged_bbox['y1'],
-                        )
-                        try:
-                            span = Span(start_offset=merged_bbox['start_offset'], end_offset=merged_bbox['end_offset'])
-                            self.add_span(span)
-                        except KeyError:
-                            raise KeyError(
-                                f'Cannot add {self} because Bbox {bbox} does not have any text inside and '
-                                f'it is not possible create Spans from the selected area. Please provide Bboxes'
-                                f'that have text inside them or Spans to create an Annotation.'
-                            )
-                else:
-                    raise ValueError(f'SDK cannot read Bbox of Annotation {self.id_} in {self.document}: {bbox}')
+        input_bbox_dicts = kwargs.get('bboxes', None)
+        if input_bbox_dicts and len(input_bbox_dicts) > 0:
+            self._add_bbox_annotation(input_bbox_dicts=input_bbox_dicts)
         elif (
-            bboxes is None
+            input_bbox_dicts is None
             and kwargs.get('start_offset', None) is not None
             and kwargs.get('end_offset', None) is not None
         ):
@@ -2466,6 +2440,55 @@ class Annotation(Data):
     def label_set(self) -> LabelSet:
         """Return Label Set of Annotation."""
         return self.annotation_set.label_set
+
+    def _add_bbox_annotation(self, input_bbox_dicts: dict) -> None:
+        """
+        Check if input Bboxes are suitable to create an Annotation and if they are, create it.
+
+        :param input_bbox_dicts: Bboxes to create an Annotation with.
+        """
+        for input_bbox_dict in input_bbox_dicts:
+            if 'start_offset' in input_bbox_dict.keys() and 'end_offset' in input_bbox_dict.keys():
+                Span(
+                    start_offset=input_bbox_dict['start_offset'],
+                    end_offset=input_bbox_dict['end_offset'],
+                    annotation=self,
+                )
+            elif (
+                'x0' in input_bbox_dict.keys()
+                and 'x1' in input_bbox_dict.keys()
+                and 'y0' in input_bbox_dict.keys()
+                and 'y1' in input_bbox_dict.keys()
+            ):
+                page = self.document.get_page_by_index(input_bbox_dict['page_index'])
+                if not self._document_bboxes:
+                    self._document_bboxes = self.document.bbox_dict
+                input_bbox_dict['page_index'] = page.index
+                input_bbox_dict['top'] = page.height - input_bbox_dict['y1']
+                input_bbox_dict['bottom'] = page.height - input_bbox_dict['y0']
+                # checking that Bboxes provided as input contain text inside
+                merged_bboxes = get_merged_bboxes(
+                    doc_bbox=self._document_bboxes, bboxes=[input_bbox_dict], doc_text=self.document.text
+                )
+                for merged_bbox in merged_bboxes:
+                    try:
+                        span = Span(start_offset=merged_bbox['start_offset'], end_offset=merged_bbox['end_offset'])
+                        self.add_span(span)
+                        _ = Bbox(
+                            page=self.document.get_page_by_index(merged_bbox['page_index']),
+                            x0=merged_bbox['x0'],
+                            x1=merged_bbox['x1'],
+                            y0=merged_bbox['y0'],
+                            y1=merged_bbox['y1'],
+                        )
+                    except KeyError:
+                        raise KeyError(
+                            f'Cannot add {self} because Bbox {input_bbox_dict} does not have any text inside and '
+                            f'it is not possible create Spans from the selected area. Please provide Bboxes'
+                            f'that have text inside them or Spans to create an Annotation.'
+                        )
+            else:
+                raise ValueError(f'SDK cannot read Bbox of Annotation {self.id_} in {self.document}: {input_bbox_dict}')
 
     def add_span(self, span: Span):
         """Add a Span to an Annotation incl. a duplicate check per Annotation."""
