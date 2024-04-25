@@ -27,6 +27,13 @@ jupyter:
 
 ---
 
+### Environment
+You need to install the Konfuzio SDK before diving into the tutorial. \
+To get up and running quickly, you can use our Colab Quick Start notebook. \
+<a href="https://colab.research.google.com/github/konfuzio-ai/konfuzio-sdk/blob/master/notebooks/Quick_start_template_for_Konfuzio_SDK.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+
+As an alternative you can follow the [installation section](../get_started.html#install-sdk) to install and initialize the Konfuzio SDK locally or on an environment of your choice.
+
 ### Introduction
 
 There are several ways to create an Annotation in a Document: using the SmartView or DVUI on Konfuzio's app or an 
@@ -71,7 +78,7 @@ To create an Annotation that is based on existing text of a Document, let's firs
 Span that will be passed as the `spans` argument. You can define one or more Spans.
 ```python
 test_document = Project(id_=YOUR_PROJECT_ID).get_document_by_id(YOUR_DOCUMENT_ID)
-spans = [Span(document=test_document, start_offset=3056, end_offset=3064)]
+spans = [Span(document=test_document, start_offset=3067, end_offset=3074)]
 ```
 
 Next, let's specify arguments for a POST request that creates Annotations and send it to the server. We want to create
@@ -159,7 +166,7 @@ from konfuzio_sdk.api import post_document_annotation, delete_document_annotatio
 from konfuzio_sdk.data import Span, Project
 
 test_document = Project(id_=YOUR_PROJECT_ID).get_document_by_id(YOUR_DOCUMENT_ID)
-spans = [Span(document=test_document, start_offset=3056, end_offset=3064)]
+spans = [Span(document=test_document, start_offset=3067, end_offset=3074)]
 response = post_document_annotation(document_id=YOUR_DOCUMENT_ID, spans=spans, label_id=YOUR_LABEL_ID, confidence=100.0,
                                     label_set_id=YOUR_LABEL_SET_ID)
 response = json.loads(response.text)

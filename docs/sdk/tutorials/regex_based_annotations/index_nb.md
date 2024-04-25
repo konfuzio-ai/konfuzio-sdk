@@ -27,6 +27,13 @@ jupyter:
 
 ---
 
+### Environment
+You need to install the Konfuzio SDK before diving into the tutorial. \
+To get up and running quickly, you can use our Colab Quick Start notebook. \
+<a href="https://colab.research.google.com/github/konfuzio-ai/konfuzio-sdk/blob/master/notebooks/Quick_start_template_for_Konfuzio_SDK.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+
+As an alternative you can follow the [installation section](../get_started.html#install-sdk) to install and initialize the Konfuzio SDK locally or on an environment of your choice.
+
 ### Introduction
 
 In this guide, we'll show you how to use Python and regular expressions (regex) to automatically identify and annotate specific text patterns within a Document. 
@@ -46,7 +53,7 @@ YOUR_PROJECT_ID = 46
 import re
 from konfuzio_sdk.data import Project, Annotation, Span, AnnotationSet
 
-my_project = Project(id_=YOUR_PROJECT_ID)
+my_project = Project(id_=YOUR_PROJECT_ID, update=True)
 input_expression = "Musterstraße"
 label_name = "Lohnart"
 
@@ -81,14 +88,14 @@ for offsets in matches_locations:
     annotation_obj = Annotation(
         document=document,
         annotation_set=annotation_set,
+        label_set_id=label_set.id_,
         label=my_label,
-        label_set=label_set,
         confidence=1.0,
         spans=[span],
         is_correct=True,
     )
-
-    new_annotation_added = annotation_obj.save()
+    
+    new_annotation_added = annotation_obj.save(label_set_id=label_set.id_)
     if new_annotation_added:
         new_annotations_links.append(annotation_obj.get_link())
     # if you want to remove the Annotation and ensure it's deleted online, you can use the following:
@@ -123,14 +130,14 @@ for offsets in matches_locations:
     annotation_obj = Annotation(
         document=document,
         annotation_set=annotation_set,
+        label_set_id=label_set.id_,
         label=my_label,
-        label_set=label_set,
         confidence=1.0,
         spans=[span],
         is_correct=True,
     )
-
-    new_annotation_added = annotation_obj.save()
+    
+    new_annotation_added = annotation_obj.save(label_set_id=label_set.id_)
     if new_annotation_added:
         new_annotations_links.append(annotation_obj.get_link())
     # if you want to remove the Annotation and ensure it's deleted online, you can use the following:
