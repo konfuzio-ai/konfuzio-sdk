@@ -1582,6 +1582,9 @@ class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
         self.label_set_n_nearest_template = kwargs.get('label_set_n_nearest_template', 5)
         self.label_set_max_depth = kwargs.get('label_set_max_depth', 100)
         self.label_set_n_estimators = kwargs.get('label_set_n_estimators', 100)
+        logger.info(f'{self.label_set_n_nearest_template=}')
+        logger.info(f'{self.label_set_max_depth=}')
+        logger.info(f'{self.label_set_n_estimators=}')
 
         self.tokenizer = tokenizer
         logger.info(f'{tokenizer=}')
