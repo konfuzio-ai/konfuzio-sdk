@@ -1415,7 +1415,13 @@ class GroupAnnotationSets:
         if not res_dict:
             logger.warning('res_dict is empty')
             return res_dict
-        n_nearest = self.label_set_n_nearest_template
+        n_nearest = (
+            self.label_set_n_nearest_template
+            if hasattr(self, 'label_set_n_nearest_template')
+            else self.n_nearest_template
+            if hasattr(self, 'n_nearest_template')
+            else 5
+        )
         feature_df = self.build_document_template_feature_X(text, self.dict_to_dataframe(res_dict)).filter(
             self.template_feature_list, axis=1
         )
