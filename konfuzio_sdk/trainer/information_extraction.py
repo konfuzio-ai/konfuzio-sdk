@@ -1418,9 +1418,7 @@ class GroupAnnotationSets:
         n_nearest = (
             self.label_set_n_nearest_template
             if hasattr(self, 'label_set_n_nearest_template')
-            else self.n_nearest_template
-            if hasattr(self, 'n_nearest_template')
-            else 5
+            else (self.n_nearest_template if hasattr(self, 'n_nearest_template') else 0)
         )
         feature_df = self.build_document_template_feature_X(text, self.dict_to_dataframe(res_dict)).filter(
             self.template_feature_list, axis=1
@@ -1584,7 +1582,7 @@ class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
         self.n_nearest_across_lines = n_nearest_across_lines
 
         # label set clf hyperparameters
-        self.label_set_n_nearest_template = kwargs.get('label_set_n_nearest_template', 1)
+        self.label_set_n_nearest_template = kwargs.get('label_set_n_nearest_template', 5)
         self.label_set_max_depth = kwargs.get('label_set_max_depth', 100)
         self.label_set_n_estimators = kwargs.get('label_set_n_estimators', 100)
         logger.info(f'label_set_n_nearest_template={self.label_set_n_nearest_template}')
