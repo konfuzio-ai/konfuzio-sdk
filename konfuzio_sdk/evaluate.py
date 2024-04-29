@@ -81,6 +81,31 @@ def grouped(group, target: str):
     return group
 
 
+def prioritize_rows(group):
+    """
+    Apply a filter when a Label should only appear once per AnnotationSet but has been predicted multiple times.
+
+    After we have calculated the TPs, FPs, FNs for the Document, we filter out the case where a Label should
+    only appear once per AnnotationSet but has been predicted multiple times. In this case, if any of the
+    predictions is a TP then we keep one and discard FPs/FNs. If no TPs, if any of the predictions is a FP
+    then we keep one and discard the FNs. If no FPs, then we keep a FN. The prediction we keep is always the
+    first in terms of start_offset.
+    """
+    group = group[~(group['label_has_multiple_top_candidates_predicted'].astype(bool))]
+    if group.empty:
+        return group
+
+    first_true_positive = group[group['true_positive']].head(1)
+    first_false_positive = group[group['false_positive']].head(1)
+    first_false_negative = group[group['false_negative']].head(1)
+    if not first_true_positive.empty:
+        return first_true_positive
+    elif not first_false_positive.empty:
+        return first_false_positive
+    else:
+        return first_false_negative
+
+
 def compare(
     doc_a, doc_b, only_use_correct=False, use_view_annotations=False, ignore_below_threshold=False, strict=True
 ) -> pd.DataFrame:
@@ -250,31 +275,6 @@ def compare(
         )
 
     if not strict:
-
-        def prioritize_rows(group):
-            """
-            Apply a filter when a Label should only appear once per AnnotationSet but has been predicted multiple times.
-
-            After we have calculated the TPs, FPs, FNs for the Document, we filter out the case where a Label should
-            only appear once per AnnotationSet but has been predicted multiple times. In this case, if any of the
-            predictions is a TP then we keep one and discard FPs/FNs. If no TPs, if any of the predictions is a FP
-            then we keep one and discard the FNs. If no FPs, then we keep a FN. The prediction we keep is always the
-            first in terms of start_offset.
-            """
-            group = group[~(group['label_has_multiple_top_candidates_predicted'].astype(bool))]
-            if group.empty:
-                return group
-
-            first_true_positive = group[group['true_positive']].head(1)
-            first_false_positive = group[group['false_positive']].head(1)
-            first_false_negative = group[group['false_negative']].head(1)
-            if not first_true_positive.empty:
-                return first_true_positive
-            elif not first_false_positive.empty:
-                return first_false_positive
-            else:
-                return first_false_negative
-
         spans = spans.groupby(['annotation_set_id_predicted', 'label_id_predicted']).apply(prioritize_rows)
 
     spans = spans.replace({numpy.nan: None})
@@ -341,49 +341,116 @@ class EvaluationConfusionMatrix:
         df_a_ids['disambiguated_id'] = df_a_ids['id_'].astype(str)
         df_a_ids.loc[duplicated_ids, 'disambiguated_id'] += '_' + (df_a_ids.groupby('id_').cumcount() + 1).astype(str)
         df_a['disambiguated_id'] = df_a_ids['disambiguated_id']
-        merged_df = pd.merge(
-            df_a,
-            df_b,
-            how='outer',
-            left_on=['start_offset', 'end_offset'],
-            right_on=['start_offset', 'end_offset'],
-            suffixes=('_gt', '_predicted'),
-        )
-        merged_df['label_id_gt'].fillna(merged_df['label_id_predicted'], inplace=True)
-        merged_df['label_set_id_gt'].fillna(merged_df['label_set_id_predicted'], inplace=True)
-        merged_df['above_predicted_threshold'] = merged_df.apply(
-            lambda x: True if (x['confidence_predicted'] >= x['label_threshold_gt']) else False, axis=1
-        )
-        merged_df['is_matched'] = merged_df.apply(lambda x: True if x['id_local_gt'] else False, axis=1)
-        merged_df['id_'] = merged_df['id__gt']
-        merged_df = merged_df.groupby('id_local_gt', dropna=False).apply(lambda group: grouped(group, 'id_'))
+        if strict:
+            merged_df = pd.merge(
+                df_a,
+                df_b,
+                how='outer',
+                left_on=['start_offset', 'end_offset'],
+                right_on=['start_offset', 'end_offset'],
+                suffixes=('', '_predicted'),
+            )
+            merged_df['is_matched'] = merged_df.apply(lambda x: True if x['id_local'] else False, axis=1)
+            merged_df['above_predicted_threshold'] = merged_df.apply(
+                lambda x: True if (x['confidence_predicted'] >= x['label_threshold']) else False, axis=1
+            )
+            merged_df['start_offset_predicted'] = merged_df['start_offset']
+            merged_df['end_offset_predicted'] = merged_df['end_offset']
+            merged_df['is_correct_label'] = merged_df['label_id'] == merged_df['label_id_predicted']
+            merged_df['is_correct_label_set'] = merged_df['label_set_id'] == merged_df['label_set_id_predicted']
+            merged_df['duplicated'] = False
+            merged_df['duplicated_predicted'] = False
+        else:
+            merged_df = pd.merge(
+                df_a,
+                df_b,
+                how='outer',
+                left_on=['label_id', 'label_set_id'],
+                right_on=['label_id', 'label_set_id'],
+                suffixes=('', '_predicted'),
+            )
+            merged_df['is_matched'] = (merged_df['start_offset_predicted'] <= merged_df['end_offset']) & (
+                merged_df['end_offset_predicted'] >= merged_df['start_offset']
+            )
+            merged_df['above_predicted_threshold'] = (
+                merged_df['confidence_predicted'] >= merged_df['label_threshold_predicted']
+            )
+            merged_df['is_correct_label'] = True
+            merged_df['is_correct_label_set'] = True
+            merged_df['label_id_predicted'] = merged_df['label_id']
+            merged_df['label_set_id_predicted'] = merged_df['label_set_id']
+            merged_df = merged_df.sort_values(by='is_matched', ascending=False)
+            merged_df['duplicated'] = merged_df.duplicated(subset=['id_local'], keep='first')
+            merged_df['duplicated_predicted'] = merged_df.duplicated(subset=['id_local_predicted'], keep='first')
+            merged_df = merged_df.drop(merged_df[(merged_df['duplicated']) & (merged_df['duplicated_predicted'])].index)
+
+        merged_df = merged_df.groupby('id_local', dropna=False).apply(lambda group: grouped(group, 'id_'))
         merged_df = merged_df.groupby('annotation_set_id_predicted', dropna=False).apply(
-            lambda group: grouped(group, 'annotation_set_id_gt')
+            lambda group: grouped(group, 'annotation_set_id')
         )
+        merged_df['label_id'].fillna(merged_df['label_id_predicted'], inplace=True)
+        merged_df['label_set_id'].fillna(merged_df['label_set_id_predicted'], inplace=True)
 
         merged_df['true_positive'] = (
-            (merged_df['label_id_predicted'] == merged_df['label_id_gt'])
-            & (merged_df['confidence_predicted'] >= merged_df['label_threshold_gt'])
-            & (merged_df['is_correct_gt'])
-            & (merged_df['label_set_id_predicted'] == merged_df['label_set_id_gt'])
-            & (merged_df['document_id_local_predicted'].notna())
-        )
-
-        merged_df['false_negative'] = (merged_df['is_correct_gt']) & (
-            (merged_df['confidence_predicted'] < merged_df['label_threshold_gt'])
-            | (merged_df['label_id_predicted'].isna())
-            | (merged_df['id__gt'].isna())
-        )
-
-        merged_df['false_positive'] = (
-            (merged_df['confidence_predicted'] >= merged_df['label_threshold_predicted'])
-            & (~merged_df['true_positive'])
-            & (
-                (merged_df['label_id_predicted'] != merged_df['label_id_gt'])
-                | (merged_df['label_set_id_predicted'] != merged_df['label_set_id_gt'])
-                | (merged_df['id__gt'].isna())
+            (merged_df['is_matched'])
+            & (merged_df['is_correct'])
+            & (merged_df['above_predicted_threshold'])
+            & (~merged_df['duplicated'])
+            & (  # Everything is correct
+                (merged_df['is_correct_label'])
+                & (merged_df['is_correct_label_set'])
+                & (merged_df['is_correct_annotation_set_id'])
+                & (merged_df['is_correct_id_'])
             )
         )
+
+        merged_df['false_negative'] = (
+            (merged_df['is_correct'])
+            & (~merged_df['duplicated'])
+            & (
+                (~merged_df['is_matched'])
+                | (~merged_df['above_predicted_threshold'])
+                | (merged_df['label_id_predicted'].isna())
+            )
+        )
+
+        if strict:
+            merged_df['false_positive'] = (
+                (merged_df['above_predicted_threshold'])
+                & (~merged_df['true_positive'])
+                & (~merged_df['duplicated_predicted'])
+                & (  # Something is wrong
+                    (~merged_df['is_correct_label'])
+                    | (~merged_df['is_correct_label_set'])
+                    | (~merged_df['is_correct_annotation_set_id'])
+                    | (~merged_df['is_correct_id_'])
+                    | (~merged_df['is_matched'])
+                )
+            )
+
+        else:
+            merged_df['false_positive'] = (
+                (merged_df['above_predicted_threshold'])
+                & (~merged_df['false_negative'])
+                & (~merged_df['true_positive'])
+                & (~merged_df['duplicated_predicted'])
+                & (
+                    (~merged_df['is_correct_label'])
+                    | (~merged_df['is_correct_label_set'])
+                    | (~merged_df['is_correct_annotation_set_id'])
+                    | (~merged_df['is_correct_id_'])
+                    | (~merged_df['is_matched'])
+                )
+            )
+
+        if not strict:
+            merged_df = merged_df.groupby(['annotation_set_id_predicted', 'label_id_predicted']).apply(prioritize_rows)
+
+        merged_df = merged_df.replace({numpy.nan: None})
+        if not strict:
+            # one Span must not be defined as TP or FP or FN more than once
+            quality = (merged_df[['true_positive', 'false_positive', 'false_negative']].sum(axis=1) <= 1).all()
+            assert quality
 
         merged_df['relation'] = merged_df.apply(
             lambda x: 'TP'
@@ -394,7 +461,7 @@ class EvaluationConfusionMatrix:
 
         merged_df['disambiguated_id'].fillna('no_match', inplace=True)
         merged_df['tmp_id_'].fillna('no_match', inplace=True)
-        merged_df['freq'] = merged_df.groupby('label_id_gt')['label_id_gt'].transform('size')
+        merged_df['freq'] = merged_df.groupby('label_id')['label_id'].transform('size')
 
         self.result_df_by_annotations = pd.pivot(
             merged_df, index='disambiguated_id', columns='tmp_id_', values=['relation']
@@ -402,13 +469,19 @@ class EvaluationConfusionMatrix:
         self.result_df_by_annotations.fillna('TN', inplace=True)
 
         self.result_df = pd.pivot_table(
-            merged_df[['label_id_gt', 'relation']], index='label_id_gt', columns='relation', aggfunc=len, fill_value=0
+            merged_df[['label_name', 'relation']], index='label_name', columns='relation', aggfunc=len, fill_value=0
         )
+        if 'FP' not in self.result_df.columns:
+            self.result_df['FP'] = 0
+        if 'FN' not in self.result_df.columns:
+            self.result_df['FN'] = 0
+        if 'TP' not in self.result_df.columns:
+            self.result_df['TP'] = 0
         self.result_df['TN'] = len(df_b) - 1 - self.result_df['FN'] - self.result_df['TP'] - self.result_df['FP']
         self.result_df['TN'] = self.result_df['TN'].apply(lambda x: max(0, x))
 
-        def get_first_freq(label_id_gt):
-            return merged_df.loc[merged_df['label_id_gt'] == label_id_gt, 'freq'].iloc[0]
+        def get_first_freq(label_id):
+            return merged_df.loc[merged_df['label_name'] == label_id, 'freq'].iloc[0]
 
         self.result_df['tmp_ids'] = self.result_df.index
         self.result_df['GT'] = self.result_df['tmp_ids'].apply(lambda x: get_first_freq(x))
@@ -422,6 +495,23 @@ class EvaluationConfusionMatrix:
         )
         self.result_df['f1'] = self.result_df.apply(
             lambda x: round(EvaluationCalculator(tp=x['TP'], fp=x['FP'], fn=x['FN'], tn=x['TN']).f1, 2), axis=1
+        )
+
+        self.result_df['accuracy'] = self.result_df.apply(
+            lambda x: round(
+                (
+                    EvaluationCalculator(tp=x['TP'], fp=x['FP'], fn=x['FN'], tn=x['TN']).tp
+                    + EvaluationCalculator(tp=x['TP'], fp=x['FP'], fn=x['FN'], tn=x['TN']).tn
+                )
+                / (
+                    EvaluationCalculator(tp=x['TP'], fp=x['FP'], fn=x['FN'], tn=x['TN']).tp
+                    + EvaluationCalculator(tp=x['TP'], fp=x['FP'], fn=x['FN'], tn=x['TN']).tn
+                    + EvaluationCalculator(tp=x['TP'], fp=x['FP'], fn=x['FN'], tn=x['TN']).fp
+                    + EvaluationCalculator(tp=x['TP'], fp=x['FP'], fn=x['FN'], tn=x['TN']).fn
+                ),
+                2,
+            ),
+            axis=1,
         )
 
         return self.result_df
