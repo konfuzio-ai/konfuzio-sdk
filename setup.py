@@ -76,6 +76,7 @@ setuptools.setup(
     entry_points={'console_scripts': ['konfuzio_sdk=konfuzio_sdk.cli:main']},
     install_requires=[
         'bentoml==1.2.11',
+        'fastapi<0.111.0',  # Used to serve additional endpoints in Bento services
         'certifi==2023.7.22',
         'cloudpickle==2.2.1',  # Used to pickle objects
         'filetype==1.0.7',  # Used to check that files are in the correct format
