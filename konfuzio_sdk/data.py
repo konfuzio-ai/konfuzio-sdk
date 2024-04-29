@@ -917,8 +917,8 @@ class Category(Data):
         """Associate Label Sets to relate to Annotations."""
         self.id_local = next(Data.id_iter)
         self.id_ = id_
-        self.name = name
-        self.name_clean = name_clean
+        self.name = name.replace('/', ' ')
+        self.name_clean = name_clean.replace('/', ' ')
         self.project: Project = project
         self._force_offline = project._force_offline
         self.label_sets: List[LabelSet] = []
