@@ -96,6 +96,116 @@ Project
    :members:
    :noindex:
 
+API call wrappers
+=====================
+
+`[source] <https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/konfuzio_sdk/api.py>`__
+
+.. automodule:: konfuzio_sdk.api
+
+TimeoutHTTPAdapter
+---------------------
+.. autoclass:: TimeoutHTTPAdapter
+   :members:
+   :noindex:
+
+.. autofunction:: init_env
+.. autofunction:: konfuzio_session
+.. autofunction:: get_project_list
+.. autofunction:: get_project_details
+.. autofunction:: get_project_labels
+.. autofunction:: get_project_label_sets
+.. autofunction:: create_new_project
+.. autofunction:: get_document_details
+.. autofunction:: get_document_annotations
+.. autofunction:: get_document_bbox
+.. autofunction:: get_page_image
+.. autofunction:: post_document_annotation
+.. autofunction:: change_document_annotation
+.. autofunction:: delete_document_annotation
+.. autofunction:: update_document_konfuzio_api
+.. autofunction:: download_file_konfuzio_api
+.. autofunction:: get_results_from_segmentation
+.. autofunction:: get_project_categories
+.. autofunction:: upload_ai_model
+.. autofunction:: delete_ai_model
+.. autofunction:: update_ai_model
+.. autofunction:: get_all_project_ais
+.. autofunction:: export_ai_models
+
+
+CLI tools
+=====================
+
+`[source] <https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/konfuzio_sdk/cli.py>`__
+
+.. automodule:: konfuzio_sdk.cli
+
+.. autofunction:: parse_args
+.. autofunction:: credentials
+
+Extras
+=====================
+
+`[source] <https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/konfuzio_sdk/extras.py>`__
+
+.. automodule:: konfuzio_sdk.extras
+
+PackageWrapper
+---------------------
+.. autoclass:: PackageWrapper
+   :members:
+   :noindex:
+
+ModuleWrapper
+---------------------
+.. autoclass:: ModuleWrapper
+   :members:
+   :noindex:
+
+Normalization
+=====================
+
+`[source] <https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/konfuzio_sdk/normalize.py>`__
+
+.. automodule:: konfuzio_sdk.normalize
+
+.. autofunction:: normalize_to_float
+.. autofunction:: normalize_to_positive_float
+.. autofunction:: normalize_to_percentage
+.. autofunction:: normalize_to_date
+.. autofunction:: normalize_to_bool
+.. autofunction:: roman_to_float
+.. autofunction:: normalize
+
+Utils
+=====================
+
+`[source] <https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/konfuzio_sdk/utils.py>`__
+
+.. automodule:: konfuzio_sdk.utils
+
+.. autofunction:: sdk_isinstance
+.. autofunction:: exception_or_log_error
+.. autofunction:: get_id
+.. autofunction:: is_file
+.. autofunction:: memory_size_of
+.. autofunction:: normalize_memory
+.. autofunction:: get_timestamp
+.. autofunction:: load_image
+.. autofunction:: get_file_type
+.. autofunction:: get_file_type_and_extension
+.. autofunction:: does_not_raise
+.. autofunction:: convert_to_bio_scheme
+.. autofunction:: slugify
+.. autofunction:: amend_file_name
+.. autofunction:: amend_file_path
+.. autofunction:: get_sentences
+.. autofunction:: map_offsets
+.. autofunction:: detectron_get_paragraph_bboxes
+.. autofunction:: iter_before_and_after
+.. autofunction:: get_sdk_version
+.. autofunction:: get_spans_from_bbox
 
 Tokenizers
 =====================
@@ -306,3 +416,30 @@ File Splitting AI Evaluation
    :members:
    :noindex:
 
+Evaluation Calculator
+---------------------
+.. autoclass:: konfuzio_sdk.evaluate.EvaluationCalculator
+   :members:
+   :noindex:
+
+.. autofunction:: konfuzio_sdk.evaluate.grouped
+.. autofunction:: konfuzio_sdk.evaluate.compare
+
+Trainer utils
+=====================
+
+`[source] <https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/konfuzio_sdk/trainer/utils.py>`__
+
+.. automodule:: konfuzio_sdk.trainer.utils
+
+LoggerCallback
+---------------------
+.. autoclass:: konfuzio_sdk.trainer.utils.LoggerCallback
+   :members:
+   :noindex:
+
+BalancedLossTrainer
+---------------------
+.. autoclass:: konfuzio_sdk.trainer.utils.BalancedLossTrainer
+   :members:
+   :noindex:
