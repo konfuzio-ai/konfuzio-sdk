@@ -835,7 +835,7 @@ class AbstractExtractionAI(BaseModel):
             # copy bento_module_dir to temp_dir
             shutil.copytree(bento_module_dir, temp_dir + '/extraction')
             # include metadata
-            with open(f'{temp_dir}/categories_labels_data.json5', 'w') as f:
+            with open(f'{temp_dir}/categories_and_label_data.json5', 'w') as f:
                 json.dump(dict_metadata, f, indent=2, sort_keys=True)
             # include the AI model name so the service can load it correctly
             with open(f'{temp_dir}/AI_MODEL_NAME', 'w') as f:
@@ -846,7 +846,7 @@ class AbstractExtractionAI(BaseModel):
                 service=f'extraction/{self.name_lower()}_service.py:svc',
                 include=[
                     'extraction/*.py',
-                    'categories_labels_data.json5',
+                    'categories_and_label_data.json5',
                     'AI_MODEL_NAME',
                 ],
                 labels={'request': 'ExtractRequest20240117', 'response': 'ExtractResponse20240117'},
@@ -885,6 +885,8 @@ class AbstractExtractionAI(BaseModel):
             'requires_images': getattr(self, 'requires_images', False),
             'requires_segmentation': getattr(self, 'requires_segmentation', False),
             'requires_text': getattr(self, 'requires_text', False),
+            'input': 'ExtractRequest20240117',
+            'output': 'ExtractResponse20240117',
         }
 
     def check_is_ready(self):
