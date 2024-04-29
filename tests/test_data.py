@@ -405,6 +405,14 @@ class TestOnlineProject(unittest.TestCase):
         assert isinstance(image, PIL.PngImagePlugin.PngImageFile)
         document.delete(delete_online=True)
 
+    @classmethod
+    def tearDownClass(cls) -> None:
+        """Remove any files that might have been left from the test pipeline."""
+        project = Project(id_=TEST_PROJECT_ID, update=True)
+        for document in project._documents:
+            if document.name in os.listdir('tests/test_data/'):
+                document.delete(delete_online=True)
+
 
 class TestOfflineExampleData(unittest.TestCase):
     """Test data features without real data."""
