@@ -343,12 +343,12 @@ def slugify(value):
 
 def normalize_name(value: str) -> str:
     """
-    Normalize names for different Konfuzio concepts by removing special characters and checking for non-ascii symbols.
+    Normalize names for different Konfuzio concepts by removing slashes and checking for non-ascii symbols.
 
     :param value: A name to be normalized.
     """
     value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
-    return re.sub(r'[^\:\.\w\s-]', '', value)
+    return re.sub('/', '', value)
 
 
 def amend_file_name(
