@@ -107,8 +107,8 @@ YOUR_LABEL_ID = 862
 ```
 ```python
 bboxes = [
-        {'page_index': 0, 'x0': 198, 'x1': 300, 'y0': 508, 'y1': 517},
-        {'page_index': 0, 'x0': 197.76, 'x1': 233, 'y0': 495, 'y1': 508},
+        {'page_index': 0, 'x0': 457, 'x1': 480, 'y0': 290, 'y1': 303},
+        {'page_index': 0, 'x0': 452.16, 'x1': 482.64, 'y0': 306, 'y1': 313,}
 ]
 ```
 Next, we specify arguments for a POST request to create an Annotation and send it to the server. We want to create
@@ -173,8 +173,8 @@ response = json.loads(response.text)
 print(response['span'])
 
 bboxes = [
-        {'page_index': 0, 'x0': 198, 'x1': 300, 'y0': 508, 'y1': 517},
-        {'page_index': 0, 'x0': 197.76, 'x1': 233, 'y0': 495, 'y1': 508},
+        {'page_index': 0, 'x0': 457, 'x1': 480, 'y0': 290, 'y1': 303},
+        {'page_index': 0, 'x0': 452.16, 'x1': 482.64, 'y0': 306, 'y1': 313,}
 ]
 response = post_document_annotation(document_id=YOUR_DOCUMENT_ID, spans=bboxes, label_id=YOUR_LABEL_ID, confidence=100.0,
                                     label_set_id=YOUR_LABEL_SET_ID)
