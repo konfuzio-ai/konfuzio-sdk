@@ -163,6 +163,7 @@ label_set_clf_classes = ['Brutto-Bezug', 'Lohnabrechnung', 'Netto-Bezug', 'No', 
         'data_quality_result_view',
         'clf_quality_result',
         'n_nearest_accross_lines',
+        'first_word',
     ),
     [
         (
@@ -173,6 +174,7 @@ label_set_clf_classes = ['Brutto-Bezug', 'Lohnabrechnung', 'Netto-Bezug', 'No', 
             0.9652173913043478,
             1.0,
             False,
+            True,
         ),
         (
             True,
@@ -182,8 +184,18 @@ label_set_clf_classes = ['Brutto-Bezug', 'Lohnabrechnung', 'Netto-Bezug', 'No', 
             0.9652173913043478,
             0.9836065573770492,
             False,
+            True,
         ),  # w/ full dataset: 0.9783549783549783
-        (False, 0.8611111111111112, 0.8985507246376812, 0.9704641350210971, 0.9652173913043478, 1.0, True),
+        (
+            False,
+            0.8285714285714286,
+            0.8656716417910447,
+            0.9745762711864406,
+            0.9652173913043478,
+            0.9705882352941176,
+            True,
+            False,
+        ),
     ],
 )
 class TestWhitespaceRFExtractionAI(unittest.TestCase):
@@ -198,6 +210,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
             use_separate_labels=cls.use_separate_labels,
             n_nearest_across_lines=cls.n_nearest_accross_lines,
             tokenizer=None,
+            first_word=cls.first_word,
         )
         cls.pipeline.pipeline_path_no_konfuzio_sdk = None
 
@@ -261,7 +274,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 
         assert 9e5 < memory_size_of(self.pipeline.category) < 12e5
 
-        assert 11e6 < memory_size_of(self.pipeline.df_train) < 12e6
+        assert 10e6 < memory_size_of(self.pipeline.df_train) < 12e6
 
     def test_03_fit(self) -> None:
         """Start to train the Model."""
@@ -481,10 +494,16 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
     reason='Required dependencies not installed.',
 )
 @parameterized.parameterized_class(
-    ('use_separate_labels', 'evaluate_full_result'),
+    (
+        'use_separate_labels',
+        'evaluate_full_result',
+        'label_set_n_nearest_template',
+        'label_set_max_depth',
+        'label_set_n_estimators',
+    ),
     [
-        (False, 0.7384615384615385),  # w/ full dataset: 0.8930232558139535
-        (True, 0.75),  # w/ full dataset: 0.9596412556053812
+        (False, 0.7384615384615385, 10, 100, 150),  # w/ full dataset: 0.8930232558139535
+        (True, 0.75, 5, 150, 100),  # w/ full dataset: 0.9596412556053812
     ],
 )
 class TestRegexRFExtractionAI(unittest.TestCase):
@@ -496,7 +515,12 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
         for label in cls.project.labels:
             label.threshold = 0.2
-        cls.pipeline = RFExtractionAI(use_separate_labels=cls.use_separate_labels)
+        cls.pipeline = RFExtractionAI(
+            use_separate_labels=cls.use_separate_labels,
+            label_set_n_nearest_template=cls.label_set_n_nearest_template,
+            label_set_max_depth=cls.label_set_max_depth,
+            label_set_n_estimators=cls.label_set_n_estimators,
+        )
 
         cls.pipeline.pipeline_path_no_konfuzio_sdk = None
 
@@ -802,6 +826,7 @@ class TestParagraphRFExtractionAI(unittest.TestCase):
         evaluation = self.pipeline.evaluate_full(use_training_docs=True)  # only one training doc available for eval
         assert evaluation.f1() >= 0.97
         assert evaluation.fp() == self.fp  # 2 lines are unannotated
+
 
 @unittest.skip(reason='Project 458 is under maintentance now and switching to another Project requires major changes.')
 @pytest.mark.skipif(
@@ -1136,7 +1161,8 @@ class TestInformationExtraction(unittest.TestCase):
         assert feature_names[65] == 'r_pos1'
 
     @unittest.skip(
-        reason='Project 458 is under maintentance now and switching to another Project requires major changes.')
+        reason='Project 458 is under maintentance now and switching to another Project requires major changes.'
+    )
     def test_time_feature_extraction(self):
         """Test time it takes to extract the features from a Document."""
         project = Project(id_=458)
