@@ -48,6 +48,7 @@ from konfuzio_sdk.utils import (
     get_file_type_and_extension,
     get_missing_offsets,
     is_file,
+    normalize_name,
     sdk_isinstance,
 )
 
@@ -917,8 +918,8 @@ class Category(Data):
         """Associate Label Sets to relate to Annotations."""
         self.id_local = next(Data.id_iter)
         self.id_ = id_
-        self.name = None if not name else name.replace('/', ' ')
-        self.name_clean = None if not name_clean else name_clean.replace('/', ' ')
+        self.name = None if not name else normalize_name(name)
+        self.name_clean = None if not name_clean else normalize_name(name_clean)
         self.project: Project = project
         self._force_offline = project._force_offline
         self.label_sets: List[LabelSet] = []
