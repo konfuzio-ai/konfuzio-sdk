@@ -2306,7 +2306,7 @@ class Annotation(Data):
         # TODO START LEGACY to support multiline Annotations
         input_bbox_dicts = kwargs.get('bboxes', None)
         if input_bbox_dicts and len(input_bbox_dicts) > 0:
-            self._add_bbox_annotation(input_bbox_dicts=input_bbox_dicts)
+            self._add_annotation_from_bbox_dicts(input_bbox_dicts=input_bbox_dicts)
         elif (
             input_bbox_dicts is None
             and kwargs.get('start_offset', None) is not None
@@ -2441,11 +2441,29 @@ class Annotation(Data):
         """Return Label Set of Annotation."""
         return self.annotation_set.label_set
 
-    def _add_bbox_annotation(self, input_bbox_dicts: dict) -> None:
+    def _add_annotation_from_bbox_dicts(self, input_bbox_dicts: list) -> None:
         """
-        Check if input Bboxes are suitable to create an Annotation and if they are, create it.
+        Based on a list of dictionaries where each contains metadata for a bbox, this method adds Annotations to the Document.
+        If the dictionary has the fields "start_offset" and "end_offset", the method creates a Span based on such fields.
+        If not, it parses the bbox coordinates from the dictionary keys and based on them, looks for Spans
+        that could be contained within such bbox. If no Span was found, a `KeyError` is raised.
 
-        :param input_bbox_dicts: Bboxes to create an Annotation with.
+        :param input_bbox_dicts: List of dictionaries, each containing metadata such as bbox coordinates
+        or Span's start_offset & end_offset used to create an Annotation.
+        The `input_bbox_dicts` format should be as follows:
+
+            [
+                {
+                    "start_offset": int,
+                    "end_offset": int,
+                    "x0": int,
+                    "x1": int,
+                    "y0": int,
+                    "y1": int
+                }
+                ...
+            ]
+        Note: either (start_offset, end_offset) and/or (x0, x1, y0, y1) should be provided in the dictionary.
         """
         for input_bbox_dict in input_bbox_dicts:
             if 'start_offset' in input_bbox_dict.keys() and 'end_offset' in input_bbox_dict.keys():
@@ -2459,11 +2477,11 @@ class Annotation(Data):
                 and 'x1' in input_bbox_dict.keys()
                 and 'y0' in input_bbox_dict.keys()
                 and 'y1' in input_bbox_dict.keys()
+                and 'page_index' in input_bbox_dict.keys()
             ):
                 page = self.document.get_page_by_index(input_bbox_dict['page_index'])
                 if not self._document_bboxes:
                     self._document_bboxes = self.document.bbox_dict
-                input_bbox_dict['page_index'] = page.index
                 input_bbox_dict['top'] = page.height - input_bbox_dict['y1']
                 input_bbox_dict['bottom'] = page.height - input_bbox_dict['y0']
                 # checking that Bboxes provided as input contain text inside
