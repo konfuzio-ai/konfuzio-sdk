@@ -49,6 +49,8 @@ RELEVANT_FOR_EVALUATION = [
     'is_correct_id_',
     'duplicated',
     'duplicated_predicted',
+    'tmp_id_',  # a temporary ID used for enumerating the predicted annotations solely
+    'disambiguated_id',  # an ID for multi-span annotations
 ]
 
 logger = logging.getLogger(__name__)
@@ -107,7 +109,13 @@ def prioritize_rows(group):
 
 
 def compare(
-    doc_a, doc_b, only_use_correct=False, use_view_annotations=False, ignore_below_threshold=False, strict=True
+    doc_a,
+    doc_b,
+    only_use_correct=False,
+    use_view_annotations=False,
+    ignore_below_threshold=False,
+    strict=True,
+    id_counter: int = 1,
 ) -> pd.DataFrame:
     """Compare the Annotations of two potentially empty Documents wrt. to **all** Annotations.
 
@@ -126,6 +134,11 @@ def compare(
     :return: Evaluation DataFrame
     """
     df_a = pd.DataFrame(doc_a.eval_dict(use_correct=only_use_correct))
+    df_a_ids = df_a[['id_']]
+    duplicated_ids = df_a_ids['id_'].duplicated(keep=False)
+    df_a_ids['disambiguated_id'] = df_a_ids['id_'].astype(str)
+    df_a_ids.loc[duplicated_ids, 'disambiguated_id'] += '_' + (df_a_ids.groupby('id_').cumcount() + 1).astype(str)
+    df_a['disambiguated_id'] = df_a_ids['disambiguated_id']
     df_b = pd.DataFrame(
         doc_b.eval_dict(
             use_view_annotations=strict and use_view_annotations,  # view_annotations only available for strict=True
@@ -133,6 +146,8 @@ def compare(
             ignore_below_threshold=ignore_below_threshold,
         )
     )
+    df_b['tmp_id_'] = list(range(id_counter, id_counter + len(df_b)))
+
     if doc_a.category != doc_b.category:
         raise ValueError(f'Categories of {doc_a} with {doc_a.category} and {doc_b} with {doc_a.category} do not match.')
     if strict:  # many to many inner join to keep all Spans of both Documents
@@ -278,6 +293,12 @@ def compare(
         spans = spans.groupby(['annotation_set_id_predicted', 'label_id_predicted']).apply(prioritize_rows)
 
     spans = spans.replace({numpy.nan: None})
+
+    # how many times annotations with this label occur in the ground truth data
+    spans['frequency'] = spans.groupby('label_id')['label_id'].transform('size')
+    spans['frequency'].fillna(0, inplace=True)
+    spans['frequency'] = spans['frequency'].apply(lambda x: int(x))
+
     if not strict:
         # one Span must not be defined as TP or FP or FN more than once
         quality = (spans[['true_positive', 'false_positive', 'false_negative']].sum(axis=1) <= 1).all()
@@ -285,236 +306,25 @@ def compare(
     return spans
 
 
-class EvaluationConfusionMatrix:
-    def __init__(
-        self,
-        documents: List[Tuple[Document, Document]],
-        strict: bool = True,
-        ignore_below_threshold: bool = True,
-        use_view_annotations: bool = True,
-        zero_division='warn',
-    ):
-        self.documents = documents
-        self.strict = strict
-        self.ignore_below_threshold = ignore_below_threshold
-        self.only_use_correct = True
-        self.use_view_annotations = use_view_annotations
-        self.data = None
-        self.zero_division = zero_division
-        self.calculate()
+class ExtractionConfusionMatrix:
+    def __init__(self, data: pd.DataFrame):
+        self.matrix = self.calculate(data=data)
 
-    def calculate(self):
-        evaluations = []  # start anew, the configuration of the Evaluation might have changed.
-        for ground_truth, predicted in self.documents:
-            evaluation = self._calculate_matrices(
-                doc_a=ground_truth,
-                doc_b=predicted,
-                only_use_correct=self.only_use_correct,
-                strict=self.strict,
-                use_view_annotations=self.use_view_annotations,
-                ignore_below_threshold=self.ignore_below_threshold,
-            )
-            evaluations.append(evaluation)
+    def calculate(self, data: pd.DataFrame):
+        data = data.reset_index(drop=True)
+        data['id_'] = data['id_'].fillna('no_match', inplace=True)
+        data['tmp_id_'] = data['tmp_id_'].fillna('no_match')
 
-        self.data = pd.concat(evaluations)
-
-    def _calculate_matrices(
-        self,
-        doc_a,
-        doc_b,
-        only_use_correct=False,
-        use_view_annotations=False,
-        ignore_below_threshold=False,
-        strict=True,
-    ):
-        doc_a_eval_dict = doc_a.eval_dict(use_correct=False)
-        doc_b_eval_dict = doc_b.eval_dict(
-            use_view_annotations=strict and use_view_annotations,
-            use_correct=False,
-            ignore_below_threshold=ignore_below_threshold,
-        )
-        df_a = pd.DataFrame(doc_a_eval_dict)
-        df_b = pd.DataFrame(doc_b_eval_dict)
-        df_a_ids = df_a[['id_']]
-        df_b['tmp_id_'] = list(range(1, len(df_b) + 1))
-        duplicated_ids = df_a_ids['id_'].duplicated(keep=False)
-        df_a_ids['disambiguated_id'] = df_a_ids['id_'].astype(str)
-        df_a_ids.loc[duplicated_ids, 'disambiguated_id'] += '_' + (df_a_ids.groupby('id_').cumcount() + 1).astype(str)
-        df_a['disambiguated_id'] = df_a_ids['disambiguated_id']
-        if strict:
-            merged_df = pd.merge(
-                df_a,
-                df_b,
-                how='outer',
-                left_on=['start_offset', 'end_offset'],
-                right_on=['start_offset', 'end_offset'],
-                suffixes=('', '_predicted'),
-            )
-            merged_df['is_matched'] = merged_df.apply(lambda x: True if x['id_local'] else False, axis=1)
-            merged_df['above_predicted_threshold'] = merged_df.apply(
-                lambda x: True if (x['confidence_predicted'] >= x['label_threshold']) else False, axis=1
-            )
-            merged_df['start_offset_predicted'] = merged_df['start_offset']
-            merged_df['end_offset_predicted'] = merged_df['end_offset']
-            merged_df['is_correct_label'] = merged_df['label_id'] == merged_df['label_id_predicted']
-            merged_df['is_correct_label_set'] = merged_df['label_set_id'] == merged_df['label_set_id_predicted']
-            merged_df['duplicated'] = False
-            merged_df['duplicated_predicted'] = False
-        else:
-            merged_df = pd.merge(
-                df_a,
-                df_b,
-                how='outer',
-                left_on=['label_id', 'label_set_id'],
-                right_on=['label_id', 'label_set_id'],
-                suffixes=('', '_predicted'),
-            )
-            merged_df['is_matched'] = (merged_df['start_offset_predicted'] <= merged_df['end_offset']) & (
-                merged_df['end_offset_predicted'] >= merged_df['start_offset']
-            )
-            merged_df['above_predicted_threshold'] = (
-                merged_df['confidence_predicted'] >= merged_df['label_threshold_predicted']
-            )
-            merged_df['is_correct_label'] = True
-            merged_df['is_correct_label_set'] = True
-            merged_df['label_id_predicted'] = merged_df['label_id']
-            merged_df['label_set_id_predicted'] = merged_df['label_set_id']
-            merged_df = merged_df.sort_values(by='is_matched', ascending=False)
-            merged_df['duplicated'] = merged_df.duplicated(subset=['id_local'], keep='first')
-            merged_df['duplicated_predicted'] = merged_df.duplicated(subset=['id_local_predicted'], keep='first')
-            merged_df = merged_df.drop(merged_df[(merged_df['duplicated']) & (merged_df['duplicated_predicted'])].index)
-
-        merged_df = merged_df.groupby('id_local', dropna=False).apply(lambda group: grouped(group, 'id_'))
-        merged_df = merged_df.groupby('annotation_set_id_predicted', dropna=False).apply(
-            lambda group: grouped(group, 'annotation_set_id')
-        )
-        merged_df['label_id'].fillna(merged_df['label_id_predicted'], inplace=True)
-        merged_df['label_set_id'].fillna(merged_df['label_set_id_predicted'], inplace=True)
-
-        merged_df['true_positive'] = (
-            (merged_df['is_matched'])
-            & (merged_df['is_correct'])
-            & (merged_df['above_predicted_threshold'])
-            & (~merged_df['duplicated'])
-            & (  # Everything is correct
-                (merged_df['is_correct_label'])
-                & (merged_df['is_correct_label_set'])
-                & (merged_df['is_correct_annotation_set_id'])
-                & (merged_df['is_correct_id_'])
-            )
-        )
-
-        merged_df['false_negative'] = (
-            (merged_df['is_correct'])
-            & (~merged_df['duplicated'])
-            & (
-                (~merged_df['is_matched'])
-                | (~merged_df['above_predicted_threshold'])
-                | (merged_df['label_id_predicted'].isna())
-            )
-        )
-
-        if strict:
-            merged_df['false_positive'] = (
-                (merged_df['above_predicted_threshold'])
-                & (~merged_df['true_positive'])
-                & (~merged_df['duplicated_predicted'])
-                & (  # Something is wrong
-                    (~merged_df['is_correct_label'])
-                    | (~merged_df['is_correct_label_set'])
-                    | (~merged_df['is_correct_annotation_set_id'])
-                    | (~merged_df['is_correct_id_'])
-                    | (~merged_df['is_matched'])
-                )
-            )
-
-        else:
-            merged_df['false_positive'] = (
-                (merged_df['above_predicted_threshold'])
-                & (~merged_df['false_negative'])
-                & (~merged_df['true_positive'])
-                & (~merged_df['duplicated_predicted'])
-                & (
-                    (~merged_df['is_correct_label'])
-                    | (~merged_df['is_correct_label_set'])
-                    | (~merged_df['is_correct_annotation_set_id'])
-                    | (~merged_df['is_correct_id_'])
-                    | (~merged_df['is_matched'])
-                )
-            )
-
-        if not strict:
-            merged_df = merged_df.groupby(['annotation_set_id_predicted', 'label_id_predicted']).apply(prioritize_rows)
-
-        merged_df = merged_df.replace({numpy.nan: None})
-        if not strict:
-            # one Span must not be defined as TP or FP or FN more than once
-            quality = (merged_df[['true_positive', 'false_positive', 'false_negative']].sum(axis=1) <= 1).all()
-            assert quality
-
-        merged_df['relation'] = merged_df.apply(
+        data['relation'] = data.apply(
             lambda x: 'TP'
             if x['true_positive']
             else ('FP' if x['false_positive'] else ('FN' if x['false_negative'] else 'TN')),
             axis=1,
         )
 
-        merged_df['disambiguated_id'].fillna('no_match', inplace=True)
-        merged_df['tmp_id_'].fillna('no_match', inplace=True)
-        merged_df['freq'] = merged_df.groupby('label_id')['label_id'].transform('size')
-
-        self.result_df_by_annotations = pd.pivot(
-            merged_df, index='disambiguated_id', columns='tmp_id_', values=['relation']
-        )
-        self.result_df_by_annotations.fillna('TN', inplace=True)
-
-        self.result_df = pd.pivot_table(
-            merged_df[['label_name', 'relation']], index='label_name', columns='relation', aggfunc=len, fill_value=0
-        )
-        if 'FP' not in self.result_df.columns:
-            self.result_df['FP'] = 0
-        if 'FN' not in self.result_df.columns:
-            self.result_df['FN'] = 0
-        if 'TP' not in self.result_df.columns:
-            self.result_df['TP'] = 0
-        self.result_df['TN'] = len(df_b) - 1 - self.result_df['FN'] - self.result_df['TP'] - self.result_df['FP']
-        self.result_df['TN'] = self.result_df['TN'].apply(lambda x: max(0, x))
-
-        def get_first_freq(label_id):
-            return merged_df.loc[merged_df['label_name'] == label_id, 'freq'].iloc[0]
-
-        self.result_df['tmp_ids'] = self.result_df.index
-        self.result_df['GT'] = self.result_df['tmp_ids'].apply(lambda x: get_first_freq(x))
-        self.result_df = self.result_df.drop(columns=['tmp_ids'])
-        self.result_df['GT'] = self.result_df['GT'].apply(lambda x: int(x))
-        self.result_df['precision'] = self.result_df.apply(
-            lambda x: round(EvaluationCalculator(tp=x['TP'], fp=x['FP'], fn=x['FN'], tn=x['TN']).precision, 2), axis=1
-        )
-        self.result_df['recall'] = self.result_df.apply(
-            lambda x: round(EvaluationCalculator(tp=x['TP'], fp=x['FP'], fn=x['FN'], tn=x['TN']).recall, 2), axis=1
-        )
-        self.result_df['f1'] = self.result_df.apply(
-            lambda x: round(EvaluationCalculator(tp=x['TP'], fp=x['FP'], fn=x['FN'], tn=x['TN']).f1, 2), axis=1
-        )
-
-        self.result_df['accuracy'] = self.result_df.apply(
-            lambda x: round(
-                (
-                    EvaluationCalculator(tp=x['TP'], fp=x['FP'], fn=x['FN'], tn=x['TN']).tp
-                    + EvaluationCalculator(tp=x['TP'], fp=x['FP'], fn=x['FN'], tn=x['TN']).tn
-                )
-                / (
-                    EvaluationCalculator(tp=x['TP'], fp=x['FP'], fn=x['FN'], tn=x['TN']).tp
-                    + EvaluationCalculator(tp=x['TP'], fp=x['FP'], fn=x['FN'], tn=x['TN']).tn
-                    + EvaluationCalculator(tp=x['TP'], fp=x['FP'], fn=x['FN'], tn=x['TN']).fp
-                    + EvaluationCalculator(tp=x['TP'], fp=x['FP'], fn=x['FN'], tn=x['TN']).fn
-                ),
-                2,
-            ),
-            axis=1,
-        )
-
-        return self.result_df
+        matrix = pd.pivot(data, index='disambiguated_id', columns='tmp_id_', values=['relation'])
+        matrix.fillna('TN', inplace=True)
+        return matrix
 
 
 class EvaluationCalculator:
@@ -655,6 +465,7 @@ class ExtractionEvaluation:
     def calculate(self):
         """Calculate and update the data stored within this Evaluation."""
         evaluations = []  # start anew, the configuration of the Evaluation might have changed.
+        id_counter = 1
         for ground_truth, predicted in self.documents:
             evaluation = compare(
                 doc_a=ground_truth,
@@ -663,8 +474,10 @@ class ExtractionEvaluation:
                 strict=self.strict,
                 use_view_annotations=self.use_view_annotations,
                 ignore_below_threshold=self.ignore_below_threshold,
+                id_counter=id_counter,
             )
             evaluations.append(evaluation)
+            id_counter += len(evaluation)
 
         self.data = pd.concat(evaluations)
 
@@ -704,9 +517,11 @@ class ExtractionEvaluation:
 
     def tn(self, search=None) -> int:
         """Return the True Negatives of all Spans."""
-        return (
-            len(self._query(search=search)) - self.tp(search=search) - self.fn(search=search) - self.fp(search=search)
-        )
+        return len(self._query(search=None)) - self.tp(search=search) - self.fn(search=search) - self.fp(search=search)
+
+    def gt(self, search=None) -> int:
+        """Return the number of ground-truth Annotations for a given Label."""
+        return len(self._query(search=search).dropna(subset=['label_id']))
 
     def tokenizer_tp(self, search=None) -> int:
         """Return the tokenizer True Positives of all Spans."""
