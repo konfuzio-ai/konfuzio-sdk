@@ -2450,20 +2450,7 @@ class Annotation(Data):
 
         :param input_bbox_dicts: List of dictionaries, each containing metadata such as bbox coordinates
         or Span's start_offset & end_offset used to create an Annotation.
-        The `input_bbox_dicts` format should be as follows:
-
-            [
-                {
-                    "start_offset": int,
-                    "end_offset": int,
-                    "x0": int,
-                    "x1": int,
-                    "y0": int,
-                    "y1": int
-                }
-                ...
-            ]
-        Note: either (start_offset, end_offset) and/or (x0, x1, y0, y1) should be provided in the dictionary.
+        Note: either (start_offset, end_offset) or (x0, x1, y0, y1, page_index) should be provided in each item of `input_bbox_dicts`.
         """
         for input_bbox_dict in input_bbox_dicts:
             if 'start_offset' in input_bbox_dict.keys() and 'end_offset' in input_bbox_dict.keys():
