@@ -642,6 +642,9 @@ class ExtractionEvaluation:
         self.data.groupby('id_local_predicted').apply(lambda group: self._apply(group, 'wrong_merge'))
         return self.data[self.data['wrong_merge']]
 
+    def confusion_matrix(self):
+        return ExtractionConfusionMatrix(data=self.data)
+
 
 class CategorizationEvaluation:
     """Calculated evaluation measures for the classification task of Document categorization."""
