@@ -93,6 +93,9 @@ response = json.loads(response.text)
 print(response['span'])
 ```
 ```python tags=['remove-cell']
+annotations = get_document_annotations(YOUR_DOCUMENT_ID)['results']
+negative_id = delete_document_annotation(response['id'])
+assert delete_document_annotation(negative_id, delete_from_database=True).status_code == 204
 YOUR_ANNOTATION_ID = response['id']
 ```
 
