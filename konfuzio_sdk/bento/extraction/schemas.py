@@ -8,9 +8,9 @@ class ExtractRequest20240117Page(BaseModel):
     """Describe a scheme for the Page class on 17/01/2024."""
 
     number: int
-    image: Optional[bytes]
+    image: Optional[bytes] = None
     original_size: Tuple[float, float]
-    segmentation: Optional[list]
+    segmentation: Optional[list] = None
 
 
 class ExtractRequest20240117(BaseModel):
