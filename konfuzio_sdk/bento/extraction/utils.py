@@ -107,13 +107,13 @@ def convert_document_to_request(document: Document, schema: BaseModel = ExtractR
     :param schema: A schema to which the request should adhere.
     :returns: A Document converted in accordance with the schema.
     """
-    pages = [
-        ExtractRequest20240117Page(
-            number=page.number, image=page.image, original_size=page._original_size, segmentation=page._segmentation
-        )
-        for page in document.pages()
-    ]
     if schema.__name__ == 'ExtractRequest20240117':
+        pages = [
+            ExtractRequest20240117Page(
+                number=page.number, image=page.image, original_size=page._original_size, segmentation=page._segmentation
+            )
+            for page in document.pages()
+        ]
         converted = schema(
             text=document.text,
             bboxes={
