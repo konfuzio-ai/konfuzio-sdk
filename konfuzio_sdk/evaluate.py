@@ -307,10 +307,22 @@ def compare(
 
 
 class ExtractionConfusionMatrix:
+    """Check how all predictions are mapped to the ground-truth Annotations."""
+
     def __init__(self, data: pd.DataFrame):
+        """
+        Initialize the class.
+
+        :param data: Raw evaluation data.
+        """
         self.matrix = self.calculate(data=data)
 
     def calculate(self, data: pd.DataFrame):
+        """
+        Calculate the matrix.
+
+        :param data: Raw evaluation data.
+        """
         data = data.reset_index(drop=True)
         data['id_'] = data['id_'].fillna('no_match', inplace=True)
         data['tmp_id_'] = data['tmp_id_'].fillna('no_match')
