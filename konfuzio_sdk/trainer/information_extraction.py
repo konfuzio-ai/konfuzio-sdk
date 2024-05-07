@@ -853,7 +853,7 @@ class AbstractExtractionAI(BaseModel):
                 # TODO replace with latest version after release
                 python={
                     'packages': [
-                        'https://github.com/konfuzio-ai/konfuzio-sdk/archive/refs/heads/bentoml-experiments.zip#egg=konfuzio-sdk[ai]'
+                        'https://github.com/konfuzio-ai/konfuzio-sdk/archive/refs/heads/bentoml-experiments.zip#egg=konfuzio-sdk'
                     ],
                     'lock_packages': True,
                 },
