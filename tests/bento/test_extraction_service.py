@@ -93,7 +93,7 @@ class TestExtractionAIBento(unittest.TestCase):
         data = {'pages': 1234, 'new_field': 'ffff'}
         responses = requests.post(url=self.request_url, data=data)
         assert responses.status_code == 400
-        assert 'Invalid JSON' in responses.text
+        assert 'validation error' in responses.text
 
     @classmethod
     def tearDownClass(cls) -> None:
