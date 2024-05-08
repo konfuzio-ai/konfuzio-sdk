@@ -168,7 +168,7 @@ label_set_clf_classes = ['Brutto-Bezug', 'Lohnabrechnung', 'Netto-Bezug', 'No', 
     [
         (
             False,
-            0.7945205479452054,  # w/ full dataset: 0.9237668161434978
+            0.8108108108108109,  # w/ full dataset: 0.9237668161434978
             0.8405797101449275,
             0.9745762711864406,
             0.9652173913043478,
@@ -178,21 +178,21 @@ label_set_clf_classes = ['Brutto-Bezug', 'Lohnabrechnung', 'Netto-Bezug', 'No', 
         ),
         (
             True,
-            0.8285714285714286,
+            0.8450704225352113,
             0.8656716417910447,
             0.9704641350210971,
             0.9652173913043478,
-            0.9836065573770492,
+            1.0,
             False,
             True,
         ),  # w/ full dataset: 0.9783549783549783
         (
             False,
-            0.8285714285714286,
+            0.8732394366197183,
             0.8656716417910447,
             0.9745762711864406,
             0.9652173913043478,
-            0.9705882352941176,
+            1.0,
             True,
             False,
         ),
@@ -502,7 +502,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         'label_set_n_estimators',
     ),
     [
-        (False, 0.7384615384615385, 10, 100, 150),  # w/ full dataset: 0.8930232558139535
+        (False, 0.7619047619047619, 10, 100, 150),  # w/ full dataset: 0.8930232558139535
         (True, 0.75, 5, 150, 100),  # w/ full dataset: 0.9596412556053812
     ],
 )
