@@ -189,6 +189,16 @@ def _normalize_string_to_absolute_float(offset_string: str) -> Optional[float]:
 
     ln = len(offset_string)
 
+    # check for 1.2134, 200.3212415 and all floats with 4 and more digits after the decimal separator and no thousand
+    # separators
+    if '.' in offset_string and offset_string.count('.') == 1:
+        if len(offset_string.split('.')[1]) > 3:
+            _float = _normalize_to_float_safe(offset_string)
+
+    if ',' in offset_string and offset_string.count(',') == 1:
+        if len(offset_string.split(',')[1]) > 3:
+            _float = _normalize_to_float_safe(offset_string.replace(',', '.'))
+
     # check for 1.234,56
     if '.' in offset_string and offset_string.count(',') == 1 and offset_string.index('.') < offset_string.index(','):
         offset_string = offset_string.replace('.', '').replace(',', '.')  # => 1234.56
