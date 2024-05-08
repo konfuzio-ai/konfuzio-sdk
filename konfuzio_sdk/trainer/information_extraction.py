@@ -849,7 +849,7 @@ class AbstractExtractionAI(BaseModel):
                     'categories_and_label_data.json5',
                     'AI_MODEL_NAME',
                 ],
-                labels={'request': 'ExtractRequest20240117', 'response': 'ExtractResponse20240117'},
+                labels=self.bento_metadata,
                 # TODO replace with latest version after release
                 python={
                     'packages': [
@@ -885,8 +885,8 @@ class AbstractExtractionAI(BaseModel):
             'requires_images': getattr(self, 'requires_images', False),
             'requires_segmentation': getattr(self, 'requires_segmentation', False),
             'requires_text': getattr(self, 'requires_text', False),
-            'input': 'ExtractRequest20240117',
-            'output': 'ExtractResponse20240117',
+            'request': 'ExtractRequest20240117',
+            'response': 'ExtractResponse20240117',
         }
 
     def check_is_ready(self):
