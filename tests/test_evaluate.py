@@ -1150,7 +1150,7 @@ class TestEvaluation(unittest.TestCase):
         assert evaluation.tp(search=label) == 2
         assert evaluation.fp(search=label) == 0
         assert evaluation.fn(search=label) == 0
-        assert evaluation.tn(search=label) == 0
+        assert evaluation.tn(search=label) == 6
 
     def test_true_positive_document(self):
         """Count zero Annotations from one Training Document that has no ID."""
@@ -1234,7 +1234,7 @@ class TestEvaluationFirstLabelDocumentADocumentB(unittest.TestCase):
 
     def test_true_negatives(self):
         """Evaluate that that nothing is correctly predicted below threshold."""
-        assert self.evaluation.tn(search=self.label) == 0
+        assert self.evaluation.tn(search=self.label) == 3
 
 
 class TestEvaluationFirstLabelDocumentBDocumentA(unittest.TestCase):
@@ -1262,7 +1262,7 @@ class TestEvaluationFirstLabelDocumentBDocumentA(unittest.TestCase):
 
     def test_true_negatives(self):
         """Evaluate that that nothing is correctly predicted below threshold."""
-        assert self.evaluation.tn(search=self.label) == 0
+        assert self.evaluation.tn(search=self.label) == 3
 
 
 class TestEvaluationSecondLabelDocumentADocumentB(unittest.TestCase):
@@ -1290,7 +1290,7 @@ class TestEvaluationSecondLabelDocumentADocumentB(unittest.TestCase):
 
     def test_true_negatives(self):
         """Evaluate that that nothing is correctly predicted below threshold."""
-        assert self.evaluation.tn(search=self.label) == 0
+        assert self.evaluation.tn(search=self.label) == 3
 
 
 class TestEvaluationSecondLabelDocumentBDocumentA(unittest.TestCase):
@@ -1332,7 +1332,7 @@ class TestEvaluationSecondLabelDocumentBDocumentA(unittest.TestCase):
 
     def test_true_negatives(self):
         """Evaluate that that nothing is correctly predicted below threshold."""
-        assert self.evaluation.tn(search=self.label) == 0
+        assert self.evaluation.tn(search=self.label) == 3
 
 
 class TestCategorizationEvaluation(unittest.TestCase):

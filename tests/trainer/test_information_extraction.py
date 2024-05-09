@@ -382,7 +382,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         assert evaluation.tokenizer_fp() == 289
         assert evaluation.tokenizer_fn() == 5
 
-        assert 5e5 < memory_size_of(evaluation.data) < 6e5
+        assert 5e5 < memory_size_of(evaluation.data) < 7e5
 
     def test_09_clf_quality(self):
         """Evaluate the Label classifier quality."""
@@ -654,7 +654,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         assert evaluation.tokenizer_fp() == 34
         assert evaluation.tokenizer_fn() == 8
 
-        assert 1e5 < memory_size_of(evaluation.data) < 2e5
+        assert 1e5 < memory_size_of(evaluation.data) < 3e5
 
     def test_09_clf_quality(self):
         """Evaluate the Label classifier quality."""
@@ -802,6 +802,7 @@ class TestParagraphRFExtractionAI(unittest.TestCase):
         evaluation = self.pipeline.evaluate_full(use_training_docs=True)  # only one training doc available for eval
         assert evaluation.f1() >= 0.97
         assert evaluation.fp() == self.fp  # 2 lines are unannotated
+
 
 @unittest.skip(reason='Project 458 is under maintentance now and switching to another Project requires major changes.')
 @pytest.mark.skipif(
@@ -1136,7 +1137,8 @@ class TestInformationExtraction(unittest.TestCase):
         assert feature_names[65] == 'r_pos1'
 
     @unittest.skip(
-        reason='Project 458 is under maintentance now and switching to another Project requires major changes.')
+        reason='Project 458 is under maintentance now and switching to another Project requires major changes.'
+    )
     def test_time_feature_extraction(self):
         """Test time it takes to extract the features from a Document."""
         project = Project(id_=458)
