@@ -798,6 +798,10 @@ class CategorizationEvaluation:
         """Return the True Negatives of all Documents."""
         return self._base_metric('tn', category)
 
+    def gt(self, category: Optional[Category] = None) -> int:
+        """Placeholder for compatibility with Server."""
+        return 0
+
     def get_evaluation_data(self, search: Category = None, allow_zero: bool = True) -> EvaluationCalculator:
         """
         Get precision, recall, f1, based on TP, TN, FP, FN.
@@ -1048,6 +1052,10 @@ class FileSplittingEvaluation:
         :raises KeyError: When the Category in search is not present in the Project from which the Documents are.
         """
         return self._query('true_negatives', search)
+
+    def gt(self, search: Category = None) -> int:
+        """Placeholder for compatibility with Server."""
+        return 0
 
     def precision(self, search: Category = None) -> float:
         """
