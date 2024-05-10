@@ -4627,18 +4627,19 @@ class Project(Data):
                     'name': category.name,
                     'id': category.id_,
                     'project': self.id_,
-                    'schema_': [
+                    'schema': [
                         {
                             'api_name': label_set.name,
+                            'name': label_set.name,
                             'has_multiple_annotation_sets': label_set.has_multiple_annotation_sets,
                             'id': label_set.id_,
                             'labels': [
                                 {
+                                    'api_name': label.name,
                                     'name': label.name,
                                     'data_type': label.data_type,
                                     'has_multiple_top_candidates': label.has_multiple_top_candidates,
                                     'id': label.id_,
-                                    'api_name': label.name,
                                     'threshold': label.threshold,
                                 }
                                 for label in label_set.labels
