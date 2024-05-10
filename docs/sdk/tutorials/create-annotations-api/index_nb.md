@@ -93,10 +93,8 @@ response = json.loads(response.text)
 print(response['span'])
 ```
 ```python tags=['remove-cell']
-annotations = get_document_annotations(YOUR_DOCUMENT_ID)['results']
 negative_id = delete_document_annotation(response['id'])
 assert delete_document_annotation(negative_id, delete_from_database=True).status_code == 204
-YOUR_ANNOTATION_ID = response['id']
 ```
 
 ### Creating a visual Annotation
@@ -110,8 +108,8 @@ YOUR_LABEL_ID = 862
 ```
 ```python
 bboxes = [
-        {'page_index': 0, 'x0': 198, 'x1': 300, 'y0': 508, 'y1': 517},
-        {'page_index': 0, 'x0': 197.76, 'x1': 233, 'y0': 495, 'y1': 508},
+        {'page_index': 0, 'x0': 457, 'x1': 480, 'y0': 290, 'y1': 303},
+        {'page_index': 0, 'x0': 452.16, 'x1': 482.64, 'y0': 306, 'y1': 313,}
 ]
 ```
 Next, we specify arguments for a POST request to create an Annotation and send it to the server. We want to create
@@ -127,13 +125,14 @@ print(response['span'])
 ```
 ```python tags=['remove-cell']
 assert delete_document_annotation(response['id'], delete_from_database=True)
+YOUR_ANNOTATION_ID = test_document.annotations(label=project.get_label_by_id(NEW_LABEL_ID))[0].id_
 ```
 
 ### Change an Annotation
 To update details of an Annotation, use `change_document_annotation` method from `konfuzio_sdk.api`. You can specify 
 a Label, a Label Set, an Annotation Set, `is_correct` and `revised` statuses, Span list and selection Bbox to be 
 updated to a new value.
-```python
+```python 
 from konfuzio_sdk.api import change_document_annotation
 
 response = change_document_annotation(annotation_id=YOUR_ANNOTATION_ID, label=NEW_LABEL_ID)
@@ -149,7 +148,7 @@ soft deletion (does not delete from the database, just deletes from approved Ann
 creating a negative Annotation instead) and hard deletion (deletes Annotations permanently from the database). For AI 
 training purposes, we recommend setting `delete_from_database` to False if you don't want to remove an Annotation 
 permanently.
-```python
+```python tags=["skip-execution", "nbval-skip"]
 from konfuzio_sdk.api import delete_document_annotation
 
 # soft-delete and create a negative Annotation
@@ -176,8 +175,8 @@ response = json.loads(response.text)
 print(response['span'])
 
 bboxes = [
-        {'page_index': 0, 'x0': 198, 'x1': 300, 'y0': 508, 'y1': 517},
-        {'page_index': 0, 'x0': 197.76, 'x1': 233, 'y0': 495, 'y1': 508},
+        {'page_index': 0, 'x0': 457, 'x1': 480, 'y0': 290, 'y1': 303},
+        {'page_index': 0, 'x0': 452.16, 'x1': 482.64, 'y0': 306, 'y1': 313,}
 ]
 response = post_document_annotation(document_id=YOUR_DOCUMENT_ID, spans=bboxes, label_id=YOUR_LABEL_ID, confidence=100.0,
                                     label_set_id=YOUR_LABEL_SET_ID)
