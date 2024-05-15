@@ -327,6 +327,14 @@ def _normalize_string_to_absolute_float(offset_string: str) -> Optional[float]:
         offset_string = offset_string[1:].replace(',', '.')  # => 22.95
         if all(x.isdecimal() for x in offset_string.split('.')):
             _float = _normalize_to_float_safe(offset_string)
+    # check for 1.213467, 200.3212415 and all floats with multiple digits after the decimal separator and no thousand
+    # separators
+    elif '.' in offset_string and offset_string.count('.') == 1:
+        if len(offset_string.split('.')[1]) > 5:
+            _float = _normalize_to_float_safe(offset_string)
+    elif ',' in offset_string and offset_string.count(',') == 1:
+        if len(offset_string.split(',')[1]) > 5:
+            _float = _normalize_to_float_safe(offset_string.replace(',', '.'))
     elif all(char in ROMAN_NUMS.keys() for char in offset_string):
         normalization = roman_to_float(offset_string)
     else:
