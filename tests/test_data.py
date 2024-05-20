@@ -271,7 +271,7 @@ class TestOnlineProject(unittest.TestCase):
 
     def test_get_sentence_spans_from_bbox(self):
         """Test to get sentence Spans in a bounding box."""
-        document = self.project.get_document_by_id(5904716)
+        document = self.project.get_document_by_id(215906)
         document = WhitespaceTokenizer().tokenize(deepcopy(document))
         page = document.get_page_by_index(0)
 
@@ -283,13 +283,10 @@ class TestOnlineProject(unittest.TestCase):
 
         sentences_spans = Span.get_sentence_from_spans(spans=spans)
 
-        assert len(sentences_spans) == 1
+        assert len(sentences_spans) == 2
         first_sentence = sentences_spans[0]
-        assert len(first_sentence) == 2
-        assert (
-            first_sentence[0].offset_string
-            == 'Page Stream Segmentation with Convolutional Neural Nets Combining Textual'
-        )
+        assert len(first_sentence) == 1
+        assert first_sentence[0].offset_string == 'Hi, my name is LeftTop.'
 
     def test_merge_documents(self):
         """Merge documents into a new document."""
