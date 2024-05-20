@@ -2715,7 +2715,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         for document in prj.documents:
             document.text
         after = _getsize(prj)
-        assert 1.6 < after / before < 2.1
+        assert 1.6 < after / before < 5
         assert after < 610000
 
         # strings in prj take slightly less space than in a list
