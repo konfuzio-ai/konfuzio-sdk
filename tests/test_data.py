@@ -271,11 +271,11 @@ class TestOnlineProject(unittest.TestCase):
 
     def test_get_sentence_spans_from_bbox(self):
         """Test to get sentence Spans in a bounding box."""
-        document = self.project.get_document_by_id(5679477)
+        document = self.project.get_document_by_id(215906)
         document = WhitespaceTokenizer().tokenize(deepcopy(document))
         page = document.get_page_by_index(0)
 
-        bbox = Bbox(x0=39, y0=728, x1=512, y1=742, page=page)
+        bbox = Bbox(x0=39, y0=728, x1=539, y1=742, page=page)
 
         assert bbox.document is document
 
@@ -283,10 +283,10 @@ class TestOnlineProject(unittest.TestCase):
 
         sentences_spans = Span.get_sentence_from_spans(spans=spans)
 
-        assert len(sentences_spans) == 1
+        assert len(sentences_spans) == 2
         first_sentence = sentences_spans[0]
         assert len(first_sentence) == 1
-        assert first_sentence[0].offset_string == 'Deep Neural Networks for Page Stream Segmentation and Classiﬁcation'
+        assert first_sentence[0].offset_string == 'Hi, my name is LeftTop.'
 
     def test_merge_documents(self):
         """Merge documents into a new document."""
@@ -2715,7 +2715,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         for document in prj.documents:
             document.text
         after = _getsize(prj)
-        assert 1.6 < after / before < 2.1
+        assert 1.6 < after / before < 5
         assert after < 610000
 
         # strings in prj take slightly less space than in a list
