@@ -113,18 +113,23 @@ Learn how to dynamically generate PDF forms using our AI-powered tools. This tut
 
 Harness the power of regular expressions for precise Document Annotations. This tutorial guides you through the process of using regex patterns effectively.
 
+19. :doc:`Object Detection <tutorials/object-detection/index>`
+
+Dive into object detection to detect document structures. This tutorial provides a step by step guide on how to train an object detection model on document structures.
+
+
 Streamlined Operations
 ---------------------
 
-19. :doc:`Data Validation <tutorials/data_validation/index>`
+20. :doc:`Data Validation <tutorials/data_validation/index>`
 
 Ensure the accuracy and integrity of your data with effective validation techniques. This tutorial provides best practices for maintaining high-quality data sets.
 
-20. :doc:`Outlier Annotations <tutorials/outlier-annotations/index>`
+21. :doc:`Outlier Annotations <tutorials/outlier-annotations/index>`
 
 Discover how to identify and handle outliers in your Document processing pipeline. This tutorial offers strategies for accurate Annotations.
 
-21. :doc:`Async Upload with Callback <tutorials/async_upload_with_callback/index>`
+22. :doc:`Async Upload with Callback <tutorials/async_upload_with_callback/index>`
 
 Optimize your Document processing workflow with asynchronous upload and callback functionality. This tutorial enhances the efficiency of large-scale operations.
 
