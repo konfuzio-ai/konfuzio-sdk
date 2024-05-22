@@ -132,6 +132,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             'updated_at',
             'proposed_split',
             'split_is_revised',
+            'enable_translated_strings',
         }
 
     def test_document_details_document_not_available(self):
@@ -182,6 +183,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             'updated_at',
             'proposed_split',
             'split_is_revised',
+            'enable_translated_strings',
         }
 
     def test_long_document_details(self):
@@ -220,6 +222,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             'updated_at',
             'proposed_split',
             'split_is_revised',
+            'enable_translated_strings',
         }
 
     def test_get_list_of_files(self):
@@ -306,7 +309,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
         assert response.status_code == 201
         annotation = json.loads(response.text)
-        assert delete_document_annotation(annotation['id'])
+        assert delete_document_annotation(annotation['id'], delete_from_database=True)
 
     @unittest.skip(reason='Not supported by Server: https://gitlab.com/konfuzio/objectives/-/issues/8663')
     def test_post_document_annotation_multiline_as_offsets(self):

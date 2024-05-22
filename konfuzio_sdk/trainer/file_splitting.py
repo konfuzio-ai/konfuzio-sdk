@@ -692,7 +692,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
             callbacks=[transformers.integrations.MLflowCallback] if self.use_mlflow else [LoggerCallback],
         )
         trainer.class_weights = class_weights
-        
+
         # training the model
         trainer.train()
 
@@ -905,7 +905,12 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
             intersection = {span.offset_string.strip('\f').strip('\n') for span in page.spans()}.intersection(
                 cur_first_page_strings
             )
-            if len(intersection) > 0:
+            # we set a minimum set size to avoid false positives and pages with very few strings
+            minimum_set_size = min(
+                len(cur_first_page_strings), len({span.offset_string.strip('\f').strip('\n') for span in page.spans()})
+            )
+            # if the intersection is at least 1/4 of the minimum set size, we mark the page as first
+            if len(intersection) > minimum_set_size / 4:
                 page.is_first_page = True
                 break
         page.is_first_page_confidence = 1
