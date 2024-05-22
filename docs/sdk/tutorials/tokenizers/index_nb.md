@@ -327,7 +327,7 @@ The `SentenceTokenizer` is a specialized [tokenizer](https://dev.konfuzio.com/sd
 
 To use it, import the necessary modules, initialize the Project, the Document, and the Tokenizer and tokenize the Document.
 ```python tags=["remove-cell"]
-YOUR_DOCUMENT_ID = 5679477
+YOUR_DOCUMENT_ID = 215906
 ```
 
 ```python tags=["remove-output"]
@@ -346,7 +346,7 @@ tokenized = tokenizer(doc)
 
 Visualize the output:
 ```python
-tokenized.get_page_by_index(1).get_annotations_image(display_all=True)
+tokenized.get_page_by_index(0).get_annotations_image(display_all=True)
 ```
 
 ### Choosing the right tokenizer
