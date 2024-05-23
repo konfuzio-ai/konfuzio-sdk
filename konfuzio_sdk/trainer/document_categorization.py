@@ -31,7 +31,6 @@ from konfuzio_sdk.extras import (
     Module,
     Optimizer,
     Tensor,
-    evaluate,
     timm,
     torch,
     torch_no_grad,
@@ -43,6 +42,7 @@ from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
 from konfuzio_sdk.trainer.base import BaseModel
 from konfuzio_sdk.trainer.image import ImageDataAugmentation, ImagePreProcessing
 from konfuzio_sdk.trainer.tokenization import TransformersTokenizer
+from konfuzio_sdk.trainer.utils import load_metric
 from konfuzio_sdk.utils import get_timestamp
 
 logger = logging.getLogger(__name__)
@@ -1298,8 +1298,8 @@ class CategorizationAI(AbstractCategorizationAI):
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=0, factor=lr_decay)
         temp_dir = tempfile.gettempdir()
         temp_filename = os.path.join(temp_dir, f'temp_{uuid.uuid4().hex}.pt')
-        f1_metric = evaluate.load('f1')
-        acc_metric = evaluate.load('accuracy')
+        f1_metric = load_metric('f1')
+        acc_metric = load_metric('accuracy')
         logger.info('Begin fitting')
         best_valid_loss = float('inf')
         train_loss = float('inf')

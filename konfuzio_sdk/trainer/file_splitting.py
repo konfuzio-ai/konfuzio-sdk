@@ -13,7 +13,7 @@ from sklearn.utils.class_weight import compute_class_weight
 
 from konfuzio_sdk.data import Category, Document, Page
 from konfuzio_sdk.evaluate import FileSplittingEvaluation
-from konfuzio_sdk.extras import datasets, evaluate, mlflow, tensorflow as tf, torch, transformers
+from konfuzio_sdk.extras import datasets, mlflow, tensorflow as tf, torch, transformers
 from konfuzio_sdk.trainer.information_extraction import BaseModel
 from konfuzio_sdk.trainer.utils import BalancedLossTrainer, LoggerCallback
 from konfuzio_sdk.utils import get_timestamp
@@ -548,7 +548,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
             return page_images, texts, labels
         return texts, labels
 
-    def _loading_model_and_tokenizer(self, path: str):
+    def _load_model_and_tokenizer(self, path: str):
         """
         Private method to load the model and tokenizer from the HuggingFace Cache.
         If one of the model or it's tokenizer is not to be found in the cache, it will be downloaded from the HuggingFace Hub.
@@ -560,9 +560,9 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
 
         # try to get the model & it's tokenizer from the transformers cache first
         try:
-            transformers_tokenizer = transformers.AutoTokenizer.from_pretrained(f'{path}/{self.model_name}')
+            transformers_tokenizer = transformers.AutoTokenizer.from_pretrained(self.model_name, cache_dir=path)
             model = transformers.AutoModelForSequenceClassification.from_pretrained(
-                f'{path}/{self.model_name}', num_labels=2
+                self.model_name, cache_dir=path, num_labels=2
             )
             logger.info(f'Model and tokenizer {self.model_name} loaded successfully from the transformers cache.')
         # if the model is not found in the cache, download it from the HuggingFace Hub
@@ -572,27 +572,6 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
             model = transformers.AutoModelForSequenceClassification.from_pretrained(self.model_name, num_labels=2)
 
         return model, transformers_tokenizer
-
-    def _loading_metric(self, metric_name: str, path: str):
-        """
-        Private method to load a metric from the HuggingFace Cache.
-        If the metric is not to be found in the cache, it will be downloaded from the HuggingFace Hub.
-
-        :param metric_name: The name of the metric to be loaded.
-        :type metric_name: str
-        :param path: The path to the transformers cache.
-        :type path: str
-        :returns: The metric.
-        """
-
-        try:
-            metric = evaluate.load(f'{path}/{metric_name}.py')
-            logger.info(f'Metric {metric_name} loaded successfully from the transformers cache {path}.')
-        except FileNotFoundError:
-            logger.warning('Could not find the metric in the transformers cache. Downloading it from HuggingFace Hub.')
-            metric = evaluate.load(metric_name)
-
-        return metric
 
     def fit(
         self,
@@ -649,11 +628,11 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         # defining transformers cache location
         transformers_cache_location = os.getenv('TRANSFORMERS_CACHE')
         # defining model & tokenizer
-        self.model, self.transformers_tokenizer = self._loading_model_and_tokenizer(path=transformers_cache_location)
+        self.model, self.transformers_tokenizer = self._load_model_and_tokenizer(path=transformers_cache_location)
         # move model to device
         self.model.to(device)
         # defining metric
-        metric = self._loading_metric(metric_name='f1', path=transformers_cache_location)
+        metric = self.load_metric(metric_name='f1', path=transformers_cache_location)
 
         # functions to be used by transformers.trainer
         def tokenize_function(examples):
