@@ -66,6 +66,8 @@ class TestOMRCheckboxBento(unittest.TestCase):
         cls.bento_process.kill()
 
 
+# Delete this and make tests executable
+
 if __name__ == '__main__':
     tester = TestOMRCheckboxBento()
     tester.setUpClass()

@@ -2,15 +2,15 @@
 import base64
 import logging
 from io import BytesIO
-from typing import List, Union
 
 import bentoml
 import debugpy
 import numpy as np
 from PIL import Image
-from pydantic import BaseModel
 
 from konfuzio_sdk.trainer.omr import BboxPairing
+
+from .schemas import OMRRequest20240215, OMRResponse20240215
 
 try:
     debugpy.listen(('0.0.0.0', 5678))  # Listen on the port defined in launch.json
@@ -31,54 +31,6 @@ svc = bentoml.Service('extraction_svc', runners=[extraction_runner])
 logger = logging.getLogger(__name__)
 
 
-# Optical Mark Recognition (OMR) schemas
-class OMRRequest20240215(BaseModel):
-    """Describe a scheme for the extraction request."""
-
-    class Annotation(BaseModel):  # Just annotation which has the flag is_linked_to_checkbox = True
-        class Box(BaseModel):
-            x0: int
-            x1: int
-            y0: int
-            y1: int
-
-        page_id_: int  # page.id_
-        annotation_id_: str  # annotation.id_
-        bbox: Box
-
-    class Page(BaseModel):
-        page_id_: int
-        width: int
-        height: int
-        image: str  # (str base64)
-
-    pages: List[Page]  # List of pages: page infos and encoded page image (str base64)
-    annotations: List[Annotation]  # List of annotations which are linked to checkboxes
-
-
-class OMRResponse20240215(BaseModel):
-    """Describe a scheme for the extraction response."""
-
-    class MetaData(BaseModel):
-        class Meta(BaseModel):
-            class OMR(BaseModel):
-                class Box(BaseModel):
-                    x0: int
-                    x1: int
-                    y0: int
-                    y1: int
-
-                is_checked: Union[bool, None]  # None if undetermined or invalid
-                checkbox_bbox: Box
-                confidence: float
-
-            omr: OMR
-
-        annotation_id: Meta
-
-    metadata: MetaData
-
-
 @svc.api(
     input=bentoml.io.JSON(pydantic_model=OMRRequest20240215),
     output=bentoml.io.JSON(pydantic_model=OMRResponse20240215),
@@ -91,7 +43,7 @@ async def extract(request: OMRRequest20240215) -> OMRResponse20240215:
         page_image = Image.open(BytesIO(base64.b64decode(page.image)))
         page_image = page_image.convert('RGB')
 
-        annotations = [a for a in request.annotations if a.page_id_ == page.page_id_]
+        annotations = [a for a in request.annotations if a.page_id == page.page_id]
 
         image_size = page_image.size
         page_size = (page.width, page.height)
@@ -128,7 +80,7 @@ async def extract(request: OMRRequest20240215) -> OMRResponse20240215:
                 }
             }
 
-            a_id_ = annotations[ann_idx].annotation_id_
+            a_id_ = annotations[ann_idx].annotation_id
             metadata[a_id_] = chbx_meta
 
     return metadata

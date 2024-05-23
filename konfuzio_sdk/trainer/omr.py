@@ -147,10 +147,14 @@ class CheckboxDetector(OMRAbstractModel):
         :rtype: :class:`NoneType`
         """
         super().__init__()
-        # model_path = str(Path(__file__).parent / 'ckpt_best.pt')
-        # if not Path(model_path).exists():
-        #    raise FileNotFoundError(f'Model weights file not found at {model_path}')
-        # self.detector = torch.jit.load(model_path)
+
+        # """ NE: commented in on 07.05.24 due to test with if __name__ == '__main__':, might not be needed for bento
+        model_path = str(Path(__file__).parent / 'ckpt_best.pt')
+        if not Path(model_path).exists():
+            raise FileNotFoundError(f'Model weights file not found at {model_path}')
+        self.detector = torch.jit.load(model_path)
+        # """
+
         self.input_shape = (1280, 1280)
         self.threshold = 0.7
 
@@ -315,21 +319,24 @@ class CheckboxDetector(OMRAbstractModel):
         bboxes = np.array([(int(b[0]), int(b[1]), int(b[2]), int(b[3])) for b in bboxes])
         return cls_conf, bboxes
 
-    # def forward(self, image: Image.Image) -> Tuple[np.ndarray, List[bool], np.ndarray]:
-    #    """
-    #    Runs the detection pipeline on an input image.
+    # """ NE: commented in on 07.05.24 due to test with if __name__ == '__main__':, might not be needed for bento
+    def forward(self, image: Image.Image) -> Tuple[np.ndarray, List[bool], np.ndarray]:
+        """
+        Runs the detection pipeline on an input image.
 
-    #    :param image: The input image.
-    #    :type image: :class:`PIL.Image.Image`
-    #    :return: Bounding boxes, detection flags, and confidence scores.
-    #    :rtype: :class:`tuple`
-    #    """
-    #    logger.info('Run checkbox detection.')
-    #    input_image = self._preprocess(image, self.input_shape)
-    #    outputs = self.detector(input_image)
-    #    cls_conf, bboxes = self._postprocess(outputs, image.size)
-    #    checked = [True if c[0] > c[1] else False for c in cls_conf]
-    #    return bboxes, checked, cls_conf
+        :param image: The input image.
+        :type image: :class:`PIL.Image.Image`
+        :return: Bounding boxes, detection flags, and confidence scores.
+        :rtype: :class:`tuple`
+        """
+        logger.info('Run checkbox detection.')
+        input_image = self._preprocess(image, self.input_shape)
+        outputs = self.detector(input_image)
+        cls_conf, bboxes = self._postprocess(outputs, image.size)
+        checked = [True if c[0] > c[1] else False for c in cls_conf]
+        return bboxes, checked, cls_conf
+
+    # """
 
 
 class BboxPairing:
@@ -460,15 +467,16 @@ def map_annotations_to_checkboxes(document: Document) -> Document:
         annotations = page.view_annotations()  # not sure why page.annotations is returning an empty list.
 
         # simulate labels that should be paired to checkboxes
-        labels_with_checkboxes = [
-            'Geschlecht_Person1',
-            'Geschlecht_Person2',
-            'Statsangehörigkeit_Person1',
-            'Statsangehörigkeit_Person2',
-        ]
+        # labels_with_checkboxes = [
+        #     'Geschlecht_Person1',
+        #     'Geschlecht_Person2',
+        #     'Statsangehörigkeit_Person1',
+        #     'Statsangehörigkeit_Person2',
+        # ]
+
         for annotation in annotations:
-            if annotation.label.name in labels_with_checkboxes:
-                annotation.label.is_linked_to_checkbox = True
+            # if annotation.label.name in labels_with_checkboxes:
+            annotation.label.is_linked_to_checkbox = True
 
         # just evaluate for annotations with label.is_linked_to_checkbox == True
         annotations = [annotation for annotation in annotations if annotation.label.is_linked_to_checkbox]
@@ -508,10 +516,12 @@ if __name__ == '__main__':
 
     from konfuzio_sdk.data import Document, Project
 
-    OMR_TEST_PROJECT_ID = 14848
-    OMR_TEST_DOCUMENT_ID = 5772921
+    OMR_TEST_PROJECT_ID = 14835  ## 14848
+    OMR_TEST_DOCUMENT_ID = (
+        5892586  # 5892966  # 5892967  # 5892586  # 5892444  # 5892443  # 5892441 #5892442  # 5892440  ## 5772921
+    )
 
-    project = Project(id_=OMR_TEST_PROJECT_ID)
+    project = Project(id_=OMR_TEST_PROJECT_ID, update=True)
     # project = Project(id_=OMR_TEST_PROJECT_ID, update=True)
 
     doc = project.get_document_by_id(OMR_TEST_DOCUMENT_ID)
@@ -532,6 +542,8 @@ if __name__ == '__main__':
 
         scaler = max((image.size[0] / page.width, image.size[1] / page.height))
 
+        image.save(str(f'./{page.document.name}_{page.number}_normal.png'))
+
         for ann in annotations:
             # draw all annotation boxes
             an_x0, an_y0, an_x1, an_y1 = (
@@ -540,7 +552,6 @@ if __name__ == '__main__':
                 ann.bbox().x1_image,
                 ann.bbox().y1_image,
             )
-            img_draw.rectangle((an_x0, an_y0, an_x1, an_y1), outline='blue', width=2)
 
             # draw all checkbox boxes and color code based on checked or not
             if ann.metadata:
@@ -551,9 +562,38 @@ if __name__ == '__main__':
                 y0, y1 = image.size[1] - y1, image.size[1] - y0
 
                 if ann.metadata['omr']['is_checked']:
-                    img_draw.rectangle((x0, y0, x1, y1), outline=check_color, width=2)
+                    img_draw.rectangle((x0, y0, x1, y1), outline=check_color, width=1)
                 else:
-                    img_draw.rectangle((x0, y0, x1, y1), outline=uncheck_color, width=2)
+                    img_draw.rectangle((x0, y0, x1, y1), outline=uncheck_color, width=1)
+
+        image.save(str(f'./{page.document.name}_{page.number}_checkboxes.png'))
+
+        for ann in annotations:
+            # draw all annotation boxes
+            an_x0, an_y0, an_x1, an_y1 = (
+                ann.bbox().x0_image,
+                ann.bbox().y0_image,
+                ann.bbox().x1_image,
+                ann.bbox().y1_image,
+            )
+
+            img_draw.rectangle((an_x0, an_y0, an_x1, an_y1), outline='blue', width=1)
+        image.save(str(f'./{page.document.name}_{page.number}_checkboxes_labels.png'))
+
+        for ann in annotations:
+            # draw all annotation boxes
+            an_x0, an_y0, an_x1, an_y1 = (
+                ann.bbox().x0_image,
+                ann.bbox().y0_image,
+                ann.bbox().x1_image,
+                ann.bbox().y1_image,
+            )
+            if ann.metadata:
+                box_page = ann.metadata['omr']['checkbox_bbox']
+                x0, y0, x1, y1 = box_page[0], box_page[2], box_page[1], box_page[3]
+                x0, y0, x1, y1 = int(x0 * scaler), int(y0 * scaler), int(x1 * scaler), int(y1 * scaler)
+                # coordinate system starts from bottom left, convert from top left to bottom left
+                y0, y1 = image.size[1] - y1, image.size[1] - y0
 
                 # draw a point from the edge of the checkbox to the edge of the annotation
                 # shortest distance from the edge of the checkbox to the edge of the annotation
@@ -563,5 +603,4 @@ if __name__ == '__main__':
                 ed_y1 = min(y1, an_y1)
                 ed_y_ave = (ed_y0 + ed_y1) / 2
                 img_draw.line((ed_x0, ed_y_ave, ed_x1, ed_y_ave), fill=pair_colors, width=2)
-
-        image.save(str(f'./{page.document.name}_paired.png'))
+        image.save(str(f'./{page.document.name}_{page.number}_pairs.png'))
