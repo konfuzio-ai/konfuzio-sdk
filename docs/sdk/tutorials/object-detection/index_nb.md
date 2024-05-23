@@ -16,7 +16,7 @@ jupyter:
 
 ---
 
-**Prerequisites:** 
+**Prerequisites:**
 
 - General understanding of object detection and training of neural networks.
 - A COCO formatted object detection dataset.
@@ -29,9 +29,9 @@ jupyter:
 
 ### Environment
 To get up and running quickly, you can create a new Google Colab notebook to follow along. \
-<a href="https://colab.research.google.com/#create=true" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Create New Colab"/></a>
+<a href="https://colab.research.google.com/#create=true" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Create a new Colab"/></a>
 
-As an alternative you can install and run the code locally or in an environment of your choice.
+As an alternative, you can install and run the code locally or in an environment of your choice.
 
 ### Introduction
 
@@ -45,18 +45,18 @@ The focus here is on Document structures but you can use the code to train on a 
 We will use the state of the art object detection model [YOLO-NAS](https://konfuzio.com/de/yolo-nas-object-detection-model/). \
 It was developed to incorporate high speed and accuracy, which makes it a very good fit for production use cases. For the training of the model we will use the [`super-gradients`](https://github.com/Deci-AI/super-gradients) library, which is provided by the creators of YOLO-NAS. 😎
 
-The use case, we train the model on, is checkbox detection in form Documents. ☑ \
+The use case for which we train the model is checkbox detection in form Documents. ☑ \
 You can train the model for another use case, as long as you stick to the COCO dataset format.
 
 At the end we will export the trained model, so that you can use it in another environment without the training library dependencies.
 
-Here is an example of what the model will be capable of after training. The color cyan stands for detected checked boxes and the color green for detected empty boxes, while the number indicate the detection confidence. 😃
+Here is an example of what the model will be capable of after training. The color cyan stands for detected checked boxes and the color green for detected empty boxes, while the numbers indicate the detection confidence. 😃
 
 ![Example of checkbox detection - 1](checkbox_example_handwritten_1.png)
 
 ### Dependency installation 💿
 
-For training and testing the model the following dependencies are needed.
+For training and testing the model, the following dependencies are needed.
 
 ```bash tags=["remove-output"]
 pip install -q super-gradients
@@ -69,7 +69,6 @@ Due to the later export of the model into the ONNX format, the model can be test
 ### Imports 🔽
 
 The following imports are needed to train, export and test the model.
-
 ```python tags=["remove-output"]
 # General imports
 from pathlib import Path
@@ -217,14 +216,14 @@ valset = COCOFormatDetectionDataset(data_dir=str(test_path),
                                     )
 ```
 
-Based on the the dataset we infer the number of object classes the model should detect.
+Based on the dataset we infer the number of object classes the model should detect.
 
 ```python
 # get number of classes from dataset
 num_classes = len(trainset.classes)
 ```
 
-And as a last step we instantiate the dataloader. Pay attention to the `min_samples` with value of `512`. This parameter forces the training, to use at least the `min_samples` number of images for each epoch. This is usefull for smaller datasets, as we have it for this showcase. 
+And as a last step we instantiate the dataloader. Pay attention to the `min_samples` with value of `512`. This parameter forces the training, to use at least the `min_samples` number of images for each epoch. This is useful for smaller datasets, as we have it for this showcase. 
 
 ```python tags=["remove-cell"]
 # define train and validation loader for konfuzio testing pipeline (minimal batch size and epochs)
@@ -242,7 +241,7 @@ train_loader = dataloaders.get(dataset=trainset, dataloader_params={
 valid_loader = dataloaders.get(dataset=valset, dataloader_params={
     "shuffle": False,
     "batch_size": 1,
-    "num_workers": 2,
+    "num_workers": 1,
     "drop_last": False,
     "pin_memory": True,
     "collate_fn": CrowdDetectionCollateFN(),
@@ -371,7 +370,7 @@ Then we get the path to the checkpoint, which was saved during training.
 
 ```python
 # get path to trained model
-checkpoint_dir = Path(trainer.sg_logger._local_dir)
+checkpoint_dir = Path(trainer.sg_logger._local_dir).absolute()
 checkpoint_path = checkpoint_dir / WEIGHTS_FILE
 assert checkpoint_path.exists(), f"No checkpoint file found in {checkpoint_path}. Check if the train run was successful."
 ```
@@ -397,7 +396,7 @@ torch.onnx.export(
     yolo_model,
     dummy_input,
     EXPORT_NAME,
-    verbose=True,
+    verbose=False,
     input_names=input_names,
     output_names=output_names,
 )
@@ -409,7 +408,6 @@ onnx.checker.check_model(model_onnx)
 
 print("\nModel exported to ONNX format.\n")
 ```
-
 
 ### Load and test 🏁
 
@@ -593,7 +591,8 @@ def plot_results(pil_img, scores, labels, boxes, name=None):
 ```
 
 Finally we run the visualization based on the detectors output. 😃
-```python
+
+```python tags=["remove-output"]
 # show result
 plot_results(sample_img, score, checked, bboxes, "Example of checkbox detection")
 ```
@@ -603,6 +602,7 @@ plot_results(sample_img, score, checked, bboxes, "Example of checkbox detection"
 
 ### Conclusion 💭
 In this tutorial, we have trained, optimized and tested the object detection model YOLO-NAS on a coco dataset. Below is the full code to accomplish this task:
+
 
 **Dependency installation**
 ```bash tags=["skip-execution", "nbval-skip"]
@@ -806,7 +806,7 @@ WEIGHTS_FILE = "ckpt_best.pth"
 EXPORT_NAME = "yolo_model.onnx"
 
 # get path to trained model
-checkpoint_dir = Path(trainer.sg_logger._local_dir)
+checkpoint_dir = Path(trainer.sg_logger._local_dir).absolute()
 checkpoint_path = checkpoint_dir / WEIGHTS_FILE
 assert checkpoint_path.exists(), f"No checkpoint file found in {checkpoint_path}. Check if the train run was successful."
 
@@ -828,7 +828,7 @@ torch.onnx.export(
     yolo_model,
     dummy_input,
     EXPORT_NAME,
-    verbose=True,
+    verbose=False,
     input_names=input_names,
     output_names=output_names,
 )
@@ -1007,3 +1007,13 @@ plot_results(sample_img, score, checked, bboxes, "Example of checkbox detection"
 
 - [Learn how to upload a custom AI](https://dev.konfuzio.com/sdk/tutorials/upload-your-ai/index.html)
 - [Get to know how to create any custom Extraction AI](https://dev.konfuzio.com/sdk/tutorials/information_extraction/index.html#train-a-custom-date-extraction-ai)
+
+
+<!-- REMOVE TEMPORARY FILES AND DIRECTORIES -->
+```python tags=["remove-cell"]
+import subprocess
+
+subprocess.run(["rm", "./Example of checkbox detection.png"])
+subprocess.run(["rm", EXPORT_NAME])
+subprocess.run(["rm", "-r", "./checkpoints_dir"])
+```
