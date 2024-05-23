@@ -1,4 +1,5 @@
 """Handle data from the API."""
+
 import io
 import itertools
 import json
@@ -25,10 +26,12 @@ from konfuzio_sdk.api import (
     download_file_konfuzio_api,
     export_ai_models,
     get_all_project_ais,
+    get_document_annotations,
+    get_document_bbox,
     get_document_details,
     get_meta_of_files,
     get_page_image,
-    get_project_details,
+    get_project_categories,
     get_results_from_segmentation,
     konfuzio_session,
     post_document_annotation,
@@ -218,7 +221,10 @@ class Page(Data):
             elif is_file(self.image_path, raise_exception=False) and not update:
                 self.image = Image.open(self.image_path)
             elif (not is_file(self.image_path, raise_exception=False) or update) and page_id:
-                png_content = get_page_image(page_id, session=self.document.project.session)
+                document_id = self.document.id_ if self.document.id_ else self.document.copy_of_id
+                png_content = get_page_image(
+                    document_id=document_id, page_number=self.number, session=self.document.project.session
+                )
                 with open(self.image_path, 'wb') as f:
                     f.write(png_content)
                     self.image = Image.open(io.BytesIO(png_content))
@@ -307,21 +313,39 @@ class Page(Data):
         char_bboxes = self.get_bbox().values()
         char_bboxes = sorted(char_bboxes, key=lambda x: x['char_index'])
 
-        # iterate over each line_number and all of the character bboxes with that line number
+        # iterate over each line_number and all the character bboxes with that line number
 
-        for _, line_char_bboxes in itertools.groupby(char_bboxes, lambda x: x['line_number']):
-            # (a line should never start with a space char)
-            trimmed_line_char_bboxes = [char for char in line_char_bboxes if not char['text'].isspace()]
+        # condition for backward compatibility that checks if bbox file structure includes 'line_number' or
+        # 'line_index' and parses the file accordingly.
+        if 'line_number' in [bbox.keys() for bbox in char_bboxes][0]:
+            for _, line_char_bboxes in itertools.groupby(char_bboxes, lambda x: x['line_number']):
+                # (a line should never start with a space char)
+                trimmed_line_char_bboxes = [char for char in line_char_bboxes if not char['text'].isspace()]
 
-            if len(trimmed_line_char_bboxes) == 0:
-                continue
+                if len(trimmed_line_char_bboxes) == 0:
+                    continue
 
-            # create Span from the line characters bboxes
-            start_offset = min((char_bbox['char_index'] for char_bbox in trimmed_line_char_bboxes))
-            end_offset = max((char_bbox['char_index'] for char_bbox in trimmed_line_char_bboxes)) + 1
-            span = Span(start_offset=start_offset, end_offset=end_offset, document=self.document)
+                # create Span from the line characters bboxes
+                start_offset = min((char_bbox['char_index'] for char_bbox in trimmed_line_char_bboxes))
+                end_offset = max((char_bbox['char_index'] for char_bbox in trimmed_line_char_bboxes)) + 1
+                span = Span(start_offset=start_offset, end_offset=end_offset, document=self.document)
 
-            lines_spans.append(span)
+                lines_spans.append(span)
+        elif 'line_index' in [bbox.keys() for bbox in char_bboxes][0]:
+            # line index is always less than line_index by 1, e.g. if line_index is 0, line_number is 1
+            for _, line_char_bboxes in itertools.groupby(char_bboxes, lambda x: x['line_index'] + 1):
+                # (a line should never start with a space char)
+                trimmed_line_char_bboxes = [char for char in line_char_bboxes if not char['text'].isspace()]
+
+                if len(trimmed_line_char_bboxes) == 0:
+                    continue
+
+                # create Span from the line characters bboxes
+                start_offset = min((char_bbox['char_index'] for char_bbox in trimmed_line_char_bboxes))
+                end_offset = max((char_bbox['char_index'] for char_bbox in trimmed_line_char_bboxes)) + 1
+                span = Span(start_offset=start_offset, end_offset=end_offset, document=self.document)
+
+                lines_spans.append(span)
 
         return lines_spans
 
@@ -475,7 +499,8 @@ class Page(Data):
 
 
 class BboxValidationTypes(Enum):
-    """Define validation strictness for bounding boxes.
+    """
+    Define validation strictness for Bounding Boxes.
 
     For more details see the `Bbox` class.
     """
@@ -522,6 +547,12 @@ class Bbox:
         """Calculate the distance to the top of the Page."""
         if self.page:
             return round(self.page.height - self.y1, 3)
+
+    @property
+    def bottom(self):
+        """Calculate the distance to the bottom of the Page."""
+        if self.page:
+            return round(self.page.height - self.y0, 3)
 
     def __repr__(self):
         """Represent the Box."""
@@ -806,6 +837,9 @@ class LabelSet(Data):
         elif not categories and 'default_section_labels' in kwargs:
             self._default_of_label_set_ids = kwargs['default_section_labels']
             self.categories = []
+        elif isinstance(categories, list) and all(isinstance(category, dict) for category in categories):
+            self._default_of_label_set_ids = [category['id'] for category in categories]
+            self.categories = []
         else:
             self._default_of_label_set_ids = []
             self.categories = categories
@@ -825,9 +859,11 @@ class LabelSet(Data):
                 label = self.project.get_label_by_id(id_=label)
             self.add_label(label)
 
-        project.add_label_set(self)
+        if self not in project._label_sets:
+            project.add_label_set(self)
         for category in self.categories:
-            category.add_label_set(self)
+            if self not in category.label_sets:
+                category.add_label_set(self)
 
     def __lt__(self, other: 'LabelSet'):
         """Sort Label Sets by name."""
@@ -1441,7 +1477,7 @@ class Label(Data):
 
         return best_regex
 
-    def regex(self, categories: List[Category], update=False) -> List:
+    def regex(self, categories: List[Category], update=False) -> Dict:
         """Calculate regex to be used in the Extraction AI."""
         # if not is_file(self.regex_file_path, raise_exception=False) or update:
         logger.info(f'Build regexes for Label {self.name}.')
@@ -1761,7 +1797,9 @@ class Span(Data):
         self._page: Union[Page, None] = None
         self._bbox: Union[Bbox, None] = None
         self.regex_matching = []
-        annotation and annotation.add_span(self)  # only add if Span has access to an Annotation
+        # check because we don't want to add a Span multiple times to the Annotation
+        if annotation and self not in annotation.spans:  # only add if Span has access to an Annotation
+            annotation.add_span(self)
         self._valid(strict_validation)
 
     def _valid(self, strict: bool = True, handler: str = 'sdk_validation'):
@@ -2201,8 +2239,8 @@ class Annotation(Data):
             self.annotation_set = None
 
         # if no label_set_id we check if is passed by section_label_id
-        if label_set_id is None and kwargs.get('section_label_id') is not None:
-            label_set_id = kwargs.get('section_label_id')
+        if label_set_id is None and kwargs.get('label_set_id') is not None:
+            label_set_id = kwargs.get('label_set_id')
 
         # handles association to an Annotation Set if the Annotation belongs to a Category
         if isinstance(label_set_id, int):
@@ -2420,7 +2458,7 @@ class Annotation(Data):
         else:
             return None
 
-    def save(self, document_annotations: list = None) -> bool:
+    def save(self, label_set_id=None, annotation_set_id=None, document_annotations: list = None) -> bool:
         """
         Save Annotation online.
 
@@ -2434,6 +2472,9 @@ class Annotation(Data):
         The update can be done after the request (per annotation) or the updated Annotations can be passed as input
         of the function (advisable when dealing with big Documents or Documents with many Annotations).
 
+        Specify label_set_id if you want to create an Annotation belonging to a new Annotation Set. Specify
+        annotation_set_id if you want to add an Annotation to an existing Annotation Set. Do not specify both of them.
+
         :param document_annotations: Annotations in the Document (list)
         :return: True if new Annotation was created
         """
@@ -2442,31 +2483,22 @@ class Annotation(Data):
         if self.document.category == self.document.project.no_category:
             raise ValueError(f'You cannot save Annotations of Documents with {self.document.category}.')
         new_annotation_added = False
-        if not self.label_set:
-            label_set_id = None
-        else:
-            label_set_id = self.label_set.id_
+
         if self.is_online:
             raise ValueError(f'You cannot update Annotations once saved online: {self.get_link()}')
             # update_annotation(id_=self.id_, document_id=self.document.id_, project_id=self.project.id_)
 
         if not self.is_online:
-            annotation_set_id = self.annotation_set.id_ if self.annotation_set else None
             response = post_document_annotation(
-                project_id=self.document.project.id_,
                 document_id=self.document.id_,
-                # start_offset=self.start_offset,
-                # end_offset=self.end_offset,
                 label_id=self.label.id_,
                 label_set_id=label_set_id,
                 confidence=self.confidence,
                 is_correct=self.is_correct,
                 revised=self.revised,
-                annotation_set=annotation_set_id,
-                bboxes=self.bboxes,
-                # selection_bbox=self.selection_bbox,
-                page_number=self.page_number,
+                annotation_set_id=annotation_set_id,
                 session=self.document.project.session,
+                spans=self.spans,
             )
             if response.status_code == 201:
                 json_response = json.loads(response.text)
@@ -2568,11 +2600,17 @@ class Annotation(Data):
         """
         if self.document.is_online and delete_online:
             delete_document_annotation(
-                self.document.id_, self.id_, self.document.project.id_, session=self.document.project.session
+                annotation_id=self.id_, session=self.document.project.session, delete_from_database=True
             )
             self.document.update()
         else:
-            del self.document._annotations[(tuple(sorted(self._spans.keys())), self.label.name)]
+            try:
+                del self.document._annotations[(tuple(sorted(self._spans.keys())), self.label.name)]
+            except KeyError as e:
+                logger.warning(
+                    f'Could not delete annotation with key {(tuple(sorted(self._spans.keys())), self.label.name)} in {self.document}: {e}'
+                )
+                # See also: https://git.konfuzio.com/konfuzio/objectives/-/issues/12402
 
     def bbox(self) -> Bbox:
         """Get Bbox encompassing all Annotation Spans."""
@@ -2605,14 +2643,13 @@ class Annotation(Data):
         self._tokens = []
 
 
-class Document(Data):
+class DocumentStatuses(Enum):
     """
-    Access the information about one Document, which is available online.
+    Define statuses of a Document's processing.
 
     For more details see https://dev.konfuzio.com/sdk/explanations.html#document-concept
     """
 
-    # Define the status of a Document's processing
     QUEUING_FOR_OCR = 0
     OCR_IN_PROGRESS = 10
     QUEUING_FOR_EXTRACTION = 1
@@ -2624,6 +2661,14 @@ class Document(Data):
     WAITING_FOR_SPLITTING_CONFIRMATION = 41
     DONE = 2
     COULD_NOT_BE_PROCESSED = 111
+
+
+class Document(Data):
+    """
+    Access the information about one Document, which is available online.
+
+    For more details see https://dev.konfuzio.com/sdk/explanations.html#document-concept
+    """
 
     def __init__(
         self,
@@ -2838,18 +2883,22 @@ class Document(Data):
         new_document_id = response['id']
 
         if sync:
-            if response['status'][0] == 2:
-                logger.debug(f"Document status code {response['status'][0]}: {response['status'][1]}")
+            status = [
+                response['status_data'],
+                [status.name for status in DocumentStatuses if status.value == response['status_data']][0],
+            ]
+            if status[0] == 2:
+                logger.debug(f'Document status code {status[0]}: {status[1]}')
             else:
-                logger.warning(f"Document status code {response['status'][0]}: {response['status'][1]}")
+                logger.warning(f'Document status code {status[0]}: {status[1]}')
             assert project.id_ == response['project'], 'Project id_ of uploaded file does not match'
             document = Document(
                 id_=new_document_id,
                 project=project,
                 update=True,
-                category_template=category_id if category_id else response['category_template'],
+                category_template=category_id if category_id else response['category'],
                 text=response['text'],
-                status=response['status'],
+                status=status[0],  # we want a numeric representation of status, e.g. 2, not the textual, e.g. "Done"
                 data_file_name=response['data_file_name'],
                 file_url=response['file_url'],
                 dataset_status=dataset_status,
@@ -2860,7 +2909,7 @@ class Document(Data):
                 project=project,
                 update=True,
                 category_template=category_id,
-                status=[0, 'Queuing for OCR'],
+                status=[0],  # numeric representation of a status that means "queueing for ocr"
                 data_file_name=response['data_file_name'],
                 dataset_status=dataset_status,
             )
@@ -3162,10 +3211,15 @@ class Document(Data):
                     raw_annotation_sets = json.load(f)
                 # first load all Annotation Sets before we create Annotations
                 for raw_annotation_set in raw_annotation_sets:
+                    # for backwards compatibility
+                    if 'label_set' in raw_annotation_set.keys():
+                        label_set_id = raw_annotation_set['label_set']['id']
+                    elif 'section_label' in raw_annotation_set.keys():
+                        label_set_id = raw_annotation_set['section_label']
                     _ = AnnotationSet(
                         id_=raw_annotation_set['id'],
                         document=self,
-                        label_set=self.project.get_label_set_by_id(raw_annotation_set['section_label']),
+                        label_set=self.project.get_label_set_by_id(label_set_id),
                     )
             elif self._annotation_sets is None:
                 self._annotation_sets = []  # Annotation sets cannot be loaded from Konfuzio Server
@@ -3340,8 +3394,12 @@ class Document(Data):
             file_path = self.ocr_file_path
         else:
             file_path = self.file_path
-
-        if self.status[0] == Document.DONE and (
+        # backward compatibility check
+        if isinstance(self.status, int) or not self.status:
+            status = self.status
+        else:
+            status = self.status[0]
+        if status == DocumentStatuses.DONE.value and (
             not file_path or not is_file(file_path, raise_exception=False) or update
         ):
             pdf_content = download_file_konfuzio_api(self.id_, ocr=ocr_version, session=self.project.session)
@@ -3360,22 +3418,28 @@ class Document(Data):
         return [page.get_image(update=update) for page in self.pages()]
 
     def download_document_details(self):
-        """Retrieve data from a Document online in case Document has finished processing."""
+        """
+        Retrieve data from a Document online in case Document has finished processing.
+
+        Data includes Document's status, URL of its file, name of its file, date of
+        las update, its text and pagination, Annotations and Annotation Sets; optionally,
+        Category information.
+        """
         if self.is_online:
-            data = get_document_details(document_id=self.id_, project_id=self.project.id_, session=self.project.session)
-            self.status = data['status']
+            data = get_document_details(document_id=self.id_, session=self.project.session)
+            self.status = data['status_data']
             self.file_url = data['file_url']
             self.name = data['data_file_name']
             self.updated_at = dateutil.parser.isoparse(data['updated_at'])
-            if data['category_template']:
-                self._category = self.project.get_category_by_id(data['category_template'])
-            # TODO: update rest of metadata with APIv3
+            if data['category']:
+                self._category = self.project.get_category_by_id(data['category'])
             # write a file, even there are no annotations to support offline work
+            annotations = get_document_annotations(document_id=self.id_, session=self.project.session)['results']
             with open(self.annotation_file_path, 'w') as f:
-                json.dump(data['annotations'], f, indent=2, sort_keys=True)
+                json.dump(annotations, f, indent=2, sort_keys=True)
 
             with open(self.annotation_set_file_path, 'w') as f:
-                json.dump(data['sections'], f, indent=2, sort_keys=True)
+                json.dump(data['annotation_sets'], f, indent=2, sort_keys=True)
 
             with open(self.txt_file_path, 'w', encoding='utf-8') as f:
                 if data['text']:
@@ -3552,12 +3616,10 @@ class Document(Data):
         elif is_file(self.bbox_file_path, raise_exception=False):
             with zipfile.ZipFile(self.bbox_file_path, 'r') as archive:
                 bbox = json.loads(archive.read('bbox.json5'))
-        elif self.is_online and self.status and self.status[0] == Document.DONE:
+        elif self.is_online and self.status and self.status == DocumentStatuses.DONE.value:
             # todo check for self.project.id_ and self.id_ and ?
             logger.info(f'Start downloading bbox files of {len(self.text)} characters for {self}.')
-            bbox = get_document_details(
-                document_id=self.id_, project_id=self.project.id_, extra_fields='bbox', session=self.project.session
-            )['bbox']
+            bbox = get_document_bbox(document_id=self.id_, session=self.project.session)['bbox']
             # Use the `zipfile` module: `compresslevel` was added in Python 3.7
             with zipfile.ZipFile(
                 self.bbox_file_path, mode='w', compression=zipfile.ZIP_DEFLATED, compresslevel=9
@@ -3580,7 +3642,12 @@ class Document(Data):
             self._pages_char_bboxes: List[Dict[str, Dict]] = [{} for _ in self.pages()]
             for char_index, bbox in self.get_bbox().items():
                 bbox['char_index'] = int(char_index)
-                self._pages_char_bboxes[bbox['page_number'] - 1][char_index] = bbox
+                # for backwards compatibility
+                if 'page_index' in bbox.keys():
+                    bbox_page_index = bbox['page_index']
+                else:
+                    bbox_page_index = bbox['page_number'] - 1
+                self._pages_char_bboxes[bbox_page_index][char_index] = bbox
         return self._pages_char_bboxes[page_index]
 
     @property
@@ -3610,7 +3677,10 @@ class Document(Data):
                 x1 = box.get('x1')
                 y0 = box.get('y0')
                 y1 = box.get('y1')
-                page_index = box.get('page_number') - 1
+                if 'page_index' in box.keys():
+                    page_index = box.get('page_index')
+                else:
+                    page_index = box.get('page_number') - 1
                 page = self.get_page_by_index(page_index=page_index)
                 box_character = box.get('text')
                 document_character = self.text[int(character_index)]
@@ -3798,15 +3868,62 @@ class Document(Data):
                 raw_annotations = json.load(f)
 
             if self.category == self.project.no_category:
-                raw_annotations = [
-                    annotation for annotation in raw_annotations if annotation['label_text'] == 'NO_LABEL'
-                ]
+                # for backwards compatibility
+                # todo: not send no_label label to the server / see how it is handled now
+                # they are ignored now
+                no_label_raw_annotations = []
+                for raw_annotation in raw_annotations:
+                    # we want to ensure that both label files of old structure that have 'label_text' field and label
+                    # files of a new structure that have 'label' field that is a dict with nested elements are properly
+                    # parsed
+                    if 'label_text' in raw_annotation.keys():
+                        if raw_annotation['label_text'] == 'NO_LABEL':
+                            no_label_raw_annotations.append(raw_annotation)
+                    elif isinstance(raw_annotation['label'], dict):
+                        if raw_annotation['label']['name'] == 'NO_LABEL':
+                            no_label_raw_annotations.append(raw_annotation)
+
+                raw_annotations = no_label_raw_annotations
 
             if raw_annotations:
                 for raw_annotation in raw_annotations:
-                    raw_annotation['annotation_set_id'] = raw_annotation.pop('section')
-                    raw_annotation['label_set_id'] = raw_annotation.pop('section_label_id')
-                    _ = Annotation(document=self, id_=raw_annotation['id'], **raw_annotation)
+                    # remove the 'annotation_set' because we specify its id explicitly when creating the Annotation
+                    # conditions for backward compatibility
+                    if 'annotation_set' in raw_annotation:
+                        raw_annotation['annotation_set_id'] = raw_annotation.pop('annotation_set')
+                    else:
+                        raw_annotation['annotation_set_id'] = raw_annotation.pop('section')
+                    # same with the 'label_set_id'
+                    if 'label_set' in raw_annotation:
+                        raw_annotation['label_set_id'] = raw_annotation.pop('label_set')['id']
+                    else:
+                        raw_annotation['label_set_id'] = raw_annotation.pop('section_label_id')
+                    # same with 'document'
+                    raw_annotation.pop('document', None)
+                    if isinstance(raw_annotation['label'], int):
+                        label = self.project.get_label_by_id(id_=raw_annotation['label'])
+                    else:
+                        label = self.project.get_label_by_id(id_=raw_annotation['label']['id'])
+                    # same with 'label'
+                    raw_annotation.pop('label', None)
+                    # same with 'span'/'bboxes'
+                    if 'span' in raw_annotation:
+                        raw_spans = raw_annotation['span']
+                        raw_annotation.pop('span', None)
+                    else:
+                        raw_spans = raw_annotation['bboxes']
+                    spans = [
+                        Span(start_offset=span['start_offset'], end_offset=span['end_offset']) for span in raw_spans
+                    ]
+                    # same with 'annotation_set'
+                    if (
+                        raw_annotation['annotation_set_id']
+                        and not self.project.get_label_set_by_id(
+                            raw_annotation['label_set_id']
+                        ).has_multiple_annotation_sets
+                    ):
+                        raw_annotation.pop('annotation_set_id', None)
+                    _ = Annotation(document=self, id_=raw_annotation['id'], label=label, spans=spans, **raw_annotation)
                 self._update = False  # Make sure we don't repeat to load once loaded.
 
         if self._annotations is None:
@@ -3818,8 +3935,18 @@ class Document(Data):
                     raw_annotations = json.load(f)
 
                 if self.category == self.project.no_category:
+                    # conditions for backward compatibility
                     raw_annotations = [
-                        annotation for annotation in raw_annotations if annotation['label_text'] == 'NO_LABEL'
+                        annotation
+                        for annotation in raw_annotations
+                        if (
+                            ('label_text' in annotation.keys() and annotation['label_text'] == 'NO_LABEL')
+                            or (
+                                'label' in annotation.keys()
+                                and isinstance(annotation['label'], dict)
+                                and annotation['label']['name'] == 'NO_LABEL'
+                            )
+                        )
                     ]
 
                 if raw_annotations:
@@ -3947,6 +4074,8 @@ class Project(Data):
 
         # paths
         self.meta_file_path = os.path.join(self.project_folder, 'documents_meta.json5')
+        self.categories_and_label_data_file_path = os.path.join(self.project_folder, 'categories_and_label_data.json5')
+        # labels and label sets left for backwards compatibility
         self.labels_file_path = os.path.join(self.project_folder, 'labels.json5')
         self.label_sets_file_path = os.path.join(self.project_folder, 'label_sets.json5')
 
@@ -3961,6 +4090,10 @@ class Project(Data):
         self.no_label_set.name_clean = 'NO_LABEL_SET'
         self.no_label_set.name = 'NO_LABEL_SET'
         self.no_label = Label(project=self, id_=0, text='NO_LABEL', label_sets=[self.no_label_set])
+        if not self.no_category.label_sets:
+            self.no_category.add_label_set(self.no_label_set)
+        if not self.no_label_set.categories:
+            self.no_label_set.add_category(self.no_category)
         self.no_label.name_clean = 'NO_LABEL'
         self._regexes = None
 
@@ -4038,11 +4171,9 @@ class Project(Data):
 
     def write_project_files(self):
         """Overwrite files with Project, Label, Label Set information."""
-        data = get_project_details(project_id=self.id_, session=self.session)
-        with open(self.label_sets_file_path, 'w') as f:
-            json.dump(data['section_labels'], f, indent=2, sort_keys=True)
-        with open(self.labels_file_path, 'w') as f:
-            json.dump(data['labels'], f, indent=2, sort_keys=True)
+        categories_labels_label_sets = get_project_categories(project_id=self.id_, session=self.session)
+        with open(self.categories_and_label_data_file_path, 'w') as f:
+            json.dump(categories_labels_label_sets, f, indent=2, sort_keys=True)
 
         self.write_meta_of_files()
 
@@ -4065,12 +4196,19 @@ class Project(Data):
         pathlib.Path(self.regex_folder).mkdir(parents=True, exist_ok=True)
         pathlib.Path(self.model_folder).mkdir(parents=True, exist_ok=True)
 
+        # reload means re-add to the Project what is currently available in the Project's folder
+        # update means download information from server to keep up with the updates made online
         if self.id_ and (not is_file(self.meta_file_path, raise_exception=False) or update):
             self.write_project_files()
-        self.get_meta(reload=True)
+        # order of adding data into the project has changed after migration from v2 to v3 API - the endpoint used for
+        # fetching categories, labels and label sets returns them in a nested structure:
+        # Categories -> Label Sets -> Labels.
+        # order of methods is pertained for backward compatibility in case there is project information that is stored
+        # in an "old" way, with labels.json5 and label_sets.json5
         self.get_labels(reload=True)
         self.get_label_sets(reload=True)
-        self.get_categories()
+        self.get_categories(reload=True)
+        self.get_meta(reload=True)
         self.init_or_update_document(from_online=False)
         return self
 
@@ -4136,40 +4274,80 @@ class Project(Data):
             self.get_meta()
         return self._meta_data
 
-    def get_categories(self):
+    def get_categories(self, reload: bool = True):
         """Load Categories for all Label Sets in the Project."""
-        for label_set in self.label_sets:
-            if label_set.is_default:
-                # the _default_of_label_set_ids are the Label Sets used by the Category
-                pass
-            else:
-                # the _default_of_label_set_ids are the Categories the Label Set is used in
-                for label_set_id in label_set._default_of_label_set_ids:
-                    category = self.get_category_by_id(label_set_id)
-                    if category not in label_set.categories:
-                        label_set.add_category(category)  # The Label Set is linked to a Category it created
-                    if label_set not in category.label_sets:
-                        category.add_label_set(label_set)
 
-    def get_label_sets(self, reload=False):
-        """Get LabelSets in the Project."""
-        if not self._label_sets or reload:
+        # backward compatibility loading
+        if is_file(self.label_sets_file_path, raise_exception=False):
             with open(self.label_sets_file_path, 'r') as f:
                 label_sets_data = json.load(f)
 
-            self._label_sets = []  # clean up Label Sets to not create duplicates
             self.categories = []  # clean up Labels to not create duplicates
 
             # adding a NO_CATEGORY at this step because we need to preserve it after Project is updated
             if 'NO_CATEGORY' not in [category.name for category in self.categories]:
                 self.no_category = Category(project=self, id_=0, name_clean='NO_CATEGORY', name='NO_CATEGORY')
             for label_set_data in label_sets_data:
-                label_set = LabelSet(project=self, id_=label_set_data['id'], **label_set_data)
+                label_set = self.get_label_set_by_id(label_set_data['id'])
                 if label_set.is_default:
                     category = Category(project=self, id_=label_set_data['id'], **label_set_data)
                     category.label_sets.append(label_set)
                     label_set.categories.append(category)  # Konfuzio Server mixes the concepts, we use two instances
+            for label_set in self.label_sets:
+                if label_set.is_default:
+                    # the _default_of_label_set_ids are the Label Sets used by the Category
+                    pass
+                else:
+                    # the _default_of_label_set_ids are the Categories the Label Set is used in
+                    for label_set_id in label_set._default_of_label_set_ids:
+                        category = self.get_category_by_id(label_set_id)
+                        if category not in label_set.categories:
+                            label_set.add_category(category)  # The Label Set is linked to a Category it created
+                        if label_set.name not in [cur_label_set.name for cur_label_set in category.label_sets]:
+                            category.add_label_set(label_set)
 
+        if reload and (
+            not is_file(self.labels_file_path, raise_exception=False)
+            and not is_file(self.label_sets_file_path, raise_exception=False)
+        ):
+            self.categories = []
+
+            if 'NO_CATEGORY' not in [category.name for category in self.categories]:
+                self.no_category = Category(project=self, id_=0, name_clean='NO_CATEGORY', name='NO_CATEGORY')
+            with open(self.categories_and_label_data_file_path, 'r') as f:
+                categories_and_label_data = json.load(f)
+            for category in categories_and_label_data:
+                cur_category = Category(project=self, id_=category['id'], name=category['name'])
+                for label_data in category['schema']:
+                    cur_labels = label_data['labels']
+                    label_data.pop('labels', None)
+                    label_set = LabelSet(project=self, id_=label_data['id'], **label_data)
+                    for cur_label in cur_labels:
+                        if cur_label['name'] not in [label.name for label in self.labels]:
+                            _ = Label(project=self, id_=cur_label['id'], text=cur_label['name'], **cur_label)
+                        else:
+                            _ = self.get_label_by_id(cur_label['id'])
+                        label_set.labels.append(_)
+                        _.label_sets.append(label_set)
+                    if label_set.id_ == cur_category.id_:
+                        label_set.is_default = True
+                    cur_category.label_sets.append(label_set)
+                    label_set.categories.append(cur_category)
+
+    def get_label_sets(self, reload=False):
+        """Get LabelSets in the Project."""
+        if not self._label_sets or reload:
+            self._label_sets = []  # clean up Label Sets to not create duplicates
+            if is_file(self.label_sets_file_path, raise_exception=False):
+                with open(self.label_sets_file_path, 'r') as f:
+                    label_sets_data = json.load(f)
+                for label_set_data in label_sets_data:
+                    _ = LabelSet(project=self, id_=label_set_data['id'], **label_set_data)
+                    if _.name not in [label_set.name for label_set in self._label_sets]:
+                        self._label_sets.append(_)
+            else:
+                for cur_label_set in [label_set for category in self.categories for label_set in category.label_sets]:
+                    self._label_sets.append(cur_label_set)
         return self._label_sets
 
     @property
@@ -4179,17 +4357,26 @@ class Project(Data):
             self.get_label_sets()
         return self._label_sets
 
-    def get_labels(self, reload=False) -> Label:
+    def get_labels(self, reload=False) -> List[Label]:
         """Get ID and name of any Label in the Project."""
         if not self._labels or reload:
-            with open(self.labels_file_path, 'r') as f:
-                labels_data = json.load(f)
             self._labels = []  # clean up Labels to not create duplicates
-            for label_data in labels_data:
-                # Remove the Project from label_data
-                label_data.pop('project', None)
-                Label(project=self, id_=label_data['id'], **label_data)
-
+            if is_file(self.labels_file_path, raise_exception=False):
+                with open(self.labels_file_path, 'r') as f:
+                    labels_data = json.load(f)
+                for label_data in labels_data:
+                    # Remove the Project from label_data
+                    label_data.pop('project', None)
+                    Label(project=self, id_=label_data['id'], **label_data)
+            else:
+                for cur_label in [
+                    label
+                    for category in self.categories
+                    for label_set in category.label_sets
+                    for label in label_set.labels
+                ]:
+                    if cur_label not in self._labels:
+                        self._labels.append(cur_label)
         return self._labels
 
     @property
@@ -4224,20 +4411,49 @@ class Project(Data):
             if not new:
                 last_date = local_docs_dict[document_data['id']].updated_at
                 updated = dateutil.parser.isoparse(new_date) > last_date if last_date is not None else True
-
+            category_id = None
+            # backward compatibility
+            if 'category' in document_data.keys():
+                category_id = document_data['category']
+            elif 'category_template' in document_data.keys():
+                category_id = document_data['category_template']
+            doc_category = self.get_category_by_id(category_id) if category_id else self.no_category
+            document_data.pop('category', None)
+            # ensuring we store document status in a variable and don't pass it multiple times by not removing it from
+            # document_data
+            status = document_data['status_data']
+            document_data.pop('status_data', None)
             if updated:
                 doc = local_docs_dict[document_data['id']]
-                doc.update_meta_data(**document_data)
+                doc.update_meta_data(category=doc_category, status=status, **document_data)
                 doc.update()
                 logger.debug(f'{doc} was updated, we will download it again as soon you use it.')
                 n_updated_documents += 1
             elif new:
-                doc = Document(project=self, update=from_online, id_=document_data['id'], **document_data)
+                document_data.pop('project', None)
+                # ensuring we store dataset status in a variable and don't pass it multiple times by not removing it
+                # from document_data
+                if 'status' in document_data:
+                    status = document_data['status']
+                document_data.pop('status', None)
+                doc = Document(
+                    project=self,
+                    update=from_online,
+                    id_=document_data['id'],
+                    category=doc_category,
+                    status=status,
+                    **document_data,
+                )
                 logger.debug(f'{doc} is not available on your machine, we will download it as soon you use it.')
                 n_new_documents += 1
             else:
                 doc = local_docs_dict[document_data['id']]
-                doc.update_meta_data(**document_data)  # reset any Document level meta data changes
+                if 'status' in document_data:
+                    status = document_data['status']
+                document_data.pop('status', None)
+                doc.update_meta_data(
+                    category=doc_category, status=status, **document_data
+                )  # reset any Document level meta data changes
                 logger.debug(f'Unchanged local version of {doc} from {new_date}.')
                 n_unchanged_documents += 1
             # else:
@@ -4383,8 +4599,8 @@ class Project(Data):
         """
         "Export the Project data including Training, Test Documents and AI models.
 
-        :include_ais: Whether or not to include AI models in the export
-        :training_and_test_documents: Whether or not to include training & test documents in the export.
+        :include_ais: Whether to include AI models in the export
+        :training_and_test_documents: Whether to include training & test documents in the export.
         """
         if training_and_test_documents:
             try:
@@ -4404,3 +4620,41 @@ class Project(Data):
             except Exception as error:
                 print('[ERROR] Something went wrong while downloading AIs or AI metadata!')
                 raise error
+
+    def create_project_metadata_dict(self) -> Dict:
+        """
+        Create a dictionary that mimics the file categories_label_sets.json5 saved in the Project folder
+        for restoring Projects within Bento containers.
+        """
+        categories = {
+            'categories': [
+                {
+                    'api_name': category.name,
+                    'name': category.name,
+                    'id': category.id_,
+                    'project': self.id_,
+                    'schema': [
+                        {
+                            'api_name': label_set.name,
+                            'name': label_set.name,
+                            'has_multiple_annotation_sets': label_set.has_multiple_annotation_sets,
+                            'id': label_set.id_,
+                            'labels': [
+                                {
+                                    'api_name': label.name,
+                                    'name': label.name,
+                                    'data_type': label.data_type,
+                                    'has_multiple_top_candidates': label.has_multiple_top_candidates,
+                                    'id': label.id_,
+                                    'threshold': label.threshold,
+                                }
+                                for label in label_set.labels
+                            ],
+                        }
+                        for label_set in category.label_sets
+                    ],
+                }
+                for category in self.categories
+            ]
+        }
+        return categories

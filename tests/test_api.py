@@ -1,4 +1,5 @@
 """Validate API functions."""
+
 import datetime
 import json
 import logging
@@ -14,16 +15,20 @@ from konfuzio_sdk import BASE_DIR
 from konfuzio_sdk.api import (
     TimeoutHTTPAdapter,
     _get_auth_token,
+    change_document_annotation,
     create_label,
     create_new_project,
     delete_document_annotation,
     delete_file_konfuzio_api,
     download_file_konfuzio_api,
     get_all_project_ais,
+    get_document_annotations,
     get_document_details,
     get_meta_of_files,
     get_page_image,
     get_project_details,
+    get_project_label_sets,
+    get_project_labels,
     get_project_list,
     get_results_from_segmentation,
     init_env,
@@ -31,6 +36,8 @@ from konfuzio_sdk.api import (
     update_document_konfuzio_api,
     upload_file_konfuzio_api,
 )
+from konfuzio_sdk.data import Bbox, Project, Span
+from konfuzio_sdk.utils import get_spans_from_bbox
 from tests.variables import TEST_DOCUMENT_ID, TEST_PROJECT_ID
 
 FOLDER_ROOT = os.path.dirname(os.path.realpath(__file__))
@@ -42,15 +49,19 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
     def test_projects_details(self):
         """Test to get Document details."""
         data = get_project_list()
-        assert TEST_PROJECT_ID in [prj['id'] for prj in data]
-        assert data[0].keys() == {
+        assert TEST_PROJECT_ID in [prj['id'] for prj in data['results']]
+        assert set(data['results'][0]) == {
             'id',
             'name',
-            'labels',
-            'section_labels',
             'storage_name',
             'priority_processing',
             'ocr_method',
+            'auto_rotate_documents',
+            'category_ai_model_parameters',
+            'category_ai',
+            'decimal_separator',
+            'auto_delete_documents_after_days',
+            'enable_translated_strings',
         }
 
     def test_project_details(self):
@@ -59,124 +70,161 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         assert data.keys() == {
             'id',
             'name',
-            'labels',
-            'section_labels',
             'storage_name',
             'priority_processing',
             'ocr_method',
+            'auto_rotate_documents',
+            'category_ai_model_parameters',
+            'category_ai',
+            'decimal_separator',
+            'auto_delete_documents_after_days',
+            'enable_translated_strings',
         }
 
     def test_get_meta_of_files_multiple_pages(self):
         """Get the meta information of Document in a Project."""
-        get_meta_of_files(project_id=TEST_PROJECT_ID, limit=10)
+        get_meta_of_files(project_id=TEST_PROJECT_ID, pagination_limit=10)
 
     @patch('requests.post')
     def test_empty_project(self, function):
         """Get the meta information of Documents if the Project is empty."""
         function.return_value = {'count': 0, 'next': None, 'previous': None, 'results': []}
-        get_meta_of_files(project_id=TEST_PROJECT_ID, limit=10)
+        get_meta_of_files(project_id=TEST_PROJECT_ID, pagination_limit=10)
 
     def test_get_meta_of_files_one_page(self):
         """Get the meta information of Documents in a Project."""
-        get_meta_of_files(project_id=TEST_PROJECT_ID, limit=1000000000)
+        get_meta_of_files(project_id=TEST_PROJECT_ID, pagination_limit=1000000000)
+
+    def test_get_meta_of_files_limited(self):
+        """Get the meta information of a limited number of Documents."""
+        meta = get_meta_of_files(project_id=TEST_PROJECT_ID, limit=10)
+        assert len(meta) == 10
 
     def test_documents_list(self):
         """Test to get Documents details."""
         data = get_meta_of_files(project_id=TEST_PROJECT_ID)
-        assert data[0].keys() == {
+        assert set(data[0].keys()) == {
             'id',
-            'assignee',
-            'created_by',
+            'project',
+            'document_set',
             'number_of_pages',
-            'callback_url',
-            'callback_status_code',
-            'category_template',
-            'category_confidence',
-            'file_url',
             'data_file_name',
             'data_file_producer',
-            'data_file',
+            'file_url',
+            'thumbnail_url',
             'ocr_time',
+            'categorization_time',
             'extraction_time',
-            'workflow_start_time',
-            'workflow_end_time',
-            'dataset_status',
-            'status',
+            'processing_time',
+            'extraction_url',
+            'callback_url',
+            'callback_status_code',
+            'category_confidence',
+            'category_is_revised',
             'status_data',
+            'labeling_available',
+            'is_reviewed',
+            'category',
+            'dataset_status',
+            'assignee',
+            'created_by',
             'created_at',
             'updated_at',
+            'proposed_split',
+            'split_is_revised',
         }
 
     def test_document_details_document_not_available(self):
         """Test to get Document that does not exist."""
         with pytest.raises(HTTPError) as e:
-            get_document_details(document_id=0, project_id=0)
+            get_document_details(document_id=0)
         assert '404 Not Found' in str(e.value)
 
     def test_document_details_document_not_available_but_project_exists(self):
         """Test to get Document that does not exist."""
         with pytest.raises(HTTPError) as e:
-            get_document_details(document_id=99999999999999999999, project_id=TEST_PROJECT_ID)
+            get_document_details(document_id=99999999999999999999)
         assert '404 Not Found' in str(e.value)
 
     def test_document_details(self):
         """Test to get Document details."""
-        data = get_document_details(document_id=TEST_DOCUMENT_ID, project_id=TEST_PROJECT_ID)
-        assert data.keys() == {
+        data = get_document_details(document_id=TEST_DOCUMENT_ID)
+        assert set(data.keys()) == {
             'id',
+            'project',
+            'document_set',
             'number_of_pages',
+            'data_file_name',
+            'file_url',
+            'thumbnail_url',
+            'ocr_time',
+            'categorization_time',
+            'extraction_time',
+            'processing_time',
+            'extraction_url',
             'callback_url',
             'callback_status_code',
-            'file_url',
-            'data_file_name',
+            'category_confidence',
+            'category_is_revised',
+            'status_data',
+            'labeling_available',
+            'is_reviewed',
             'text',
-            # 'bbox',  removed from default to reduce loading time
             'data_file_producer',
-            'data_file',
-            'ocr_time',
-            'extraction_time',
-            'workflow_start_time',
-            'workflow_end_time',
-            'status',
-            'updated_at',
-            'annotations',
-            'sections',
+            'category',
+            'dataset_status',
             'pages',
-            'category_template',
-            'ai_model_runs',
+            'annotation_sets',
+            'assignee',
+            'created_by',
+            'created_at',
+            'updated_at',
+            'proposed_split',
+            'split_is_revised',
         }
 
     def test_long_document_details(self):
         """Test to get Document details."""
-        data = get_document_details(document_id=216836, project_id=TEST_PROJECT_ID)
-        assert data.keys() == {
+        data = get_document_details(document_id=216836)
+        assert set(data.keys()) == {
             'id',
+            'project',
+            'document_set',
             'number_of_pages',
+            'data_file_name',
+            'file_url',
+            'thumbnail_url',
+            'ocr_time',
+            'categorization_time',
+            'extraction_time',
+            'processing_time',
+            'extraction_url',
             'callback_url',
             'callback_status_code',
-            'file_url',
-            'data_file_name',
+            'category_confidence',
+            'category_is_revised',
+            'status_data',
+            'labeling_available',
+            'is_reviewed',
             'text',
-            # 'bbox',  removed from default to reduce loading time
             'data_file_producer',
-            'data_file',
-            'ocr_time',
-            'extraction_time',
-            'workflow_start_time',
-            'workflow_end_time',
-            'status',
-            'updated_at',
-            'annotations',
-            'sections',
+            'category',
+            'dataset_status',
             'pages',
-            'category_template',
-            'ai_model_runs',
+            'annotation_sets',
+            'assignee',
+            'created_by',
+            'created_at',
+            'updated_at',
+            'proposed_split',
+            'split_is_revised',
         }
 
     def test_get_list_of_files(self):
         """Get meta information from Documents in the Project."""
         sorted_documents = get_meta_of_files(project_id=TEST_PROJECT_ID)
         sorted_dataset_documents = [x for x in sorted_documents if x['dataset_status'] in [2, 3]]
+
         self.assertEqual(26 + 3, len(sorted_dataset_documents))
 
     def test_upload_file_konfuzio_api_1(self):
@@ -213,7 +261,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
     def test_get_annotations(self):
         """Download Annotations and the Text from API for a Document and check their offset alignment."""
-        annotations = get_document_details(TEST_DOCUMENT_ID, project_id=TEST_PROJECT_ID)['annotations']
+        annotations = get_document_annotations(TEST_DOCUMENT_ID)['results']
         self.assertEqual(len(annotations), 21)
 
     def test_post_document_annotation_multiline_as_bboxes(self):
@@ -225,23 +273,38 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             {'page_index': 0, 'x0': 198, 'x1': 300, 'y0': 508, 'y1': 517},
             {'page_index': 0, 'x0': 197.76, 'x1': 233, 'y0': 495, 'y1': 508},
         ]
-
+        document = Project(id_=TEST_PROJECT_ID, strict_data_validation=False).get_document_by_id(TEST_DOCUMENT_ID + 11)
+        document.update()
+        spans = get_spans_from_bbox(
+            selection_bbox=Bbox(
+                x0=bboxes[0]['x0'],
+                x1=bboxes[0]['x1'],
+                y0=bboxes[0]['y0'],
+                y1=bboxes[0]['y1'],
+                page=document.pages()[0],
+            )
+        ) + get_spans_from_bbox(
+            selection_bbox=Bbox(
+                x0=bboxes[1]['x0'],
+                x1=bboxes[1]['x1'],
+                y0=bboxes[1]['y0'],
+                y1=bboxes[1]['y1'],
+                page=document.pages()[0],
+            )
+        )
         response = post_document_annotation(
-            document_id=TEST_DOCUMENT_ID,
-            project_id=TEST_PROJECT_ID,
-            start_offset=24,
-            end_offset=1000,
-            confidence=None,
+            document_id=TEST_DOCUMENT_ID + 11,
+            confidence=0.01,
             label_id=label_id,
             label_set_id=label_set_id,
             revised=False,
             is_correct=True,
-            bboxes=bboxes,
+            spans=spans,
         )
 
         assert response.status_code == 201
         annotation = json.loads(response.text)
-        assert delete_document_annotation(TEST_DOCUMENT_ID, annotation['id'], project_id=TEST_PROJECT_ID)
+        assert delete_document_annotation(annotation['id'])
 
     @unittest.skip(reason='Not supported by Server: https://gitlab.com/konfuzio/objectives/-/issues/8663')
     def test_post_document_annotation_multiline_as_offsets(self):
@@ -269,42 +332,46 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
         assert response.status_code == 201
         annotation = json.loads(response.text)
-        assert delete_document_annotation(
-            document_id=TEST_DOCUMENT_ID, project_id=TEST_PROJECT_ID, annotation_id=annotation['id']
-        )
+        assert delete_document_annotation(annotation_id=annotation['id'])
 
-    @unittest.skip(reason='Server issue https://gitlab.com/konfuzio/objectives/-/issues/9284')
     def test_post_document_annotation(self):
         """Create an Annotation via API."""
-        start_offset = 60
-        end_offset = 63
         confidence = 0.0001
         label_id = 863  # Refers to Label Betrag (863)
         label_set_id = 64  # Refers to LabelSet Brutto-Bezug (allows multiple Annotation Sets)
         # create a revised annotation, so we can verify its existence via get_document_annotations
+        project = Project(id_=TEST_PROJECT_ID, update=True)
+        project.init_or_update_document(from_online=True)
+        document = project.get_document_by_id(TEST_DOCUMENT_ID)
+        document.update()
+        span = Span(document=document, start_offset=1002, end_offset=1010)
+        span.bbox()
         response = post_document_annotation(
             document_id=TEST_DOCUMENT_ID,
-            project_id=TEST_PROJECT_ID,
-            start_offset=start_offset,
-            end_offset=end_offset,
             confidence=confidence,
             label_id=label_id,
             label_set_id=label_set_id,
             revised=False,
             is_correct=False,
+            spans=[span],
         )
         annotation = json.loads(response.text)
         # check if the update has been received by the server
-        annotations = get_document_details(TEST_DOCUMENT_ID, project_id=TEST_PROJECT_ID)['annotations']
+        annotations = get_document_annotations(TEST_DOCUMENT_ID)['results']
         assert annotation['id'] in [annotation['id'] for annotation in annotations]
-        # delete the annotation, i.e. change it's status from feedback required to negative
-        negative_id = delete_document_annotation(TEST_DOCUMENT_ID, annotation['id'], project_id=TEST_PROJECT_ID)
+        # delete the annotation, i.e. change its status from feedback required to negative
+        negative_id = delete_document_annotation(annotation['id'])
         # delete it a second time to remove this Annotation from the feedback stored as negative
-        assert delete_document_annotation(TEST_DOCUMENT_ID, negative_id, project_id=TEST_PROJECT_ID)
+        assert delete_document_annotation(negative_id, delete_from_database=True).status_code == 204
+
+    def test_change_annotation(self):
+        """Test modifying an existing Annotation."""
+        r = change_document_annotation(annotation_id=4420022, label=860)
+        assert r.status_code == 200
 
     def test_get_project_labels(self):
         """Download Labels from API for a Project."""
-        label_ids = [label['id'] for label in get_project_details(project_id=TEST_PROJECT_ID)['labels']]
+        label_ids = [label['id'] for label in get_project_labels(project_id=TEST_PROJECT_ID)['results']]
         assert set(label_ids) == {
             858,
             859,
@@ -326,13 +393,18 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             12503,
         }
 
+    def test_get_project_label_sets(self):
+        """Test getting all Label Sets of a Project."""
+        label_set_ids = [label_set['id'] for label_set in get_project_label_sets(project_id=TEST_PROJECT_ID)['results']]
+        assert label_set_ids == [64, 3706, 3686, 3707]
+
     def test_download_office_file(self):
         """Test to download the original version of an Office file."""
         download_file_konfuzio_api(257244, ocr=False)
 
     def test_download_image(self):
-        """Test to download a image of a Page."""
-        assert isinstance(get_page_image(1989960), bytes)
+        """Test to download an image of a Page."""
+        assert isinstance(get_page_image(document_id=TEST_DOCUMENT_ID, page_number=1), bytes)
 
     def test_get_results_from_segmentation(self):
         """Download segmentation results."""
@@ -341,18 +413,14 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         assert {box['label'] for box in result[0]} == {'text', 'figure', 'table', 'title'}
 
     def test_update_document_konfuzio_api(self):
-        """Update the name and assignee of a document."""
+        """Update the name and assignee of a Document."""
         timestamp = str(datetime.datetime.now())
-        assignee = 1043
-        result = update_document_konfuzio_api(
-            document_id=214414, file_name=timestamp, dataset_status=0, assignee=assignee
-        )
+        result = update_document_konfuzio_api(document_id=214414, file_name=timestamp, dataset_status=0)
         assert result['data_file_name'] == timestamp
-        assert result['assignee'] == assignee
 
     def test_update_document_konfuzio_api_no_changes(self):
         """Update a document without providing information."""
-        data = get_document_details(document_id=214414, project_id=TEST_PROJECT_ID)
+        data = get_document_details(document_id=214414)
         file_name = data['data_file_name']
         result = update_document_konfuzio_api(document_id=214414)
         assert result['data_file_name'] == file_name
@@ -507,6 +575,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         mock_get_extraction_url,
         mock_session,
     ):
+        """Retrieve all AIs from a Project."""
         # Setup
         sample_data = {'AI_DATA': 'AI_SAMPLE_DATA'}
 
@@ -546,8 +615,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         mock_get_extraction_url,
         mock_session,
     ):
-        """Assert that despite of not having permissions, the function can still be called without exception"""
-
+        """Assert that despite not having permissions, the function can still be called without exception."""
         # Setup
         exception_message = '403 Client Error: Forbidden'
         sample_data = {'error': exception_message}  # direct string, not HTTPError

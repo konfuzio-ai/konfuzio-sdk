@@ -1,23 +1,34 @@
 """Define pydantic models for request and response from the Extraction AI."""
-from typing import List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel
+
+
+class ExtractRequest20240117Page(BaseModel):
+    """Describe a scheme for the Page class on 17/01/2024."""
+
+    number: int
+    image: Optional[bytes] = None
+    original_size: Tuple[float, float]
+    segmentation: Optional[list] = None
 
 
 class ExtractRequest20240117(BaseModel):
     """Describe a scheme for the extraction request on 17/01/2024."""
 
+    class Bbox(BaseModel):
+        """Describe a scheme for the Bbox class on 17/01/2024."""
+
+        x0: float
+        x1: float
+        y0: float
+        y1: float
+        page_number: int
+        text: Optional[str]
+
     text: str
-    bboxes: Optional[dict]
-
-    class Page(BaseModel):
-        """Describe a scheme for the Page class on 17/01/2024."""
-
-        number: int
-        image: Optional[bytes]
-        original_size: Tuple[float, float]
-
-    pages: Optional[List[Page]]
+    bboxes: Optional[Dict[int, Bbox]]
+    pages: Optional[List[ExtractRequest20240117Page]]
 
 
 class ExtractResponse20240117(BaseModel):
@@ -56,7 +67,7 @@ class ExtractResponse20240117(BaseModel):
             normalized: Union[str, int, None]
             label: Label
             annotation_set: int
-            confidence: Union[int, float]
+            confidence: float
             span: List[Span]
 
         label_set_id: int

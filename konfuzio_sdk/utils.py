@@ -527,6 +527,7 @@ def merge_bboxes(bboxes: list):
     :return: Merged bounding box.
     """
     warn('Method needs testing and revision. Please create a Ticket if you use it.', DeprecationWarning, stacklevel=2)
+    # the issue is there: https://git.konfuzio.com/konfuzio/objectives/-/issues/9333
     merge_bbox = {
         'x0': min([b['x0'] for b in bboxes]),
         'x1': max([b['x1'] for b in bboxes]),
@@ -570,16 +571,20 @@ def get_bbox(bbox, start_offset: int, end_offset: int) -> Dict:
     pdf_page_index = None
     line_indexes = []  # todo create one bounding box per line.
 
-    # combine all of the found character bboxes and calculate their combined x0, x1, etc. values
+    # combine all the found character bboxes and calculate their combined x0, x1, etc. values
     for char_bbox_id in char_bbox_ids:
+        # conditions for backward compatibility
         x0 = min(bbox[char_bbox_id]['x0'], x0)
-        top = min(bbox[char_bbox_id]['top'], top)
+        if 'top' in bbox[char_bbox_id].keys():
+            top = min(bbox[char_bbox_id]['top'], top)
         y0 = min(bbox[char_bbox_id]['y0'], y0)
 
         x1 = max(bbox[char_bbox_id]['x1'], x1)
-        bottom = max(bbox[char_bbox_id]['bottom'], bottom)
+        if 'bottom' in bbox[char_bbox_id].keys():
+            bottom = max(bbox[char_bbox_id]['bottom'], bottom)
         y1 = max(bbox[char_bbox_id]['y1'], y1)
-        line_indexes.append(bbox[char_bbox_id]['page_number'])
+        if 'page_number' in bbox[char_bbox_id]:
+            line_indexes.append(bbox[char_bbox_id]['page_number'])
 
         if pdf_page_index is not None:
             try:
@@ -590,7 +595,8 @@ def get_bbox(bbox, start_offset: int, end_offset: int) -> Dict:
                     'on the first page of the match.'
                 )
                 break
-        pdf_page_index = bbox[char_bbox_id]['page_number'] - 1
+        if 'page_number' in bbox[char_bbox_id]:
+            pdf_page_index = bbox[char_bbox_id]['page_number'] - 1
 
     res = {'bottom': bottom, 'page_index': pdf_page_index, 'top': top, 'x0': x0, 'x1': x1, 'y0': y0, 'y1': y1}
     if len(set(line_indexes)) == 1:
@@ -883,22 +889,25 @@ def get_spans_from_bbox(selection_bbox: 'Bbox') -> List['Span']:
     ]
     selected_bboxes = sorted(selected_bboxes, key=lambda x: x['char_index'])
 
-    # iterate over each line_number (or bottom, depending on group_by) and all of the character
+    # iterate over each line_number (or bottom, depending on group_by) and all the character
     # bboxes that have the same line_number (or bottom)
     spans = []
-    for _, line_char_bboxes in itertools.groupby(selected_bboxes, lambda x: x['line_number']):
-        # remove space chars from the line selection so they don't interfere with the merging of bboxes
-        # (a bbox should never start with a space char)
-        trimmed_line_char_bboxes = [char for char in line_char_bboxes if not char['text'].isspace()]
+    if selected_bboxes:
+        # condition for backward compatibility
+        line_key = 'line_index' if 'line_index' in selected_bboxes[0].keys() else 'line_number'
+        for _, line_char_bboxes in itertools.groupby(selected_bboxes, lambda x: x[line_key]):
+            # remove space chars from the line selection, so they don't interfere with the merging of bboxes
+            # (a bbox should never start with a space char)
+            trimmed_line_char_bboxes = [char for char in line_char_bboxes if not char['text'].isspace()]
 
-        if len(trimmed_line_char_bboxes) == 0:
-            continue
+            if len(trimmed_line_char_bboxes) == 0:
+                continue
 
-        # combine all of the found character bboxes on a given line and calculate their combined x0, x1, etc. values
-        start_offset = min(char_bbox['char_index'] for char_bbox in trimmed_line_char_bboxes)
-        end_offset = max(char_bbox['char_index'] for char_bbox in trimmed_line_char_bboxes)
-        span = Span(start_offset=start_offset, end_offset=end_offset + 1, document=selection_bbox.page.document)
-        spans.append(span)
+            # combine all the found character bboxes on a given line and calculate their combined x0, x1, etc. values
+            start_offset = min(char_bbox['char_index'] for char_bbox in trimmed_line_char_bboxes)
+            end_offset = max(char_bbox['char_index'] for char_bbox in trimmed_line_char_bboxes)
+            span = Span(start_offset=start_offset, end_offset=end_offset + 1, document=selection_bbox.page.document)
+            spans.append(span)
 
     return spans
 

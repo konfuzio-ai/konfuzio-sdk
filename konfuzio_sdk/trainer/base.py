@@ -46,6 +46,11 @@ class BaseModel(metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
+    def pkl_name(self):
+        """Generate a unique extension-less name for a resulting pickle file."""
+
+    @property
+    @abc.abstractmethod
     def temp_pkl_file_path(self):
         """Generate a path for temporary pickle file."""
 
@@ -185,9 +190,11 @@ class BaseModel(metaclass=abc.ABCMeta):
         Finally, we delete the cloudpickle file and are left with the compressed pickle file which has a .pkl.lz4 or
         .pkl.bz2 extension.
 
+        For more info on pickle serialization and including dependencies read
+        https://github.com/cloudpipe/cloudpickle#overriding-pickles-serialization-mechanism-for-importable-constructs
+
         :param output_dir: Folder to save AI model in. If None, the default Project folder is used.
-        :param include_konfuzio: Enables pickle serialization as a value, not as a reference (for more info, read
-        https://github.com/cloudpipe/cloudpickle#overriding-pickles-serialization-mechanism-for-importable-constructs).
+        :param include_konfuzio: Enables pickle serialization as a value, not as a reference.
         :param reduce_weight: Remove all non-strictly necessary parameters before saving.
         :param compression: Compression algorithm to use. Default is lz4, bz2 is also supported.
         :param max_ram: Specify maximum memory usage condition to save model.
@@ -307,8 +314,11 @@ class BaseModel(metaclass=abc.ABCMeta):
         if output_dir and not build:
             raise ValueError('Cannot specify output_dir without build=True')
 
+        # cache the pickle name to avoid changing it during the save process (as it includes timestamps)
+        self._pkl_name = self.pkl_name
+
         saved_model = bentoml.picklable_model.save_model(
-            name=self.name_lower(), model=self, signatures=self.entrypoint_methods, metadata=self.bento_metadata
+            name=self._pkl_name, model=self, signatures=self.entrypoint_methods, metadata=self.bento_metadata
         )
         logger.info(f'Model saved in the local BentoML store: {saved_model}')
 

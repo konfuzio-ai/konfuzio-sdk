@@ -309,17 +309,79 @@ class TestTextualFileSplittingModel(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Initialize the tested class."""
+        # setting up project documents and model
         cls.project = Project(id_=TEST_SPLITTING_AI_PROJECT_ID)
         cls.file_splitting_model = TextualFileSplittingModel(categories=cls.project.categories)
         if not TEST_WITH_FULL_DATASET:
             cls.file_splitting_model.documents = cls.file_splitting_model.categories[0].documents()
             cls.file_splitting_model.test_documents = cls.file_splitting_model.categories[0].test_documents()
         cls.test_document = cls.file_splitting_model.test_documents[-1]
+        # starting MLflow server
+        cls.mlflow_process, cls.mlflow_host, cls.mlflow_port, cls.mlflow_url = cls.start_mlflow_server()
 
-    def test_model_training(self):
-        """Test model's fit() method."""
-        self.file_splitting_model.fit(device=DEVICE)
-        assert self.file_splitting_model.model
+    @classmethod
+    def start_mlflow_server(cls):
+        import logging
+        import random
+        import subprocess
+        import sys
+        import time
+
+        logger = logging.getLogger(__name__)
+
+        mlflow_host = '127.0.0.1'
+        mlflow_port = random.randint(5000, 9000)
+        mlflow_url = f'http://{mlflow_host}:{mlflow_port}'
+        logger.info(f'Starting MLflow server under {mlflow_url}...')
+        mlflow_process = subprocess.Popen(
+            [sys.executable, '-m', 'mlflow', 'server', '--host', mlflow_host, '--port', str(mlflow_port)],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        time.sleep(5)
+        return mlflow_process, mlflow_host, mlflow_port, mlflow_url
+
+    def test_model_training_without_mlflow(self):
+        """Test model's fit() method without Mlflow arguments."""
+
+        self.file_splitting_model.fit(device=DEVICE, epochs=3, eval_batch_size=1, train_batch_size=1)
+        assert self.file_splitting_model.model is not None
+        assert self.file_splitting_model.use_mlflow is False
+
+    def test_model_training_with_mlflow(self):
+        """Test model's fit() method with Mlflow arguments."""
+        from mlflow import MlflowClient
+
+        # creating mlflow client
+        mlflow_client = MlflowClient(self.mlflow_url)
+        # if experiment with experiment_name does not exist, create it
+        if not mlflow_client.get_experiment_by_name('test_experiment'):
+            _ = mlflow_client.create_experiment('test_experiment')
+        # training the model
+        self.file_splitting_model.fit(
+            device=DEVICE,
+            epochs=3,
+            eval_batch_size=1,
+            train_batch_size=1,
+            experiment_name='test_experiment',
+            tracking_uri=self.mlflow_url,
+        )
+        assert self.file_splitting_model.model is not None
+        assert self.file_splitting_model.use_mlflow is True
+        # checking if the experiment was created
+        try:
+            experiment = mlflow_client.get_experiment_by_name('test_experiment')
+            assert experiment.name == 'test_experiment'
+        except Exception as e:
+            assert False, f'Experiment not created: {e}'
+        # checking if the run was created
+        try:
+            expected_run_id = self.file_splitting_model.mlflow_run_id
+            run = mlflow_client.get_run(expected_run_id)
+            assert run.info.run_id == expected_run_id
+            assert 'splitting_run' in run.info.run_name
+        except Exception as e:
+            assert False, f'Run not created: {e}'
 
     def test_run_page_prediction(self):
         """Test model's prediction."""
@@ -376,6 +438,25 @@ class TestTextualFileSplittingModel(unittest.TestCase):
         assert splitting_ai.full_evaluation.precision() == 1.0
         assert splitting_ai.full_evaluation.recall() == 1.0
         assert splitting_ai.full_evaluation.f1() == 1.0
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        """Terminate MLflow server."""
+        import psutil
+
+        # get the parent process of the MLflow server and it's children processes
+        parent = psutil.Process(cls.mlflow_process.pid)
+        children = parent.children(recursive=True)
+        # terminate the children processes
+        for child in children:
+            child.terminate()
+        # wait for the children processes to terminate
+        _, __ = psutil.wait_procs(children, timeout=5)
+        # terminate the parent process if it's still alive
+        if parent.is_running():
+            parent.terminate()
+        # wait for the parent process to terminate
+        parent.wait(5)
 
 
 @pytest.mark.skipif(
