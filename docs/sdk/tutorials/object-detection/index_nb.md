@@ -599,6 +599,13 @@ plot_results(sample_img, score, checked, bboxes, "Example of checkbox detection"
 
 ![Example of checkbox detection - 2](checkbox_example_computer_filled.png)
 
+### Use Case 🔥
+
+Now that we have a trained object detection model, which is capable of detecting checkboxes, let's briefly discuss the usecase in form Documents. \
+The information that matters is not just the checkbox and if it is checked or unchecked, but also the related information. The related information (Annotations in blue) can be detected with the default Extraction AI of Konfuzio and then be mapped to its according checkbox by a refined overall distance calculation and the Hungarian algorithm (pink line).
+
+![Example of use case - 1](checkbox_example_use_case.png)
+
 
 ### Conclusion 💭
 In this tutorial, we have trained, optimized and tested the object detection model YOLO-NAS on a coco dataset. Below is the full code to accomplish this task:
