@@ -81,13 +81,14 @@ Then, create a new Document from each PDF in the list of paths `file_paths`:
 
 ```python
 for document_path in file_paths:
-    _ = Document.from_file(document_path, project=project, sync=False)
+    _ = Document.from_file(document_path, project=project, sync=True)
     print(f'Document {_.id_} successfully created.')
 ```
 ```python tags=["remove-cell"]
 project = Project(id_=TEST_PROJECT_ID, update=True)
-for document in project._documents[-len(file_paths):]:
-    document.delete(delete_online=True)
+for document in project._documents:
+    if document.name == 'pdf.pdf':
+        document.delete(delete_online=True)
 ```
 The `Document.from_file` method uploads a new Document to the Konfuzio server. The [documentation](https://dev.konfuzio.com/sdk/sourcecode.html#document) provides an overview of the returned values and optional paramenters for this method.
 
