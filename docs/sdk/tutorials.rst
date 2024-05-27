@@ -146,3 +146,4 @@ Dive into these tutorials and elevate your Document processing capabilities. Whe
    tutorials/outlier-annotations/index
    tutorials/regex_based_annotations/index
    tutorials/async_upload_with_callback/index
+   tutorials/object-detection/index

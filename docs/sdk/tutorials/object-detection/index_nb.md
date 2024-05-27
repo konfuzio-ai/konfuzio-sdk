@@ -21,7 +21,7 @@ jupyter:
 - General understanding of object detection and training of neural networks.
 - A COCO formatted object detection dataset.
 
-**Difficulty:** Medium
+**Difficulty:** Hard
 
 **Goal:** Train, test and optimize an object detection model for a production use case based on a COCO formatted dataset.
 
@@ -42,7 +42,7 @@ The focus here is on Document structures but you can use the code to train on a 
 
 ### Overview 🌐
 
-We will use the state of the art object detection model [YOLO-NAS](https://konfuzio.com/de/yolo-nas-object-detection-model/). \
+We will use the state of the art object detection model [YOLO-NAS](https://konfuzio.com/en/yolo-nas-object-detection-model/). \
 It was developed to incorporate high speed and accuracy, which makes it a very good fit for production use cases. For the training of the model we will use the [`super-gradients`](https://github.com/Deci-AI/super-gradients) library, which is provided by the creators of YOLO-NAS. 😎
 
 The use case for which we train the model is checkbox detection in form Documents. ☑ \
@@ -102,7 +102,7 @@ from onnxruntime import InferenceSession
 
 ### Hyperparameter setting ⚙
 
-First we define an experiment name for the current selection of hyperparameters. This will ensure that once we iterate on different hyperparameters, that the experiments are getting saved into separate directories based on their time stamp.
+First we define an experiment name for the current selection of hyperparameters. This will ensure that once we iterate on different hyperparameters, the experiments are getting saved into separate directories based on their time stamp.
 
 
 ```python 
@@ -111,8 +111,29 @@ t = datetime.datetime.now()
 EXPERIEMENT_NAME = f"{t.year}-{t.month}-{t.day}-{t.hour}-{t.minute}-checkbox-detector"
 ```
 
-We define a set of hyperparameters for the model, the training and the data. You can change them and run multiple training runs and see what works best for you. For that, it is recommended to use some model tracking tool like [wandb](https://wandb.ai/site) or [mlflow](https://mlflow.org/).
-The usual input size `SIZE` for the model is `640`, which works for normally sized objects just fine. We use `1280` as input size for the detection of really small checkboxes, feel free to change it back.
+We define a set of hyperparameters for the model, the training and the data. You can change them and run multiple training runs and see what works best for you. For that, it is recommended to use some train tracking tool like [wandb](https://wandb.ai/site) or [mlflow](https://mlflow.org/).
+
+Here is a quick break down of the parameters and why we use them.
+
+
+| Name                             | Value        | Description & Purpose                                                                                                                                                                                                                                                                                                                                                                              |     |
+| -------------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --- |
+| MODEL_NAME                       | "YOLO_NAS_S" | Model architecture variant. You can choose between `YOLO_NAS_S`, `YOLO_NAS_M` and `YOLO_NAS_L`. The model architecture differs by its "size", S is the **s**mallest while L is the **l**argest version to choose. The choice will effect the latency and performance of the model. [See here](https://docs.deci.ai/super-gradients/latest/YOLONAS.html) for and overview on. |     |
+| SIZE                             | 1280         | Image input size of the model (`SIZE`x`SIZE`). The usual input size `SIZE` for the model is `640`, which works for normally sized objects just fine. We use `1280` as input size for the detection of really small checkboxes, feel free to change it back.                                                                                                                          |     |
+| WARMUP_INITIAL_LR                | 5e-4         | Learning rate which the training  starts with.                                                                                                                                                                                                                                                                                                                                       |     |
+| INITIAL_LR                       | 1e-3         | Learning rate after `LR_WARMUP_EPOCHS`                                                                                                                                                                                                                                                                                                                                               |     |
+| COSINE_FINAL_LR_RATIO            | 0.01         | Ratio of the learning rate at end of training with respect to the initial learning rate.                                                                                                                                                                                                                                                                                             |     |
+| ZERO_WEIGHT_DECAY_ON_BIAS_AND_BN | True         | Sets weight decay on bias and batch norm to zero.                                                                                                                                                                                                                                                                                                                                    |     |
+| LR_WARMUP_EPOCHS                 | 1            | Number of warm-up epochs.                                                                                                                                                                                                                                                                                                                                                            |     |
+| OPTIMIZER_WEIGHT_DECAY           | 1e-4         | Weight decay of the optimizer.                                                                                                                                                                                                                                                                                                                                                       |     |
+| EMA                              | True         | Use [Exponential Moving Average (EMA)](https://docs.deci.ai/super-gradients/latest/documentation/source/EMA.html).                                                                                                                                                                                                                                                                   |     |
+| EMA_DECAY                        | 0.9999       | Decay for EMA.                                                                                                                                                                                                                                                                                                                                                                       |     |
+| MAX_EPOCHS                       | 20           | Number of training epochs.                                                                                                                                                                                                                                                                                                                                                           |     |
+| BATCH_SIZE_TRAIN                 | 2            | Batch size used for training.                                                                                                                                                                                                                                                                                                                                                        |     |
+| BATCH_SIZE_TEST                  | 6            | Batch size used for validation.                                                                                                                                                                                                                                                                                                                                                      |     |
+| MIXED_PRECISION                  | True         | Use [Automatic Mixed Precision (AMP)](https://docs.deci.ai/super-gradients/latest/documentation/source/average_mixed_precision.html) for improved training.                                                                                                                                                
+| IGNORE_EMPTY_ANNOTATIONS         | True         | If there are train samples without any annotations, they are not used for training.
+
 
 ```python
 # Model params
@@ -139,7 +160,7 @@ IGNORE_EMPTY_ANNOTATIONS = True
 
 ### Dataset and dataloader 🔃
 
-We need to define on which data the model should be trained on. For this tutorial to work, the dataset needs to be formatted in the widely used [COCO format](https://cocodataset.org/#format-data).
+We need to define which data the model should be trained on. For this tutorial to work, the dataset needs to be formatted in the widely used [COCO format](https://cocodataset.org/#format-data).
 Once you have your data ready, you need to adapt the following lines, so that the path to your dataset is defined correctly.
 
 ```python
@@ -154,7 +175,7 @@ TEST_FOLDER = "dataset"
 TEST_ANNOTATION_FILE = "val.json"
 ```
 
-Then lets convert the provided information into paths for the dataloader and check if everything is correct.
+Then let's convert the provided information into paths for the dataloader and check if everything is correct.
 
 ```python
 # train path
@@ -178,7 +199,7 @@ assert test_ann_path.exists(), f"Train annotation path {test_ann_path} does not 
 
 After we have the data and the path definition, we instantiate the dataset. Most important to point out here are the transforms, which contain image transformation and augmentations of the images before they are passed to the model.
 We **recommend not to change** the `DetectionPaddedRescale`, `DetectionStandardize`, `DetectionTargetsFormatTransform` transforms, because the later implementation of the exported model depends on them. \
-However you can of cause adapt and change the augmentation transforms  `DetectionMosaic`, `DetectionRandomAffine`, `DetectionHSV`, `DetectionHorizontalFlip`, `DetectionVerticalFlip`, according to your use case. The chosen augmentations here are meant to work for the task of object detection for Document structures, specifically checkboxes.
+However you can of course adapt and change the augmentation transforms  `DetectionMosaic`, `DetectionRandomAffine`, `DetectionHSV`, `DetectionHorizontalFlip`, `DetectionVerticalFlip`, according to your use case. The chosen augmentations here are meant to work for the task of object detection for Document structures, specifically checkboxes.
 
 ```python tags=["remove-output"]
 # train dataset
@@ -391,7 +412,7 @@ dummy_input = torch.randn(
 input_names = ["input"]
 output_names = ["output"]
 
-# export the model to onnx format
+# export the model to ONNX format
 torch.onnx.export(
     yolo_model,
     dummy_input,
@@ -402,7 +423,7 @@ torch.onnx.export(
 )
 assert Path(EXPORT_NAME).exists(), "\nModel export was not successful.\n"
 
-# check the onnx model
+# check the ONNX model
 model_onnx = onnx.load(EXPORT_NAME)
 onnx.checker.check_model(model_onnx)
 
@@ -411,7 +432,7 @@ print("\nModel exported to ONNX format.\n")
 
 ### Load and test 🏁
 
-To use the model in the onnx format without `super-gradients` we need to define the pre-processing, especially the transforms used during training, the model session and the post-processing like thresholding and non-maximum-suppression ourselves. This is not needed for testing and experimenting with the model but comes in handy for using the model in production, due to less dependencies, more control as well as optimization in model size and runtime.
+To use the model in the ONNX format without `super-gradients` we need to define the pre-processing, especially the transforms used during training, the model session and the post-processing like [thresholding](https://data-intelligence.hashnode.dev/threshold-function-explained) and [non-maximum-suppression](https://learnopencv.com/non-maximum-suppression-theory-and-implementation-in-pytorch/) ourselves. This is not needed for testing and experimenting with the model but comes in handy for using the model in production, due to less dependencies, more control as well as optimization in model size and runtime.
 
 ```python
 class Detector:
@@ -532,7 +553,7 @@ class Detector:
         return cls_conf, bboxes
 ```
 
-Now we can instantiate a new model/detector based on the above class and the saved onnx model. 🤖
+Now we can instantiate a new model/detector based on the above class and the saved ONNX model. 🤖
 
 ```python
 # instantiate detector
@@ -602,13 +623,13 @@ plot_results(sample_img, score, checked, bboxes, "Example of checkbox detection"
 ### Use Case 🔥
 
 Now that we have a trained object detection model, which is capable of detecting checkboxes, let's briefly discuss the usecase in form Documents. \
-The information that matters is not just the checkbox and if it is checked or unchecked, but also the related information. The related information (Annotations in blue) can be detected with the default Extraction AI of Konfuzio and then be mapped to its according checkbox by a refined overall distance calculation and the Hungarian algorithm (pink line).
+The information that matters is not just the checkbox and if it is checked or unchecked, but also the related information. The related information (Annotations in blue) can be detected with the default Extraction AI of Konfuzio and then be mapped to its according checkbox by a refined overall distance calculation and the [Hungarian algorithm](https://medium.com/@riya.tendulkar/the-assignment-problem-using-hungarian-algorithm-4f105729af18) (pink line).
 
 ![Example of use case - 1](checkbox_example_use_case.png)
 
 
 ### Conclusion 💭
-In this tutorial, we have trained, optimized and tested the object detection model YOLO-NAS on a coco dataset. Below is the full code to accomplish this task:
+In this tutorial, we have trained, optimized and tested the object detection model YOLO-NAS on a COCO dataset. Below is the full code to accomplish this task:
 
 
 **Dependency installation**
@@ -830,7 +851,7 @@ dummy_input = torch.randn(
 input_names = ["input"]
 output_names = ["output"]
 
-# export the model to onnx format
+# export the model to ONNX format
 torch.onnx.export(
     yolo_model,
     dummy_input,
@@ -841,7 +862,7 @@ torch.onnx.export(
 )
 assert Path(EXPORT_NAME).exists(), "\nModel export was not successful.\n"
 
-# check the onnx model
+# check the ONNX model
 model_onnx = onnx.load(EXPORT_NAME)
 onnx.checker.check_model(model_onnx)
 
