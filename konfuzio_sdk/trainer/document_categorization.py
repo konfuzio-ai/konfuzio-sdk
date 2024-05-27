@@ -1298,8 +1298,10 @@ class CategorizationAI(AbstractCategorizationAI):
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=0, factor=lr_decay)
         temp_dir = tempfile.gettempdir()
         temp_filename = os.path.join(temp_dir, f'temp_{uuid.uuid4().hex}.pt')
-        f1_metric = load_metric('f1')
-        acc_metric = load_metric('accuracy')
+        # defining transformers cache location to load the metrics
+        transformers_cache_location = os.getenv('TRANSFORMERS_CACHE')
+        f1_metric = load_metric('f1', path=transformers_cache_location)
+        acc_metric = load_metric('accuracy', path=transformers_cache_location)
         logger.info('Begin fitting')
         best_valid_loss = float('inf')
         train_loss = float('inf')
