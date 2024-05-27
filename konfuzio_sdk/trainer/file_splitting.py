@@ -796,7 +796,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         globals()['torch'] = None
         globals()['tf'] = None
         globals()['transformers'] = None
-        globals()['evaluate'] = None
+        globals()['load_metric'] = None
         globals()['datasets'] = None
         globals()['Trainer'] = None
         globals()['BalancedLossTrainer'] = None
@@ -806,7 +806,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         del globals()['torch']
         del globals()['tf']
         del globals()['transformers']
-        del globals()['evaluate']
+        del globals()['load_metric']
         del globals()['datasets']
         del globals()['Trainer']
         del globals()['BalancedLossTrainer']
@@ -821,14 +821,14 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         This is needed for proper functioning of a loaded model because we have previously removed these dependencies
         upon saving the model.
         """
-        from konfuzio_sdk.extras import Trainer, datasets, evaluate, mlflow, tensorflow as tf, torch, transformers
-        from konfuzio_sdk.trainer.utils import BalancedLossTrainer, LoggerCallback
+        from konfuzio_sdk.extras import Trainer, datasets, mlflow, tensorflow as tf, torch, transformers
+        from konfuzio_sdk.trainer.utils import BalancedLossTrainer, LoggerCallback, load_metric
 
         globals()['torch'] = torch
         globals()['tf'] = tf
         globals()['transformers'] = transformers
         globals()['datasets'] = datasets
-        globals()['evalute'] = evaluate
+        globals()['load_metric'] = load_metric
         globals()['Trainer'] = Trainer
         globals()['BalancedLossTrainer'] = BalancedLossTrainer
         globals()['LoggerCallback'] = LoggerCallback

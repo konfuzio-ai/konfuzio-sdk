@@ -86,7 +86,7 @@ class BalancedLossTrainer(Trainer):
 
 def load_metric(metric_name: str, path: str):
     """
-    Private method to load a metric from the HuggingFace Cache.
+    Utility function to load a metric from the HuggingFace Cache.
     If the metric is not to be found in the cache, it will be downloaded from the HuggingFace Hub.
 
     :param metric_name: The name of the metric to be loaded.
