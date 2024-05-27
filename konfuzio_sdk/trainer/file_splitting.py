@@ -15,7 +15,7 @@ from konfuzio_sdk.data import Category, Document, Page
 from konfuzio_sdk.evaluate import FileSplittingEvaluation
 from konfuzio_sdk.extras import datasets, mlflow, tensorflow as tf, torch, transformers
 from konfuzio_sdk.trainer.information_extraction import BaseModel
-from konfuzio_sdk.trainer.utils import BalancedLossTrainer, LoggerCallback
+from konfuzio_sdk.trainer.utils import BalancedLossTrainer, LoggerCallback, load_metric
 from konfuzio_sdk.utils import get_timestamp
 
 logger = logging.getLogger(__name__)
@@ -632,7 +632,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         # move model to device
         self.model.to(device)
         # defining metric
-        metric = self.load_metric(metric_name='f1', path=transformers_cache_location)
+        metric = load_metric(metric_name='f1', path=transformers_cache_location)
 
         # functions to be used by transformers.trainer
         def tokenize_function(examples):
