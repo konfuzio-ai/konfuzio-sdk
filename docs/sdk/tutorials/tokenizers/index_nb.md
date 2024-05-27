@@ -280,7 +280,10 @@ tokenized_doc.get_page_by_index(0).get_annotations_image(display_all=True)
 ```
 
 ```python tags=["remove-cell"]
-sample_doc.delete(delete_online=True)
+my_project = Project(id_=TEST_PROJECT_ID, update=True)
+for document in my_project._documents:
+    if document.name == 'sample.pdf':
+        document.delete(delete_online=True)
 ```
 
 Note that this example uses a PDF file named 'sample.pdf', you can download this file <a href="sample.pdf">here</a> in case you wish to try running this code.
