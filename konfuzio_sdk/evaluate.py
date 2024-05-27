@@ -82,7 +82,14 @@ def grouped(group, target: str):
 
 
 def compare(
-    doc_a, doc_b, only_use_correct=False, use_view_annotations=False, ignore_below_threshold=False, strict=True
+    doc_a,
+    doc_b,
+    only_use_correct=False,
+    use_view_annotations=False,
+    ignore_below_threshold=False,
+    strict=True,
+    use_custom_threshold=False,
+    custom_threshold=None,
 ) -> pandas.DataFrame:
     """Compare the Annotations of two potentially empty Documents wrt. to **all** Annotations.
 
@@ -117,7 +124,13 @@ def compare(
         spans['start_offset_predicted'] = spans['start_offset']  # start and end offset are identical
         spans['end_offset_predicted'] = spans['end_offset']  # start and end offset are identical
 
-        spans['above_predicted_threshold'] = spans['confidence_predicted'] >= spans['label_threshold_predicted']
+        if use_custom_threshold:
+            if custom_threshold:
+                spans['above_predicted_threshold'] = spans['confidence_predicted'] >= custom_threshold
+            else:
+                raise ValueError('Not specified custom_threshold. Set custom_threshold to a non-zero value.')
+        else:
+            spans['above_predicted_threshold'] = spans['confidence_predicted'] >= spans['label_threshold_predicted']
 
         spans['is_correct_label'] = spans['label_id'] == spans['label_id_predicted']
         spans['is_correct_label_set'] = spans['label_set_id'] == spans['label_set_id_predicted']
@@ -137,7 +150,13 @@ def compare(
         spans['is_matched'] = (spans['start_offset_predicted'] <= spans['end_offset']) & (
             spans['end_offset_predicted'] >= spans['start_offset']
         )
-        spans['above_predicted_threshold'] = spans['confidence_predicted'] >= spans['label_threshold_predicted']
+        if use_custom_threshold:
+            if custom_threshold:
+                spans['above_predicted_threshold'] = spans['confidence_predicted'] >= custom_threshold
+            else:
+                raise ValueError('Not specified custom_threshold. Set custom_threshold to a non-zero value.')
+        else:
+            spans['above_predicted_threshold'] = spans['confidence_predicted'] >= spans['label_threshold_predicted']
         spans['is_correct_label'] = True
         spans['is_correct_label_set'] = True
         spans['label_id_predicted'] = spans['label_id']
