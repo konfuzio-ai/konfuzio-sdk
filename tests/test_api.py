@@ -61,12 +61,13 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             'category_ai',
             'decimal_separator',
             'auto_delete_documents_after_days',
+            'enable_translated_strings',
         }
 
     def test_project_details(self):
         """Test to get Document details."""
         data = get_project_details(project_id=TEST_PROJECT_ID)
-        assert data.keys() == {
+        assert set(data.keys()) == {
             'id',
             'name',
             'storage_name',
@@ -77,6 +78,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             'category_ai',
             'decimal_separator',
             'auto_delete_documents_after_days',
+            'enable_translated_strings',
         }
 
     def test_get_meta_of_files_multiple_pages(self):
