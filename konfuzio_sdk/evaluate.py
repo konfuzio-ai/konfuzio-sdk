@@ -425,6 +425,7 @@ class ExtractionEvaluation:
     def calculate(self):
         """Calculate and update the data stored within this Evaluation."""
         evaluations = []  # start anew, the configuration of the Evaluation might have changed.
+        threshold_evaluations = {'threshold_75': [], 'threshold_90': [], 'threshold_99': []}
         for ground_truth, predicted in self.documents:
             evaluation = compare(
                 doc_a=ground_truth,
@@ -435,8 +436,43 @@ class ExtractionEvaluation:
                 ignore_below_threshold=self.ignore_below_threshold,
             )
             evaluations.append(evaluation)
-
+            evaluation_75 = compare(
+                doc_a=ground_truth,
+                doc_b=predicted,
+                only_use_correct=self.only_use_correct,
+                strict=self.strict,
+                use_view_annotations=self.use_view_annotations,
+                ignore_below_threshold=self.ignore_below_threshold,
+                use_custom_threshold=True,
+                custom_threshold=0.75,
+            )
+            threshold_evaluations['threshold_75'].append(evaluation_75)
+            evaluation_90 = compare(
+                doc_a=ground_truth,
+                doc_b=predicted,
+                only_use_correct=self.only_use_correct,
+                strict=self.strict,
+                use_view_annotations=self.use_view_annotations,
+                ignore_below_threshold=self.ignore_below_threshold,
+                use_custom_threshold=True,
+                custom_threshold=0.90,
+            )
+            threshold_evaluations['threshold_90'].append(evaluation_90)
+            evaluation_95 = compare(
+                doc_a=ground_truth,
+                doc_b=predicted,
+                only_use_correct=self.only_use_correct,
+                strict=self.strict,
+                use_view_annotations=self.use_view_annotations,
+                ignore_below_threshold=self.ignore_below_threshold,
+                use_custom_threshold=True,
+                custom_threshold=0.95,
+            )
+            threshold_evaluations['threshold_95'].append(evaluation_95)
         self.data = pandas.concat(evaluations)
+        self.data_threshold_75 = pandas.concat(threshold_evaluations['threshold_75'])
+        self.data_threshold_90 = pandas.concat(threshold_evaluations['threshold_90'])
+        self.data_threshold_95 = pandas.concat(threshold_evaluations['threshold_95'])
 
     def _query(self, search=None):
         """Query the comparison data.
@@ -596,6 +632,11 @@ class ExtractionEvaluation:
         """Return Spans that were wrongly merged vertically."""
         self.data.groupby('id_local_predicted').apply(lambda group: self._apply(group, 'wrong_merge'))
         return self.data[self.data['wrong_merge']]
+
+    def f1_threshold_optimized(self, search):
+        label_data = self._query(search=search)
+        for label_id in set(label_data['label_id']):
+            _ = self.documents[0][0].project.get_label_by_id(label_id)
 
 
 class CategorizationEvaluation:
