@@ -347,8 +347,11 @@ def normalize_name(value: str) -> str:
 
     :param value: A name to be normalized.
     """
-    value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
-    return re.sub('/', '', value)
+    if value:
+        value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
+        return re.sub('/', '', value)
+    else:
+        return
 
 
 def amend_file_name(
