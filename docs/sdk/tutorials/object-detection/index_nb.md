@@ -66,6 +66,12 @@ pip install -q onnxruntime
 ```
 Due to the later export of the model into the ONNX format, the model can be tested and deployed with [ONNX Runtime](https://onnxruntime.ai/docs/) and therefore `super-gradients` and `pycocotools` dependencies are not needed for production.
 
+
+```bash tags=["remove-cell"]
+# This is needed for the Development Center build pipeline
+pip install opencv-python-headless
+```
+
 ### Imports 🔽
 
 The following imports are needed to train, export and test the model.
