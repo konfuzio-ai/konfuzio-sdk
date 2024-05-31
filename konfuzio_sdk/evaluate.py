@@ -2,7 +2,7 @@
 import logging
 from typing import Dict, List, Optional, Tuple, Union
 
-import numpy
+import numpy as np
 import pandas
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.utils.extmath import weighted_mode
@@ -280,7 +280,7 @@ def compare(
 
         spans = spans.groupby(['annotation_set_id_predicted', 'label_id_predicted']).apply(prioritize_rows)
 
-    spans = spans.replace({numpy.nan: None})
+    spans = spans.replace({np.nan: None})
     # one Span must not be defined as TP or FP or FN more than once
     quality = (spans[['true_positive', 'false_positive', 'false_negative']].sum(axis=1) <= 1).all()
     assert quality
@@ -633,10 +633,66 @@ class ExtractionEvaluation:
         self.data.groupby('id_local_predicted').apply(lambda group: self._apply(group, 'wrong_merge'))
         return self.data[self.data['wrong_merge']]
 
-    def f1_threshold_optimized(self, search):
-        label_data = self._query(search=search)
+    def _determine_status(self, row):
+        if row['true_positive']:
+            return 'tp'
+        elif row['false_positive']:
+            return 'fp'
+        elif row['false_negative']:
+            return 'fn'
+        else:
+            return
+
+    def _calculate_optimal_threshold_f1(self, confidence_scores, labels, target_f1):
+        min_score = min(confidence_scores)
+        max_score = max(confidence_scores)
+
+        best_threshold = None
+        best_f1 = 0
+        min_diff = float('inf')
+
+        while max_score - min_score > 0.01:
+            mid_score = (min_score + max_score) / 2
+
+            tp = fp = fn = 0
+            for score, label in zip(confidence_scores, labels):
+                if score >= mid_score:
+                    if label == 'TP':
+                        tp += 1
+                    elif label == 'FP':
+                        fp += 1
+                else:
+                    if label == 'FN':
+                        fn += 1
+
+            precision = tp / (tp + fp) if (tp + fp) > 0 else 0
+            recall = tp / (tp + fn) if (tp + fn) > 0 else 0
+
+            if precision + recall == 0:
+                return 0
+            current_f1 = 2 * (precision * recall) / (precision + recall)
+
+            diff = abs(current_f1 - target_f1)
+            if diff < min_diff:
+                min_diff = diff
+                best_f1 = current_f1
+                best_threshold = mid_score
+
+            if current_f1 < target_f1:
+                min_score = mid_score
+            else:
+                max_score = mid_score
+
+        return round(best_threshold, 2), best_f1
+
+    def f1_threshold_optimized(self):
+        label_data = self._query()
+        label_data['value'] = label_data.apply(self._determine_status, axis=1)
         for label_id in set(label_data['label_id']):
-            _ = self.documents[0][0].project.get_label_by_id(label_id)
+            label = self.documents[0][0].project.get_label_by_id(label_id)
+            label_preds = self._query(search=label)
+            _ = label_preds['confidence_predicted']
+            _2 = label_preds['value']
 
 
 class CategorizationEvaluation:
@@ -715,9 +771,9 @@ class CategorizationEvaluation:
         :return: dictionary with the results per Category
         """
         confusion_matrix = self.confusion_matrix()
-        sum_columns = numpy.sum(confusion_matrix, axis=0)
-        sum_rows = numpy.sum(confusion_matrix, axis=1)
-        sum_all = numpy.sum(confusion_matrix)
+        sum_columns = np.sum(confusion_matrix, axis=0)
+        sum_rows = np.sum(confusion_matrix, axis=1)
+        sum_all = np.sum(confusion_matrix)
 
         results = {}
 
