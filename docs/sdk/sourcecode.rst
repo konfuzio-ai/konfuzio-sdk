@@ -206,6 +206,7 @@ Utils
 .. autofunction:: iter_before_and_after
 .. autofunction:: get_sdk_version
 .. autofunction:: get_spans_from_bbox
+.. autofunction:: normalize_name
 
 Tokenizers
 =====================
