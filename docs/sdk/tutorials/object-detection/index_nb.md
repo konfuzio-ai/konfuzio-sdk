@@ -69,7 +69,7 @@ Due to the later export of the model into the ONNX format, the model can be test
 
 ```bash tags=["remove-cell"]
 # This is needed for the Development Center build pipeline
-pip install opencv-python-headless
+pip install opencv-python-headless==4.8.1.78
 ```
 
 ### Imports 🔽
