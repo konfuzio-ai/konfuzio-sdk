@@ -67,7 +67,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
     def test_project_details(self):
         """Test to get Document details."""
         data = get_project_details(project_id=TEST_PROJECT_ID)
-        assert data.keys() == {
+        assert set(data.keys()) == {
             'id',
             'name',
             'storage_name',
@@ -132,7 +132,6 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             'updated_at',
             'proposed_split',
             'split_is_revised',
-            'enable_translated_strings',
         }
 
     def test_document_details_document_not_available(self):
@@ -183,7 +182,6 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             'updated_at',
             'proposed_split',
             'split_is_revised',
-            'enable_translated_strings',
         }
 
     def test_long_document_details(self):
@@ -222,7 +220,6 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             'updated_at',
             'proposed_split',
             'split_is_revised',
-            'enable_translated_strings',
         }
 
     def test_get_list_of_files(self):

@@ -26,6 +26,8 @@ from konfuzio_sdk.utils import (
     load_image,
     map_offsets,
     normalize_memory,
+    normalize_name,
+    slugify,
 )
 from tests.variables import (
     OFFLINE_PROJECT,
@@ -244,6 +246,16 @@ class TestUtils(unittest.TestCase):
         assert sentences[1]['offset_string'] == 'This is a test.'
         assert sentences[1]['start_offset'] == 50
         assert sentences[1]['end_offset'] == 85
+
+    def test_slugify(self):
+        """Test slugifying a value with the default parameters."""
+        value = 'Category / name 123456***:'
+        assert slugify(value=value) == 'category-name-123456-'
+
+    def test_normalize_name(self):
+        """Test normalizing names for Konfuzio concepts."""
+        value = 'Category/name'
+        assert normalize_name(value) == 'Categoryname'
 
 
 file_name_append_data = [
