@@ -13,9 +13,9 @@ from sklearn.utils.class_weight import compute_class_weight
 
 from konfuzio_sdk.data import Category, Document, Page
 from konfuzio_sdk.evaluate import FileSplittingEvaluation
-from konfuzio_sdk.extras import datasets, evaluate, mlflow, tensorflow as tf, torch, transformers
+from konfuzio_sdk.extras import datasets, mlflow, tensorflow as tf, torch, transformers
 from konfuzio_sdk.trainer.information_extraction import BaseModel
-from konfuzio_sdk.trainer.utils import BalancedLossTrainer, LoggerCallback
+from konfuzio_sdk.trainer.utils import BalancedLossTrainer, LoggerCallback, load_metric
 from konfuzio_sdk.utils import get_timestamp
 
 logger = logging.getLogger(__name__)
@@ -548,6 +548,31 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
             return page_images, texts, labels
         return texts, labels
 
+    def _load_model_and_tokenizer(self, path: str):
+        """
+        Private method to load the model and tokenizer from the HuggingFace Cache.
+        If one of the model or it's tokenizer is not to be found in the cache, it will be downloaded from the HuggingFace Hub.
+
+        :param path: The path to the transformers cache.
+        :type path: str
+        :returns: The model and it's tokenizer.
+        """
+
+        # try to get the model & it's tokenizer from the transformers cache first
+        try:
+            transformers_tokenizer = transformers.AutoTokenizer.from_pretrained(self.model_name, cache_dir=path)
+            model = transformers.AutoModelForSequenceClassification.from_pretrained(
+                self.model_name, cache_dir=path, num_labels=2
+            )
+            logger.info(f'Model and tokenizer {self.model_name} loaded successfully from the transformers cache.')
+        # if the model is not found in the cache, download it from the HuggingFace Hub
+        except OSError:
+            logger.warning('Could not find the model in the transformers cache. Downloading it from HuggingFace Hub.')
+            transformers_tokenizer = transformers.AutoTokenizer.from_pretrained(self.model_name)
+            model = transformers.AutoModelForSequenceClassification.from_pretrained(self.model_name, num_labels=2)
+
+        return model, transformers_tokenizer
+
     def fit(
         self,
         epochs: int = 5,
@@ -600,10 +625,14 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
                 You are about to train a Splitting AI for a one class classification task!'
             )
             class_weights = [1, 1]
-        # defining tokenizer
-        self.transformers_tokenizer = transformers.AutoTokenizer.from_pretrained(self.model_name)
+        # defining transformers cache location
+        transformers_cache_location = os.getenv('TRANSFORMERS_CACHE')
+        # defining model & tokenizer
+        self.model, self.transformers_tokenizer = self._load_model_and_tokenizer(path=transformers_cache_location)
+        # move model to device
+        self.model.to(device)
         # defining metric
-        metric = evaluate.load('f1')
+        metric = load_metric(metric_name='f1', path=transformers_cache_location)
 
         # functions to be used by transformers.trainer
         def tokenize_function(examples):
@@ -620,10 +649,6 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         test_dataset = test_dataset.map(tokenize_function, batched=True)
         logger.info('=' * 50)
         logger.info('Loading model')
-        # loading the transformers model and defining the training arguments
-        self.model = transformers.AutoModelForSequenceClassification.from_pretrained(self.model_name, num_labels=2)
-        # move model to device
-        self.model.to(device)
         # getting MLflow variables
         experiment_name = kwargs.get('experiment_name', None)
         tracking_uri = kwargs.get('tracking_uri', None)
@@ -692,7 +717,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
             callbacks=[transformers.integrations.MLflowCallback] if self.use_mlflow else [LoggerCallback],
         )
         trainer.class_weights = class_weights
-        
+
         # training the model
         trainer.train()
 
@@ -771,7 +796,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         globals()['torch'] = None
         globals()['tf'] = None
         globals()['transformers'] = None
-        globals()['evaluate'] = None
+        globals()['load_metric'] = None
         globals()['datasets'] = None
         globals()['Trainer'] = None
         globals()['BalancedLossTrainer'] = None
@@ -781,7 +806,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         del globals()['torch']
         del globals()['tf']
         del globals()['transformers']
-        del globals()['evaluate']
+        del globals()['load_metric']
         del globals()['datasets']
         del globals()['Trainer']
         del globals()['BalancedLossTrainer']
@@ -796,14 +821,14 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         This is needed for proper functioning of a loaded model because we have previously removed these dependencies
         upon saving the model.
         """
-        from konfuzio_sdk.extras import Trainer, datasets, evaluate, mlflow, tensorflow as tf, torch, transformers
-        from konfuzio_sdk.trainer.utils import BalancedLossTrainer, LoggerCallback
+        from konfuzio_sdk.extras import Trainer, datasets, mlflow, tensorflow as tf, torch, transformers
+        from konfuzio_sdk.trainer.utils import BalancedLossTrainer, LoggerCallback, load_metric
 
         globals()['torch'] = torch
         globals()['tf'] = tf
         globals()['transformers'] = transformers
         globals()['datasets'] = datasets
-        globals()['evalute'] = evaluate
+        globals()['load_metric'] = load_metric
         globals()['Trainer'] = Trainer
         globals()['BalancedLossTrainer'] = BalancedLossTrainer
         globals()['LoggerCallback'] = LoggerCallback
@@ -905,7 +930,12 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
             intersection = {span.offset_string.strip('\f').strip('\n') for span in page.spans()}.intersection(
                 cur_first_page_strings
             )
-            if len(intersection) > 0:
+            # we set a minimum set size to avoid false positives and pages with very few strings
+            minimum_set_size = min(
+                len(cur_first_page_strings), len({span.offset_string.strip('\f').strip('\n') for span in page.spans()})
+            )
+            # if the intersection is at least 1/4 of the minimum set size, we mark the page as first
+            if len(intersection) > minimum_set_size / 4:
                 page.is_first_page = True
                 break
         page.is_first_page_confidence = 1

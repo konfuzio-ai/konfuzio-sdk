@@ -833,8 +833,7 @@ def delete_ai_model(ai_model_id: int, ai_type: str, session=None):
     Delete an AI model from the server.
 
     :param ai_model_id: an ID of the model to be deleted.
-    :param ai_type: if a model is an Extraction AI, a Categorization AI or a File Splitting AI. Should be one of the
-    following: 'filesplitting', 'extraction', 'categorization'.
+    :param ai_type: Should be one of the following: 'filesplitting', 'extraction', 'categorization'.
     :param session: session to connect to the server.
     :raises: ValueError if ai_type is not correctly specified.
     :raises: ConnectionError when a request is unsuccessful.
@@ -858,8 +857,7 @@ def update_ai_model(ai_model_id: int, ai_type: str, patch: bool = True, session=
     Update an AI model from the server.
 
     :param ai_model_id: an ID of the model to be updated.
-    :param ai_type: if a model is an Extraction AI, a Categorization AI or a File Splitting AI. Should be one of the
-    following: 'filesplitting', 'extraction', 'categorization'.
+    :param ai_type: Should be one of the following: 'filesplitting', 'extraction', 'categorization'.
     :param patch: If true, adds info instead of replacing it.
     :param session: session to connect to the server.
     :raises: ValueError if ai_type is not correctly specified.
