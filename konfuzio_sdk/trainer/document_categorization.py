@@ -1296,7 +1296,8 @@ class CategorizationAI(AbstractCategorizationAI):
         loss_fn = torch.nn.CrossEntropyLoss()
         optimizer = get_optimizer(self.classifier, optimizer)
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=0, factor=lr_decay)
-        temp_dir = tempfile.gettempdir()
+        # defining directory where temporary training artifacts will be saved
+        temp_dir = kwargs.get('output_dir', tempfile.gettempdir())
         temp_filename = os.path.join(temp_dir, f'temp_{uuid.uuid4().hex}.pt')
         # defining transformers cache location to load the metrics
         transformers_cache_location = os.getenv('TRANSFORMERS_CACHE')

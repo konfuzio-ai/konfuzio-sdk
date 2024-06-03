@@ -625,6 +625,8 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
                 You are about to train a Splitting AI for a one class classification task!'
             )
             class_weights = [1, 1]
+        # defining directory where temporary training artifacts will be saved
+        output_dir = kwargs.get('output_dir', 'training_logs/textual_file_splitting_model_trainer')
         # defining transformers cache location
         transformers_cache_location = os.getenv('TRANSFORMERS_CACHE')
         # defining model & tokenizer
@@ -683,7 +685,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
             logger.info('MLflow tracking is disabled. Training without it.')
         # defining the training arguments
         training_args = transformers.TrainingArguments(
-            output_dir='training_logs/textual_file_splitting_model_trainer',
+            output_dir=output_dir,
             evaluation_strategy='epoch',
             save_strategy='epoch',
             load_best_model_at_end=True,
