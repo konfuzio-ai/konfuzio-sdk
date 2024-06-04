@@ -2,6 +2,7 @@
 
 
 import logging
+import os
 from typing import Dict
 
 from konfuzio_sdk.extras import Trainer, TrainerCallback, evaluate, torch
@@ -99,8 +100,10 @@ def load_metric(metric_name: str, path: str):
     try:
         metric = evaluate.load(f'{path}/{metric_name}.py')
         logger.info(f'Metric {metric_name} loaded successfully from the transformers cache {path}.')
-    except FileNotFoundError:
+    except OSError:
         logger.warning('Could not find the metric in the transformers cache. Downloading it from HuggingFace Hub.')
         metric = evaluate.load(metric_name)
+        huggingface_home_dir = os.getenv('HF_HOME')
+        logger.warning(f'Metric {metric_name} downloaded and saved at: {huggingface_home_dir} successfully.')
 
     return metric

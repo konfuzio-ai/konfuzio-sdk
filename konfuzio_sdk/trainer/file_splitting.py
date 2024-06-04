@@ -560,6 +560,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
 
         # try to get the model & it's tokenizer from the transformers cache first
         try:
+            logger.info(f'Using transformers cache located at: {path} to load the model and tokenizer.')
             transformers_tokenizer = transformers.AutoTokenizer.from_pretrained(self.model_name, cache_dir=path)
             model = transformers.AutoModelForSequenceClassification.from_pretrained(
                 self.model_name, cache_dir=path, num_labels=2
@@ -570,6 +571,8 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
             logger.warning('Could not find the model in the transformers cache. Downloading it from HuggingFace Hub.')
             transformers_tokenizer = transformers.AutoTokenizer.from_pretrained(self.model_name)
             model = transformers.AutoModelForSequenceClassification.from_pretrained(self.model_name, num_labels=2)
+            huggingface_home_dir = os.getenv('HF_HOME')
+            logger.warning(f'Model and tokenizer downloaded and saved at: {huggingface_home_dir} successfully.')
 
         return model, transformers_tokenizer
 
@@ -628,7 +631,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         # defining directory where temporary training artifacts will be saved
         output_dir = kwargs.get('output_dir', 'training_logs/textual_file_splitting_model_trainer')
         # defining transformers cache location
-        transformers_cache_location = os.getenv('TRANSFORMERS_CACHE')
+        transformers_cache_location = os.getenv('HF_HOME_READ_ONLY')
         # defining model & tokenizer
         self.model, self.transformers_tokenizer = self._load_model_and_tokenizer(path=transformers_cache_location)
         # move model to device
