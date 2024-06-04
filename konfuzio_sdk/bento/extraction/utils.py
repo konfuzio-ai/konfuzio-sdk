@@ -1,4 +1,6 @@
 """Utility functions for adapting Konfuzio concepts to be used with Pydantic models."""
+from typing import Optional
+
 from pydantic import BaseModel
 
 from konfuzio_sdk.data import Annotation, AnnotationSet, Document, Page, Project, Span
@@ -48,7 +50,7 @@ def prepare_request(request: BaseModel, project: Project) -> Document:
     return document
 
 
-def process_response(result, schema=ExtractResponse20240117):
+def process_response(result, schema: BaseModel = ExtractResponse20240117) -> BaseModel:
     """
     Process a raw response from the runner to contain only selected fields.
 
@@ -99,7 +101,7 @@ def process_response(result, schema=ExtractResponse20240117):
     return schema(annotation_sets=annotations_result)
 
 
-def convert_document_to_request(document: Document, schema: BaseModel = ExtractRequest20240117):
+def convert_document_to_request(document: Document, schema: BaseModel = ExtractRequest20240117) -> BaseModel:
     """
     Receive a Document and convert it into a request in accordance to a passed schema.
 
@@ -136,25 +138,33 @@ def convert_document_to_request(document: Document, schema: BaseModel = ExtractR
     return converted
 
 
-def convert_response_to_annotations(response: BaseModel, document: Document):
+def convert_response_to_annotations(
+    response: BaseModel, document: Document, mappings: Optional[dict] = None
+) -> Document:
     """
     Receive an ExtractResponse and convert it into a list of Annotations to be added to the Document.
 
-    :param annotations: An ExtractResponse to be converted.
+    :param response: An ExtractResponse to be converted.
     :param document: A Document to which the annotations should be added.
-    :param schema: A schema to which the annotations should adhere.
+    :param mappings: A dict with "label_sets" and "labels" keys, both containing mappings from old to new IDs. Original
+        IDs are used if no mapping is provided or if the mapping is not found.
     :returns: The original Document with added Annotations.
     """
+    if mappings is None:
+        mappings = {}
+
     if response.__class__.__name__ == 'ExtractResponse20240117':
         for annotation_set in response.annotation_sets:
+            label_set_id = mappings.get('label_sets', {}).get(annotation_set.label_set_id, annotation_set.label_set_id)
             sdk_annotation_set = AnnotationSet(
-                document=document, label_set=document.project.get_label_set_by_id(annotation_set.label_set_id)
+                document=document, label_set=document.project.get_label_set_by_id(label_set_id)
             )
             for annotation in annotation_set.annotations:
+                label_id = mappings.get('labels', {}).get(annotation.label.id, annotation.label.id)
                 Annotation(
                     document=document,
                     annotation_set=sdk_annotation_set,
-                    label=document.project.get_label_by_id(annotation.label.id),
+                    label=document.project.get_label_by_id(label_id),
                     offset_string=annotation.offset_string,
                     translated_string=annotation.translated_string,
                     normalized=annotation.normalized,
