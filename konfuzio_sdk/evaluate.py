@@ -420,12 +420,13 @@ class ExtractionEvaluation:
         self.data = None
         self.zero_division = zero_division
         self.calculate()
+        self.calculate_thresholds()
+        self.label_thresholds = {label.id_: label.optimized_thresholds for label in self.documents[0][0].project.labels}
         logger.info(f'Size of evaluation DataFrame: {memory_size_of(self.data)/1000} KB.')
 
     def calculate(self):
         """Calculate and update the data stored within this Evaluation."""
         evaluations = []  # start anew, the configuration of the Evaluation might have changed.
-        threshold_evaluations = {'threshold_75': [], 'threshold_90': [], 'threshold_99': []}
         for ground_truth, predicted in self.documents:
             evaluation = compare(
                 doc_a=ground_truth,
@@ -436,43 +437,41 @@ class ExtractionEvaluation:
                 ignore_below_threshold=self.ignore_below_threshold,
             )
             evaluations.append(evaluation)
-            evaluation_75 = compare(
-                doc_a=ground_truth,
-                doc_b=predicted,
-                only_use_correct=self.only_use_correct,
-                strict=self.strict,
-                use_view_annotations=self.use_view_annotations,
-                ignore_below_threshold=self.ignore_below_threshold,
-                use_custom_threshold=True,
-                custom_threshold=0.75,
-            )
-            threshold_evaluations['threshold_75'].append(evaluation_75)
-            evaluation_90 = compare(
-                doc_a=ground_truth,
-                doc_b=predicted,
-                only_use_correct=self.only_use_correct,
-                strict=self.strict,
-                use_view_annotations=self.use_view_annotations,
-                ignore_below_threshold=self.ignore_below_threshold,
-                use_custom_threshold=True,
-                custom_threshold=0.90,
-            )
-            threshold_evaluations['threshold_90'].append(evaluation_90)
-            evaluation_95 = compare(
-                doc_a=ground_truth,
-                doc_b=predicted,
-                only_use_correct=self.only_use_correct,
-                strict=self.strict,
-                use_view_annotations=self.use_view_annotations,
-                ignore_below_threshold=self.ignore_below_threshold,
-                use_custom_threshold=True,
-                custom_threshold=0.95,
-            )
-            threshold_evaluations['threshold_95'].append(evaluation_95)
         self.data = pandas.concat(evaluations)
-        self.data_threshold_75 = pandas.concat(threshold_evaluations['threshold_75'])
-        self.data_threshold_90 = pandas.concat(threshold_evaluations['threshold_90'])
-        self.data_threshold_95 = pandas.concat(threshold_evaluations['threshold_95'])
+
+    def calculate_thresholds(self):
+        evaluations_per_threshold = {}
+        for threshold in np.arange(0.05, 1, 0.05):
+            evaluations = []
+            for ground_truth, predicted in self.documents:
+                evaluation = compare(
+                    doc_a=ground_truth,
+                    doc_b=predicted,
+                    only_use_correct=self.only_use_correct,
+                    strict=self.strict,
+                    use_view_annotations=self.use_view_annotations,
+                    ignore_below_threshold=self.ignore_below_threshold,
+                    use_custom_threshold=True,
+                    custom_threshold=threshold,
+                )
+                evaluations.append(evaluation)
+            evaluations_per_threshold[threshold] = pandas.concat(evaluations)
+        for label in self.documents[0][0].project.labels:
+            best_f1 = 0.0
+            best_threshold = 0.0
+            for threshold in evaluations_per_threshold:
+                current_evaluation = evaluations_per_threshold[threshold]
+                label_data = current_evaluation.query(f'label_id == {label.id_} | (label_id_predicted == {label.id_})')
+                label_f1 = EvaluationCalculator(
+                    tp=label_data['true_positive'].sum(),
+                    fp=label_data['false_positive'].sum(),
+                    fn=label_data['false_negative'].sum(),
+                    zero_division=self.zero_division,
+                ).f1
+                if label_f1 > best_f1:
+                    best_f1 = label_f1
+                    best_threshold = threshold
+            label.optimized_thresholds['f1'] = {'score': best_f1, 'threshold': best_threshold}
 
     def _query(self, search=None):
         """Query the comparison data.
@@ -632,67 +631,6 @@ class ExtractionEvaluation:
         """Return Spans that were wrongly merged vertically."""
         self.data.groupby('id_local_predicted').apply(lambda group: self._apply(group, 'wrong_merge'))
         return self.data[self.data['wrong_merge']]
-
-    def _determine_status(self, row):
-        if row['true_positive']:
-            return 'tp'
-        elif row['false_positive']:
-            return 'fp'
-        elif row['false_negative']:
-            return 'fn'
-        else:
-            return
-
-    def _calculate_optimal_threshold_f1(self, confidence_scores, labels, target_f1):
-        min_score = min(confidence_scores)
-        max_score = max(confidence_scores)
-
-        best_threshold = None
-        best_f1 = 0
-        min_diff = float('inf')
-
-        while max_score - min_score > 0.01:
-            mid_score = (min_score + max_score) / 2
-
-            tp = fp = fn = 0
-            for score, label in zip(confidence_scores, labels):
-                if score >= mid_score:
-                    if label == 'TP':
-                        tp += 1
-                    elif label == 'FP':
-                        fp += 1
-                else:
-                    if label == 'FN':
-                        fn += 1
-
-            precision = tp / (tp + fp) if (tp + fp) > 0 else 0
-            recall = tp / (tp + fn) if (tp + fn) > 0 else 0
-
-            if precision + recall == 0:
-                return 0
-            current_f1 = 2 * (precision * recall) / (precision + recall)
-
-            diff = abs(current_f1 - target_f1)
-            if diff < min_diff:
-                min_diff = diff
-                best_f1 = current_f1
-                best_threshold = mid_score
-
-            if current_f1 < target_f1:
-                min_score = mid_score
-            else:
-                max_score = mid_score
-
-        return round(best_threshold, 2), best_f1
-
-    def f1_threshold_optimized(self):
-        label_data = self._query()
-        label_data['value'] = label_data.apply(self._determine_status, axis=1)
-        for label_id in set(label_data['label_id']):
-            label = self.documents[0][0].project.get_label_by_id(label_id)
-            label_preds = self._query(search=label)
-            _ = label_preds['confidence_predicted']
-            _2 = label_preds['value']
 
 
 class CategorizationEvaluation:
