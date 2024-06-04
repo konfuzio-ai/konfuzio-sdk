@@ -66,6 +66,12 @@ pip install -q onnxruntime
 ```
 Due to the later export of the model into the ONNX format, the model can be tested and deployed with [ONNX Runtime](https://onnxruntime.ai/docs/) and therefore `super-gradients` and `pycocotools` dependencies are not needed for production.
 
+
+```bash tags=["remove-cell"]
+# This is needed for the Development Center build pipeline
+pip install opencv-python-headless==4.8.1.78
+```
+
 ### Imports 🔽
 
 The following imports are needed to train, export and test the model.
@@ -580,11 +586,11 @@ score = cls_conf.max(1)
 
 The used visualization function is as follows. 
 
-```python
+```python tags=["remove-output"]
 # vizualization
 import matplotlib.pyplot as plt
 import copy
-%matplotlib inline
+#%matplotlib inline # comment in if you run in Google Colab
 import matplotlib as mpl
 from PIL import Image, ImageDraw
 mpl.rcParams['figure.dpi']= 600
@@ -607,7 +613,7 @@ def plot_results(pil_img, scores, labels, boxes, name=None):
     ax[1].axis('off')
     ax[1].imshow(pil_img)
 
-    fig.show()
+    #fig.show() # comment in if you run in Google Colab
     fig.savefig(f'{name}')
 ```
 
@@ -1024,7 +1030,7 @@ def plot_results(pil_img, scores, labels, boxes, name=None):
     ax[1].axis('off')
     ax[1].imshow(pil_img)
 
-    fig.show()
+    #fig.show() # comment in if you run in Google Colab
     fig.savefig(f'{name}')
 
 # show result
