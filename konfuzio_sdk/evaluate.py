@@ -435,6 +435,7 @@ class ExtractionEvaluation:
                 strict=self.strict,
                 use_view_annotations=self.use_view_annotations,
                 ignore_below_threshold=self.ignore_below_threshold,
+                use_custom_threshold=False,
             )
             evaluations.append(evaluation)
         self.data = pandas.concat(evaluations)
@@ -458,20 +459,35 @@ class ExtractionEvaluation:
             evaluations_per_threshold[threshold] = pandas.concat(evaluations)
         for label in self.documents[0][0].project.labels:
             best_f1 = 0.0
-            best_threshold = 0.0
+            best_threshold_f1 = 0.0
+            best_precision = 0.0
+            best_threshold_precision = 0.0
+            best_recall = 0.0
+            best_threshold_recall = 0.0
             for threshold in evaluations_per_threshold:
                 current_evaluation = evaluations_per_threshold[threshold]
                 label_data = current_evaluation.query(f'label_id == {label.id_} | (label_id_predicted == {label.id_})')
-                label_f1 = EvaluationCalculator(
+                label_evaluation_calculator = EvaluationCalculator(
                     tp=label_data['true_positive'].sum(),
                     fp=label_data['false_positive'].sum(),
                     fn=label_data['false_negative'].sum(),
                     zero_division=self.zero_division,
-                ).f1
+                )
+                label_f1 = label_evaluation_calculator.f1
+                label_precision = label_evaluation_calculator.precision
+                label_recall = label_evaluation_calculator.recall
                 if label_f1 > best_f1:
                     best_f1 = label_f1
-                    best_threshold = threshold
-            label.optimized_thresholds['f1'] = {'score': best_f1, 'threshold': best_threshold}
+                    best_threshold_f1 = threshold
+                if label_precision > best_precision:
+                    best_precision = label_precision
+                    best_threshold_precision = threshold
+                if label_recall > best_recall:
+                    best_recall = label_recall
+                    best_threshold_recall = threshold
+            label.optimized_thresholds['f1'] = {'score': best_f1, 'threshold': best_threshold_f1}
+            label.optimized_thresholds['precision'] = {'score': best_precision, 'threshold': best_threshold_precision}
+            label.optimized_thresholds['recall'] = {'score': best_recall, 'threshold': best_threshold_recall}
 
     def _query(self, search=None):
         """Query the comparison data.
