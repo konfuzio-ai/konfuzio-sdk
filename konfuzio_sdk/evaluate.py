@@ -1,4 +1,5 @@
 """Calculate the accuracy on any level in a  Document."""
+
 import logging
 from typing import Dict, List, Optional, Tuple, Union
 
@@ -290,7 +291,14 @@ def compare(
         )
 
     if not strict:
-        spans = spans.groupby(['annotation_set_id_predicted', 'label_id_predicted']).apply(prioritize_rows)
+        # Apply the function prioritize_rows just to entries where the label is not set to "multiple"
+        labels = doc_a.project.labels
+        label_ids_multiple = [label.id_ for label in labels if label.has_multiple_top_candidates]
+        label_ids_not_multiple = [label.id_ for label in labels if not label.has_multiple_top_candidates]
+        spans_not_multiple = spans[spans['label_id'].isin(label_ids_not_multiple)]
+        spans_not_multiple = spans.groupby(['annotation_set_id_predicted', 'label_id_predicted']).apply(prioritize_rows)
+        spans_multiple = spans[spans['label_id'].isin(label_ids_multiple)]
+        spans = pd.concat([spans_not_multiple, spans_multiple])
 
     spans = spans.replace({numpy.nan: None})
 
