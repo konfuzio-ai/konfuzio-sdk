@@ -1300,9 +1300,9 @@ class CategorizationAI(AbstractCategorizationAI):
         temp_dir = kwargs.get('output_dir', tempfile.gettempdir())
         temp_filename = os.path.join(temp_dir, f'temp_{uuid.uuid4().hex}.pt')
         # defining transformers cache location to load the metrics
-        transformers_cache_location = os.getenv('HF_HOME_READ_ONLY')
-        f1_metric = load_metric('f1', path=transformers_cache_location)
-        acc_metric = load_metric('accuracy', path=transformers_cache_location)
+        transformers_read_only_cache_dir = os.getenv('HF_HOME_READ_ONLY')
+        f1_metric = load_metric('f1', path=transformers_read_only_cache_dir)
+        acc_metric = load_metric('accuracy', path=transformers_read_only_cache_dir)
         logger.info('Begin fitting')
         best_valid_loss = float('inf')
         train_loss = float('inf')

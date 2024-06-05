@@ -571,8 +571,8 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
             logger.warning('Could not find the model in the transformers cache. Downloading it from HuggingFace Hub.')
             transformers_tokenizer = transformers.AutoTokenizer.from_pretrained(self.model_name)
             model = transformers.AutoModelForSequenceClassification.from_pretrained(self.model_name, num_labels=2)
-            huggingface_home_dir = os.getenv('HF_HOME')
-            logger.warning(f'Model and tokenizer downloaded and saved at: {huggingface_home_dir} successfully.')
+            transformers_cache_dir = os.getenv('HF_HOME')
+            logger.warning(f'Model and tokenizer downloaded and saved at: {transformers_cache_dir} successfully.')
 
         return model, transformers_tokenizer
 
@@ -631,13 +631,13 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         # defining directory where temporary training artifacts will be saved
         output_dir = kwargs.get('output_dir', 'training_logs/textual_file_splitting_model_trainer')
         # defining transformers cache location
-        transformers_cache_location = os.getenv('HF_HOME_READ_ONLY')
+        transformers_read_only_cache_dir = os.getenv('HF_HOME_READ_ONLY')
         # defining model & tokenizer
-        self.model, self.transformers_tokenizer = self._load_model_and_tokenizer(path=transformers_cache_location)
+        self.model, self.transformers_tokenizer = self._load_model_and_tokenizer(path=transformers_read_only_cache_dir)
         # move model to device
         self.model.to(device)
         # defining metric
-        metric = load_metric(metric_name='f1', path=transformers_cache_location)
+        metric = load_metric(metric_name='f1', path=transformers_read_only_cache_dir)
 
         # functions to be used by transformers.trainer
         def tokenize_function(examples):

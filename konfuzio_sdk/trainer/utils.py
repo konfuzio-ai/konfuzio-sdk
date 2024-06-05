@@ -103,7 +103,7 @@ def load_metric(metric_name: str, path: str):
     except OSError:
         logger.warning('Could not find the metric in the transformers cache. Downloading it from HuggingFace Hub.')
         metric = evaluate.load(metric_name)
-        huggingface_home_dir = os.getenv('HF_HOME')
-        logger.warning(f'Metric {metric_name} downloaded and saved at: {huggingface_home_dir} successfully.')
+        transformers_cache_dir = os.getenv('HF_HOME')
+        logger.warning(f'Metric {metric_name} downloaded and saved at: {transformers_cache_dir} successfully.')
 
     return metric
