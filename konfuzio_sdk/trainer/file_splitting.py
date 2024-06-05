@@ -2,6 +2,7 @@
 import abc
 import logging
 import os
+import tempfile
 from copy import deepcopy
 from inspect import signature
 from typing import List, Union
@@ -629,7 +630,8 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
             )
             class_weights = [1, 1]
         # defining directory where temporary training artifacts will be saved
-        output_dir = kwargs.get('output_dir', 'training_logs/textual_file_splitting_model_trainer')
+        fallback_output_dir = os.path.join(tempfile.gettempdir(), 'textual_file_splitting_model_trainer')
+        output_dir = kwargs.get('output_dir', fallback_output_dir)
         # defining transformers cache location
         transformers_read_only_cache_dir = os.getenv('HF_HOME_READ_ONLY')
         # defining model & tokenizer
