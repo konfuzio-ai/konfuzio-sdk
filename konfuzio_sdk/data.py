@@ -4530,13 +4530,13 @@ class Project(Data):
             if not new:
                 last_date = local_docs_dict[document_data['id']].updated_at
                 updated = dateutil.parser.isoparse(new_date) > last_date if last_date is not None else True
-            category_id = None
+            document_category_id = None
             # backward compatibility
             if 'category' in document_data.keys():
-                category_id = document_data['category']
+                document_category_id = document_data['category']
             elif 'category_template' in document_data.keys():
-                category_id = document_data['category_template']
-            doc_category = self.get_category_by_id(category_id) if category_id else self.no_category
+                document_category_id = document_data['category_template']
+            doc_category = self.get_category_by_id(document_category_id) if document_category_id else self.no_category
             document_data.pop('category', None)
             # ensuring we store document status in a variable and don't pass it multiple times by not removing it from
             # document_data
