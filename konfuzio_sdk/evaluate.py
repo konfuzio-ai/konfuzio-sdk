@@ -296,9 +296,12 @@ def compare(
         label_ids_multiple = [label.id_ for label in labels if label.has_multiple_top_candidates]
         label_ids_not_multiple = [label.id_ for label in labels if not label.has_multiple_top_candidates]
         spans_not_multiple = spans[spans['label_id'].isin(label_ids_not_multiple)]
-        spans_not_multiple = spans.groupby(['annotation_set_id_predicted', 'label_id_predicted']).apply(prioritize_rows)
+        spans_not_multiple = spans_not_multiple.groupby(['annotation_set_id_predicted', 'label_id_predicted']).apply(
+            prioritize_rows
+        )
         spans_multiple = spans[spans['label_id'].isin(label_ids_multiple)]
         spans = pd.concat([spans_not_multiple, spans_multiple])
+        spans = spans.sort_values(by='is_matched', ascending=False)
 
     spans = spans.replace({numpy.nan: None})
 
