@@ -49,6 +49,7 @@ from konfuzio_sdk.utils import (
     get_merged_bboxes,
     get_missing_offsets,
     is_file,
+    normalize_name,
     sdk_isinstance,
 )
 
@@ -931,8 +932,8 @@ class Category(Data):
         """Associate Label Sets to relate to Annotations."""
         self.id_local = next(Data.id_iter)
         self.id_ = id_
-        self.name = name
-        self.name_clean = name_clean
+        self.name = normalize_name(name)
+        self.name_clean = normalize_name(name_clean)
         self.project: Project = project
         self._force_offline = project._force_offline
         self.label_sets: List[LabelSet] = []
@@ -4196,7 +4197,7 @@ class Project(Data):
         self.label_sets_file_path = os.path.join(self.project_folder, 'label_sets.json5')
 
         if self.id_ or self._project_folder:
-            self.get(update=update)
+            self.get(update=update, **kwargs)
         else:
             self.no_category = Category(project=self, id_=0, name_clean='NO_CATEGORY', name='NO_CATEGORY')
         # todo: list of Categories related to NO LABEL SET can be outdated, i.e. if the number of Categories changes
@@ -4285,23 +4286,23 @@ class Project(Data):
         """Return maximum memory used by AI models."""
         return self._max_ram
 
-    def write_project_files(self):
+    def write_project_files(self, *args, **kwargs):
         """Overwrite files with Project, Label, Label Set information."""
         categories_labels_label_sets = get_project_categories(project_id=self.id_, session=self.session)
         with open(self.categories_and_label_data_file_path, 'w') as f:
             json.dump(categories_labels_label_sets, f, indent=2, sort_keys=True)
 
-        self.write_meta_of_files()
+        self.write_meta_of_files(*args, **kwargs)
 
         return self
 
-    def write_meta_of_files(self):
+    def write_meta_of_files(self, *args, **kwargs):
         """Overwrite meta-data of Documents in Project."""
-        meta_data = get_meta_of_files(project_id=self.id_, session=self.session)
+        meta_data = get_meta_of_files(project_id=self.id_, session=self.session, *args, **kwargs)
         with open(self.meta_file_path, 'w') as f:
             json.dump(meta_data, f, indent=2, sort_keys=True)
 
-    def get(self, update=False):
+    def get(self, update=False, **kwargs):
         """
         Access meta information of the Project.
 
@@ -4315,7 +4316,7 @@ class Project(Data):
         # reload means re-add to the Project what is currently available in the Project's folder
         # update means download information from server to keep up with the updates made online
         if self.id_ and (not is_file(self.meta_file_path, raise_exception=False) or update):
-            self.write_project_files()
+            self.write_project_files(category_id=kwargs.get('category_id', None))
         # order of adding data into the project has changed after migration from v2 to v3 API - the endpoint used for
         # fetching categories, labels and label sets returns them in a nested structure:
         # Categories -> Label Sets -> Labels.
@@ -4325,7 +4326,7 @@ class Project(Data):
         self.get_label_sets(reload=True)
         self.get_categories(reload=True)
         self.get_meta(reload=True)
-        self.init_or_update_document(from_online=False)
+        self.init_or_update_document(from_online=False, category_id=kwargs.get('category_id', None))
         return self
 
     def add_label_set(self, label_set: LabelSet):
@@ -4502,7 +4503,7 @@ class Project(Data):
             self.get_labels()
         return self._labels
 
-    def init_or_update_document(self, from_online=False):
+    def init_or_update_document(self, from_online=False, category_id=None):
         """
         Initialize or update Documents from local files to then decide about full, incremental or no update.
 
@@ -4518,6 +4519,8 @@ class Project(Data):
         n_new_documents = 0
         n_unchanged_documents = 0
         for document_data in self.meta_data:
+            if category_id and 'category' in document_data.keys() and document_data['category'] != category_id:
+                continue
             updated_docs_ids_set.add(document_data['id'])
             # if document_data['status'][0] == 2:  # - hotfix for Text Annotation Server # todo add test
 
@@ -4527,13 +4530,13 @@ class Project(Data):
             if not new:
                 last_date = local_docs_dict[document_data['id']].updated_at
                 updated = dateutil.parser.isoparse(new_date) > last_date if last_date is not None else True
-            category_id = None
+            document_category_id = None
             # backward compatibility
             if 'category' in document_data.keys():
-                category_id = document_data['category']
+                document_category_id = document_data['category']
             elif 'category_template' in document_data.keys():
-                category_id = document_data['category_template']
-            doc_category = self.get_category_by_id(category_id) if category_id else self.no_category
+                document_category_id = document_data['category_template']
+            doc_category = self.get_category_by_id(document_category_id) if document_category_id else self.no_category
             document_data.pop('category', None)
             # ensuring we store document status in a variable and don't pass it multiple times by not removing it from
             # document_data
@@ -4693,7 +4696,7 @@ class Project(Data):
         self._meta_data = []
         return self
 
-    def download_training_and_test_data(self) -> None:
+    def download_training_and_test_data(self, category_id=None) -> None:
         """
         Migrate your Project to another HOST.
 
@@ -4703,6 +4706,9 @@ class Project(Data):
         if len(self.documents + self.test_documents) == 0:
             raise ValueError('No Documents in the training or test set. Please add them.')
         for document in tqdm(self.documents + self.test_documents):
+            if category_id and document.category.id_ != category_id:
+                print(f'Skip {document}...')
+                continue
             document.download_document_details()
             document.get_file()
             document.get_file(ocr_version=False)
@@ -4711,9 +4717,9 @@ class Project(Data):
 
         print('[SUCCESS] Data exporting finished successfully!')
 
-    def export_project_data(self, include_ais=False, training_and_test_documents=True) -> None:
+    def export_project_data(self, include_ais=False, training_and_test_documents=True, *args, **kwargs) -> None:
         """
-        "Export the Project data including Training, Test Documents and AI models.
+        Export the Project data including Training, Test Documents and AI models.
 
         :include_ais: Whether to include AI models in the export
         :training_and_test_documents: Whether to include training & test documents in the export.
@@ -4721,14 +4727,14 @@ class Project(Data):
         if training_and_test_documents:
             try:
                 print('[INFO] Starting Training and Test Document export!')
-                self.download_training_and_test_data()
+                self.download_training_and_test_data(*args, **kwargs)
             except Exception as error:
                 print('[ERROR] Something went wrong while downloading Document data!')
                 raise error
         if include_ais:
             try:
                 print('[INFO] Starting AI Model file export!')
-                exported_ais = export_ai_models(self)
+                exported_ais = export_ai_models(self, *args, **kwargs)
                 if exported_ais:
                     print(f'[INFO] Export finished. {exported_ais} AIs were available for export.')
                 else:

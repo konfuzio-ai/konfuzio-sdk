@@ -67,7 +67,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
     def test_project_details(self):
         """Test to get Document details."""
         data = get_project_details(project_id=TEST_PROJECT_ID)
-        assert data.keys() == {
+        assert set(data.keys()) == {
             'id',
             'name',
             'storage_name',

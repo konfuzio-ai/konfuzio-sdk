@@ -465,7 +465,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         assert len(res_doc.view_annotations()) == 17
 
         prj46 = Project(id_=46)
-        doc = prj46.get_document_by_id(570129)
+        doc = prj46.get_document_by_id(215906)
         doc.update()
         doc.get_bbox()
         res_doc = self.pipeline.extract(document=doc)

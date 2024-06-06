@@ -531,7 +531,7 @@ def delete_document_annotation(annotation_id: int, session=None, delete_from_dat
         raise ConnectionError(f'Error{r.status_code}: {r.content} {r.url}')
 
 
-def get_meta_of_files(project_id: int, pagination_limit: int = 100, limit: int = None, session=None) -> List[dict]:
+def get_meta_of_files(project_id: int, pagination_limit: int = 100, limit: int = None, session=None, *args, **kwargs) -> List[dict]:
     """
     Get meta information of Documents in a Project.
 
@@ -547,10 +547,11 @@ def get_meta_of_files(project_id: int, pagination_limit: int = 100, limit: int =
         host = session.host
     else:
         host = None
+
     if limit:
-        url = get_documents_meta_url(project_id=project_id, offset=0, limit=limit)
+        url = get_documents_meta_url(project_id=project_id, offset=0, limit=limit, *args, **kwargs)
     else:
-        url = get_documents_meta_url(project_id=project_id, limit=pagination_limit, host=host)
+        url = get_documents_meta_url(project_id=project_id, limit=pagination_limit, host=host, *args, **kwargs)
     result = []
     r = session.get(url)
     data = r.json()
@@ -923,11 +924,12 @@ def get_all_project_ais(project_id: int, session=None) -> dict:
     return all_ais
 
 
-def export_ai_models(project, session=None) -> int:
+def export_ai_models(project, session=None, category_id=None) -> int:
     """
     Export all AI Model files for a specific Project.
 
     :param: project: Konfuzio Project
+    :param: category_id: Only select AIs for a specific Category of a Project
     :return: Number of exported AIs
     """
     ai_types = set()  # Using a set to store unique AI types
@@ -954,9 +956,14 @@ def export_ai_models(project, session=None) -> int:
         ai_models = project_ai_models.get(variant, {}).get('results', [])
 
         for index, ai_model in enumerate(ai_models):
+            # Filter Extraction AI by selected category.
+            if category_id and ai_model.get('category') and category_id != ai_model.get('category'):
+                logger.warning(f'Skip {ai_model} in export.')
+                continue
+
             # Only export fully trained AIs which are set as active
             if not ai_model.get('status') == 'done' or not ai_model.get('active'):
-                logger.error(f'Skip {ai_model} in export.')
+                logger.warning(f'Skip {ai_model} in export.')
                 continue
             ai_model_id = ai_model.get('id')
             ai_model_version = ai_model.get('id')
