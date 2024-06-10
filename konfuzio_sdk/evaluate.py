@@ -441,6 +441,10 @@ class ExtractionEvaluation:
         self.data = pd.concat(evaluations)
 
     def calculate_thresholds(self):
+        """
+        Calculate optimal thresholds for each Label in the Document set that allow to achieve the highest value
+        of F1 score, precision and recall.
+        """
         evaluations_per_threshold = {}
         for threshold in np.arange(0.05, 1, 0.05):
             evaluations = []
