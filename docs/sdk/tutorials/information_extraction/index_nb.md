@@ -112,7 +112,7 @@ from konfuzio_sdk.data import Project
 
 project = Project(id_=TEST_PROJECT_ID)
 category = project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID)
-categorization_pipeline = CustomExtractionAI(category)
+extraction_pipeline = CustomExtractionAI(category)
 ```
 
 Then, create a sample test Document to run the extraction on.
@@ -127,16 +127,22 @@ print(sample_document.text)
 
 Run the extraction of a Document and print the extracted Annotations.
 ```python
-extracted = categorization_pipeline.extract(sample_document)
+extracted = extraction_pipeline.extract(sample_document)
 for annotation in extracted.annotations(use_correct=False):
     print(annotation.offset_string)
 ```
 
-Now we can save the AI and check that it is possible to load it afterwards.
+Now we can save the AI and check that it is possible to load it afterwards. There are two different ways to save an
+Extraction AI: using the native `save()` method of AbstractExtractionAI that saves a model into an `lz4`-compressed
+pickle file and using Bento model
+
+
 ```python
 pickle_model_path = categorization_pipeline.save()
 extraction_pipeline_loaded = CustomExtractionAI.load_model(pickle_model_path)
 ```
+
+
 
 The custom Extraction AI we just prepared inherits from AbstractExtractionAI, which in turn inherits from [BaseModel](sourcecode.html#base-model). `BaseModel` provides `save` method that saves a model into a compressed pickle file that can be directly uploaded to the Konfuzio Server (see [Upload Extraction or Category AI to target instance](https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html#upload-extraction-or-category-ai-to-target-instance)).
 
