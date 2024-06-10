@@ -134,14 +134,33 @@ for annotation in extracted.annotations(use_correct=False):
 
 Now we can save the AI and check that it is possible to load it afterwards. There are two different ways to save an
 Extraction AI: using the native `save()` method of AbstractExtractionAI that saves a model into an `lz4`-compressed
-pickle file and using Bento model
+pickle file and using Bento model and using `save_bento()` method that creates a containerized instance of an Extraction
+AI model in `bento` format, allowing the AI to run independently of the server environment.
 
-
+To save the model to a compressed pickle file, use the following command:
 ```python
 pickle_model_path = categorization_pipeline.save()
 extraction_pipeline_loaded = CustomExtractionAI.load_model(pickle_model_path)
 ```
 
+To save the model to the `bento` format, run the following code:
+```python
+bento, path_to_bento = CustomExtractionAI.save_bento()  # you can specify the path via output_dir argument
+```
+
+Later, the saved Bento file can be uploaded to server or served locally via the command:
+
+```commandline tags=["skip-execution", "nbval-skip"]
+bentoml serve name:version # for example, extraction_11:2qytjiwhoc7flhbp
+```
+
+After that, you can check the Swagger for the Bento on `0.0.0.0:3000` and send requests to the available endpoint(s).
+
+To run a Bento instance as a container and test it, use a following command:
+
+```commandline tags=["skip-execution", "nbval-skip"]
+bentoml containerize name:version # for example, extraction_11:2qytjiwhoc7flhbp
+```
 
 
 The custom Extraction AI we just prepared inherits from AbstractExtractionAI, which in turn inherits from [BaseModel](sourcecode.html#base-model). `BaseModel` provides `save` method that saves a model into a compressed pickle file that can be directly uploaded to the Konfuzio Server (see [Upload Extraction or Category AI to target instance](https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html#upload-extraction-or-category-ai-to-target-instance)).
