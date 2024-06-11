@@ -359,11 +359,6 @@ ASSIGNEE_ID = None
 ```python tags=["skip-execution", "nbval-skip"]
 document = Document.from_file(FILE_PATH, project=my_project, sync=True)
 ```
-```python tags=['remove-cell']
-document = my_project._documents[-1]
-document.dataset_status = 0
-document.delete(delete_online=True)
-```
 
 2. **Asynchronous upload (sync=False)**: With this setting, the method immediately returns an empty Document object 
 after initiating the upload. The OCR processing takes place in the background. This method is advantageous when 

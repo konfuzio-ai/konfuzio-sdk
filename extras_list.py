@@ -6,7 +6,7 @@ EXTRAS = {
         'pytest>=7.1.2',
         'pre-commit>=2.20.0',
         'parameterized>=0.8.1',
-        'Sphinx==4.4.0',
+        'Sphinx==5.0.0',
         'sphinx-toolbox==3.4.0',
         'sphinx-reload==0.2.0',
         'sphinx-notfound-page==0.8',

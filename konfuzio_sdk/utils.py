@@ -341,6 +341,19 @@ def slugify(value):
     return re.sub(r'[-\s\:\.]+', '-', value).replace('-_', '_')
 
 
+def normalize_name(value: str) -> str:
+    """
+    Normalize names for different Konfuzio concepts by removing slashes and checking for non-ascii symbols.
+
+    :param value: A name to be normalized.
+    """
+    if value:
+        value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
+        return re.sub('/', '', value)
+    else:
+        return
+
+
 def amend_file_name(
     file_name: str, append_text: str = '', append_separator: str = '_', new_extension: str = None
 ) -> str:

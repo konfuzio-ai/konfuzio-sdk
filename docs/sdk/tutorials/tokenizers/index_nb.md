@@ -280,7 +280,10 @@ tokenized_doc.get_page_by_index(0).get_annotations_image(display_all=True)
 ```
 
 ```python tags=["remove-cell"]
-sample_doc.delete(delete_online=True)
+my_project = Project(id_=TEST_PROJECT_ID, update=True)
+for document in my_project._documents:
+    if document.name == 'sample.pdf':
+        document.delete(delete_online=True)
 ```
 
 Note that this example uses a PDF file named 'sample.pdf', you can download this file <a href="sample.pdf">here</a> in case you wish to try running this code.
@@ -327,7 +330,7 @@ The `SentenceTokenizer` is a specialized [tokenizer](https://dev.konfuzio.com/sd
 
 To use it, import the necessary modules, initialize the Project, the Document, and the Tokenizer and tokenize the Document.
 ```python tags=["remove-cell"]
-YOUR_DOCUMENT_ID = 5679477
+YOUR_DOCUMENT_ID = 215906
 ```
 
 ```python tags=["remove-output"]
@@ -346,7 +349,7 @@ tokenized = tokenizer(doc)
 
 Visualize the output:
 ```python
-tokenized.get_page_by_index(1).get_annotations_image(display_all=True)
+tokenized.get_page_by_index(0).get_annotations_image(display_all=True)
 ```
 
 ### Choosing the right tokenizer
