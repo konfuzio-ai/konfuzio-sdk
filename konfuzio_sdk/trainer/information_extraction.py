@@ -14,6 +14,7 @@ replacing the end-to-end pipeline into two parts.
 Sun, H., Kuang, Z., Yue, X., Lin, C., & Zhang, W. (2021). Spatial Dual-Modality Graph Reasoning for Key Information
 Extraction. arXiv. https://doi.org/10.48550/ARXIV.2103.14470
 """
+
 import collections
 import difflib
 import functools
@@ -1671,7 +1672,8 @@ class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
 
         # 2. tokenize
         self.tokenizer.tokenize(inference_document)
-        if not inference_document.spans():
+        if not inference_document.spans() and inference_document.text.strip() != '':
+            # if there are no spans but text, we log an error
             logger.error(f'{self.tokenizer} does not provide Spans for {document}')
             return inference_document
 
