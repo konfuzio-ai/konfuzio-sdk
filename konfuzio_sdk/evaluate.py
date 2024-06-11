@@ -88,7 +88,6 @@ def compare(
     use_view_annotations=False,
     ignore_below_threshold=False,
     strict=True,
-    use_custom_threshold=False,
     custom_threshold=None,
 ) -> pd.DataFrame:
     """Compare the Annotations of two potentially empty Documents wrt. to **all** Annotations.
@@ -124,11 +123,8 @@ def compare(
         spans['start_offset_predicted'] = spans['start_offset']  # start and end offset are identical
         spans['end_offset_predicted'] = spans['end_offset']  # start and end offset are identical
 
-        if use_custom_threshold:
-            if custom_threshold:
-                spans['above_predicted_threshold'] = spans['confidence_predicted'] >= custom_threshold
-            else:
-                raise ValueError('Not specified custom_threshold. Set custom_threshold to a non-zero value.')
+        if custom_threshold:
+            spans['above_predicted_threshold'] = spans['confidence_predicted'] >= custom_threshold
         else:
             spans['above_predicted_threshold'] = spans['confidence_predicted'] >= spans['label_threshold_predicted']
 
@@ -150,11 +146,8 @@ def compare(
         spans['is_matched'] = (spans['start_offset_predicted'] <= spans['end_offset']) & (
             spans['end_offset_predicted'] >= spans['start_offset']
         )
-        if use_custom_threshold:
-            if custom_threshold:
-                spans['above_predicted_threshold'] = spans['confidence_predicted'] >= custom_threshold
-            else:
-                raise ValueError('Not specified custom_threshold. Set custom_threshold to a non-zero value.')
+        if custom_threshold:
+            spans['above_predicted_threshold'] = spans['confidence_predicted'] >= custom_threshold
         else:
             spans['above_predicted_threshold'] = spans['confidence_predicted'] >= spans['label_threshold_predicted']
         spans['is_correct_label'] = True
@@ -435,7 +428,6 @@ class ExtractionEvaluation:
                 strict=self.strict,
                 use_view_annotations=self.use_view_annotations,
                 ignore_below_threshold=self.ignore_below_threshold,
-                use_custom_threshold=False,
             )
             evaluations.append(evaluation)
         self.data = pd.concat(evaluations)
@@ -456,7 +448,6 @@ class ExtractionEvaluation:
                     strict=self.strict,
                     use_view_annotations=self.use_view_annotations,
                     ignore_below_threshold=self.ignore_below_threshold,
-                    use_custom_threshold=True,
                     custom_threshold=threshold,
                 )
                 evaluations.append(evaluation)
