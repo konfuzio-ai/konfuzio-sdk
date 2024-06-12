@@ -1188,6 +1188,7 @@ class Label(Data):
         self._evaluations = {}  # used to do the duplicate check on Annotation level
 
         self._has_multiline_annotations = None
+        self.optimized_thresholds = {}
 
     def __repr__(self):
         """Return string representation."""
