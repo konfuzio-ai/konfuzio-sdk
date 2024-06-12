@@ -1673,10 +1673,10 @@ class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
         # 2. tokenize
         self.tokenizer.tokenize(inference_document)
         if not inference_document.spans():
-            if inference_document.text.strip() != '':
-                logger.error(f'{self.tokenizer} does not provide Spans for {document}, even though it contains text.')
-            else:
+            if inference_document.text.strip() == '':
                 logger.warning(f'{self.tokenizer} does not provide Spans due to empty {document}.')
+            else:
+                logger.error(f'{self.tokenizer} does not provide Spans for {document}, even though it contains text.')
             return inference_document
 
         # 3. preprocessing
