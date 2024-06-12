@@ -1219,9 +1219,9 @@ class GroupAnnotationSets:
 
     def __init__(self):
         """Initialize TemplateClf."""
-        self.n_nearest_template = 5
-        self.max_depth = 100
-        self.n_estimators = 100
+        self.label_set_max_depth = 100
+        self.label_set_n_estimators = 100
+        self.label_set_n_nearest_template = 5
         self.label_set_clf = None
 
     def fit_label_set_clf(self) -> Tuple[Optional[object], Optional[List['str']]]:
@@ -1258,8 +1258,7 @@ class GroupAnnotationSets:
         # todo check if no category labels should be ignored
         self.template_feature_list = list(self.clf.classes_)  # list of label classifier targets
         # logger.warning("template_feature_list:", self.template_feature_list)
-        n_nearest = self.n_nearest_template  # if hasattr(self, 'n_nearest_template') else 0
-
+        n_nearest = self.label_set_n_nearest_template
         # Pretty long feature generation
         df_train_label = self.df_train
 
@@ -1301,7 +1300,7 @@ class GroupAnnotationSets:
             return None, None
 
         label_set_clf = RandomForestClassifier(
-            n_estimators=self.n_estimators, max_depth=self.max_depth, random_state=420
+            n_estimators=self.label_set_n_estimators, max_depth=self.label_set_max_depth, random_state=420
         )
         label_set_clf.fit(x_train, y_train)
 
@@ -1477,7 +1476,11 @@ class GroupAnnotationSets:
         if not res_dict:
             logger.warning('res_dict is empty')
             return res_dict
-        n_nearest = self.n_nearest_template if hasattr(self, 'n_nearest_template') else 0
+        n_nearest = (
+            self.label_set_n_nearest_template
+            if hasattr(self, 'label_set_n_nearest_template')
+            else (self.n_nearest_template if hasattr(self, 'n_nearest_template') else 0)
+        )
         feature_df = self.build_document_template_feature_X(text, self.dict_to_dataframe(res_dict)).filter(
             self.template_feature_list, axis=1
         )
@@ -1631,13 +1634,21 @@ class RFExtractionAI(AbstractExtractionAI, GroupAnnotationSets):
         logger.info(f'{no_label_limit=}')
         logger.info(f'{n_nearest_across_lines=}')
 
-        self.use_separate_labels = use_separate_labels
         self.n_nearest = n_nearest
-        self.first_word = first_word
         self.max_depth = max_depth
         self.n_estimators = n_estimators
+        self.use_separate_labels = use_separate_labels
         self.no_label_limit = no_label_limit
+        self.first_word = first_word
         self.n_nearest_across_lines = n_nearest_across_lines
+
+        # label set clf hyperparameters
+        self.label_set_n_nearest_template = kwargs.get('label_set_n_nearest_template', 5)
+        self.label_set_max_depth = kwargs.get('label_set_max_depth', 100)
+        self.label_set_n_estimators = kwargs.get('label_set_n_estimators', 100)
+        logger.info(f'label_set_n_nearest_template={self.label_set_n_nearest_template}')
+        logger.info(f'label_set_max_depth={self.label_set_max_depth}')
+        logger.info(f'label_set_n_estimators={self.label_set_n_estimators}')
 
         self.tokenizer = tokenizer
         logger.info(f'{tokenizer=}')

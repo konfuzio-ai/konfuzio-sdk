@@ -67,7 +67,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
     def test_project_details(self):
         """Test to get Document details."""
         data = get_project_details(project_id=TEST_PROJECT_ID)
-        assert data.keys() == {
+        assert set(data.keys()) == {
             'id',
             'name',
             'storage_name',
@@ -132,6 +132,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             'updated_at',
             'proposed_split',
             'split_is_revised',
+            'enable_translated_strings',
         }
 
     def test_document_details_document_not_available(self):
@@ -155,6 +156,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             'document_set',
             'number_of_pages',
             'data_file_name',
+            'data_file_producer',
             'file_url',
             'thumbnail_url',
             'ocr_time',
@@ -181,6 +183,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             'updated_at',
             'proposed_split',
             'split_is_revised',
+            'enable_translated_strings',
         }
 
     def test_long_document_details(self):
@@ -192,6 +195,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             'document_set',
             'number_of_pages',
             'data_file_name',
+            'data_file_producer',
             'file_url',
             'thumbnail_url',
             'ocr_time',
@@ -218,6 +222,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             'updated_at',
             'proposed_split',
             'split_is_revised',
+            'enable_translated_strings',
         }
 
     def test_get_list_of_files(self):
@@ -304,7 +309,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
         assert response.status_code == 201
         annotation = json.loads(response.text)
-        assert delete_document_annotation(annotation['id'])
+        assert delete_document_annotation(annotation['id'], delete_from_database=True)
 
     @unittest.skip(reason='Not supported by Server: https://gitlab.com/konfuzio/objectives/-/issues/8663')
     def test_post_document_annotation_multiline_as_offsets(self):
@@ -363,6 +368,31 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         negative_id = delete_document_annotation(annotation['id'])
         # delete it a second time to remove this Annotation from the feedback stored as negative
         assert delete_document_annotation(negative_id, delete_from_database=True).status_code == 204
+
+    def post_document_annotation_as_bboxes(self):
+        """Test creating an Annotation that is based only on Bbox coordinates."""
+        label_id = 862
+        label_set_id = 64
+
+        bboxes = [
+            {'page_index': 0, 'x0': 198, 'x1': 300, 'y0': 508, 'y1': 517},
+        ]
+        document = Project(id_=TEST_PROJECT_ID, strict_data_validation=False).get_document_by_id(TEST_DOCUMENT_ID + 11)
+        document.update()
+
+        response = post_document_annotation(
+            document_id=TEST_DOCUMENT_ID + 11,
+            confidence=0.01,
+            label_id=label_id,
+            label_set_id=label_set_id,
+            revised=False,
+            is_correct=True,
+            spans=bboxes,
+        )
+
+        assert response.status_code == 201
+        annotation = json.loads(response.text)
+        assert delete_document_annotation(annotation['id'])
 
     def test_change_annotation(self):
         """Test modifying an existing Annotation."""

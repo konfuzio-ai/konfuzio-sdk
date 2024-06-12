@@ -148,7 +148,17 @@ To save the model to the `bento` format, run the following code:
 bento, path_to_bento = CustomExtractionAI.save_bento()  # you can specify the path via output_dir argument
 ```
 
-Later, the saved Bento file can be uploaded to server or served locally via the command:
+Later, the saved Bento file can be uploaded to server or served locally. To serve locally, you need to know the
+name and the version of the Bento:
+
+```python
+bento_name = bento.tag.name
+bento_version = bento.tag.version
+print('Bento name: ' + bento_name)
+print('Bento version: ' + bento_version)
+```
+
+Then you can serve it via the command:
 
 ```commandline tags=["skip-execution", "nbval-skip"]
 bentoml serve name:version # for example, extraction_11:2qytjiwhoc7flhbp

@@ -20,7 +20,7 @@ jupyter:
 **Prerequisites:**
 - Ensure you have the `konfuzio_sdk` package installed. See [here](https://github.com/konfuzio-ai/konfuzio-sdk) for more info.
 
-**Difficulty:** Intermediate
+**Difficulty:** Medium
 
 **Goal:**
 The goal of this tutorial is to train a model using the Konfuzio SDK to extract relevant information like Name, Date, and Recipient from payslip Documents.
