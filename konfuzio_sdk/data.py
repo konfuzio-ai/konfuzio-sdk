@@ -3214,7 +3214,7 @@ class Document(Data):
         )
         for page in self.pages():
             copy_id = page.id_ if page.id_ else page.copy_of_id
-            _ = Page(
+            new_page = Page(
                 id_=None,
                 document=document,
                 start_offset=page.start_offset,
@@ -3224,7 +3224,11 @@ class Document(Data):
                 original_size=(page.width, page.height),
                 image_size=(page.image_width, page.image_height),
             )
-            _.image_bytes = page.image_bytes
+            new_page.image_bytes = page.image_bytes
+            for category_annotation in page.category_annotations:
+                _ = CategoryAnnotation(
+                    category=category_annotation.category, page=new_page, confidence=category_annotation.confidence
+                )
         return document
 
     def check_annotations(self, update_document: bool = False) -> bool:

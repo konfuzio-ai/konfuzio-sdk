@@ -932,6 +932,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         """
         self.check_is_ready()
         page.is_first_page = False
+        page.is_first_page_confidence = 0
         for category in self.categories:
             cur_first_page_strings = category.exclusive_first_page_strings(tokenizer=self.tokenizer)
             intersection = {span.offset_string.strip('\f').strip('\n') for span in page.spans()}.intersection(
@@ -944,8 +945,8 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
             # if the intersection is at least 1/4 of the minimum set size, we mark the page as first
             if len(intersection) > minimum_set_size / 4:
                 page.is_first_page = True
+                page.is_first_page_confidence = 1
                 break
-        page.is_first_page_confidence = 1
         return page
 
     # end predict
