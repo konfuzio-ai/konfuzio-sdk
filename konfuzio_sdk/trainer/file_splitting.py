@@ -932,6 +932,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         """
         self.check_is_ready()
         page.is_first_page = False
+        page.is_first_page_confidence = 0
         for category in self.categories:
             cur_first_page_strings = category.exclusive_first_page_strings(tokenizer=self.tokenizer)
             intersection = {span.offset_string.strip('\f').strip('\n') for span in page.spans()}.intersection(
