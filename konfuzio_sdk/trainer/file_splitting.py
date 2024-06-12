@@ -944,8 +944,8 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
             # if the intersection is at least 1/4 of the minimum set size, we mark the page as first
             if len(intersection) > minimum_set_size / 4:
                 page.is_first_page = True
+                page.is_first_page_confidence = 1
                 break
-        page.is_first_page_confidence = 1
         return page
 
     # end predict
