@@ -120,7 +120,7 @@ def compare(
             use_view_annotations=strict and use_view_annotations,  # view_annotations only available for strict=True
             use_correct=False,
             ignore_below_threshold=ignore_below_threshold,
-        )
+        ),
     )
     df_b['tmp_id_'] = list(range(id_counter, id_counter + len(df_b)))
 
@@ -241,34 +241,19 @@ def compare(
         & ((~spans['is_matched']) | (~spans['above_predicted_threshold']) | (spans['label_id_predicted'].isna()))
     )
 
-    if strict:
-        # a span can be false positive and false negative simultaneously under the strict evaluation
-        spans['false_positive'] = (  # commented out on purpose (spans["is_correct"]) &
-            (spans['above_predicted_threshold'])
-            & (~spans['true_positive'])
-            & (~spans['duplicated_predicted'])
-            & (  # Something is wrong
-                (~spans['is_correct_label'])
-                | (~spans['is_correct_label_set'])
-                | (~spans['is_correct_annotation_set_id'])
-                | (~spans['is_correct_id_'])
-                | (~spans['is_matched'])
-            )
+    spans['false_positive'] = (
+        (spans['above_predicted_threshold'])
+        & (~spans['false_negative'])
+        & (~spans['true_positive'])
+        & (~spans['duplicated_predicted'])
+        & (
+            (~spans['is_correct_label'])
+            | (~spans['is_correct_label_set'])
+            | (~spans['is_correct_annotation_set_id'])
+            | (~spans['is_correct_id_'])
+            | (~spans['is_matched'])
         )
-    else:
-        spans['false_positive'] = (
-            (spans['above_predicted_threshold'])
-            & (~spans['false_negative'])
-            & (~spans['true_positive'])
-            & (~spans['duplicated_predicted'])
-            & (
-                (~spans['is_correct_label'])
-                | (~spans['is_correct_label_set'])
-                | (~spans['is_correct_annotation_set_id'])
-                | (~spans['is_correct_id_'])
-                | (~spans['is_matched'])
-            )
-        )
+    )
 
     if not strict:
 
