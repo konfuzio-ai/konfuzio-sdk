@@ -270,9 +270,10 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
         for page in pred.pages():
             if page.number in (1, 3, 5):
                 assert page.is_first_page
+                assert page.is_first_page_confidence == 1
             else:
                 assert not page.is_first_page
-            assert page.is_first_page_confidence == 1
+                assert page.is_first_page_confidence == 0
         assert pred == self.test_document
 
     def test_suggest_first_pages(self):
@@ -284,9 +285,10 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
         for page in prediction.pages():
             if page.number in (1, 3, 5):
                 assert page.is_first_page
+                assert page.is_first_page_confidence == 1
             else:
                 assert not page.is_first_page
-            assert page.is_first_page_confidence == 1
+                assert page.is_first_page_confidence == 0
         for page_original, page_predicted in zip(self.test_document.pages(), prediction.pages()):
             assert page_original.category == page_predicted.category
         pathlib.Path(self.file_splitting_model.path).unlink()

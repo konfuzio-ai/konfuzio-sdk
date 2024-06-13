@@ -2,6 +2,7 @@
 import abc
 import logging
 import os
+import tempfile
 from copy import deepcopy
 from inspect import signature
 from typing import List, Union
@@ -560,6 +561,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
 
         # try to get the model & it's tokenizer from the transformers cache first
         try:
+            logger.info(f'Using transformers cache located at: {path} to load the model and tokenizer.')
             transformers_tokenizer = transformers.AutoTokenizer.from_pretrained(self.model_name, cache_dir=path)
             model = transformers.AutoModelForSequenceClassification.from_pretrained(
                 self.model_name, cache_dir=path, num_labels=2
@@ -570,6 +572,8 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
             logger.warning('Could not find the model in the transformers cache. Downloading it from HuggingFace Hub.')
             transformers_tokenizer = transformers.AutoTokenizer.from_pretrained(self.model_name)
             model = transformers.AutoModelForSequenceClassification.from_pretrained(self.model_name, num_labels=2)
+            transformers_cache_dir = os.getenv('HF_HOME')
+            logger.warning(f'Model and tokenizer downloaded and saved at: {transformers_cache_dir} successfully.')
 
         return model, transformers_tokenizer
 
@@ -625,14 +629,17 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
                 You are about to train a Splitting AI for a one class classification task!'
             )
             class_weights = [1, 1]
+        # defining directory where temporary training artifacts will be saved
+        fallback_output_dir = os.path.join(tempfile.gettempdir(), 'textual_file_splitting_model_trainer')
+        output_dir = kwargs.get('output_dir', fallback_output_dir)
         # defining transformers cache location
-        transformers_cache_location = os.getenv('TRANSFORMERS_CACHE')
+        transformers_read_only_cache_dir = os.getenv('HF_HOME_READ_ONLY')
         # defining model & tokenizer
-        self.model, self.transformers_tokenizer = self._load_model_and_tokenizer(path=transformers_cache_location)
+        self.model, self.transformers_tokenizer = self._load_model_and_tokenizer(path=transformers_read_only_cache_dir)
         # move model to device
         self.model.to(device)
         # defining metric
-        metric = load_metric(metric_name='f1', path=transformers_cache_location)
+        metric = load_metric(metric_name='f1', path=transformers_read_only_cache_dir)
 
         # functions to be used by transformers.trainer
         def tokenize_function(examples):
@@ -683,7 +690,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
             logger.info('MLflow tracking is disabled. Training without it.')
         # defining the training arguments
         training_args = transformers.TrainingArguments(
-            output_dir='training_logs/textual_file_splitting_model_trainer',
+            output_dir=output_dir,
             evaluation_strategy='epoch',
             save_strategy='epoch',
             load_best_model_at_end=True,
@@ -925,6 +932,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         """
         self.check_is_ready()
         page.is_first_page = False
+        page.is_first_page_confidence = 0
         for category in self.categories:
             cur_first_page_strings = category.exclusive_first_page_strings(tokenizer=self.tokenizer)
             intersection = {span.offset_string.strip('\f').strip('\n') for span in page.spans()}.intersection(
@@ -937,8 +945,8 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
             # if the intersection is at least 1/4 of the minimum set size, we mark the page as first
             if len(intersection) > minimum_set_size / 4:
                 page.is_first_page = True
+                page.is_first_page_confidence = 1
                 break
-        page.is_first_page_confidence = 1
         return page
 
     # end predict
