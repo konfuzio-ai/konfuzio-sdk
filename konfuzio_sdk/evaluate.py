@@ -2,7 +2,7 @@
 import logging
 from typing import Dict, List, Optional, Tuple, Union
 
-import numpy
+import numpy as np
 import pandas as pd
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.utils.extmath import weighted_mode
@@ -83,31 +83,6 @@ def grouped(group, target: str):
     return group
 
 
-def prioritize_rows(group):
-    """
-    Apply a filter when a Label should only appear once per AnnotationSet but has been predicted multiple times.
-
-    After we have calculated the TPs, FPs, FNs for the Document, we filter out the case where a Label should
-    only appear once per AnnotationSet but has been predicted multiple times. In this case, if any of the
-    predictions is a TP then we keep one and discard FPs/FNs. If no TPs, if any of the predictions is a FP
-    then we keep one and discard the FNs. If no FPs, then we keep a FN. The prediction we keep is always the
-    first in terms of start_offset.
-    """
-    group = group[~(group['label_has_multiple_top_candidates_predicted'].astype(bool))]
-    if group.empty:
-        return group
-
-    first_true_positive = group[group['true_positive']].head(1)
-    first_false_positive = group[group['false_positive']].head(1)
-    first_false_negative = group[group['false_negative']].head(1)
-    if not first_true_positive.empty:
-        return first_true_positive
-    elif not first_false_positive.empty:
-        return first_false_positive
-    else:
-        return first_false_negative
-
-
 def compare(
     doc_a,
     doc_b,
@@ -116,6 +91,7 @@ def compare(
     ignore_below_threshold=False,
     strict=True,
     id_counter: int = 1,
+    custom_threshold=None,
 ) -> pd.DataFrame:
     """Compare the Annotations of two potentially empty Documents wrt. to **all** Annotations.
 
@@ -157,7 +133,10 @@ def compare(
         spans['start_offset_predicted'] = spans['start_offset']  # start and end offset are identical
         spans['end_offset_predicted'] = spans['end_offset']  # start and end offset are identical
 
-        spans['above_predicted_threshold'] = spans['confidence_predicted'] >= spans['label_threshold_predicted']
+        if custom_threshold:
+            spans['above_predicted_threshold'] = spans['confidence_predicted'] >= custom_threshold
+        else:
+            spans['above_predicted_threshold'] = spans['confidence_predicted'] >= spans['label_threshold_predicted']
 
         spans['is_correct_label'] = spans['label_id'] == spans['label_id_predicted']
         spans['is_correct_label_set'] = spans['label_set_id'] == spans['label_set_id_predicted']
@@ -177,7 +156,10 @@ def compare(
         spans['is_matched'] = (spans['start_offset_predicted'] <= spans['end_offset']) & (
             spans['end_offset_predicted'] >= spans['start_offset']
         )
-        spans['above_predicted_threshold'] = spans['confidence_predicted'] >= spans['label_threshold_predicted']
+        if custom_threshold:
+            spans['above_predicted_threshold'] = spans['confidence_predicted'] >= custom_threshold
+        else:
+            spans['above_predicted_threshold'] = spans['confidence_predicted'] >= spans['label_threshold_predicted']
         spans['is_correct_label'] = True
         spans['is_correct_label_set'] = True
         spans['label_id_predicted'] = spans['label_id']
@@ -273,7 +255,6 @@ def compare(
                 | (~spans['is_matched'])
             )
         )
-
     else:
         spans['false_positive'] = (
             (spans['above_predicted_threshold'])
@@ -290,10 +271,34 @@ def compare(
         )
 
     if not strict:
+
+        def prioritize_rows(group):
+            """
+            Apply a filter when a Label should only appear once per AnnotationSet but has been predicted multiple times.
+
+            After we have calculated the TPs, FPs, FNs for the Document, we filter out the case where a Label should
+            only appear once per AnnotationSet but has been predicted multiple times. In this case, if any of the
+            predictions is a TP then we keep one and discard FPs/FNs. If no TPs, if any of the predictions is a FP
+            then we keep one and discard the FNs. If no FPs, then we keep a FN. The prediction we keep is always the
+            first in terms of start_offset.
+            """
+            group = group[~(group['label_has_multiple_top_candidates_predicted'].astype(bool))]
+            if group.empty:
+                return group
+
+            first_true_positive = group[group['true_positive']].head(1)
+            first_false_positive = group[group['false_positive']].head(1)
+            first_false_negative = group[group['false_negative']].head(1)
+            if not first_true_positive.empty:
+                return first_true_positive
+            elif not first_false_positive.empty:
+                return first_false_positive
+            else:
+                return first_false_negative
+
         spans = spans.groupby(['annotation_set_id_predicted', 'label_id_predicted']).apply(prioritize_rows)
 
-    spans = spans.replace({numpy.nan: None})
-
+    spans = spans.replace({np.nan: None})
     # how many times annotations with this label occur in the ground truth data
     spans['frequency'] = spans.groupby('label_id')['label_id'].transform('size')
     spans['frequency'].fillna(0, inplace=True)
@@ -472,6 +477,8 @@ class ExtractionEvaluation:
         self.data = None
         self.zero_division = zero_division
         self.calculate()
+        self.label_thresholds = {}
+        self.calculate_thresholds()
         logger.info(f'Size of evaluation DataFrame: {memory_size_of(self.data)/1000} KB.')
 
     def calculate(self):
@@ -492,6 +499,65 @@ class ExtractionEvaluation:
             id_counter += len(evaluation)
 
         self.data = pd.concat(evaluations)
+
+    def calculate_thresholds(self):
+        """
+        Calculate optimal thresholds for each Label in the Document set that allow to achieve the highest value
+        of F1 score, precision and recall.
+        """
+        evaluations_per_threshold = {}
+        for threshold in np.arange(0.05, 1, 0.05):
+            evaluations = []
+            for ground_truth, predicted in self.documents:
+                evaluation = compare(
+                    doc_a=ground_truth,
+                    doc_b=predicted,
+                    only_use_correct=self.only_use_correct,
+                    strict=self.strict,
+                    use_view_annotations=self.use_view_annotations,
+                    ignore_below_threshold=self.ignore_below_threshold,
+                    custom_threshold=threshold,
+                )
+                evaluations.append(evaluation)
+            evaluations_per_threshold[threshold] = pd.concat(evaluations)
+        for label in self.documents[0][0].project.labels:
+            self.label_thresholds[label.id_] = {}
+            best_f1 = 0.0
+            best_threshold_f1 = 0.0
+            best_precision = 0.0
+            best_threshold_precision = 0.0
+            best_recall = 0.0
+            best_threshold_recall = 0.0
+            for threshold in evaluations_per_threshold:
+                current_evaluation = evaluations_per_threshold[threshold]
+                label_data = current_evaluation.query(f'label_id == {label.id_} | (label_id_predicted == {label.id_})')
+                label_evaluation_calculator = EvaluationCalculator(
+                    tp=label_data['true_positive'].sum(),
+                    fp=label_data['false_positive'].sum(),
+                    fn=label_data['false_negative'].sum(),
+                    zero_division=self.zero_division,
+                )
+                label_f1 = label_evaluation_calculator.f1
+                label_precision = label_evaluation_calculator.precision
+                label_recall = label_evaluation_calculator.recall
+                if label_f1 and label_f1 > best_f1:
+                    best_f1 = label_f1
+                    best_threshold_f1 = threshold
+                if label_precision and label_precision > best_precision:
+                    best_precision = label_precision
+                    best_threshold_precision = threshold
+                if label_recall and label_recall > best_recall:
+                    best_recall = label_recall
+                    best_threshold_recall = threshold
+            label.optimized_thresholds['f1'] = {'score': best_f1, 'threshold': best_threshold_f1}
+            label.optimized_thresholds['precision'] = {'score': best_precision, 'threshold': best_threshold_precision}
+            label.optimized_thresholds['recall'] = {'score': best_recall, 'threshold': best_threshold_recall}
+            self.label_thresholds[label.id_]['f1'] = {'score': best_f1, 'threshold': best_threshold_f1}
+            self.label_thresholds[label.id_]['precision'] = {
+                'score': best_precision,
+                'threshold': best_threshold_precision,
+            }
+            self.label_thresholds[label.id_]['recall'] = {'score': best_recall, 'threshold': best_threshold_recall}
 
     def _query(self, search=None):
         """Query the comparison data.
@@ -734,9 +800,9 @@ class CategorizationEvaluation:
         :return: dictionary with the results per Category
         """
         confusion_matrix = self.confusion_matrix()
-        sum_columns = numpy.sum(confusion_matrix, axis=0)
-        sum_rows = numpy.sum(confusion_matrix, axis=1)
-        sum_all = numpy.sum(confusion_matrix)
+        sum_columns = np.sum(confusion_matrix, axis=0)
+        sum_rows = np.sum(confusion_matrix, axis=1)
+        sum_all = np.sum(confusion_matrix)
 
         results = {}
 
