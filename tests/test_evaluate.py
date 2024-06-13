@@ -1167,6 +1167,18 @@ class TestEvaluation(unittest.TestCase):
         label_set = project.get_label_set_by_id(id_=3)
         assert evaluation.tp(search=label_set) == 3
 
+    def test_label_threshold_calculation(self):
+        """Test calculation of optimized thresholds for Labels."""
+        project = LocalTextProject()
+        evaluation = ExtractionEvaluation(documents=list(zip(project.documents, project.documents)), zero_division=None)
+        assert len(evaluation.label_thresholds) == 12
+        assert evaluation.label_thresholds[6]['f1']['score'] == 1.0
+        assert evaluation.label_thresholds[6]['f1']['threshold'] == 0.05
+        assert evaluation.label_thresholds[6]['precision']['score'] == 1.0
+        assert evaluation.label_thresholds[6]['precision']['threshold'] == 0.05
+        assert evaluation.label_thresholds[6]['recall']['score'] == 1.0
+        assert evaluation.label_thresholds[6]['recall']['threshold'] == 0.05
+
 
 class TestEvaluationTwoLabels(unittest.TestCase):
     """Test the calculation two Documents with overlapping Spans and multiple Labels."""
