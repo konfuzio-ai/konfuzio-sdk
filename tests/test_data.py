@@ -730,9 +730,9 @@ class TestOfflineExampleData(unittest.TestCase):
     def test_create_project_metadata_json(self):
         """Test creating a JSON with a Project's metadata."""
         metadata_dict = self.project.create_project_metadata_dict()
-        assert len(metadata_dict['categories']) == 2
-        assert len(metadata_dict['categories'][0]['schema_']) == 6
-        assert len(metadata_dict['categories'][0]['schema_'][0]['labels']) == 10
+        assert len(metadata_dict['categories']) == 3
+        assert len(metadata_dict['categories'][0]['schema']) == 6
+        assert len(metadata_dict['categories'][0]['schema'][0]['labels']) == 10
 
     def test_create_category_wrong_name(self):
         """Test that it's impossible to create a Category with a name that contains a special character."""
