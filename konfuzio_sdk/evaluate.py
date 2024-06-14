@@ -257,17 +257,6 @@ def compare(
     )
 
     if not strict:
-        # Apply the function prioritize_rows just to entries where the label is not set to "multiple"
-        labels = doc_a.project.labels
-        label_ids_multiple = [label.id_ for label in labels if label.has_multiple_top_candidates]
-        label_ids_not_multiple = [label.id_ for label in labels if not label.has_multiple_top_candidates]
-        spans_not_multiple = spans[spans['label_id'].isin(label_ids_not_multiple)]
-        spans_not_multiple = spans_not_multiple.groupby(['annotation_set_id_predicted', 'label_id_predicted']).apply(
-            prioritize_rows
-        )
-        spans_multiple = spans[spans['label_id'].isin(label_ids_multiple)]
-        spans = pd.concat([spans_not_multiple, spans_multiple])
-        spans = spans.sort_values(by='is_matched', ascending=False)
 
         def prioritize_rows(group):
             """
@@ -293,7 +282,17 @@ def compare(
             else:
                 return first_false_negative
 
-        spans = spans.groupby(['annotation_set_id_predicted', 'label_id_predicted']).apply(prioritize_rows)
+        # Apply the function prioritize_rows just to entries where the label is not set to "multiple"
+        labels = doc_a.project.labels
+        label_ids_multiple = [label.id_ for label in labels if label.has_multiple_top_candidates]
+        label_ids_not_multiple = [label.id_ for label in labels if not label.has_multiple_top_candidates]
+        spans_not_multiple = spans[spans['label_id'].isin(label_ids_not_multiple)]
+        spans_not_multiple = spans_not_multiple.groupby(['annotation_set_id_predicted', 'label_id_predicted']).apply(
+            prioritize_rows
+        )
+        spans_multiple = spans[spans['label_id'].isin(label_ids_multiple)]
+        spans = pd.concat([spans_not_multiple, spans_multiple])
+        spans = spans.sort_values(by='is_matched', ascending=False)
 
     spans = spans.replace({np.nan: None})
     # how many times annotations with this label occur in the ground truth data
