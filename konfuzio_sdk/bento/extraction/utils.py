@@ -1,9 +1,17 @@
 """Utility functions for adapting Konfuzio concepts to be used with Pydantic models."""
+
+import base64
+from io import BytesIO
+
 from pydantic import BaseModel
 
 from konfuzio_sdk.data import Annotation, AnnotationSet, Document, Page, Project, Span
 
-from .schemas import ExtractRequest20240117, ExtractRequest20240117Page, ExtractResponse20240117
+from .schemas import (
+    ExtractRequest20240117,
+    ExtractRequest20240117Page,
+    ExtractResponse20240117,
+)
 
 NOT_IMPLEMENTED_ERROR_MESSAGE = (
     'The request does not adhere to any schema version. Please modify the request to fit one of the schemas from '
@@ -131,6 +139,44 @@ def convert_document_to_request(document: Document, schema: BaseModel = ExtractR
             },
             pages=pages,
         )
+    elif schema.__name__ == 'CheckboxRequest20240523':
+
+        def _get_encoded_image(page):
+            image = page.get_image()
+            buffered = BytesIO()
+            image.save(buffered, format='PNG')
+            encoded_image = base64.b64encode(buffered.getvalue()).decode('utf-8')
+            return encoded_image
+
+        pages = [
+            {
+                'page_id': page.id_,
+                'width': int(page.width),
+                'height': int(page.height),
+                'image': _get_encoded_image(page),
+            }
+            for page in document.pages()
+        ]
+        # TODO: Check if page width and height should be int or float (they are float when retrieved from the document)
+        annotations = [
+            {
+                'page_id': a.page.id_,
+                'annotation_id': a.id_,
+                # bbox=CheckboxRequest20240523.Annotation.Box(x0=int(a.x0), x1=int(a.x1), y0=int(a.y0), y1=int(a.y1)),
+                'bbox': {
+                    'x0': int(a.bboxes[0]['x0']),
+                    'x1': int(a.bboxes[0]['x1']),
+                    'y0': int(a.bboxes[0]['y0']),
+                    'y1': int(a.bboxes[0]['y1']),
+                },
+            }
+            for a in document.annotations()
+            # if a.label.is_linked_to_checkbox # TODO: Uncomment this line when the linked_to_checkbox attribute is implemented by Server
+        ]
+        # TODO: Check if .annotations() or .view_annotations()? -> https://dev.konfuzio.com/sdk/sourcecode.html#document
+
+        converted = schema(pages=pages, annotations=annotations)
+
     else:
         raise NotImplementedError(NOT_IMPLEMENTED_ERROR_MESSAGE)
     return converted

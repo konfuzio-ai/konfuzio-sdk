@@ -2,6 +2,9 @@
 
 import abc
 import logging
+import os
+import shutil
+import tempfile
 from pathlib import Path
 from typing import Any, List, Tuple, Union
 
@@ -21,8 +24,8 @@ logger = logging.getLogger(__name__)
 Box = Union[List[Tuple[int, int, int, int]], np.ndarray]
 
 
-class OMRAbstractModel(Module, metaclass=abc.ABCMeta):
-    """Abstract class for the Optical Mark Recognition model."""
+class CheckboxDetector(Module, metaclass=abc.ABCMeta):
+    """Detect checkboxes in images using a pre-trained model."""
 
     def __init__(
         self,
@@ -36,23 +39,19 @@ class OMRAbstractModel(Module, metaclass=abc.ABCMeta):
         super().__init__()
         self.requires_text = True
         self.requires_images = True
+        self.requires_segmentation = False
         self.name = self.__class__.__name__
-
-    # @abc.abstractmethod
-    # def forward(self, image: Image.Image) -> Any:
-    #    """
-    #    Abstract method to be implemented by subclasses. Defines the forward pass of the model.
-
-    #    :param image: The input image to process.
-    #    :type image: PIL.Image.Image
-    #    :return: The result of the model prediction.
-    #    :rtype: Any
-    #    """
 
     @property
     def bento_metadata(self) -> dict:
         """Metadata to include into the bento-saved instance of a model."""
-        return {'requires_images': self.requires_images, 'requires_segmentation': self.requires_text}
+        return {
+            'requires_images': self.requires_images,
+            'requires_segmentation': self.requires_segmentation,
+            'requires_text': self.requires_text,
+            'request': 'CheckboxRequest20240523',
+            'response': 'CheckboxResponse20240523',
+        }
 
     @property
     def entrypoint_methods(self) -> dict:
@@ -83,17 +82,17 @@ class OMRAbstractModel(Module, metaclass=abc.ABCMeta):
             raise ValueError('Cannot specify output_dir without build=True')
 
         custom_objects = {
-            'utils': CheckboxDetector,
+            'utils': CheckboxDetectorUtils,
         }
 
         model_path = str(Path(__file__).parent / 'ckpt_best.pt')
         if not Path(model_path).exists():
             raise FileNotFoundError(f'Model weights file not found at {model_path}')
-        detector = torch.jit.load(model_path)
+        self.detector = torch.jit.load(model_path)
 
         saved_model = bentoml.torchscript.save_model(
             name=self.name.lower(),
-            model=detector,
+            model=self.detector,
             signatures=self.entrypoint_methods,
             metadata=self.bento_metadata,
             custom_objects=custom_objects,
@@ -121,19 +120,36 @@ class OMRAbstractModel(Module, metaclass=abc.ABCMeta):
 
     def build_bento(self, bento_model):
         # Build BentoML service for the model.
-        return bentoml.bentos.build(
-            name=self.name.lower(),
-            service=f'{self.name.lower()}_service.py:svc',
-            include=[f'{self.name.lower()}_service.py', 'schemas.py'],
-            python={'packages': ['konfuzio_sdk[ai]'], 'lock_packages': True},
-            build_ctx=Path(__file__).resolve().parent.parent
-            / 'bento'
-            / 'extraction',  # os.path.dirname(os.path.abspath(__file__)) + '/../bento/extraction',
-            models=[str(bento_model.tag)],
-        )
+        bento_module_dir = os.path.dirname(os.path.abspath(__file__)) + '/../bento/extraction'
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # copy bento_module_dir to temp_dir
+            shutil.copytree(bento_module_dir, temp_dir + '/extraction')
+            # include the AI model name so the service can load it correctly
+            with open(f'{temp_dir}/AI_MODEL_NAME', 'w') as f:
+                f.write(self.name.lower())
+            return bentoml.bentos.build(
+                name=self.name.lower(),
+                service=f'extraction/{self.name.lower()}_service.py:CheckboxService',
+                include=[
+                    f'extraction/{self.name.lower()}_service.py',
+                    'extraction/schemas.py',
+                    'extraction/utils.py',
+                    'AI_MODEL_NAME',
+                ],
+                labels=self.bento_metadata,
+                python={
+                    'packages': [
+                        # TODO: Replace with released version of konfuzio-sdk[ai]
+                        'https://github.com/konfuzio-ai/konfuzio-sdk/archive/refs/heads/bentoml-omr.zip#egg=konfuzio-sdk[ai]'
+                    ],
+                    'lock_packages': True,
+                },
+                build_ctx=temp_dir,
+                models=[str(bento_model.tag)],
+            )
 
 
-class CheckboxDetector(OMRAbstractModel):
+class CheckboxDetectorUtils:
     """Detect checkboxes in images using a pre-trained model."""
 
     def __init__(self, **kwargs: Any) -> None:
@@ -146,13 +162,13 @@ class CheckboxDetector(OMRAbstractModel):
         :return: None
         :rtype: :class:`NoneType`
         """
-        super().__init__()
+        # super().__init__()
 
         # """ NE: commented in on 07.05.24 due to test with if __name__ == '__main__':, might not be needed for bento
-        model_path = str(Path(__file__).parent / 'ckpt_best.pt')
-        if not Path(model_path).exists():
-            raise FileNotFoundError(f'Model weights file not found at {model_path}')
-        self.detector = torch.jit.load(model_path)
+        # model_path = str(Path(__file__).parent / 'ckpt_best.pt')
+        # if not Path(model_path).exists():
+        #     raise FileNotFoundError(f'Model weights file not found at {model_path}')
+        # self.detector = torch.jit.load(model_path)
         # """
 
         self.input_shape = (1280, 1280)
@@ -319,24 +335,24 @@ class CheckboxDetector(OMRAbstractModel):
         bboxes = np.array([(int(b[0]), int(b[1]), int(b[2]), int(b[3])) for b in bboxes])
         return cls_conf, bboxes
 
-    # """ NE: commented in on 07.05.24 due to test with if __name__ == '__main__':, might not be needed for bento
-    def forward(self, image: Image.Image) -> Tuple[np.ndarray, List[bool], np.ndarray]:
-        """
-        Runs the detection pipeline on an input image.
+    # # """ NE: commented in on 07.05.24 due to test with if __name__ == '__main__':, might not be needed for bento
+    # def forward(self, image: Image.Image) -> Tuple[np.ndarray, List[bool], np.ndarray]:
+    #     """
+    #     Runs the detection pipeline on an input image.
 
-        :param image: The input image.
-        :type image: :class:`PIL.Image.Image`
-        :return: Bounding boxes, detection flags, and confidence scores.
-        :rtype: :class:`tuple`
-        """
-        logger.info('Run checkbox detection.')
-        input_image = self._preprocess(image, self.input_shape)
-        outputs = self.detector(input_image)
-        cls_conf, bboxes = self._postprocess(outputs, image.size)
-        checked = [True if c[0] > c[1] else False for c in cls_conf]
-        return bboxes, checked, cls_conf
+    #     :param image: The input image.
+    #     :type image: :class:`PIL.Image.Image`
+    #     :return: Bounding boxes, detection flags, and confidence scores.
+    #     :rtype: :class:`tuple`
+    #     """
+    #     logger.info('Run checkbox detection.')
+    #     input_image = self._preprocess(image, self.input_shape)
+    #     outputs = self.detector(input_image)
+    #     cls_conf, bboxes = self._postprocess(outputs, image.size)
+    #     checked = [True if c[0] > c[1] else False for c in cls_conf]
+    #     return bboxes, checked, cls_conf
 
-    # """
+    # # """
 
 
 class BboxPairing:

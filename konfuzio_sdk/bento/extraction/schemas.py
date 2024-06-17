@@ -1,4 +1,5 @@
 """Define pydantic models for request and response from the Extraction AI."""
+
 from typing import Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel
@@ -76,7 +77,7 @@ class ExtractResponse20240117(BaseModel):
     annotation_sets: List[AnnotationSet]
 
 
-class OMRRequest20240215(BaseModel):
+class CheckboxRequest20240523(BaseModel):
     """
     Describe a scheme for the Optical Mark Recognition (OMR) request on 15/02/2024.
 
@@ -97,7 +98,7 @@ class OMRRequest20240215(BaseModel):
             y1: int
 
         page_id: int
-        annotation_id: str
+        annotation_id: int
         bbox: Box
 
     class Page(BaseModel):
@@ -112,32 +113,28 @@ class OMRRequest20240215(BaseModel):
     annotations: List[Annotation]
 
 
-class OMRResponse20240215(BaseModel):
+class CheckboxResponse20240523(BaseModel):
     """Describe a scheme for the Optical Mark Recognition (OMR) response on 15/02/2024."""
 
     class MetaData(BaseModel):
         """Describe a scheme for OMR meta data on 15/02/2024."""
 
-        class Meta(BaseModel):
-            """Describe a scheme for OMR meta data instance on 15/02/2024."""
+        class Checkbox(BaseModel):
+            """Describe a scheme for OMR checkbox data on 15/02/2024."""
 
-            class OMR(BaseModel):
-                """Describe a scheme for OMR checkbox data on 15/02/2024."""
+            class Box(BaseModel):
+                """Describe a scheme for BBox on 15/02/2024."""
 
-                class Box(BaseModel):
-                    """Describe a scheme for BBox on 15/02/2024."""
+                x0: int
+                x1: int
+                y0: int
+                y1: int
 
-                    x0: int
-                    x1: int
-                    y0: int
-                    y1: int
+            is_checked: Union[bool, None]  # None if undetermined or invalid
+            bbox: Box
+            confidence: float
 
-                is_checked: Union[bool, None]  # None if undetermined or invalid
-                checkbox_bbox: Box
-                confidence: float
+        annotation_id: int
+        checkbox: Checkbox
 
-            omr: OMR
-
-        annotation_id: Meta
-
-    metadata: MetaData
+    metadata: List[MetaData]
