@@ -88,7 +88,7 @@ setuptools.setup(
         'python-decouple>=3.3',
         'requests',
         'regex>=2020.6.8',  # re module but better
-        'scikit-learn==1.2.2',
+        'scikit-learn==1.5.0',
         'tabulate>=0.9.0',  # Used to pretty print DataFrames
         'tqdm>=4.64.0',
         'pympler>=1.0.1',  # Use to get pickle file size.
