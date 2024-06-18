@@ -45,6 +45,8 @@ def prepare_request(request: BaseModel, project: Project) -> Document:
             p = Page(id_=page.number, document=document, number=page.number, original_size=page.original_size)
             if page.segmentation:
                 p._segmentation = page.segmentation
+            if page.image:
+                p.image_bytes = page.image
     else:
         raise NotImplementedError(NOT_IMPLEMENTED_ERROR_MESSAGE)
     return document
@@ -112,7 +114,10 @@ def convert_document_to_request(document: Document, schema: BaseModel = ExtractR
     if schema.__name__ == 'ExtractRequest20240117':
         pages = [
             ExtractRequest20240117Page(
-                number=page.number, image=page.image, original_size=page._original_size, segmentation=page._segmentation
+                number=page.number,
+                image=page.image_bytes,
+                original_size=page._original_size,
+                segmentation=page._segmentation,
             )
             for page in document.pages()
         ]
