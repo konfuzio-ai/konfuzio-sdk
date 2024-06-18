@@ -85,7 +85,8 @@ class TestOMRCheckboxBento(unittest.TestCase):
         cls.bento_process = subprocess.Popen(
             ['bentoml', 'serve', cls.bento_name], stdout=subprocess.PIPE, stderr=subprocess.STDOUT
         )
-        time.sleep(5)
+        # Debug the bento process in with breakpoints and cls.bento_process.stdout.readline()
+        time.sleep(10)  # time needed to start up the bento server
         print('served bento')
 
         cls.request_url = 'http://0.0.0.0:3000/extract'

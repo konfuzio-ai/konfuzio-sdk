@@ -10,6 +10,7 @@ import bentoml
 import numpy as np
 from fastapi import FastAPI
 from PIL import Image
+from trainer.omr import CheckboxDetectorUtils  # import from the built bento directory src/trainer/omr.py
 
 from konfuzio_sdk.trainer.omr import BboxPairing
 
@@ -26,13 +27,10 @@ logger = logging.getLogger(__name__)
 @bentoml.service
 @bentoml.mount_asgi_app(app, path='/v1')
 class CheckboxService:
-    # model_ref = bentoml.models.get(ai_model_name)
-
     def __init__(self) -> None:
         """Load the checkbox model into memory."""
         self.extraction_model = bentoml.torchscript.load_model(ai_model_name + ':latest')
-        custom_objects = bentoml.torchscript.get(ai_model_name + ':latest').custom_objects
-        self.detector_utils = custom_objects['utils']()
+        self.detector_utils = CheckboxDetectorUtils()
         self.bbox_pairing = BboxPairing()
 
     @bentoml.api(input_spec=CheckboxRequest20240523)

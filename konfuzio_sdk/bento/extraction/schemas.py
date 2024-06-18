@@ -107,7 +107,7 @@ class CheckboxRequest20240523(BaseModel):
         page_id: int
         width: int
         height: int
-        image: str
+        image: str  # TODO: Add validation for base64 encoded image
 
     pages: List[Page]
     annotations: List[Annotation]

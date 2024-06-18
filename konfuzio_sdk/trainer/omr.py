@@ -2,7 +2,6 @@
 
 import abc
 import logging
-import os
 import shutil
 import tempfile
 from pathlib import Path
@@ -81,10 +80,6 @@ class CheckboxDetector(Module, metaclass=abc.ABCMeta):
         if output_dir and not build:
             raise ValueError('Cannot specify output_dir without build=True')
 
-        custom_objects = {
-            'utils': CheckboxDetectorUtils,
-        }
-
         model_path = str(Path(__file__).parent / 'ckpt_best.pt')
         if not Path(model_path).exists():
             raise FileNotFoundError(f'Model weights file not found at {model_path}')
@@ -95,7 +90,6 @@ class CheckboxDetector(Module, metaclass=abc.ABCMeta):
             model=self.detector,
             signatures=self.entrypoint_methods,
             metadata=self.bento_metadata,
-            custom_objects=custom_objects,
         )
         logger.info(f'Model saved in the local BentoML store: {saved_model}')
 
@@ -120,20 +114,23 @@ class CheckboxDetector(Module, metaclass=abc.ABCMeta):
 
     def build_bento(self, bento_model):
         # Build BentoML service for the model.
-        bento_module_dir = os.path.dirname(os.path.abspath(__file__)) + '/../bento/extraction'
+        extraction_dir = Path(__file__).parents[1] / 'bento/extraction'
+        trainer_dir = Path(__file__).parent
         with tempfile.TemporaryDirectory() as temp_dir:
             # copy bento_module_dir to temp_dir
-            shutil.copytree(bento_module_dir, temp_dir + '/extraction')
+            shutil.copytree(extraction_dir, temp_dir + '/extraction')
+            shutil.copytree(trainer_dir, temp_dir + '/trainer')
             # include the AI model name so the service can load it correctly
             with open(f'{temp_dir}/AI_MODEL_NAME', 'w') as f:
                 f.write(self.name.lower())
-            return bentoml.bentos.build(
+            built_bento = bentoml.bentos.build(
                 name=self.name.lower(),
                 service=f'extraction/{self.name.lower()}_service.py:CheckboxService',
                 include=[
                     f'extraction/{self.name.lower()}_service.py',
                     'extraction/schemas.py',
                     'extraction/utils.py',
+                    'trainer/omr.py',
                     'AI_MODEL_NAME',
                 ],
                 labels=self.bento_metadata,
@@ -147,6 +144,7 @@ class CheckboxDetector(Module, metaclass=abc.ABCMeta):
                 build_ctx=temp_dir,
                 models=[str(bento_model.tag)],
             )
+        return built_bento
 
 
 class CheckboxDetectorUtils:
