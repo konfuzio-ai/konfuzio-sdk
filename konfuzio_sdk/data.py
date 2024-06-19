@@ -46,8 +46,10 @@ from konfuzio_sdk.utils import (
     convert_to_bio_scheme,
     exception_or_log_error,
     get_file_type_and_extension,
+    get_merged_bboxes,
     get_missing_offsets,
     is_file,
+    normalize_name,
     sdk_isinstance,
 )
 
@@ -700,6 +702,19 @@ class Bbox:
         """Get the y1 coordinate in the context of the Page image, in a top-down coordinate system."""
         return self.page.image_height - self.y0 * (self.page.image_height / self.page.height)
 
+    @property
+    def dict_format(self) -> Dict:
+        """Obtain Bbox data as a dictionary."""
+        return {
+            'page_index': self.page.index,
+            'top': self.page.height - self.y1,
+            'bottom': self.page.height - self.y0,
+            'x0': self.x0,
+            'x1': self.x1,
+            'y0': self.y0,
+            'y1': self.y1,
+        }
+
 
 class AnnotationSet(Data):
     """
@@ -923,8 +938,8 @@ class Category(Data):
         """Associate Label Sets to relate to Annotations."""
         self.id_local = next(Data.id_iter)
         self.id_ = id_
-        self.name = name
-        self.name_clean = name_clean
+        self.name = normalize_name(name)
+        self.name_clean = normalize_name(name_clean)
         self.project: Project = project
         self._force_offline = project._force_offline
         self.label_sets: List[LabelSet] = []
@@ -1179,6 +1194,7 @@ class Label(Data):
         self._evaluations = {}  # used to do the duplicate check on Annotation level
 
         self._has_multiline_annotations = None
+        self.optimized_thresholds = {}
 
         # Attribute used to know if a Label is linked to a Checkbox or not
         self.is_linked_to_checkbox = None
@@ -2174,6 +2190,9 @@ class Annotation(Data):
         """
         Initialize the Annotation.
 
+        An Annotation can be created either using Spans or using Bboxes. Make sure that Bboxes supplied actually contain
+        text inside; supplying empty Bboxes will cause an error.
+
         :param label: ID of the Annotation
         :param is_correct: If the Annotation is correct or not (bool)
         :param revised: If the Annotation is revised or not (bool)
@@ -2292,16 +2311,15 @@ class Annotation(Data):
             )
             self.selection_bbox = Bbox(x0=x0, x1=x1, y0=y0, y1=y1, page=page)
 
+        # a variable to access Document Bboxes in case an Annotation is Bbox-based
+        self._document_bboxes = None
+
         # TODO START LEGACY to support multiline Annotations
-        bboxes = kwargs.get('bboxes', None)
-        if bboxes and len(bboxes) > 0:
-            for bbox in bboxes:
-                if 'start_offset' in bbox.keys() and 'end_offset' in bbox.keys():
-                    Span(start_offset=bbox['start_offset'], end_offset=bbox['end_offset'], annotation=self)
-                else:
-                    raise ValueError(f'SDK cannot read bbox of Annotation {self.id_} in {self.document}: {bbox}')
+        input_bbox_dicts = kwargs.get('bboxes', None)
+        if input_bbox_dicts and len(input_bbox_dicts) > 0:
+            self._add_annotation_from_bbox_dicts(input_bbox_dicts=input_bbox_dicts)
         elif (
-            bboxes is None
+            input_bbox_dicts is None
             and kwargs.get('start_offset', None) is not None
             and kwargs.get('end_offset', None) is not None
         ):
@@ -2311,7 +2329,7 @@ class Annotation(Data):
             logger.warning(f'{self} is empty')
 
         self.top = None
-        self.top = None
+        self.bottom = None
         self.x0 = None
         self.x1 = None
         self.y0 = None
@@ -2366,7 +2384,7 @@ class Annotation(Data):
             return f'Annotation ({self.get_link()}) without Label ({self.start_offset}, {self.end_offset})'
 
     def __eq__(self, other):
-        """We compare an Annotation based on it's Label, Label-Sets if it's online otherwise on the id_local."""
+        """We compare an Annotation based on its Label, Label Sets if it's online otherwise on the id_local."""
         return (
             (self._spans.keys() == other._spans.keys())
             and self.label
@@ -2437,6 +2455,60 @@ class Annotation(Data):
         """Return Label Set of Annotation."""
         return self.annotation_set.label_set
 
+    def _add_annotation_from_bbox_dicts(self, input_bbox_dicts: list) -> None:
+        """
+        Based on a list of dictionaries where each contains metadata for a bbox, this method adds Annotations to the Document.
+        If the dictionary has the fields "start_offset" and "end_offset", the method creates a Span based on such fields.
+        If not, it parses the bbox coordinates from the dictionary keys and based on them, looks for Spans
+        that could be contained within such bbox. If no Span was found, a `KeyError` is raised.
+
+        :param input_bbox_dicts: List of dictionaries, each containing metadata such as bbox coordinates
+        or Span's start_offset & end_offset used to create an Annotation.
+        Note: either (start_offset, end_offset) or (x0, x1, y0, y1, page_index) should be provided in each item of `input_bbox_dicts`.
+        """
+        for input_bbox_dict in input_bbox_dicts:
+            if 'start_offset' in input_bbox_dict.keys() and 'end_offset' in input_bbox_dict.keys():
+                Span(
+                    start_offset=input_bbox_dict['start_offset'],
+                    end_offset=input_bbox_dict['end_offset'],
+                    annotation=self,
+                )
+            elif (
+                'x0' in input_bbox_dict.keys()
+                and 'x1' in input_bbox_dict.keys()
+                and 'y0' in input_bbox_dict.keys()
+                and 'y1' in input_bbox_dict.keys()
+                and 'page_index' in input_bbox_dict.keys()
+            ):
+                page = self.document.get_page_by_index(input_bbox_dict['page_index'])
+                if not self._document_bboxes:
+                    self._document_bboxes = self.document.bbox_dict
+                input_bbox_dict['top'] = page.height - input_bbox_dict['y1']
+                input_bbox_dict['bottom'] = page.height - input_bbox_dict['y0']
+                # checking that Bboxes provided as input contain text inside
+                merged_bboxes = get_merged_bboxes(
+                    doc_bbox=self._document_bboxes, bboxes=[input_bbox_dict], doc_text=self.document.text
+                )
+                for merged_bbox in merged_bboxes:
+                    try:
+                        span = Span(start_offset=merged_bbox['start_offset'], end_offset=merged_bbox['end_offset'])
+                        self.add_span(span)
+                        _ = Bbox(
+                            page=self.document.get_page_by_index(merged_bbox['page_index']),
+                            x0=merged_bbox['x0'],
+                            x1=merged_bbox['x1'],
+                            y0=merged_bbox['y0'],
+                            y1=merged_bbox['y1'],
+                        )
+                    except KeyError:
+                        raise KeyError(
+                            f'Cannot add {self} because Bbox {input_bbox_dict} does not have any text inside and '
+                            f'it is not possible create Spans from the selected area. Please provide Bboxes'
+                            f'that have text inside them or Spans to create an Annotation.'
+                        )
+            else:
+                raise ValueError(f'SDK cannot read Bbox of Annotation {self.id_} in {self.document}: {input_bbox_dict}')
+
     def add_span(self, span: Span):
         """Add a Span to an Annotation incl. a duplicate check per Annotation."""
         if (span.start_offset, span.end_offset) not in self._spans:
@@ -2489,6 +2561,12 @@ class Annotation(Data):
             # update_annotation(id_=self.id_, document_id=self.document.id_, project_id=self.project.id_)
 
         if not self.is_online:
+            if self.spans:
+                spans_bboxes = self.spans
+            elif self.bboxes:
+                spans_bboxes = self.bboxes
+            else:
+                raise ValueError('Cannot save an Annotation without Spans and Bboxes.')
             response = post_document_annotation(
                 document_id=self.document.id_,
                 label_id=self.label.id_,
@@ -2498,7 +2576,7 @@ class Annotation(Data):
                 revised=self.revised,
                 annotation_set_id=annotation_set_id,
                 session=self.document.project.session,
-                spans=self.spans,
+                spans=spans_bboxes,
             )
             if response.status_code == 201:
                 json_response = json.loads(response.text)
@@ -2614,14 +2692,13 @@ class Annotation(Data):
 
     def bbox(self) -> Bbox:
         """Get Bbox encompassing all Annotation Spans."""
-        if self._bbox is None:
-            self._bbox = Bbox(
-                x0=min([span.bbox().x0 for span in self.spans]),
-                x1=max([span.bbox().x1 for span in self.spans]),
-                y0=min([span.bbox().y0 for span in self.spans]),
-                y1=max([span.bbox().y1 for span in self.spans]),
-                page=self.page,
-            )
+        self._bbox = Bbox(
+            x0=min([span.bbox().x0 for span in self.spans]),
+            x1=max([span.bbox().x1 for span in self.spans]),
+            y0=min([span.bbox().y0 for span in self.spans]),
+            y1=max([span.bbox().y1 for span in self.spans]),
+            page=self.page,
+        )
         return self._bbox
 
     @property
@@ -3149,7 +3226,7 @@ class Document(Data):
         )
         for page in self.pages():
             copy_id = page.id_ if page.id_ else page.copy_of_id
-            _ = Page(
+            new_page = Page(
                 id_=None,
                 document=document,
                 start_offset=page.start_offset,
@@ -3159,7 +3236,11 @@ class Document(Data):
                 original_size=(page.width, page.height),
                 image_size=(page.image_width, page.image_height),
             )
-            _.image_bytes = page.image_bytes
+            new_page.image_bytes = page.image_bytes
+            for category_annotation in page.category_annotations:
+                _ = CategoryAnnotation(
+                    category=category_annotation.category, page=new_page, confidence=category_annotation.confidence
+                )
         return document
 
     def check_annotations(self, update_document: bool = False) -> bool:
@@ -3272,12 +3353,12 @@ class Document(Data):
                         is_overlapping = latest_start - earliest_end < 0
                     else:
                         is_overlapping = True
-
                     if label is not None:  # filter by Label
                         if label == annotation.label and is_overlapping:
                             add = True
                     elif is_overlapping:
                         add = True
+
             # as multiline Annotations will be added twice
             if add:
                 annotations.append(annotation)
@@ -3951,9 +4032,43 @@ class Document(Data):
 
                 if raw_annotations:
                     for raw_annotation in raw_annotations:
-                        raw_annotation['annotation_set_id'] = raw_annotation.pop('section')
-                        raw_annotation['label_set_id'] = raw_annotation.pop('section_label_id')
-                        _ = Annotation(document=self, id_=raw_annotation['id'], **raw_annotation)
+                        # for backward compatibility - to enable loading projects with old and new structure of folders
+                        # and files / json5 metadata
+                        if 'annotation_set' in raw_annotation:
+                            raw_annotation['annotation_set_id'] = raw_annotation.pop('annotation_set')
+                        else:
+                            raw_annotation['annotation_set_id'] = raw_annotation.pop('section')
+                        if 'label_set' in raw_annotation:
+                            raw_annotation['label_set_id'] = raw_annotation.pop('label_set')['id']
+                        else:
+                            raw_annotation['label_set_id'] = raw_annotation.pop('section_label_id')
+                        raw_annotation.pop('document', None)
+                        if isinstance(raw_annotation['label'], int):
+                            label = self.project.get_label_by_id(id_=raw_annotation['label'])
+                        else:
+                            label = self.project.get_label_by_id(id_=raw_annotation['label']['id'])
+                        # same with 'label'
+                        raw_annotation.pop('label', None)
+                        # same with 'span'/'bboxes'
+                        if 'span' in raw_annotation:
+                            raw_spans = raw_annotation['span']
+                            raw_annotation.pop('span', None)
+                        else:
+                            raw_spans = raw_annotation['bboxes']
+                        spans = [
+                            Span(start_offset=span['start_offset'], end_offset=span['end_offset']) for span in raw_spans
+                        ]
+                        # same with 'annotation_set'
+                        if (
+                            raw_annotation['annotation_set_id']
+                            and not self.project.get_label_set_by_id(
+                                raw_annotation['label_set_id']
+                            ).has_multiple_annotation_sets
+                        ):
+                            raw_annotation.pop('annotation_set_id', None)
+                        _ = Annotation(
+                            document=self, id_=raw_annotation['id'], label=label, spans=spans, **raw_annotation
+                        )
 
         return self._annotations.values()
 
@@ -4026,6 +4141,25 @@ class Document(Data):
                     logger.warning(f'Page id {page_id} was not found in {self}, only a Page copy.')
                     return page
 
+    @property
+    def bbox_dict(self) -> Dict:
+        """Get a dictionary of Document's character-level Bboxes."""
+        return {
+            key: {
+                'x0': value['x0'],
+                'x1': value['x1'],
+                'y0': value['y0'],
+                'y1': value['y1'],
+                'page_index': value['page_index'],
+                'page_number': value['page_index'] + 1,
+                'line_index': value['line_index'],
+                'text': value['text'],
+                'top': self.get_page_by_index(value['page_index']).height - value['y1'],
+                'bottom': self.get_page_by_index(value['page_index']).height - value['y0'],
+            }
+            for key, value in self.get_bbox().items()
+        }
+
 
 class Project(Data):
     """
@@ -4080,7 +4214,7 @@ class Project(Data):
         self.label_sets_file_path = os.path.join(self.project_folder, 'label_sets.json5')
 
         if self.id_ or self._project_folder:
-            self.get(update=update)
+            self.get(update=update, **kwargs)
         else:
             self.no_category = Category(project=self, id_=0, name_clean='NO_CATEGORY', name='NO_CATEGORY')
         # todo: list of Categories related to NO LABEL SET can be outdated, i.e. if the number of Categories changes
@@ -4169,23 +4303,23 @@ class Project(Data):
         """Return maximum memory used by AI models."""
         return self._max_ram
 
-    def write_project_files(self):
+    def write_project_files(self, *args, **kwargs):
         """Overwrite files with Project, Label, Label Set information."""
         categories_labels_label_sets = get_project_categories(project_id=self.id_, session=self.session)
         with open(self.categories_and_label_data_file_path, 'w') as f:
             json.dump(categories_labels_label_sets, f, indent=2, sort_keys=True)
 
-        self.write_meta_of_files()
+        self.write_meta_of_files(*args, **kwargs)
 
         return self
 
-    def write_meta_of_files(self):
+    def write_meta_of_files(self, *args, **kwargs):
         """Overwrite meta-data of Documents in Project."""
-        meta_data = get_meta_of_files(project_id=self.id_, session=self.session)
+        meta_data = get_meta_of_files(project_id=self.id_, session=self.session, *args, **kwargs)
         with open(self.meta_file_path, 'w') as f:
             json.dump(meta_data, f, indent=2, sort_keys=True)
 
-    def get(self, update=False):
+    def get(self, update=False, **kwargs):
         """
         Access meta information of the Project.
 
@@ -4199,7 +4333,7 @@ class Project(Data):
         # reload means re-add to the Project what is currently available in the Project's folder
         # update means download information from server to keep up with the updates made online
         if self.id_ and (not is_file(self.meta_file_path, raise_exception=False) or update):
-            self.write_project_files()
+            self.write_project_files(category_id=kwargs.get('category_id', None))
         # order of adding data into the project has changed after migration from v2 to v3 API - the endpoint used for
         # fetching categories, labels and label sets returns them in a nested structure:
         # Categories -> Label Sets -> Labels.
@@ -4209,7 +4343,7 @@ class Project(Data):
         self.get_label_sets(reload=True)
         self.get_categories(reload=True)
         self.get_meta(reload=True)
-        self.init_or_update_document(from_online=False)
+        self.init_or_update_document(from_online=False, category_id=kwargs.get('category_id', None))
         return self
 
     def add_label_set(self, label_set: LabelSet):
@@ -4386,7 +4520,7 @@ class Project(Data):
             self.get_labels()
         return self._labels
 
-    def init_or_update_document(self, from_online=False):
+    def init_or_update_document(self, from_online=False, category_id=None):
         """
         Initialize or update Documents from local files to then decide about full, incremental or no update.
 
@@ -4402,6 +4536,8 @@ class Project(Data):
         n_new_documents = 0
         n_unchanged_documents = 0
         for document_data in self.meta_data:
+            if category_id and 'category' in document_data.keys() and document_data['category'] != category_id:
+                continue
             updated_docs_ids_set.add(document_data['id'])
             # if document_data['status'][0] == 2:  # - hotfix for Text Annotation Server # todo add test
 
@@ -4411,13 +4547,13 @@ class Project(Data):
             if not new:
                 last_date = local_docs_dict[document_data['id']].updated_at
                 updated = dateutil.parser.isoparse(new_date) > last_date if last_date is not None else True
-            category_id = None
+            document_category_id = None
             # backward compatibility
             if 'category' in document_data.keys():
-                category_id = document_data['category']
+                document_category_id = document_data['category']
             elif 'category_template' in document_data.keys():
-                category_id = document_data['category_template']
-            doc_category = self.get_category_by_id(category_id) if category_id else self.no_category
+                document_category_id = document_data['category_template']
+            doc_category = self.get_category_by_id(document_category_id) if document_category_id else self.no_category
             document_data.pop('category', None)
             # ensuring we store document status in a variable and don't pass it multiple times by not removing it from
             # document_data
@@ -4577,7 +4713,7 @@ class Project(Data):
         self._meta_data = []
         return self
 
-    def download_training_and_test_data(self) -> None:
+    def download_training_and_test_data(self, category_id=None) -> None:
         """
         Migrate your Project to another HOST.
 
@@ -4587,6 +4723,9 @@ class Project(Data):
         if len(self.documents + self.test_documents) == 0:
             raise ValueError('No Documents in the training or test set. Please add them.')
         for document in tqdm(self.documents + self.test_documents):
+            if category_id and document.category.id_ != category_id:
+                print(f'Skip {document}...')
+                continue
             document.download_document_details()
             document.get_file()
             document.get_file(ocr_version=False)
@@ -4595,9 +4734,9 @@ class Project(Data):
 
         print('[SUCCESS] Data exporting finished successfully!')
 
-    def export_project_data(self, include_ais=False, training_and_test_documents=True) -> None:
+    def export_project_data(self, include_ais=False, training_and_test_documents=True, *args, **kwargs) -> None:
         """
-        "Export the Project data including Training, Test Documents and AI models.
+        Export the Project data including Training, Test Documents and AI models.
 
         :include_ais: Whether to include AI models in the export
         :training_and_test_documents: Whether to include training & test documents in the export.
@@ -4605,14 +4744,14 @@ class Project(Data):
         if training_and_test_documents:
             try:
                 print('[INFO] Starting Training and Test Document export!')
-                self.download_training_and_test_data()
+                self.download_training_and_test_data(*args, **kwargs)
             except Exception as error:
                 print('[ERROR] Something went wrong while downloading Document data!')
                 raise error
         if include_ais:
             try:
                 print('[INFO] Starting AI Model file export!')
-                exported_ais = export_ai_models(self)
+                exported_ais = export_ai_models(self, *args, **kwargs)
                 if exported_ais:
                     print(f'[INFO] Export finished. {exported_ais} AIs were available for export.')
                 else:

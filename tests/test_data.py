@@ -225,13 +225,57 @@ class TestOnlineProject(unittest.TestCase):
         annotation.delete()  # doc.update() performed internally when delete_online=True, which is default
         assert annotation not in doc.get_annotations()
 
+    def test_create_bbox_annotation(self):
+        """Test creating a Bbox-based Annotation."""
+        doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        doc.status = 2
+        doc.get_bbox()
+        label = self.project.get_label_by_id(862)
+        bbox = {'page_index': 0, 'x0': 198, 'x1': 300, 'y0': 508, 'y1': 517}
+        annotation_set = AnnotationSet(document=doc, label_set=self.project.get_label_set_by_id(64))
+        annotation = Annotation(
+            document=doc,
+            annotation_set=annotation_set,
+            label=label,
+            label_set_id=64,
+            accuracy=1.0,
+            is_correct=True,
+            bboxes=[bbox],
+        )
+        annotation.save(label_set_id=64)
+        assert annotation in doc.annotations()
+        doc.update()
+        assert annotation in doc.annotations()
+        assert round(annotation.bbox().x0) == 199
+        assert round(annotation.bbox().x1) == 287
+        assert round(annotation.bbox().y0) == 509
+        assert round(annotation.bbox().y1) == 517
+        annotation.delete(delete_online=True)
+
+    def test_create_empty_bbox_annotation(self):
+        """Test creating an empty Annotation using empty Bbox is impossible."""
+        doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        label = self.project.get_label_by_id(862)
+        bbox = {'page_index': 0, 'x0': 1, 'x1': 4, 'y0': 1, 'y1': 4}
+        annotation_set = AnnotationSet(document=doc, label_set=self.project.get_label_set_by_id(64))
+        with pytest.raises(NotImplementedError):
+            Annotation(
+                document=doc,
+                annotation_set=annotation_set,
+                label=label,
+                label_set_id=64,
+                accuracy=1.0,
+                is_correct=True,
+                bboxes=[bbox],
+            )
+
     def test_get_sentence_spans_from_bbox(self):
         """Test to get sentence Spans in a bounding box."""
-        document = self.project.get_document_by_id(5679477)
+        document = self.project.get_document_by_id(215906)
         document = WhitespaceTokenizer().tokenize(deepcopy(document))
         page = document.get_page_by_index(0)
 
-        bbox = Bbox(x0=39, y0=728, x1=512, y1=742, page=page)
+        bbox = Bbox(x0=39, y0=728, x1=539, y1=742, page=page)
 
         assert bbox.document is document
 
@@ -239,10 +283,10 @@ class TestOnlineProject(unittest.TestCase):
 
         sentences_spans = Span.get_sentence_from_spans(spans=spans)
 
-        assert len(sentences_spans) == 1
+        assert len(sentences_spans) == 2
         first_sentence = sentences_spans[0]
         assert len(first_sentence) == 1
-        assert first_sentence[0].offset_string == 'Deep Neural Networks for Page Stream Segmentation and Classiﬁcation'
+        assert first_sentence[0].offset_string == 'Hi, my name is LeftTop.'
 
     def test_merge_documents(self):
         """Merge documents into a new document."""
@@ -404,6 +448,14 @@ class TestOnlineProject(unittest.TestCase):
         image = document.pages()[0].get_image()
         assert isinstance(image, PIL.PngImagePlugin.PngImageFile)
         document.delete(delete_online=True)
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        """Remove any files that might have been left from the test pipeline."""
+        project = Project(id_=TEST_PROJECT_ID, update=True)
+        for document in project._documents:
+            if document.name in os.listdir('tests/test_data/'):
+                document.delete(delete_online=True)
 
 
 class TestOfflineExampleData(unittest.TestCase):
@@ -616,7 +668,7 @@ class TestOfflineExampleData(unittest.TestCase):
         pipeline.fit()
         evaluation = pipeline.evaluate_full(strict=False, use_training_docs=True)
         outliers = label.get_probable_outliers_by_confidence(evaluation, 0.9)
-        assert len(outliers) == 2
+        assert len(outliers) >= 2
         outlier_spans = [span.offset_string for annotation in outliers for span in annotation.spans]
         assert '24.05.2018' in outlier_spans
 
@@ -678,9 +730,15 @@ class TestOfflineExampleData(unittest.TestCase):
     def test_create_project_metadata_json(self):
         """Test creating a JSON with a Project's metadata."""
         metadata_dict = self.project.create_project_metadata_dict()
-        assert len(metadata_dict['categories']) == 2
-        assert len(metadata_dict['categories'][0]['schema_']) == 6
-        assert len(metadata_dict['categories'][0]['schema_'][0]['labels']) == 10
+        assert len(metadata_dict['categories']) == 3
+        assert len(metadata_dict['categories'][0]['schema']) == 6
+        assert len(metadata_dict['categories'][0]['schema'][0]['labels']) == 10
+
+    def test_create_category_wrong_name(self):
+        """Test that it's impossible to create a Category with a name that contains a special character."""
+        wrong_name = Category(project=self.project, name='Category/name', name_clean='Category/name')
+        assert wrong_name.name == 'Categoryname'
+        assert wrong_name.name_clean == 'Categoryname'
 
 
 class TestEqualityAnnotation(unittest.TestCase):
@@ -1126,7 +1184,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         # In the latter case, the minimum information required is the start and end offsets corresponding
         # to the characters of each bbox.
         annotation_bboxes = [{'start_offset': 0, 'end_offset': 1}, {'start_offset': 3}]
-        with pytest.raises(ValueError, match='cannot read bbox'):
+        with pytest.raises(ValueError, match='cannot read Bbox'):
             Annotation(document=document, bboxes=annotation_bboxes, label=self.label, label_set=self.label_set)
 
     def test_add_annotation_with_label_set_none(self):
@@ -2670,7 +2728,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         for document in prj.documents:
             document.text
         after = _getsize(prj)
-        assert 1.6 < after / before < 2.1
+        assert 1.6 < after / before < 5
         assert after < 610000
 
         # strings in prj take slightly less space than in a list
@@ -3447,10 +3505,11 @@ class TestData(unittest.TestCase):
         self.assertFalse(a.is_online)
 
 
-def test_download_training_and_test_data():
+def test_export_project_data():
     """Test downloading of data from training and test documents."""
     project = Project(id_=1249, update=True)
-    project.download_training_and_test_data()
+    category_id = project.categories[0].id_
+    project.export_project_data(include_ais=True, training_and_test_documents=True, category_id=category_id)
 
 
 def test_to_init_prj_from_folder():

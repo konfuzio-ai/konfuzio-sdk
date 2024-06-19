@@ -2,6 +2,7 @@
 
 import base64
 from io import BytesIO
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -51,12 +52,14 @@ def prepare_request(request: BaseModel, project: Project) -> Document:
             p = Page(id_=page.number, document=document, number=page.number, original_size=page.original_size)
             if page.segmentation:
                 p._segmentation = page.segmentation
+            if page.image:
+                p.image_bytes = page.image
     else:
         raise NotImplementedError(NOT_IMPLEMENTED_ERROR_MESSAGE)
     return document
 
 
-def process_response(result, schema=ExtractResponse20240117):
+def process_response(result, schema: BaseModel = ExtractResponse20240117) -> BaseModel:
     """
     Process a raw response from the runner to contain only selected fields.
 
@@ -107,7 +110,7 @@ def process_response(result, schema=ExtractResponse20240117):
     return schema(annotation_sets=annotations_result)
 
 
-def convert_document_to_request(document: Document, schema: BaseModel = ExtractRequest20240117):
+def convert_document_to_request(document: Document, schema: BaseModel = ExtractRequest20240117) -> BaseModel:
     """
     Receive a Document and convert it into a request in accordance to a passed schema.
 
@@ -118,7 +121,10 @@ def convert_document_to_request(document: Document, schema: BaseModel = ExtractR
     if schema.__name__ == 'ExtractRequest20240117':
         pages = [
             ExtractRequest20240117Page(
-                number=page.number, image=page.image, original_size=page._original_size, segmentation=page._segmentation
+                number=page.number,
+                image=page.image_bytes,
+                original_size=page._original_size,
+                segmentation=page._segmentation,
             )
             for page in document.pages()
         ]
@@ -182,25 +188,37 @@ def convert_document_to_request(document: Document, schema: BaseModel = ExtractR
     return converted
 
 
-def convert_response_to_annotations(response: BaseModel, document: Document):
+def convert_response_to_annotations(
+    response: BaseModel, document: Document, mappings: Optional[dict] = None
+) -> Document:
     """
     Receive an ExtractResponse and convert it into a list of Annotations to be added to the Document.
 
-    :param annotations: An ExtractResponse to be converted.
+    :param response: An ExtractResponse to be converted.
     :param document: A Document to which the annotations should be added.
-    :param schema: A schema to which the annotations should adhere.
+    :param mappings: A dict with "label_sets" and "labels" keys, both containing mappings from old to new IDs. Original
+        IDs are used if no mapping is provided or if the mapping is not found.
     :returns: The original Document with added Annotations.
     """
+    if mappings is None:
+        mappings = {}
+
+    # Mappings might be from JSON, so we need to convert keys to integers.
+    label_set_mappings = {int(k): v for k, v in mappings.get('label_sets', {}).items()}
+    label_mappings = {int(k): v for k, v in mappings.get('labels', {}).items()}
+
     if response.__class__.__name__ == 'ExtractResponse20240117':
         for annotation_set in response.annotation_sets:
+            label_set_id = label_set_mappings.get(annotation_set.label_set_id, annotation_set.label_set_id)
             sdk_annotation_set = AnnotationSet(
-                document=document, label_set=document.project.get_label_set_by_id(annotation_set.label_set_id)
+                document=document, label_set=document.project.get_label_set_by_id(label_set_id)
             )
             for annotation in annotation_set.annotations:
+                label_id = label_mappings.get(annotation.label.id, annotation.label.id)
                 Annotation(
                     document=document,
                     annotation_set=sdk_annotation_set,
-                    label=document.project.get_label_by_id(annotation.label.id),
+                    label=document.project.get_label_by_id(label_id),
                     offset_string=annotation.offset_string,
                     translated_string=annotation.translated_string,
                     normalized=annotation.normalized,

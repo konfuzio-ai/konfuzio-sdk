@@ -2,8 +2,8 @@
 import logging
 from typing import Dict, List, Optional, Tuple, Union
 
-import numpy
-import pandas
+import numpy as np
+import pandas as pd
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.utils.extmath import weighted_mode
 
@@ -82,8 +82,14 @@ def grouped(group, target: str):
 
 
 def compare(
-    doc_a, doc_b, only_use_correct=False, use_view_annotations=False, ignore_below_threshold=False, strict=True
-) -> pandas.DataFrame:
+    doc_a,
+    doc_b,
+    only_use_correct=False,
+    use_view_annotations=False,
+    ignore_below_threshold=False,
+    strict=True,
+    custom_threshold=None,
+) -> pd.DataFrame:
     """Compare the Annotations of two potentially empty Documents wrt. to **all** Annotations.
 
     :param doc_a: Document which is assumed to be correct
@@ -100,8 +106,8 @@ def compare(
     :raises ValueError: When the Category differs.
     :return: Evaluation DataFrame
     """
-    df_a = pandas.DataFrame(doc_a.eval_dict(use_correct=only_use_correct))
-    df_b = pandas.DataFrame(
+    df_a = pd.DataFrame(doc_a.eval_dict(use_correct=only_use_correct))
+    df_b = pd.DataFrame(
         doc_b.eval_dict(
             use_view_annotations=strict and use_view_annotations,  # view_annotations only available for strict=True
             use_correct=False,
@@ -111,13 +117,16 @@ def compare(
     if doc_a.category != doc_b.category:
         raise ValueError(f'Categories of {doc_a} with {doc_a.category} and {doc_b} with {doc_a.category} do not match.')
     if strict:  # many to many inner join to keep all Spans of both Documents
-        spans = pandas.merge(df_a, df_b, how='outer', on=['start_offset', 'end_offset'], suffixes=('', '_predicted'))
+        spans = pd.merge(df_a, df_b, how='outer', on=['start_offset', 'end_offset'], suffixes=('', '_predicted'))
         # add criteria to evaluate Spans
         spans['is_matched'] = spans['id_local'].notna()  # start and end offset are identical
         spans['start_offset_predicted'] = spans['start_offset']  # start and end offset are identical
         spans['end_offset_predicted'] = spans['end_offset']  # start and end offset are identical
 
-        spans['above_predicted_threshold'] = spans['confidence_predicted'] >= spans['label_threshold_predicted']
+        if custom_threshold:
+            spans['above_predicted_threshold'] = spans['confidence_predicted'] >= custom_threshold
+        else:
+            spans['above_predicted_threshold'] = spans['confidence_predicted'] >= spans['label_threshold_predicted']
 
         spans['is_correct_label'] = spans['label_id'] == spans['label_id_predicted']
         spans['is_correct_label_set'] = spans['label_set_id'] == spans['label_set_id_predicted']
@@ -132,12 +141,15 @@ def compare(
         )
     else:
         # allows  start_offset_predicted <= end_offset and end_offset_predicted >= start_offset
-        spans = pandas.merge(df_a, df_b, how='outer', on=['label_id', 'label_set_id'], suffixes=('', '_predicted'))
+        spans = pd.merge(df_a, df_b, how='outer', on=['label_id', 'label_set_id'], suffixes=('', '_predicted'))
         # add criteria to evaluate Spans
         spans['is_matched'] = (spans['start_offset_predicted'] <= spans['end_offset']) & (
             spans['end_offset_predicted'] >= spans['start_offset']
         )
-        spans['above_predicted_threshold'] = spans['confidence_predicted'] >= spans['label_threshold_predicted']
+        if custom_threshold:
+            spans['above_predicted_threshold'] = spans['confidence_predicted'] >= custom_threshold
+        else:
+            spans['above_predicted_threshold'] = spans['confidence_predicted'] >= spans['label_threshold_predicted']
         spans['is_correct_label'] = True
         spans['is_correct_label_set'] = True
         spans['label_id_predicted'] = spans['label_id']
@@ -261,7 +273,7 @@ def compare(
 
         spans = spans.groupby(['annotation_set_id_predicted', 'label_id_predicted']).apply(prioritize_rows)
 
-    spans = spans.replace({numpy.nan: None})
+    spans = spans.replace({np.nan: None})
     # one Span must not be defined as TP or FP or FN more than once
     quality = (spans[['true_positive', 'false_positive', 'false_negative']].sum(axis=1) <= 1).all()
     assert quality
@@ -401,6 +413,8 @@ class ExtractionEvaluation:
         self.data = None
         self.zero_division = zero_division
         self.calculate()
+        self.label_thresholds = {}
+        self.calculate_thresholds()
         logger.info(f'Size of evaluation DataFrame: {memory_size_of(self.data)/1000} KB.')
 
     def calculate(self):
@@ -416,8 +430,66 @@ class ExtractionEvaluation:
                 ignore_below_threshold=self.ignore_below_threshold,
             )
             evaluations.append(evaluation)
+        self.data = pd.concat(evaluations)
 
-        self.data = pandas.concat(evaluations)
+    def calculate_thresholds(self):
+        """
+        Calculate optimal thresholds for each Label in the Document set that allow to achieve the highest value
+        of F1 score, precision and recall.
+        """
+        evaluations_per_threshold = {}
+        for threshold in np.arange(0.05, 1, 0.05):
+            evaluations = []
+            for ground_truth, predicted in self.documents:
+                evaluation = compare(
+                    doc_a=ground_truth,
+                    doc_b=predicted,
+                    only_use_correct=self.only_use_correct,
+                    strict=self.strict,
+                    use_view_annotations=self.use_view_annotations,
+                    ignore_below_threshold=self.ignore_below_threshold,
+                    custom_threshold=threshold,
+                )
+                evaluations.append(evaluation)
+            evaluations_per_threshold[threshold] = pd.concat(evaluations)
+        for label in self.documents[0][0].project.labels:
+            self.label_thresholds[label.id_] = {}
+            best_f1 = 0.0
+            best_threshold_f1 = 0.0
+            best_precision = 0.0
+            best_threshold_precision = 0.0
+            best_recall = 0.0
+            best_threshold_recall = 0.0
+            for threshold in evaluations_per_threshold:
+                current_evaluation = evaluations_per_threshold[threshold]
+                label_data = current_evaluation.query(f'label_id == {label.id_} | (label_id_predicted == {label.id_})')
+                label_evaluation_calculator = EvaluationCalculator(
+                    tp=label_data['true_positive'].sum(),
+                    fp=label_data['false_positive'].sum(),
+                    fn=label_data['false_negative'].sum(),
+                    zero_division=self.zero_division,
+                )
+                label_f1 = label_evaluation_calculator.f1
+                label_precision = label_evaluation_calculator.precision
+                label_recall = label_evaluation_calculator.recall
+                if label_f1 and label_f1 > best_f1:
+                    best_f1 = label_f1
+                    best_threshold_f1 = threshold
+                if label_precision and label_precision > best_precision:
+                    best_precision = label_precision
+                    best_threshold_precision = threshold
+                if label_recall and label_recall > best_recall:
+                    best_recall = label_recall
+                    best_threshold_recall = threshold
+            label.optimized_thresholds['f1'] = {'score': best_f1, 'threshold': best_threshold_f1}
+            label.optimized_thresholds['precision'] = {'score': best_precision, 'threshold': best_threshold_precision}
+            label.optimized_thresholds['recall'] = {'score': best_recall, 'threshold': best_threshold_recall}
+            self.label_thresholds[label.id_]['f1'] = {'score': best_f1, 'threshold': best_threshold_f1}
+            self.label_thresholds[label.id_]['precision'] = {
+                'score': best_precision,
+                'threshold': best_threshold_precision,
+            }
+            self.label_thresholds[label.id_]['recall'] = {'score': best_recall, 'threshold': best_threshold_recall}
 
     def _query(self, search=None):
         """Query the comparison data.
@@ -625,7 +697,7 @@ class CategorizationEvaluation:
             for ground_truth, predicted in self.documents
         ]
 
-    def confusion_matrix(self) -> pandas.DataFrame:
+    def confusion_matrix(self) -> pd.DataFrame:
         """Confusion matrix."""
         return confusion_matrix(self.actual_classes, self.predicted_classes, labels=self.category_ids + [0])
 
@@ -655,9 +727,9 @@ class CategorizationEvaluation:
         :return: dictionary with the results per Category
         """
         confusion_matrix = self.confusion_matrix()
-        sum_columns = numpy.sum(confusion_matrix, axis=0)
-        sum_rows = numpy.sum(confusion_matrix, axis=1)
-        sum_all = numpy.sum(confusion_matrix)
+        sum_columns = np.sum(confusion_matrix, axis=0)
+        sum_rows = np.sum(confusion_matrix, axis=1)
+        sum_all = np.sum(confusion_matrix)
 
         results = {}
 

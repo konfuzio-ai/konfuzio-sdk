@@ -35,6 +35,7 @@ def parse_args(parser):
     # Sub-parser for export_project command
     export_project_parser = subparsers.add_parser('export_project', help='Export project data')
     export_project_parser.add_argument('id', help='ID of the project to export', type=int)
+    export_project_parser.add_argument('--category_id', help='Filter export by category', type=int, default=None)
     export_project_parser.add_argument('--include_ai', action='store_true', help='Include AI models in the export')
 
     return parser.parse_args()
@@ -62,8 +63,8 @@ def main():
         user, password, host = credentials(args)
         init_env(user=user, password=password, host=host)
     elif args.command == 'export_project':
-        project = Project(id_=args.id)
-        project.export_project_data(include_ais=args.include_ai)
+        project = Project(id_=args.id, category_id=args.category_id)
+        project.export_project_data(include_ais=args.include_ai, category_id=args.category_id)
     elif args.command == 'create_project':
         create_new_project(args.name)
     else:
