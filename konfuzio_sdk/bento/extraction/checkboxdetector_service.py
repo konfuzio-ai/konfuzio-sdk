@@ -1,4 +1,4 @@
-"""Run checkbox detection service."""
+"""Checkbox detection service."""
 
 import base64
 import logging
@@ -8,13 +8,14 @@ from typing import Any
 
 import bentoml
 import numpy as np
+from extraction.schemas import CheckboxRequest20240523, CheckboxResponse20240523
 from fastapi import FastAPI
 from PIL import Image
-from trainer.omr import CheckboxDetectorUtils  # import from the built bento directory src/trainer/omr.py
+
+# imports from the built bento directory src/, e.g. trainer/omr.py and extraction/schemas.py
+from trainer.omr import CheckboxDetectorUtils
 
 from konfuzio_sdk.trainer.omr import BboxPairing
-
-from .schemas import CheckboxRequest20240523, CheckboxResponse20240523
 
 # load ai model name AI_MODEL_NAME file in parent directory
 ai_model_name_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'AI_MODEL_NAME')
