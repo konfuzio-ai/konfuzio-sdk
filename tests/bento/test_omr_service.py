@@ -7,6 +7,7 @@ import time
 import unittest
 from io import BytesIO
 
+import bentoml
 import numpy as np
 import pytest
 import requests
@@ -28,17 +29,29 @@ class TestOMRCheckboxBento(unittest.TestCase):
     def setUpClass(cls) -> None:
         """Create a model and its Bento instance of Extraction AI."""
 
+        bento_version = os.getenv('CHECKBOX_DETECTOR_VERSION', 'latest')
+        bento_tag = f'checkboxdetector:{bento_version}'
+
         # Define used schemas
         cls.RequestSchema = CheckboxRequest20240523
         cls.ResponseSchema = CheckboxResponse20240523
         # Initialize pipeline
         cls.pipeline = CheckboxDetector()
-        # Save and build Bento
-        bento, path = cls.pipeline.save_bento()
+
+        # Load Bento checkboxdetector model
+        try:
+            # try to get the model from the local store
+            bento = bentoml.bentos.get(bento_tag)
+        except bentoml.exceptions.NotFound:
+            try:
+                # try to get the model from the yatai store
+                bentoml.bentos.pull(bento_tag)
+                bento = bentoml.bentos.get(bento_tag)
+            except bentoml.exceptions.NotFound:
+                print(f'The Bento {bento_tag} is not available in the local store or the Yatai store.')
         cls.bento_name = bento.tag.name + ':' + bento.tag.version
 
         # Initialize and create test data
-
         cls.project = Project(id_=15217, update=True)
         cls.test_doc = cls.project.get_document_by_id(5930563)  # musterformular-by.pdf
 
@@ -80,7 +93,7 @@ class TestOMRCheckboxBento(unittest.TestCase):
         # Serve Bento
 
         # kill process on port 3000 if exists
-        os.system('lsof -t -i:3000 | xargs kill -9')
+        os.system('lsof -t -i:3000 | fuser -k 3000/tcp')
 
         cls.bento_process = subprocess.Popen(
             ['bentoml', 'serve', cls.bento_name], stdout=subprocess.PIPE, stderr=subprocess.STDOUT

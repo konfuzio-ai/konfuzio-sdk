@@ -68,7 +68,7 @@ class CheckboxDetector(Module, metaclass=abc.ABCMeta):
         self.__dict__.update(state)
         # Restore any necessary state not directly saved in __getstate__
 
-    def save_bento(self, build=True, output_dir=None) -> Union[None, tuple]:
+    def save_bento(self, model_path, build=True, output_dir=None) -> Union[None, tuple]:
         """
         Save AI as a BentoML model in the local store.
 
@@ -80,9 +80,6 @@ class CheckboxDetector(Module, metaclass=abc.ABCMeta):
         if output_dir and not build:
             raise ValueError('Cannot specify output_dir without build=True')
 
-        model_path = str(Path(__file__).parent / 'ckpt_best.pt')
-        if not Path(model_path).exists():
-            raise FileNotFoundError(f'Model weights file not found at {model_path}')
         self.detector = torch.jit.load(model_path)
 
         saved_model = bentoml.torchscript.save_model(
