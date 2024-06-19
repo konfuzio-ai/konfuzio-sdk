@@ -50,7 +50,9 @@ def get_project_url(project_id: Union[int, None], host: str = None) -> str:
     return f'{host}/api/v3/projects/{project_id}/'
 
 
-def get_documents_meta_url(project_id: int, offset: int = None, limit: int = 10, host: str = None, *args, **kwargs) -> str:
+def get_documents_meta_url(
+    project_id: int, offset: int = None, limit: int = 10, host: str = None, *args, **kwargs
+) -> str:
     """
     Generate URL to load meta information about the Documents in the Project.
 
@@ -423,3 +425,16 @@ def get_ai_model_download_url(ai_model_id: int, host: str = None) -> str:
     if host is None:
         host = KONFUZIO_HOST
     return f'{host}/aimodel/file/{ai_model_id}/'
+
+
+def get_snapshot_url(snapshot_id: int, host: str = None) -> str:
+    """
+    Get a URL to retrieve a Project's snapshot.
+
+    :param snapshot_id: ID of a retrieved snapshot
+    :param host: Konfuzio host
+    :returns: URL to retrieve a snapshot
+    """
+    if host is None:
+        host = KONFUZIO_HOST
+    return f'{host}/v3/snapshots/{snapshot_id}/'
