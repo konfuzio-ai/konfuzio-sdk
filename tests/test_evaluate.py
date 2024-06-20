@@ -3,11 +3,19 @@ import unittest
 from copy import deepcopy
 from statistics import mean
 
+import pandas as pd
+import parameterized
 import pytest
-from pandas import DataFrame
 
 from konfuzio_sdk.data import Annotation, AnnotationSet, Category, Document, Label, LabelSet, Project, Span
-from konfuzio_sdk.evaluate import CategorizationEvaluation, EvaluationCalculator, ExtractionEvaluation, compare, grouped
+from konfuzio_sdk.evaluate import (
+    CategorizationEvaluation,
+    EvaluationCalculator,
+    ExtractionEvaluation,
+    compare,
+    grouped,
+    prioritize_rows,
+)
 from konfuzio_sdk.samples import LocalTextProject
 from konfuzio_sdk.settings_importer import is_dependency_installed
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
@@ -924,7 +932,7 @@ class TestCompare(unittest.TestCase):
     def test_strict_grouped_both_above_threshold_both_correct(self):
         """Test grouped for two correct Spans where both are over threshold."""
         result = grouped(
-            DataFrame(
+            pd.DataFrame(
                 [[True, 3, True, 0.1], [True, 1, True, 0.05]],
                 columns=['is_matched', 'target', 'above_predicted_threshold', 'confidence_predicted'],
             ),
@@ -935,7 +943,7 @@ class TestCompare(unittest.TestCase):
     def test_non_strict_grouped_both_above_threshold_both_correct(self):
         """Return second group with target = int(1) as the confidence of 100 % is higher than 99%."""
         result = grouped(
-            DataFrame(
+            pd.DataFrame(
                 [[True, 3, True, 0.99], [True, 1, True, 1.0]],
                 columns=['is_matched', 'target', 'above_predicted_threshold', 'confidence_predicted'],
             ),
@@ -946,7 +954,7 @@ class TestCompare(unittest.TestCase):
     def test_strict_grouped_both_above_threshold_one_correct(self):
         """Test grouped for one correct Span and one incorrect Span over threshold."""
         result = grouped(
-            DataFrame(
+            pd.DataFrame(
                 [[True, 3, True, 0.5], [False, 1, True, 0.5]],
                 columns=['is_matched', 'target', 'above_predicted_threshold', 'confidence_predicted'],
             ),
@@ -957,7 +965,7 @@ class TestCompare(unittest.TestCase):
     def test_strict_grouped_one_above_threshold_both_incorrect(self):
         """Test grouped for incorrect Span over threshold and incorrect Span below threshold."""
         result = grouped(
-            DataFrame(
+            pd.DataFrame(
                 [[False, 1, False, 0.5], [False, 3, True, 0.5]],
                 columns=['is_matched', 'target', 'above_predicted_threshold', 'confidence_predicted'],
             ),
@@ -968,7 +976,7 @@ class TestCompare(unittest.TestCase):
     def test_strict_grouped_one_above_threshold_none_correct(self):
         """Test grouped for Span below threshold and Span above threshold, while is_correct is empty."""
         result = grouped(
-            DataFrame(
+            pd.DataFrame(
                 [[None, 3, True, 0.9], [None, 1, False, 0.1]],
                 columns=['is_matched', 'target', 'above_predicted_threshold', 'confidence_predicted'],
             ),
@@ -979,7 +987,7 @@ class TestCompare(unittest.TestCase):
     def test_strict_grouped_none_above_threshold_none_correct(self):
         """Test grouped for two Spans below threshold, while is_correct is empty."""
         result = grouped(
-            DataFrame(
+            pd.DataFrame(
                 [[None, 3, False, 0.1], [None, 1, False, 0.2]],
                 columns=['is_matched', 'target', 'above_predicted_threshold', 'confidence_predicted'],
             ),
@@ -990,7 +998,7 @@ class TestCompare(unittest.TestCase):
     def test_strict_grouped_but_no_voter_above_threshold_none_confidence(self):
         """Test grouped for two Spans below threshold and the CLF does not provide any confidence."""
         result = grouped(
-            DataFrame(
+            pd.DataFrame(
                 [[None, 3, False, None], [None, 1, False, None]],
                 columns=['is_matched', 'target', 'above_predicted_threshold', 'confidence_predicted'],
             ),
@@ -999,8 +1007,281 @@ class TestCompare(unittest.TestCase):
         assert result['defined_to_be_correct_target'].to_list() == [1, 1]
 
 
+@parameterized.parameterized_class(
+    (
+        'id_local',
+        'id_',
+        'confidence',
+        'offset_string',
+        'normalized',
+        'start_offset',
+        'end_offset',
+        'is_correct',
+        'label_threshold',
+        'label_id',
+        'label_has_multiple_top_candidates',
+        'label_set_id',
+        'annotation_id',
+        'annotation_set_id',
+        'document_id',
+        'document_id_local',
+        'category_id',
+        'mode',
+        'TPs',
+        'FNs',
+        'FPs',
+    ),
+    (
+        [1, 1, 0.9, 'de chilly', 'de chilly', 0, 8, True, 0.1, 1, False, 1, 1, 1, 1, 1, 1, 'strict', 1, 0, 0],  # TP 1
+        [1, 1, 0.9, 'de chilly', 'de chilly', 0, 8, True, 0.1, 2, False, 1, 1, 1, 1, 1, 1, 'strict', 0, 0, 1],  # FP 1
+        [
+            1,
+            1,
+            0.9,
+            'de chilly',
+            'de chilly',
+            0,
+            8,
+            True,
+            0.1,
+            None,
+            False,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            'strict',
+            0,
+            1,
+            0,
+        ],  # FN 1
+        [1, 1, 0.05, 'de chilly', 'de chilly', 0, 8, True, 0.1, 1, False, 1, 1, 1, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
+        [1, 1, 0.9, 'de chi', 'de chi', 0, 5, True, 0.1, 1, False, 1, 1, 1, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
+        [1, 1, 0.9, 'de chi', 'de chi', 0, 5, True, 0.1, 2, False, 1, 1, 1, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 2
+        [1, 1, 0.9, 'de chi', 'de chi', 0, 5, True, 0.1, None, False, 1, 1, 1, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 2
+        [1, 1, 0.05, 'de chi', 'de chi', 0, 5, True, 0.1, 1, False, 1, 1, 1, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
+        [
+            1,
+            1,
+            0.9,
+            'de chilly',
+            'de chilly',
+            0,
+            8,
+            True,
+            0.1,
+            1,
+            False,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            'nonstrict',
+            1,
+            0,
+            0,
+        ],  # TP 1
+        [
+            1,
+            1,
+            0.9,
+            'de chilly',
+            'de chilly',
+            0,
+            8,
+            True,
+            0.1,
+            2,
+            False,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            'nonstrict',
+            0,
+            0,
+            1,
+        ],  # FP 2
+        [
+            1,
+            1,
+            0.05,
+            'de chilly',
+            'de chilly',
+            0,
+            8,
+            True,
+            0.1,
+            1,
+            False,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            'nonstrict',
+            0,
+            1,
+            0,
+        ],  # FN 1
+        [1, 1, 0.9, 'de chi', 'de chi', 0, 5, True, 0.1, 1, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 1, 0, 0],  # TP 1
+        [1, 1, 0.9, 'de chi', 'de chi', 0, 5, True, 0.1, 2, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 0, 0, 1],  # FP 2
+        [1, 1, 0.05, 'de chi', 'de chi', 0, 5, True, 0.1, 1, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
+    ),
+)
+class TestParametrizedCompare(unittest.TestCase):
+    """
+    Test evaluation logic on mockup data instead of document data to verify correct behavior in assigning TP/FP/FN.
+    Needed as a minimal example of evaluation logic that is not possible to replicate for all possible cases of
+    ground truth/prediction combination using real documents.
+    """
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Set up the ground truth, the prediction and the mode of evaluation."""
+        cls.gt = [
+            {
+                'id_local': 1,
+                'id_': 1,
+                'confidence': 1.0,
+                'offset_string': 'de chilly',
+                'normalized': 'de chilly',
+                'start_offset': 0,
+                'end_offset': 8,
+                'is_correct': True,
+                'label_threshold': 0.1,
+                'label_id': 1,
+                'label_has_multiple_top_candidates': False,
+                'label_set_id': 1,
+                'annotation_id': 1,
+                'annotation_set_id': 1,
+                'document_id': 1,
+                'document_id_local': 1,
+                'category_id': 1,
+            }
+        ]
+        cls.pred = [
+            {
+                'id_local': cls.id_local,
+                'id_': cls.id_,
+                'confidence': cls.confidence,
+                'offset_string': cls.offset_string,
+                'normalized': cls.normalized,
+                'start_offset': cls.start_offset,
+                'end_offset': cls.end_offset,
+                'is_correct': cls.is_correct,
+                'label_threshold': cls.label_threshold,
+                'label_id': cls.label_id,
+                'label_has_multiple_top_candidates': cls.label_has_multiple_top_candidates,
+                'label_set_id': cls.label_set_id,
+                'annotation_id': cls.annotation_id,
+                'annotation_set_id': cls.annotation_set_id,
+                'document_id': cls.document_id,
+                'document_id_local': cls.document_id_local,
+                'category_id': cls.category_id,
+            }
+        ]
+        cls.evaluation_mode = cls.mode
+        cls.tp = cls.TPs
+        cls.fp = cls.FPs
+        cls.fn = cls.FNs
+
+    def test_compare(self):
+        """Iterate through ground truth and prediction and determine if a prediction is a TP, an FP or an FN."""
+        df_a = pd.DataFrame(self.gt)
+        df_b = pd.DataFrame(self.pred)
+        if self.evaluation_mode == 'strict':
+            spans = pd.merge(df_a, df_b, how='outer', on=['start_offset', 'end_offset'], suffixes=('', '_predicted'))
+            spans['is_matched'] = spans['id_local'].notna()
+            spans['start_offset_predicted'] = spans['start_offset']
+            spans['end_offset_predicted'] = spans['end_offset']
+            spans['above_predicted_threshold'] = spans['confidence_predicted'] >= spans['label_threshold_predicted']
+            spans['is_correct_label'] = spans['label_id'] == spans['label_id_predicted']
+            spans['is_correct_label_set'] = spans['label_set_id'] == spans['label_set_id_predicted']
+            spans['duplicated'] = False
+            spans['duplicated_predicted'] = False
+            spans = spans.groupby('id_local', dropna=False).apply(lambda group: grouped(group, 'id_'))
+            spans = spans.groupby('annotation_set_id_predicted', dropna=False).apply(
+                lambda group: grouped(group, 'annotation_set_id')
+            )
+        else:
+            spans = pd.merge(df_a, df_b, how='outer', on=['label_id', 'label_set_id'], suffixes=('', '_predicted'))
+            spans['is_matched'] = (spans['start_offset_predicted'] <= spans['end_offset']) & (
+                spans['end_offset_predicted'] >= spans['start_offset']
+            )
+            spans['above_predicted_threshold'] = spans['confidence_predicted'] >= spans['label_threshold_predicted']
+            spans['is_correct_label'] = True
+            spans['is_correct_label_set'] = True
+            spans['label_id_predicted'] = spans['label_id']
+            spans['label_set_id_predicted'] = spans['label_set_id']
+            spans = spans.sort_values(by='is_matched', ascending=False)
+            spans['duplicated'] = spans.duplicated(subset=['id_local'], keep='first')
+            spans['duplicated_predicted'] = spans.duplicated(subset=['id_local_predicted'], keep='first')
+            spans = spans.drop(spans[(spans['duplicated']) & (spans['duplicated_predicted'])].index)
+            spans = spans.groupby('id_local', dropna=False).apply(lambda group: grouped(group, 'id_'))
+            spans = spans.groupby('annotation_set_id_predicted', dropna=False).apply(
+                lambda group: grouped(group, 'annotation_set_id')
+            )
+
+        spans['true_positive'] = (
+            (spans['is_matched'])
+            & (spans['is_correct'])
+            & (spans['above_predicted_threshold'])
+            & (~spans['duplicated'])
+            & (  # Everything is correct
+                (spans['is_correct_label'])
+                & (spans['is_correct_label_set'])
+                & (spans['is_correct_annotation_set_id'])
+                & (spans['is_correct_id_'])
+            )
+        )
+
+        spans['false_negative'] = (
+            (spans['is_correct'])
+            & (~spans['duplicated'])
+            & ((~spans['is_matched']) | (~spans['above_predicted_threshold']) | (spans['label_id_predicted'].isna()))
+        )
+
+        spans['false_positive'] = (
+            (spans['above_predicted_threshold'])
+            & (~spans['false_negative'])
+            & (~spans['true_positive'])
+            & (~spans['duplicated_predicted'])
+            & (
+                (~spans['is_correct_label'])
+                | (~spans['is_correct_label_set'])
+                | (~spans['is_correct_annotation_set_id'])
+                | (~spans['is_correct_id_'])
+                | (~spans['is_matched'])
+            )
+        )
+        if self.evaluation_mode == 'nonstrict':
+            label_ids_multiple = []
+            label_ids_not_multiple = [1, 2]
+            spans_not_multiple = spans[spans['label_id'].isin(label_ids_not_multiple)]
+            spans_not_multiple = spans_not_multiple.groupby(
+                ['annotation_set_id_predicted', 'label_id_predicted']
+            ).apply(prioritize_rows)
+            spans_multiple = spans[spans['label_id'].isin(label_ids_multiple)]
+            spans = pd.concat([spans_not_multiple, spans_multiple])
+            spans = spans.sort_values(by='is_matched', ascending=False)
+            quality = (spans[['true_positive', 'false_positive', 'false_negative']].sum(axis=1) <= 1).all()
+            assert quality
+
+        assert spans['true_positive'].sum() == self.tp
+        assert spans['false_positive'].sum() == self.fp
+        assert spans['false_negative'].sum() == self.fn
+
+
 class TestEvaluation(unittest.TestCase):
-    """Tes to compare to Documents."""
+    """Test to compare to Documents."""
 
     def test_project(self):
         """Test that data has not changed."""

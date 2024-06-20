@@ -84,6 +84,31 @@ def grouped(group, target: str):
     return group
 
 
+def prioritize_rows(group):
+    """
+    Apply a filter when a Label should only appear once per AnnotationSet but has been predicted multiple times.
+
+    After we have calculated the TPs, FPs, FNs for the Document, we filter out the case where a Label should
+    only appear once per AnnotationSet but has been predicted multiple times. In this case, if any of the
+    predictions is a TP then we keep one and discard FPs/FNs. If no TPs, if any of the predictions is a FP
+    then we keep one and discard the FNs. If no FPs, then we keep a FN. The prediction we keep is always the
+    first in terms of start_offset.
+    """
+    group = group[~(group['label_has_multiple_top_candidates_predicted'].astype(bool))]
+    if group.empty:
+        return group
+
+    first_true_positive = group[group['true_positive']].head(1)
+    first_false_positive = group[group['false_positive']].head(1)
+    first_false_negative = group[group['false_negative']].head(1)
+    if not first_true_positive.empty:
+        return first_true_positive
+    elif not first_false_positive.empty:
+        return first_false_positive
+    else:
+        return first_false_negative
+
+
 def compare(
     doc_a,
     doc_b,
@@ -257,31 +282,6 @@ def compare(
     )
 
     if not strict:
-
-        def prioritize_rows(group):
-            """
-            Apply a filter when a Label should only appear once per AnnotationSet but has been predicted multiple times.
-
-            After we have calculated the TPs, FPs, FNs for the Document, we filter out the case where a Label should
-            only appear once per AnnotationSet but has been predicted multiple times. In this case, if any of the
-            predictions is a TP then we keep one and discard FPs/FNs. If no TPs, if any of the predictions is a FP
-            then we keep one and discard the FNs. If no FPs, then we keep a FN. The prediction we keep is always the
-            first in terms of start_offset.
-            """
-            group = group[~(group['label_has_multiple_top_candidates_predicted'].astype(bool))]
-            if group.empty:
-                return group
-
-            first_true_positive = group[group['true_positive']].head(1)
-            first_false_positive = group[group['false_positive']].head(1)
-            first_false_negative = group[group['false_negative']].head(1)
-            if not first_true_positive.empty:
-                return first_true_positive
-            elif not first_false_positive.empty:
-                return first_false_positive
-            else:
-                return first_false_negative
-
         # Apply the function prioritize_rows just to entries where the label is not set to "multiple"
         labels = doc_a.project.labels
         label_ids_multiple = [label.id_ for label in labels if label.has_multiple_top_candidates]
