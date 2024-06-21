@@ -438,3 +438,16 @@ def get_snapshot_url(snapshot_id: int, host: str = None) -> str:
     if host is None:
         host = KONFUZIO_HOST
     return f'{host}/v3/snapshots/{snapshot_id}/'
+
+
+def get_snapshot_restore_url(snapshot_id: int, host: str = None) -> str:
+    """
+    Get a URL to retrieve a Project's snapshot.
+
+    :param snapshot_id: ID of a retrieved snapshot
+    :param host: Konfuzio host
+    :returns: URL to retrieve a snapshot
+    """
+    if host is None:
+        host = KONFUZIO_HOST
+    return f'{host}/v3/snapshotrestores/{snapshot_id}/'
