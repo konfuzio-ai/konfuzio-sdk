@@ -37,6 +37,7 @@ from konfuzio_sdk.urls import (
     get_project_labels_url,
     get_project_url,
     get_projects_list_url,
+    get_snapshot_restore_url,
     get_splitting_ais_list_url,
     get_upload_document_url,
 )
@@ -531,7 +532,9 @@ def delete_document_annotation(annotation_id: int, session=None, delete_from_dat
         raise ConnectionError(f'Error{r.status_code}: {r.content} {r.url}')
 
 
-def get_meta_of_files(project_id: int, pagination_limit: int = 100, limit: int = None, session=None, *args, **kwargs) -> List[dict]:
+def get_meta_of_files(
+    project_id: int, pagination_limit: int = 100, limit: int = None, session=None, *args, **kwargs
+) -> List[dict]:
     """
     Get meta information of Documents in a Project.
 
@@ -1011,3 +1014,24 @@ def export_ai_models(project, session=None, category_id=None) -> int:
                 print(f'[SUCCESS] Exported {variant} AI Model to {file_name}')
 
     return exported_ais.keys().__len__()
+
+
+def restore_snapshot(snapshot_id: int, session=None) -> int:
+    """
+    Restore a snapshot into a new Project.
+
+    :param snapshot_id: ID of a snapshot to be restored
+    :param session: Konfuzio session with Retry and Timeout policy
+    """
+    if session is None:
+        session = konfuzio_session()
+    if hasattr(session, 'host'):
+        host = session.host
+    else:
+        host = None
+    url = get_snapshot_restore_url(snapshot_id=snapshot_id, host=host)
+    r = session.post(url)
+    if r.status_code == 200:
+        return json.loads(r.text)['project']
+    else:
+        raise ConnectionError(f'Error{r.status_code}: {r.content} {r.url}')
