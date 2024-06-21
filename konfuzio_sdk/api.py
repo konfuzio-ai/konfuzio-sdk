@@ -1029,8 +1029,9 @@ def restore_snapshot(snapshot_id: int, session=None) -> int:
         host = session.host
     else:
         host = None
-    url = get_snapshot_restore_url(snapshot_id=snapshot_id, host=host)
-    r = session.post(url)
+    data = {'snapshot': snapshot_id}
+    url = get_snapshot_restore_url(host=host)
+    r = session.post(url, data=data)
     if r.status_code == 200:
         return json.loads(r.text)['project']
     else:
