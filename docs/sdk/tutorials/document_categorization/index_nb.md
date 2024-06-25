@@ -222,7 +222,7 @@ Categorization.
 | `albert-base-v2`                               | 768                  | English  | 12 million           |
 | `german-nlp-group/electra-base-german-uncased` | 768                  | German   | 111 million          |
 | `bert-base-german-cased`                       | 768                  | German   | 110 million          |
-| `bert-base-german-uncased`                     | 768                  | German   | 110 million          |
+| `dbmdz/bert-base-german-uncased`               | 768                  | German   | 110 million          |
 | `distilbert-base-german-cased`                 | 768                  | German   | 66 million           |    
 | `bert-base-multilingual-cased`                 | 768                  | Multiple | 110 million          |
 
