@@ -234,3 +234,22 @@ def convert_response_to_annotations(
         return document
     else:
         raise NotImplementedError(NOT_IMPLEMENTED_ERROR_MESSAGE)
+
+
+def convert_response_to_checkbox_annotations(response: BaseModel, document: Document) -> Document:
+    """
+    Receive a CheckboxResponse and add the metadata to the Annotations of the Document.
+
+    :param response: A CheckboxResponse to be converted.
+    :param document: A Document where the annotations should be checkbox-annotated.
+    :returns: The original Document with checkbox-annotated Annotations.
+    """
+    if response.__class__.__name__ == 'CheckboxResponse20240523':
+        for annotation_metadata in response.metadata:
+            annotation = document.get_annotation_by_id(annotation_metadata.annotation_id)
+            if annotation.metadata is None:
+                annotation.metadata = {}
+            annotation['checkbox'] = annotation_metadata.checkbox
+        return document
+    else:
+        raise NotImplementedError(NOT_IMPLEMENTED_ERROR_MESSAGE)
