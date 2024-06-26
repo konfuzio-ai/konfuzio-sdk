@@ -249,7 +249,7 @@ def convert_response_to_checkbox_annotations(response: BaseModel, document: Docu
             annotation = document.get_annotation_by_id(annotation_metadata.annotation_id)
             if annotation.metadata is None:
                 annotation.metadata = {}
-            annotation['checkbox'] = annotation_metadata.checkbox
+            annotation.metadata['checkbox'] = annotation_metadata.checkbox
         return document
     else:
         raise NotImplementedError(NOT_IMPLEMENTED_ERROR_MESSAGE)
