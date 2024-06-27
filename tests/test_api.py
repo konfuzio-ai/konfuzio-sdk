@@ -20,6 +20,7 @@ from konfuzio_sdk.api import (
     create_new_project,
     delete_document_annotation,
     delete_file_konfuzio_api,
+    delete_project,
     download_file_konfuzio_api,
     get_all_project_ais,
     get_document_annotations,
@@ -33,6 +34,7 @@ from konfuzio_sdk.api import (
     get_results_from_segmentation,
     init_env,
     post_document_annotation,
+    restore_snapshot,
     update_document_konfuzio_api,
     upload_file_konfuzio_api,
 )
@@ -659,6 +661,19 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         self.assertEqual(result['extraction']['error'].__str__(), exception_message)
         self.assertEqual(result['categorization']['error'].__str__(), exception_message)
         self.assertEqual(result['filesplitting']['error'].__str__(), exception_message)
+
+    def test_restore_snapshot(self):
+        """Test restoring a snapshot using snapshotrestores endpoint."""
+        project_id = restore_snapshot(snapshot_id=65)
+        all_projects = get_project_list()
+        assert project_id in [project['id'] for project in all_projects['results']]
+        new_project = Project(id_=project_id)
+        for document in new_project.documents + new_project.test_documents:
+            document.dataset_status = 0
+            document.save_meta_data()
+            document.delete(delete_online=True)
+        r = delete_project(project_id=project_id)
+        assert r.status_code == 204
 
 
 def test_init_env():

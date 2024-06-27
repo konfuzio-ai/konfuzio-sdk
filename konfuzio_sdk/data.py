@@ -4701,16 +4701,20 @@ class Project(Data):
         self._meta_data = []
         return self
 
-    def download_training_and_test_data(self, category_id=None) -> None:
+    def download_project_data(self, training_test_only=True, category_id=None) -> None:
         """
         Migrate your Project to another HOST.
 
         See https://dev.konfuzio.com/web/migration-between-konfuzio-server-instances/index.html
 
         """
-        if len(self.documents + self.test_documents) == 0:
-            raise ValueError('No Documents in the training or test set. Please add them.')
-        for document in tqdm(self.documents + self.test_documents):
+        if training_test_only:
+            target_documents = self.documents + self.test_documents
+        else:
+            target_documents = [document for document in self._documents if document.dataset_status != 0]
+        if len(target_documents) == 0:
+            raise ValueError('No Documents. Please add them.')
+        for document in tqdm(target_documents):
             if category_id and document.category.id_ != category_id:
                 print(f'Skip {document}...')
                 continue
@@ -4719,23 +4723,31 @@ class Project(Data):
             document.get_file(ocr_version=False)
             document.get_bbox()
             document.get_images()
-
         print('[SUCCESS] Data exporting finished successfully!')
 
-    def export_project_data(self, include_ais=False, training_and_test_documents=True, *args, **kwargs) -> None:
+    def export_project_data(
+        self, include_ais=False, training_and_test_documents=True, documents_with_status=False, *args, **kwargs
+    ) -> None:
         """
         Export the Project data including Training, Test Documents and AI models.
 
         :include_ais: Whether to include AI models in the export
         :training_and_test_documents: Whether to include training & test documents in the export.
         """
-        if training_and_test_documents:
-            try:
+        if training_and_test_documents and documents_with_status:
+            raise ValueError(
+                'Specify either training_and_test_documents or documents_with_status as True. Both cannot be True at the same time.'
+            )
+        try:
+            if training_and_test_documents:
                 print('[INFO] Starting Training and Test Document export!')
                 self.download_training_and_test_data(*args, **kwargs)
-            except Exception as error:
-                print('[ERROR] Something went wrong while downloading Document data!')
-                raise error
+            if documents_with_status:
+                print('[INFO] Starting export of all Documents with status different from None!')
+                self.download_training_and_test_data(training_test_only=False, *args, **kwargs)
+        except Exception as error:
+            print('[ERROR] Something went wrong while downloading Document data!')
+            raise error
         if include_ais:
             try:
                 print('[INFO] Starting AI Model file export!')

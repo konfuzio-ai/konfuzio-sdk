@@ -3,6 +3,7 @@
 import json
 import logging
 import os
+import time
 from json import JSONDecodeError
 from operator import itemgetter
 from typing import Dict, List, Optional, Union
@@ -37,6 +38,7 @@ from konfuzio_sdk.urls import (
     get_project_labels_url,
     get_project_url,
     get_projects_list_url,
+    get_restored_snapshot_url,
     get_snapshot_restore_url,
     get_splitting_ais_list_url,
     get_upload_document_url,
@@ -1030,9 +1032,40 @@ def restore_snapshot(snapshot_id: int, session=None) -> int:
     else:
         host = None
     data = {'snapshot': snapshot_id}
+    headers = {
+        'accept': 'application/json',
+        'Content-Type': 'application/json',
+    }
     url = get_snapshot_restore_url(host=host)
-    r = session.post(url, data=data)
-    if r.status_code == 200:
-        return json.loads(r.text)['project']
+    r = session.post(url, headers=headers, json=data)
+    if r.status_code == 201:
+        new_snapshot_url = get_restored_snapshot_url(restored_snapshot_id=r.json()['id'])
+        status = None
+        while status != 'done':
+            new_snapshot_status = session.get(url=new_snapshot_url)
+            status = new_snapshot_status.json()['status']
+            time.sleep(5)
+        return r.json()['project']
+    else:
+        raise ConnectionError(f'Error{r.status_code}: {r.content} {r.url}')
+
+
+def delete_project(project_id: int, session=None):
+    """
+    Delete a Project.
+
+    :param project_id: ID of a Project to be deleted
+    :param session: Konfuzio session with Retry and Timeout policy
+    """
+    if session is None:
+        session = konfuzio_session()
+    if hasattr(session, 'host'):
+        host = session.host
+    else:
+        host = None
+    url = get_project_url(project_id=project_id, host=host)
+    r = session.delete(url)
+    if r.status_code == 204:
+        return r
     else:
         raise ConnectionError(f'Error{r.status_code}: {r.content} {r.url}')
