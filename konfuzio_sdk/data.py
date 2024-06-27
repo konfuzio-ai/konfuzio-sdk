@@ -932,7 +932,7 @@ class Category(Data):
         """Associate Label Sets to relate to Annotations."""
         self.id_local = next(Data.id_iter)
         self.id_ = id_
-        self.name = normalize_name(name)
+        self.name = name
         self.name_clean = normalize_name(name_clean)
         self.project: Project = project
         self._force_offline = project._force_offline

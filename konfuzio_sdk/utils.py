@@ -348,6 +348,7 @@ def normalize_name(value: str) -> str:
     :param value: A name to be normalized.
     """
     if value:
+        value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
         return re.sub('/', '', value)
     else:
         return
