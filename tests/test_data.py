@@ -9,6 +9,7 @@ import pytest
 from PIL.PngImagePlugin import PngImageFile
 from requests import ConnectionError, HTTPError
 
+from konfuzio_sdk.api import delete_project, restore_snapshot
 from konfuzio_sdk.data import (
     Annotation,
     AnnotationSet,
@@ -48,18 +49,25 @@ class TestOnlineProject(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Initialize the test Project."""
-        cls.project = Project(id_=TEST_PROJECT_ID, update=True)
+
+        cls.project_id = restore_snapshot(snapshot_id=65)
+        cls.project = Project(id_=cls.project_id, update=True)
+        original_document_text = Project(id_=46).get_document_by_id(TEST_DOCUMENT_ID).text
+        cls.test_document_id = [
+            document for document in cls.project.documents if document.text == original_document_text
+        ][0].id_
+        cls.test_category_id = cls.project.categories[0].id_
 
     def test_document(self):
         """Test properties of a specific Documents in the test Project."""
-        doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        doc = self.project.get_document_by_id(self.test_document_id)
         assert doc.ocr_ready is True
         assert doc.category.name == 'Lohnabrechnung'
         label = self.project.labels[0]
-        annotations = label.annotations(categories=[self.project.get_category_by_id(63)])
+        annotations = label.annotations(categories=[self.project.get_category_by_id(self.test_category_id)])
         assert len(annotations) == self.annotations_correct
         doc.update()
-        annotations = label.annotations(categories=[self.project.get_category_by_id(63)])
+        annotations = label.annotations(categories=[self.project.get_category_by_id(self.test_category_id)])
         self.assertEqual(len(annotations), self.annotations_correct)
         assert len(doc.text) == 4537
         assert is_file(doc.txt_file_path)
@@ -69,7 +77,7 @@ class TestOnlineProject(unittest.TestCase):
 
     def test_document_no_label_annotations_after_update(self):
         """Test that Annotations in the no_label_annotation_set of the Document are removed after update."""
-        document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        document = self.project.get_document_by_id(self.test_document_id)
         span = Span(start_offset=0, end_offset=1)
         _ = Annotation(
             document=document,
@@ -86,12 +94,12 @@ class TestOnlineProject(unittest.TestCase):
 
     def test_document_with_multiline_annotation(self):
         """Test properties of a specific Documents in the test Project."""
-        doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
-        label = self.project.get_label_by_id(867)
-        annotations = label.annotations(categories=[self.project.get_category_by_id(63)])
+        doc = self.project.get_document_by_id(self.test_document_id)
+        label = self.project.get_label_by_name('Austellungsdatum')
+        annotations = label.annotations(categories=[self.project.get_category_by_id(self.test_category_id)])
         self.assertEqual(len(annotations), self.annotations_correct)
         doc.update()
-        annotations = label.annotations(categories=[self.project.get_category_by_id(63)])
+        annotations = label.annotations(categories=[self.project.get_category_by_id(self.test_category_id)])
         self.assertEqual(len(annotations), self.annotations_correct)
         self.assertEqual(len(doc.text), 4537)
         # self.assertEqual(len(glob.glob(os.path.join(doc.document_folder, '*.*'))), 4)
@@ -116,13 +124,13 @@ class TestOnlineProject(unittest.TestCase):
 
     def test_get_pages_files(self):
         """Test to download page files."""
-        doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        doc = self.project.get_document_by_id(self.test_document_id)
         assert len(doc.pages()) == 1
         assert doc.pages()[0].category == doc.category
 
     def test_load_image_in_memory(self):
         """Test to download page files."""
-        doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        doc = self.project.get_document_by_id(self.test_document_id)
         for page in doc.pages():
             image = page.get_image(update=True)
             assert type(image) is PngImageFile
@@ -134,7 +142,7 @@ class TestOnlineProject(unittest.TestCase):
         from PIL import Image
 
         external_image = Image.fromarray(numpy.zeros((5, 5)))
-        doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        doc = self.project.get_document_by_id(self.test_document_id)
         page = doc.pages()[0]
         page.image = external_image  # provide an image for the Page ad-hoc
         image = page.get_image()
@@ -142,7 +150,7 @@ class TestOnlineProject(unittest.TestCase):
 
     def test_load_image_from_bytes(self):
         """Test loading a Page image provided as bytes rather than loaded from the Project's folder."""
-        doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        doc = self.project.get_document_by_id(self.test_document_id)
         page = doc.pages()[0]
         original_image = page.get_image(update=True)  # Pillow loads from page.image_path file
         assert type(original_image) is PngImageFile
@@ -157,21 +165,22 @@ class TestOnlineProject(unittest.TestCase):
 
     def test_get_annotation_by_id(self):
         """Test to find an online Annotation by its ID."""
-        doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
-        annotation = doc.get_annotation_by_id(4420057)
+        doc = self.project.get_document_by_id(self.test_document_id)
+        searched_id = doc.annotations()[5].id_
+        annotation = doc.get_annotation_by_id(searched_id)
         assert annotation.start_offset == 1507
         assert annotation.end_offset == 1518
         assert annotation.offset_string == ['Erna-Muster']
 
     def test_get_nonexistent_annotation_by_id(self):
         """Test to find an online Annotation that does not exist by its ID, should raise an IndexError."""
-        doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        doc = self.project.get_document_by_id(self.test_document_id)
         with pytest.raises(IndexError, match='is not part of'):
             _ = doc.get_annotation_by_id(999999)
 
     def test_create_annotation_offline(self):
         """Test to add an Annotation to the Document offline, and that it does not persist after updating the doc."""
-        doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        doc = self.project.get_document_by_id(self.test_document_id)
         doc.update()
         assert Span(start_offset=1590, end_offset=1602) not in doc.spans()
         label = self.project.get_label_by_name('Lohnart')
@@ -195,7 +204,7 @@ class TestOnlineProject(unittest.TestCase):
         # we don't want to refer to an Annotation created by a previous test
 
         # Test1: add an Annotation to the document online
-        doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        doc = self.project.get_document_by_id(self.test_document_id)
         assert Span(start_offset=1590, end_offset=1602) not in doc.spans()
         label = self.project.get_label_by_name('Vorname')
 
@@ -227,22 +236,23 @@ class TestOnlineProject(unittest.TestCase):
 
     def test_create_bbox_annotation(self):
         """Test creating a Bbox-based Annotation."""
-        doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        doc = self.project.get_document_by_id(self.test_document_id)
         doc.status = 2
         doc.get_bbox()
-        label = self.project.get_label_by_id(862)
+        label = self.project.get_label_by_name('Bezeichnung')
+        label_set = self.project.get_label_set_by_name('Brutto-Bezug')
         bbox = {'page_index': 0, 'x0': 198, 'x1': 300, 'y0': 508, 'y1': 517}
-        annotation_set = AnnotationSet(document=doc, label_set=self.project.get_label_set_by_id(64))
+        annotation_set = AnnotationSet(document=doc, label_set=label_set)
         annotation = Annotation(
             document=doc,
             annotation_set=annotation_set,
             label=label,
-            label_set_id=64,
+            label_set_id=label_set.id_,
             accuracy=1.0,
             is_correct=True,
             bboxes=[bbox],
         )
-        annotation.save(label_set_id=64)
+        annotation.save(label_set_id=label_set.id_)
         assert annotation in doc.annotations()
         doc.update()
         assert annotation in doc.annotations()
@@ -254,16 +264,17 @@ class TestOnlineProject(unittest.TestCase):
 
     def test_create_empty_bbox_annotation(self):
         """Test creating an empty Annotation using empty Bbox is impossible."""
-        doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
-        label = self.project.get_label_by_id(862)
+        doc = self.project.get_document_by_id(self.test_document_id)
+        label = self.project.get_label_by_name('Bezeichnung')
+        label_set = self.project.get_label_set_by_name('Brutto-Bezug')
         bbox = {'page_index': 0, 'x0': 1, 'x1': 4, 'y0': 1, 'y1': 4}
-        annotation_set = AnnotationSet(document=doc, label_set=self.project.get_label_set_by_id(64))
+        annotation_set = AnnotationSet(document=doc, label_set=label_set)
         with pytest.raises(NotImplementedError):
             Annotation(
                 document=doc,
                 annotation_set=annotation_set,
                 label=label,
-                label_set_id=64,
+                label_set_id=label_set.id_,
                 accuracy=1.0,
                 is_correct=True,
                 bboxes=[bbox],
@@ -271,7 +282,7 @@ class TestOnlineProject(unittest.TestCase):
 
     def test_get_sentence_spans_from_bbox(self):
         """Test to get sentence Spans in a bounding box."""
-        document = self.project.get_document_by_id(215906)
+        document = Document.from_file(path='tests/test_data/textposition.pdf', project=self.project)
         document = WhitespaceTokenizer().tokenize(deepcopy(document))
         page = document.get_page_by_index(0)
 
@@ -316,7 +327,7 @@ class TestOnlineProject(unittest.TestCase):
 
     def test_modify_document_metadata(self):
         """Test modification of meta-data of test document."""
-        doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        doc = self.project.get_document_by_id(self.test_document_id)
 
         doc.assignee = 42
         doc.dataset_status = 1
@@ -332,7 +343,7 @@ class TestOnlineProject(unittest.TestCase):
 
     def test_get_segmentation(self):
         """Test getting the detectron segmentation of a Document."""
-        document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        document = self.project.get_document_by_id(self.test_document_id)
 
         page = document.get_page_by_index(0)
         assert page._segmentation is None
@@ -343,8 +354,8 @@ class TestOnlineProject(unittest.TestCase):
 
         segmentation = document.get_segmentation()
         assert len(segmentation) == 1
-        assert len(segmentation[0]) == 5
-        assert len(page._segmentation) == 5
+        assert len(segmentation[0]) == 12
+        assert len(page._segmentation) == 12
 
         virtual_document = deepcopy(document)
 
@@ -352,7 +363,7 @@ class TestOnlineProject(unittest.TestCase):
         virtual_document_segmentation = virtual_document.get_segmentation(timeout=0.1, num_retries=1)
 
         assert len(virtual_document_segmentation) == 1
-        assert len(virtual_document_segmentation[0]) == 5
+        assert len(virtual_document_segmentation[0]) == 12
 
         virtual_document_page = virtual_document.get_page_by_index(0)
         assert virtual_document_page._segmentation is None
@@ -423,7 +434,7 @@ class TestOnlineProject(unittest.TestCase):
 
     def test_set_none_category(self):
         """Test that setting Category to None gives the Document NO_CATEGORY."""
-        test_document = self.project.get_document_by_id(44823)
+        test_document = self.project.get_document_by_id(self.test_document_id)
         test_document.set_category(None)
         assert test_document.category == self.project.no_category
         assert test_document._category == self.project.no_category
@@ -451,11 +462,13 @@ class TestOnlineProject(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls) -> None:
-        """Remove any files that might have been left from the test pipeline."""
-        project = Project(id_=TEST_PROJECT_ID, update=True)
-        for document in project._documents:
-            if document.name in os.listdir('tests/test_data/'):
-                document.delete(delete_online=True)
+        """Remove the project created specifically for this test pipeline."""
+        for document in cls.project.documents + cls.project.test_documents:
+            document.dataset_status = 0
+            document.save_meta_data()
+            document.delete(delete_online=True)
+        response = delete_project(project_id=cls.project_id)
+        assert response.status_code == 204
 
 
 class TestOfflineExampleData(unittest.TestCase):
@@ -2391,6 +2404,12 @@ class TestKonfuzioDataSetup(unittest.TestCase):
     def setUpClass(cls) -> None:
         """Initialize the test Project."""
         cls.prj = Project(id_=None, project_folder=OFFLINE_PROJECT)
+        cls.project_id = restore_snapshot(snapshot_id=65)
+        cls.project = Project(id_=cls.project_id, update=True)
+        original_document_text = cls.prj.get_document_by_id(TEST_DOCUMENT_ID).text
+        cls.test_document_id = [
+            document for document in cls.project.documents if document.text == original_document_text
+        ][0].id_
 
     def test_number_training_documents(self):
         """Test the number of Documents in dataset status Training."""
@@ -2620,8 +2639,8 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_make_sure_annotations_are_downloaded_automatically(self):
         """Test if Annotations are downloaded automatically."""
-        prj = Project(id_=TEST_PROJECT_ID, project_folder='another')
-        doc = prj.get_document_by_id(TEST_DOCUMENT_ID)
+        prj = Project(id_=self.project_id, project_folder='another')
+        doc = prj.get_document_by_id(self.test_document_id)
         self.assertFalse(is_file(doc.annotation_file_path, raise_exception=False))
         self.assertEqual(None, doc._annotations)
         self.assertTrue(doc.annotations())
@@ -2631,8 +2650,8 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_make_sure_annotation_sets_are_downloaded_automatically(self):
         """Test if Annotation Sets are downloaded automatically."""
-        prj = Project(id_=TEST_PROJECT_ID, project_folder='another2')
-        doc = prj.get_document_by_id(TEST_DOCUMENT_ID)
+        prj = Project(id_=self.project_id, project_folder='another2')
+        doc = prj.get_document_by_id(self.test_document_id)
         self.assertFalse(is_file(doc.annotation_set_file_path, raise_exception=False))
         self.assertEqual(None, doc._annotation_sets)
         self.assertTrue(doc.annotation_sets())
@@ -2642,8 +2661,8 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_make_sure_pages_are_downloaded_automatically(self):
         """Test if Pages are downloaded automatically."""
-        prj = Project(id_=TEST_PROJECT_ID, project_folder='another33')
-        doc = prj.get_document_by_id(TEST_DOCUMENT_ID)
+        prj = Project(id_=self.project_id, project_folder='another33')
+        doc = prj.get_document_by_id(self.test_document_id)
         self.assertFalse(is_file(doc.pages_file_path, raise_exception=False))
         self.assertEqual([], doc._pages)
         self.assertTrue(doc.pages())
@@ -2652,8 +2671,8 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_add_label_set_without_category_to_document_with_category(self):
         """Test to add a Label Set without Category to a Document with a Category."""
-        prj = Project(id_=TEST_PROJECT_ID)  # new init to not add data to self.prj
-        doc = prj.get_document_by_id(TEST_DOCUMENT_ID)
+        prj = Project(id_=self.project_id)  # new init to not add data to self.prj
+        doc = prj.get_document_by_id(self.test_document_id)
         label_set = LabelSet(project=prj)
         label = Label(project=prj, label_sets=[label_set])
         with self.assertRaises(ValueError) as context:
@@ -2662,14 +2681,15 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_get_annotations_set_without_category_to_document_with_category(self):
         """Test to add a Label Set without Category to a Document with a Category."""
-        prj = Project(id_=TEST_PROJECT_ID)  # new init to not add data to self.prj
-        doc = prj.get_document_by_id(214414)
+        prj = Project(id_=self.project_id)  # new init to not add data to self.prj
+        original_document_text = self.prj.get_document_by_id(214414).text
+        doc = [document for document in prj.documents if document.text == original_document_text][0]
         assert doc.annotations() == []
 
     def test_get_bbox(self):
         """Test to get BoundingBox of Text offset."""
-        prj = Project(id_=TEST_PROJECT_ID)  # new init to not add data to self.prj
-        doc = prj.get_document_by_id(TEST_DOCUMENT_ID)
+        prj = Project(id_=self.project_id)  # new init to not add data to self.prj
+        doc = prj.get_document_by_id(self.test_document_id)
         doc.update()
         assert doc.category
         label_set = LabelSet(project=prj, categories=[doc.category])
@@ -2716,7 +2736,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
             return size
 
         # start of test
-        prj = Project(id_=46)
+        prj = Project(id_=self.project_id)
         before = _getsize(prj)
         for document in prj.documents:
             document.text
@@ -2734,8 +2754,8 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_online_project_document_default_update_setting(self):
         """Test update setting of Document when online Project is initialized."""
-        project = Project(id_=46)
-        document = project.get_document_by_id(TEST_DOCUMENT_ID)
+        project = Project(id_=self.project_id)
+        document = project.get_document_by_id(self.test_document_id)
 
         assert document._update is False
 
@@ -3167,8 +3187,9 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         The empty Annotation should be added to the Document as this represents the way the tokenizer
         creates empty Annotations.
         """
-        prj = Project(id_=TEST_PROJECT_ID)
-        doc = Document(text='', project=prj, category=prj.get_category_by_id(63))
+        prj = Project(id_=self.project_id)
+        test_category_id = prj.categories[0].id_
+        doc = Document(text='', project=prj, category=prj.get_category_by_id(test_category_id))
         label_set = doc.category.default_label_set
         label = label_set.labels[0]
         span = Span(start_offset=1, end_offset=2)
@@ -3222,14 +3243,30 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert len(cls.prj.test_documents) == cls.test_document_count
         category = cls.prj.get_category_by_id(63)
         assert len(cls.prj.labels[0].annotations(categories=[category])) == cls.annotations_correct
+        for document in cls.project.documents + cls.project.test_documents:
+            document.dataset_status = 0
+            document.save_meta_data()
+            document.delete(delete_online=True)
+        response = delete_project(project_id=cls.project_id)
+        assert response.status_code == 204
 
 
 class TestKonfuzioForceOfflineData(unittest.TestCase):
     """Test handle data forced offline."""
 
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Initialize the test Project."""
+        cls.project_id = restore_snapshot(snapshot_id=65)
+        cls.project = Project(id_=cls.project_id, update=True)
+        original_document_text = Project(id_=TEST_PROJECT_ID).get_document_by_id(TEST_DOCUMENT_ID).text
+        cls.test_document_id = [
+            document for document in cls.project.documents if document.text == original_document_text
+        ][0].id_
+
     def test_force_offline_project(self):
         """Test that a Project with an ID can be forced offline."""
-        prj = Project(id_=TEST_PROJECT_ID)
+        prj = Project(id_=self.project_id)
         prj.set_offline()
         self.assertFalse(prj.is_online)
         # all Data belonging to that Project should be offline without setting individual instances offline
@@ -3251,8 +3288,8 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
 
     def test_make_sure_annotations_are_not_downloaded_automatically(self):
         """Test that Annotations are not downloaded automatically."""
-        prj = Project(id_=TEST_PROJECT_ID, project_folder='another')
-        doc = prj.get_document_by_id(TEST_DOCUMENT_ID)
+        prj = Project(id_=self.project_id, project_folder='another')
+        doc = prj.get_document_by_id(self.test_document_id)
         doc.set_offline()
         self.assertFalse(is_file(doc.annotation_file_path, raise_exception=False))
         self.assertEqual(None, doc._annotations)
@@ -3277,8 +3314,8 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
 
     def test_make_sure_annotation_sets_are_not_downloaded_automatically(self):
         """Test that Annotation Sets are not downloaded automatically."""
-        prj = Project(id_=TEST_PROJECT_ID, project_folder='another2')
-        doc = prj.get_document_by_id(TEST_DOCUMENT_ID)
+        prj = Project(id_=self.project_id, project_folder='another2')
+        doc = prj.get_document_by_id(self.test_document_id)
         doc.set_offline()
         self.assertFalse(is_file(doc.annotation_set_file_path, raise_exception=False))
         self.assertEqual(None, doc._annotation_sets)
@@ -3303,8 +3340,8 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
 
     def test_make_sure_pages_are_not_downloaded_automatically(self):
         """Test that Pages are not downloaded automatically."""
-        prj = Project(id_=TEST_PROJECT_ID, project_folder='another33')
-        doc = prj.get_document_by_id(TEST_DOCUMENT_ID)
+        prj = Project(id_=self.project_id, project_folder='another33')
+        doc = prj.get_document_by_id(self.test_document_id)
         doc.set_offline()
         self.assertFalse(is_file(doc.pages_file_path, raise_exception=False))
         self.assertEqual([], doc._pages)
