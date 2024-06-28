@@ -1492,7 +1492,7 @@ class Label(Data):
         for category in categories:
             if category.id_ not in self._regex or update:
                 regex_category_file_path = os.path.join(
-                    self.project.regex_folder, f'{category.name}_{self.name_clean}_tokens.json5'
+                    self.project.regex_folder, f'{category.name_clean}_{self.name_clean}_tokens.json5'
                 )
                 if not is_file(regex_category_file_path, raise_exception=False) or update:
                     category_regex = self.find_regex(category=category)

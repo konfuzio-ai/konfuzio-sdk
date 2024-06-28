@@ -730,7 +730,7 @@ class TestOfflineExampleData(unittest.TestCase):
     def test_create_category_wrong_name(self):
         """Test that it's impossible to create a Category with a name that contains a special character."""
         wrong_name = Category(project=self.project, name='Category/name', name_clean='Category/name')
-        assert wrong_name.name == 'Categoryname'
+        assert wrong_name.name == 'Category/name'
         assert wrong_name.name_clean == 'Categoryname'
 
 
