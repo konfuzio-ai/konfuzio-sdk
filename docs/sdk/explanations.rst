@@ -14,6 +14,8 @@ Explanations
 
 .. mdinclude:: releasing/index.md
 
+.. mdinclude:: containerization.md
+
 .. mdinclude:: coordinates_system.md
 
 .. mdinclude:: merging_of_predicted_annotations/index.md
