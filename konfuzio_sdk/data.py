@@ -1154,6 +1154,7 @@ class Label(Data):
         description: str = None,
         label_sets=None,
         has_multiple_top_candidates: bool = False,
+        is_linked_to_checkbox: Optional[bool] = None,
         threshold: float = 0.1,
         *initial_data,
         **kwargs,
@@ -1176,6 +1177,7 @@ class Label(Data):
         self.data_type = get_data_type_display
         self.description = description
         self.has_multiple_top_candidates = has_multiple_top_candidates
+        self.is_linked_to_checkbox = is_linked_to_checkbox
         self.threshold = threshold
         self.project: Project = project
         self._force_offline = project._force_offline
@@ -1195,9 +1197,6 @@ class Label(Data):
 
         self._has_multiline_annotations = None
         self.optimized_thresholds = {}
-
-        # Attribute used to know if a Label is linked to a Checkbox or not
-        self.is_linked_to_checkbox = None
 
     def __repr__(self):
         """Return string representation."""
@@ -2177,6 +2176,7 @@ class Annotation(Data):
         normalized=None,
         id_: int = None,
         spans=None,
+        metadata: dict = None,
         accuracy: float = None,
         confidence: float = None,
         created_by: int = None,
@@ -2371,7 +2371,7 @@ class Annotation(Data):
             )
 
         # Meta date attribute containing information about e.g. omr
-        self.metadata = None
+        self.metadata = metadata or {}
 
     def __repr__(self):
         """Return string representation."""
