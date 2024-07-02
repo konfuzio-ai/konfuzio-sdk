@@ -2681,10 +2681,8 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_get_annotations_set_without_category_to_document_with_category(self):
         """Test to add a Label Set without Category to a Document with a Category."""
-        prj = Project(id_=self.project_id)  # new init to not add data to self.prj
-        original_document_text = self.prj.get_document_by_id(214414).text
-        doc = [document for document in prj.documents if document.text == original_document_text][0]
-        assert doc.annotations() == []
+        document = Document.from_file(path='tests/test_data/textposition.pdf', project=self.project)
+        assert document.annotations() == []
 
     def test_get_bbox(self):
         """Test to get BoundingBox of Text offset."""
