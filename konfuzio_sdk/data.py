@@ -4759,3 +4759,19 @@ class Project(Data):
             except Exception as error:
                 print('[ERROR] Something went wrong while downloading AIs or AI metadata!')
                 raise error
+
+    def get_categories_by_name(self, category_name: str = None) -> List[Category]:
+        """
+        Get Categories by the match to its name or clean_name.
+
+        :param category_name: A string to search the Category.
+        :returns: A list of Categories that have a matching name or a clean name.
+        """
+        result_categories = []
+        for category in self.categories:
+            if category.name == category_name or category.name_clean == category_name:
+                result_categories.append(category)
+        if result_categories:
+            return result_categories
+        else:
+            raise IndexError(f'Category name {category_name} was not found in {self}.')

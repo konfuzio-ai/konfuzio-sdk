@@ -737,6 +737,17 @@ class TestOfflineExampleData(unittest.TestCase):
         assert wrong_name.name == 'Categoryname'
         assert wrong_name.name_clean == 'Categoryname'
 
+    def test_get_categories_by_name(self):
+        """Test that Categories can be searched by name."""
+        assert (
+            self.project.get_category_by_id(63).name
+            == self.project.get_categories_by_name(category_name='Lohnabrechnung')[0].name
+        )
+        assert (
+            self.project.get_category_by_id(63).name_clean
+            == self.project.get_categories_by_name(category_name='Lohnabrechnung')[0].name_clean
+        )
+
 
 class TestEqualityAnnotation(unittest.TestCase):
     """Test the equality of Annotations."""
@@ -3421,11 +3432,12 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Remove the project created specifically for this test pipeline."""
+        cls.project = Project(id_=RESTORED_PROJECT_ID, update=True)
         for document in cls.project.documents + cls.project.test_documents:
             document.dataset_status = 0
             document.save_meta_data()
             document.delete(delete_online=True)
-        response = delete_project(project_id=cls.project_id)
+        response = delete_project(project_id=RESTORED_PROJECT_ID)
         assert response.status_code == 204
 
 

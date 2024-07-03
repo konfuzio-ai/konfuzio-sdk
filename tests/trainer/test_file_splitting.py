@@ -12,7 +12,14 @@ import numpy
 import pytest
 from requests import HTTPError
 
-from konfuzio_sdk.api import delete_ai_model, konfuzio_session, update_ai_model, upload_ai_model
+from konfuzio_sdk.api import (
+    delete_ai_model,
+    delete_project,
+    konfuzio_session,
+    restore_snapshot,
+    update_ai_model,
+    upload_ai_model,
+)
 from konfuzio_sdk.data import Category, Document, Project
 from konfuzio_sdk.samples import LocalTextProject
 from konfuzio_sdk.settings_importer import is_dependency_installed
@@ -27,7 +34,7 @@ from konfuzio_sdk.urls import get_create_ai_model_url
 
 TEST_WITH_FULL_DATASET = False
 DEVICE = 'cpu'
-TEST_SPLITTING_AI_PROJECT_ID = 14392
+RESTORED_PROJECT_ID = restore_snapshot(snapshot_id=66)
 
 
 @pytest.mark.skipif(
@@ -312,7 +319,7 @@ class TestTextualFileSplittingModel(unittest.TestCase):
     def setUpClass(cls) -> None:
         """Initialize the tested class."""
         # setting up project documents and model
-        cls.project = Project(id_=TEST_SPLITTING_AI_PROJECT_ID)
+        cls.project = Project(id_=RESTORED_PROJECT_ID)
         cls.file_splitting_model = TextualFileSplittingModel(categories=cls.project.categories)
         if not TEST_WITH_FULL_DATASET:
             cls.file_splitting_model.documents = cls.file_splitting_model.categories[0].documents()
@@ -473,12 +480,22 @@ class TestMultimodalFileSplittingModel(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Initialize the tested class."""
-        cls.project = Project(id_=TEST_SPLITTING_AI_PROJECT_ID)
+        cls.project = Project(id_=RESTORED_PROJECT_ID)
         cls.file_splitting_model = MultimodalFileSplittingModel(categories=cls.project.categories)
         if not TEST_WITH_FULL_DATASET:
             cls.file_splitting_model.documents = cls.file_splitting_model.categories[0].documents()
             cls.file_splitting_model.test_documents = cls.file_splitting_model.categories[0].test_documents()
         cls.test_document = cls.file_splitting_model.test_documents[-1]
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        """Remove artifacts created by testing."""
+        for document in cls.project.documents + cls.project.test_documents:
+            document.dataset_status = 0
+            document.save_meta_data()
+            document.delete(delete_online=True)
+        response = delete_project(project_id=RESTORED_PROJECT_ID)
+        assert response.status_code == 204
 
     def test_model_training(self):
         """Test model's fit() method."""
