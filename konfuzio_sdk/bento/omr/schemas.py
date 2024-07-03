@@ -1,4 +1,4 @@
-"""Define pydantic models for request and response from the Extraction AI."""
+"""Define pydantic models for request and response for OMR (Optical Mark Recognition) services"""
 
 from typing import Any, List, Optional, Union
 
@@ -27,15 +27,11 @@ HexBytes = Annotated[
 
 class CheckboxRequest20240523(BaseModel):
     """
-    Describe a scheme for the Optical Mark Recognition (OMR) request on 15/02/2024.
-
-    Info:
-    Just Annotations with the attribute is_linked_to_checkbox set to True are allowed.
-    The Page images need to be str-base64 encoded.
+    Describe a scheme for the Checkbox Detection request on 15/02/2024.
     """
 
     class Annotation(BaseModel):
-        """Describe a scheme for the Annotation info needed for OMR on 15/02/2024."""
+        """Describe a scheme for the Annotation info needed for Checkbox Detection on 15/02/2024."""
 
         class Box(BaseModel):
             """Describe a scheme for BBox on 15/02/2024."""
@@ -50,7 +46,7 @@ class CheckboxRequest20240523(BaseModel):
         bbox: Box
 
     class Page(BaseModel):
-        """Describe a scheme for the Page info needed for OMR on 15/02/2024."""
+        """Describe a scheme for the Page info needed for Checkbox Detection on 15/02/2024."""
 
         page_id: int
         width: int
@@ -64,13 +60,13 @@ class CheckboxRequest20240523(BaseModel):
 
 
 class CheckboxResponse20240523(BaseModel):
-    """Describe a scheme for the Optical Mark Recognition (OMR) response on 15/02/2024."""
+    """Describe a scheme for the Checkbox Detection response on 15/02/2024."""
 
     class MetaData(BaseModel):
-        """Describe a scheme for OMR meta data on 15/02/2024."""
+        """Describe a scheme for Checkbox Detection meta data on 15/02/2024."""
 
         class Checkbox(BaseModel):
-            """Describe a scheme for OMR checkbox data on 15/02/2024."""
+            """Describe a scheme for Checkbox data on 15/02/2024."""
 
             class Box(BaseModel):
                 """Describe a scheme for BBox on 15/02/2024."""

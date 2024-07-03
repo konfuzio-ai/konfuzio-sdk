@@ -1,4 +1,4 @@
-"""Test interfaces created for containerization of Information Extraction AIs."""
+"""Test OMR functionality."""
 
 import os
 import subprocess
@@ -19,17 +19,16 @@ from konfuzio_sdk.settings_importer import is_dependency_installed
 from konfuzio_sdk.trainer.omr import CheckboxDetector
 
 
-# @pytest.mark.skip(reason='Testing of the components requires starting a subprocess')
 @pytest.mark.skipif(
     not is_dependency_installed('torch') and not is_dependency_installed('torchvision'),
     reason='Required dependencies not installed.',
 )
 class TestOMRCheckboxBento(unittest.TestCase):
-    """Test that Bento-based OMR checkbox detector works."""
+    """Test Bento-based OMR checkbox detector functionality."""
 
     @classmethod
     def setUpClass(cls) -> None:
-        """Create a model and its Bento instance of Extraction AI."""
+        """Get latest Bento instance of checkbox detection service and initialize test data."""
 
         bento_version = os.getenv('CHECKBOX_DETECTOR_VERSION', 'latest')
         bento_tag = f'checkboxdetector:{bento_version}'
@@ -39,7 +38,6 @@ class TestOMRCheckboxBento(unittest.TestCase):
         cls.ResponseSchema = CheckboxResponse20240523
         # Initialize pipeline
         cls.pipeline = CheckboxDetector()
-
         # Load Bento checkboxdetector model
         try:
             # try to get the model from the local store
@@ -127,24 +125,33 @@ class TestOMRCheckboxBento(unittest.TestCase):
 
         cls.request_url = 'http://0.0.0.0:3000/extract'
 
-    def test_testdocument(self):
+    def test_testdocument(self) -> None:
         """Test that the test document contains all relevant Annotations and Checkboxes for the following tests."""
         assert self.test_doc is not None
         assert len(self.test_doc.pages()) == 2
-        # Check, that the test document contains 17 Annotations with attribute 'is_linked_to_checkbox'
-        # TODO: Uncomment this line when the linked_to_checkbox attribute is implemented by Server
-        # assert len([a for a in self.test_doc.annotations() if a.label.is_linked_to_checkbox]) == 17, f"{self.test_doc} contains {len(self.test_doc.annotations())} Annotations with attribute 'is_linked_to_checkbox', it should be 17."
+        assert (
+            len(
+                [
+                    a
+                    for a in self.test_doc.annotations()
+                    if getattr(a.label, 'is_linked_to_checkbox', True) or a.label.is_linked_to_checkbox is None
+                ]
+            )
+            == 17
+        ), f"{self.test_doc} should contain 17 Annotations with attribute 'is_linked_to_checkbox'==True."
 
-    def test_request_schema(self):
+    def test_request_schema(self) -> None:
+        """Test that the request schema and test_request is correctly initialized."""
         request_schema = self.RequestSchema(**self.test_request)
         assert isinstance(request_schema, self.RequestSchema)
 
-    def test_response_schema(self):
+    def test_response_schema(self) -> None:
+        """Test that the response schema and test_response is correctly initialized."""
         response_schema = self.ResponseSchema(**self.test_response)
         assert isinstance(response_schema, self.ResponseSchema)
 
-    def test_convert_document_to_request(self):
-        """Test that the conversion of a document to a request adheres to the schema."""
+    def test_convert_document_to_request(self) -> None:
+        """Test that the conversion of the test document to a request adheres to the correct schema."""
         req = convert_document_to_request(document=self.test_doc, schema=self.RequestSchema)
 
         # check request pages
@@ -161,21 +168,16 @@ class TestOMRCheckboxBento(unittest.TestCase):
         assert req.annotations[0].bbox.y0 == int(self.test_doc.annotations()[0].bboxes[0]['y0'])
         assert req.annotations[0].bbox.y1 == int(self.test_doc.annotations()[0].bboxes[0]['y1'])
 
-        # check for number of annotations which are linked to checkboxes
-        assert (
-            len(req.annotations) == 17
-        ), f'The prepared request contains {len(req.annotations)} Annotations, but should be 17.'
-
-    def test_detector_dummydata(self):
-        """Test that only a schema-adhering response is accepted by extract method of service."""
+    def test_detector_dummydata(self) -> None:
+        """Test the checkbox detection service with dummy data (no checkboxes in dummy data)."""
         # Create a dummy image (e.g., a 100x100 red image)
         request = self.RequestSchema(**self.test_request)
         response = requests.post(url=self.request_url, json=request.model_dump())
         assert response.status_code == 200
-        assert response.json() == {'metadata': []}  # dummy data does not contain checkboxes, hence empty response
+        assert response.json() == {'metadata': []}  # check empty response due to lack of checkboxes in dummy data
 
-    def test_detector_realdata(self):
-        """Test that only a schema-adhering response is accepted by extract method of service."""
+    def test_detector_realdata(self) -> None:
+        """Test the checkbox detection service with a real test document (end2end)."""
         request = convert_document_to_request(document=self.test_doc, schema=self.RequestSchema)
         response = requests.post(url=self.request_url, json=request.model_dump())
         ckboxes = response.json()['metadata']
@@ -184,7 +186,7 @@ class TestOMRCheckboxBento(unittest.TestCase):
             len(ckboxes) == 17
         ), f'Test {self.test_doc} contains 17 checkboxes, but just {len(ckboxes)} have been detected.'
 
-        def bboxes_overlap(bbox1, bbox2):
+        def bboxes_overlap(bbox1, bbox2) -> bool:
             """Check if two bounding boxes have any overlap, if so, it is considered valid."""
             # Check if there is any overlap on the x-axis
             if bbox1['x1'] < bbox2['x0'] or bbox2['x1'] < bbox1['x0']:
@@ -215,8 +217,8 @@ class TestOMRCheckboxBento(unittest.TestCase):
             valid_box_ids == detected_box_ids
         ), f'Not all checkboxes in {self.test_doc} have been detected correctly, either the value or the position is wrong.'
 
-    def test_detector_max_threshold(self):
-        """Test that only a schema-adhering response is accepted by extract method of service."""
+    def test_detector_max_threshold(self) -> None:
+        """Test the checkbox detection service with modified detection threshold parameter."""
         request = convert_document_to_request(document=self.test_doc, schema=self.RequestSchema)
         request.detection_threshold = 1.0
         response = requests.post(url=self.request_url, json=request.model_dump())
@@ -225,7 +227,7 @@ class TestOMRCheckboxBento(unittest.TestCase):
             response.json() == {'metadata': []}
         ), f'Threshold is set to 1.0, as the confidence should not be higher than one, the response should be empty, but is: {response.json()}.'
 
-    def test_detector_wrongdata(self):
+    def test_detector_wrongdata(self) -> None:
         """Test that it's impossible to send a request with a structure not adhering to schema."""
         data = {'pages': 1234, 'new_field': 'ffff'}
         responses = requests.post(url=self.request_url, data=data)

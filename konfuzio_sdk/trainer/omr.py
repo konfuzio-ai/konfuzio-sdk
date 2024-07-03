@@ -21,14 +21,14 @@ Box = Union[List[Tuple[int, int, int, int]], np.ndarray]
 
 
 class CheckboxDetector(Module, metaclass=abc.ABCMeta):
-    """Detect checkboxes in images using a pre-trained model."""
+    """Build a bentoml based CheckboxDetector, which detects checkboxes in images using a pre-trained model."""
 
     def __init__(
         self,
         **kwargs,
-    ):
+    ) -> None:
         """
-        Initialize the OMRAbstractModel.
+        Initialize the Bento class for CheckboxDetector.
 
         :param kwargs: Arbitrary keyword arguments.
         """
@@ -56,16 +56,7 @@ class CheckboxDetector(Module, metaclass=abc.ABCMeta):
             '__call__': {'batchable': False},
         }
 
-    def __getstate__(self):
-        state = self.__dict__.copy()
-        # Modify state to be serializable, if necessary
-        return state
-
-    def __setstate__(self, state):
-        self.__dict__.update(state)
-        # Restore any necessary state not directly saved in __getstate__
-
-    def save_bento(self, model_path, build=True, output_dir=None) -> Union[None, tuple]:
+    def save_bento(self, model_path: str, build: bool = True, output_dir: str = None) -> Union[None, tuple]:
         """
         Save AI as a BentoML model in the local store.
 
@@ -101,12 +92,13 @@ class CheckboxDetector(Module, metaclass=abc.ABCMeta):
 
         return saved_bento, archive_path
 
-    # is this function even needed? TODO: check
-    def load_bento(model_name):
-        """Load AI as a Bento ML instance."""
-        return bentoml.torchscript.load_model(model_name)
+    def build_bento(self, bento_model: bentoml._internal.models.model.Model) -> bentoml._internal.bento.bento.Bento:
+        """
+        Build a BentoML service for the model.
 
-    def build_bento(self, bento_model):
+        :param bento_model: The model to be built into a BentoML service.
+        :return: The built BentoML service.
+        """
         # Build BentoML service for the model.
         omr_dir = Path(__file__).parents[1] / 'bento/omr'
         trainer_dir = Path(__file__).parent
@@ -142,7 +134,7 @@ class CheckboxDetector(Module, metaclass=abc.ABCMeta):
 
 
 class CheckboxDetectorUtils:
-    """Detect checkboxes in images using a pre-trained model."""
+    """Utilities for pre and postprocessing of the CheckboxDetector."""
 
     def __init__(self, **kwargs: Any) -> None:
         """
@@ -150,18 +142,7 @@ class CheckboxDetectorUtils:
 
         :param kwargs: Arbitrary keyword arguments.
         :type kwargs: :class:`Any`
-        :raises FileNotFoundError: If the model weights file is not found.
-        :return: None
-        :rtype: :class:`NoneType`
         """
-        # super().__init__()
-
-        # """ NE: commented in on 07.05.24 due to test with if __name__ == '__main__':, might not be needed for bento
-        # model_path = str(Path(__file__).parent / 'ckpt_best.pt')
-        # if not Path(model_path).exists():
-        #     raise FileNotFoundError(f'Model weights file not found at {model_path}')
-        # self.detector = torch.jit.load(model_path)
-        # """
 
         self.input_shape = (1280, 1280)
         self.threshold = 0.67  # Based on best threshold during training, adjust if model is retrained
@@ -283,7 +264,7 @@ class CheckboxDetectorUtils:
         processed_image = (image / max_value).astype(np.float32)
         return processed_image
 
-    def _preprocess(self, image: np.ndarray, out_shape: Tuple[int, int]) -> np.ndarray:
+    def preprocess(self, image: np.ndarray, out_shape: Tuple[int, int]) -> np.ndarray:
         """
         Preprocesses the image before passing it to the model.
         The preprocessing is done as during training, so do not change anything.
@@ -307,7 +288,7 @@ class CheckboxDetectorUtils:
         image = torch.from_numpy(image)
         return image
 
-    def _postprocess(
+    def postprocess(
         self, outputs: torch.Tensor, image_shape: Tuple[int, int], threshold: Optional[float] = None
     ) -> Tuple[np.ndarray, np.ndarray]:
         """
@@ -332,25 +313,6 @@ class CheckboxDetectorUtils:
         bboxes = np.array([(int(b[0]), int(b[1]), int(b[2]), int(b[3])) for b in bboxes])
         return cls_conf, bboxes
 
-    # # """ NE: commented in on 07.05.24 due to test with if __name__ == '__main__':, might not be needed for bento
-    # def forward(self, image: Image.Image) -> Tuple[np.ndarray, List[bool], np.ndarray]:
-    #     """
-    #     Runs the detection pipeline on an input image.
-
-    #     :param image: The input image.
-    #     :type image: :class:`PIL.Image.Image`
-    #     :return: Bounding boxes, detection flags, and confidence scores.
-    #     :rtype: :class:`tuple`
-    #     """
-    #     logger.info('Run checkbox detection.')
-    #     input_image = self._preprocess(image, self.input_shape)
-    #     outputs = self.detector(input_image)
-    #     cls_conf, bboxes = self._postprocess(outputs, image.size)
-    #     checked = [True if c[0] > c[1] else False for c in cls_conf]
-    #     return bboxes, checked, cls_conf
-
-    # # """
-
 
 class BboxPairing:
     """
@@ -365,7 +327,7 @@ class BboxPairing:
     The following example shows how you can use the `BboxPairing` class to find pairs.
 
     .. testcode::
-
+        # a single box is defined by (x0, y0, x1, y1)
         class1_boxes = [(0, 0, 1, 1), (10, 10, 12, 12)]
         class2_boxes = [(2, 0, 3, 1), (14, 14, 16, 16)]
         bbox_pairing = BboxPairing()

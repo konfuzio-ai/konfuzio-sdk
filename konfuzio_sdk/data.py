@@ -2370,7 +2370,7 @@ class Annotation(Data):
                 exception_type=NotImplementedError,
             )
 
-        # Meta date attribute containing information about e.g. omr
+        # Meta data attribute containing information about e.g. omr
         self.metadata = metadata or {}
 
     def __repr__(self):

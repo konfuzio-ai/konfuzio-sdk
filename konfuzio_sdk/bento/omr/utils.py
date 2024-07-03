@@ -1,4 +1,4 @@
-"""Utility functions for adapting Konfuzio concepts to be used with Pydantic models."""
+"""Utility functions for adapting OMR functionality to be used with Pydantic models."""
 
 from pydantic import BaseModel
 
@@ -35,7 +35,6 @@ def convert_document_to_request(document: Document, schema: BaseModel = Checkbox
             for page in document.pages()
         ]
 
-        # TODO: Check if page width and height should be int or float (they are float when retrieved from the document)
         annotations = [
             {
                 'page_id': a.page.id_,
@@ -66,8 +65,8 @@ def convert_response_to_checkbox_annotations(
     """
     Receive a CheckboxResponse and add the metadata to the Annotations of the Document.
 
-    :param response: A CheckboxResponse to be converted.
     :param document: A Document where the annotations should be checkbox-annotated.
+    :param response: A CheckboxResponse to be converted.
     :returns: The original Document with checkbox-annotated Annotations.
     """
     if response.__class__.__name__ == 'CheckboxResponse20240523':
