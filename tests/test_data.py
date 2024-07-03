@@ -1,6 +1,7 @@
 """Validate data functions."""
 import logging
 import os
+import time
 import unittest
 from copy import copy, deepcopy
 
@@ -39,6 +40,7 @@ from tests.variables import (
 )
 
 logger = logging.getLogger(__name__)
+RESTORED_PROJECT_ID = restore_snapshot(snapshot_id=65)
 
 
 class TestOnlineProject(unittest.TestCase):
@@ -49,9 +51,7 @@ class TestOnlineProject(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Initialize the test Project."""
-
-        cls.project_id = restore_snapshot(snapshot_id=65)
-        cls.project = Project(id_=cls.project_id, update=True)
+        cls.project = Project(id_=RESTORED_PROJECT_ID, update=True)
         original_document_text = Project(id_=46).get_document_by_id(TEST_DOCUMENT_ID).text
         cls.test_document_id = [
             document for document in cls.project.documents if document.text == original_document_text
@@ -383,6 +383,7 @@ class TestOnlineProject(unittest.TestCase):
 
         assert doc in self.project.preparation_documents
         assert doc.name == 'pdf.pdf'
+        time.sleep(5)  # for ocr processing completion
         assert doc.get_file(ocr_version=True).split('/')[-1] == 'pdf_ocr.pdf'
 
         # Test Document modification
@@ -459,16 +460,6 @@ class TestOnlineProject(unittest.TestCase):
         image = document.pages()[0].get_image()
         assert isinstance(image, PIL.PngImagePlugin.PngImageFile)
         document.delete(delete_online=True)
-
-    @classmethod
-    def tearDownClass(cls) -> None:
-        """Remove the project created specifically for this test pipeline."""
-        for document in cls.project.documents + cls.project.test_documents:
-            document.dataset_status = 0
-            document.save_meta_data()
-            document.delete(delete_online=True)
-        response = delete_project(project_id=cls.project_id)
-        assert response.status_code == 204
 
 
 class TestOfflineExampleData(unittest.TestCase):
@@ -2404,8 +2395,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
     def setUpClass(cls) -> None:
         """Initialize the test Project."""
         cls.prj = Project(id_=None, project_folder=OFFLINE_PROJECT)
-        cls.project_id = restore_snapshot(snapshot_id=65)
-        cls.project = Project(id_=cls.project_id, update=True)
+        cls.project = Project(id_=RESTORED_PROJECT_ID, update=True)
         original_document_text = cls.prj.get_document_by_id(TEST_DOCUMENT_ID).text
         cls.test_document_id = [
             document for document in cls.project.documents if document.text == original_document_text
@@ -2639,7 +2629,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_make_sure_annotations_are_downloaded_automatically(self):
         """Test if Annotations are downloaded automatically."""
-        prj = Project(id_=self.project_id, project_folder='another')
+        prj = Project(id_=RESTORED_PROJECT_ID, project_folder='another')
         doc = prj.get_document_by_id(self.test_document_id)
         self.assertFalse(is_file(doc.annotation_file_path, raise_exception=False))
         self.assertEqual(None, doc._annotations)
@@ -2650,7 +2640,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_make_sure_annotation_sets_are_downloaded_automatically(self):
         """Test if Annotation Sets are downloaded automatically."""
-        prj = Project(id_=self.project_id, project_folder='another2')
+        prj = Project(id_=RESTORED_PROJECT_ID, project_folder='another2')
         doc = prj.get_document_by_id(self.test_document_id)
         self.assertFalse(is_file(doc.annotation_set_file_path, raise_exception=False))
         self.assertEqual(None, doc._annotation_sets)
@@ -2661,7 +2651,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_make_sure_pages_are_downloaded_automatically(self):
         """Test if Pages are downloaded automatically."""
-        prj = Project(id_=self.project_id, project_folder='another33')
+        prj = Project(id_=RESTORED_PROJECT_ID, project_folder='another33')
         doc = prj.get_document_by_id(self.test_document_id)
         self.assertFalse(is_file(doc.pages_file_path, raise_exception=False))
         self.assertEqual([], doc._pages)
@@ -2671,7 +2661,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_add_label_set_without_category_to_document_with_category(self):
         """Test to add a Label Set without Category to a Document with a Category."""
-        prj = Project(id_=self.project_id)  # new init to not add data to self.prj
+        prj = Project(id_=RESTORED_PROJECT_ID)  # new init to not add data to self.prj
         doc = prj.get_document_by_id(self.test_document_id)
         label_set = LabelSet(project=prj)
         label = Label(project=prj, label_sets=[label_set])
@@ -2686,7 +2676,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_get_bbox(self):
         """Test to get BoundingBox of Text offset."""
-        prj = Project(id_=self.project_id)  # new init to not add data to self.prj
+        prj = Project(id_=RESTORED_PROJECT_ID)  # new init to not add data to self.prj
         doc = prj.get_document_by_id(self.test_document_id)
         doc.update()
         assert doc.category
@@ -2734,7 +2724,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
             return size
 
         # start of test
-        prj = Project(id_=self.project_id)
+        prj = Project(id_=RESTORED_PROJECT_ID)
         before = _getsize(prj)
         for document in prj.documents:
             document.text
@@ -2752,7 +2742,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_online_project_document_default_update_setting(self):
         """Test update setting of Document when online Project is initialized."""
-        project = Project(id_=self.project_id)
+        project = Project(id_=RESTORED_PROJECT_ID)
         document = project.get_document_by_id(self.test_document_id)
 
         assert document._update is False
@@ -3185,7 +3175,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         The empty Annotation should be added to the Document as this represents the way the tokenizer
         creates empty Annotations.
         """
-        prj = Project(id_=self.project_id)
+        prj = Project(id_=RESTORED_PROJECT_ID)
         test_category_id = prj.categories[0].id_
         doc = Document(text='', project=prj, category=prj.get_category_by_id(test_category_id))
         label_set = doc.category.default_label_set
@@ -3241,12 +3231,6 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert len(cls.prj.test_documents) == cls.test_document_count
         category = cls.prj.get_category_by_id(63)
         assert len(cls.prj.labels[0].annotations(categories=[category])) == cls.annotations_correct
-        for document in cls.project.documents + cls.project.test_documents:
-            document.dataset_status = 0
-            document.save_meta_data()
-            document.delete(delete_online=True)
-        response = delete_project(project_id=cls.project_id)
-        assert response.status_code == 204
 
 
 class TestKonfuzioForceOfflineData(unittest.TestCase):
@@ -3255,8 +3239,7 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Initialize the test Project."""
-        cls.project_id = restore_snapshot(snapshot_id=65)
-        cls.project = Project(id_=cls.project_id, update=True)
+        cls.project = Project(id_=RESTORED_PROJECT_ID, update=True)
         original_document_text = Project(id_=TEST_PROJECT_ID).get_document_by_id(TEST_DOCUMENT_ID).text
         cls.test_document_id = [
             document for document in cls.project.documents if document.text == original_document_text
@@ -3264,7 +3247,7 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
 
     def test_force_offline_project(self):
         """Test that a Project with an ID can be forced offline."""
-        prj = Project(id_=self.project_id)
+        prj = Project(id_=RESTORED_PROJECT_ID)
         prj.set_offline()
         self.assertFalse(prj.is_online)
         # all Data belonging to that Project should be offline without setting individual instances offline
@@ -3286,7 +3269,7 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
 
     def test_make_sure_annotations_are_not_downloaded_automatically(self):
         """Test that Annotations are not downloaded automatically."""
-        prj = Project(id_=self.project_id, project_folder='another')
+        prj = Project(id_=RESTORED_PROJECT_ID, project_folder='another')
         doc = prj.get_document_by_id(self.test_document_id)
         doc.set_offline()
         self.assertFalse(is_file(doc.annotation_file_path, raise_exception=False))
@@ -3312,7 +3295,7 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
 
     def test_make_sure_annotation_sets_are_not_downloaded_automatically(self):
         """Test that Annotation Sets are not downloaded automatically."""
-        prj = Project(id_=self.project_id, project_folder='another2')
+        prj = Project(id_=RESTORED_PROJECT_ID, project_folder='another2')
         doc = prj.get_document_by_id(self.test_document_id)
         doc.set_offline()
         self.assertFalse(is_file(doc.annotation_set_file_path, raise_exception=False))
@@ -3338,7 +3321,7 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
 
     def test_make_sure_pages_are_not_downloaded_automatically(self):
         """Test that Pages are not downloaded automatically."""
-        prj = Project(id_=self.project_id, project_folder='another33')
+        prj = Project(id_=RESTORED_PROJECT_ID, project_folder='another33')
         doc = prj.get_document_by_id(self.test_document_id)
         doc.set_offline()
         self.assertFalse(is_file(doc.pages_file_path, raise_exception=False))
@@ -3434,6 +3417,16 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
         assert len(first_page_strings) == 2
         assert 'I like bread.' in first_page_strings
         assert 'Morning,' in first_page_strings
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        """Remove the project created specifically for this test pipeline."""
+        for document in cls.project.documents + cls.project.test_documents:
+            document.dataset_status = 0
+            document.save_meta_data()
+            document.delete(delete_online=True)
+        response = delete_project(project_id=cls.project_id)
+        assert response.status_code == 204
 
 
 class TestFillOperation(unittest.TestCase):
