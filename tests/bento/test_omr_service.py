@@ -1,6 +1,5 @@
 """Test interfaces created for containerization of Information Extraction AIs."""
 
-import base64
 import os
 import subprocess
 import time
@@ -13,15 +12,18 @@ import pytest
 import requests
 from PIL import Image
 
-from konfuzio_sdk.bento.extraction.schemas import CheckboxRequest20240523, CheckboxResponse20240523
-from konfuzio_sdk.bento.extraction.utils import convert_document_to_request
+from konfuzio_sdk.bento.omr.schemas import CheckboxRequest20240523, CheckboxResponse20240523
+from konfuzio_sdk.bento.omr.utils import convert_document_to_request
 from konfuzio_sdk.data import Project
 from konfuzio_sdk.settings_importer import is_dependency_installed
 from konfuzio_sdk.trainer.omr import CheckboxDetector
 
 
 # @pytest.mark.skip(reason='Testing of the components requires starting a subprocess')
-@pytest.mark.skipif(not is_dependency_installed('torch'), reason='Required dependencies not installed.')
+@pytest.mark.skipif(
+    not is_dependency_installed('torch') and not is_dependency_installed('torchvision'),
+    reason='Required dependencies not installed.',
+)
 class TestOMRCheckboxBento(unittest.TestCase):
     """Test that Bento-based OMR checkbox detector works."""
 
@@ -54,11 +56,31 @@ class TestOMRCheckboxBento(unittest.TestCase):
         # Initialize and create test data
         cls.project = Project(id_=15217, update=True)
         cls.test_doc = cls.project.get_document_by_id(5930563)  # musterformular-by.pdf
+        # Ground truth for the checkboxes in the test document
+        cls.ckboxes_gt_doc5930563 = [
+            {'is_checked': True, 'bbox': {'x0': 70, 'x1': 82, 'y0': 758, 'y1': 771}},
+            {'is_checked': False, 'bbox': {'x0': 70, 'x1': 82, 'y0': 733, 'y1': 745}},
+            {'is_checked': False, 'bbox': {'x0': 85, 'x1': 97, 'y0': 481, 'y1': 493}},
+            {'is_checked': False, 'bbox': {'x0': 85, 'x1': 97, 'y0': 431, 'y1': 443}},
+            {'is_checked': True, 'bbox': {'x0': 85, 'x1': 97, 'y0': 367, 'y1': 380}},
+            {'is_checked': False, 'bbox': {'x0': 85, 'x1': 97, 'y0': 343, 'y1': 355}},
+            {'is_checked': True, 'bbox': {'x0': 85, 'x1': 97, 'y0': 317, 'y1': 329}},
+            {'is_checked': True, 'bbox': {'x0': 85, 'x1': 97, 'y0': 254, 'y1': 266}},
+            {'is_checked': False, 'bbox': {'x0': 113, 'x1': 125, 'y0': 229, 'y1': 241}},
+            {'is_checked': True, 'bbox': {'x0': 113, 'x1': 125, 'y0': 216, 'y1': 228}},
+            {'is_checked': True, 'bbox': {'x0': 141, 'x1': 153, 'y0': 203, 'y1': 216}},
+            {'is_checked': False, 'bbox': {'x0': 141, 'x1': 153, 'y0': 191, 'y1': 203}},
+            {'is_checked': True, 'bbox': {'x0': 85, 'x1': 97, 'y0': 115, 'y1': 127}},
+            {'is_checked': False, 'bbox': {'x0': 85, 'x1': 97, 'y0': 796, 'y1': 808}},
+            {'is_checked': True, 'bbox': {'x0': 85, 'x1': 97, 'y0': 746, 'y1': 758}},
+            {'is_checked': False, 'bbox': {'x0': 85, 'x1': 97, 'y0': 696, 'y1': 707}},
+            {'is_checked': True, 'bbox': {'x0': 70, 'x1': 82, 'y0': 352, 'y1': 363}},
+        ]
 
         dummy_image = Image.fromarray(np.full((100, 100, 3), (255, 0, 0), dtype=np.uint8))
         buffered = BytesIO()
         dummy_image.save(buffered, format='PNG')
-        encoded_image = base64.b64encode(buffered.getvalue()).decode('utf-8')
+        encoded_image = buffered.getvalue()
 
         cls.test_request = {
             'pages': [
@@ -69,6 +91,7 @@ class TestOMRCheckboxBento(unittest.TestCase):
                 {'page_id': 8795115, 'annotation_id': 36015161, 'bbox': {'x0': 114, 'x1': 196, 'y0': 761, 'y1': 769}},
                 {'page_id': 8795115, 'annotation_id': 36015153, 'bbox': {'x0': 114, 'x1': 164, 'y0': 733, 'y1': 744}},
             ],
+            'detection_threshold': 0.5,
         }
         cls.test_response = {
             'metadata': [
@@ -129,8 +152,7 @@ class TestOMRCheckboxBento(unittest.TestCase):
         assert req.pages[0].page_id == self.test_doc.pages()[0].id_
         assert req.pages[0].width == int(self.test_doc.pages()[0].width)
         assert req.pages[0].height == int(self.test_doc.pages()[0].height)
-        assert isinstance(req.pages[0].image, str)
-
+        assert isinstance(req.pages[0].image, bytes)
         # check request annotations
         assert req.annotations[0].page_id == self.test_doc.pages()[0].id_
         assert req.annotations[0].annotation_id == self.test_doc.annotations()[0].id_
@@ -147,21 +169,61 @@ class TestOMRCheckboxBento(unittest.TestCase):
     def test_detector_dummydata(self):
         """Test that only a schema-adhering response is accepted by extract method of service."""
         # Create a dummy image (e.g., a 100x100 red image)
-        response = requests.post(url=self.request_url, json=self.test_request)
+        request = self.RequestSchema(**self.test_request)
+        response = requests.post(url=self.request_url, json=request.model_dump())
         assert response.status_code == 200
         assert response.json() == {'metadata': []}  # dummy data does not contain checkboxes, hence empty response
 
     def test_detector_realdata(self):
         """Test that only a schema-adhering response is accepted by extract method of service."""
         request = convert_document_to_request(document=self.test_doc, schema=self.RequestSchema)
-        response = requests.post(url=self.request_url, json=request.dict())
+        response = requests.post(url=self.request_url, json=request.model_dump())
         ckboxes = response.json()['metadata']
+
         assert (
             len(ckboxes) == 17
         ), f'Test {self.test_doc} contains 17 checkboxes, but just {len(ckboxes)} have been detected.'
 
-        # TODO: check for all 17 checkboxes, if they are checked and the position of the bounding box (overlap with the Document Annotation)
-        # {'is_checked': True, 'bbox': {'x0': 70, 'x1': 82, 'y0': 758, 'y1': 771}
+        def bboxes_overlap(bbox1, bbox2):
+            """Check if two bounding boxes have any overlap, if so, it is considered valid."""
+            # Check if there is any overlap on the x-axis
+            if bbox1['x1'] < bbox2['x0'] or bbox2['x1'] < bbox1['x0']:
+                return False
+            # Check if there is any overlap on the y-axis
+            if bbox1['y1'] < bbox2['y0'] or bbox2['y1'] < bbox1['y0']:
+                return False
+            return True
+
+        # check each detected checkbox for overlap and same value as ground truth
+        valid_box_ids = []
+        # for all detected checkboxes
+        for ckbox in ckboxes:
+            # and each ground truth checkbox
+            for ckbox_gt in self.ckboxes_gt_doc5930563:
+                # check overlap
+                if bboxes_overlap(ckbox['checkbox']['bbox'], ckbox_gt['bbox']):
+                    # check value
+                    if ckbox['checkbox']['is_checked'] == ckbox_gt['is_checked']:
+                        # if both are true, the detection is valid
+                        valid_box_ids.append(ckbox['annotation_id'])
+                        break
+
+        # check if all valid checkboxes are within the detections
+        valid_box_ids = set(valid_box_ids)
+        detected_box_ids = {ckbox['annotation_id'] for ckbox in ckboxes}
+        assert (
+            valid_box_ids == detected_box_ids
+        ), f'Not all checkboxes in {self.test_doc} have been detected correctly, either the value or the position is wrong.'
+
+    def test_detector_max_threshold(self):
+        """Test that only a schema-adhering response is accepted by extract method of service."""
+        request = convert_document_to_request(document=self.test_doc, schema=self.RequestSchema)
+        request.detection_threshold = 1.0
+        response = requests.post(url=self.request_url, json=request.model_dump())
+        assert response.status_code == 200
+        assert (
+            response.json() == {'metadata': []}
+        ), f'Threshold is set to 1.0, as the confidence should not be higher than one, the response should be empty, but is: {response.json()}.'
 
     def test_detector_wrongdata(self):
         """Test that it's impossible to send a request with a structure not adhering to schema."""
