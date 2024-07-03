@@ -5,17 +5,14 @@ import logging
 import shutil
 import tempfile
 from pathlib import Path
-from typing import Any, List, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union
 
 import bentoml
 import numpy as np
-import torch
-import torchvision
 from PIL import Image
 from scipy.optimize import linear_sum_assignment
 
-from konfuzio_sdk.data import Bbox, Document
-from konfuzio_sdk.extras import Module
+from konfuzio_sdk.extras import Module, torch, torchvision
 
 logger = logging.getLogger(__name__)
 
@@ -111,22 +108,22 @@ class CheckboxDetector(Module, metaclass=abc.ABCMeta):
 
     def build_bento(self, bento_model):
         # Build BentoML service for the model.
-        extraction_dir = Path(__file__).parents[1] / 'bento/extraction'
+        omr_dir = Path(__file__).parents[1] / 'bento/omr'
         trainer_dir = Path(__file__).parent
         with tempfile.TemporaryDirectory() as temp_dir:
             # copy bento_module_dir to temp_dir
-            shutil.copytree(extraction_dir, temp_dir + '/extraction')
+            shutil.copytree(omr_dir, temp_dir + '/omr')
             shutil.copytree(trainer_dir, temp_dir + '/trainer')
             # include the AI model name so the service can load it correctly
             with open(f'{temp_dir}/AI_MODEL_NAME', 'w') as f:
                 f.write(self.name.lower())
             built_bento = bentoml.bentos.build(
                 name=self.name.lower(),
-                service=f'extraction/{self.name.lower()}_service.py:CheckboxService',
+                service=f'omr.{self.name.lower()}_service:CheckboxService',
                 include=[
-                    f'extraction/{self.name.lower()}_service.py',
-                    'extraction/schemas.py',
-                    'extraction/utils.py',
+                    f'omr/{self.name.lower()}_service.py',
+                    'omr/schemas.py',
+                    'omr/utils.py',
                     'trainer/omr.py',
                     'AI_MODEL_NAME',
                 ],
@@ -167,9 +164,11 @@ class CheckboxDetectorUtils:
         # """
 
         self.input_shape = (1280, 1280)
-        self.threshold = 0.7
+        self.threshold = 0.67  # Based on best threshold during training, adjust if model is retrained
 
-    def _threshold(self, cls_conf: np.ndarray, bboxes: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    def _threshold(
+        self, cls_conf: np.ndarray, bboxes: np.ndarray, threshold: Optional[float] = None
+    ) -> Tuple[np.ndarray, np.ndarray]:
         """
         Filters detections based on confidence threshold.
 
@@ -180,7 +179,8 @@ class CheckboxDetectorUtils:
         :return: Filtered confidence scores and bounding boxes.
         :rtype: :class:`tuple`
         """
-        idx = np.argwhere(cls_conf > self.threshold)
+        threshold = threshold if threshold is not None else self.threshold
+        idx = np.argwhere(cls_conf > threshold)
         cls_conf = cls_conf[idx[:, 0]]
         bboxes = bboxes[idx[:, 0]]
         return cls_conf, bboxes
@@ -307,7 +307,9 @@ class CheckboxDetectorUtils:
         image = torch.from_numpy(image)
         return image
 
-    def _postprocess(self, outputs: torch.Tensor, image_shape: Tuple[int, int]) -> Tuple[np.ndarray, np.ndarray]:
+    def _postprocess(
+        self, outputs: torch.Tensor, image_shape: Tuple[int, int], threshold: Optional[float] = None
+    ) -> Tuple[np.ndarray, np.ndarray]:
         """
         Postprocesses the model's outputs to obtain final detections.
 
@@ -321,7 +323,7 @@ class CheckboxDetectorUtils:
         logger.info('Run checkbox detection postprocessing.')
         cls_conf = outputs[1][0].cpu().detach().numpy()
         bboxes = outputs[0][0].cpu().detach().numpy()
-        cls_conf, bboxes = self._threshold(cls_conf, bboxes)
+        cls_conf, bboxes = self._threshold(cls_conf, bboxes, threshold)
         cls_conf, bboxes = self._nms(cls_conf, bboxes)
 
         # Define and apply scale for the bounding boxes to the original image size
@@ -463,155 +465,3 @@ class BboxPairing:
         distance_matrix = self._min_edge_distances(class1_boxes, class2_boxes)
         class1_ind, class2_ind = linear_sum_assignment(distance_matrix)
         return class1_ind, class2_ind
-
-
-def map_annotations_to_checkboxes(document: Document) -> Document:
-    """Map the annotations to the checkboxes."""
-
-    bbox_pairing = BboxPairing()
-    checkbox_detector = CheckboxDetector()
-
-    # Loop through the pages of the document
-    for page in document.pages():
-        # get image and annotations
-        image = page.get_image()
-        annotations = page.view_annotations()  # not sure why page.annotations is returning an empty list.
-
-        # simulate labels that should be paired to checkboxes
-        # labels_with_checkboxes = [
-        #     'Geschlecht_Person1',
-        #     'Geschlecht_Person2',
-        #     'Statsangehörigkeit_Person1',
-        #     'Statsangehörigkeit_Person2',
-        # ]
-
-        for annotation in annotations:
-            # if annotation.label.name in labels_with_checkboxes:
-            annotation.label.is_linked_to_checkbox = True
-
-        # just evaluate for annotations with label.is_linked_to_checkbox == True
-        annotations = [annotation for annotation in annotations if annotation.label.is_linked_to_checkbox]
-        annotation_boxes = np.array(
-            [
-                (int(a.bbox().x0_image), int(a.bbox().y0_image), int(a.bbox().x1_image), int(a.bbox().y1_image))
-                for a in annotations
-            ]
-        )
-
-        checkboxes, checked, _ = checkbox_detector(image)
-
-        # pair the checkboxes to the annotations
-        ann_boxes_ind, checkbox_ind = bbox_pairing.find_pairs(annotation_boxes, checkboxes)
-
-        # convert the checkboxes from image coordinates to document coordinates
-        checkboxes = [
-            (box.x0, box.x1, box.y0, box.y1)
-            for box in [Bbox.from_image_size(x0, x1, y0, y1, page=page) for x0, y0, x1, y1 in checkboxes]
-        ]
-
-        # update the metadata of the annotations with the checkbox information
-        for ann_idx, chbx_idx in zip(ann_boxes_ind, checkbox_ind):
-            chbx_meta = {
-                'omr': {
-                    'is_checked': checked[chbx_idx],
-                    'checkbox_bbox': checkboxes[chbx_idx],
-                }
-            }
-            annotations[ann_idx].metadata = chbx_meta
-
-    return document
-
-
-if __name__ == '__main__':
-    from PIL import Image, ImageDraw
-
-    from konfuzio_sdk.data import Document, Project
-
-    OMR_TEST_PROJECT_ID = 14835  ## 14848
-    OMR_TEST_DOCUMENT_ID = (
-        5892586  # 5892966  # 5892967  # 5892586  # 5892444  # 5892443  # 5892441 #5892442  # 5892440  ## 5772921
-    )
-
-    project = Project(id_=OMR_TEST_PROJECT_ID, update=True)
-    # project = Project(id_=OMR_TEST_PROJECT_ID, update=True)
-
-    doc = project.get_document_by_id(OMR_TEST_DOCUMENT_ID)
-
-    doc_with_anns = map_annotations_to_checkboxes(doc)
-
-    for page in doc_with_anns.pages():
-        image = page.get_image()
-        annotations = page.view_annotations()
-
-        image = image.convert('RGB')
-        img_draw = ImageDraw.Draw(image)
-
-        check_color = (0, 255, 0)
-        uncheck_color = (0, 255, 255)
-        label_color = (255, 0, 0)
-        pair_colors = (255, 0, 255)
-
-        scaler = max((image.size[0] / page.width, image.size[1] / page.height))
-
-        image.save(str(f'./{page.document.name}_{page.number}_normal.png'))
-
-        for ann in annotations:
-            # draw all annotation boxes
-            an_x0, an_y0, an_x1, an_y1 = (
-                ann.bbox().x0_image,
-                ann.bbox().y0_image,
-                ann.bbox().x1_image,
-                ann.bbox().y1_image,
-            )
-
-            # draw all checkbox boxes and color code based on checked or not
-            if ann.metadata:
-                box_page = ann.metadata['omr']['checkbox_bbox']
-                x0, y0, x1, y1 = box_page[0], box_page[2], box_page[1], box_page[3]
-                x0, y0, x1, y1 = int(x0 * scaler), int(y0 * scaler), int(x1 * scaler), int(y1 * scaler)
-                # coordinate system starts from bottom left, convert from top left to bottom left
-                y0, y1 = image.size[1] - y1, image.size[1] - y0
-
-                if ann.metadata['omr']['is_checked']:
-                    img_draw.rectangle((x0, y0, x1, y1), outline=check_color, width=1)
-                else:
-                    img_draw.rectangle((x0, y0, x1, y1), outline=uncheck_color, width=1)
-
-        image.save(str(f'./{page.document.name}_{page.number}_checkboxes.png'))
-
-        for ann in annotations:
-            # draw all annotation boxes
-            an_x0, an_y0, an_x1, an_y1 = (
-                ann.bbox().x0_image,
-                ann.bbox().y0_image,
-                ann.bbox().x1_image,
-                ann.bbox().y1_image,
-            )
-
-            img_draw.rectangle((an_x0, an_y0, an_x1, an_y1), outline='blue', width=1)
-        image.save(str(f'./{page.document.name}_{page.number}_checkboxes_labels.png'))
-
-        for ann in annotations:
-            # draw all annotation boxes
-            an_x0, an_y0, an_x1, an_y1 = (
-                ann.bbox().x0_image,
-                ann.bbox().y0_image,
-                ann.bbox().x1_image,
-                ann.bbox().y1_image,
-            )
-            if ann.metadata:
-                box_page = ann.metadata['omr']['checkbox_bbox']
-                x0, y0, x1, y1 = box_page[0], box_page[2], box_page[1], box_page[3]
-                x0, y0, x1, y1 = int(x0 * scaler), int(y0 * scaler), int(x1 * scaler), int(y1 * scaler)
-                # coordinate system starts from bottom left, convert from top left to bottom left
-                y0, y1 = image.size[1] - y1, image.size[1] - y0
-
-                # draw a point from the edge of the checkbox to the edge of the annotation
-                # shortest distance from the edge of the checkbox to the edge of the annotation
-                ed_x0 = max(x0, an_x0)
-                ed_x1 = min(x1, an_x1)
-                ed_y0 = max(y0, an_y0)
-                ed_y1 = min(y1, an_y1)
-                ed_y_ave = (ed_y0 + ed_y1) / 2
-                img_draw.line((ed_x0, ed_y_ave, ed_x1, ed_y_ave), fill=pair_colors, width=2)
-        image.save(str(f'./{page.document.name}_{page.number}_pairs.png'))

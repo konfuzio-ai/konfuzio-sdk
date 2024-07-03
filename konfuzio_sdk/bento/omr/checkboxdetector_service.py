@@ -1,6 +1,5 @@
 """Checkbox detection service."""
 
-import base64
 import logging
 import os
 from io import BytesIO
@@ -8,8 +7,8 @@ from typing import Any
 
 import bentoml
 import numpy as np
-from extraction.schemas import CheckboxRequest20240523, CheckboxResponse20240523
 from fastapi import FastAPI
+from omr.schemas import CheckboxRequest20240523, CheckboxResponse20240523
 from PIL import Image
 
 # imports from the built bento directory src/, e.g. trainer/omr.py and extraction/schemas.py
@@ -43,7 +42,7 @@ class CheckboxService:
         metadata = []
 
         for page in request.pages:
-            page_image = Image.open(BytesIO(base64.b64decode(page.image)))
+            page_image = Image.open(BytesIO(page.image))
             page_image = page_image.convert('RGB')
 
             annotations = [a for a in request.annotations if a.page_id == page.page_id]
@@ -61,8 +60,10 @@ class CheckboxService:
 
             image_tensor = self.detector_utils._preprocess(image=page_image, out_shape=(1280, 1280))
             outputs = self.extraction_model(image_tensor)
-            cls_conf, checkboxes = self.detector_utils._postprocess(outputs, page_image.size)
-            checked = [True if c[0] > c[1] else False for c in cls_conf]
+            cls_conf, checkboxes = self.detector_utils._postprocess(
+                outputs, page_image.size, request.detection_threshold
+            )
+            checked = [c[0] > c[1] for c in cls_conf]
             confidence = [max(c) for c in cls_conf]
             # pair the checkboxes to the annotations
             ann_boxes_ind, checkbox_ind = self.bbox_pairing.find_pairs(annotation_boxes, checkboxes)
