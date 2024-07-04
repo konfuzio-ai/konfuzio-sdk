@@ -352,6 +352,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         self.pipeline.save_bento(build=False)
 
     @unittest.skipIf(sys.version_info[:2] != (3, 8), reason='This AI can only be loaded on Python 3.8.')
+    @pytest.mark.xfail(reason='Your user might not have the correct permission to upload an AI.')
     def test_05_upload_modify_delete_ai_model(self):
         """Upload the model."""
         assert os.path.isfile(self.pipeline.pipeline_path)
