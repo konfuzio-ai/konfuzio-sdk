@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any, List, Optional, Tuple, Union
 
 import bentoml
+import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
 from scipy.optimize import linear_sum_assignment
@@ -427,3 +428,51 @@ class BboxPairing:
         distance_matrix = self._min_edge_distances(class1_boxes, class2_boxes)
         class1_ind, class2_ind = linear_sum_assignment(distance_matrix)
         return class1_ind, class2_ind
+
+    def plot_pairs(
+        self,
+        class1_boxes: List[Tuple[int, int, int, int]],
+        class2_boxes: List[Tuple[int, int, int, int]],
+        class1_ind: np.ndarray,
+        class2_ind: np.ndarray,
+        save_path: Optional[str] = None,
+    ) -> plt:
+        """
+        Plot the bounding boxes and the connections between the nearest middle points of their edges.
+
+        :param class1_boxes: List of bounding boxes from the first class.
+        :type class1_boxes: list[tuple[int, int, int, int]]
+        :param class2_boxes: List of bounding boxes from the second class.
+        :type class2_boxes: list[tuple[int, int, int, int]]
+        :param class1_ind: Indices of the paired boxes from the first class.
+        :type class1_ind: np.ndarray
+        :param class2_ind: Indices of the paired boxes from the
+        :type class2_ind: np.ndarray
+        :return: Matplotlib plot.
+        :rtype: plt
+        """
+
+        def draw_box(ax, box, color='b'):
+            x1, y1, x2, y2 = box
+            ax.plot([x1, x2, x2, x1, x1], [y1, y1, y2, y2, y1], color)
+
+        _, ax = plt.subplots()
+        for box in class1_boxes:
+            draw_box(ax, box, 'b')
+        for box in class2_boxes:
+            draw_box(ax, box, 'r')
+
+        points1 = self._mid_points(class1_boxes)
+        points2 = self._mid_points(class2_boxes)
+
+        for i, j in zip(class1_ind, class2_ind):
+            distances = self._pair_distances(points1[i], points2[j])
+            min_distance_index = np.unravel_index(np.argmin(distances), distances.shape)
+            point1 = points1[i][min_distance_index[0]]
+            point2 = points2[j][min_distance_index[1]]
+            ax.plot([point1[0], point2[0]], [point1[1], point2[1]], 'g--')
+
+        ax.set_aspect('equal')
+        if save_path:
+            plt.savefig(save_path)
+        return plt
