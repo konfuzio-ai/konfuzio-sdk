@@ -4741,10 +4741,10 @@ class Project(Data):
         try:
             if training_and_test_documents:
                 print('[INFO] Starting Training and Test Document export!')
-                self.download_training_and_test_data(*args, **kwargs)
+                self.download_project_data(*args, **kwargs)
             if documents_with_status:
                 print('[INFO] Starting export of all Documents with status different from None!')
-                self.download_training_and_test_data(training_test_only=False, *args, **kwargs)
+                self.download_project_data(training_test_only=False, *args, **kwargs)
         except Exception as error:
             print('[ERROR] Something went wrong while downloading Document data!')
             raise error
