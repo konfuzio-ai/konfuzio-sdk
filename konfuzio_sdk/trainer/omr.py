@@ -9,6 +9,7 @@ from typing import Any, List, Optional, Tuple, Union
 
 import bentoml
 import matplotlib.pyplot as plt
+import matplotlib.figure
 import numpy as np
 from PIL import Image
 from scipy.optimize import linear_sum_assignment
@@ -328,19 +329,24 @@ class BboxPairing:
     The following example shows how you can use the `BboxPairing` class to find pairs.
 
     .. testcode::
-        # a single box is defined by (x0, y0, x1, y1)
-        class1_boxes = [(0, 0, 1, 1), (10, 10, 12, 12)]
-        class2_boxes = [(2, 0, 3, 1), (14, 14, 16, 16)]
+
+        class1_boxes = [(2, 2, 3, 3), (3, 6, 9, 8), (10, 12, 12, 14), (10, 9, 12, 11)] # blue
+        class2_boxes = [(5, 2, 6, 3), (13, 13, 15, 15), (4, 10, 6, 12), (13, 10, 15, 12)] # red
         bbox_pairing = BboxPairing()
         class1_ind, class2_ind = bbox_pairing.find_pairs(class1_boxes, class2_boxes)
-
+        fig, ax = bbox_pairing.plot_pairs(class1_boxes, class2_boxes, class1_ind, class2_ind)
+        fig.show()
         for i, j in zip(class1_ind, class2_ind):
             print(f"Class 1 Box {i} is paired with Class 2 Box {j}.")
+
+    .. image:: ../../docs/_static/img/bbox_pairs.png
 
     .. testoutput::
 
         Class 1 Box 0 is paired with Class 2 Box 0.
-        Class 1 Box 1 is paired with Class 2 Box 1.
+        Class 1 Box 1 is paired with Class 2 Box 2.
+        Class 1 Box 2 is paired with Class 2 Box 1.
+        Class 1 Box 3 is paired with Class 2 Box 3.
 
     """
 
@@ -349,7 +355,7 @@ class BboxPairing:
         For each box, calculate the middle points of its edges.
 
         :param boxes: A list of bounding boxes, each defined as a tuple in format (x0, y0, x1, y1).
-        :type boxes: list[tuple[float, float, float, float]]
+        :type boxes: list[tuple[int, int, int, int]]
         :return: A list of arrays, with each array containing four middle points (top, bottom, left, right) for each box.
         :rtype: list[np.ndarray]
         """
@@ -389,9 +395,9 @@ class BboxPairing:
         Calculate the minimum edge-to-edge distance between boxes in class 1 and class 2.
 
         :param class1_boxes: Bounding boxes of the first class in format (x0, y0, x1, y1).
-        :type class1_boxes: list[tuple[float, float, float, float]]
+        :type class1_boxes: list[tuple[int, int, int, int]]
         :param class2_boxes: Bounding boxes of the second class in format (x0, y0, x1, y1).
-        :type class2_boxes: list[tuple[float, float, float, float]]
+        :type class2_boxes: list[tuple[int, int, int, int]]
         :return: A matrix containing the minimum distances between each pair of boxes.
         :rtype: np.ndarray
         """
@@ -418,9 +424,9 @@ class BboxPairing:
         the total edge-to-edge distance using the Hungarian algorithm.
 
         :param class1_boxes: Bounding boxes of the first class in format (x0, y0, x1, y1).
-        :type class1_boxes: list[tuple[float, float, float, float]]
+        :type class1_boxes: list[tuple[int, int, int, int]]
         :param class2_boxes: Bounding boxes of the second class in format (x0, y0, x1, y1).
-        :type class2_boxes: list[tuple[float, float, float, float]]
+        :type class2_boxes: list[tuple[int, int, int, int]]
         :return: Indices of boxes (class1_ind, class2_ind) for class 1 and class 2 that form the optimal pairing.
         :rtype: (np.ndarray, np.ndarray)
         """
@@ -436,7 +442,7 @@ class BboxPairing:
         class1_ind: np.ndarray,
         class2_ind: np.ndarray,
         save_path: Optional[str] = None,
-    ) -> plt:
+    ) -> Tuple[matplotlib.figure.Figure, plt.Axes]:
         """
         Plot the bounding boxes and the connections between the nearest middle points of their edges.
 
@@ -448,15 +454,15 @@ class BboxPairing:
         :type class1_ind: np.ndarray
         :param class2_ind: Indices of the paired boxes from the
         :type class2_ind: np.ndarray
-        :return: Matplotlib plot.
-        :rtype: plt
+        :return: A tuple containing the figure and axes of the plot.
+        :rtype: (matplotlib.figure.Figure, plt.Axes)
         """
 
         def draw_box(ax, box, color='b'):
             x1, y1, x2, y2 = box
             ax.plot([x1, x2, x2, x1, x1], [y1, y1, y2, y2, y1], color)
 
-        _, ax = plt.subplots()
+        fig, ax = plt.subplots()
         for box in class1_boxes:
             draw_box(ax, box, 'b')
         for box in class2_boxes:
@@ -475,4 +481,4 @@ class BboxPairing:
         ax.set_aspect('equal')
         if save_path:
             plt.savefig(save_path)
-        return plt
+        return (fig, ax)
