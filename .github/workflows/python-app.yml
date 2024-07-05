@@ -17,6 +17,7 @@ jobs:
       - run: |
           echo "No build step required."
   tests:
+    if: always()
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 4
