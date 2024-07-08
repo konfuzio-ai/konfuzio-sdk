@@ -211,7 +211,7 @@ Utils
 BboxPairing
 ---------------------
 
-`[source] <https://github.com/konfuzio-ai/konfuzio-sdk/blob/bentoml-omr/konfuzio_sdk/trainer/omr.py>`__
+`[source] <https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/konfuzio_sdk/trainer/omr.py>`__
 
 .. automodule:: konfuzio_sdk.trainer.omr
 
