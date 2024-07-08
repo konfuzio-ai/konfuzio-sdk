@@ -112,7 +112,7 @@ from konfuzio_sdk.data import Project
 
 project = Project(id_=TEST_PROJECT_ID)
 category = project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID)
-extraction_pipeline = CustomExtractionAI(category)
+categorization_pipeline = CustomExtractionAI(category)
 ```
 
 Then, create a sample test Document to run the extraction on.
@@ -127,25 +127,18 @@ print(sample_document.text)
 
 Run the extraction of a Document and print the extracted Annotations.
 ```python
-extracted = extraction_pipeline.extract(sample_document)
+extracted = categorization_pipeline.extract(sample_document)
 for annotation in extracted.annotations(use_correct=False):
     print(annotation.offset_string)
 ```
 
-Now we can save the AI and check that it is possible to load it afterwards. There are two different ways to save an
-Extraction AI: using the native `save()` method of AbstractExtractionAI that saves a model into an `lz4`-compressed
-pickle file and using Bento model and using `save_bento()` method that creates a containerized instance of an Extraction
-AI model in `bento` format, allowing the AI to run independently of the server environment.
-
-To save the model to a compressed pickle file, use the following command:
+Now we can save the AI and check that it is possible to load it afterwards.
 ```python
 pickle_model_path = categorization_pipeline.save()
 extraction_pipeline_loaded = CustomExtractionAI.load_model(pickle_model_path)
 ```
 
-The custom Extraction AI we just prepared inherits from AbstractExtractionAI, which in turn inherits from 
-[BaseModel](sourcecode.html#base-model). `BaseModel` provides `save` method that saves a model into a compressed 
-pickle file that can be directly uploaded to the Konfuzio Server (see [Upload Extraction or Category AI to target instance](https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html#upload-extraction-or-category-ai-to-target-instance)).
+The custom Extraction AI we just prepared inherits from AbstractExtractionAI, which in turn inherits from [BaseModel](sourcecode.html#base-model). `BaseModel` provides `save` method that saves a model into a compressed pickle file that can be directly uploaded to the Konfuzio Server (see [Upload Extraction or Category AI to target instance](https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html#upload-extraction-or-category-ai-to-target-instance)).
 
 Activating the uploaded AI on the web interface will enable the custom pipeline on your self-hosted installation.
 
@@ -155,142 +148,6 @@ on app), you need to enable creating them in the Superuser Project settings if y
 If you have the Superuser rights, it is also possible to upload the AI from your local machine using the 
 `upload_ai_model()` as described in [Upload your AI](https://dev.konfuzio.com/sdk/tutorials/upload-your-ai/index.html).
 
-### Create and containerize a custom Extraction AI into the Bento container
-
-It is also possible to save the model using [Bento](https://www.bentoml.com/). Let's take the code we used in the
-previous tutorial and modify it to support Bento archiving.
-
-We will add several new methods: `build_bento()`  allows building the Bento archive that can later be uploaded to 
-Konfuzio app or an on-prem installation, as well as served and used locally. `entrypoint_methods()` is a property that 
-defines what methods will be exposed in a resulting Bento model. `bento_metadata()` defines what will be saved in the 
-model as metadata.
-
-```python
-import json
-import re
-import shutil
-import tempfile
-
-import bentoml
-
-from konfuzio_sdk.data import Document, Span, Annotation, Label
-from konfuzio_sdk.trainer.information_extraction import AbstractExtractionAI
-
-class CustomExtractionAI(AbstractExtractionAI):
-    def extract(self, document: Document) -> Document:
-        document = super().extract(document)
-        label_set = document.category.default_label_set
-        label_name = 'Date'
-        if label_name in [label.name for label in document.category.labels]:
-            label = document.project.get_label_by_name(label_name)
-        else:
-            label = Label(text=label_name, project=document.project, label_sets=[label_set])
-        annotation_set = document.default_annotation_set
-        for re_match in re.finditer(r'(\d+/\d+/\d+)', document.text, flags=re.MULTILINE):
-            span = Span(start_offset=re_match.span(1)[0], end_offset=re_match.span(1)[1])
-
-            _ = Annotation(
-                document=document,
-                label=label,
-                annotation_set=annotation_set,
-                confidence=1.0,
-                spans=[span],
-            )
-        return document
-
-    @property
-    def entrypoint_methods(self) -> dict:
-        return {
-            'extract': {'batchable': False},
-            'evaluate': {'batchable': False},
-        }
-
-    @property
-    def bento_metadata(self) -> dict:
-        return {
-            'requires_images': getattr(self, 'requires_images', False),
-            'requires_segmentation': getattr(self, 'requires_segmentation', False),
-            'requires_text': getattr(self, 'requires_text', False),
-            'request': 'ExtractRequest20240117',
-            'response': 'ExtractResponse20240117',
-        }
-
-    def build_bento(self, bento_model):
-        bento_module_dir = 'konfuzio-sdk/konfuzio_sdk/bento/extraction' 
-        dict_metadata = self.project.create_project_metadata_dict()
-
-        with tempfile.TemporaryDirectory() as temp_dir:
-            shutil.copytree(bento_module_dir, temp_dir + '/extraction')
-            with open(f'{temp_dir}/categories_and_label_data.json5', 'w') as f:
-                json.dump(dict_metadata, f, indent=2, sort_keys=True)
-            with open(f'{temp_dir}/AI_MODEL_NAME', 'w') as f:
-                f.write(self._pkl_name)
-
-            built_bento = bentoml.bentos.build(
-                name=f"extraction_{self.category.id_ if self.category else '0'}",
-                service=f'extraction/rfextractionai_service.py:ExtractionService',
-                include=[
-                    'extraction/*.py',
-                    'categories_and_label_data.json5',
-                    'AI_MODEL_NAME',
-                ],
-                labels=self.bento_metadata,
-                python={
-                    'packages': [
-                        'https://github.com/konfuzio-ai/konfuzio-sdk/archive/refs/heads/bentoml-experiments.zip#egg=konfuzio-sdk'
-                    ],
-                    'lock_packages': True,
-                },
-                build_ctx=temp_dir,
-                models=[str(bento_model.tag)],
-            )
-
-        return built_bento
-```
-
-Let's initialize the AI:
-
-```python
-from konfuzio_sdk.data import Project
-
-project = Project(id_=YOUR_PROJECT_ID)
-category = project.get_category_by_id(YOUR_CATEGORY_ID)
-extraction_pipeline = CustomExtractionAI(category)
-```
-
-To save the model to the `bento` format, run the following code:
-```python
-bento, path_to_bento = CustomExtractionAI.save_bento()  # you can specify the path via output_dir argument
-```
-
-Check that the Bento was successfully saved via the following command:
-```commandline tags=["skip-execution", "nbval-skip"]
-bentoml list
-```
-
-Later, the saved Bento file can be uploaded to server or served locally. To serve locally, you need to know the
-name and the version of the Bento:
-
-```python
-bento_name = bento.tag.name
-bento_version = bento.tag.version
-print('Bento name: ' + bento_name)
-print('Bento version: ' + bento_version)
-```
-
-Then you can serve it via the command:
-
-```commandline tags=["skip-execution", "nbval-skip"]
-bentoml serve name:version # for example, extraction_11:2qytjiwhoc7flhbp
-```
-
-After that, you can check the Swagger for the Bento on `0.0.0.0:3000` and send requests to the available endpoint(s).
-
-To run a Bento instance as a container and test it, use a following command:
-
-```commandline tags=["skip-execution", "nbval-skip"]
-bentoml containerize name:version # for example, extraction_11:2qytjiwhoc7flhbp
-```
 
 ### The Paragraph Custom Extraction AI
 In [the Paragraph Tokenizer tutorial](https://dev.konfuzio.com/sdk/tutorials/tokenizers/index.html#paragraph-tokenization), we saw how we can use the Paragraph Tokenizer in `detectron` mode and with the `create_detectron_labels` option to segment a Document and create `figure`, `table`, `list`, `text` and `title` Annotations.
