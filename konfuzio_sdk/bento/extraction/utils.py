@@ -6,11 +6,8 @@ from pydantic import BaseModel
 
 from konfuzio_sdk.data import Annotation, AnnotationSet, Document, Page, Project, Span
 
-from .schemas import (
-    ExtractRequest20240117,
-    ExtractRequest20240117Page,
-    ExtractResponse20240117,
-)
+
+from .schemas import ExtractRequest20240117, ExtractRequest20240117Page, ExtractResponse20240117
 
 NOT_IMPLEMENTED_ERROR_MESSAGE = (
     'The request does not adhere to any schema version. Please modify the request to fit one of the schemas from '
