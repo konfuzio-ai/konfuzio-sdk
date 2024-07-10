@@ -125,7 +125,7 @@ class CheckboxDetector(Module, metaclass=abc.ABCMeta):
                 python={
                     'packages': [
                         # TODO: Replace with released version of konfuzio-sdk[ai]
-                        'https://github.com/konfuzio-ai/konfuzio-sdk/archive/refs/heads/bentoml-omr.zip#egg=konfuzio-sdk[ai]'
+                        'https://github.com/konfuzio-ai/konfuzio-sdk/archive/refs/heads/master.zip#egg=konfuzio-sdk[ai]'
                     ],
                     'lock_packages': True,
                 },
