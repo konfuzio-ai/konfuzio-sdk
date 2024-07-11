@@ -54,6 +54,15 @@ sys.path.insert(0, '../../../../')
 from tests.variables import TEST_PROJECT_ID, TEST_DOCUMENT_ID, TEST_PAYSLIPS_CATEGORY_ID, TEST_CATEGORIZATION_DOCUMENT_ID
 import logging
 logging.getLogger("konfuzio_sdk").setLevel(logging.ERROR)
+
+from konfuzio_sdk.api import get_project_list
+projects = get_project_list()
+TEST_PROJECT_ID = None
+while not TEST_PROJECT_ID:
+    for project in reversed(projects['results']):
+        if 'ZGF0YV8xNDM5Mi02Ni56aXA=' in project['name']:
+            TEST_PROJECT_ID = project['id']
+            break
 ```
 
 First, we import necessary modules:
@@ -330,7 +339,8 @@ The `SentenceTokenizer` is a specialized [tokenizer](https://dev.konfuzio.com/sd
 
 To use it, import the necessary modules, initialize the Project, the Document, and the Tokenizer and tokenize the Document.
 ```python tags=["remove-cell"]
-YOUR_DOCUMENT_ID = 215906
+original_document_text = Project(id_=46).get_document_by_id(215906).text
+YOUR_DOCUMENT_ID = [document for document in project.documents if document.text == original_document_text][0].id_
 ```
 
 ```python tags=["remove-output"]

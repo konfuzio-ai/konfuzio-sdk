@@ -29,9 +29,16 @@ Retrieve all information available for your Project:
 
 ```python tags=['remove-cell']
 import logging
+from konfuzio_sdk.api import get_project_list
 
 logging.getLogger("konfuzio_sdk").setLevel(logging.ERROR)
-YOUR_PROJECT_ID = 46
+projects = get_project_list()
+YOUR_PROJECT_ID = None
+while not TEST_PROJECT_ID:
+    for project in reversed(projects['results']):
+        if 'ZGF0YV8xNDM5Mi02Ni56aXA=' in project['name']:
+            TEST_PROJECT_ID = project['id']
+            break
 ```
 ```python 
 from konfuzio_sdk.data import Project, Document
@@ -318,7 +325,8 @@ my_project.documents_folder
 
 And you can get the path to the file with the Document text with:
 ```python tags=['remove-cell']
-document = my_project.get_document_by_id(44823)
+original_document_text = Project(id_=46).get_document_by_id(44823).text
+document = [document for document in project.documents if document.text == original_document_text][0]
 ```
 ```python
 document.txt_file_path

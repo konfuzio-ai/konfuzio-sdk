@@ -47,11 +47,21 @@ Let's begin with making imports, initializing the Categorization model and calli
 import logging
 import os
 import konfuzio_sdk
+from konfuzio_sdk.api import get_project_list
+from konfuzio_sdk.data import Project
 
 logging.getLogger("konfuzio_sdk").setLevel(logging.ERROR)
-YOUR_PROJECT_ID = 46
-YOUR_CATEGORY_ID = 63
-YOUR_DOCUMENT_ID = 44865
+projects = get_project_list()
+YOUR_PROJECT_ID = None
+while not TEST_PROJECT_ID:
+    for project in reversed(projects['results']):
+        if 'ZGF0YV8xNDM5Mi02Ni56aXA=' in project['name']:
+            TEST_PROJECT_ID = project['id']
+            break
+project = Project(id_=YOUR_PROJECT_ID)
+YOUR_CATEGORY_ID = project.get_category_by_name('Lohnabrechnung').id_
+original_document_text = Project(id_=46).get_document_by_id(44825).text
+YOUR_DOCUMENT_ID = [document for document in project.documents if document.text == original_document_text][0].id_
 ```
 
 ```python editable=true slideshow={"slide_type": ""} tags=["remove-output"] vscode={"languageId": "plaintext"}
@@ -90,7 +100,6 @@ from konfuzio_sdk.trainer.document_categorization import ImageModel, TextModel, 
 
 project = Project(id_=YOUR_PROJECT_ID)
 ```
-
 ```python editable=true slideshow={"slide_type": ""} tags=["remove-cell"]
 logging.getLogger("konfuzio_sdk").setLevel(logging.CRITICAL)
 logging.getLogger("timm").setLevel(logging.CRITICAL)
@@ -98,7 +107,9 @@ for doc in project.documents + project.test_documents:
     doc.get_images()
 for document in project.documents[3:] + project.test_documents[1:]:
     document.dataset_status = 4
-project.get_document_by_id(44864).dataset_status = 4
+original_document_text = Project(id_=46).get_document_by_id(44864).text
+cur_document_id = [document for document in project.documents if document.text == original_document_text][0].id_
+project.get_document_by_id(cur_document_id).dataset_status = 4
 ```
 
 Build the Categorization AI architecture using a template of pre-built Image and Text classification Models. In this tutorial, we use `EfficientNetB0` and `NBOWSelfAttention` together.

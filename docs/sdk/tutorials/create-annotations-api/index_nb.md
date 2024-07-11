@@ -80,7 +80,8 @@ new Annotation Set.
 To create an Annotation that is based on existing text of a Document, let's firstly define the test Document and the 
 Span that will be passed as the `spans` argument. You can define one or more Spans.
 ```python
-test_document = Project(id_=YOUR_PROJECT_ID).get_document_by_id(YOUR_DOCUMENT_ID)
+project = Project(id_=YOUR_PROJECT_ID)
+test_document = project.get_document_by_id(YOUR_DOCUMENT_ID)
 spans = [Span(document=test_document, start_offset=3067, end_offset=3074)]
 ```
 
@@ -106,7 +107,8 @@ To create an Annotation that is based on Bounding Boxes' coordinates, let's crea
 be passed as the `spans` argument. You can define one or more Bounding Boxes. Note that you don't need to specify 
 offsets, only the `page_index` is needed.
 ```python tags=['remove-cell']
-YOUR_DOCUMENT_ID = YOUR_DOCUMENT_ID + 11
+original_document_text = Project(id_=46).get_document_by_id(YOUR_DOCUMENT_ID + 11).text
+YOUR_DOCUMENT_ID = [document for document in project.documents if document.text == original_document_text][0].id_
 YOUR_LABEL_ID = project.get_label_by_name('Bezeichnung')
 ```
 ```python

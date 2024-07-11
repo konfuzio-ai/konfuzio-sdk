@@ -48,10 +48,22 @@ FOLDER_ROOT = os.path.dirname(os.path.realpath(__file__))
 class TestKonfuzioSDKAPI(unittest.TestCase):
     """Test API with payslip example Project."""
 
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Initialize the test Project."""
+        cls.RESTORED_PROJECT_ID = restore_snapshot(snapshot_id=65)
+        cls.project = Project(id_=cls.RESTORED_PROJECT_ID, update=True)
+        original_document_text = Project(id_=46).get_document_by_id(TEST_DOCUMENT_ID).text
+        cls.test_document_id = [
+            document for document in cls.project.documents if document.text == original_document_text
+        ][0].id_
+        cls.test_category_id = cls.project.categories[0].id_
+
     def test_projects_details(self):
         """Test to get Document details."""
         data = get_project_list()
-        assert TEST_PROJECT_ID in [prj['id'] for prj in data['results']]
+        new_var = self.RESTORED_PROJECT_ID
+        assert new_var in [prj['id'] for prj in data['results']]
         assert set(data['results'][0]) == {
             'id',
             'name',
@@ -68,7 +80,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
     def test_project_details(self):
         """Test to get Document details."""
-        data = get_project_details(project_id=TEST_PROJECT_ID)
+        data = get_project_details(project_id=self.RESTORED_PROJECT_ID)
         assert set(data.keys()) == {
             'id',
             'name',
@@ -85,26 +97,26 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
     def test_get_meta_of_files_multiple_pages(self):
         """Get the meta information of Document in a Project."""
-        get_meta_of_files(project_id=TEST_PROJECT_ID, pagination_limit=10)
+        get_meta_of_files(project_id=self.RESTORED_PROJECT_ID, pagination_limit=10)
 
     @patch('requests.post')
     def test_empty_project(self, function):
         """Get the meta information of Documents if the Project is empty."""
         function.return_value = {'count': 0, 'next': None, 'previous': None, 'results': []}
-        get_meta_of_files(project_id=TEST_PROJECT_ID, pagination_limit=10)
+        get_meta_of_files(project_id=self.RESTORED_PROJECT_ID, pagination_limit=10)
 
     def test_get_meta_of_files_one_page(self):
         """Get the meta information of Documents in a Project."""
-        get_meta_of_files(project_id=TEST_PROJECT_ID, pagination_limit=1000000000)
+        get_meta_of_files(project_id=self.RESTORED_PROJECT_ID, pagination_limit=1000000000)
 
     def test_get_meta_of_files_limited(self):
         """Get the meta information of a limited number of Documents."""
-        meta = get_meta_of_files(project_id=TEST_PROJECT_ID, limit=10)
+        meta = get_meta_of_files(project_id=self.RESTORED_PROJECT_ID, limit=10)
         assert len(meta) == 10
 
     def test_documents_list(self):
         """Test to get Documents details."""
-        data = get_meta_of_files(project_id=TEST_PROJECT_ID)
+        data = get_meta_of_files(project_id=self.RESTORED_PROJECT_ID)
         assert set(data[0].keys()) == {
             'id',
             'project',
@@ -151,7 +163,12 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
     def test_document_details(self):
         """Test to get Document details."""
-        data = get_document_details(document_id=TEST_DOCUMENT_ID)
+        original_document_text = Project(id_=46).get_document_by_id(TEST_DOCUMENT_ID).text
+        project = Project(id_=self.RESTORED_PROJECT_ID)
+        test_document_id = [document for document in project.documents if document.text == original_document_text][
+            0
+        ].id_
+        data = get_document_details(document_id=test_document_id)
         assert set(data.keys()) == {
             'id',
             'project',
@@ -229,7 +246,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
     def test_get_list_of_files(self):
         """Get meta information from Documents in the Project."""
-        sorted_documents = get_meta_of_files(project_id=TEST_PROJECT_ID)
+        sorted_documents = get_meta_of_files(project_id=self.RESTORED_PROJECT_ID)
         sorted_dataset_documents = [x for x in sorted_documents if x['dataset_status'] in [2, 3]]
 
         self.assertEqual(26 + 3, len(sorted_dataset_documents))
@@ -237,7 +254,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
     def test_upload_file_konfuzio_api_1(self):
         """Test upload of a file through API and its removal."""
         file_path = os.path.join(FOLDER_ROOT, 'test_data', 'pdf.pdf')
-        doc = upload_file_konfuzio_api(file_path, project_id=TEST_PROJECT_ID)
+        doc = upload_file_konfuzio_api(file_path, project_id=self.RESTORED_PROJECT_ID)
         assert doc.status_code == 201
         document_id = json.loads(doc.text)['id']
         assert delete_file_konfuzio_api(document_id)
@@ -246,7 +263,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         """Test upload of a file through API and its removal."""
         file_path = os.path.join(FOLDER_ROOT, 'test_data', 'pdf.pdf')
         with pytest.raises(HTTPError, match='Enter a valid URL.'):
-            _ = upload_file_konfuzio_api(file_path, project_id=TEST_PROJECT_ID, callback_url='invalid url')
+            _ = upload_file_konfuzio_api(file_path, project_id=self.RESTORED_PROJECT_ID, callback_url='invalid url')
 
     def test_download_file_with_ocr(self):
         """Test to download the OCR version of a document."""
@@ -268,19 +285,29 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
     def test_get_annotations(self):
         """Download Annotations and the Text from API for a Document and check their offset alignment."""
-        annotations = get_document_annotations(TEST_DOCUMENT_ID)['results']
+        original_document_text = Project(id_=46).get_document_by_id(TEST_DOCUMENT_ID).text
+        project = Project(id_=self.RESTORED_PROJECT_ID)
+        test_document_id = [document for document in project.documents if document.text == original_document_text][
+            0
+        ].id_
+        annotations = get_document_annotations(test_document_id)['results']
         self.assertEqual(len(annotations), 21)
 
     def test_post_document_annotation_multiline_as_bboxes(self):
         """Create a multiline Annotation via API."""
-        label_id = 862  # just for testing
-        label_set_id = 64  # just for testing
+        project = Project(id_=self.RESTORED_PROJECT_ID, strict_data_validation=False)
+        label_id = project.get_label_by_name('Bezeichnung').id_  # just for testing
+        label_set_id = project.get_label_set_by_name('Brutto-Bezug').id_  # just for testing
 
         bboxes = [
             {'page_index': 0, 'x0': 198, 'x1': 300, 'y0': 508, 'y1': 517},
             {'page_index': 0, 'x0': 197.76, 'x1': 233, 'y0': 495, 'y1': 508},
         ]
-        document = Project(id_=TEST_PROJECT_ID, strict_data_validation=False).get_document_by_id(TEST_DOCUMENT_ID + 11)
+        original_document_text = Project(id_=46).get_document_by_id(TEST_DOCUMENT_ID + 11).text
+        test_document_id = [document for document in project.documents if document.text == original_document_text][
+            0
+        ].id_
+        document = project.get_document_by_id(test_document_id)
         document.update()
         spans = get_spans_from_bbox(
             selection_bbox=Bbox(
@@ -300,7 +327,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             )
         )
         response = post_document_annotation(
-            document_id=TEST_DOCUMENT_ID + 11,
+            document_id=test_document_id,
             confidence=0.01,
             label_id=label_id,
             label_set_id=label_set_id,
@@ -316,17 +343,21 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
     @unittest.skip(reason='Not supported by Server: https://gitlab.com/konfuzio/objectives/-/issues/8663')
     def test_post_document_annotation_multiline_as_offsets(self):
         """Create a multiline Annotation via API."""
-        label_id = 862  # just for testing
-        label_set_id = 64  # just for testing
+        project = Project(id_=self.RESTORED_PROJECT_ID, strict_data_validation=False)
+        label_id = project.get_label_by_name('Bezeichnung').id_  # just for testing
+        label_set_id = project.get_label_set_by_name('Brutto-Bezug').id_
 
         bboxes = [
             {'page_index': 0, 'start_offset': 1868, 'end_offset': 1883},
             {'page_index': 0, 'start_offset': 1909, 'end_offset': 1915},
         ]
-
+        original_document_text = Project(id_=46).get_document_by_id(TEST_DOCUMENT_ID + 11).text
+        test_document_id = [document for document in project.documents if document.text == original_document_text][
+            0
+        ].id_
         response = post_document_annotation(
-            document_id=TEST_DOCUMENT_ID,
-            project_id=TEST_PROJECT_ID,
+            document_id=test_document_id,
+            project_id=self.RESTORED_PROJECT_ID,
             start_offset=24,
             end_offset=1000,
             accuracy=None,
@@ -343,18 +374,22 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
     def test_post_document_annotation(self):
         """Create an Annotation via API."""
+        project = Project(id_=self.RESTORED_PROJECT_ID, strict_data_validation=False, update=True)
         confidence = 0.0001
-        label_id = 863  # Refers to Label Betrag (863)
-        label_set_id = 64  # Refers to LabelSet Brutto-Bezug (allows multiple Annotation Sets)
+        label_id = label_id = project.get_label_by_name('Betrag').id_
+        label_set_id = project.get_label_set_by_name('Brutto-Bezug').id_
         # create a revised annotation, so we can verify its existence via get_document_annotations
-        project = Project(id_=TEST_PROJECT_ID, update=True)
         project.init_or_update_document(from_online=True)
-        document = project.get_document_by_id(TEST_DOCUMENT_ID)
+        original_document_text = Project(id_=46).get_document_by_id(TEST_DOCUMENT_ID).text
+        test_document_id = [document for document in project.documents if document.text == original_document_text][
+            0
+        ].id_
+        document = project.get_document_by_id(test_document_id)
         document.update()
         span = Span(document=document, start_offset=1002, end_offset=1010)
-        span.bbox()
+        # span.bbox()
         response = post_document_annotation(
-            document_id=TEST_DOCUMENT_ID,
+            document_id=test_document_id,
             confidence=confidence,
             label_id=label_id,
             label_set_id=label_set_id,
@@ -364,7 +399,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         )
         annotation = json.loads(response.text)
         # check if the update has been received by the server
-        annotations = get_document_annotations(TEST_DOCUMENT_ID)['results']
+        annotations = get_document_annotations(test_document_id)['results']
         assert annotation['id'] in [annotation['id'] for annotation in annotations]
         # delete the annotation, i.e. change its status from feedback required to negative
         negative_id = delete_document_annotation(annotation['id'])
@@ -373,17 +408,21 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
     def post_document_annotation_as_bboxes(self):
         """Test creating an Annotation that is based only on Bbox coordinates."""
-        label_id = 862
-        label_set_id = 64
+        label_id = self.project.get_label_by_name('Bezeichnung').id_
+        label_set_id = self.project.get_label_set_by_name('Brutto-Bezug').id_
 
         bboxes = [
             {'page_index': 0, 'x0': 198, 'x1': 300, 'y0': 508, 'y1': 517},
         ]
-        document = Project(id_=TEST_PROJECT_ID, strict_data_validation=False).get_document_by_id(TEST_DOCUMENT_ID + 11)
+        original_document_text = Project(id_=46).get_document_by_id(TEST_DOCUMENT_ID + 11).text
+        test_document_id = [document for document in self.project.documents if document.text == original_document_text][
+            0
+        ].id_
+        document = self.project.get_document_by_id(test_document_id + 11)
         document.update()
 
         response = post_document_annotation(
-            document_id=TEST_DOCUMENT_ID + 11,
+            document_id=test_document_id + 11,
             confidence=0.01,
             label_id=label_id,
             label_set_id=label_set_id,
@@ -398,7 +437,14 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
     def test_change_annotation(self):
         """Test modifying an existing Annotation."""
-        r = change_document_annotation(annotation_id=4420022, label=860)
+        annotation_with_steuerklasse = None
+        for document in self.project.documents:
+            for annotation in document.annotations():
+                if annotation.label.name == 'Steuerklasse':
+                    annotation_with_steuerklasse = annotation
+                    break
+        label_id = self.project.get_label_by_name('Steuerklasse')
+        r = change_document_annotation(annotation_id=annotation_with_steuerklasse.id_, label_id=label_id)
         assert r.status_code == 200
 
     def test_get_project_labels(self):
@@ -674,6 +720,17 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             document.delete(delete_online=True)
         r = delete_project(project_id=project_id)
         assert r.status_code == 204
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        """Remove the project created specifically for this test pipeline."""
+        cls.project = Project(id_=cls.RESTORED_PROJECT_ID, update=True)
+        for document in cls.project.documents + cls.project.test_documents:
+            document.dataset_status = 0
+            document.save_meta_data()
+            document.delete(delete_online=True)
+        response = delete_project(project_id=cls.RESTORED_PROJECT_ID)
+        assert response.status_code == 204
 
 
 def test_init_env():
