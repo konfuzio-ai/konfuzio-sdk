@@ -26,12 +26,12 @@ def convert_document_to_request(document: Document, schema: BaseModel = Checkbox
 
     if schema.__name__ == 'CheckboxRequest20240523':
         pages = [
-            {
-                'page_id': page.id_,
-                'width': int(page.width),
-                'height': int(page.height),
-                'image': open(page.image_path, 'rb').read(),
-            }
+            CheckboxRequest20240523.Page(
+                page_id=page.id_,
+                width=int(page.width),
+                height=int(page.height),
+                image=page.image_bytes,
+            )
             for page in document.pages()
         ]
 
@@ -47,7 +47,7 @@ def convert_document_to_request(document: Document, schema: BaseModel = Checkbox
                     'y1': int(a.bboxes[0]['y1']),
                 },
             }
-            for a in document.annotations()
+            for a in document.annotations(use_correct=False)
             if (
                 getattr(a.label, 'is_linked_to_checkbox', True) or a.label.is_linked_to_checkbox is None
             )  # TODO: Should be changed to an explicit check if True once the checkbox service is fully integrated.
@@ -74,7 +74,7 @@ def convert_response_to_checkbox_annotations(
             annotation = document.get_annotation_by_id(annotation_metadata.annotation_id)
             if annotation.metadata is None:
                 annotation.metadata = {}
-            annotation.metadata['checkbox'] = annotation_metadata.checkbox
+            annotation.metadata['checkbox'] = annotation_metadata.checkbox.dict()
         return document
     else:
         raise NotImplementedError(NOT_IMPLEMENTED_ERROR_MESSAGE)
