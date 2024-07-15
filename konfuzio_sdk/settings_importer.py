@@ -41,7 +41,7 @@ OPTIONAL_IMPORT_ERROR = (
 
 extras = [
     'chardet==5.1.0',
-    'pydantic==1.10.8',
+    'pydantic>2,<2.8',
     'torch>=1.8',
     'torchvision>=0.9',
     'transformers>=4.21.2',

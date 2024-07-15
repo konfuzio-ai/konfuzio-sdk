@@ -444,3 +444,45 @@ BalancedLossTrainer
 .. autoclass:: konfuzio_sdk.trainer.utils.BalancedLossTrainer
    :members:
    :noindex:
+
+AI containerization
+=====================
+
+`[source] <https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/konfuzio_sdk/bento/extraction>`__
+
+.. automodule:: konfuzio_sdk.bento.extraction.rfextractionai_service
+
+ExtractionService
+--------------------
+.. autoclass:: ExtractionService
+   :members:
+   :noindex:
+
+.. autofunction:: project_metadata
+
+.. automodule::konfuzio_sdk.bento.extraction.schemas
+
+Pydantic schemas
+--------------------
+.. autoclass:: ExtractRequest20240117Page
+   :members:
+   :noindex:
+
+.. autoclass:: ExtractRequest20240117
+   :members:
+   :noindex:
+
+.. autoclass:: ExtractResponse20240117
+   :members:
+   :noindex:
+
+.. autofunction:: hex_bytes_validator
+
+.. automodule::konfuzio_sdk.bento.extraction.utils
+
+Containerization utils
+-----------------------
+.. autofunction:: prepare_request
+.. autofunction:: process_response
+.. autofunction:: convert_document_to_request
+.. autofunction:: convert_response_to_annotations

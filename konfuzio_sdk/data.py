@@ -550,6 +550,12 @@ class Bbox:
         if self.page:
             return round(self.page.height - self.y1, 3)
 
+    @property
+    def bottom(self):
+        """Calculate the distance to the bottom of the Page."""
+        if self.page:
+            return round(self.page.height - self.y0, 3)
+
     def __repr__(self):
         """Represent the Box."""
         return f'{self.__class__.__name__}: x0: {self.x0} x1: {self.x1} y0: {self.y0} y1: {self.y1} on Page {self.page}'
@@ -4760,6 +4766,7 @@ class Project(Data):
                 print('[ERROR] Something went wrong while downloading AIs or AI metadata!')
                 raise error
 
+
     def get_category_by_name(self, category_name: str = None) -> List[Category]:
         """
         Get Category by the match to its name or clean_name.
@@ -4772,3 +4779,41 @@ class Project(Data):
                 return category
         else:
             raise IndexError(f'Category name {category_name} was not found in {self}.')
+
+    def create_project_metadata_dict(self) -> Dict:
+        """
+        Create a dictionary that mimics the file categories_label_sets.json5 saved in the Project folder
+        for restoring Projects within Bento containers.
+        """
+        categories = {
+            'categories': [
+                {
+                    'api_name': category.name,
+                    'name': category.name,
+                    'id': category.id_,
+                    'project': self.id_,
+                    'schema': [
+                        {
+                            'api_name': label_set.name,
+                            'name': label_set.name,
+                            'has_multiple_annotation_sets': label_set.has_multiple_annotation_sets,
+                            'id': label_set.id_,
+                            'labels': [
+                                {
+                                    'api_name': label.name,
+                                    'name': label.name,
+                                    'data_type': label.data_type,
+                                    'has_multiple_top_candidates': label.has_multiple_top_candidates,
+                                    'id': label.id_,
+                                    'threshold': label.threshold,
+                                }
+                                for label in label_set.labels
+                            ],
+                        }
+                        for label_set in category.label_sets
+                    ],
+                }
+                for category in self.categories
+            ]
+        }
+        return categories
