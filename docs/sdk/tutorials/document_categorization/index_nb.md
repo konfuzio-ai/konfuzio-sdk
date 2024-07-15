@@ -59,7 +59,7 @@ while not YOUR_PROJECT_ID:
             YOUR_PROJECT_ID = project['id']
             break
 project = Project(id_=YOUR_PROJECT_ID)
-YOUR_CATEGORY_ID = project.get_categories_by_name('Lohnabrechnung')[0].id_
+YOUR_CATEGORY_ID = project.get_category_by_name('Lohnabrechnung').id_
 original_document_text = Project(id_=46).get_document_by_id(44823).text
 YOUR_DOCUMENT_ID = [document for document in project.documents if document.text == original_document_text][0].id_
 ```

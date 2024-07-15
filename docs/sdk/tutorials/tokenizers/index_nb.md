@@ -269,7 +269,7 @@ while not TEST_PROJECT_ID:
 original_document_text = Project(id_=46).get_document_by_id(44823).text
 project = Project(id_=TEST_PROJECT_ID)
 TEST_DOCUMENT_ID = [document for document in project.documents if document.text == original_document_text][0].id_
-TEST_PAYSLIPS_CATEGORY_ID = project.get_categories_by_name('Lohnabrechnung')[0].id_
+TEST_PAYSLIPS_CATEGORY_ID = project.get_category_by_name('Lohnabrechnung').id_
 ```
 ```python tags=["remove-output"]
 from konfuzio_sdk.data import Project, Document

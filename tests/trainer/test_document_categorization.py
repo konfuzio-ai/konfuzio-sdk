@@ -450,8 +450,8 @@ class TestBertCategorizationModels(unittest.TestCase):
         """Set up the Data and Categorization Pipeline."""
         cls.training_prj = Project(id_=RESTORED_PROJECT_ID)
         cls.categorization_pipeline = CategorizationAI(cls.training_prj.categories)
-        cls.category_1 = cls.training_prj.get_categories_by_name(category_name='Employee and Family Medic')[0]
-        cls.category_2 = cls.training_prj.get_categories_by_name(category_name='Patient Registration Form')[0]
+        cls.category_1 = cls.training_prj.get_category_by_name(category_name='Employee and Family Medic')
+        cls.category_2 = cls.training_prj.get_category_by_name(category_name='Patient Registration Form')
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -600,8 +600,8 @@ class TestCategorizationConfigurations(unittest.TestCase):
         """Set up the Data and Categorization Pipeline."""
         cls.training_prj = Project(id_=RESTORED_PROJECT_ID)
         cls.categorization_pipeline = CategorizationAI(cls.training_prj.categories)
-        cls.category_1 = cls.training_prj.get_categories_by_name(category_name='Employee and Family Medic')[0]
-        cls.category_2 = cls.training_prj.get_categories_by_name(category_name='Patient Registration Form')[0]
+        cls.category_1 = cls.training_prj.get_category_by_name(category_name='Employee and Family Medic')
+        cls.category_2 = cls.training_prj.get_category_by_name(category_name='Patient Registration Form')
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -762,8 +762,8 @@ def test_bert_in_multimodal_categorization_ai():
     """Test compatibility of BERT-based model and image-processing model for Categorization."""
     training_prj = Project(id_=RESTORED_PROJECT_ID)
     categorization_pipeline = CategorizationAI(training_prj.categories)
-    category_1 = training_prj.get_categories_by_name(category_name='Employee and Family Medic')[0]
-    category_2 = training_prj.get_categories_by_name(category_name='Patient Registration Form')[0]
+    category_1 = training_prj.get_category_by_name(category_name='Employee and Family Medic')
+    category_2 = training_prj.get_category_by_name(category_name='Patient Registration Form')
     category_1_documents = category_1.documents()
     category_2_documents = category_2.documents()
     categorization_pipeline.documents = category_1_documents + category_2_documents

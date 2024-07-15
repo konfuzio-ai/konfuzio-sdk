@@ -737,16 +737,21 @@ class TestOfflineExampleData(unittest.TestCase):
         assert wrong_name.name == 'Category/name'
         assert wrong_name.name_clean == 'Categoryname'
 
-    def test_get_categories_by_name(self):
+    def test_get_category_by_name(self):
         """Test that Categories can be searched by name."""
         assert (
             self.project.get_category_by_id(63).name
-            == self.project.get_categories_by_name(category_name='Lohnabrechnung')[0].name
+            == self.project.get_category_by_name(category_name='Lohnabrechnung').name
         )
         assert (
             self.project.get_category_by_id(63).name_clean
-            == self.project.get_categories_by_name(category_name='Lohnabrechnung')[0].name_clean
+            == self.project.get_category_by_name(category_name='Lohnabrechnung').name_clean
         )
+
+    def test_add_category_with_repeated_name(self):
+        """Test that it is impossible to create a Category with the same name as one of already existing in a Project."""
+        with pytest.raises(ValueError, match='duplicate'):
+            _ = Category(project=self.project, name='Lohnabrechnung')
 
 
 class TestEqualityAnnotation(unittest.TestCase):
