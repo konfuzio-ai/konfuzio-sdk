@@ -4358,8 +4358,12 @@ class Project(Data):
         :param category: Category to add in the Project
         """
         if category.name != 'NO_CATEGORY':
-            if category not in self.categories and category.name not in [category.name for category in self.categories]:
-                self.categories.append(category)
+            if category not in self.categories:
+                # we want to allow creating nameless categories locally but not use same names for different categories
+                if (
+                    category.name and category.name not in [category.name for category in self.categories]
+                ) or not category.name:
+                    self.categories.append(category)
             else:
                 raise ValueError(f'In {self} the {category} is a duplicate and will not be added.')
 
