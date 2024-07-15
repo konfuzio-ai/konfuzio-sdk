@@ -53,14 +53,14 @@ from konfuzio_sdk.data import Project
 logging.getLogger("konfuzio_sdk").setLevel(logging.ERROR)
 projects = get_project_list()
 YOUR_PROJECT_ID = None
-while not TEST_PROJECT_ID:
+while not YOUR_PROJECT_ID:
     for project in reversed(projects['results']):
-        if 'ZGF0YV8xNDM5Mi02Ni56aXA=' in project['name']:
-            TEST_PROJECT_ID = project['id']
+        if 'ZGF0YV80Ni02NS56aXA=' in project['name']:
+            YOUR_PROJECT_ID = project['id']
             break
 project = Project(id_=YOUR_PROJECT_ID)
-YOUR_CATEGORY_ID = project.get_category_by_name('Lohnabrechnung').id_
-original_document_text = Project(id_=46).get_document_by_id(44825).text
+YOUR_CATEGORY_ID = project.get_categories_by_name('Lohnabrechnung')[0].id_
+original_document_text = Project(id_=46).get_document_by_id(44823).text
 YOUR_DOCUMENT_ID = [document for document in project.documents if document.text == original_document_text][0].id_
 ```
 
@@ -93,6 +93,7 @@ print(f"Found category {result_doc.category} for {result_doc}")
 For better results you can build, train and test a Categorization AI using Image Models and Text Models to classify the image and text of each Page.
 
 Let's start with the imports and initializing the Project.
+
 ```python editable=true slideshow={"slide_type": ""}
 from konfuzio_sdk.data import Project, Document
 from konfuzio_sdk.trainer.document_categorization import build_categorization_ai_pipeline
@@ -108,7 +109,7 @@ for doc in project.documents + project.test_documents:
 for document in project.documents[3:] + project.test_documents[1:]:
     document.dataset_status = 4
 original_document_text = Project(id_=46).get_document_by_id(44864).text
-cur_document_id = [document for document in project.documents if document.text == original_document_text][0].id_
+cur_document_id = [document for document in project._documents if document.text == original_document_text][0].id_
 project.get_document_by_id(cur_document_id).dataset_status = 4
 ```
 

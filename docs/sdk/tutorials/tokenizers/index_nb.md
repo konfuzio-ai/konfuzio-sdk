@@ -54,15 +54,6 @@ sys.path.insert(0, '../../../../')
 from tests.variables import TEST_PROJECT_ID, TEST_DOCUMENT_ID, TEST_PAYSLIPS_CATEGORY_ID, TEST_CATEGORIZATION_DOCUMENT_ID
 import logging
 logging.getLogger("konfuzio_sdk").setLevel(logging.ERROR)
-
-from konfuzio_sdk.api import get_project_list
-projects = get_project_list()
-TEST_PROJECT_ID = None
-while not TEST_PROJECT_ID:
-    for project in reversed(projects['results']):
-        if 'ZGF0YV8xNDM5Mi02Ni56aXA=' in project['name']:
-            TEST_PROJECT_ID = project['id']
-            break
 ```
 
 First, we import necessary modules:
@@ -265,6 +256,21 @@ document.get_page_by_index(0).get_annotations_image(display_all=True)
 
 Due to the complexity of the Document we processed, the `line_distance` approach does not perform very well. We can see that a simpler Document that has a more linear structure gives better results:
 
+```python tags=["remove-cell"]
+from konfuzio_sdk.api import get_project_list
+from konfuzio_sdk.data import Project
+projects = get_project_list()
+TEST_PROJECT_ID = None
+while not TEST_PROJECT_ID:
+    for project in reversed(projects['results']):
+        if 'ZGF0YV80Ni02NS56aXA=' in project['name']:
+            TEST_PROJECT_ID = project['id']
+            break
+original_document_text = Project(id_=46).get_document_by_id(44823).text
+project = Project(id_=TEST_PROJECT_ID)
+TEST_DOCUMENT_ID = [document for document in project.documents if document.text == original_document_text][0].id_
+TEST_PAYSLIPS_CATEGORY_ID = project.get_categories_by_name('Lohnabrechnung')[0].id_
+```
 ```python tags=["remove-output"]
 from konfuzio_sdk.data import Project, Document
 from konfuzio_sdk.tokenizer.paragraph_and_sentence import ParagraphTokenizer
@@ -278,7 +284,6 @@ tokenizer = ParagraphTokenizer(mode='line_distance')
 
 tokenized_doc = tokenizer(deepcopied_doc)
 ```
-
 ```python tags=["remove-cell"]
 tokenized_doc.pages()[0].image_width = 1100
 tokenized_doc.pages()[0].image_height = 1400
@@ -339,8 +344,8 @@ The `SentenceTokenizer` is a specialized [tokenizer](https://dev.konfuzio.com/sd
 
 To use it, import the necessary modules, initialize the Project, the Document, and the Tokenizer and tokenize the Document.
 ```python tags=["remove-cell"]
-original_document_text = Project(id_=46).get_document_by_id(215906).text
-YOUR_DOCUMENT_ID = [document for document in project.documents if document.text == original_document_text][0].id_
+document = Document.from_file(path="../../../../tests/test_data/textposition.pdf", project=project, sync=True)
+YOUR_DOCUMENT_ID = document.id_
 ```
 
 ```python tags=["remove-output"]
@@ -398,6 +403,16 @@ spans_not_found = label.spans_not_found_by_tokenizer(tokenizer, categories=[cate
 
 for span in spans_not_found:
     print(f"{span}: {span.offset_string}")
+```
+```python tags=["remove-cell"]
+from konfuzio_sdk.api import delete_project
+
+for document in my_project.documents + my_project.test_documents:
+    document.dataset_status = 0
+    document.save_meta_data()
+    document.delete(delete_online=True)
+response = delete_project(project_id=my_project.id_)
+assert response.status_code == 204
 ```
 
 ### Conclusion

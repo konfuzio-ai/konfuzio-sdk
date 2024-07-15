@@ -107,9 +107,9 @@ To create an Annotation that is based on Bounding Boxes' coordinates, let's crea
 be passed as the `spans` argument. You can define one or more Bounding Boxes. Note that you don't need to specify 
 offsets, only the `page_index` is needed.
 ```python tags=['remove-cell']
-original_document_text = Project(id_=46).get_document_by_id(YOUR_DOCUMENT_ID + 11).text
+original_document_text = Project(id_=46).get_document_by_id(44834).text
 YOUR_DOCUMENT_ID = [document for document in project.documents if document.text == original_document_text][0].id_
-YOUR_LABEL_ID = project.get_label_by_name('Bezeichnung')
+YOUR_LABEL_ID = project.get_label_by_name('Bezeichnung').id_
 ```
 ```python
 bboxes = [
