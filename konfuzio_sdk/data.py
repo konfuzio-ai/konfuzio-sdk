@@ -550,6 +550,12 @@ class Bbox:
         if self.page:
             return round(self.page.height - self.y1, 3)
 
+    @property
+    def bottom(self):
+        """Calculate the distance to the bottom of the Page."""
+        if self.page:
+            return round(self.page.height - self.y0, 3)
+
     def __repr__(self):
         """Represent the Box."""
         return f'{self.__class__.__name__}: x0: {self.x0} x1: {self.x1} y0: {self.y0} y1: {self.y1} on Page {self.page}'
@@ -932,7 +938,7 @@ class Category(Data):
         """Associate Label Sets to relate to Annotations."""
         self.id_local = next(Data.id_iter)
         self.id_ = id_
-        self.name = normalize_name(name)
+        self.name = name
         self.name_clean = normalize_name(name_clean)
         self.project: Project = project
         self._force_offline = project._force_offline
@@ -1492,7 +1498,7 @@ class Label(Data):
         for category in categories:
             if category.id_ not in self._regex or update:
                 regex_category_file_path = os.path.join(
-                    self.project.regex_folder, f'{category.name}_{self.name_clean}_tokens.json5'
+                    self.project.regex_folder, f'{category.name_clean}_{self.name_clean}_tokens.json5'
                 )
                 if not is_file(regex_category_file_path, raise_exception=False) or update:
                     category_regex = self.find_regex(category=category)
@@ -4747,3 +4753,41 @@ class Project(Data):
             except Exception as error:
                 print('[ERROR] Something went wrong while downloading AIs or AI metadata!')
                 raise error
+
+    def create_project_metadata_dict(self) -> Dict:
+        """
+        Create a dictionary that mimics the file categories_label_sets.json5 saved in the Project folder
+        for restoring Projects within Bento containers.
+        """
+        categories = {
+            'categories': [
+                {
+                    'api_name': category.name,
+                    'name': category.name,
+                    'id': category.id_,
+                    'project': self.id_,
+                    'schema': [
+                        {
+                            'api_name': label_set.name,
+                            'name': label_set.name,
+                            'has_multiple_annotation_sets': label_set.has_multiple_annotation_sets,
+                            'id': label_set.id_,
+                            'labels': [
+                                {
+                                    'api_name': label.name,
+                                    'name': label.name,
+                                    'data_type': label.data_type,
+                                    'has_multiple_top_candidates': label.has_multiple_top_candidates,
+                                    'id': label.id_,
+                                    'threshold': label.threshold,
+                                }
+                                for label in label_set.labels
+                            ],
+                        }
+                        for label_set in category.label_sets
+                    ],
+                }
+                for category in self.categories
+            ]
+        }
+        return categories
