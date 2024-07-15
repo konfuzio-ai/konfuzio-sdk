@@ -4353,7 +4353,7 @@ class Project(Data):
 
     def add_category(self, category: Category):
         """
-        Add Category to Project, if it does not exist.
+        Add Category to Project if it does not exist.
 
         :param category: Category to add in the Project
         """
@@ -4364,6 +4364,10 @@ class Project(Data):
                     category.name and category.name not in [category.name for category in self.categories]
                 ) or not category.name:
                     self.categories.append(category)
+                else:
+                    raise ValueError(
+                        f'In {self} there already exists a Category with name {category.name}. Choose another name for the new Category.'
+                    )
             else:
                 raise ValueError(f'In {self} the {category} is a duplicate and will not be added.')
 
@@ -4769,7 +4773,6 @@ class Project(Data):
             except Exception as error:
                 print('[ERROR] Something went wrong while downloading AIs or AI metadata!')
                 raise error
-
 
     def get_category_by_name(self, category_name: str = None) -> List[Category]:
         """

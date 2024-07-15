@@ -461,6 +461,11 @@ class TestOnlineProject(unittest.TestCase):
         assert isinstance(image, PIL.PngImagePlugin.PngImageFile)
         document.delete(delete_online=True)
 
+    def test_add_category_with_repeated_name(self):
+        """Test that it is impossible to create a Category with the same name as one of already existing in a Project."""
+        with pytest.raises(ValueError, match='another name'):
+            _ = Category(project=self.project, name='Lohnabrechnung')
+
 
 class TestOfflineExampleData(unittest.TestCase):
     """Test data features without real data."""
@@ -754,11 +759,6 @@ class TestOfflineExampleData(unittest.TestCase):
             self.project.get_category_by_id(63).name_clean
             == self.project.get_category_by_name(category_name='Lohnabrechnung').name_clean
         )
-
-    def test_add_category_with_repeated_name(self):
-        """Test that it is impossible to create a Category with the same name as one of already existing in a Project."""
-        with pytest.raises(ValueError, match='duplicate'):
-            _ = Category(project=self.project, name='Lohnabrechnung')
 
 
 class TestEqualityAnnotation(unittest.TestCase):
