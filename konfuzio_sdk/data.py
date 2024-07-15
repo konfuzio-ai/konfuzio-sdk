@@ -2678,6 +2678,12 @@ class Annotation(Data):
         else:
             try:
                 del self.document._annotations[(tuple(sorted(self._spans.keys())), self.label.name)]
+                if len(self.annotation_set.annotations) == 1:
+                    self.document._annotation_sets = [
+                        annotation_set
+                        for annotation_set in self.document._annotation_sets
+                        if annotation_set != self.annotation_set
+                    ]
             except KeyError as e:
                 logger.warning(
                     f'Could not delete annotation with key {(tuple(sorted(self._spans.keys())), self.label.name)} in {self.document}: {e}'

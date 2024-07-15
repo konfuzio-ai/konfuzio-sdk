@@ -740,6 +740,21 @@ class TestOfflineExampleData(unittest.TestCase):
         assert wrong_name.name == 'Category/name'
         assert wrong_name.name_clean == 'Categoryname'
 
+    def test_delete_empty_annotation_set(self):
+        """Test that an Annotation Set is deleted from a Document when its last Annotation is deleted."""
+        document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        spans = [Span(start_offset=4452, end_offset=4457, document=document)]
+        annotation_set = AnnotationSet(document=document, label_set=self.project.get_label_set_by_name('Steuer'))
+        annotation = Annotation(
+            document=document,
+            annotation_set=annotation_set,
+            label=self.project.get_label_by_name('Sozialversicherung'),
+            is_correct=True,
+            spans=spans,
+        )
+        annotation.delete(delete_online=False)
+        assert annotation_set not in document.annotation_sets()
+
 
 class TestEqualityAnnotation(unittest.TestCase):
     """Test the equality of Annotations."""
