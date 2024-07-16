@@ -52,7 +52,9 @@ from tests.variables import (
 )
 
 logger = logging.getLogger(__name__)
-RESTORED_PROJECT_ID = restore_snapshot(snapshot_id=66)
+
+if is_dependency_installed('torch'):
+    RESTORED_PROJECT_ID = restore_snapshot(snapshot_id=66)
 
 
 @pytest.mark.skipif(

@@ -34,7 +34,9 @@ from konfuzio_sdk.urls import get_create_ai_model_url
 
 TEST_WITH_FULL_DATASET = False
 DEVICE = 'cpu'
-RESTORED_PROJECT_ID = restore_snapshot(snapshot_id=66)
+
+if is_dependency_installed('torch'):
+    RESTORED_PROJECT_ID = restore_snapshot(snapshot_id=66)
 
 
 @pytest.mark.skipif(
