@@ -407,7 +407,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         assert evaluation.tokenizer_fp() == 289
         assert evaluation.tokenizer_fn() == 5
 
-        assert 5e5 < memory_size_of(evaluation.data) < 6e5
+        assert 5e5 < memory_size_of(evaluation.data) < 7e5
 
     def test_09_clf_quality(self):
         """Evaluate the Label classifier quality."""
@@ -701,7 +701,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         assert evaluation.tokenizer_fp() == 34
         assert evaluation.tokenizer_fn() == 8
 
-        assert 1e5 < memory_size_of(evaluation.data) < 2e5
+        assert 1e5 < memory_size_of(evaluation.data) < 3e5
 
     def test_09_clf_quality(self):
         """Evaluate the Label classifier quality."""

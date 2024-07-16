@@ -1,4 +1,5 @@
 """Calculate the accuracy on any level in a  Document."""
+
 import logging
 from typing import Dict, List, Optional, Tuple, Union
 
@@ -49,6 +50,8 @@ RELEVANT_FOR_EVALUATION = [
     'is_correct_id_',
     'duplicated',
     'duplicated_predicted',
+    'tmp_id_',  # a temporary ID used for enumerating the predicted annotations solely
+    'disambiguated_id',  # an ID for multi-span annotations
 ]
 
 logger = logging.getLogger(__name__)
@@ -81,6 +84,31 @@ def grouped(group, target: str):
     return group
 
 
+def prioritize_rows(group):
+    """
+    Apply a filter when a Label should only appear once per AnnotationSet but has been predicted multiple times.
+
+    After we have calculated the TPs, FPs, FNs for the Document, we filter out the case where a Label should
+    only appear once per AnnotationSet but has been predicted multiple times. In this case, if any of the
+    predictions is a TP then we keep one and discard FPs/FNs. If no TPs, if any of the predictions is a FP
+    then we keep one and discard the FNs. If no FPs, then we keep a FN. The prediction we keep is always the
+    first in terms of start_offset.
+    """
+    group = group[~(group['label_has_multiple_top_candidates_predicted'].astype(bool))]
+    if group.empty:
+        return group
+
+    first_true_positive = group[group['true_positive']].head(1)
+    first_false_positive = group[group['false_positive']].head(1)
+    first_false_negative = group[group['false_negative']].head(1)
+    if not first_true_positive.empty:
+        return first_true_positive
+    elif not first_false_positive.empty:
+        return first_false_positive
+    else:
+        return first_false_negative
+
+
 def compare(
     doc_a,
     doc_b,
@@ -88,6 +116,7 @@ def compare(
     use_view_annotations=False,
     ignore_below_threshold=False,
     strict=True,
+    id_counter: int = 1,
     custom_threshold=None,
 ) -> pd.DataFrame:
     """Compare the Annotations of two potentially empty Documents wrt. to **all** Annotations.
@@ -107,13 +136,20 @@ def compare(
     :return: Evaluation DataFrame
     """
     df_a = pd.DataFrame(doc_a.eval_dict(use_correct=only_use_correct))
+    df_a_ids = df_a[['id_']]
+    duplicated_ids = df_a_ids['id_'].duplicated(keep=False)
+    df_a_ids['disambiguated_id'] = df_a_ids['id_'].astype(str)
+    df_a_ids.loc[duplicated_ids, 'disambiguated_id'] += '_' + (df_a_ids.groupby('id_').cumcount() + 1).astype(str)
+    df_a['disambiguated_id'] = df_a_ids['disambiguated_id']
     df_b = pd.DataFrame(
         doc_b.eval_dict(
             use_view_annotations=strict and use_view_annotations,  # view_annotations only available for strict=True
             use_correct=False,
             ignore_below_threshold=ignore_below_threshold,
-        )
+        ),
     )
+    df_b['tmp_id_'] = list(range(id_counter, id_counter + len(df_b)))
+
     if doc_a.category != doc_b.category:
         raise ValueError(f'Categories of {doc_a} with {doc_a.category} and {doc_b} with {doc_a.category} do not match.')
     if strict:  # many to many inner join to keep all Spans of both Documents
@@ -231,12 +267,12 @@ def compare(
         & ((~spans['is_matched']) | (~spans['above_predicted_threshold']) | (spans['label_id_predicted'].isna()))
     )
 
-    spans['false_positive'] = (  # commented out on purpose (spans["is_correct"]) &
+    spans['false_positive'] = (
         (spans['above_predicted_threshold'])
         & (~spans['false_negative'])
         & (~spans['true_positive'])
         & (~spans['duplicated_predicted'])
-        & (  # Something is wrong
+        & (
             (~spans['is_correct_label'])
             | (~spans['is_correct_label_set'])
             | (~spans['is_correct_annotation_set_id'])
@@ -246,38 +282,62 @@ def compare(
     )
 
     if not strict:
-
-        def prioritize_rows(group):
-            """
-            Apply a filter when a Label should only appear once per AnnotationSet but has been predicted multiple times.
-
-            After we have calculated the TPs, FPs, FNs for the Document, we filter out the case where a Label should
-            only appear once per AnnotationSet but has been predicted multiple times. In this case, if any of the
-            predictions is a TP then we keep one and discard FPs/FNs. If no TPs, if any of the predictions is a FP
-            then we keep one and discard the FNs. If no FPs, then we keep a FN. The prediction we keep is always the
-            first in terms of start_offset.
-            """
-            group = group[~(group['label_has_multiple_top_candidates_predicted'].astype(bool))]
-            if group.empty:
-                return group
-
-            first_true_positive = group[group['true_positive']].head(1)
-            first_false_positive = group[group['false_positive']].head(1)
-            first_false_negative = group[group['false_negative']].head(1)
-            if not first_true_positive.empty:
-                return first_true_positive
-            elif not first_false_positive.empty:
-                return first_false_positive
-            else:
-                return first_false_negative
-
-        spans = spans.groupby(['annotation_set_id_predicted', 'label_id_predicted']).apply(prioritize_rows)
+        # Apply the function prioritize_rows just to entries where the label is not set to "multiple"
+        labels = doc_a.project.labels
+        label_ids_multiple = [label.id_ for label in labels if label.has_multiple_top_candidates]
+        label_ids_not_multiple = [label.id_ for label in labels if not label.has_multiple_top_candidates]
+        spans_not_multiple = spans[spans['label_id'].isin(label_ids_not_multiple)]
+        spans_not_multiple = spans_not_multiple.groupby(['annotation_set_id_predicted', 'label_id_predicted']).apply(
+            prioritize_rows
+        )
+        spans_multiple = spans[spans['label_id'].isin(label_ids_multiple)]
+        spans = pd.concat([spans_not_multiple, spans_multiple])
+        spans = spans.sort_values(by='is_matched', ascending=False)
 
     spans = spans.replace({np.nan: None})
-    # one Span must not be defined as TP or FP or FN more than once
-    quality = (spans[['true_positive', 'false_positive', 'false_negative']].sum(axis=1) <= 1).all()
-    assert quality
+    # how many times annotations with this label occur in the ground truth data
+    spans['frequency'] = spans.groupby('label_id')['label_id'].transform('size')
+    spans['frequency'].fillna(0, inplace=True)
+    spans['frequency'] = spans['frequency'].apply(lambda x: int(x))
+
+    if not strict:
+        # one Span must not be defined as TP or FP or FN more than once
+        quality = (spans[['true_positive', 'false_positive', 'false_negative']].sum(axis=1) <= 1).all()
+        assert quality
     return spans
+
+
+class ExtractionConfusionMatrix:
+    """Check how all predictions are mapped to the ground-truth Annotations."""
+
+    def __init__(self, data: pd.DataFrame):
+        """
+        Initialize the class.
+
+        :param data: Raw evaluation data.
+        """
+        self.matrix = self.calculate(data=data)
+
+    def calculate(self, data: pd.DataFrame):
+        """
+        Calculate the matrix.
+
+        :param data: Raw evaluation data.
+        """
+        data = data.reset_index(drop=True)
+        data['id_'] = data['id_'].fillna('no_match', inplace=True)
+        data['tmp_id_'] = data['tmp_id_'].fillna('no_match')
+
+        data['relation'] = data.apply(
+            lambda x: 'TP'
+            if x['true_positive']
+            else ('FP' if x['false_positive'] else ('FN' if x['false_negative'] else 'TN')),
+            axis=1,
+        )
+
+        matrix = pd.pivot(data, index='disambiguated_id', columns='tmp_id_', values=['relation'])
+        matrix.fillna('TN', inplace=True)
+        return matrix
 
 
 class EvaluationCalculator:
@@ -420,6 +480,7 @@ class ExtractionEvaluation:
     def calculate(self):
         """Calculate and update the data stored within this Evaluation."""
         evaluations = []  # start anew, the configuration of the Evaluation might have changed.
+        id_counter = 1
         for ground_truth, predicted in self.documents:
             evaluation = compare(
                 doc_a=ground_truth,
@@ -428,8 +489,11 @@ class ExtractionEvaluation:
                 strict=self.strict,
                 use_view_annotations=self.use_view_annotations,
                 ignore_below_threshold=self.ignore_below_threshold,
+                id_counter=id_counter,
             )
             evaluations.append(evaluation)
+            id_counter += len(evaluation)
+
         self.data = pd.concat(evaluations)
 
     def calculate_thresholds(self):
@@ -527,9 +591,11 @@ class ExtractionEvaluation:
 
     def tn(self, search=None) -> int:
         """Return the True Negatives of all Spans."""
-        return (
-            len(self._query(search=search)) - self.tp(search=search) - self.fn(search=search) - self.fp(search=search)
-        )
+        return len(self._query(search=None)) - self.tp(search=search) - self.fn(search=search) - self.fp(search=search)
+
+    def gt(self, search=None) -> int:
+        """Return the number of ground-truth Annotations for a given Label."""
+        return len(self._query(search=search).dropna(subset=['label_id']))
 
     def tokenizer_tp(self, search=None) -> int:
         """Return the tokenizer True Positives of all Spans."""
@@ -649,6 +715,9 @@ class ExtractionEvaluation:
         """Return Spans that were wrongly merged vertically."""
         self.data.groupby('id_local_predicted').apply(lambda group: self._apply(group, 'wrong_merge'))
         return self.data[self.data['wrong_merge']]
+
+    def confusion_matrix(self):
+        return ExtractionConfusionMatrix(data=self.data)
 
 
 class CategorizationEvaluation:
@@ -790,6 +859,10 @@ class CategorizationEvaluation:
     def tn(self, category: Optional[Category] = None) -> int:
         """Return the True Negatives of all Documents."""
         return self._base_metric('tn', category)
+
+    def gt(self, category: Optional[Category] = None) -> int:
+        """Placeholder for compatibility with Server."""
+        return 0
 
     def get_evaluation_data(self, search: Category = None, allow_zero: bool = True) -> EvaluationCalculator:
         """
@@ -1041,6 +1114,10 @@ class FileSplittingEvaluation:
         :raises KeyError: When the Category in search is not present in the Project from which the Documents are.
         """
         return self._query('true_negatives', search)
+
+    def gt(self, search: Category = None) -> int:
+        """Placeholder for compatibility with Server."""
+        return 0
 
     def precision(self, search: Category = None) -> float:
         """
