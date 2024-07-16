@@ -69,6 +69,11 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
         """
 
     @property
+    def pkl_name(self):
+        """Generate a unique extension-less name for a resulting pickle file."""
+        return f'{self.name_lower()}_{get_timestamp()}'
+
+    @property
     def temp_pkl_file_path(self) -> str:
         """
         Generate a path for temporary pickle file.
@@ -93,6 +98,14 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
             f'{get_timestamp()}_{self.project.id_}_{self.name_lower()}.pkl',
         )
         return pkl_file_path
+
+    @property
+    def entrypoint_methods(self) -> dict:
+        """Methods that will be exposed in a bento-saved instance of a model."""
+        return {
+            'predict': {'batchable': False},
+            'evaluate': {'batchable': False},
+        }
 
     @staticmethod
     def has_compatible_interface(other) -> bool:
