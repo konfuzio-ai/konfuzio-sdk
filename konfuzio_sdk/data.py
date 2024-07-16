@@ -2678,12 +2678,12 @@ class Annotation(Data):
         else:
             try:
                 del self.document._annotations[(tuple(sorted(self._spans.keys())), self.label.name)]
-                if len(self.annotation_set.annotations) == 1:
-                    self.document._annotation_sets = [
-                        annotation_set
-                        for annotation_set in self.document._annotation_sets
-                        if annotation_set != self.annotation_set
-                    ]
+                # if len(self.annotation_set.annotations()) == 1:
+                #     self.document._annotation_sets = [
+                #         annotation_set
+                #         for annotation_set in self.document._annotation_sets
+                #         if annotation_set != self.annotation_set
+                #     ]
             except KeyError as e:
                 logger.warning(
                     f'Could not delete annotation with key {(tuple(sorted(self._spans.keys())), self.label.name)} in {self.document}: {e}'
@@ -3608,7 +3608,7 @@ class Document(Data):
         if result:
             return result
         else:
-            raise IndexError(f'Annotation {annotation_id} is not part of {self}.')
+            raise IndexError(f'Annotation {annotation_id} is not a part of {self}.')
 
     def add_annotation_set(self, annotation_set: AnnotationSet):
         """Add the Annotation Sets to the Document."""
@@ -3642,7 +3642,7 @@ class Document(Data):
         if result:
             return result
         else:
-            raise IndexError(f'Annotation Set {id_} is not part of Document {self.id_}.')
+            raise IndexError(f'Annotation Set {id_} is not a part of Document {self.id_}.')
 
     @property
     def default_annotation_set(self) -> AnnotationSet:
