@@ -53,6 +53,7 @@ from konfuzio_sdk.utils import (
     get_timestamp,
     memory_size_of,
     sdk_isinstance,
+    slugify,
 )
 
 logger = logging.getLogger(__name__)
@@ -1180,7 +1181,7 @@ class AbstractExtractionAI(BaseModel):
     @property
     def pkl_name(self) -> str:
         """Generate a name for the pickle file."""
-        return f'{self.name_lower()}_{self.category.id_ if self.category.id_ else 0}_{self.category.fallback_name}_{get_timestamp()}'
+        return f'{self.name_lower()}_{self.category.id_ if self.category.id_ else 0}_{slugify(self.category.name)}_{get_timestamp()}'
 
     @property
     def temp_pkl_file_path(self) -> str:
