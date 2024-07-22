@@ -54,7 +54,6 @@ while not YOUR_PROJECT_ID:
         if 'ZGF0YV80Ni02NS56aXA=' in project['name']:
             YOUR_PROJECT_ID = project['id']
             break
-import time
 ```
 
 ```python editable=true slideshow={"slide_type": ""} vscode={"languageId": "plaintext"}

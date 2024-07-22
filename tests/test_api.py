@@ -54,9 +54,13 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         cls.RESTORED_PROJECT_ID = restore_snapshot(snapshot_id=65)
         cls.project = Project(id_=cls.RESTORED_PROJECT_ID, update=True)
         original_document_text = Project(id_=46).get_document_by_id(TEST_DOCUMENT_ID).text
-        cls.test_document_id = [
-            document for document in cls.project.documents if document.text == original_document_text
-        ][0].id_
+        cls.test_document = cls.project.get_document_by_id(
+            [document for document in cls.project.documents if document.text == original_document_text][0].id_
+        )
+        original_document_text_2 = Project(id_=46).get_document_by_id(TEST_DOCUMENT_ID + 11).text
+        cls.test_document_2 = cls.project.get_document_by_id(
+            [document for document in cls.project.documents if document.text == original_document_text_2][0].id_
+        )
         cls.test_category_id = cls.project.categories[0].id_
 
     def test_projects_details(self):
@@ -163,12 +167,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
     def test_document_details(self):
         """Test to get Document details."""
-        original_document_text = Project(id_=46).get_document_by_id(TEST_DOCUMENT_ID).text
-        project = Project(id_=self.RESTORED_PROJECT_ID)
-        test_document_id = [document for document in project.documents if document.text == original_document_text][
-            0
-        ].id_
-        data = get_document_details(document_id=test_document_id)
+        data = get_document_details(document_id=self.test_document.id_)
         assert set(data.keys()) == {
             'id',
             'project',
@@ -285,12 +284,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
     def test_get_annotations(self):
         """Download Annotations and the Text from API for a Document and check their offset alignment."""
-        original_document_text = Project(id_=46).get_document_by_id(TEST_DOCUMENT_ID).text
-        project = Project(id_=self.RESTORED_PROJECT_ID)
-        test_document_id = [document for document in project.documents if document.text == original_document_text][
-            0
-        ].id_
-        annotations = get_document_annotations(test_document_id)['results']
+        annotations = get_document_annotations(self.test_document.id_)['results']
         self.assertEqual(len(annotations), 21)
 
     def test_post_document_annotation_multiline_as_bboxes(self):
@@ -303,11 +297,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             {'page_index': 0, 'x0': 198, 'x1': 300, 'y0': 508, 'y1': 517},
             {'page_index': 0, 'x0': 197.76, 'x1': 233, 'y0': 495, 'y1': 508},
         ]
-        original_document_text = Project(id_=46).get_document_by_id(TEST_DOCUMENT_ID + 11).text
-        test_document_id = [document for document in project.documents if document.text == original_document_text][
-            0
-        ].id_
-        document = project.get_document_by_id(test_document_id)
+        document = project.get_document_by_id(self.test_document_2.id_)
         document.update()
         spans = get_spans_from_bbox(
             selection_bbox=Bbox(
@@ -327,7 +317,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             )
         )
         response = post_document_annotation(
-            document_id=test_document_id,
+            document_id=document.id_,
             confidence=0.01,
             label_id=label_id,
             label_set_id=label_set_id,
@@ -351,12 +341,8 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             {'page_index': 0, 'start_offset': 1868, 'end_offset': 1883},
             {'page_index': 0, 'start_offset': 1909, 'end_offset': 1915},
         ]
-        original_document_text = Project(id_=46).get_document_by_id(TEST_DOCUMENT_ID + 11).text
-        test_document_id = [document for document in project.documents if document.text == original_document_text][
-            0
-        ].id_
         response = post_document_annotation(
-            document_id=test_document_id,
+            document_id=self.test_document_2.id_,
             project_id=self.RESTORED_PROJECT_ID,
             start_offset=24,
             end_offset=1000,
@@ -380,16 +366,12 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         label_set_id = project.get_label_set_by_name('Brutto-Bezug').id_
         # create a revised annotation, so we can verify its existence via get_document_annotations
         project.init_or_update_document(from_online=True)
-        original_document_text = Project(id_=46).get_document_by_id(TEST_DOCUMENT_ID).text
-        test_document_id = [document for document in project.documents if document.text == original_document_text][
-            0
-        ].id_
-        document = project.get_document_by_id(test_document_id)
+        document = project.get_document_by_id(self.test_document.id_)
         document.update()
         span = Span(document=document, start_offset=1002, end_offset=1010)
         # span.bbox()
         response = post_document_annotation(
-            document_id=test_document_id,
+            document_id=self.test_document.id_,
             confidence=confidence,
             label_id=label_id,
             label_set_id=label_set_id,
@@ -399,7 +381,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         )
         annotation = json.loads(response.text)
         # check if the update has been received by the server
-        annotations = get_document_annotations(test_document_id)['results']
+        annotations = get_document_annotations(self.test_document.id_)['results']
         assert annotation['id'] in [annotation['id'] for annotation in annotations]
         # delete the annotation, i.e. change its status from feedback required to negative
         negative_id = delete_document_annotation(annotation['id'])
@@ -414,15 +396,11 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         bboxes = [
             {'page_index': 0, 'x0': 198, 'x1': 300, 'y0': 508, 'y1': 517},
         ]
-        original_document_text = Project(id_=46).get_document_by_id(TEST_DOCUMENT_ID + 11).text
-        test_document_id = [document for document in self.project.documents if document.text == original_document_text][
-            0
-        ].id_
-        document = self.project.get_document_by_id(test_document_id + 11)
+        document = self.project.get_document_by_id(self.test_document_2.id_)
         document.update()
 
         response = post_document_annotation(
-            document_id=test_document_id + 11,
+            document_id=self.test_document_2.id_,
             confidence=0.01,
             label_id=label_id,
             label_set_id=label_set_id,
