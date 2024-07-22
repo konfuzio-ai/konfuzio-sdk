@@ -9,6 +9,7 @@ import shutil
 import sys
 from typing import Optional, Union
 
+import bentoml
 import cloudpickle
 import lz4.frame
 
@@ -45,6 +46,11 @@ class BaseModel(metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
+    def pkl_name(self):
+        """Generate a unique extension-less name for a resulting pickle file."""
+
+    @property
+    @abc.abstractmethod
     def temp_pkl_file_path(self):
         """Generate a path for temporary pickle file."""
 
@@ -52,6 +58,11 @@ class BaseModel(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def pkl_file_path(self):
         """Generate a path for a resulting pickle file."""
+
+    @property
+    @abc.abstractmethod
+    def entrypoint_methods(self) -> dict:
+        """Create a dict of methods for this class that are exposed via API."""
 
     @staticmethod
     @abc.abstractmethod
@@ -290,3 +301,42 @@ class BaseModel(metaclass=abc.ABCMeta):
         self.project.credentials = restore_credentials
 
         return pkl_file_path
+
+    def save_bento(self, build=True, output_dir=None) -> Union[None, tuple]:
+        """
+        Save AI as a BentoML model in the local store.
+
+        :param build: Bundle the model into a BentoML service and store it in the local store.
+        :param output_dir: If present, a .bento archive will also be saved to this directory.
+
+        :return: None if build=False, otherwise a tuple of (saved_bento, archive_path).
+        """
+        if output_dir and not build:
+            raise ValueError('Cannot specify output_dir without build=True')
+
+        # cache the pickle name to avoid changing it during the save process (as it includes timestamps)
+        self._pkl_name = self.pkl_name
+
+        saved_model = bentoml.picklable_model.save_model(
+            name=self._pkl_name, model=self, signatures=self.entrypoint_methods, metadata=self.bento_metadata
+        )
+        logger.info(f'Model saved in the local BentoML store: {saved_model}')
+
+        if not build:
+            return
+
+        saved_bento = self.build_bento(bento_model=saved_model)
+        logger.info(f'Bento created: {saved_bento}')
+
+        if not output_dir:
+            return saved_bento, None  # None = no archive saved
+
+        archive_path = saved_bento.export(output_dir)
+        logger.info(f'Bento archive saved: {archive_path}')
+
+        return saved_bento, archive_path
+
+
+def load_bento(model_name):
+    """Load AI as a Bento ML instance."""
+    return bentoml.picklable_model.load_model(model_name)
