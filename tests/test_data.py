@@ -166,7 +166,7 @@ class TestOnlineProject(unittest.TestCase):
     def test_get_nonexistent_annotation_by_id(self):
         """Test to find an online Annotation that does not exist by its ID, should raise an IndexError."""
         doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
-        with pytest.raises(IndexError, match='is not part of'):
+        with pytest.raises(IndexError, match='is not a part of'):
             _ = doc.get_annotation_by_id(999999)
 
     def test_create_annotation_offline(self):
