@@ -4410,7 +4410,7 @@ class Project(Data):
             with open(self.label_sets_file_path, 'r') as f:
                 label_sets_data = json.load(f)
 
-            self.categories = []  # clean up Labels to not create duplicates
+            self.categories = []  # clean up Categories to not create duplicates
 
             # adding a NO_CATEGORY at this step because we need to preserve it after Project is updated
             if 'NO_CATEGORY' not in [category.name for category in self.categories]:
@@ -4449,21 +4449,29 @@ class Project(Data):
                 for label_data in category['schema']:
                     cur_labels = label_data['labels']
                     label_data.pop('labels', None)
-                    label_set = LabelSet(project=self, id_=label_data['id'], **label_data)
+                    if label_data['id'] not in [cur_label_set.id_ for cur_label_set in self.label_sets]:
+                        label_set = LabelSet(project=self, id_=label_data['id'], **label_data)
+                    else:
+                        label_set = self.get_label_set_by_id(label_data['id'])
+                    label_set.categories.append(cur_category)
                     for cur_label in cur_labels:
                         if cur_label['name'] not in [label.name for label in self.labels]:
                             _ = Label(project=self, id_=cur_label['id'], text=cur_label['name'], **cur_label)
                         else:
                             _ = self.get_label_by_id(cur_label['id'])
-                        label_set.labels.append(_)
-                        if label_set.name in [cur_label_set.name for cur_label_set in _.label_sets]:
-                            label_set_to_update = _.project.get_label_set_by_name(label_set.name)
-                            _.label_sets.remove(label_set_to_update)
-                        _.label_sets.append(label_set)
-                    if label_set.id_ == cur_category.id_:
-                        label_set.is_default = True
-                    cur_category.label_sets.append(label_set)
-                    label_set.categories.append(cur_category)
+                        if _ not in label_set.labels:
+                            label_set.add_label(_)
+                        if label_set not in _.label_sets:
+                            _.add_label_set(label_set=label_set)
+                    #     label_set.labels.append(_)
+                    #     if label_set.name in [cur_label_set.name for cur_label_set in _.label_sets]:
+                    #         label_set_to_update = _.project.get_label_set_by_name(label_set.name)
+                    #         _.label_sets.remove(label_set_to_update)
+                    #     _.label_sets.append(label_set)
+                    # if label_set.id_ == cur_category.id_:
+                    #     label_set.is_default = True
+                    # cur_category.label_sets.append(label_set)
+                    # label_set.categories.append(cur_category)
 
     def get_label_sets(self, reload=False):
         """Get LabelSets in the Project."""
