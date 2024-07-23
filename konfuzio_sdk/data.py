@@ -2678,7 +2678,7 @@ class Annotation(Data):
         else:
             try:
                 del self.document._annotations[(tuple(sorted(self._spans.keys())), self.label.name)]
-                if len(self.annotation_set.annotations()) == 1:
+                if len(self.annotation_set._annotations) == 1:
                     self.document._annotation_sets = [
                         annotation_set
                         for annotation_set in self.document._annotation_sets
