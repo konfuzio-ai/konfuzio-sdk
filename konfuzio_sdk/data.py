@@ -3292,6 +3292,11 @@ class Document(Data):
                     raw_annotation_sets = json.load(f)
                 # first load all Annotation Sets before we create Annotations
                 for raw_annotation_set in raw_annotation_sets:
+                    # if all the labels in the annotation set do not have annotations, we skip it
+                    if 'labels' in raw_annotation_set and all(
+                        len(label['annotations']) == 0 for label in raw_annotation_set['labels']
+                    ):
+                        continue
                     # for backwards compatibility
                     if 'label_set' in raw_annotation_set.keys():
                         label_set_id = raw_annotation_set['label_set']['id']
