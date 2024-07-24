@@ -480,6 +480,7 @@ class TestOnlineProject(unittest.TestCase):
         # of old projects do not store the labels and their annotations data
         project = Project(id_=TEST_FALLBACK_PROJECT_ID)
         document = project.get_document_by_id(TEST_FALLBACK_DOCUMENT_ID)
+        _ = document.download_document_details()
         # modify the annotation_set.json5 file to intentionally have an empty Annotation Set
         with open(document.annotation_set_file_path, 'r') as f:
             annotation_set_data = json.load(f)
