@@ -29,12 +29,17 @@ class ExtractionService:
         self.extraction_model = bentoml.picklable_model.load_model(self.model_ref)
 
     @bentoml.api(input_spec=ExtractRequest20240117)
-    async def extract(self, **request: t.Any) -> ExtractResponse20240117:
+    async def extract(self, ctx: bentoml.Context, **request: t.Any) -> ExtractResponse20240117:
         """Send an call to the Extraction AI and process the response."""
         # Even though the request is already validated against the pydantic schema, we need to get it back as an
         # instance of the pydantic model to be able to pass it to the prepare_request function.
         request = ExtractRequest20240117(**request)
         project = self.extraction_model.project
+        # Add credentials from the request headers to the project object
+        for key, value in ctx.request.headers.items():
+            if key.startswith('env_'):
+                key = key.replace('env_', '', 1)
+                project.credentials[key.upper()] = value
         document = prepare_request(request=request, project=project)
         result = self.extraction_model.extract(document)
         annotations_result = process_response(result)
