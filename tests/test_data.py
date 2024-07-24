@@ -1,4 +1,5 @@
 """Validate data functions."""
+import json
 import logging
 import os
 import unittest
@@ -32,6 +33,8 @@ from konfuzio_sdk.utils import get_spans_from_bbox, is_file
 from tests.variables import (
     OFFLINE_PROJECT,
     TEST_DOCUMENT_ID,
+    TEST_FALLBACK_DOCUMENT_ID,
+    TEST_FALLBACK_PROJECT_ID,
     TEST_PAYSLIPS_CATEGORY_ID,
     TEST_PROJECT_ID,
     TEST_RECEIPTS_CATEGORY_ID,
@@ -166,7 +169,7 @@ class TestOnlineProject(unittest.TestCase):
     def test_get_nonexistent_annotation_by_id(self):
         """Test to find an online Annotation that does not exist by its ID, should raise an IndexError."""
         doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
-        with pytest.raises(IndexError, match='is not part of'):
+        with pytest.raises(IndexError, match='is not a part of'):
             _ = doc.get_annotation_by_id(999999)
 
     def test_create_annotation_offline(self):
@@ -448,6 +451,44 @@ class TestOnlineProject(unittest.TestCase):
         image = document.pages()[0].get_image()
         assert isinstance(image, PIL.PngImagePlugin.PngImageFile)
         document.delete(delete_online=True)
+
+    def test_prohibit_creating_multiple_annotation_sets(self):
+        """Test that it is not possible to create multiple Annotation Sets for a Document."""
+        document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        # tokenize the document to get the spans
+        document = WhitespaceTokenizer().tokenize(document)
+        span = Span(document.spans()[0].start_offset, document.spans()[0].end_offset)
+        # we make sure that the document has multiple Annotation Sets attribute set to True
+        document.category.label_sets[0].has_multiple_annotation_sets = True
+        # we create a second Annotation Set in the Document
+        _ = AnnotationSet(document=document, label_set=document.category.label_sets[0])
+        # we set the has_multiple_annotation_sets attribute to False back again
+        # to force the ValueError to be raised
+        document.category.label_sets[0].has_multiple_annotation_sets = False
+        # initialize a new Annotation and make sure that the ValueError is raised
+        with pytest.raises(ValueError, match='multiple Annotation Sets'):
+            _ = Annotation(
+                document=document,
+                label_set=document.category.label_sets[0],
+                label=document.annotations()[0].label,
+                spans=[span],
+            )
+
+    def test_ignore_empty_annotation_sets(self):
+        """Test that empty Annotation Sets are not loaded."""
+        # use the fallback project to avoid issues where annotation_set.json5 files
+        # of old projects do not store the labels and their annotations data
+        project = Project(id_=TEST_FALLBACK_PROJECT_ID)
+        document = project.get_document_by_id(TEST_FALLBACK_DOCUMENT_ID)
+        _ = document.download_document_details()
+        # modify the annotation_set.json5 file to intentionally have an empty Annotation Set
+        with open(document.annotation_set_file_path, 'r') as f:
+            annotation_set_data = json.load(f)
+            annotation_set_data.append({'labels': [{'annotations': []}], 'id': 0})
+        with open(document.annotation_set_file_path, 'w') as f:
+            json.dump(annotation_set_data, f)
+        # load the document again and make sure no error due to multiple Annotation Sets is raised
+        _ = document.annotations()
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -739,6 +780,14 @@ class TestOfflineExampleData(unittest.TestCase):
         wrong_name = Category(project=self.project, name='Category/name', name_clean='Category/name')
         assert wrong_name.name == 'Category/name'
         assert wrong_name.name_clean == 'Categoryname'
+
+    def test_delete_empty_annotation_set(self):
+        """Test that an Annotation Set is deleted from a Document when its last Annotation is deleted."""
+        document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        annotation_set = document.get_annotation_set_by_id(687572)
+        annotation = annotation_set.annotations(use_correct=False)[0]
+        annotation.delete(delete_online=False)
+        assert annotation_set not in document.annotation_sets()
 
 
 class TestEqualityAnnotation(unittest.TestCase):
