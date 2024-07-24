@@ -4463,15 +4463,6 @@ class Project(Data):
                             label_set.add_label(_)
                         if label_set not in _.label_sets:
                             _.add_label_set(label_set=label_set)
-                    #     label_set.labels.append(_)
-                    #     if label_set.name in [cur_label_set.name for cur_label_set in _.label_sets]:
-                    #         label_set_to_update = _.project.get_label_set_by_name(label_set.name)
-                    #         _.label_sets.remove(label_set_to_update)
-                    #     _.label_sets.append(label_set)
-                    # if label_set.id_ == cur_category.id_:
-                    #     label_set.is_default = True
-                    # cur_category.label_sets.append(label_set)
-                    # label_set.categories.append(cur_category)
 
     def get_label_sets(self, reload=False):
         """Get LabelSets in the Project."""
