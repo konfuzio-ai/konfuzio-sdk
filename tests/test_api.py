@@ -266,13 +266,13 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
     def test_download_file_with_ocr(self):
         """Test to download the OCR version of a document."""
-        document_id = 215906
+        document_id = self.test_document.id_
         downloaded_file = download_file_konfuzio_api(document_id=document_id)
         logging.info(f'Size of file {document_id}: {sys.getsizeof(downloaded_file)}')
 
     def test_download_file_without_ocr(self):
         """Test to download the original version of a document."""
-        document_id = 215906
+        document_id = self.test_document.id_
         downloaded_file = download_file_konfuzio_api(document_id=document_id, ocr=False)
         logging.info(f'Size of file {document_id}: {sys.getsizeof(downloaded_file)}')
 
