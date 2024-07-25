@@ -177,7 +177,7 @@ class TestOnlineProject(unittest.TestCase):
 
     def test_get_nonexistent_annotation_by_id(self):
         """Test to find an online Annotation that does not exist by its ID, should raise an IndexError."""
-        doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        doc = self.project.get_document_by_id(self.test_document_id)
         with pytest.raises(IndexError, match='is not a part of'):
             _ = doc.get_annotation_by_id(999999)
 
@@ -471,7 +471,7 @@ class TestOnlineProject(unittest.TestCase):
 
     def test_prohibit_creating_multiple_annotation_sets(self):
         """Test that it is not possible to create multiple Annotation Sets for a Document."""
-        document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        document = self.project.get_document_by_id(self.test_document_id)
         # tokenize the document to get the spans
         document = WhitespaceTokenizer().tokenize(document)
         span = Span(document.spans()[0].start_offset, document.spans()[0].end_offset)
