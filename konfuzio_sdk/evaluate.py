@@ -109,6 +109,24 @@ def prioritize_rows(group):
         return first_false_negative
 
 
+def split_row_based_on_offset_string(row: pd.Series) -> pd.DataFrame:
+    """
+    Split a row based on the offset string. If the offset_string has multiple words split by a whitespace,
+    then the row is split into multiple rows. The offset_string is split into multiple words and each word is
+    used as offset_string value in the new row. The other columns are copied from the original row.
+    """
+    words = row['offset_string'].split()
+    if len(words) > 1:
+        new_rows = []
+        for word in words:
+            new_row = row.copy()
+            new_row['offset_string'] = word
+            new_rows.append(new_row)
+        return pd.DataFrame(new_rows)
+    else:
+        return pd.DataFrame([row])
+
+
 def compare(
     doc_a,
     doc_b,
@@ -118,6 +136,7 @@ def compare(
     strict=True,
     id_counter: int = 1,
     custom_threshold=None,
+    split_spans_by_whitespace=False,
 ) -> pd.DataFrame:
     """Compare the Annotations of two potentially empty Documents wrt. to **all** Annotations.
 
@@ -136,6 +155,8 @@ def compare(
     :return: Evaluation DataFrame
     """
     df_a = pd.DataFrame(doc_a.eval_dict(use_correct=only_use_correct))
+    if split_spans_by_whitespace:
+        df_a = pd.concat(df_a.apply(split_row_based_on_offset_string, axis=1).tolist(), ignore_index=True)
     df_a_ids = df_a[['id_']]
     duplicated_ids = df_a_ids['id_'].duplicated(keep=False)
     df_a_ids['disambiguated_id'] = df_a_ids['id_'].astype(str)
@@ -148,6 +169,8 @@ def compare(
             ignore_below_threshold=ignore_below_threshold,
         ),
     )
+    if split_spans_by_whitespace:
+        df_b = pd.concat(df_b.apply(split_row_based_on_offset_string, axis=1).tolist(), ignore_index=True)
     df_b['tmp_id_'] = list(range(id_counter, id_counter + len(df_b)))
 
     if doc_a.category != doc_b.category:
@@ -444,6 +467,7 @@ class ExtractionEvaluation:
         strict: bool = True,
         use_view_annotations: bool = True,
         ignore_below_threshold: bool = True,
+        split_spans_by_whitespace: bool = False,
         zero_division='warn',
     ):
         """
@@ -467,6 +491,7 @@ class ExtractionEvaluation:
         logger.info(f'Initializing Evaluation object with {len(documents)} documents. Evaluation mode {strict=}.')
         self.documents = documents
         self.strict = strict
+        self.split_spans_by_whitespace = split_spans_by_whitespace
         self.use_view_annotations = use_view_annotations
         self.ignore_below_threshold = ignore_below_threshold
         self.only_use_correct = True
@@ -490,6 +515,7 @@ class ExtractionEvaluation:
                 use_view_annotations=self.use_view_annotations,
                 ignore_below_threshold=self.ignore_below_threshold,
                 id_counter=id_counter,
+                split_spans_by_whitespace=self.split_spans_by_whitespace,
             )
             evaluations.append(evaluation)
             id_counter += len(evaluation)
