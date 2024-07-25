@@ -271,7 +271,7 @@ class TestOnlineProject(unittest.TestCase):
 
     def test_get_sentence_spans_from_bbox(self):
         """Test to get sentence Spans in a bounding box."""
-        document = self.project.get_document_by_id(215906)
+        document = self.project.get_document_by_id(6013060)
         document = WhitespaceTokenizer().tokenize(deepcopy(document))
         page = document.get_page_by_index(0)
 

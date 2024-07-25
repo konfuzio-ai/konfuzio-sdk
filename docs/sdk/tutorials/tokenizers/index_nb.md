@@ -330,7 +330,7 @@ The `SentenceTokenizer` is a specialized [tokenizer](https://dev.konfuzio.com/sd
 
 To use it, import the necessary modules, initialize the Project, the Document, and the Tokenizer and tokenize the Document.
 ```python tags=["remove-cell"]
-YOUR_DOCUMENT_ID = 215906
+YOUR_DOCUMENT_ID = 6013060
 ```
 
 ```python tags=["remove-output"]
