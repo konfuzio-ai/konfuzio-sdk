@@ -63,15 +63,12 @@ We import the id of the default test Project, as well as the libraries we need:
 # This is necessary to make sure we can import from 'tests'
 import sys
 from konfuzio_sdk.api import get_project_list
+from konfuzio_sdk.tests.variables import TEST_SNAPSHOT_ID
 sys.path.insert(0, '../../../../')
 
 projects = get_project_list()
-TEST_PROJECT_ID = None
-while not TEST_PROJECT_ID:
-    for project in reversed(projects['results']):
-        if 'ZGF0YV8xNDM5Mi02Ni56aXA=' in project['name']:
-            TEST_PROJECT_ID = project['id']
-            break
+# we want to get the last instance of a project restored from a snapshot because creating a new one each time takes longer 
+TEST_PROJECT_ID = next(project['id'] for project in reversed(projects['results']) if TEST_SNAPSHOT_ID in project['name'])
 ```
 
 ```python

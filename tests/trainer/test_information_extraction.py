@@ -18,7 +18,14 @@ from requests import HTTPError
 from sklearn.datasets import make_classification
 from sklearn.ensemble import RandomForestClassifier
 
-from konfuzio_sdk.api import delete_ai_model, konfuzio_session, update_ai_model, upload_ai_model
+from konfuzio_sdk.api import (
+    delete_ai_model,
+    delete_project,
+    konfuzio_session,
+    restore_snapshot,
+    update_ai_model,
+    upload_ai_model,
+)
 from konfuzio_sdk.data import Annotation, AnnotationSet, Category, Document, LabelSet, Page, Project, Span
 from konfuzio_sdk.samples import LocalTextProject
 from konfuzio_sdk.settings_importer import is_dependency_installed
@@ -51,6 +58,9 @@ logger = logging.getLogger(__name__)
 FEATURE_COUNT = 49
 
 TEST_WITH_FULL_DATASET = False
+
+if is_dependency_installed('torch'):
+    RESTORED_PROJECT_ID = restore_snapshot(snapshot_id=65)
 
 
 def display_top(snapshot, key_type='lineno', limit=30):
@@ -476,8 +486,8 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         res_doc = no_konfuzio_sdk_pipeline.extract(document=test_document)
         assert len(res_doc.view_annotations()) == 17
 
-        prj46 = Project(id_=46)
-        doc = prj46.get_document_by_id(215906)
+        prj46 = Project(id_=RESTORED_PROJECT_ID)
+        doc = Document.from_file(path='tests/test_data/textposition.pdf', project=prj46, sync=True)
         doc.update()
         doc.get_bbox()
         res_doc = self.pipeline.extract(document=doc)
@@ -499,6 +509,13 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         if os.path.isfile(cls.pipeline.pipeline_path):
             os.remove(cls.pipeline.pipeline_path)  # cleanup
             os.remove(cls.pipeline.pipeline_path_no_konfuzio_sdk)
+        cls.project = Project(id_=RESTORED_PROJECT_ID, update=True)
+        for document in cls.project.documents + cls.project.test_documents:
+            document.dataset_status = 0
+            document.save_meta_data()
+            document.delete(delete_online=True)
+        response = delete_project(project_id=RESTORED_PROJECT_ID)
+        assert response.status_code == 204
 
 
 @pytest.mark.skipif(

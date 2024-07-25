@@ -30,15 +30,12 @@ Retrieve all information available for your Project:
 ```python tags=['remove-cell']
 import logging
 from konfuzio_sdk.api import get_project_list
+from tests.variables import TEST_SNAPSHOT_ID
 
 logging.getLogger("konfuzio_sdk").setLevel(logging.ERROR)
 projects = get_project_list()
-YOUR_PROJECT_ID = None
-while not YOUR_PROJECT_ID:
-    for project in reversed(projects['results']):
-        if 'ZGF0YV80Ni02NS56aXA=' in project['name']:
-            YOUR_PROJECT_ID = project['id']
-            break
+# we want to get the last instance of a project restored from a snapshot because creating a new one each time takes longer 
+YOUR_PROJECT_ID = next(project['id'] for project in reversed(projects['results']) if TEST_SNAPSHOT_ID in project['name'])
 ```
 ```python 
 from konfuzio_sdk.data import Project, Document

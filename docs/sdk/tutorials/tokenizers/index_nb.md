@@ -51,7 +51,7 @@ We will use the Konfuzio SDK to tokenize the Document and identify word-level Sp
 import sys
 sys.path.insert(0, '../../../../')
 
-from tests.variables import TEST_PROJECT_ID, TEST_DOCUMENT_ID, TEST_PAYSLIPS_CATEGORY_ID, TEST_CATEGORIZATION_DOCUMENT_ID
+from tests.variables import TEST_PROJECT_ID, TEST_DOCUMENT_ID, TEST_PAYSLIPS_CATEGORY_ID, TEST_CATEGORIZATION_DOCUMENT_ID, TEST_SNAPSHOT_ID
 import logging
 logging.getLogger("konfuzio_sdk").setLevel(logging.ERROR)
 ```
