@@ -118,9 +118,15 @@ def split_row_based_on_offset_string(row: pd.Series) -> pd.DataFrame:
     words = row['offset_string'].split()
     if len(words) > 1:
         new_rows = []
+        start = row['start_offset']
+        end = row['end_offset']
         for word in words:
             new_row = row.copy()
+            end = start + len(word)
             new_row['offset_string'] = word
+            new_row['start_offset'] = start
+            new_row['end_offset'] = end
+            start = end + 1
             new_rows.append(new_row)
         return pd.DataFrame(new_rows)
     else:
