@@ -509,13 +509,6 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         if os.path.isfile(cls.pipeline.pipeline_path):
             os.remove(cls.pipeline.pipeline_path)  # cleanup
             os.remove(cls.pipeline.pipeline_path_no_konfuzio_sdk)
-        cls.project = Project(id_=RESTORED_PROJECT_ID, update=True)
-        for document in cls.project.documents + cls.project.test_documents:
-            document.dataset_status = 0
-            document.save_meta_data()
-            document.delete(delete_online=True)
-        response = delete_project(project_id=RESTORED_PROJECT_ID)
-        assert response.status_code == 204
 
 
 @pytest.mark.skipif(
@@ -2403,7 +2396,15 @@ def test_num(test_input, expected, document_id):
     assert num_count(test_input) == expected
 
 
-#
+if is_dependency_installed('torch'):
+    project = Project(id_=RESTORED_PROJECT_ID, update=True)
+    for document in project.documents + project.test_documents:
+        document.dataset_status = 0
+        document.save_meta_data()
+        document.delete(delete_online=True)
+    response = delete_project(project_id=RESTORED_PROJECT_ID)
+    assert response.status_code == 204
+
 # """Test models in models_labels_multiclass."""
 # import logging
 # import unittest
