@@ -20,7 +20,6 @@ from sklearn.ensemble import RandomForestClassifier
 
 from konfuzio_sdk.api import (
     delete_ai_model,
-    delete_project,
     konfuzio_session,
     restore_snapshot,
     update_ai_model,
@@ -485,12 +484,6 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         no_konfuzio_sdk_pipeline = RFExtractionAI.load_model(self.pipeline.pipeline_path_no_konfuzio_sdk)
         res_doc = no_konfuzio_sdk_pipeline.extract(document=test_document)
         assert len(res_doc.view_annotations()) == 17
-
-        prj46 = Project(id_=RESTORED_PROJECT_ID)
-        doc = Document.from_file(path='tests/test_data/textposition.pdf', project=prj46, sync=True)
-        doc.update()
-        doc.get_bbox()
-        res_doc = self.pipeline.extract(document=doc)
 
         test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         res_doc = self.pipeline.extract(document=test_document)
@@ -2395,15 +2388,6 @@ def test_num(test_input, expected, document_id):
     """Test string conversion."""
     assert num_count(test_input) == expected
 
-
-if is_dependency_installed('torch'):
-    project = Project(id_=RESTORED_PROJECT_ID, update=True)
-    for document in project.documents + project.test_documents:
-        document.dataset_status = 0
-        document.save_meta_data()
-        document.delete(delete_online=True)
-    response = delete_project(project_id=RESTORED_PROJECT_ID)
-    assert response.status_code == 204
 
 # """Test models in models_labels_multiclass."""
 # import logging
