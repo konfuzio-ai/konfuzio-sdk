@@ -140,6 +140,7 @@ class TestExtractionAIBento(unittest.TestCase):
         """Test that Python errors occurring in the service are caught and returned as a response."""
         data = {'text': 'test', 'bboxes': {}, 'pages': []}
         response = requests.post(url=self.request_url, json=data)
+        assert response.status_code == 500
         assert response.json()['error'] == 'NotImplementedError'
         assert len(response.json()['traceback']) > 0
 

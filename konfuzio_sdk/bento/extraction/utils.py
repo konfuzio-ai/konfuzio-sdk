@@ -40,6 +40,10 @@ def handle_exceptions(func: t.Callable) -> t.Callable:
         except Exception as exc:
             tb = traceback.format_exception(type(exc), exc, exc.__traceback__)
             error_details = get_error_details(exc)
+            # Override the default status code, otherwise it will be 200.
+            if 'ctx' in kwargs:
+                ctx = kwargs['ctx']
+                ctx.response.status_code = 500
             return JSONResponse(status_code=500, content={'error': error_details, 'traceback': tb})
 
     return wrapper
