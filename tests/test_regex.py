@@ -8,6 +8,7 @@ from timeit import timeit
 import pytest
 import regex as re
 
+from konfuzio_sdk.api import delete_project, restore_snapshot
 from konfuzio_sdk.data import Annotation, AnnotationSet, Category, Document, Label, LabelSet, Project, Span
 from konfuzio_sdk.regex import (
     generic_candidate_function,
@@ -22,6 +23,8 @@ from konfuzio_sdk.utils import does_not_raise, is_file
 from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
 
 logger = logging.getLogger(__name__)
+
+RESTORED_PROJECT_ID = restore_snapshot(snapshot_id=65)
 
 suggest_regex_for_string_data = [
     ({'string': ' '}, r'[ ]{1,2}', does_not_raise()),
@@ -453,17 +456,29 @@ class TestRegexGenerator(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Load the Project data from the Konfuzio Host."""
-        cls.prj = Project(id_=46)
-        cls.category = cls.prj.get_category_by_id(63)
+        cls.prj = Project(id_=RESTORED_PROJECT_ID)
+        cls.category = cls.prj.get_category_by_name('Lohnabrechnung')
         assert len(cls.prj.documents) == cls.document_count
-        assert len(cls.prj.get_label_by_id(867).annotations(categories=[cls.category])) == cls.correct_annotations
+        assert (
+            len(cls.prj.get_label_by_name('Austellungsdatum').annotations(categories=[cls.category]))
+            == cls.correct_annotations
+        )
 
     @classmethod
     def tearDownClass(cls) -> None:
         """Check that no local data was changed by the tests."""
         assert len(cls.prj.documents) == cls.document_count
-        assert len(cls.prj.get_label_by_id(867).annotations(categories=[cls.category])) == cls.correct_annotations
+        assert (
+            len(cls.prj.get_label_by_name('Austellungsdatum').annotations(categories=[cls.category]))
+            == cls.correct_annotations
+        )
         # cls.prj.delete()
+        for document in cls.prj.documents + cls.prj.test_documents:
+            document.dataset_status = 0
+            document.save_meta_data()
+            document.delete(delete_online=True)
+        response = delete_project(project_id=RESTORED_PROJECT_ID)
+        assert response.status_code == 204
 
     def test_regex_single_annotation_in_row(self):
         """Build a simple extraction for an amount."""
@@ -568,12 +583,12 @@ class TestRegexGenerator(unittest.TestCase):
         last_name_base = last_name.base_regex(category=category)
         last_name_base = re.sub(regex_to_remove_groupnames_full, '', last_name_base)
 
-        assert '(?P<Label_865_' in first_name_proposal
+        assert f'(?P<Label_{first_names.id_}_' in first_name_proposal
         # assert '>[A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+)' in male_first_name
         assert '>[A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+)' in first_name_proposal
         assert last_name_base in first_name_proposal  # Nachname label
         textcorpus = ''.join([doc.text for doc in self.prj.documents])
-        results = regex_matches(textcorpus, first_name_proposal, filtered_group='Label_865')
+        results = regex_matches(textcorpus, first_name_proposal, filtered_group='Label_' + str(first_names.id_))
         assert [result['value'] for result in results] == [
             'Erna-Muster',
             'Daniel-Muster',
@@ -608,16 +623,17 @@ class TestRegexGenerator(unittest.TestCase):
     def test_wage_regex(self):
         """Return the regex for the tax class regex."""
         tax = next(x for x in self.prj.labels if x.name == 'Steuerklasse')
-        category = self.prj.get_category_by_id(63)
+        category = self.prj.get_category_by_name('Lohnabrechnung')
         regex = tax.find_regex(category=category)[0]
-        assert '(?P<Label_860_N_' in regex
+        label_id = self.prj.get_label_by_name('Steuerklasse').id_
+        assert f'(?P<Label_{label_id}_N_' in regex
 
     def test_regex_second_annotation_in_row(self):
         """Delete the last character of the regex solution as only for some runs it will contain a line break."""
         first_names = self.prj.get_label_by_name('Vorname')
         last_name = self.prj.get_label_by_name('Nachname')
 
-        category = self.prj.get_category_by_id(63)
+        category = self.prj.get_category_by_name('Lohnabrechnung')
 
         regex_to_remove_groupnames_full = re.compile(r'\?P<.*?>')
 
@@ -631,8 +647,8 @@ class TestRegexGenerator(unittest.TestCase):
 
         first_name_regex = first_names.find_regex(category=category)[0]
 
-        assert '(?P<Label_865_' in first_name_regex
-        assert 'Label_866' not in first_name_regex
+        assert f'(?P<Label_{first_names.id_}_' in first_name_regex
+        assert f'Label_{last_name.id_}' not in first_name_regex
 
         assert '>[A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+)' in first_name_regex
         assert last_name_base in first_name_regex
@@ -641,11 +657,11 @@ class TestRegexGenerator(unittest.TestCase):
 
         last_name_regex = last_name.find_regex(category=category)[0]
 
-        assert '(?P<Label_866_' in last_name_regex
-        assert 'Label_865' not in last_name_regex
+        assert f'(?P<Label_{last_name.id_}_' in last_name_regex
+        assert f'Label_{first_names.id_}' not in last_name_regex
 
         textcorpus = ''.join([doc.text for doc in self.prj.documents])
-        results = regex_matches(textcorpus, last_name_regex, filtered_group='Label_866')
+        results = regex_matches(textcorpus, last_name_regex, filtered_group='Label_' + str(last_name.id_))
         assert [result['value'] for result in results] == [
             'Schmidt',
             'Schlosser',
