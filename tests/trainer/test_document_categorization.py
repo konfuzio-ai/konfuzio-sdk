@@ -11,7 +11,14 @@ import parameterized
 import pytest
 from requests import HTTPError, ReadTimeout
 
-from konfuzio_sdk.api import delete_ai_model, konfuzio_session, update_ai_model, upload_ai_model
+from konfuzio_sdk.api import (
+    delete_ai_model,
+    delete_project,
+    konfuzio_session,
+    restore_snapshot,
+    update_ai_model,
+    upload_ai_model,
+)
 from konfuzio_sdk.data import Document, Page, Project
 from konfuzio_sdk.extras import FloatTensor, torch
 from konfuzio_sdk.settings_importer import is_dependency_installed
@@ -45,6 +52,9 @@ from tests.variables import (
 )
 
 logger = logging.getLogger(__name__)
+
+if is_dependency_installed('torch'):
+    RESTORED_PROJECT_ID = restore_snapshot(snapshot_id=66)
 
 
 @pytest.mark.skipif(
@@ -440,10 +450,10 @@ class TestBertCategorizationModels(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Set up the Data and Categorization Pipeline."""
-        cls.training_prj = Project(id_=14392)
+        cls.training_prj = Project(id_=RESTORED_PROJECT_ID)
         cls.categorization_pipeline = CategorizationAI(cls.training_prj.categories)
-        cls.category_1 = cls.training_prj.get_category_by_id(19827)
-        cls.category_2 = cls.training_prj.get_category_by_id(19828)
+        cls.category_1 = cls.training_prj.get_category_by_name(category_name='Employee and Family Medic')
+        cls.category_2 = cls.training_prj.get_category_by_name(category_name='Patient Registration Form')
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -486,7 +496,11 @@ class TestBertCategorizationModels(unittest.TestCase):
 
     def test_4_categorize_document(self):
         """Test categorizing the Document."""
-        test_document = self.training_prj.get_document_by_id(5589058)
+        project = Project(id_=14392)
+        original_document_text = project.get_document_by_id(5589058).text
+        test_document = [
+            document for document in self.training_prj.test_documents if document.text == original_document_text
+        ][0]
         ground_truth_category = test_document.category
         test_document.set_category(self.training_prj.no_category)
         result = self.categorization_pipeline.categorize(document=test_document)
@@ -500,7 +514,11 @@ class TestBertCategorizationModels(unittest.TestCase):
 
     def test_5_categorize_page(self):
         """Test categorizing the Document's Page."""
-        test_document = self.training_prj.get_document_by_id(5589057)
+        project = Project(id_=14392)
+        original_document_text = project.get_document_by_id(5589057).text
+        test_document = [
+            document for document in self.training_prj.test_documents if document.text == original_document_text
+        ][0]
         ground_truth_category = test_document.category
         test_page = WhitespaceTokenizer().tokenize(deepcopy(test_document)).pages()[0]
         # reset the category attribute to test that it can be categorized successfully
@@ -518,7 +536,11 @@ class TestBertCategorizationModels(unittest.TestCase):
     def test_7_load_ai_model(self):
         """Test loading a previously saved model."""
         loaded = CategorizationAI.load_model(self.categorization_pipeline.pipeline_path)
-        test_document = self.training_prj.get_document_by_id(5589058)
+        project = Project(id_=14392)
+        original_document_text = project.get_document_by_id(5589058).text
+        test_document = [
+            document for document in self.training_prj.test_documents if document.text == original_document_text
+        ][0]
         ground_truth_category = test_document.category
         test_document.set_category(self.training_prj.no_category)
         result = loaded.categorize(document=test_document)
@@ -578,10 +600,10 @@ class TestCategorizationConfigurations(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Set up the Data and Categorization Pipeline."""
-        cls.training_prj = Project(id_=14392, update=True)
+        cls.training_prj = Project(id_=RESTORED_PROJECT_ID)
         cls.categorization_pipeline = CategorizationAI(cls.training_prj.categories)
-        cls.category_1 = cls.training_prj.get_category_by_id(19827)
-        cls.category_2 = cls.training_prj.get_category_by_id(19828)
+        cls.category_1 = cls.training_prj.get_category_by_name(category_name='Employee and Family Medic')
+        cls.category_2 = cls.training_prj.get_category_by_name(category_name='Patient Registration Form')
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -652,7 +674,11 @@ class TestCategorizationConfigurations(unittest.TestCase):
 
     def test_4_categorize_document(self):
         """Test categorizing the Document."""
-        test_document = self.training_prj.get_document_by_id(5589058)
+        project = Project(id_=14392)
+        original_document_text = project.get_document_by_id(5589058).text
+        test_document = [
+            document for document in self.training_prj.test_documents if document.text == original_document_text
+        ][0]
         ground_truth_category = test_document.category
         test_document.set_category(self.training_prj.no_category)
         result = self.categorization_pipeline.categorize(document=test_document)
@@ -666,7 +692,11 @@ class TestCategorizationConfigurations(unittest.TestCase):
 
     def test_5_categorize_page(self):
         """Test categorizing the Document's Page."""
-        test_document = self.training_prj.get_document_by_id(5589057)
+        project = Project(id_=14392)
+        original_document_text = project.get_document_by_id(5589057).text
+        test_document = [
+            document for document in self.training_prj.test_documents if document.text == original_document_text
+        ][0]
         ground_truth_category = test_document.category
         test_page = WhitespaceTokenizer().tokenize(deepcopy(test_document)).pages()[0]
         # reset the category attribute to test that it can be categorized successfully
@@ -684,7 +714,11 @@ class TestCategorizationConfigurations(unittest.TestCase):
     def test_7_load_ai_model(self):
         """Test loading a previously saved model."""
         loaded = CategorizationAI.load_model(self.categorization_pipeline.pipeline_path)
-        test_document = self.training_prj.get_document_by_id(5589058)
+        project = Project(id_=14392)
+        original_document_text = project.get_document_by_id(5589058).text
+        test_document = [
+            document for document in self.training_prj.test_documents if document.text == original_document_text
+        ][0]
         ground_truth_category = test_document.category
         test_document.set_category(self.training_prj.no_category)
         result = loaded.categorize(document=test_document)
@@ -728,10 +762,10 @@ class TestCategorizationConfigurations(unittest.TestCase):
 @unittest.skipIf(sys.version_info[:2] != (3, 8), reason='This AI can only be loaded on Python 3.8.')
 def test_bert_in_multimodal_categorization_ai():
     """Test compatibility of BERT-based model and image-processing model for Categorization."""
-    training_prj = Project(id_=14392)
+    training_prj = Project(id_=RESTORED_PROJECT_ID)
     categorization_pipeline = CategorizationAI(training_prj.categories)
-    category_1 = training_prj.get_category_by_id(19827)
-    category_2 = training_prj.get_category_by_id(19828)
+    category_1 = training_prj.get_category_by_name(category_name='Employee and Family Medic')
+    category_2 = training_prj.get_category_by_name(category_name='Patient Registration Form')
     category_1_documents = category_1.documents()
     category_2_documents = category_2.documents()
     categorization_pipeline.documents = category_1_documents + category_2_documents
@@ -759,7 +793,9 @@ def test_bert_in_multimodal_categorization_ai():
     categorization_pipeline.classifier.eval()
     categorization_pipeline.build_preprocessing_pipeline(use_image=True)
     categorization_pipeline.fit(n_epochs=3, optimizer={'name': 'Adam'})
-    test_document = training_prj.get_document_by_id(5589058)
+    project = Project(id_=14392)
+    original_document_text = project.get_document_by_id(5589058).text
+    test_document = [document for document in training_prj.test_documents if document.text == original_document_text][0]
     ground_truth_category = test_document.category
     test_document.set_category(training_prj.no_category)
     result = categorization_pipeline.categorize(document=test_document)
@@ -815,7 +851,7 @@ def test_build_categorization_ai() -> None:
 )
 def test_categorize_no_category_document():
     """Test categorization in case a NO_CATEGORY is predicted."""
-    project = Project(id_=14392)
+    project = Project(id_=RESTORED_PROJECT_ID)
     test_document = project.documents[0]
     test_document.set_category(None)
     categorization_pipeline = build_categorization_ai_pipeline(
@@ -827,3 +863,9 @@ def test_categorize_no_category_document():
     )
     categorization_pipeline.categorize(document=test_document, recategorize=True)
     assert test_document.category == project.no_category
+    for document in project.documents + project.test_documents:
+        document.dataset_status = 0
+        document.save_meta_data()
+        document.delete(delete_online=True)
+    response = delete_project(project_id=RESTORED_PROJECT_ID)
+    assert response.status_code == 204

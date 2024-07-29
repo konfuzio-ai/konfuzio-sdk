@@ -27,6 +27,8 @@ from konfuzio_sdk.urls import (
     get_project_labels_url,
     get_project_url,
     get_projects_list_url,
+    get_restored_snapshot_url,
+    get_snapshot_restore_url,
     get_update_ai_model_url,
     get_upload_document_url,
 )
@@ -44,12 +46,12 @@ class TestUrls(unittest.TestCase):
 
     def test_get_auth_token_url(self):
         """Test function used to generate url to create an authentication token for the user."""
-        auth_token_url_url = f"{KONFUZIO_HOST}/api/v3/auth/"
+        auth_token_url_url = f'{KONFUZIO_HOST}/api/v3/auth/'
         self.assertEqual(get_auth_token_url(host=KONFUZIO_HOST), auth_token_url_url)
 
     def test_get_projects_list_url(self):
         """Test function used to generate url to list all the Projects available for the user."""
-        projects_list_url = f"{KONFUZIO_HOST}/api/v3/projects/?limit=1000"
+        projects_list_url = f'{KONFUZIO_HOST}/api/v3/projects/?limit=1000'
         self.assertEqual(get_projects_list_url(), projects_list_url)
 
     def test_get_project_url(self):
@@ -64,17 +66,17 @@ class TestUrls(unittest.TestCase):
 
     def test_get_documents_meta_url(self):
         """Test function used to generate url to load meta information about Documents."""
-        document_meta_url = f"{KONFUZIO_HOST}/api/v3/documents/?limit=10&project={TEST_PROJECT_ID}"
+        document_meta_url = f'{KONFUZIO_HOST}/api/v3/documents/?limit=10&project={TEST_PROJECT_ID}'
         self.assertEqual(document_meta_url, get_documents_meta_url(project_id=TEST_PROJECT_ID))
 
     def test_get_documents_meta_url_limited(self):
         """Test function used to generate url to load meta information about Documents."""
-        document_meta_url = f"{KONFUZIO_HOST}/api/v3/documents/?limit=10&project={TEST_PROJECT_ID}&offset=0"
+        document_meta_url = f'{KONFUZIO_HOST}/api/v3/documents/?limit=10&project={TEST_PROJECT_ID}&offset=0'
         self.assertEqual(document_meta_url, get_documents_meta_url(project_id=TEST_PROJECT_ID, offset=0))
 
     def test_get_document_annotations_url(self):
         """Test function used to generate url to access Annotations from a document."""
-        document_annotations_url = f"{KONFUZIO_HOST}/api/v3/annotations/?document={DOCUMENT_ID}&limit=100"
+        document_annotations_url = f'{KONFUZIO_HOST}/api/v3/annotations/?document={DOCUMENT_ID}&limit=100'
         self.assertEqual(get_document_annotations_url(document_id=DOCUMENT_ID), document_annotations_url)
 
     def test_get_document_segmentation_details_url(self):
@@ -88,17 +90,17 @@ class TestUrls(unittest.TestCase):
 
     def test_get_upload_document_url(self):
         """Test function used to generate url to upload a document."""
-        upload_document_url = f"{KONFUZIO_HOST}/api/v3/documents/"
+        upload_document_url = f'{KONFUZIO_HOST}/api/v3/documents/'
         self.assertEqual(get_upload_document_url(), upload_document_url)
 
     def test_get_document_url(self):
         """Test function used to generate url to access a document."""
-        document_url = f"{KONFUZIO_HOST}/api/v3/documents/{DOCUMENT_ID}/"
+        document_url = f'{KONFUZIO_HOST}/api/v3/documents/{DOCUMENT_ID}/'
         self.assertEqual(get_document_url(document_id=DOCUMENT_ID), document_url)
 
     def test_get_document_details(self):
         """Test function used to generate URL to access Document's details."""
-        document_url = f"{KONFUZIO_HOST}/api/v3/documents/{DOCUMENT_ID}/"
+        document_url = f'{KONFUZIO_HOST}/api/v3/documents/{DOCUMENT_ID}/'
         self.assertEqual(get_document_details_url(document_id=DOCUMENT_ID), document_url)
 
     def test_get_document_ocr_file_url(self):
@@ -118,22 +120,22 @@ class TestUrls(unittest.TestCase):
 
     def test_get_labels_url(self):
         """Test function used to generate url to list all Labels."""
-        labels_url = f"{KONFUZIO_HOST}/api/v3/labels/"
+        labels_url = f'{KONFUZIO_HOST}/api/v3/labels/'
         self.assertEqual(get_labels_url(), labels_url)
 
     def test_get_project_labels_url(self):
         """Test function used to generate URL to list all Labels in a Project."""
-        labels_url = f"{KONFUZIO_HOST}/api/v3/labels/?project={TEST_PROJECT_ID}&limit=1000"
+        labels_url = f'{KONFUZIO_HOST}/api/v3/labels/?project={TEST_PROJECT_ID}&limit=1000'
         self.assertEqual(get_project_labels_url(project_id=TEST_PROJECT_ID), labels_url)
 
     def test_get_label_url(self):
         """Test function used to generate url to access a label."""
-        label_url = f"{KONFUZIO_HOST}/api/v3/labels/{LABEL_ID}/"
+        label_url = f'{KONFUZIO_HOST}/api/v3/labels/{LABEL_ID}/'
         self.assertEqual(get_label_url(label_id=LABEL_ID), label_url)
 
     def test_get_project_label_sets_url(self):
         """Test function used to generate URL to access all Label Sets in a Project."""
-        label_sets_url = f"{KONFUZIO_HOST}/api/v3/label-sets/?project={TEST_PROJECT_ID}&limit=1000"
+        label_sets_url = f'{KONFUZIO_HOST}/api/v3/label-sets/?project={TEST_PROJECT_ID}&limit=1000'
         self.assertEqual(get_project_label_sets_url(project_id=TEST_PROJECT_ID), label_sets_url)
 
     def test_get_annotation_url(self):
@@ -201,9 +203,19 @@ class TestUrls(unittest.TestCase):
         ai_model_id = 100
         self.assertEqual(
             get_ai_model_download_url(ai_model_id=ai_model_id, host=KONFUZIO_HOST),
-            f"{KONFUZIO_HOST}/aimodel/file/{ai_model_id}/",
+            f'{KONFUZIO_HOST}/aimodel/file/{ai_model_id}/',
         )
 
     def test_change_ai_url(self):
         """Test to get URL to change AI."""
         self.assertEqual(get_update_ai_model_url(AI_ID), f'{KONFUZIO_HOST}/api/aimodels/{AI_ID}/')
+
+    def test_snapshot_restore_url(self):
+        """Test to get an URL to restore a snapshot."""
+        self.assertEqual(get_snapshot_restore_url(), f'{KONFUZIO_HOST}/api/v3/snapshotrestores/')
+
+    def test_restored_snapshot_url(self):
+        """Test to get an URL to access a restored snapshot."""
+        self.assertEqual(
+            get_restored_snapshot_url(restored_snapshot_id=1), f'{KONFUZIO_HOST}/api/v3/snapshotrestores/1/'
+        )
