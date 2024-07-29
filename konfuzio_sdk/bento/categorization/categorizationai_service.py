@@ -1,5 +1,4 @@
 """Run a service for a containerized instance of Categorization AI."""
-import logging
 import os
 from typing import Any
 
@@ -14,8 +13,6 @@ ai_model_name_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'A
 ai_model_name = open(ai_model_name_file).read().strip()
 
 app = FastAPI()
-
-logger = logging.getLogger(__name__)
 
 
 @bentoml.service

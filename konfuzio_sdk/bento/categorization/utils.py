@@ -53,5 +53,9 @@ def process_response(result, schema: BaseModel = CategorizeResponse20240729) -> 
 
     :param result: A raw response to be processed.
     :param schema: A schema of the response.
-    :returns:
+    :returns: A list of dictionaries with Pages and their Categories.
     """
+    # pages_result = []
+    if schema.__name__ == 'CategorizeResponse20240729':
+        for page in result.pages:
+            _ = {'number': page.number, 'categories': []}
