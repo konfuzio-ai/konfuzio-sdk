@@ -33,11 +33,13 @@ class ExtractionService:
         # instance of the pydantic model to be able to pass it to the prepare_request function.
         request = ExtractRequest20240117(**request)
         project = self.extraction_model.project
-        # Add credentials from the request headers to the project object
-        for key, value in ctx.request.headers.items():
-            if key.startswith('env_'):
-                key = key.replace('env_', '', 1)
-                project.credentials[key.upper()] = value
+        # Add credentials from the request headers to the Project object, but only if the SDK version supports this.
+        # Older SDK versions do not have the credentials attribute on Project.
+        if hasattr(project, 'credentials'):
+            for key, value in ctx.request.headers.items():
+                if key.startswith('env_'):
+                    key = key.replace('env_', '', 1)
+                    project.credentials[key.upper()] = value
         document = prepare_request(request=request, project=project)
         result = self.extraction_model.extract(document)
         annotations_result = process_response(result)
