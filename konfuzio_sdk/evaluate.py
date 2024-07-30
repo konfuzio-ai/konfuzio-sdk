@@ -516,6 +516,7 @@ class ExtractionEvaluation:
                 )
                 evaluations.append(evaluation)
             evaluations_per_threshold[threshold] = pd.concat(evaluations)
+        label_category_id = self.documents[0][0].category.id_
         for label in self.documents[0][0].project.labels:
             self.label_thresholds[label.id_] = {}
             best_f1 = 0.0
@@ -545,9 +546,16 @@ class ExtractionEvaluation:
                 if label_recall and label_recall > best_recall:
                     best_recall = label_recall
                     best_threshold_recall = threshold
-            label.optimized_thresholds['f1'] = {'score': best_f1, 'threshold': best_threshold_f1}
-            label.optimized_thresholds['precision'] = {'score': best_precision, 'threshold': best_threshold_precision}
-            label.optimized_thresholds['recall'] = {'score': best_recall, 'threshold': best_threshold_recall}
+            label.optimized_thresholds[label_category_id] = {}
+            label.optimized_thresholds[label_category_id]['f1'] = {'score': best_f1, 'threshold': best_threshold_f1}
+            label.optimized_thresholds[label_category_id]['precision'] = {
+                'score': best_precision,
+                'threshold': best_threshold_precision,
+            }
+            label.optimized_thresholds[label_category_id]['recall'] = {
+                'score': best_recall,
+                'threshold': best_threshold_recall,
+            }
             self.label_thresholds[label.id_]['f1'] = {'score': best_f1, 'threshold': best_threshold_f1}
             self.label_thresholds[label.id_]['precision'] = {
                 'score': best_precision,
