@@ -1459,6 +1459,14 @@ class TestEvaluation(unittest.TestCase):
         assert evaluation.label_thresholds[6]['precision']['threshold'] == 0.05
         assert evaluation.label_thresholds[6]['recall']['score'] == 1.0
         assert evaluation.label_thresholds[6]['recall']['threshold'] == 0.05
+        label = project.get_label_by_id(6)
+        assert len(label.optimized_thresholds) == 1
+        assert label.optimized_thresholds[1]['f1']['score'] == 1.0
+        assert label.optimized_thresholds[1]['f1']['threshold'] == 0.05
+        assert label.optimized_thresholds[1]['precision']['score'] == 1.0
+        assert label.optimized_thresholds[1]['precision']['threshold'] == 0.05
+        assert label.optimized_thresholds[1]['recall']['score'] == 1.0
+        assert label.optimized_thresholds[1]['recall']['threshold'] == 0.05
 
 
 class TestEvaluationTwoLabels(unittest.TestCase):
