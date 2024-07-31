@@ -13,7 +13,6 @@ from requests import HTTPError, ReadTimeout
 
 from konfuzio_sdk.api import (
     delete_ai_model,
-    delete_project,
     konfuzio_session,
     restore_snapshot,
     update_ai_model,
@@ -863,9 +862,3 @@ def test_categorize_no_category_document():
     )
     categorization_pipeline.categorize(document=test_document, recategorize=True)
     assert test_document.category == project.no_category
-    for document in project.documents + project.test_documents:
-        document.dataset_status = 0
-        document.save_meta_data()
-        document.delete(delete_online=True)
-    response = delete_project(project_id=RESTORED_PROJECT_ID)
-    assert response.status_code == 204
