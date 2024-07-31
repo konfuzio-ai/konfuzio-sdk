@@ -12,10 +12,6 @@ def pytest_runtest_makereport(item, call):
             call.rerun = True
 
 
-def pytest_addoption(parser):
-    parser.addoption('--reruns', action='store', default=5, type=int, help='number of times to rerun failed tests')
-
-
 @pytest.hookimpl(tryfirst=True)
 def pytest_runtest_protocol(item, nextitem):
     max_reruns = item.config.getoption('--reruns')
