@@ -17,6 +17,7 @@ EXTRAS = {
         'sphinx-copybutton==0.5.2',
         'myst_nb==0.17.2',
         'ruff',
+        'pytest-rerunfailures',
     ],
     'ai': [
         'accelerate==0.20.1',
