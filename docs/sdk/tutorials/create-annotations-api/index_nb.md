@@ -45,15 +45,18 @@ request using the methods from `konfuzio_sdk.api` which serves as a wrapper arou
 Let's start by making necessary imports:
 ```python tags=["remove-cell"]
 import logging
+from konfuzio_sdk.api import restore_snapshot
 from konfuzio_sdk.data import Project
 
 logging.getLogger("konfuzio_sdk").setLevel(logging.ERROR)
-YOUR_DOCUMENT_ID = 44823
-YOUR_LABEL_ID = 12503
-YOUR_LABEL_SET_ID = 63
-YOUR_PROJECT_ID = 46
-NEW_LABEL_ID = YOUR_LABEL_ID
+YOUR_PROJECT_ID = restore_snapshot(snapshot_id=65)
 project = Project(id_=YOUR_PROJECT_ID)
+original_document_text = Project(id_=46).get_document_by_id(44823).text
+YOUR_DOCUMENT_ID = [document for document in project.documents if document.text == original_document_text][0].id_
+YOUR_LABEL_ID = project.get_label_by_name('Steuer-Brutto').id_
+YOUR_LABEL_SET_ID = project.get_label_set_by_name('Lohnabrechnung').id_
+NEW_LABEL_ID = YOUR_LABEL_ID
+
 project.get_document_by_id(YOUR_DOCUMENT_ID).get_bbox()
 ```
 ```python
@@ -77,7 +80,8 @@ new Annotation Set.
 To create an Annotation that is based on existing text of a Document, let's firstly define the test Document and the 
 Span that will be passed as the `spans` argument. You can define one or more Spans.
 ```python
-test_document = Project(id_=YOUR_PROJECT_ID).get_document_by_id(YOUR_DOCUMENT_ID)
+project = Project(id_=YOUR_PROJECT_ID)
+test_document = project.get_document_by_id(YOUR_DOCUMENT_ID)
 spans = [Span(document=test_document, start_offset=3067, end_offset=3074)]
 ```
 
@@ -103,8 +107,9 @@ To create an Annotation that is based on Bounding Boxes' coordinates, let's crea
 be passed as the `spans` argument. You can define one or more Bounding Boxes. Note that you don't need to specify 
 offsets, only the `page_index` is needed.
 ```python tags=['remove-cell']
-YOUR_DOCUMENT_ID = YOUR_DOCUMENT_ID + 11
-YOUR_LABEL_ID = 862
+original_document_text = Project(id_=46).get_document_by_id(44834).text
+YOUR_DOCUMENT_ID = [document for document in project.documents if document.text == original_document_text][0].id_
+YOUR_LABEL_ID = project.get_label_by_name('Bezeichnung').id_
 ```
 ```python
 bboxes = [

@@ -29,9 +29,13 @@ Retrieve all information available for your Project:
 
 ```python tags=['remove-cell']
 import logging
+from konfuzio_sdk.api import get_project_list
+from tests.variables import TEST_SNAPSHOT_ID
 
 logging.getLogger("konfuzio_sdk").setLevel(logging.ERROR)
-YOUR_PROJECT_ID = 46
+projects = get_project_list()
+# we want to get the last instance of a project restored from a snapshot because creating a new one each time takes longer 
+YOUR_PROJECT_ID = next(project['id'] for project in reversed(projects['results']) if TEST_SNAPSHOT_ID in project['name'])
 ```
 ```python 
 from konfuzio_sdk.data import Project, Document
@@ -318,7 +322,8 @@ my_project.documents_folder
 
 And you can get the path to the file with the Document text with:
 ```python tags=['remove-cell']
-document = my_project.get_document_by_id(44823)
+original_document_text = Project(id_=46).get_document_by_id(44823).text
+document = [document for document in my_project.documents if document.text == original_document_text][0]
 ```
 ```python
 document.txt_file_path

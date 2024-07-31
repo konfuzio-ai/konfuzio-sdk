@@ -132,9 +132,17 @@ class TestExtractionAIBento(unittest.TestCase):
     def test_wrong_input(self):
         """Test that it's impossible to send a request with a structure not adhering to schema."""
         data = {'pages': 1234, 'new_field': 'ffff'}
-        responses = requests.post(url=self.request_url, data=data)
-        assert responses.status_code == 400
-        assert 'validation error' in responses.text
+        response = requests.post(url=self.request_url, data=data)
+        assert response.status_code == 400
+        assert 'validation error' in response.text
+
+    def test_service_error(self):
+        """Test that Python errors occurring in the service are caught and returned as a response."""
+        data = {'text': 'test', 'bboxes': {}, 'pages': []}
+        response = requests.post(url=self.request_url, json=data)
+        assert response.status_code == 500
+        assert response.json()['error'] == 'NotImplementedError'
+        assert len(response.json()['traceback']) > 0
 
     @classmethod
     def tearDownClass(cls) -> None:

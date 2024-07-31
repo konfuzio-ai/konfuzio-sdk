@@ -2678,6 +2678,12 @@ class Annotation(Data):
         else:
             try:
                 del self.document._annotations[(tuple(sorted(self._spans.keys())), self.label.name)]
+                if len(self.annotation_set._annotations) == 1:
+                    self.document._annotation_sets = [
+                        annotation_set
+                        for annotation_set in self.document._annotation_sets
+                        if annotation_set != self.annotation_set
+                    ]
             except KeyError as e:
                 logger.warning(
                     f'Could not delete annotation with key {(tuple(sorted(self._spans.keys())), self.label.name)} in {self.document}: {e}'
@@ -3286,6 +3292,11 @@ class Document(Data):
                     raw_annotation_sets = json.load(f)
                 # first load all Annotation Sets before we create Annotations
                 for raw_annotation_set in raw_annotation_sets:
+                    # if all the labels in the annotation set do not have annotations, we skip it
+                    if 'labels' in raw_annotation_set and all(
+                        len(label['annotations']) == 0 for label in raw_annotation_set['labels']
+                    ):
+                        continue
                     # for backwards compatibility
                     if 'label_set' in raw_annotation_set.keys():
                         label_set_id = raw_annotation_set['label_set']['id']
@@ -3602,7 +3613,7 @@ class Document(Data):
         if result:
             return result
         else:
-            raise IndexError(f'Annotation {annotation_id} is not part of {self}.')
+            raise IndexError(f'Annotation {annotation_id} is not a part of {self}.')
 
     def add_annotation_set(self, annotation_set: AnnotationSet):
         """Add the Annotation Sets to the Document."""
@@ -3636,7 +3647,7 @@ class Document(Data):
         if result:
             return result
         else:
-            raise IndexError(f'Annotation Set {id_} is not part of Document {self.id_}.')
+            raise IndexError(f'Annotation Set {id_} is not a part of Document {self.id_}.')
 
     @property
     def default_annotation_set(self) -> AnnotationSet:
@@ -4353,13 +4364,21 @@ class Project(Data):
 
     def add_category(self, category: Category):
         """
-        Add Category to Project, if it does not exist.
+        Add Category to Project if it does not exist.
 
         :param category: Category to add in the Project
         """
         if category.name != 'NO_CATEGORY':
             if category not in self.categories:
-                self.categories.append(category)
+                # we want to allow creating nameless categories locally but not use same names for different categories
+                if (
+                    category.name and category.name not in [category.name for category in self.categories]
+                ) or not category.name:
+                    self.categories.append(category)
+                else:
+                    raise ValueError(
+                        f'In {self} there already exists a Category with name {category.name}. Choose another name for the new Category.'
+                    )
             else:
                 raise ValueError(f'In {self} the {category} is a duplicate and will not be added.')
 
@@ -4707,16 +4726,20 @@ class Project(Data):
         self._meta_data = []
         return self
 
-    def download_training_and_test_data(self, category_id=None) -> None:
+    def download_project_data(self, training_test_only=True, category_id=None) -> None:
         """
         Migrate your Project to another HOST.
 
         See https://dev.konfuzio.com/web/migration-between-konfuzio-server-instances/index.html
 
         """
-        if len(self.documents + self.test_documents) == 0:
-            raise ValueError('No Documents in the training or test set. Please add them.')
-        for document in tqdm(self.documents + self.test_documents):
+        if training_test_only:
+            target_documents = self.documents + self.test_documents
+        else:
+            target_documents = [document for document in self._documents if document.dataset_status != 0]
+        if len(target_documents) == 0:
+            raise ValueError('No Documents. Please add them.')
+        for document in tqdm(target_documents):
             if category_id and document.category.id_ != category_id:
                 print(f'Skip {document}...')
                 continue
@@ -4725,23 +4748,31 @@ class Project(Data):
             document.get_file(ocr_version=False)
             document.get_bbox()
             document.get_images()
-
         print('[SUCCESS] Data exporting finished successfully!')
 
-    def export_project_data(self, include_ais=False, training_and_test_documents=True, *args, **kwargs) -> None:
+    def export_project_data(
+        self, include_ais=False, training_and_test_documents=True, documents_with_status=False, *args, **kwargs
+    ) -> None:
         """
         Export the Project data including Training, Test Documents and AI models.
 
         :include_ais: Whether to include AI models in the export
         :training_and_test_documents: Whether to include training & test documents in the export.
         """
-        if training_and_test_documents:
-            try:
+        if training_and_test_documents and documents_with_status:
+            raise ValueError(
+                'Specify either training_and_test_documents or documents_with_status as True. Both cannot be True at the same time.'
+            )
+        try:
+            if training_and_test_documents:
                 print('[INFO] Starting Training and Test Document export!')
-                self.download_training_and_test_data(*args, **kwargs)
-            except Exception as error:
-                print('[ERROR] Something went wrong while downloading Document data!')
-                raise error
+                self.download_project_data(*args, **kwargs)
+            if documents_with_status:
+                print('[INFO] Starting export of all Documents with status different from None!')
+                self.download_project_data(training_test_only=False, *args, **kwargs)
+        except Exception as error:
+            print('[ERROR] Something went wrong while downloading Document data!')
+            raise error
         if include_ais:
             try:
                 print('[INFO] Starting AI Model file export!')
@@ -4753,6 +4784,19 @@ class Project(Data):
             except Exception as error:
                 print('[ERROR] Something went wrong while downloading AIs or AI metadata!')
                 raise error
+
+    def get_category_by_name(self, category_name: str = None) -> List[Category]:
+        """
+        Get Category by the match to its name or clean_name.
+
+        :param category_name: A string to search the Category.
+        :returns: A Category that has a matching name or a clean name.
+        """
+        for category in self.categories:
+            if category.name == category_name or category.name_clean == category_name:
+                return category
+        else:
+            raise IndexError(f'Category name {category_name} was not found in {self}.')
 
     def create_project_metadata_dict(self) -> Dict:
         """
