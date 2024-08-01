@@ -1,7 +1,10 @@
 """Run extraction service for a dockerized AI."""
+
+import asyncio
 import json
 import os
 import typing as t
+from concurrent.futures import ThreadPoolExecutor
 
 import bentoml
 from fastapi import Depends, FastAPI, HTTPException
@@ -24,6 +27,7 @@ class ExtractionService:
     def __init__(self):
         """Load the extraction model into memory."""
         self.extraction_model = bentoml.picklable_model.load_model(self.model_ref)
+        self.executor = ThreadPoolExecutor()
 
     @bentoml.api(input_spec=ExtractRequest20240117)
     @handle_exceptions
@@ -40,8 +44,13 @@ class ExtractionService:
                 if key.startswith('env_'):
                     key = key.replace('env_', '', 1)
                     project.credentials[key.upper()] = value
-        document = prepare_request(request=request, project=project)
-        result = self.extraction_model.extract(document)
+        document = prepare_request(
+            request=request,
+            project=project,
+            konfuzio_sdk_version=getattr(self.extraction_model, 'konfuzio_sdk_version', None),
+        )
+        # Run the extraction in a separate thread, otherwise the API server will block
+        result = await asyncio.get_event_loop().run_in_executor(self.executor, self.extraction_model.extract, document)
         annotations_result = process_response(result)
         return annotations_result
 

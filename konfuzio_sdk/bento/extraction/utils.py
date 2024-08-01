@@ -1,4 +1,5 @@
 """Utility functions for adapting Konfuzio concepts to be used with Pydantic models."""
+
 import functools
 import traceback
 import typing as t
@@ -52,7 +53,7 @@ def handle_exceptions(func: t.Callable) -> t.Callable:
 # Pydanctic conversion functions
 
 
-def prepare_request(request: BaseModel, project: Project) -> Document:
+def prepare_request(request: BaseModel, project: Project, konfuzio_sdk_version: t.Optional[str] = None) -> Document:
     """
     Receive a request and prepare it for the extraction runner.
 
@@ -63,8 +64,9 @@ def prepare_request(request: BaseModel, project: Project) -> Document:
     # Extraction AIs include only one Category per Project.
     category = project.categories[0]
     if request.__class__.__name__ == 'ExtractRequest20240117':
-        bboxes = {
-            str(bbox_id): {
+        bboxes = {}
+        for bbox_id, bbox in request.bboxes.items():
+            bboxes[str(bbox_id)] = {
                 'x0': bbox.x0,
                 'x1': bbox.x1,
                 'y0': bbox.y0,
@@ -72,8 +74,12 @@ def prepare_request(request: BaseModel, project: Project) -> Document:
                 'page_number': bbox.page_number,
                 'text': bbox.text,
             }
-            for bbox_id, bbox in request.bboxes.items()
-        }
+            # Backwards compatibility with Konfuzio SDK versions < 0.3.
+            # In newer versions, the top and bottom values are not needed.
+            if konfuzio_sdk_version < '0.3':
+                page = next(page for page in request.pages if page.number == bbox.page_number)
+                bboxes[str(bbox_id)]['top'] = round(page.original_size[1] - bbox.y0, 4)
+                bboxes[str(bbox_id)]['bottom'] = round(page.original_size[1] - bbox.y1, 4)
         document = Document(
             text=request.text,
             bbox=bboxes,
@@ -102,6 +108,8 @@ def process_response(result, schema: BaseModel = ExtractResponse20240117) -> Bas
     annotations_result = []
     if schema.__name__ == 'ExtractResponse20240117':
         for annotation_set in result.annotation_sets():
+            if not annotation_set.label_set.id_:
+                continue
             current_annotation_set = {'label_set_id': annotation_set.label_set.id_, 'annotations': []}
             for annotation in annotation_set.annotations(use_correct=False, ignore_below_threshold=True):
                 spans_list_of_dicts = [
