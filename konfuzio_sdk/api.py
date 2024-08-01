@@ -170,7 +170,7 @@ def konfuzio_session(
     retry_strategy = Retry(
         total=num_retries,
         status_forcelist=[429, 500, 502, 503, 504],
-        backoff_factor=3,
+        backoff_factor=2,
     )
     session = requests.Session()
     session.mount('https://', adapter=TimeoutHTTPAdapter(max_retries=retry_strategy, timeout=timeout))
