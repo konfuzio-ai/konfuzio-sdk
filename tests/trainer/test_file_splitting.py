@@ -40,11 +40,13 @@ DEVICE = 'cpu'
 if is_dependency_installed('torch'):
     projects = get_project_list()
     # we want to get the last instance of a project restored from a snapshot because creating a new one each time takes longer
-    RESTORED_PROJECT_ID = next(
-        project['id'] for project in reversed(projects['results']) if TEST_SNAPSHOT_ID_2 in project['name']
-    )
-    if not RESTORED_PROJECT_ID:
-        RESTORED_PROJECT_ID = restore_snapshot(snapshot_id=66)
+    try:
+        RESTORED_PROJECT_ID = next(
+            project['id'] for project in reversed(projects['results']) if TEST_SNAPSHOT_ID_2 in project['name']
+        )
+    except StopIteration:
+        if is_dependency_installed('torch'):
+            RESTORED_PROJECT_ID = restore_snapshot(snapshot_id=66)
 
 
 @pytest.mark.skipif(
