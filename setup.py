@@ -1,4 +1,5 @@
 """Setup."""
+
 import subprocess
 import sys
 import textwrap
@@ -94,6 +95,7 @@ setuptools.setup(
         'Pillow>=8.4.0',
         'python-dateutil>=2.8.2',
         'python-decouple>=3.3',
+        'python-dotenv>=1.0,<1.1',
         'requests',
         'regex>=2020.6.8',  # re module but better
         'scikit-learn==1.2.2',
