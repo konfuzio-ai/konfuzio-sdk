@@ -63,6 +63,9 @@ def prepare_request(request: BaseModel, project: Project, konfuzio_sdk_version: 
     """
     # Extraction AIs include only one Category per Project.
     category = project.categories[0]
+    # Calculate next available ID based on current Project documents to avoid conflicts.
+    document_id = max((doc.id_ for doc in project._documents if doc.id_), default=0) + 1
+
     if request.__class__.__name__ == 'ExtractRequest20240117':
         bboxes = {}
         for bbox_id, bbox in request.bboxes.items():
@@ -81,6 +84,7 @@ def prepare_request(request: BaseModel, project: Project, konfuzio_sdk_version: 
                 bboxes[str(bbox_id)]['top'] = round(page.original_size[1] - bbox.y0, 4)
                 bboxes[str(bbox_id)]['bottom'] = round(page.original_size[1] - bbox.y1, 4)
         document = Document(
+            id_=document_id,
             text=request.text,
             bbox=bboxes,
             project=project,
