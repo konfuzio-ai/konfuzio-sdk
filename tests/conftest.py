@@ -7,13 +7,13 @@ def pytest_runtest_makereport(item, call):
     report = outcome.get_result()
 
     if report.when == 'call' and report.failed and call.excinfo is not None:
-        if call.excinfo is not None:
-            exc_value = call.excinfo.value
-            error_message = str(exc_value)
-            if '502' in error_message or 'Read timed out' in error_message:
-                setattr(report, 'wasxfail', False)
-                setattr(report, 'rerun', True)
-                report.outcome = 'failed'
+        exc_value = call.excinfo.value
+        error_message = str(exc_value)
+        if '502' in error_message or 'Read timed out' in error_message:
+            # Modify the report to mark the test for rerun
+            setattr(report, 'wasxfail', False)
+            setattr(report, 'rerun', True)
+            report.outcome = 'failed'
 
 
 def pytest_addoption(parser):
