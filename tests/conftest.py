@@ -10,10 +10,11 @@ def pytest_runtest_makereport(item, call):
         exc_value = call.excinfo.value
         error_message = str(exc_value)
         if '502' in error_message or 'Read timed out' in error_message:
-            # Modify the report to mark the test for rerun
             setattr(report, 'wasxfail', False)
             setattr(report, 'rerun', True)
             report.outcome = 'failed'
+        else:
+            setattr(report, 'rerun', False)
 
 
 def pytest_addoption(parser):
