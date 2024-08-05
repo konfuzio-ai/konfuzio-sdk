@@ -18,7 +18,7 @@ from konfuzio_sdk.evaluate import (
 )
 from konfuzio_sdk.samples import LocalTextProject
 from konfuzio_sdk.settings_importer import is_dependency_installed
-from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
+from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer, WhitespaceTokenizer
 from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel, FileSplittingEvaluation, SplittingAI
 from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
 
@@ -1005,6 +1005,25 @@ class TestCompare(unittest.TestCase):
             target='target',
         )
         assert result['defined_to_be_correct_target'].to_list() == [1, 1]
+
+    def test_split_span_evaluation(self):
+        """Test evaluation with split_spans_by_whitespace==True."""
+        project = Project(id_=14392)
+        tokenizer = WhitespaceTokenizer()
+        doc = project.get_document_by_id(5589024)
+        doc_2 = deepcopy(doc)
+        doc_2 = tokenizer.tokenize(doc_2)
+        _ = Annotation(
+            label_set=doc.annotations()[2].label_set,
+            spans=[Span(1336, 1343), Span(1344, 1348)],
+            document=doc_2,
+            label=doc.annotations()[2].label,
+            confidence=1,
+        )
+        _.annotation_set.id_ = 1
+        docs_to_evaluate = [(doc, doc_2)]
+        evaluation = ExtractionEvaluation(docs_to_evaluate, strict=False)
+        assert evaluation.f1(search=doc.annotations()[2].label) == 1.0
 
 
 @parameterized.parameterized_class(
