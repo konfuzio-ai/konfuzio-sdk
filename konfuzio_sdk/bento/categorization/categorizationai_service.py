@@ -25,10 +25,8 @@ class CategorizationService:
         self.categorization_model = bentoml.picklable_model.load_model(self.model_ref)
 
     @bentoml.api(input_spec=CategorizeRequest20240729)
-    async def extract(self, **request: Any) -> CategorizeResponse20240729:
-        """Send an call to the Extraction AI and process the response."""
-        # Even though the request is already validated against the pydantic schema, we need to get it back as an
-        # instance of the pydantic model to be able to pass it to the prepare_request function.
+    async def categorize(self, **request: Any) -> CategorizeResponse20240729:
+        """Send an call to the Categorization AI and process the response."""
         request = CategorizeRequest20240729(**request)
         project = self.categorization_model.project
         document = prepare_request(request=request, project=project)
