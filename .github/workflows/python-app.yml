@@ -56,7 +56,7 @@ jobs:
             coverage run -m pytest
             coverage report --omit="docs/sdk/boilerplates/*,tests/*,/home/runner/.cache/huggingface/modules/evaluate_modules/*" > coverage_report.txt
           else
-            pytest --durations=10 --n_reruns=5 -m 'not local'
+            pytest --durations=10 --reruns=5 -m 'not local'
           fi
         env:
           KONFUZIO_PROJECT_ID: ${{ secrets.KONFUZIO_PROJECT_ID }}
