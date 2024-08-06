@@ -47,11 +47,18 @@ Let's begin with making imports, initializing the Categorization model and calli
 import logging
 import os
 import konfuzio_sdk
+from konfuzio_sdk.api import get_project_list
+from konfuzio_sdk.data import Project
+from tests.variables import TEST_SNAPSHOT_ID
 
 logging.getLogger("konfuzio_sdk").setLevel(logging.ERROR)
-YOUR_PROJECT_ID = 46
-YOUR_CATEGORY_ID = 63
-YOUR_DOCUMENT_ID = 44865
+projects = get_project_list()
+# we want to get the last instance of a project restored from a snapshot because creating a new one each time takes longer 
+YOUR_PROJECT_ID = next(project['id'] for project in reversed(projects['results']) if TEST_SNAPSHOT_ID in project['name'])
+project = Project(id_=YOUR_PROJECT_ID)
+YOUR_CATEGORY_ID = project.get_category_by_name('Lohnabrechnung').id_
+original_document_text = Project(id_=46).get_document_by_id(44823).text
+YOUR_DOCUMENT_ID = [document for document in project.documents if document.text == original_document_text][0].id_
 ```
 
 ```python editable=true slideshow={"slide_type": ""} tags=["remove-output"] vscode={"languageId": "plaintext"}
@@ -83,6 +90,7 @@ print(f"Found category {result_doc.category} for {result_doc}")
 For better results you can build, train and test a Categorization AI using Image Models and Text Models to classify the image and text of each Page.
 
 Let's start with the imports and initializing the Project.
+
 ```python editable=true slideshow={"slide_type": ""}
 from konfuzio_sdk.data import Project, Document
 from konfuzio_sdk.trainer.document_categorization import build_categorization_ai_pipeline
@@ -90,7 +98,6 @@ from konfuzio_sdk.trainer.document_categorization import ImageModel, TextModel, 
 
 project = Project(id_=YOUR_PROJECT_ID)
 ```
-
 ```python editable=true slideshow={"slide_type": ""} tags=["remove-cell"]
 logging.getLogger("konfuzio_sdk").setLevel(logging.CRITICAL)
 logging.getLogger("timm").setLevel(logging.CRITICAL)
@@ -98,7 +105,9 @@ for doc in project.documents + project.test_documents:
     doc.get_images()
 for document in project.documents[3:] + project.test_documents[1:]:
     document.dataset_status = 4
-project.get_document_by_id(44864).dataset_status = 4
+original_document_text = Project(id_=46).get_document_by_id(44864).text
+cur_document_id = [document for document in project._documents if document.text == original_document_text][0].id_
+project.get_document_by_id(cur_document_id).dataset_status = 4
 ```
 
 Build the Categorization AI architecture using a template of pre-built Image and Text classification Models. In this tutorial, we use `EfficientNetB0` and `NBOWSelfAttention` together.
@@ -222,7 +231,7 @@ Categorization.
 | `albert-base-v2`                               | 768                  | English  | 12 million           |
 | `german-nlp-group/electra-base-german-uncased` | 768                  | German   | 111 million          |
 | `bert-base-german-cased`                       | 768                  | German   | 110 million          |
-| `bert-base-german-uncased`                     | 768                  | German   | 110 million          |
+| `dbmdz/bert-base-german-uncased`               | 768                  | German   | 110 million          |
 | `distilbert-base-german-cased`                 | 768                  | German   | 66 million           |    
 | `bert-base-multilingual-cased`                 | 768                  | Multiple | 110 million          |
 

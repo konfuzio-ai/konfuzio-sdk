@@ -44,9 +44,13 @@ Let's say we have a Document, and we want to highlight every instance of the ter
 
 ```python editable=true slideshow={"slide_type": ""} tags=["remove-cell"] vscode={"languageId": "plaintext"}
 import logging
+from konfuzio_sdk.api import get_project_list
+from tests.variables import TEST_SNAPSHOT_ID
 
 logging.getLogger("konfuzio_sdk").setLevel(logging.ERROR)
-YOUR_PROJECT_ID = 46
+projects = get_project_list()
+# we want to get the last instance of a project restored from a snapshot because creating a new one each time takes longer 
+YOUR_PROJECT_ID = next(project['id'] for project in reversed(projects['results']) if TEST_SNAPSHOT_ID in project['name'])
 ```
 
 ```python editable=true slideshow={"slide_type": ""} vscode={"languageId": "plaintext"}

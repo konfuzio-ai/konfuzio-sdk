@@ -1,8 +1,12 @@
 """Utility functions for adapting Konfuzio concepts to be used with Pydantic models."""
 
-from typing import Optional
+import functools
+import traceback
+import typing as t
+
 
 from pydantic import BaseModel
+from starlette.responses import JSONResponse
 
 from konfuzio_sdk.data import Annotation, AnnotationSet, Document, Page, Project, Span
 
@@ -15,7 +19,43 @@ NOT_IMPLEMENTED_ERROR_MESSAGE = (
 )
 
 
-def prepare_request(request: BaseModel, project: Project) -> Document:
+# Error handling
+
+
+def get_error_details(exc: Exception) -> str:
+    error_details = type(exc).__name__
+    error_message = str(exc)
+    if error_message:
+        error_details = f'{error_details}: {error_message}'
+    return error_details
+
+
+def handle_exceptions(func: t.Callable) -> t.Callable:
+    """
+    Decorator to handle exceptions in service API endpoints and return a JSON response with error details.
+    Pydantic errors are not handled here, as they are handled by Bento automatically.
+    """
+
+    @functools.wraps(func)
+    async def wrapper(*args: t.Any, **kwargs: t.Any) -> t.Any:
+        try:
+            return await func(*args, **kwargs)
+        except Exception as exc:
+            tb = traceback.format_exception(type(exc), exc, exc.__traceback__)
+            error_details = get_error_details(exc)
+            # Override the default status code, otherwise it will be 200.
+            if 'ctx' in kwargs:
+                ctx = kwargs['ctx']
+                ctx.response.status_code = 500
+            return JSONResponse(status_code=500, content={'error': error_details, 'traceback': tb})
+
+    return wrapper
+
+
+# Pydanctic conversion functions
+
+
+def prepare_request(request: BaseModel, project: Project, konfuzio_sdk_version: t.Optional[str] = None) -> Document:
     """
     Receive a request and prepare it for the extraction runner.
 
@@ -25,9 +65,13 @@ def prepare_request(request: BaseModel, project: Project) -> Document:
     """
     # Extraction AIs include only one Category per Project.
     category = project.categories[0]
+    # Calculate next available ID based on current Project documents to avoid conflicts.
+    document_id = max((doc.id_ for doc in project._documents if doc.id_), default=0) + 1
+
     if request.__class__.__name__ == 'ExtractRequest20240117':
-        bboxes = {
-            str(bbox_id): {
+        bboxes = {}
+        for bbox_id, bbox in request.bboxes.items():
+            bboxes[str(bbox_id)] = {
                 'x0': bbox.x0,
                 'x1': bbox.x1,
                 'y0': bbox.y0,
@@ -35,9 +79,14 @@ def prepare_request(request: BaseModel, project: Project) -> Document:
                 'page_number': bbox.page_number,
                 'text': bbox.text,
             }
-            for bbox_id, bbox in request.bboxes.items()
-        }
+            # Backwards compatibility with Konfuzio SDK versions < 0.3.
+            # In newer versions, the top and bottom values are not needed.
+            if konfuzio_sdk_version < '0.3':
+                page = next(page for page in request.pages if page.number == bbox.page_number)
+                bboxes[str(bbox_id)]['top'] = round(page.original_size[1] - bbox.y0, 4)
+                bboxes[str(bbox_id)]['bottom'] = round(page.original_size[1] - bbox.y1, 4)
         document = Document(
+            id_=document_id,
             text=request.text,
             bbox=bboxes,
             project=project,
@@ -65,6 +114,8 @@ def process_response(result, schema: BaseModel = ExtractResponse20240117) -> Bas
     annotations_result = []
     if schema.__name__ == 'ExtractResponse20240117':
         for annotation_set in result.annotation_sets():
+            if not annotation_set.label_set.id_:
+                continue
             current_annotation_set = {'label_set_id': annotation_set.label_set.id_, 'annotations': []}
             for annotation in annotation_set.annotations(use_correct=False, ignore_below_threshold=True):
                 spans_list_of_dicts = [
@@ -147,7 +198,7 @@ def convert_document_to_request(document: Document, schema: BaseModel = ExtractR
 
 
 def convert_response_to_annotations(
-    response: BaseModel, document: Document, mappings: Optional[dict] = None
+    response: BaseModel, document: Document, mappings: t.Optional[dict] = None
 ) -> Document:
     """
     Receive an ExtractResponse and convert it into a list of Annotations to be added to the Document.
