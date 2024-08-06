@@ -6,9 +6,11 @@ import os
 import time
 from json import JSONDecodeError
 from operator import itemgetter
+from pathlib import Path
 from typing import Dict, List, Optional, Union
 
 import requests
+from dotenv import set_key
 from requests import HTTPError
 from requests.adapters import HTTPAdapter
 from urllib3 import Retry
@@ -89,11 +91,13 @@ def init_env(
     :param file_ending: Ending of file.
     """
     token = _get_auth_token(user, password, host)
+    env_file_path = Path(working_directory, file_ending)
+    # Create env file if it does not exist
+    env_file_path.touch(mode=0o600, exist_ok=True)
 
-    with open(os.path.join(working_directory, file_ending), 'w') as f:
-        f.write(f'KONFUZIO_HOST = {host}\n')
-        f.write(f'KONFUZIO_USER = {user}\n')
-        f.write(f'KONFUZIO_TOKEN = {token}\n')
+    set_key(env_file_path, 'KONFUZIO_HOST', host)
+    set_key(env_file_path, 'KONFUZIO_USER', user)
+    set_key(env_file_path, 'KONFUZIO_TOKEN', token)
 
     print('[SUCCESS] SDK initialized!')
 
