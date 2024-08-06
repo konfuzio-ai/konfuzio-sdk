@@ -17,9 +17,16 @@ def pytest_runtest_makereport(item, call):
 
         logger.debug(f'Error message: {error_message}')
 
-        if '502' in error_message or 'Read timed out' in error_message:
-            setattr(report, 'wasxfail', False)
-            setattr(report, 'rerun', True)
-            report.outcome = 'failed'
-        else:
+        try:
+            error_message = str(exc_value)
+            logger.debug(f'Error message: {error_message}')
+
+            if '502' in error_message or 'Read timed out' in error_message:
+                setattr(report, 'wasxfail', False)
+                setattr(report, 'rerun', True)
+                report.outcome = 'failed'
+            else:
+                setattr(report, 'rerun', False)
+        except Exception as e:
+            logger.error(f'Exception while processing error message: {e}')
             setattr(report, 'rerun', False)
