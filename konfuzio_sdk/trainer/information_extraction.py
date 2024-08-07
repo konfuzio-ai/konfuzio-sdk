@@ -853,7 +853,7 @@ class AbstractExtractionAI(BaseModel):
                 ],
                 labels=self.bento_metadata,
                 python={
-                    'packages': [f'konfuzio-sdk=={self.konfuzio_sdk_version}'],
+                    'packages': [f'konfuzio-sdk<={self.konfuzio_sdk_version}'],
                     'lock_packages': True,
                 },
                 build_ctx=temp_dir,
