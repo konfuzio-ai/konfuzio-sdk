@@ -599,25 +599,6 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             _get_auth_token('test', 'test')
             assert 'HTTP Status 500' in context.exception
 
-    @patch('requests.post')
-    def test_patched_init_env(self, function):
-        """Test to run CLI."""
-
-        # mock response
-        class _Response:
-            """Mock requests POST response."""
-
-            status_code = 200
-
-            def json(self):
-                """Mock valid return."""
-                return {'token': 'faketoken'}
-
-        function.return_value = _Response()
-        env_file = '.testenv'
-        assert init_env(user='me', password='pw', file_ending=env_file)
-        os.remove(os.path.join(os.getcwd(), env_file))
-
     @patch('konfuzio_sdk.api.konfuzio_session')
     @patch('konfuzio_sdk.api.get_extraction_ais_list_url')
     @patch('konfuzio_sdk.api.get_splitting_ais_list_url')
@@ -702,3 +683,38 @@ def test_init_env():
     """Test to write env file."""
     with pytest.raises(PermissionError, match='Your credentials are not correct'):
         init_env(user='user', password='ABCD', working_directory=BASE_DIR, file_ending='x.env')
+
+
+@patch('requests.post')
+def test_patched_init_env(function):
+    """Test to run CLI."""
+
+    # mock response
+    class _Response:
+        """Mock requests POST response."""
+
+        status_code = 200
+
+        def json(self):
+            """Mock valid return."""
+            return {'token': 'faketoken'}
+
+    function.return_value = _Response()
+    env_file = '.testenv'
+
+    # Create .testenv with some dummy variables
+    with open(os.path.join(os.getcwd(), env_file), 'w') as f:
+        f.write('TESTVAR1=test\n')
+        f.write('KONFUZIO_HOST=testdomain.com\n')
+
+    assert init_env(user='me', password='pw', host='https://testing.konfuzio.com', file_ending=env_file)
+
+    with open(os.path.join(os.getcwd(), env_file), 'r') as f:
+        env_content = f.read()
+
+    # TESTVAR should still be in the env file
+    assert 'TESTVAR1=test' in env_content
+    # KONFUZIO_HOST should be overwritten
+    assert "KONFUZIO_HOST='https://testing.konfuzio.com'" in env_content
+
+    os.remove(os.path.join(os.getcwd(), env_file))
