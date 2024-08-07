@@ -14,7 +14,6 @@ from requests import HTTPError, ReadTimeout
 from konfuzio_sdk.api import (
     delete_ai_model,
     konfuzio_session,
-    restore_snapshot,
     update_ai_model,
     upload_ai_model,
 )
@@ -51,9 +50,6 @@ from tests.variables import (
 )
 
 logger = logging.getLogger(__name__)
-
-if is_dependency_installed('torch'):
-    RESTORED_PROJECT_ID = restore_snapshot(snapshot_id=66)
 
 
 @pytest.mark.skipif(
@@ -449,7 +445,7 @@ class TestBertCategorizationModels(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Set up the Data and Categorization Pipeline."""
-        cls.training_prj = Project(id_=RESTORED_PROJECT_ID)
+        cls.training_prj = Project(id_=14392)
         cls.categorization_pipeline = CategorizationAI(cls.training_prj.categories)
         cls.category_1 = cls.training_prj.get_category_by_name(category_name='Employee and Family Medic')
         cls.category_2 = cls.training_prj.get_category_by_name(category_name='Patient Registration Form')
@@ -599,7 +595,7 @@ class TestCategorizationConfigurations(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Set up the Data and Categorization Pipeline."""
-        cls.training_prj = Project(id_=RESTORED_PROJECT_ID)
+        cls.training_prj = Project(id_=14392)
         cls.categorization_pipeline = CategorizationAI(cls.training_prj.categories)
         cls.category_1 = cls.training_prj.get_category_by_name(category_name='Employee and Family Medic')
         cls.category_2 = cls.training_prj.get_category_by_name(category_name='Patient Registration Form')
@@ -761,7 +757,7 @@ class TestCategorizationConfigurations(unittest.TestCase):
 @unittest.skipIf(sys.version_info[:2] != (3, 8), reason='This AI can only be loaded on Python 3.8.')
 def test_bert_in_multimodal_categorization_ai():
     """Test compatibility of BERT-based model and image-processing model for Categorization."""
-    training_prj = Project(id_=RESTORED_PROJECT_ID)
+    training_prj = Project(id_=14392)
     categorization_pipeline = CategorizationAI(training_prj.categories)
     category_1 = training_prj.get_category_by_name(category_name='Employee and Family Medic')
     category_2 = training_prj.get_category_by_name(category_name='Patient Registration Form')
@@ -850,7 +846,7 @@ def test_build_categorization_ai() -> None:
 )
 def test_categorize_no_category_document():
     """Test categorization in case a NO_CATEGORY is predicted."""
-    project = Project(id_=RESTORED_PROJECT_ID)
+    project = Project(id_=None, project_folder=OFFLINE_PROJECT)
     test_document = project.documents[0]
     test_document.set_category(None)
     categorization_pipeline = build_categorization_ai_pipeline(
