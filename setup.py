@@ -93,6 +93,7 @@ setuptools.setup(
         'numpy==1.23.5',
         'pandas>=1.3.5,<2.0.0',
         'Pillow>=8.4.0',
+        'pydantic>2,<2.8',
         'python-dateutil>=2.8.2',
         'python-decouple>=3.3',
         'python-dotenv>=1.0,<1.1',

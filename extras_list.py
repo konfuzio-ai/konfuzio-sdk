@@ -23,7 +23,6 @@ EXTRAS = {
         'chardet==5.1.0',
         'datasets==2.14.6',
         'evaluate==0.4.1',
-        'pydantic>2,<2.8',
         'spacy>=2.3.5',
         'torch>=1.8.1',
         'torchvision>=0.9.1',
