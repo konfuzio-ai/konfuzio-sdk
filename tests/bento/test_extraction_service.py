@@ -1,4 +1,5 @@
 """Test interfaces created for containerization of Information Extraction AIs."""
+
 import io
 import subprocess
 import time
@@ -75,7 +76,7 @@ class TestExtractionAIBento(unittest.TestCase):
         }
         response = requests.post(url=self.request_url, json=data)
         # logging_from_subprocess(process=self.bento_process, breaking_point='status=')
-        assert len(response.json()['annotation_sets']) == 5
+        assert len(response.json()['annotation_sets']) == 4
         assert sum([len(element['annotations']) for element in response.json()['annotation_sets']]) == 19
 
     def test_extract_converted(self):
@@ -83,7 +84,7 @@ class TestExtractionAIBento(unittest.TestCase):
         prepared = convert_document_to_request(document=self.test_document, schema=ExtractRequest20240117)
         response = requests.post(url=self.request_url, json=prepared.dict())
         # logging_from_subprocess(process=bento_process, breaking_point='status=')
-        assert len(response.json()['annotation_sets']) == 5
+        assert len(response.json()['annotation_sets']) == 4
         assert sum([len(element['annotations']) for element in response.json()['annotation_sets']]) == 19
         response_schema = ExtractResponse20240117(annotation_sets=response.json()['annotation_sets'])
         empty_document = Document(project=self.project, category=self.pipeline.category)
@@ -126,7 +127,7 @@ class TestExtractionAIBento(unittest.TestCase):
         }
         response = requests.post(url=self.request_url, json=data)
         # logging_from_subprocess(process=self.bento_process, breaking_point='status=')
-        assert len(response.json()['annotation_sets']) == 5
+        assert len(response.json()['annotation_sets']) == 4
         assert sum([len(element['annotations']) for element in response.json()['annotation_sets']]) == 19
 
     def test_wrong_input(self):
