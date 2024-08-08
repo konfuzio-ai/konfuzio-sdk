@@ -3137,14 +3137,17 @@ class Document(Data):
             self.annotation_sets()
 
             # Find no label annotation set
-            self._no_label_annotation_set = next(
-                (
-                    annotation_set
-                    for annotation_set in self._annotation_sets
-                    if annotation_set.label_set == self.project.no_label_set
-                ),
-                None,
-            )
+            if self._annotation_sets is not None:
+                self._no_label_annotation_set = next(
+                    (
+                        annotation_set
+                        for annotation_set in self._annotation_sets
+                        if annotation_set.label_set == self.project.no_label_set
+                    ),
+                    None,
+                )
+            else:
+                self._no_label_annotation_set = None
 
             # Create no label annotation set if not found
             if self._no_label_annotation_set is None:
