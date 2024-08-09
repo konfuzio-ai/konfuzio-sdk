@@ -1,4 +1,5 @@
 """Initialize AI-related dependencies safely."""
+
 import abc
 import functools
 import logging
@@ -81,7 +82,7 @@ else:
     SpacyLanguage = ModuleWrapper('SpacyLanguage').replaced
 tensorflow = PackageWrapper('tensorflow', ['File Splitting AI'])
 timm = PackageWrapper('timm', ['Document Categorization AI'])
-torch = PackageWrapper('torch', ['Document Categorization AI, File Splitting AI'])
+torch = PackageWrapper('torch', ['Document Categorization AI, File Splitting AI', 'OMR'])
 if torch.package:
     Module = torch.nn.Module
     Tensor = torch.Tensor
@@ -96,7 +97,7 @@ else:
     Optimizer = ModuleWrapper('Optimizer').replaced
     DataLoader = ModuleWrapper('DataLoader').replaced
     LongTensor = ModuleWrapper('LongTensor').replaced
-torchvision = PackageWrapper('torchvision', ['Document Categorization AI'])
+torchvision = PackageWrapper('torchvision', ['Document Categorization AI', 'OMR'])
 transformers = PackageWrapper('transformers', ['Document Categorization AI, File Splitting AI'])
 if transformers.package:
     Trainer = transformers.Trainer

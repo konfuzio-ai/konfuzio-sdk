@@ -4,10 +4,12 @@ import functools
 import traceback
 import typing as t
 
+
 from pydantic import BaseModel
 from starlette.responses import JSONResponse
 
 from konfuzio_sdk.data import Annotation, AnnotationSet, Document, Page, Project, Span
+
 
 from .schemas import ExtractRequest20240117, ExtractRequest20240117Page, ExtractResponse20240117
 
@@ -189,6 +191,7 @@ def convert_document_to_request(document: Document, schema: BaseModel = ExtractR
             },
             pages=pages,
         )
+
     else:
         raise NotImplementedError(NOT_IMPLEMENTED_ERROR_MESSAGE)
     return converted

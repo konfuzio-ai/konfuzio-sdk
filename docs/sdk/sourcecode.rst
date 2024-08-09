@@ -208,6 +208,17 @@ Utils
 .. autofunction:: get_spans_from_bbox
 .. autofunction:: normalize_name
 
+BboxPairing
+---------------------
+
+`[source] <https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/konfuzio_sdk/trainer/omr.py>`__
+
+.. automodule:: konfuzio_sdk.trainer.omr
+
+.. autoclass:: BboxPairing
+   :members:
+   :noindex:
+
 Tokenizers
 =====================
 
@@ -486,3 +497,4 @@ Containerization utils
 .. autofunction:: process_response
 .. autofunction:: convert_document_to_request
 .. autofunction:: convert_response_to_annotations
+
