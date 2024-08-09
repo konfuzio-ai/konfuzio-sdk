@@ -17,7 +17,6 @@ from konfuzio_sdk.trainer.information_extraction import RFExtractionAI
 from tests.variables import OFFLINE_PROJECT
 
 
-# @pytest.mark.skip(reason='Too lengthy for regular test pipelines')
 @pytest.mark.skipif(
     not is_dependency_installed('torch'),
     reason='Required dependencies not installed.',
