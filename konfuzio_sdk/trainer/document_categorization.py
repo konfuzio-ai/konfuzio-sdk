@@ -6,10 +6,12 @@ import abc
 import collections
 import functools
 import io
+import json
 import logging
 import math
 import os
 import pathlib
+import shutil
 import tempfile
 import uuid
 from copy import deepcopy
@@ -17,6 +19,7 @@ from enum import Enum
 from inspect import signature
 from typing import Dict, List, Optional, Tuple, Union
 
+import bentoml
 import lz4.frame
 import numpy as np
 import pandas as pd
@@ -224,7 +227,53 @@ class AbstractCategorizationAI(BaseModel, metaclass=abc.ABCMeta):
         """Methods that will be exposed in a bento-saved instance of a model."""
         return {
             'categorize': {'batchable': False},
+            'evaluate': {'batchable': False},
         }
+
+    @property
+    def bento_metadata(self) -> dict:
+        """Metadata to include into the bento-saved instance of a model."""
+        return {
+            'requires_images': getattr(self, 'requires_images', False),
+            'requires_segmentation': getattr(self, 'requires_segmentation', False),
+            'requires_text': getattr(self, 'requires_text', False),
+            'request': 'CategorizeRequest20240729',
+            'response': 'CategorizeResponse20240729',
+        }
+
+    def build_bento(self, bento_model):
+        """Build BentoML service for the model."""
+        bento_module_dir = os.path.dirname(os.path.abspath(__file__)) + '/../bento/categorization'
+        dict_metadata = self.project.create_project_metadata_dict()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # copy bento_module_dir to temp_dir
+            shutil.copytree(bento_module_dir, temp_dir + '/categorization')
+            # include metadata
+            with open(f'{temp_dir}/categories_and_label_data.json5', 'w') as f:
+                json.dump(dict_metadata, f, indent=2, sort_keys=True)
+            # include the AI model name so the service can load it correctly
+            with open(f'{temp_dir}/AI_MODEL_NAME', 'w') as f:
+                f.write(self._pkl_name)
+
+            built_bento = bentoml.bentos.build(
+                name=f'categorization_{get_timestamp()}_{self.name_lower()}_{self.project.id_}',
+                service=f'categorization.{self.name_lower()}_service:CategorizationService',
+                include=[
+                    'categorization/*.py',
+                    'categories_and_label_data.json5',
+                    'AI_MODEL_NAME',
+                ],
+                labels=self.bento_metadata,
+                python={
+                    'packages': [f'konfuzio-sdk=={self.konfuzio_sdk_version}'],
+                    'lock_packages': True,
+                },
+                build_ctx=temp_dir,
+                models=[str(bento_model.tag)],
+            )
+
+        return built_bento
 
 
 class NameBasedCategorizationAI(AbstractCategorizationAI):

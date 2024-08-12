@@ -317,8 +317,28 @@ class BaseModel(metaclass=abc.ABCMeta):
         # cache the pickle name to avoid changing it during the save process (as it includes timestamps)
         self._pkl_name = self.pkl_name
 
+        if 'categorization' in self.pkl_name:
+            custom_objects = {
+                'tokenizer': self.tokenizer,
+                'image_preprocessing': self.image_preprocessing,
+                'image_augmentation': self.image_augmentation,
+                'text_vocab': self.text_vocab,
+                'category_vocab': self.category_vocab,
+                'classifier': self.classifier,
+                'eval_transforms': self.eval_transforms,
+                'train_transforms': self.train_transforms,
+                'categories': self.categories,
+                'model_type': self.__class__.__name__,
+            }
+        else:
+            custom_objects = None
+
         saved_model = bentoml.picklable_model.save_model(
-            name=self._pkl_name, model=self, signatures=self.entrypoint_methods, metadata=self.bento_metadata
+            name=self._pkl_name,
+            model=self,
+            signatures=self.entrypoint_methods,
+            metadata=self.bento_metadata,
+            custom_objects=custom_objects,
         )
         logger.info(f'Model saved in the local BentoML store: {saved_model}')
 
