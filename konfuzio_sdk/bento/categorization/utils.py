@@ -13,7 +13,7 @@ NOT_IMPLEMENTED_ERROR_MESSAGE = (
 )
 
 
-def prepare_request(request: BaseModel, project: Project) -> Document:
+def prepare_request(request: BaseModel, project: Project, konfuzio_sdk_version: Optional[str] = None) -> Document:
     """
     Receive a request and prepare it for the categorization runner.
 
@@ -21,9 +21,12 @@ def prepare_request(request: BaseModel, project: Project) -> Document:
     :param project: A Project instance.
     :returns: An instance of a Document class.
     """
+    document_id = max((doc.id_ for doc in project._documents if doc.id_), default=0) + 1
+
     if request.__class__.__name__ == 'CategorizeRequest20240729':
-        bboxes = {
-            str(bbox_id): {
+        bboxes = {}
+        for bbox_id, bbox in request.bboxes.items():
+            bboxes[str(bbox_id)] = {
                 'x0': bbox.x0,
                 'x1': bbox.x1,
                 'y0': bbox.y0,
@@ -31,9 +34,14 @@ def prepare_request(request: BaseModel, project: Project) -> Document:
                 'page_number': bbox.page_number,
                 'text': bbox.text,
             }
-            for bbox_id, bbox in request.bboxes.items()
-        }
+            # Backwards compatibility with Konfuzio SDK versions < 0.3.
+            # In newer versions, the top and bottom values are not needed.
+            if konfuzio_sdk_version < '0.3':
+                page = next(page for page in request.pages if page.number == bbox.page_number)
+                bboxes[str(bbox_id)]['top'] = round(page.original_size[1] - bbox.y0, 4)
+                bboxes[str(bbox_id)]['bottom'] = round(page.original_size[1] - bbox.y1, 4)
         document = Document(
+            id_=document_id,
             text=request.text,
             bbox=bboxes,
             project=project,
@@ -59,14 +67,22 @@ def process_response(result, schema: BaseModel = CategorizeResponse20240729) -> 
     """
     pages_result = []
     if schema.__name__ == 'CategorizeResponse20240729':
-        for page in result.pages:
-            current_page = {'number': page.number, 'categories': []}
+        for page in result.pages():
+            current_page = {'number': page.number, 'original_size': page._original_size, 'categories': []}
             for category_annotation in page.category_annotations:
-                current_page['categories'] = {
-                    'category_id': category_annotation.category.id_,
-                    'confidence': category_annotation.confidence,
-                }
-            pages_result.append(current_page)
+                current_page['categories'].append(
+                    schema.CategorizedPage.PredictedCategory(
+                        category_id=category_annotation.category.id_,
+                        confidence=category_annotation.confidence,
+                    )
+                )
+            pages_result.append(
+                schema.CategorizedPage(
+                    number=current_page['number'],
+                    original_size=current_page['original_size'],
+                    categories=current_page['categories'],
+                )
+            )
     else:
         raise NotImplementedError(NOT_IMPLEMENTED_ERROR_MESSAGE)
     return schema(pages=pages_result)
@@ -132,11 +148,11 @@ def convert_response_to_categorized_pages(
 
     if response.__class__.__name__ == 'CategorizeResponse20240729':
         for page in response.pages:
-            document_page = document.get_page_by_index(page['number'] - 1)
+            _ = Page(id_=page.number, document=document, number=page.number, original_size=page.original_size)
             for category in page.categories:
-                category_id = category_mappings.get(category.id_, category.id_)
+                category_id = category_mappings.get(category.category_id, category.category_id)
                 confidence = category.confidence
-                document_page.add_category_annotation(
+                _.add_category_annotation(
                     category_annotation=CategoryAnnotation(
                         category=document.project.get_category_by_id(category_id), confidence=confidence
                     )

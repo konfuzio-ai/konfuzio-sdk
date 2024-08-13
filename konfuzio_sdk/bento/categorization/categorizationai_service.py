@@ -1,6 +1,8 @@
 """Run a service for a containerized instance of Categorization AI."""
+import asyncio
 import json
 import os
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
 import bentoml
@@ -24,6 +26,7 @@ class CategorizationService:
     def __init__(self):
         """Load the categorization model into memory."""
         self.categorization_model = bentoml.picklable_model.load_model(self.model_ref)
+        self.executor = ThreadPoolExecutor()
 
     @bentoml.api(input_spec=CategorizeRequest20240729)
     async def categorize(self, **request: Any) -> CategorizeResponse20240729:
@@ -31,7 +34,9 @@ class CategorizationService:
         request = CategorizeRequest20240729(**request)
         project = self.categorization_model.project
         document = prepare_request(request=request, project=project)
-        result = self.categorization_model.extract(document)
+        result = await asyncio.get_event_loop().run_in_executor(
+            self.executor, self.categorization_model.categorize, document
+        )
         categories_result = process_response(result)
         return categories_result
 

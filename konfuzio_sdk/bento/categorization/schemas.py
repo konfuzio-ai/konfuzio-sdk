@@ -1,9 +1,27 @@
 """Define pydantic models for request and response from the Categorization AI."""
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel
+from pydantic import BaseModel, PlainSerializer, PlainValidator, WithJsonSchema, errors
+from typing_extensions import Annotated
 
-from ..utils import HexBytes
+
+def hex_bytes_validator(o: Any) -> bytes:
+    """
+    Custom validator to be able to correctly serialize and unserialize bytes.
+    See https://github.com/pydantic/pydantic/issues/3756#issuecomment-1654425270
+    """
+    if isinstance(o, bytes):
+        return o
+    elif isinstance(o, bytearray):
+        return bytes(o)
+    elif isinstance(o, str):
+        return bytes.fromhex(o)
+    raise errors.BytesError
+
+
+HexBytes = Annotated[
+    bytes, PlainValidator(hex_bytes_validator), PlainSerializer(lambda b: b.hex()), WithJsonSchema({'type': 'string'})
+]
 
 
 class CategorizeRequest20240729Page(BaseModel):
@@ -45,6 +63,7 @@ class CategorizeResponse20240729(BaseModel):
             category_id: int
             confidence: float
 
+        original_size: Tuple[float, float]
         number: int
         categories: List[PredictedCategory]
 
