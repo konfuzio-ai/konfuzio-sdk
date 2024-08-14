@@ -36,10 +36,11 @@ def prepare_request(request: BaseModel, project: Project, konfuzio_sdk_version: 
             }
             # Backwards compatibility with Konfuzio SDK versions < 0.3.
             # In newer versions, the top and bottom values are not needed.
-            if konfuzio_sdk_version < '0.3':
-                page = next(page for page in request.pages if page.number == bbox.page_number)
-                bboxes[str(bbox_id)]['top'] = round(page.original_size[1] - bbox.y0, 4)
-                bboxes[str(bbox_id)]['bottom'] = round(page.original_size[1] - bbox.y1, 4)
+            if konfuzio_sdk_version:
+                if konfuzio_sdk_version < '0.3':
+                    page = next(page for page in request.pages if page.number == bbox.page_number)
+                    bboxes[str(bbox_id)]['top'] = round(page.original_size[1] - bbox.y0, 4)
+                    bboxes[str(bbox_id)]['bottom'] = round(page.original_size[1] - bbox.y1, 4)
         document = Document(
             id_=document_id,
             text=request.text,
