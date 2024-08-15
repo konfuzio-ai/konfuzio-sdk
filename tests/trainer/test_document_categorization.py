@@ -741,8 +741,8 @@ class TestCategorizationConfigurations(unittest.TestCase):
             delete_ai_model(model_id, ai_type='categorization')
             url = get_create_ai_model_url(ai_type='categorization')
             session = konfuzio_session()
-            not_found = session.get(url)
-            assert not_found.status_code == 204
+            with pytest.raises(HTTPError, match='404 Not Found'):
+                _ = session.get(url)
         except (HTTPError, ReadTimeout) as e:
             assert ('403' in str(e)) or ('500' in str(e)) or ('Read timed out' in str(e)) or ('404' in str(e))
 
