@@ -117,16 +117,24 @@ def split_row_based_on_offset_string(row: pd.Series) -> pd.DataFrame:
     """
     words = row['offset_string'].split()
     if len(words) > 1:
+        current_index = 0
         new_rows = []
         start = row['start_offset']
-        end = row['end_offset']
         for word in words:
+            # find the next occurrence of the word starting from current_index
+            start_index = row['offset_string'].find(word, current_index)
+            if start_index == -1:
+                # this case should not happen if the input is correctly split but having it here for safety
+                continue
+            end_index = start_index + len(word)
+            current_index = end_index
+            # setting the offset values for each word using it's start_index and end_index in the offset_string
+            start_offset = start + start_index
+            end_offset = start + end_index
             new_row = row.copy()
-            end = start + len(word)
             new_row['offset_string'] = word
-            new_row['start_offset'] = start
-            new_row['end_offset'] = end
-            start = end + 1
+            new_row['start_offset'] = start_offset
+            new_row['end_offset'] = end_offset
             new_rows.append(new_row)
         return pd.DataFrame(new_rows)
     else:

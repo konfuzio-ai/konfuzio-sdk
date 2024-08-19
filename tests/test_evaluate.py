@@ -1006,10 +1006,15 @@ class TestCompare(unittest.TestCase):
         )
         assert result['defined_to_be_correct_target'].to_list() == [1, 1]
 
-    def test_split_span_evaluation(self):
-        """Test strict mode of evaluation with and without split_spans_by_whitespace."""
+    def test_evaluation_result_with_split_spans_by_whitespace_case_1(self):
+        """Test evaluation results with split_spans_by_whitespace set to True using a first Test Case."""
         project = Project(id_=14392)
         tokenizer = WhitespaceTokenizer()
+        ############################
+        #         Test Case 1      #
+        ############################
+        # doc annotation spans: [Span (1336, 1348): "July 6, 1960"]
+        # doc_2 annotation spans: [Span (1336, 1343): "July 6,", Span (1344, 1348): "1960"]
         doc = project.get_document_by_id(5589024)
         doc_2 = deepcopy(doc)
         doc_2 = tokenizer.tokenize(doc_2)
@@ -1021,13 +1026,111 @@ class TestCompare(unittest.TestCase):
             confidence=1,
         )
         _.annotation_set.id_ = 1
-        # doc annotation spans: [Span (1336, 1348): "July 6, 1960"]
-        # doc_2 annotation spans: [Span (1336, 1343): "July 6,", Span (1344, 1348): "1960"]
         docs_to_evaluate = [(doc, doc_2)]
         evaluation = ExtractionEvaluation(docs_to_evaluate, strict=True, split_spans_by_whitespace=True)
         assert evaluation.f1(search=doc.annotations()[2].label) == 1.0
+        evaluation = ExtractionEvaluation(docs_to_evaluate, strict=False, split_spans_by_whitespace=True)
+        assert evaluation.f1(search=doc.annotations()[2].label) == 1.0
+
+    def test_evaluation_result_without_split_spans_by_whitespace_case_1(self):
+        """Test evaluation results with split_spans_by_whitespace set to False using a first Test Case."""
+        project = Project(id_=14392)
+        tokenizer = WhitespaceTokenizer()
+        ############################
+        #         Test Case 1      #
+        ############################
+        # doc annotation spans: [Span (1336, 1348): "July 6, 1960"]
+        # doc_2 annotation spans: [Span (1336, 1343): "July 6,", Span (1344, 1348): "1960"]
+        doc = project.get_document_by_id(5589024)
+        doc_2 = deepcopy(doc)
+        doc_2 = tokenizer.tokenize(doc_2)
+        _ = Annotation(
+            label_set=doc.annotations()[2].label_set,
+            spans=[Span(1336, 1343), Span(1344, 1348)],
+            document=doc_2,
+            label=doc.annotations()[2].label,
+            confidence=1,
+        )
+        _.annotation_set.id_ = 1
+        docs_to_evaluate = [(doc, doc_2)]
         evaluation = ExtractionEvaluation(docs_to_evaluate, strict=True, split_spans_by_whitespace=False)
         assert evaluation.f1(search=doc.annotations()[2].label) == 0.0
+        evaluation = ExtractionEvaluation(docs_to_evaluate, strict=False, split_spans_by_whitespace=False)
+        assert evaluation.f1(search=doc.annotations()[2].label) == 1.0
+
+    def test_evaluation_result_with_split_spans_by_whitespace_case_2(self):
+        """Test evaluation results with split_spans_by_whitespace set to False using a second Test Case."""
+        project = Project(id_=14392)
+        ############################
+        #         Test Case 2      #
+        ############################
+        # doc annotation spans: [Span (0, 5): "hello", Span (9, 21): "world\t\tworld"]
+        # doc_2 annotation spans: [Span (0, 5): "hello", Span (9, 14): "world", Span (16, 21): "world"]
+        example_text = 'hello    world\t\tworld'
+        doc = Document(project=project, text=example_text, category=project.categories[0])
+        _ = Annotation(
+            label_set=project.label_sets[0],
+            spans=[Span(0, 5), Span(9, 21)],
+            document=doc,
+            label=project.labels[0],
+            confidence=1,
+            is_correct=True,
+            id_=1,
+        )
+        _.annotation_set.id_ = 1
+        doc_2 = Document(project=project, text=example_text, category=project.categories[0])
+        _ = Annotation(
+            label_set=project.label_sets[0],
+            spans=[Span(0, 5), Span(9, 14), Span(16, 21)],
+            document=doc_2,
+            label=project.labels[0],
+            confidence=1,
+            is_correct=True,
+            id_=2,
+        )
+        _.annotation_set.id_ = 2
+        docs_to_evaluate = [(doc, doc_2)]
+        evaluation = ExtractionEvaluation(docs_to_evaluate, strict=True, split_spans_by_whitespace=True)
+        assert evaluation.f1(search=project.labels[0]) == 1.0
+        evaluation = ExtractionEvaluation(docs_to_evaluate, strict=False, split_spans_by_whitespace=True)
+        assert evaluation.f1(search=project.labels[0]) == 1.0
+
+    def test_evaluation_result_without_split_spans_by_whitespace_case_2(self):
+        """Test evaluation results without split_spans_by_whitespace set to False using a second Test Case."""
+        project = Project(id_=14392)
+        ############################
+        #         Test Case 2      #
+        ############################
+        # doc annotation spans: [Span (0, 5): "hello", Span (9, 21): "world\t\tworld"]
+        # doc_2 annotation spans: [Span (0, 5): "hello", Span (9, 14): "world", Span (16, 21): "world"]
+        example_text = 'hello    world\t\tworld'
+        doc = Document(project=project, text=example_text, category=project.categories[0])
+        _ = Annotation(
+            label_set=project.label_sets[0],
+            spans=[Span(0, 5), Span(9, 21)],
+            document=doc,
+            label=project.labels[0],
+            confidence=1,
+            is_correct=True,
+            id_=1,
+        )
+        _.annotation_set.id_ = 1
+        doc_2 = Document(project=project, text=example_text, category=project.categories[0])
+        _ = Annotation(
+            label_set=project.label_sets[0],
+            spans=[Span(0, 5), Span(9, 14), Span(16, 21)],
+            document=doc_2,
+            label=project.labels[0],
+            confidence=1,
+            is_correct=True,
+            id_=2,
+        )
+        _.annotation_set.id_ = 2
+        docs_to_evaluate = [(doc, doc_2)]
+        evaluation = ExtractionEvaluation(docs_to_evaluate, strict=True, split_spans_by_whitespace=False)
+        assert evaluation.f1(search=project.labels[0]) == 0.4
+        evaluation = ExtractionEvaluation(docs_to_evaluate, strict=False, split_spans_by_whitespace=False)
+        assert evaluation.f1(search=project.labels[0]) == 1.0
 
 
 @parameterized.parameterized_class(
