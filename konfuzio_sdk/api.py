@@ -630,6 +630,7 @@ def upload_file_konfuzio_api(
     callback_status_code: int = None,
     sync: bool = False,
     assignee: str = '',
+    wait_for_images: bool = False,
 ):
     """
     Upload Document to Konfuzio API.
@@ -643,6 +644,7 @@ def upload_file_konfuzio_api(
     :param callback_status_code: The HTTP response code of the callback server (in case a callback URL is set)
     :param sync: If True, will run synchronously and only return once the online database is updated
     :param assignee: The user who is currently assigned to the Document.
+    :param wait_for_images: Whether to wait until image processing has finished or not.
     :return: Response status.
     """
     if session is None:
@@ -666,6 +668,14 @@ def upload_file_konfuzio_api(
         data['assignee'] = assignee
 
     r = session.post(url=url, files=files, data=data)
+
+    if wait_for_images:
+        document_url = get_document_url(document_id=r.json()['id'])
+        images_are_ready = False
+        while not images_are_ready:
+            check_page_images = session.get(url=document_url)
+            page_data = check_page_images.json()['pages']
+            images_are_ready = all(page.get('size') is not None for page in page_data)
 
     return r
 

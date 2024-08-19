@@ -464,6 +464,12 @@ class TestOnlineProject(unittest.TestCase):
         assert isinstance(image, PIL.PngImagePlugin.PngImageFile)
         document.delete(delete_online=True)
 
+    def test_create_document_with_waiting_for_images(self):
+        """Test creating a Document with wait_for_images=True to ensure Page images are processed."""
+        document = Document.from_file(path='tests/test_data/pdf.pdf', project=self.project, wait_for_images=True)
+        for page in document.pages():
+            assert page._original_size
+
     def test_add_category_with_repeated_name(self):
         """Test that it is impossible to create a Category with the same name as one of already existing in a Project."""
         with pytest.raises(ValueError, match='another name'):

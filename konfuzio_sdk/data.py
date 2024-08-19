@@ -2929,6 +2929,7 @@ class Document(Data):
         callback_url: str = '',
         timeout: Optional[int] = None,
         sync: bool = True,
+        wait_for_images: bool = False,
     ) -> 'Document':
         """
         Initialize Document from file with synchronous API call.
@@ -2944,6 +2945,7 @@ class Document(Data):
         :param callback_url: Callback URL receiving POST call once extraction is done
         :param timeout: Number of seconds to wait for response from the server
         :param sync: Whether to wait for the file to be processed by the server
+        :param wait_for_images: Whether to wait for images to be processed by the server
         :return: New Document
         """
         get_file_type_and_extension(path)  # check if file is valid
@@ -2954,6 +2956,7 @@ class Document(Data):
             category_id=category_id,
             callback_url=callback_url,
             sync=sync,
+            wait_for_images=wait_for_images,
             session=konfuzio_session(timeout=timeout),
         )
         response = response.json()

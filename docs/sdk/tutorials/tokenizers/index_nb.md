@@ -278,7 +278,7 @@ from copy import deepcopy
 
 my_project = Project(id_=TEST_PROJECT_ID)
 
-sample_doc = Document.from_file("sample.pdf", project=my_project, sync=True)
+sample_doc = Document.from_file("sample.pdf", project=my_project, sync=True, wait_for_images=True)
 deepcopied_doc = deepcopy(sample_doc)
 tokenizer = ParagraphTokenizer(mode='line_distance')
 
@@ -344,7 +344,7 @@ The `SentenceTokenizer` is a specialized [tokenizer](https://dev.konfuzio.com/sd
 
 To use it, import the necessary modules, initialize the Project, the Document, and the Tokenizer and tokenize the Document.
 ```python tags=["remove-cell"]
-document = Document.from_file(path="../../../../tests/test_data/textposition.pdf", project=project, sync=True)
+document = Document.from_file(path="../../../../tests/test_data/textposition.pdf", project=project, sync=True,wait_for_images=True)
 YOUR_DOCUMENT_ID = document.id_
 ```
 
