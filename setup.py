@@ -89,7 +89,7 @@ setuptools.setup(
         'filetype==1.0.7',  # Used to check that files are in the correct format
         'lz4>=4.3.2',  # Used to compress pickles
         'matplotlib==3.7.1',
-        'nltk>=3.6.3',
+        'nltk>=3.6.3,<3.8.2',
         'numpy==1.23.5',
         'pandas>=1.3.5,<2.0.0',
         'Pillow>=8.4.0',

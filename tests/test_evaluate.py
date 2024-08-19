@@ -1015,6 +1015,10 @@ class TestCompare(unittest.TestCase):
         ############################
         # doc annotation spans: [Span (1336, 1348): "July 6, 1960"]
         # doc_2 annotation spans: [Span (1336, 1343): "July 6,", Span (1344, 1348): "1960"]
+    def test_split_span_evaluation(self):
+        """Test strict mode of evaluation with and without split_spans_by_whitespace."""
+        project = Project(id_=14392)
+        tokenizer = WhitespaceTokenizer()
         doc = project.get_document_by_id(5589024)
         doc_2 = deepcopy(doc)
         doc_2 = tokenizer.tokenize(doc_2)
@@ -1131,6 +1135,13 @@ class TestCompare(unittest.TestCase):
         assert evaluation.f1(search=project.labels[0]) == 0.4
         evaluation = ExtractionEvaluation(docs_to_evaluate, strict=False, split_spans_by_whitespace=False)
         assert evaluation.f1(search=project.labels[0]) == 1.0
+        # doc annotation spans: [Span (1336, 1348): "July 6, 1960"]
+        # doc_2 annotation spans: [Span (1336, 1343): "July 6,", Span (1344, 1348): "1960"]
+        docs_to_evaluate = [(doc, doc_2)]
+        evaluation = ExtractionEvaluation(docs_to_evaluate, strict=True, split_spans_by_whitespace=True)
+        assert evaluation.f1(search=doc.annotations()[2].label) == 1.0
+        evaluation = ExtractionEvaluation(docs_to_evaluate, strict=True, split_spans_by_whitespace=False)
+        assert evaluation.f1(search=doc.annotations()[2].label) == 0.0
 
 
 @parameterized.parameterized_class(
