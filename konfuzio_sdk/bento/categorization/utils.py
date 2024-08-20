@@ -75,6 +75,7 @@ def process_response(result, schema: BaseModel = CategorizeResponse20240729) -> 
                     schema.CategorizedPage.PredictedCategory(
                         category_id=category_annotation.category.id_,
                         confidence=category_annotation.confidence,
+                        category_name=category_annotation.category.name,
                     )
                 )
             pages_result.append(

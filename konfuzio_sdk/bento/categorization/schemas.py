@@ -62,6 +62,7 @@ class CategorizeResponse20240729(BaseModel):
 
             category_id: int
             confidence: float
+            category_name: str
 
         original_size: Tuple[float, float]
         number: int

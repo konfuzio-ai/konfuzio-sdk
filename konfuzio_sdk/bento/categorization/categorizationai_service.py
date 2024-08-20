@@ -29,10 +29,17 @@ class CategorizationService:
         self.executor = ThreadPoolExecutor()
 
     @bentoml.api(input_spec=CategorizeRequest20240729)
-    async def categorize(self, **request: Any) -> CategorizeResponse20240729:
+    async def categorize(self, ctx: bentoml.Context, **request: Any) -> CategorizeResponse20240729:
         """Send an call to the Categorization AI and process the response."""
         request = CategorizeRequest20240729(**request)
         project = self.categorization_model.project
+        # Add credentials from the request headers to the Project object, but only if the SDK version supports this.
+        # Older SDK versions do not have the credentials attribute on Project.
+        if hasattr(project, 'credentials'):
+            for key, value in ctx.request.headers.items():
+                if key.startswith('env_'):
+                    key = key.replace('env_', '', 1)
+                    project.credentials[key.upper()] = value
         document = prepare_request(request=request, project=project)
         result = await asyncio.get_event_loop().run_in_executor(
             self.executor, self.categorization_model.categorize, document
