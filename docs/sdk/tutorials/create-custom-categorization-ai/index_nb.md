@@ -12,7 +12,7 @@ jupyter:
     name: python3
 ---
 
-## Create a custom Categorization AI
+## Create and save a custom Categorization AI
 
 ---
 
@@ -23,7 +23,7 @@ jupyter:
 
 **Difficulty:** Medium
 
-**Goal:** Learn how to create a custom Categorization AI with manually defined architecture.
+**Goal:** Learn how to create a custom Categorization AI with manually defined architecture and save it in a Bento containerized format.
 
 ---
 
@@ -44,11 +44,10 @@ runtime and initialize the SDK once again; this will resolve the issue.
 You just need to wrap it into the class that corresponds to our Categorization AI structure. Follow the steps in this 
 tutorial to find out what are the requirements for that.
 
-**Note**: currently, the Server supports AI models created using `python 3.8`.
-
-By default, any [Categorization AI](https://dev.konfuzio.com/sdk/tutorials/document_categorization/index.html) class should derive from the `AbstractCategorizationModel` class and implement methods `__init__`, `fit`, `_categorize_page` and `save`.
+By default, any [Categorization AI](https://dev.konfuzio.com/sdk/tutorials/document_categorization/index.html) class should derive from the `AbstractCategorizationModel` class and implement methods `__init__`, `fit`, `_categorize_page`, `build_bento`, `bento_metadata`, and `entrypoint_methods` methods.
 
 Let's make necessary imports and define the class. In `__init__`, you can either not make any changes or initialize key variables required by your custom AI.
+
 ```python tags=["remove-cell"]
 import logging
 
@@ -57,6 +56,7 @@ logging.getLogger("timm").setLevel(logging.CRITICAL)
 ```
 
 ```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
+import bentoml
 import lz4
 import os
 import pathlib
@@ -66,7 +66,19 @@ from konfuzio_sdk.data import Page, Category, Project
 from typing import List
 
 class CustomCategorizationAI(AbstractCategorizationAI):
-    def __init__(self, categories: List[Category], *args, **kwargs):
+    """Define a custom Categorization AI."""
+
+    # specify if an AI uses text, images 
+    requires_text = True
+    requires_images = False
+    requires_segmentation = False # always false because it is only required for existing segmentation AIs
+
+    def __init__(self, categories: List[Category], *args, **kwargs) -> None:
+        """
+        Initialize a class.
+
+        categories: A list of Categories between which the AI is going to distinguish.
+        """
         # a list of Categories between which the AI will differentiate
         super().__init__(categories)
 ```
@@ -76,7 +88,8 @@ Then we need to define `fit` method. It can contain any custom architecture, for
 This method is allowed to be implemented as a no-op if you provide the trained model in other ways.
 
 ```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
-    def fit(self):
+    def fit(self) -> None:
+        """Fit the classifier on training Documents."""
         self.classifier_iterator = build_document_classifier_iterator(
                     self.documents,
                     self.train_transforms,
@@ -91,6 +104,11 @@ Next, we need to define how the model assigns a Category to a Page inside a `_ca
 
 ```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
     def _categorize_page(self, page: Page) -> Page:
+        """
+        Assign Category Annotations to the Document's Page.
+        
+        page: A Page to which Category Annotations are assigned.
+        """
         page_image = page.get_image()
         predicted_category_id, predicted_confidence = self._predict(page_image)
         
@@ -101,38 +119,66 @@ Next, we need to define how the model assigns a Category to a Page inside a `_ca
         return page
 ```
 
-Lastly, we define saving method for the new AI. It needs to be compressed into .lz4 format to be compatible with Konfuzio when uploaded to the server or an on-prem installation later.
-For example, saving can be defined similarly to the way it is defined in `CategorizationAI` class. Make sure to check that the save path exists using `pathlib`, 
-assign paths for temporary .pt file and final compressed file (this is needed for compressing the initially saved model),
-create dictionary to save all necessary model data needed for categorization/inference. If you use torch-based model, 
-save it using `torch.save()` and then compress the resulting file via lz4, removing the temporary file afterward.
+[BentoML](https://docs.bentoml.com/en/latest/?_gl=1*vms2y5*_gcl_au*OTYwNzkwODIzLjE3MTk5NDQwOTk.) allows to containerize the AI models and run them independently. A custom Categorization AI class needs three methods to support usage with BentoML:
+- `build_bento()` method which allows building the Bento archive that can later be uploaded to Konfuzio app or an on-prem installation, as well as served and used locally;
+- `entrypoint_methods()`, a property that defines what methods will be exposed in a resulting Bento model (typically `categorize` is enough);
+- `bento_metadata()` which defines what metadata will be saved in the model: whether it requires usage of images, text and/or segmentation, and also the formats of an expected request and response in Pydantic format.
 
-```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"] vscode={"languageId": "plaintext"}
-    def save(self, output_dir: str=None):
-
-        if not output_dir:
-            self.output_dir = self.project.model_folder
-        else:
-            self.output_dir = output_dir
-        pathlib.Path(self.output_dir).mkdir(parents=True, exist_ok=True)
-        temp_pt_file_path = self.temp_pt_file_path
-        compressed_file_path = self.compressed_file_path
-
-        data_to_save = {
-            "classifier": self.classifier,
-            "categories": self.categories,
-            "model_type": "CustomCategorizationAI",
+```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"]
+    @property
+    def entrypoint_methods(self) -> dict:
+        """List the model's methods to make it accessible in a containerized instance of the AI."""
+        return {
+            'categorize': {'batchable': False}
         }
 
-        # save all necessary model data
-        torch.save(data_to_save, temp_pt_file_path)
-        with open(temp_pt_file_path, 'rb') as f_in:
-            with open(compressed_file_path, 'wb') as f_out:
-                compressed = lz4.frame.compress(f_in.read())
-                f_out.write(compressed)
-        self.pipeline_path = compressed_file_path
-        os.remove(temp_pt_file_path)
-        return self.pipeline_path
+    @property
+    def bento_metadata(self) -> dict:
+        """List if the AI requires processing of images/text and segmentation, and specify formats of request and response. Needed for server support of the AI. """
+        return {
+            'requires_images': getattr(self, 'requires_images', False),
+            'requires_segmentation': getattr(self, 'requires_segmentation', False),
+            'requires_text': getattr(self, 'requires_text', False),
+            'request': 'CategorizeRequest20240729', 
+            'response': 'CategorizeResponse20240729', 
+        }
+
+    def build_bento(self, bento_model) -> Bento:
+        """Build a archived instance of the AI."""
+        bento_module_dir = 'konfuzio-sdk/konfuzio_sdk/bento/categorization' # specify your own path if the root folder where konfuzio_sdk is stored has a different name
+        dict_metadata = self.project.create_project_metadata_dict()
+
+        #  create a temporary directory for a future bento archive
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # copy bento_module_dir to temp_dir
+            shutil.copytree(bento_module_dir, temp_dir + '/categorization')
+            # include metadata
+            with open(f'{temp_dir}/categories_and_label_data.json5', 'w') as f:
+                json.dump(dict_metadata, f, indent=2, sort_keys=True)
+            # include the AI model name so the service can load it correctly
+            with open(f'{temp_dir}/AI_MODEL_NAME', 'w') as f:
+                f.write(self._pkl_name)
+
+            built_bento = bentoml.bentos.build(
+                name=f"categorization_{self.category.id_ if self.category else '0'}",
+                service=f'categorization/categorizationai_service.py:CategorizationService',
+                include=[
+                    'categorization/*.py',
+                    'categories_and_label_data.json5',
+                    'AI_MODEL_NAME',
+                ],
+                labels=self.bento_metadata,
+                python={
+                    'packages': [
+                        'https://github.com/konfuzio-ai/konfuzio-sdk/archive/refs/heads/master.zip#egg=konfuzio-sdk'
+                    ],
+                    'lock_packages': True,
+                },
+                build_ctx=temp_dir,
+                models=[str(bento_model.tag)],
+            )
+
+        return built_bento
 ```
 
 After building the class, we need to test it to ensure it works. Let's make necessary imports, initialize the Project
@@ -193,10 +239,27 @@ for page in categorization_result.pages():
 print(f"Found category {categorization_result.category} for {categorization_result}")
 ```
 
-Finally, save the model and check that it is loadable.
+Finally, save the model and check that it is loadable. Saving can be done in two different ways: as a compressed model and as a Bento containerized instance. 
+**Note:** Now both of methods are supported by Konfuzio Server, but we will depreciate the former method when Bento components are developed for all AI types. 
+
+Saving and loading a model via compression:
 ```python
 pickle_model_path = categorization_pipeline.save(reduce_weight=False)
 categorization_pipeline_loaded = CustomCategorizationAI.load_model(pickle_model_path)
+```
+
+Saving a model as a Bento instance:
+```python
+bento, path_to_bento = categorization_pipeline.save_bento(output_dir=project.model_folder)
+```
+
+To test that a model works, you can find out the model's name in BentoML's local registry and serve it via the following command:
+```python tags=["skip-execution", "nbval-skip"]
+bento_name = bento.tag.name + ':' + bento.tag.version
+```
+
+```bash tags=["skip-execution", "nbval-skip"]
+bentoml serve extraction_0:gmu2lrbyugahyasc # replace the name to your value of bento_name variable
 ```
 
 After you have trained and saved your custom AI, you can upload it using the steps from the [tutorial](https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html#upload-extraction-or-category-ai-to-target-instance) or using the method 
@@ -206,27 +269,49 @@ After you have trained and saved your custom AI, you can upload it using the ste
 In this tutorial, we have walked through the construction, training, testing and preparation to uploading of the custom Categorization AI. Below is the full code to accomplish this task. Note that this class is completely demonstrative, and to make it functional you would need to replace contents of defined methods with your own code.
 
 ```python editable=true slideshow={"slide_type": ""} tags=["skip-execution", "nbval-skip"] vscode={"languageId": "plaintext"}
+import bentoml
+import lz4
 import os
-
-from konfuzio_sdk.trainer.document_categorization import AbstractCategorizationAI, EfficientNet, PageImageCategorizationModel
+import pathlib
+import torch
+from konfuzio_sdk.trainer.document_categorization import AbstractCategorizationAI
 from konfuzio_sdk.data import Page, Category, Project
 from typing import List
 
 class CustomCategorizationAI(AbstractCategorizationAI):
-    def __init__(self, categories: List[Category], *args, **kwargs):
-        super().__init__(categories)
+    """Define a custom Categorization AI."""
 
-    def fit(self, n_epochs=1) -> None:
-        self.classifier_iterator = self.build_document_classifier_iterator(
+    # specify if an AI uses text, images 
+    requires_text = True
+    requires_images = False
+    requires_segmentation = False # always false because it is only required for existing segmentation AIs
+
+    def __init__(self, categories: List[Category], *args, **kwargs) -> None:
+        """
+        Initialize a class.
+
+        categories: A list of Categories between which the AI is going to distinguish.
+        """
+        # a list of Categories between which the AI will differentiate
+        super().__init__(categories)
+    
+    def fit(self) -> None:
+        """Fit the classifier on training Documents."""
+        self.classifier_iterator = build_document_classifier_iterator(
                     self.documents,
                     self.train_transforms,
                     use_image = True,
                     use_text = False,
                     device='cpu',
                 )
-        self.classifier, training_metrics = self._fit_classifier(train_iterator, **kwargs)
-
+        self.classifier._fit_classifier(self.classifier_iterator, **kwargs)
+    
     def _categorize_page(self, page: Page) -> Page:
+        """
+        Assign Category Annotations to the Document's Page.
+        
+        page: A Page to which Category Annotations are assigned.
+        """
         page_image = page.get_image()
         predicted_category_id, predicted_confidence = self._predict(page_image)
         
@@ -235,35 +320,61 @@ class CustomCategorizationAI(AbstractCategorizationAI):
                 _ = CategoryAnnotation(category=category, confidence=predicted_confidence, page=page)
         
         return page
-
-    def save(self, output_dir: str=None):
-        if not output_dir:
-            self.output_dir = self.project.model_folder
-        else:
-            self.output_dir = output_dir
-
-        pathlib.Path(self.output_dir).mkdir(parents=True, exist_ok=True)
-
-        temp_pt_file_path = self.temp_pt_file_path
-        compressed_file_path = self.compressed_file_path
-
-        if self.categories:
-            self.categories[0].project.lose_weight()
-
-        data_to_save = {
-            "classifier": self.classifier,
-            "categories": self.categories,
-            "model_type": "CustomCategorizationAI",
+    
+    @property
+    def entrypoint_methods(self) -> dict:
+        """List the model's methods to make it accessible in a containerized instance of the AI."""
+        return {
+            'categorize': {'batchable': False}
         }
 
-        torch.save(data_to_save, temp_pt_file_path)
-        with open(temp_pt_file_path, 'rb') as f_in:
-            with open(compressed_file_path, 'wb') as f_out:
-                compressed = lz4.frame.compress(f_in.read())
-                f_out.write(compressed)
-        self.pipeline_path = compressed_file_path
-        os.remove(temp_pt_file_path)
-        return self.pipeline_path
+    @property
+    def bento_metadata(self) -> dict:
+        """List if the AI requires processing of images/text and segmentation, and specify formats of request and response. Needed for server support of the AI. """
+        return {
+            'requires_images': getattr(self, 'requires_images', False),
+            'requires_segmentation': getattr(self, 'requires_segmentation', False),
+            'requires_text': getattr(self, 'requires_text', False),
+            'request': 'CategorizeRequest20240729', 
+            'response': 'CategorizeResponse20240729', 
+        }
+
+    def build_bento(self, bento_model) -> Bento:
+        """Build a archived instance of the AI."""
+        bento_module_dir = 'konfuzio-sdk/konfuzio_sdk/bento/categorization' # specify your own path if the root folder where konfuzio_sdk is stored has a different name
+        dict_metadata = self.project.create_project_metadata_dict()
+
+        #  create a temporary directory for a future bento archive
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # copy bento_module_dir to temp_dir
+            shutil.copytree(bento_module_dir, temp_dir + '/categorization')
+            # include metadata
+            with open(f'{temp_dir}/categories_and_label_data.json5', 'w') as f:
+                json.dump(dict_metadata, f, indent=2, sort_keys=True)
+            # include the AI model name so the service can load it correctly
+            with open(f'{temp_dir}/AI_MODEL_NAME', 'w') as f:
+                f.write(self._pkl_name)
+
+            built_bento = bentoml.bentos.build(
+                name=f"categorization_{self.category.id_ if self.category else '0'}",
+                service=f'categorization/categorizationai_service.py:CategorizationService',
+                include=[
+                    'categorization/*.py',
+                    'categories_and_label_data.json5',
+                    'AI_MODEL_NAME',
+                ],
+                labels=self.bento_metadata,
+                python={
+                    'packages': [
+                        'https://github.com/konfuzio-ai/konfuzio-sdk/archive/refs/heads/master.zip#egg=konfuzio-sdk'
+                    ],
+                    'lock_packages': True,
+                },
+                build_ctx=temp_dir,
+                models=[str(bento_model.tag)],
+            )
+
+        return built_bento
 
 project = Project(id_=YOUR_PROJECT_ID)
 categorization_pipeline = CustomCategorizationAI(project.categories)
@@ -295,8 +406,10 @@ for page in categorization_result.pages():
     print(f"Found category {page.category} for {page}")
 print(f"Found category {categorization_result.category} for {categorization_result}")
 
-pickle_model_path = categorization_pipeline.save(reduce_weight=False)
+pickle_model_path = categorization_pipeline.save_bento()
 categorization_pipeline_loaded = CustomCategorizationAI.load_model(pickle_model_path)
+bento, path_to_bento = categorization_pipeline.save_bento(output_dir=project.model_folder)
+bento_name = bento.tag.name + ':' + bento.tag.version
 ```
 
 ```python tags=["remove-cell"]

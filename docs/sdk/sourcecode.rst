@@ -448,41 +448,78 @@ BalancedLossTrainer
 AI containerization
 =====================
 
-`[source] <https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/konfuzio_sdk/bento/extraction>`__
+`[source] <https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/konfuzio_sdk/bento>`__
 
 .. automodule:: konfuzio_sdk.bento.extraction.rfextractionai_service
 
 ExtractionService
 --------------------
-.. autoclass:: ExtractionService
+.. autoclass:: konfuzio_sdk.bento.extraction.rfextractionai_service.ExtractionService
    :members:
    :noindex:
 
-.. autofunction:: project_metadata
+.. autofunction:: konfuzio_sdk.bento.extraction.rfextractionai_service.project_metadata
 
-.. automodule::konfuzio_sdk.bento.extraction.schemas
+.. automodule:: konfuzio_sdk.bento.extraction.schemas
 
-Pydantic schemas
+Pydantic schemas for ExtractionService
 --------------------
-.. autoclass:: ExtractRequest20240117Page
+.. autoclass:: konfuzio_sdk.bento.extraction.schemas.ExtractRequest20240117Page
    :members:
    :noindex:
 
-.. autoclass:: ExtractRequest20240117
+.. autoclass:: konfuzio_sdk.bento.extraction.schemas.ExtractRequest20240117
    :members:
    :noindex:
 
-.. autoclass:: ExtractResponse20240117
+.. autoclass:: konfuzio_sdk.bento.extraction.schemas.ExtractResponse20240117
    :members:
    :noindex:
 
-.. autofunction:: hex_bytes_validator
+.. autofunction:: konfuzio_sdk.bento.extraction.schemas.hex_bytes_validator
 
-.. automodule::konfuzio_sdk.bento.extraction.utils
+.. automodule:: konfuzio_sdk.bento.extraction.utils
 
-Containerization utils
+Containerization utils for ExtractionService 
 -----------------------
 .. autofunction:: prepare_request
 .. autofunction:: process_response
 .. autofunction:: convert_document_to_request
 .. autofunction:: convert_response_to_annotations
+
+.. automodule:: konfuzio_sdk.bento.categorization.categorizationai_service
+
+CategorizationService
+--------------------
+.. autoclass:: konfuzio_sdk.bento.categorization.categorizationai_service.CategorizationService
+   :members:
+   :noindex:
+
+.. autofunction:: konfuzio_sdk.bento.categorization.categorizationai_service.project_metadata
+
+.. automodule:: konfuzio_sdk.bento.categorization.schemas
+
+Pydantic schemas for CategorizationService
+--------------------
+.. autoclass:: konfuzio_sdk.bento.categorization.schemas.CategorizeRequest20240729Page
+   :members:
+   :noindex:
+
+.. autoclass:: konfuzio_sdk.bento.categorization.schemas.CategorizeRequest20240729
+   :members:
+   :noindex:
+
+.. autoclass:: konfuzio_sdk.bento.categorization.schemas.CategorizeResponse20240729
+   :members:
+   :noindex:
+
+.. autofunction:: konfuzio_sdk.bento.categorization.schemas.hex_bytes_validator
+
+.. automodule:: konfuzio_sdk.bento.categorization.utils
+
+Containerization utils for CategorizationService 
+-----------------------
+.. autofunction:: konfuzio_sdk.bento.categorization.utils.prepare_request
+.. autofunction:: konfuzio_sdk.bento.categorization.utils.process_response
+.. autofunction:: konfuzio_sdk.bento.categorization.utils.convert_document_to_request
+.. autofunction:: konfuzio_sdk.bento.categorization.utils.convert_response_to_categorized_pages
