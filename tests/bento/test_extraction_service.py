@@ -15,6 +15,7 @@ from konfuzio_sdk.data import Document, Project
 from konfuzio_sdk.settings_importer import is_dependency_installed
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
 from konfuzio_sdk.trainer.information_extraction import RFExtractionAI
+from konfuzio_sdk.utils import logging_from_subprocess
 from tests.variables import OFFLINE_PROJECT
 
 
@@ -42,11 +43,11 @@ class TestExtractionAIBento(unittest.TestCase):
         bento, path = cls.pipeline.save_bento()
         cls.bento_name = bento.tag.name + ':' + bento.tag.version
         cls.bento_process = subprocess.Popen(
-            ['bentoml', 'serve', cls.bento_name], stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+            ['bentoml', 'serve', '-p 3001', cls.bento_name], stdout=subprocess.PIPE, stderr=subprocess.STDOUT
         )
         time.sleep(5)
         print('served bento')
-        cls.request_url = 'http://0.0.0.0:3000/extract'
+        cls.request_url = 'http://0.0.0.0:3001/extract'
 
     def test_extract(self):
         """Test that only a schema-adhering response is accepted by extract method of service."""
@@ -74,7 +75,7 @@ class TestExtractionAIBento(unittest.TestCase):
             ],
         }
         response = requests.post(url=self.request_url, json=data)
-        # logging_from_subprocess(process=self.bento_process, breaking_point='status=')
+        logging_from_subprocess(process=self.bento_process, breaking_point='status=')
         assert len(response.json()['annotation_sets']) == 4
         assert sum([len(element['annotations']) for element in response.json()['annotation_sets']]) == 19
 
