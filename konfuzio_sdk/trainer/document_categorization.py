@@ -267,7 +267,11 @@ class AbstractCategorizationAI(BaseModel, metaclass=abc.ABCMeta):
                 labels=self.bento_metadata,
                 python={
                     'packages': [
-                        'https://github.com/konfuzio-ai/konfuzio-sdk/archive/refs/heads/12219-categorization-ai-bento.zip#egg=konfuzio-sdk'
+                        'https://github.com/konfuzio-ai/konfuzio-sdk/archive/refs/heads/12219-categorization-ai-bento.zip#egg=konfuzio-sdk',
+                        'transformers==4.30.2',
+                        'torch==2.3.1',
+                        'torchvision==0.18.1',
+                        'timm==0.6.7',
                     ],
                     'lock_packages': True,
                 },
@@ -276,6 +280,29 @@ class AbstractCategorizationAI(BaseModel, metaclass=abc.ABCMeta):
             )
 
         return built_bento
+
+    def save_bento(self, build=True, output_dir=None) -> Union[None, Tuple]:
+        """
+        Save AI as a BentoML model in the local store.
+
+        :param build: Bundle the model into a BentoML service and store it in the local store.
+        :param output_dir: If present, a .bento archive will also be saved to this directory.
+
+        :return: None if build=False, otherwise a tuple of (saved_bento, archive_path).
+        """
+        custom_objects = {
+            'tokenizer': self.tokenizer,
+            'image_preprocessing': self.image_preprocessing,
+            'image_augmentation': self.image_augmentation,
+            'text_vocab': self.text_vocab,
+            'category_vocab': self.category_vocab,
+            'classifier': self.classifier,
+            'eval_transforms': self.eval_transforms,
+            'train_transforms': self.train_transforms,
+            'categories': self.categories,
+            'model_type': self.__class__.__name__,
+        }
+        return super().save_bento(build, output_dir, custom_objects=custom_objects)
 
 
 class NameBasedCategorizationAI(AbstractCategorizationAI):

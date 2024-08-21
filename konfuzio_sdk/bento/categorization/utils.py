@@ -81,7 +81,6 @@ def process_response(result, schema: BaseModel = CategorizeResponse20240729) -> 
             pages_result.append(
                 schema.CategorizedPage(
                     number=current_page['number'],
-                    original_size=current_page['original_size'],
                     categories=current_page['categories'],
                 )
             )
@@ -150,11 +149,11 @@ def convert_response_to_categorized_pages(
 
     if response.__class__.__name__ == 'CategorizeResponse20240729':
         for page in response.pages:
-            _ = Page(id_=page.number, document=document, number=page.number, original_size=page.original_size)
+            page_to_update = document.get_page_by_index(page.number - 1)
             for category in page.categories:
                 category_id = category_mappings.get(category.category_id, category.category_id)
                 confidence = category.confidence
-                _.add_category_annotation(
+                page_to_update.add_category_annotation(
                     category_annotation=CategoryAnnotation(
                         category=document.project.get_category_by_id(category_id), confidence=confidence
                     )

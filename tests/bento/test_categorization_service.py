@@ -8,7 +8,7 @@ import requests
 
 from konfuzio_sdk.bento.categorization.schemas import CategorizeRequest20240729, CategorizeResponse20240729
 from konfuzio_sdk.bento.categorization.utils import convert_document_to_request, convert_response_to_categorized_pages
-from konfuzio_sdk.data import Document, Project
+from konfuzio_sdk.data import Project
 from konfuzio_sdk.settings_importer import is_dependency_installed
 from konfuzio_sdk.trainer.document_categorization import BERT, CategorizationAI, PageTextCategorizationModel
 
@@ -82,15 +82,12 @@ class TestCategorizationAIBento(unittest.TestCase):
 
     def test_categorize_converted(self):
         """Test that a converting function creates request that can be accepted by categorize method of service."""
-        prepared = convert_document_to_request(document=self.test_document, schema=CategorizeRequest20240729)
+        document = self.test_document
+        prepared = convert_document_to_request(document=document, schema=CategorizeRequest20240729)
         response = requests.post(url=self.request_url, json=prepared.dict())
         response_schema = CategorizeResponse20240729(pages=response.json()['pages'])
-        document_id = max((doc.id_ for doc in self.project._documents if doc.id_), default=0) + 1
-        restored_document = Document(
-            id_=document_id, project=self.project, text=self.test_document.text, bbox=self.test_document.bboxes
-        )
         document_with_categorized_pages = convert_response_to_categorized_pages(
-            response=response_schema, document=restored_document
+            response=response_schema, document=document
         )
         assert len(document_with_categorized_pages.pages()) == 2
         assert document_with_categorized_pages.get_page_by_index(0).category_annotations[0].category.id_ == 19827

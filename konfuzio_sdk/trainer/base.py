@@ -302,12 +302,13 @@ class BaseModel(metaclass=abc.ABCMeta):
 
         return pkl_file_path
 
-    def save_bento(self, build=True, output_dir=None) -> Union[None, tuple]:
+    def save_bento(self, build=True, output_dir=None, custom_objects=None) -> Union[None, tuple]:
         """
         Save AI as a BentoML model in the local store.
 
         :param build: Bundle the model into a BentoML service and store it in the local store.
         :param output_dir: If present, a .bento archive will also be saved to this directory.
+        :param custom_objects: Objects to be saved in a .bento archive.
 
         :return: None if build=False, otherwise a tuple of (saved_bento, archive_path).
         """
@@ -316,22 +317,6 @@ class BaseModel(metaclass=abc.ABCMeta):
 
         # cache the pickle name to avoid changing it during the save process (as it includes timestamps)
         self._pkl_name = self.pkl_name
-
-        if 'categorization' in self.pkl_name:
-            custom_objects = {
-                'tokenizer': self.tokenizer,
-                'image_preprocessing': self.image_preprocessing,
-                'image_augmentation': self.image_augmentation,
-                'text_vocab': self.text_vocab,
-                'category_vocab': self.category_vocab,
-                'classifier': self.classifier,
-                'eval_transforms': self.eval_transforms,
-                'train_transforms': self.train_transforms,
-                'categories': self.categories,
-                'model_type': self.__class__.__name__,
-            }
-        else:
-            custom_objects = None
 
         saved_model = bentoml.picklable_model.save_model(
             name=self._pkl_name,

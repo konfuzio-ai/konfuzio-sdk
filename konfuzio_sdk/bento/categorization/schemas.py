@@ -64,7 +64,6 @@ class CategorizeResponse20240729(BaseModel):
             confidence: float
             category_name: str
 
-        original_size: Tuple[float, float]
         number: int
         categories: List[PredictedCategory]
 
