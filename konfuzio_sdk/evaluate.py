@@ -1,6 +1,7 @@
 """Calculate the accuracy on any level in a  Document."""
 
 import logging
+import warnings
 from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
@@ -13,7 +14,8 @@ from konfuzio_sdk.utils import memory_size_of, sdk_isinstance
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.WARNING)
-pandas_logger = logging.getLogger('pandas').setLevel(logging.ERROR)
+warnings.simplefilter(action='ignore', category=FutureWarning)
+warnings.simplefilter(action='ignore', category=pd.errors.SettingWithCopyWarning)
 
 RELEVANT_FOR_EVALUATION = [
     'is_matched',  # needed to group spans in Annotations
