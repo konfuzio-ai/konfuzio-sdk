@@ -12,6 +12,7 @@ from konfuzio_sdk.data import Category, Document
 from konfuzio_sdk.utils import memory_size_of, sdk_isinstance
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.WARNING)
 pandas_logger = logging.getLogger('pandas').setLevel(logging.ERROR)
 
 RELEVANT_FOR_EVALUATION = [
