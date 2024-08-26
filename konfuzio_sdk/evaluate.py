@@ -12,6 +12,7 @@ from konfuzio_sdk.data import Category, Document
 from konfuzio_sdk.utils import memory_size_of, sdk_isinstance
 
 logger = logging.getLogger(__name__)
+pandas_logger = logging.getLogger('pandas').setLevel(logging.ERROR)
 
 RELEVANT_FOR_EVALUATION = [
     'is_matched',  # needed to group spans in Annotations
@@ -381,7 +382,7 @@ class EvaluationCalculator:
                 raise ZeroDivisionError('TP and FP are zero, impossible to calculate precision.')
             elif self.zero_division == 'warn':
                 precision = 0
-                logging.warning('TP and FP are zero, precision is set to 0.')
+                logging.info('TP and FP are zero, precision is set to 0.')
             else:
                 precision = self.zero_division
         return precision
@@ -400,7 +401,7 @@ class EvaluationCalculator:
                 raise ZeroDivisionError('TP and FN are zero, recall is impossible to calculate.')
             elif self.zero_division == 'warn':
                 recall = 0
-                logging.warning('TP and FN are zero, recall is set to 0.')
+                logging.info('TP and FN are zero, recall is set to 0.')
             else:
                 recall = self.zero_division
         return recall
@@ -419,7 +420,7 @@ class EvaluationCalculator:
                 raise ZeroDivisionError('Precision and recall are zero, F1 is impossible to calculate.')
             elif self.zero_division == 'warn':
                 f1 = 0
-                logging.warning('Precision and recall are zero, F1 score is set to 0.')
+                logging.info('Precision and recall are zero, F1 score is set to 0.')
             else:
                 f1 = self.zero_division
         return f1
