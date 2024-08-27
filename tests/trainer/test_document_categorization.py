@@ -13,7 +13,6 @@ from requests import HTTPError, ReadTimeout
 
 from konfuzio_sdk.api import (
     delete_ai_model,
-    konfuzio_session,
     update_ai_model,
     upload_ai_model,
 )
@@ -40,7 +39,6 @@ from konfuzio_sdk.trainer.document_categorization import (
     TextModel,
     build_categorization_ai_pipeline,
 )
-from konfuzio_sdk.urls import get_create_ai_model_url
 from tests.variables import (
     OFFLINE_PROJECT,
     TEST_CATEGORIZATION_DOCUMENT_ID,
@@ -560,11 +558,8 @@ class TestBertCategorizationModels(unittest.TestCase):
             assert updated['description'] == 'test_description'
             updated = update_ai_model(model_id, ai_type='categorization', patch=False, description='test_description')
             assert updated['description'] == 'test_description'
-            delete_ai_model(model_id, ai_type='categorization')
-            url = get_create_ai_model_url(ai_type='categorization')
-            session = konfuzio_session()
-            not_found = session.get(url)
-            assert not_found.status_code == 204
+            deleted_model = delete_ai_model(model_id, ai_type='categorization')
+            assert deleted_model.status_code == 204
         except (HTTPError, ReadTimeout) as e:
             assert ('403' in str(e)) or ('500' in str(e)) or ('ReadTimeout' in str(e))
 
@@ -738,11 +733,8 @@ class TestCategorizationConfigurations(unittest.TestCase):
             assert updated['description'] == 'test_description'
             updated = update_ai_model(model_id, ai_type='categorization', patch=False, description='test_description')
             assert updated['description'] == 'test_description'
-            delete_ai_model(model_id, ai_type='categorization')
-            url = get_create_ai_model_url(ai_type='categorization')
-            session = konfuzio_session()
-            not_found = session.get(url)
-            assert not_found.status_code == 204
+            deleted_model = delete_ai_model(model_id, ai_type='categorization')
+            assert deleted_model.status_code == 204
         except (HTTPError, ReadTimeout) as e:
             assert ('403' in str(e)) or ('500' in str(e)) or ('Read timed out' in str(e)) or ('404' in str(e))
 
