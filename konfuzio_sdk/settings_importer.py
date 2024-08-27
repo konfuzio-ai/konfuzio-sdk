@@ -71,5 +71,5 @@ def get_handlers():
 
 
 logging.basicConfig(
-    level=config('LOGGING_LEVEL', default=logging.INFO, cast=int), format=LOG_FORMAT, handlers=get_handlers()
+    level=config('LOGGING_LEVEL', default=logging.WARNING, cast=int), format=LOG_FORMAT, handlers=get_handlers()
 )
