@@ -2295,7 +2295,7 @@ class Annotation(Data):
                 self.label in self.annotation_set.label_set.labels
             ), f'{self.label} is not in {self.annotation_set.label_set.labels} of {self.annotation_set}.'
 
-        for i, span in enumerate(spans) or enumerate([]):
+        for i, span in enumerate(spans or []):
             if (i != len(spans) - 1) and (self.document.text is not None):
                 current_span = spans[i]
                 next_span = spans[i + 1]
