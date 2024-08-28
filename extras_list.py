@@ -2,6 +2,7 @@
 
 EXTRAS = {
     'dev': [
+        'autodoc_pydantic==2.2.0',
         'coverage==7.3.2',
         'pytest>=7.1.2',
         'pre-commit>=2.20.0',
