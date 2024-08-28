@@ -59,6 +59,8 @@ def prepare_request(request: BaseModel, project: Project, konfuzio_sdk_version: 
 
     :param request: Unprocessed request.
     :param project: A Project instance.
+    :param konfuzio_sdk_version: The version of the Konfuzio SDK used by the embedded AI model. Used to apply backwards
+        compatibility changes for older SDK versions.
     :returns: An instance of a Document class.
     """
     # Extraction AIs include only one Category per Project.
@@ -79,7 +81,7 @@ def prepare_request(request: BaseModel, project: Project, konfuzio_sdk_version: 
             }
             # Backwards compatibility with Konfuzio SDK versions < 0.3.
             # In newer versions, the top and bottom values are not needed.
-            if konfuzio_sdk_version < '0.3':
+            if konfuzio_sdk_version and konfuzio_sdk_version < '0.3':
                 page = next(page for page in request.pages if page.number == bbox.page_number)
                 bboxes[str(bbox_id)]['top'] = round(page.original_size[1] - bbox.y0, 4)
                 bboxes[str(bbox_id)]['bottom'] = round(page.original_size[1] - bbox.y1, 4)
