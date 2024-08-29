@@ -13,7 +13,6 @@ from konfuzio_sdk.data import Category, Document
 from konfuzio_sdk.utils import memory_size_of, sdk_isinstance
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARNING)
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 RELEVANT_FOR_EVALUATION = [
@@ -56,8 +55,6 @@ RELEVANT_FOR_EVALUATION = [
     'tmp_id_',  # a temporary ID used for enumerating the predicted annotations solely
     'disambiguated_id',  # an ID for multi-span annotations
 ]
-
-logger = logging.getLogger(__name__)
 
 
 def grouped(group, target: str):
