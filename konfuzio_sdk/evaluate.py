@@ -15,7 +15,6 @@ from konfuzio_sdk.utils import memory_size_of, sdk_isinstance
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.WARNING)
 warnings.simplefilter(action='ignore', category=FutureWarning)
-warnings.simplefilter(action='ignore', category=pd.errors.SettingWithCopyWarning)
 
 RELEVANT_FOR_EVALUATION = [
     'is_matched',  # needed to group spans in Annotations
@@ -140,7 +139,7 @@ def compare(
     :return: Evaluation DataFrame
     """
     df_a = pd.DataFrame(doc_a.eval_dict(use_correct=only_use_correct))
-    df_a_ids = df_a[['id_']]
+    df_a_ids = df_a[['id_']].copy()
     duplicated_ids = df_a_ids['id_'].duplicated(keep=False)
     df_a_ids['disambiguated_id'] = df_a_ids['id_'].astype(str)
     df_a_ids.loc[duplicated_ids, 'disambiguated_id'] += '_' + (df_a_ids.groupby('id_').cumcount() + 1).astype(str)
