@@ -853,7 +853,9 @@ class AbstractExtractionAI(BaseModel):
                 ],
                 labels=self.bento_metadata,
                 python={
-                    'packages': [f'konfuzio-sdk<={self.konfuzio_sdk_version}'],
+                    'packages': [
+                        'https://github.com/konfuzio-ai/konfuzio-sdk/archive/refs/heads/upgrade-bento.zip#egg=konfuzio-sdk'
+                    ],
                     'lock_packages': True,
                 },
                 build_ctx=temp_dir,
