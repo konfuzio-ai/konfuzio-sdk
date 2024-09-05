@@ -835,7 +835,7 @@ class AbstractExtractionAI(BaseModel):
 
         with tempfile.TemporaryDirectory() as temp_dir:
             # copy bento_module_dir to temp_dir
-            shutil.copytree(bento_module_dir, temp_dir + '/extraction')
+            shutil.copytree(bento_module_dir, temp_dir + '/extraction', ignore=shutil.ignore_patterns('*.pyc'))
             # include metadata
             with open(f'{temp_dir}/categories_and_label_data.json5', 'w') as f:
                 json.dump(dict_metadata, f, indent=2, sort_keys=True)
