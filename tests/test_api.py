@@ -151,6 +151,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             'proposed_split',
             'split_is_revised',
             'enable_translated_strings',
+            'original_file_url',
         }
 
     def test_document_details_document_not_available(self):
@@ -202,6 +203,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             'proposed_split',
             'split_is_revised',
             'enable_translated_strings',
+            'original_file_url',
         }
 
     def test_long_document_details(self):
@@ -241,6 +243,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             'proposed_split',
             'split_is_revised',
             'enable_translated_strings',
+            'original_file_url',
         }
 
     def test_get_list_of_files(self):
