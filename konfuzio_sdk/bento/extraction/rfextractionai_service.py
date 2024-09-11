@@ -11,6 +11,7 @@ from fastapi import Depends, FastAPI, HTTPException
 
 from .schemas import ExtractRequest20240117, ExtractResponse20240117
 from .utils import handle_exceptions, prepare_request, process_response
+from ...data import Project
 
 # load ai model name from AI_MODEL_NAME file in parent directory
 ai_model_name_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'AI_MODEL_NAME')
@@ -36,7 +37,13 @@ class ExtractionService:
         # Even though the request is already validated against the pydantic schema, we need to get it back as an
         # instance of the pydantic model to be able to pass it to the prepare_request function.
         request = ExtractRequest20240117(**request)
-        project = self.extraction_model.project
+        try:
+            project = self.extraction_model.project
+        except:
+            project = Project(None, strict_data_validation=False, credentials={})
+            sdk_project.set_offline()
+            Category(project=sdk_project)
+
         # Add credentials from the request headers to the Project object, but only if the SDK version supports this.
         # Older SDK versions do not have the credentials attribute on Project.
         if hasattr(project, 'credentials'):
