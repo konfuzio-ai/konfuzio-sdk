@@ -41,8 +41,8 @@ class ExtractionService:
             project = self.extraction_model.project
         except:
             project = Project(None, strict_data_validation=False, credentials={})
-            sdk_project.set_offline()
-            Category(project=sdk_project)
+            project.set_offline()
+            Category(project=project)
 
         # Add credentials from the request headers to the Project object, but only if the SDK version supports this.
         # Older SDK versions do not have the credentials attribute on Project.
