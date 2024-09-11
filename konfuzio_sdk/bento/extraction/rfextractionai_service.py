@@ -11,7 +11,7 @@ from fastapi import Depends, FastAPI, HTTPException
 
 from .schemas import ExtractRequest20240117, ExtractResponse20240117
 from .utils import handle_exceptions, prepare_request, process_response
-from ...data import Project
+from konfuzio_sdk.data import Project
 
 # load ai model name from AI_MODEL_NAME file in parent directory
 ai_model_name_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'AI_MODEL_NAME')
