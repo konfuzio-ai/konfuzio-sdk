@@ -7,7 +7,7 @@ import time
 from json import JSONDecodeError
 from operator import itemgetter
 from pathlib import Path
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import requests
 from dotenv import set_key
@@ -183,6 +183,29 @@ def konfuzio_session(
     return session
 
 
+def consume_paginated_api(initial_url: str, session=None) -> List[Dict[str, Any]]:
+    """
+    Consumes a paginated API, following the `next` links until all items have been retrieved.
+
+    :param initial_url: The initial URL to start fetching data from
+    :param session: A Konfuzio Session object
+    :return: A list of all items from all pages
+    """
+    all_results = []
+    next_url = initial_url
+
+    while next_url:
+        logger.info(f'Fetching paginated {next_url}')
+        response = session.get(next_url)
+        response.raise_for_status()
+
+        data = response.json()
+        all_results.extend(data['results'])
+        next_url = data.get('next')
+
+    return all_results
+
+
 def get_project_list(session=None):
     """
     Get the list of all Projects for the user.
@@ -317,8 +340,8 @@ def get_document_annotations(document_id: int, session=None):
     else:
         host = None
     url = get_document_annotations_url(document_id=document_id, host=host)
-    r = session.get(url)
-    return r.json()
+    result = consume_paginated_api(url, session)
+    return result
 
 
 def get_document_bbox(document_id: int, session=None):
@@ -559,20 +582,11 @@ def get_meta_of_files(
 
     if limit:
         url = get_documents_meta_url(project_id=project_id, offset=0, limit=limit, *args, **kwargs)
+        r = session.get(url)
+        result = r.json()['results']
     else:
         url = get_documents_meta_url(project_id=project_id, limit=pagination_limit, host=host, *args, **kwargs)
-    result = []
-    r = session.get(url)
-    data = r.json()
-    result += data['results']
-
-    if not limit:
-        while 'next' in data.keys() and data['next']:
-            logger.info(f'Iterate on paginated {url}.')
-            url = data['next']
-            r = session.get(url)
-            data = r.json()
-            result += data['results']
+        result = consume_paginated_api(url, session)
 
     sorted_documents = sorted(result, key=itemgetter('id'))
     return sorted_documents

@@ -3534,7 +3534,7 @@ class Document(Data):
             if data['category']:
                 self._category = self.project.get_category_by_id(data['category'])
             # write a file, even there are no annotations to support offline work
-            annotations = get_document_annotations(document_id=self.id_, session=self.project.session)['results']
+            annotations = get_document_annotations(document_id=self.id_, session=self.project.session)
             with open(self.annotation_file_path, 'w') as f:
                 json.dump(annotations, f, indent=2, sort_keys=True)
 
