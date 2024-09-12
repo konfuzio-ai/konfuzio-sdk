@@ -26,14 +26,36 @@ class ExtractionService:
     model_ref = bentoml.models.get(ai_model_name)
 
     def __init__(self):
-        """Load the extraction model into memory."""
-        self.extraction_model = bentoml.picklable_model.load_model(self.model_ref)
+        """Initialize the extraction service."""
+        print(f'Initializing service for model {self.model_ref}')
+        self.extraction_model = None
         self.executor = ThreadPoolExecutor()
+        self.model_load_task = asyncio.create_task(self.load_model())
+
+    async def load_model(self):
+        """Asynchronously load the extraction model into memory using the executor."""
+        print(f'Loading model {self.model_ref}')
+        loop = asyncio.get_event_loop()
+        self.extraction_model = await loop.run_in_executor(
+            self.executor, bentoml.picklable_model.load_model, self.model_ref
+        )
+        print(f'Model {self.model_ref} loaded')
+
+    async def get_model(self):
+        """Ensure the model is loaded before returning it."""
+        await self.model_load_task
+        if self.extraction_model is None:
+            raise RuntimeError('Model failed to load')
+        return self.extraction_model
 
     @bentoml.api(input_spec=ExtractRequest20240117)
     @handle_exceptions
     async def extract(self, ctx: bentoml.Context, **request: t.Any) -> ExtractResponseForLegacyTrainer20240912:
         """Send a call to the Extraction AI and process the response."""
+
+        # Ensure the model is loaded
+        extraction_model = await self.get_model()
+
         # Even though the request is already validated against the pydantic schema, we need to get it back as an
         # instance of the pydantic model to be able to pass it to the prepare_request function.
         request = ExtractRequest20240117(**request)
@@ -59,7 +81,7 @@ class ExtractionService:
         for _page in request.pages:
             pages.append(dict(_page))
 
-        result = await asyncio.get_event_loop().run_in_executor(self.executor, self.extraction_model.extract, request.text, bboxes, pages)
+        result = await asyncio.get_event_loop().run_in_executor(self.executor, extraction_model.extract, request.text, bboxes, pages)
         json_result = process_response(result, schema=ExtractResponseForLegacyTrainer20240912)
 
         project._documents = [d for d in project._documents if d.id_ != document.id_ and d.copy_of_id != document.id_]
