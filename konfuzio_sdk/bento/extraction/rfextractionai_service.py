@@ -52,7 +52,7 @@ class ExtractionService:
         )
         # Run the extraction in a separate thread, otherwise the API server will block
         result = await asyncio.get_event_loop().run_in_executor(self.executor, self.extraction_model.extract, document)
-        annotations_result = process_response(result)
+        annotations_result = process_response(result, schema=ExtractResponse20240117)
         # Remove the Document and its copies from the Project to avoid memory leaks
         project._documents = [d for d in project._documents if d.id_ != document.id_ and d.copy_of_id != document.id_]
         return annotations_result

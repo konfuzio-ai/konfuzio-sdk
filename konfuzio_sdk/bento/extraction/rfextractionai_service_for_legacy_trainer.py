@@ -60,7 +60,7 @@ class ExtractionService:
             pages.append(dict(_page))
 
         result = await asyncio.get_event_loop().run_in_executor(self.executor, self.extraction_model.extract, request.text, bboxes, pages)
-        json_result = process_response(result)
+        json_result = process_response(result, schema=LegacyTrainerExtractResponse20240912)
 
         project._documents = [d for d in project._documents if d.id_ != document.id_ and d.copy_of_id != document.id_]
         return json_result
