@@ -86,9 +86,10 @@ class TestExtractionAIBento(unittest.TestCase):
         # logging_from_subprocess(process=bento_process, breaking_point='status=')
         assert len(response.json()['annotation_sets']) == 4
         assert sum([len(element['annotations']) for element in response.json()['annotation_sets']]) == 19
-        response_schema = ExtractResponse20240117(annotation_sets=response.json()['annotation_sets'])
         empty_document = Document(project=self.project, category=self.pipeline.category)
-        document_with_annotations = convert_response_to_annotations(response=response_schema, document=empty_document)
+        document_with_annotations = convert_response_to_annotations(
+            response=response, response_schema_class=ExtractResponse20240117, document=empty_document
+        )
         assert len(document_with_annotations.annotations(use_correct=False)) == 19
 
     def test_extract_with_image_bytes(self):
