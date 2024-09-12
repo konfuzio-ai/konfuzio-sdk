@@ -226,6 +226,8 @@ def convert_response_to_annotations(
     label_mappings = {int(k): v for k, v in mappings.get('labels', {}).items()}
 
     if response.__class__.__name__ == 'ExtractResponse20240117':
+        response = response_schema_class(annotation_sets=response.json()['annotation_sets'])
+
         for annotation_set in response.annotation_sets:
             label_set_id = label_set_mappings.get(annotation_set.label_set_id, annotation_set.label_set_id)
             sdk_annotation_set = AnnotationSet(
