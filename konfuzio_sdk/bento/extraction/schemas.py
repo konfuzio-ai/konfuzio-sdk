@@ -95,5 +95,5 @@ class ExtractResponse20240117(BaseModel):
 
     annotation_sets: List[AnnotationSet]
 
-class LegacyTrainerExtractResponse20240912(BaseModel):
-    __root__: Dict
+class LegacyTrainerExtractResponse20240912(RootModel):
+    root: Dict
