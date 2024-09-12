@@ -11,7 +11,6 @@ from fastapi import Depends, FastAPI, HTTPException
 
 from .schemas import ExtractRequest20240117, ExtractResponse20240117
 from .utils import handle_exceptions, prepare_request, process_response
-from konfuzio_sdk.data import Project, Category
 
 # load ai model name from AI_MODEL_NAME file in parent directory
 ai_model_name_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'AI_MODEL_NAME')
@@ -52,7 +51,7 @@ class ExtractionService:
             konfuzio_sdk_version=getattr(self.extraction_model, 'konfuzio_sdk_version', None),
         )
         # Run the extraction in a separate thread, otherwise the API server will block
-        result = await asyncio.get_event_loop().run_in_executor(self.executor, self.extraction_model.extract, request.text, request.bboxes)
+        result = await asyncio.get_event_loop().run_in_executor(self.executor, self.extraction_model.extract, document)
         annotations_result = process_response(result)
         # Remove the Document and its copies from the Project to avoid memory leaks
         project._documents = [d for d in project._documents if d.id_ != document.id_ and d.copy_of_id != document.id_]
