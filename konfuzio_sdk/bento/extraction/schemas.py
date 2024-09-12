@@ -1,7 +1,7 @@
 """Define pydantic models for request and response from the Extraction AI."""
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from pydantic import BaseModel, PlainSerializer, PlainValidator, WithJsonSchema, errors
+from pydantic import BaseModel, RootModel, PlainSerializer, PlainValidator, WithJsonSchema, errors
 from typing_extensions import Annotated
 
 
