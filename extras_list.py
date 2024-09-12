@@ -25,7 +25,7 @@ EXTRAS = {
         'chardet==5.1.0',
         'datasets==2.14.6',
         'evaluate==0.4.1',
-        'spacy>=2.3.5',
+        'spacy>=2.3.5,<3.8.0',
         'torch>=1.8.1',
         'torchvision>=0.9.1',
         'transformers==4.30.2',
