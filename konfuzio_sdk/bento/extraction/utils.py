@@ -152,7 +152,7 @@ def process_response(result, schema: BaseModel = ExtractResponse20240117) -> Bas
                 )
             annotations_result.append(current_annotation_set)
         return schema(annotation_sets=annotations_result)
-    elif schema.__name__ == 'LegacyTrainerExtractResponse20240912':
+    elif schema.__name__ == 'ExtractResponseForLegacyTrainer20240912':
         import json
         class JSONEncoder(json.JSONEncoder):
             def default(self, obj):
@@ -250,7 +250,7 @@ def convert_response_to_annotations(
                     ],
                 )
         return document
-    elif response.__class__.__name__ == 'LegacyTrainerExtractResponse20240912':
+    elif response.__class__.__name__ == 'ExtractResponseForLegacyTrainer20240912':
         """Restore Pandas Dataframe which has been converted to JSON for sending via API."""
         result = response.json()
 
