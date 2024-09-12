@@ -151,9 +151,19 @@ def process_response(result, schema: BaseModel = ExtractResponse20240117) -> Bas
                     )
                 )
             annotations_result.append(current_annotation_set)
+        return schema(annotation_sets=annotations_result)
+    elif schema.__name__ == 'LegacyTrainerExtractResponse20240912':
+        import json
+        class JSONEncoder(json.JSONEncoder):
+            def default(self, obj):
+                if hasattr(obj, 'to_json'):
+                    return obj.to_json()
+                return json.JSONEncoder.default(self, obj)
+
+        json_result = json.loads(json.dumps(result, cls=JSONEncoder))
+        return schema(json_result)
     else:
         raise NotImplementedError(NOT_IMPLEMENTED_ERROR_MESSAGE)
-    return schema(annotation_sets=annotations_result)
 
 
 def convert_document_to_request(document: Document, schema: BaseModel = ExtractRequest20240117) -> BaseModel:
@@ -240,5 +250,23 @@ def convert_response_to_annotations(
                     ],
                 )
         return document
+    elif response.__class__.__name__ == 'LegacyTrainerExtractResponse20240912':
+        """Restore Pandas Dataframe which has been converted to JSON for sending via API."""
+        result = response.json()
+
+        def my_convert(res_dict):
+            import pandas as pd
+            new_dict = {}
+            for k, v in res_dict.items():
+                if isinstance(v, dict):
+                    new_dict[k] = my_convert(v)
+                if isinstance(v, list):
+                    new_dict[k] = [my_convert(x) for x in v]
+                if isinstance(v, str):
+                    new_dict[k] = pd.DataFrame.from_dict(json.loads(v))
+            return new_dict
+
+        my_converted_json = my_convert(result)
+        return my_converted_json
     else:
         raise NotImplementedError(NOT_IMPLEMENTED_ERROR_MESSAGE)
