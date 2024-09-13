@@ -183,7 +183,7 @@ def konfuzio_session(
     return session
 
 
-def consume_paginated_api(initial_url: str, session=None) -> List[Dict[str, Any]]:
+def consume_paginated_api(initial_url: str, session) -> List[Dict[str, Any]]:
     """
     Consumes a paginated API, following the `next` links until all items have been retrieved.
 
@@ -216,8 +216,8 @@ def get_project_list(session=None):
     if session is None:
         session = konfuzio_session()
     url = get_projects_list_url()
-    r = session.get(url=url)
-    return r.json()
+    result = consume_paginated_api(url, session)
+    return result
 
 
 def get_project_details(project_id: int, session=None) -> dict:
@@ -256,9 +256,9 @@ def get_project_labels(project_id: int, session=None) -> dict:
         host = None
 
     url = get_project_labels_url(project_id=project_id, host=host)
-    r = session.get(url=url)
+    result = consume_paginated_api(url, session)
 
-    return r.json()
+    return result
 
 
 def get_project_label_sets(project_id: int, session=None) -> dict:
@@ -276,9 +276,9 @@ def get_project_label_sets(project_id: int, session=None) -> dict:
         host = None
 
     url = get_project_label_sets_url(project_id=project_id, host=host)
-    r = session.get(url=url)
+    result = consume_paginated_api(url, session)
 
-    return r.json()
+    return result
 
 
 def create_new_project(project_name, session=None):
@@ -392,22 +392,6 @@ def get_page_image(document_id: int, page_number: int, session=None, thumbnail: 
         raise TypeError(f'CONTENT TYPE of Image {page_number} is {content_type} and no PNG.')
 
     return r.content
-
-
-# def post_document_bulk_annotation(document_id: int, project_id: int, annotation_list, session=konfuzio_session()):
-#     """
-#     Add a list of Annotations to an existing document.
-#
-#     :param document_id: ID of the file
-#     :param project_id: ID of the project
-#     :param annotation_list: List of Annotations
-#     :param session: Konfuzio session with Retry and Timeout policy
-#     :return: Response status.
-#     """
-#     url = get_document_annotations_url(document_id, project_id=project_id)
-#     r = session.post(url, json=annotation_list)
-#     r.raise_for_status()
-#     return r
 
 
 def post_document_annotation(
@@ -798,8 +782,8 @@ def get_project_categories(project_id: int = None, session=None) -> List[Dict]:
     else:
         host = None
     url = get_project_categories_url(project_id=project_id, host=host)
-    r = session.get(url=url)
-    return r.json()['results']
+    result = consume_paginated_api(url, session)
+    return result
 
 
 def upload_ai_model(ai_model_path: str, project_id: int = None, category_id: int = None, session=None):
@@ -935,11 +919,7 @@ def get_all_project_ais(project_id: int, session=None) -> dict:
 
     for ai_type, url in urls.items():
         try:
-            response = session.get(url=url)
-            response.raise_for_status()
-
-            if response.status_code == 200:
-                all_ais[ai_type] = json.loads(response.text)
+            all_ais[ai_type] = consume_paginated_api(url, session)
         except HTTPError as e:
             all_ais[ai_type] = {'error': e}
             print(f'[ERROR] while fetching {ai_type} AIs: {e}')
