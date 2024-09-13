@@ -3,6 +3,7 @@
 import functools
 import traceback
 import typing as t
+import logging
 
 from pydantic import BaseModel
 from starlette.responses import JSONResponse
@@ -17,9 +18,9 @@ NOT_IMPLEMENTED_ERROR_MESSAGE = (
 )
 
 
+logger = logging.getLogger(__name__)
+
 # Error handling
-
-
 def get_error_details(exc: Exception) -> str:
     error_details = type(exc).__name__
     error_message = str(exc)
@@ -151,9 +152,19 @@ def process_response(result, schema: BaseModel = ExtractResponse20240117) -> Bas
                     )
                 )
             annotations_result.append(current_annotation_set)
+        return schema(annotation_sets=annotations_result)
+    elif schema.__name__ == 'ExtractResponseForLegacyTrainer20240912':
+        import json
+        class JSONEncoder(json.JSONEncoder):
+            def default(self, obj):
+                if hasattr(obj, 'to_json'):
+                    return obj.to_json()
+                return json.JSONEncoder.default(self, obj)
+
+        json_result = json.loads(json.dumps(result, cls=JSONEncoder))
+        return schema(json_result)
     else:
         raise NotImplementedError(NOT_IMPLEMENTED_ERROR_MESSAGE)
-    return schema(annotation_sets=annotations_result)
 
 
 def convert_document_to_request(document: Document, schema: BaseModel = ExtractRequest20240117) -> BaseModel:
@@ -197,12 +208,13 @@ def convert_document_to_request(document: Document, schema: BaseModel = ExtractR
 
 
 def convert_response_to_annotations(
-    response: BaseModel, document: Document, mappings: t.Optional[dict] = None
+    response: 'Response', response_schema_class: BaseModel, document: Document, mappings: t.Optional[dict] = None
 ) -> Document:
     """
     Receive an ExtractResponse and convert it into a list of Annotations to be added to the Document.
 
-    :param response: An ExtractResponse to be converted.
+    :param response: A Response instance to be converted.
+    :param response_schema_class: The schema class.
     :param document: A Document to which the annotations should be added.
     :param mappings: A dict with "label_sets" and "labels" keys, both containing mappings from old to new IDs. Original
         IDs are used if no mapping is provided or if the mapping is not found.
@@ -215,7 +227,9 @@ def convert_response_to_annotations(
     label_set_mappings = {int(k): v for k, v in mappings.get('label_sets', {}).items()}
     label_mappings = {int(k): v for k, v in mappings.get('labels', {}).items()}
 
-    if response.__class__.__name__ == 'ExtractResponse20240117':
+    if response_schema_class.__name__ == 'ExtractResponse20240117':
+        response = response_schema_class(annotation_sets=response.json()['annotation_sets'])
+
         for annotation_set in response.annotation_sets:
             label_set_id = label_set_mappings.get(annotation_set.label_set_id, annotation_set.label_set_id)
             sdk_annotation_set = AnnotationSet(
@@ -240,5 +254,24 @@ def convert_response_to_annotations(
                     ],
                 )
         return document
+    elif response_schema_class.__name__ == 'ExtractResponseForLegacyTrainer20240912':
+        """Restore Pandas Dataframe which has been converted to JSON for sending via API."""
+        import json
+        result = response.json()
+        def my_convert(res_dict):
+            import pandas as pd
+            new_dict = {}
+            for k, v in res_dict.items():
+                if isinstance(v, dict):
+                    new_dict[k] = my_convert(v)
+                if isinstance(v, list):
+                    new_dict[k] = [my_convert(x) for x in v]
+                if isinstance(v, str):
+                    new_dict[k] = pd.DataFrame.from_dict(json.loads(v))
+            return new_dict
+
+        my_converted_json = my_convert(result)
+        return my_converted_json
     else:
+        logger.error(f'Schema "{response.__class__.__name__}" is not implemented.')
         raise NotImplementedError(NOT_IMPLEMENTED_ERROR_MESSAGE)
