@@ -67,8 +67,8 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         """Test to get Document details."""
         data = get_project_list()
         new_var = self.RESTORED_PROJECT_ID
-        assert new_var in [prj['id'] for prj in data['results']]
-        assert set(data['results'][0]) == {
+        assert new_var in [prj['id'] for prj in data]
+        assert set(data[0]) == {
             'id',
             'name',
             'storage_name',
@@ -430,7 +430,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
     def test_get_project_labels(self):
         """Download Labels from API for a Project."""
-        label_ids = [label['id'] for label in get_project_labels(project_id=TEST_PROJECT_ID)['results']]
+        label_ids = [label['id'] for label in get_project_labels(project_id=TEST_PROJECT_ID)]
         assert set(label_ids) == {
             858,
             859,
@@ -454,7 +454,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
     def test_get_project_label_sets(self):
         """Test getting all Label Sets of a Project."""
-        label_set_ids = [label_set['id'] for label_set in get_project_label_sets(project_id=TEST_PROJECT_ID)['results']]
+        label_set_ids = [label_set['id'] for label_set in get_project_label_sets(project_id=TEST_PROJECT_ID)]
         assert label_set_ids == [64, 3706, 3686, 3707]
 
     def test_download_office_file(self):
