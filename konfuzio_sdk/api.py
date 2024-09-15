@@ -940,7 +940,7 @@ def export_ai_models(project, session=None, category_id=None) -> int:
 
     project_ai_models = project.ai_models
     for model_type, details in project_ai_models.items():
-        count = details.get('count')
+        count = len(details)
         if count and count > 0:
             # Only AI types with at least one model will be exported
             ai_types.add(model_type)
@@ -956,7 +956,7 @@ def export_ai_models(project, session=None, category_id=None) -> int:
         variant = ai_type
         folder = os.path.join(project.project_folder, 'models', variant + '_ais')
 
-        ai_models = project_ai_models.get(variant, {}).get('results', [])
+        ai_models = project_ai_models.get(variant, [])
 
         for index, ai_model in enumerate(ai_models):
             # Filter Extraction AI by selected category.
