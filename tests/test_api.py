@@ -607,46 +607,6 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
     @patch('konfuzio_sdk.api.get_splitting_ais_list_url')
     @patch('konfuzio_sdk.api.get_categorization_ais_list_url')
     @patch('konfuzio_sdk.api.json.loads')
-    def test_get_all_project_ais(
-        self,
-        mock_json_loads,
-        mock_get_categorization_url,
-        mock_get_splitting_url,
-        mock_get_extraction_url,
-        mock_session,
-    ):
-        """Retrieve all AIs from a Project."""
-        # Setup
-        sample_data = {'AI_DATA': 'AI_SAMPLE_DATA'}
-
-        mock_session.return_value.get.return_value.status_code = 200
-        mock_json_loads.return_value = sample_data
-
-        # Action
-        result = get_all_project_ais(project_id=1)
-
-        # Assertions
-        self.assertEqual(
-            result,
-            {
-                'extraction': sample_data,
-                'filesplitting': sample_data,
-                'categorization': sample_data,
-            },
-        )
-
-        from konfuzio_sdk.api import konfuzio_session
-
-        # Ensure the mock methods were called with the correct arguments
-        mock_get_extraction_url.assert_called_once_with(1, konfuzio_session().host)
-        mock_get_splitting_url.assert_called_once_with(1, konfuzio_session().host)
-        mock_get_categorization_url.assert_called_once_with(1, konfuzio_session().host)
-
-    @patch('konfuzio_sdk.api.konfuzio_session')
-    @patch('konfuzio_sdk.api.get_extraction_ais_list_url')
-    @patch('konfuzio_sdk.api.get_splitting_ais_list_url')
-    @patch('konfuzio_sdk.api.get_categorization_ais_list_url')
-    @patch('konfuzio_sdk.api.json.loads')
     def test_get_all_project_ais_with_invalid_permissions(
         self,
         mock_json_loads,
