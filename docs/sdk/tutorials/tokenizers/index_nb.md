@@ -262,7 +262,7 @@ from konfuzio_sdk.data import Project
 projects = get_project_list()
 TEST_PROJECT_ID = None
 while not TEST_PROJECT_ID:
-    for project in reversed(projects['results']):
+    for project in reversed(projects):
         if 'ZGF0YV80Ni02NS56aXA=' in project['name']:
             TEST_PROJECT_ID = project['id']
             break
@@ -344,7 +344,9 @@ The `SentenceTokenizer` is a specialized [tokenizer](https://dev.konfuzio.com/sd
 
 To use it, import the necessary modules, initialize the Project, the Document, and the Tokenizer and tokenize the Document.
 ```python tags=["remove-cell"]
+import time
 document = Document.from_file(path="../../../../tests/test_data/textposition.pdf", project=project, sync=True)
+time.sleep(15)
 YOUR_DOCUMENT_ID = document.id_
 ```
 
