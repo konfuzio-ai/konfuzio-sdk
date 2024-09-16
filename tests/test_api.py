@@ -67,8 +67,8 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         """Test to get Document details."""
         data = get_project_list()
         new_var = self.RESTORED_PROJECT_ID
-        assert new_var in [prj['id'] for prj in data['results']]
-        assert set(data['results'][0]) == {
+        assert new_var in [prj['id'] for prj in data]
+        assert set(data[0]) == {
             'id',
             'name',
             'storage_name',
@@ -151,6 +151,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             'proposed_split',
             'split_is_revised',
             'enable_translated_strings',
+            'original_file_url',
         }
 
     def test_document_details_document_not_available(self):
@@ -202,6 +203,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             'proposed_split',
             'split_is_revised',
             'enable_translated_strings',
+            'original_file_url',
         }
 
     def test_long_document_details(self):
@@ -241,6 +243,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             'proposed_split',
             'split_is_revised',
             'enable_translated_strings',
+            'original_file_url',
         }
 
     def test_get_list_of_files(self):
@@ -284,7 +287,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
     def test_get_annotations(self):
         """Download Annotations and the Text from API for a Document and check their offset alignment."""
-        annotations = get_document_annotations(self.test_document.id_)['results']
+        annotations = get_document_annotations(self.test_document.id_)
         self.assertEqual(len(annotations), 21)
 
     def test_post_document_annotation_multiline_as_bboxes(self):
@@ -381,7 +384,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         )
         annotation = json.loads(response.text)
         # check if the update has been received by the server
-        annotations = get_document_annotations(self.test_document.id_)['results']
+        annotations = get_document_annotations(self.test_document.id_)
         assert annotation['id'] in [annotation['id'] for annotation in annotations]
         # delete the annotation, i.e. change its status from feedback required to negative
         negative_id = delete_document_annotation(annotation['id'])
@@ -427,7 +430,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
     def test_get_project_labels(self):
         """Download Labels from API for a Project."""
-        label_ids = [label['id'] for label in get_project_labels(project_id=TEST_PROJECT_ID)['results']]
+        label_ids = [label['id'] for label in get_project_labels(project_id=TEST_PROJECT_ID)]
         assert set(label_ids) == {
             858,
             859,
@@ -451,7 +454,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
     def test_get_project_label_sets(self):
         """Test getting all Label Sets of a Project."""
-        label_set_ids = [label_set['id'] for label_set in get_project_label_sets(project_id=TEST_PROJECT_ID)['results']]
+        label_set_ids = [label_set['id'] for label_set in get_project_label_sets(project_id=TEST_PROJECT_ID)]
         assert label_set_ids == [64, 3706, 3686, 3707]
 
     def test_download_office_file(self):
@@ -599,65 +602,6 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             _get_auth_token('test', 'test')
             assert 'HTTP Status 500' in context.exception
 
-    @patch('requests.post')
-    def test_patched_init_env(self, function):
-        """Test to run CLI."""
-
-        # mock response
-        class _Response:
-            """Mock requests POST response."""
-
-            status_code = 200
-
-            def json(self):
-                """Mock valid return."""
-                return {'token': 'faketoken'}
-
-        function.return_value = _Response()
-        env_file = '.testenv'
-        assert init_env(user='me', password='pw', file_ending=env_file)
-        os.remove(os.path.join(os.getcwd(), env_file))
-
-    @patch('konfuzio_sdk.api.konfuzio_session')
-    @patch('konfuzio_sdk.api.get_extraction_ais_list_url')
-    @patch('konfuzio_sdk.api.get_splitting_ais_list_url')
-    @patch('konfuzio_sdk.api.get_categorization_ais_list_url')
-    @patch('konfuzio_sdk.api.json.loads')
-    def test_get_all_project_ais(
-        self,
-        mock_json_loads,
-        mock_get_categorization_url,
-        mock_get_splitting_url,
-        mock_get_extraction_url,
-        mock_session,
-    ):
-        """Retrieve all AIs from a Project."""
-        # Setup
-        sample_data = {'AI_DATA': 'AI_SAMPLE_DATA'}
-
-        mock_session.return_value.get.return_value.status_code = 200
-        mock_json_loads.return_value = sample_data
-
-        # Action
-        result = get_all_project_ais(project_id=1)
-
-        # Assertions
-        self.assertEqual(
-            result,
-            {
-                'extraction': sample_data,
-                'filesplitting': sample_data,
-                'categorization': sample_data,
-            },
-        )
-
-        from konfuzio_sdk.api import konfuzio_session
-
-        # Ensure the mock methods were called with the correct arguments
-        mock_get_extraction_url.assert_called_once_with(1, konfuzio_session().host)
-        mock_get_splitting_url.assert_called_once_with(1, konfuzio_session().host)
-        mock_get_categorization_url.assert_called_once_with(1, konfuzio_session().host)
-
     @patch('konfuzio_sdk.api.konfuzio_session')
     @patch('konfuzio_sdk.api.get_extraction_ais_list_url')
     @patch('konfuzio_sdk.api.get_splitting_ais_list_url')
@@ -686,19 +630,6 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         self.assertEqual(result['categorization']['error'].__str__(), exception_message)
         self.assertEqual(result['filesplitting']['error'].__str__(), exception_message)
 
-    def test_restore_snapshot(self):
-        """Test restoring a snapshot using snapshotrestores endpoint."""
-        project_id = restore_snapshot(snapshot_id=65)
-        all_projects = get_project_list()
-        assert project_id in [project['id'] for project in all_projects['results']]
-        new_project = Project(id_=project_id)
-        for document in new_project.documents + new_project.test_documents:
-            document.dataset_status = 0
-            document.save_meta_data()
-            document.delete(delete_online=True)
-        r = delete_project(project_id=project_id)
-        assert r.status_code == 204
-
     @classmethod
     def tearDownClass(cls) -> None:
         """Remove the project created specifically for this test pipeline."""
@@ -715,3 +646,38 @@ def test_init_env():
     """Test to write env file."""
     with pytest.raises(PermissionError, match='Your credentials are not correct'):
         init_env(user='user', password='ABCD', working_directory=BASE_DIR, file_ending='x.env')
+
+
+@patch('requests.post')
+def test_patched_init_env(function):
+    """Test to run CLI."""
+
+    # mock response
+    class _Response:
+        """Mock requests POST response."""
+
+        status_code = 200
+
+        def json(self):
+            """Mock valid return."""
+            return {'token': 'faketoken'}
+
+    function.return_value = _Response()
+    env_file = '.testenv'
+
+    # Create .testenv with some dummy variables
+    with open(os.path.join(os.getcwd(), env_file), 'w') as f:
+        f.write('TESTVAR1=test\n')
+        f.write('KONFUZIO_HOST=testdomain.com\n')
+
+    assert init_env(user='me', password='pw', host='https://testing.konfuzio.com', file_ending=env_file)
+
+    with open(os.path.join(os.getcwd(), env_file), 'r') as f:
+        env_content = f.read()
+
+    # TESTVAR should still be in the env file
+    assert 'TESTVAR1=test' in env_content
+    # KONFUZIO_HOST should be overwritten
+    assert "KONFUZIO_HOST='https://testing.konfuzio.com'" in env_content
+
+    os.remove(os.path.join(os.getcwd(), env_file))

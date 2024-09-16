@@ -6,9 +6,11 @@ import os
 import time
 from json import JSONDecodeError
 from operator import itemgetter
-from typing import Dict, List, Optional, Union
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
 
 import requests
+from dotenv import set_key
 from requests import HTTPError
 from requests.adapters import HTTPAdapter
 from urllib3 import Retry
@@ -89,11 +91,13 @@ def init_env(
     :param file_ending: Ending of file.
     """
     token = _get_auth_token(user, password, host)
+    env_file_path = Path(working_directory, file_ending)
+    # Create env file if it does not exist
+    env_file_path.touch(mode=0o600, exist_ok=True)
 
-    with open(os.path.join(working_directory, file_ending), 'w') as f:
-        f.write(f'KONFUZIO_HOST = {host}\n')
-        f.write(f'KONFUZIO_USER = {user}\n')
-        f.write(f'KONFUZIO_TOKEN = {token}\n')
+    set_key(env_file_path, 'KONFUZIO_HOST', host)
+    set_key(env_file_path, 'KONFUZIO_USER', user)
+    set_key(env_file_path, 'KONFUZIO_TOKEN', token)
 
     print('[SUCCESS] SDK initialized!')
 
@@ -179,6 +183,29 @@ def konfuzio_session(
     return session
 
 
+def consume_paginated_api(initial_url: str, session) -> List[Dict[str, Any]]:
+    """
+    Consumes a paginated API, following the `next` links until all items have been retrieved.
+
+    :param initial_url: The initial URL to start fetching data from
+    :param session: A Konfuzio Session object
+    :return: A list of all items from all pages
+    """
+    all_results = []
+    next_url = initial_url
+
+    while next_url:
+        logger.info(f'Fetching paginated {next_url}')
+        response = session.get(next_url)
+        response.raise_for_status()
+
+        data = response.json()
+        all_results.extend(data['results'])
+        next_url = data.get('next')
+
+    return all_results
+
+
 def get_project_list(session=None):
     """
     Get the list of all Projects for the user.
@@ -189,8 +216,8 @@ def get_project_list(session=None):
     if session is None:
         session = konfuzio_session()
     url = get_projects_list_url()
-    r = session.get(url=url)
-    return r.json()
+    result = consume_paginated_api(url, session)
+    return result
 
 
 def get_project_details(project_id: int, session=None) -> dict:
@@ -229,9 +256,9 @@ def get_project_labels(project_id: int, session=None) -> dict:
         host = None
 
     url = get_project_labels_url(project_id=project_id, host=host)
-    r = session.get(url=url)
+    result = consume_paginated_api(url, session)
 
-    return r.json()
+    return result
 
 
 def get_project_label_sets(project_id: int, session=None) -> dict:
@@ -249,9 +276,9 @@ def get_project_label_sets(project_id: int, session=None) -> dict:
         host = None
 
     url = get_project_label_sets_url(project_id=project_id, host=host)
-    r = session.get(url=url)
+    result = consume_paginated_api(url, session)
 
-    return r.json()
+    return result
 
 
 def create_new_project(project_name, session=None):
@@ -313,8 +340,8 @@ def get_document_annotations(document_id: int, session=None):
     else:
         host = None
     url = get_document_annotations_url(document_id=document_id, host=host)
-    r = session.get(url)
-    return r.json()
+    result = consume_paginated_api(url, session)
+    return result
 
 
 def get_document_bbox(document_id: int, session=None):
@@ -365,22 +392,6 @@ def get_page_image(document_id: int, page_number: int, session=None, thumbnail: 
         raise TypeError(f'CONTENT TYPE of Image {page_number} is {content_type} and no PNG.')
 
     return r.content
-
-
-# def post_document_bulk_annotation(document_id: int, project_id: int, annotation_list, session=konfuzio_session()):
-#     """
-#     Add a list of Annotations to an existing document.
-#
-#     :param document_id: ID of the file
-#     :param project_id: ID of the project
-#     :param annotation_list: List of Annotations
-#     :param session: Konfuzio session with Retry and Timeout policy
-#     :return: Response status.
-#     """
-#     url = get_document_annotations_url(document_id, project_id=project_id)
-#     r = session.post(url, json=annotation_list)
-#     r.raise_for_status()
-#     return r
 
 
 def post_document_annotation(
@@ -555,20 +566,11 @@ def get_meta_of_files(
 
     if limit:
         url = get_documents_meta_url(project_id=project_id, offset=0, limit=limit, *args, **kwargs)
+        r = session.get(url)
+        result = r.json()['results']
     else:
         url = get_documents_meta_url(project_id=project_id, limit=pagination_limit, host=host, *args, **kwargs)
-    result = []
-    r = session.get(url)
-    data = r.json()
-    result += data['results']
-
-    if not limit:
-        while 'next' in data.keys() and data['next']:
-            logger.info(f'Iterate on paginated {url}.')
-            url = data['next']
-            r = session.get(url)
-            data = r.json()
-            result += data['results']
+        result = consume_paginated_api(url, session)
 
     sorted_documents = sorted(result, key=itemgetter('id'))
     return sorted_documents
@@ -780,8 +782,8 @@ def get_project_categories(project_id: int = None, session=None) -> List[Dict]:
     else:
         host = None
     url = get_project_categories_url(project_id=project_id, host=host)
-    r = session.get(url=url)
-    return r.json()['results']
+    result = consume_paginated_api(url, session)
+    return result
 
 
 def upload_ai_model(ai_model_path: str, project_id: int = None, category_id: int = None, session=None):
@@ -917,11 +919,7 @@ def get_all_project_ais(project_id: int, session=None) -> dict:
 
     for ai_type, url in urls.items():
         try:
-            response = session.get(url=url)
-            response.raise_for_status()
-
-            if response.status_code == 200:
-                all_ais[ai_type] = json.loads(response.text)
+            all_ais[ai_type] = consume_paginated_api(url, session)
         except HTTPError as e:
             all_ais[ai_type] = {'error': e}
             print(f'[ERROR] while fetching {ai_type} AIs: {e}')
@@ -942,7 +940,7 @@ def export_ai_models(project, session=None, category_id=None) -> int:
 
     project_ai_models = project.ai_models
     for model_type, details in project_ai_models.items():
-        count = details.get('count')
+        count = len(details)
         if count and count > 0:
             # Only AI types with at least one model will be exported
             ai_types.add(model_type)
@@ -958,7 +956,7 @@ def export_ai_models(project, session=None, category_id=None) -> int:
         variant = ai_type
         folder = os.path.join(project.project_folder, 'models', variant + '_ais')
 
-        ai_models = project_ai_models.get(variant, {}).get('results', [])
+        ai_models = project_ai_models.get(variant, [])
 
         for index, ai_model in enumerate(ai_models):
             # Filter Extraction AI by selected category.

@@ -852,11 +852,8 @@ class AbstractExtractionAI(BaseModel):
                     'AI_MODEL_NAME',
                 ],
                 labels=self.bento_metadata,
-                # TODO replace with latest version after release
                 python={
-                    'packages': [
-                        'https://github.com/konfuzio-ai/konfuzio-sdk/archive/refs/heads/master.zip#egg=konfuzio-sdk'
-                    ],
+                    'packages': [f'konfuzio-sdk<={self.konfuzio_sdk_version}'],
                     'lock_packages': True,
                 },
                 build_ctx=temp_dir,
@@ -1181,7 +1178,15 @@ class AbstractExtractionAI(BaseModel):
     @property
     def pkl_name(self) -> str:
         """Generate a name for the pickle file."""
-        return f'{self.name_lower()}_{self.category.id_ if self.category.id_ else 0}_{slugify(self.category.name)}_{get_timestamp()}'
+        # Bento tag names must be 63 characters or less.
+        # To ensure this and not lose relevant information, we first build separate parts of the name that do not
+        # include the category name, which is the only thing that can be reasonably truncated to fit.
+        prefix = f'{self.name_lower()}_{self.category.id_ if self.category.id_ else 0}_'
+        suffix = f'_{get_timestamp()}'
+        # The category name is the only part that can be truncated, so we truncate it to 63 - len(prefix) - len(suffix).
+        category_name = slugify(self.category.name)[: 63 - len(prefix) - len(suffix)]
+        # Put all the pieces back together to form the final, 63 character or less name.
+        return f'{prefix}{category_name}{suffix}'
 
     @property
     def temp_pkl_file_path(self) -> str:

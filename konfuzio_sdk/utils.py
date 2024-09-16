@@ -341,6 +341,11 @@ def slugify(value):
     return re.sub(r'[-\s\:\.]+', '-', value).replace('-_', '_')
 
 
+def is_composed_of_spaces_and_tabs(s: str) -> bool:
+    """Check if the string contains only spaces and tabs using a regex"""
+    return re.fullmatch(r'[ \t]*', s) is not None
+
+
 def normalize_name(value: str) -> str:
     """
     Normalize names for different Konfuzio concepts by removing slashes and checking for non-ascii symbols.

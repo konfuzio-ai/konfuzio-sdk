@@ -49,6 +49,7 @@ extensions = [
     'sphinx_toolbox.collapse',
     'sphinx_sitemap',
     'sphinxcontrib.mermaid',
+    'sphinxcontrib.autodoc_pydantic',
     'notfound.extension',
     'sphinx_copybutton',
     'validate_nb',

@@ -41,7 +41,6 @@ OPTIONAL_IMPORT_ERROR = (
 
 extras = [
     'chardet==5.1.0',
-    'pydantic>2,<2.8',
     'torch>=1.8',
     'torchvision>=0.9',
     'transformers>=4.21.2',
@@ -72,5 +71,5 @@ def get_handlers():
 
 
 logging.basicConfig(
-    level=config('LOGGING_LEVEL', default=logging.INFO, cast=int), format=LOG_FORMAT, handlers=get_handlers()
+    level=config('LOGGING_LEVEL', default=logging.WARNING, cast=int), format=LOG_FORMAT, handlers=get_handlers()
 )

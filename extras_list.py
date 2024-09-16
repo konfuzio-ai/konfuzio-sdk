@@ -2,6 +2,7 @@
 
 EXTRAS = {
     'dev': [
+        'autodoc_pydantic==2.2.0',
         'coverage==7.3.2',
         'pytest>=7.1.2',
         'pre-commit>=2.20.0',
@@ -17,19 +18,19 @@ EXTRAS = {
         'sphinx-copybutton==0.5.2',
         'myst_nb==0.17.2',
         'ruff',
+        'pytest-rerunfailures',
     ],
     'ai': [
         'accelerate==0.20.1',
         'chardet==5.1.0',
         'datasets==2.14.6',
         'evaluate==0.4.1',
-        'pydantic>2,<2.8',
-        'spacy>=2.3.5',
+        'spacy>=2.3.5,<3.8.0',
         'torch>=1.8.1',
         'torchvision>=0.9.1',
         'transformers==4.30.2',
         'tensorflow-cpu==2.12.0',
         'timm==0.6.7',
-        'mlflow==2.9.2',
+        'mlflow==2.15.0',
     ],
 }

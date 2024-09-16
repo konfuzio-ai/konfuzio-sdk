@@ -450,39 +450,27 @@ AI containerization
 
 `[source] <https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/konfuzio_sdk/bento/extraction>`__
 
-.. automodule:: konfuzio_sdk.bento.extraction.rfextractionai_service
-
-ExtractionService
---------------------
-.. autoclass:: ExtractionService
-   :members:
-   :noindex:
-
-.. autofunction:: project_metadata
-
-.. automodule::konfuzio_sdk.bento.extraction.schemas
-
 Pydantic schemas
 --------------------
-.. autoclass:: ExtractRequest20240117Page
+.. autopydantic_model:: konfuzio_sdk.bento.extraction.schemas.ExtractRequest20240117Page
    :members:
    :noindex:
 
-.. autoclass:: ExtractRequest20240117
+.. autopydantic_model:: konfuzio_sdk.bento.extraction.schemas.ExtractRequest20240117
    :members:
    :noindex:
 
-.. autoclass:: ExtractResponse20240117
+.. autopydantic_model:: konfuzio_sdk.bento.extraction.schemas.ExtractResponse20240117
    :members:
    :noindex:
 
-.. autofunction:: hex_bytes_validator
+.. autopydantic_validator:: konfuzio_sdk.bento.extraction.schemas.hex_bytes_validator
 
 .. automodule::konfuzio_sdk.bento.extraction.utils
 
 Containerization utils
 -----------------------
-.. autofunction:: prepare_request
-.. autofunction:: process_response
-.. autofunction:: convert_document_to_request
-.. autofunction:: convert_response_to_annotations
+.. autofunction:: konfuzio_sdk.bento.extraction.utils.prepare_request
+.. autofunction:: konfuzio_sdk.bento.extraction.utils.process_response
+.. autofunction:: konfuzio_sdk.bento.extraction.utils.convert_document_to_request
+.. autofunction:: konfuzio_sdk.bento.extraction.utils.convert_response_to_annotations

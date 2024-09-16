@@ -1,6 +1,7 @@
 """Calculate the accuracy on any level in a  Document."""
 
 import logging
+import warnings
 from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
@@ -12,6 +13,7 @@ from konfuzio_sdk.data import Category, Document
 from konfuzio_sdk.utils import memory_size_of, sdk_isinstance
 
 logger = logging.getLogger(__name__)
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 RELEVANT_FOR_EVALUATION = [
     'is_matched',  # needed to group spans in Annotations
@@ -53,8 +55,6 @@ RELEVANT_FOR_EVALUATION = [
     'tmp_id_',  # a temporary ID used for enumerating the predicted annotations solely
     'disambiguated_id',  # an ID for multi-span annotations
 ]
-
-logger = logging.getLogger(__name__)
 
 
 def grouped(group, target: str):
@@ -136,7 +136,7 @@ def compare(
     :return: Evaluation DataFrame
     """
     df_a = pd.DataFrame(doc_a.eval_dict(use_correct=only_use_correct))
-    df_a_ids = df_a[['id_']]
+    df_a_ids = df_a[['id_']].copy()
     duplicated_ids = df_a_ids['id_'].duplicated(keep=False)
     df_a_ids['disambiguated_id'] = df_a_ids['id_'].astype(str)
     df_a_ids.loc[duplicated_ids, 'disambiguated_id'] += '_' + (df_a_ids.groupby('id_').cumcount() + 1).astype(str)
@@ -381,7 +381,7 @@ class EvaluationCalculator:
                 raise ZeroDivisionError('TP and FP are zero, impossible to calculate precision.')
             elif self.zero_division == 'warn':
                 precision = 0
-                logging.warning('TP and FP are zero, precision is set to 0.')
+                logging.info('TP and FP are zero, precision is set to 0.')
             else:
                 precision = self.zero_division
         return precision
@@ -400,7 +400,7 @@ class EvaluationCalculator:
                 raise ZeroDivisionError('TP and FN are zero, recall is impossible to calculate.')
             elif self.zero_division == 'warn':
                 recall = 0
-                logging.warning('TP and FN are zero, recall is set to 0.')
+                logging.info('TP and FN are zero, recall is set to 0.')
             else:
                 recall = self.zero_division
         return recall
@@ -419,7 +419,7 @@ class EvaluationCalculator:
                 raise ZeroDivisionError('Precision and recall are zero, F1 is impossible to calculate.')
             elif self.zero_division == 'warn':
                 f1 = 0
-                logging.warning('Precision and recall are zero, F1 score is set to 0.')
+                logging.info('Precision and recall are zero, F1 score is set to 0.')
             else:
                 f1 = self.zero_division
         return f1
