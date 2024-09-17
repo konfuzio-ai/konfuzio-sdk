@@ -28,6 +28,7 @@ Make sure to set up your Project (so that you can retrieve the Project ID) using
 Retrieve all information available for your Project:
 
 ```python tags=['remove-cell']
+# This is necessary to make sure we can import from 'tests'
 import sys
 sys.path.insert(0, '../../../../')
 
