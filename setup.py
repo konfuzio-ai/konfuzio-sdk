@@ -76,6 +76,7 @@ setuptools.setup(
         'konfuzio_sdk',
         'konfuzio_sdk.bento',
         'konfuzio_sdk.bento.extraction',
+        'konfuzio_sdk.bento.categorization',
         'konfuzio_sdk.tokenizer',
         'konfuzio_sdk.trainer',
     ],
