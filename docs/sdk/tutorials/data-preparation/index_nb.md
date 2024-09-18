@@ -114,3 +114,4 @@ for document_path in file_paths:
     _ = Document.from_file(document_path, project=project, sync=False)
     print(f'Document {_.id_} successfully created.')
 ```
+
