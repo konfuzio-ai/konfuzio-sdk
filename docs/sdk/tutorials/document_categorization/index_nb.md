@@ -44,6 +44,10 @@ The name-based Categorization AI is a simple logic that checks if a name of the 
 
 Let's begin with making imports, initializing the Categorization model and calling the Document to categorize.
 ```python editable=true slideshow={"slide_type": ""} tags=["remove-cell"] vscode={"languageId": "plaintext"}
+# This is necessary to make sure we can import from 'tests'
+import sys
+sys.path.insert(0, '../../../../')
+
 import logging
 import os
 import konfuzio_sdk
@@ -54,7 +58,7 @@ from tests.variables import TEST_SNAPSHOT_ID
 logging.getLogger("konfuzio_sdk").setLevel(logging.ERROR)
 projects = get_project_list()
 # we want to get the last instance of a project restored from a snapshot because creating a new one each time takes longer 
-YOUR_PROJECT_ID = next(project['id'] for project in reversed(projects['results']) if TEST_SNAPSHOT_ID in project['name'])
+YOUR_PROJECT_ID = next(project['id'] for project in reversed(projects) if TEST_SNAPSHOT_ID in project['name'])
 project = Project(id_=YOUR_PROJECT_ID)
 YOUR_CATEGORY_ID = project.get_category_by_name('Lohnabrechnung').id_
 original_document_text = Project(id_=46).get_document_by_id(44823).text

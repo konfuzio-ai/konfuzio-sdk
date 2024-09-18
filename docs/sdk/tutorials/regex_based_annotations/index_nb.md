@@ -43,6 +43,10 @@ In this guide, we'll show you how to use Python and regular expressions (regex) 
 Let's say we have a Document, and we want to highlight every instance of the term "Musterstraße", which might represent a specific street name or location. Our task is to find this term, label it as "Lohnart", and associate it with the "Brutto-Bezug" Label Set.
 
 ```python editable=true slideshow={"slide_type": ""} tags=["remove-cell"] vscode={"languageId": "plaintext"}
+# This is necessary to make sure we can import from 'tests'
+import sys
+sys.path.insert(0, '../../../../')
+
 import logging
 from konfuzio_sdk.api import get_project_list
 from tests.variables import TEST_SNAPSHOT_ID
@@ -50,7 +54,7 @@ from tests.variables import TEST_SNAPSHOT_ID
 logging.getLogger("konfuzio_sdk").setLevel(logging.ERROR)
 projects = get_project_list()
 # we want to get the last instance of a project restored from a snapshot because creating a new one each time takes longer 
-YOUR_PROJECT_ID = next(project['id'] for project in reversed(projects['results']) if TEST_SNAPSHOT_ID in project['name'])
+YOUR_PROJECT_ID = next(project['id'] for project in reversed(projects) if TEST_SNAPSHOT_ID in project['name'])
 ```
 
 ```python editable=true slideshow={"slide_type": ""} vscode={"languageId": "plaintext"}
