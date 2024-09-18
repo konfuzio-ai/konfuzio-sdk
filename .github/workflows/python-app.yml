@@ -96,7 +96,7 @@ jobs:
               body: '```\n' + report + '\n```'
             });
       - name: Run documentation tests
-        if: ( matrix.python-version == '3.9' && steps.filter.outputs.docs == 'true' )
+        if: ( matrix.python-version == '3.9' && matrix.extra-set == 'ai' && steps.filter.outputs.docs == 'true' )
         run: |
           pip install jupytext
           find docs/sdk/tutorials/**/ -type f -name "*_nb.md" -not -path '*/\.*' -exec bash -c 'dir=$(dirname "{}"); jupytext --to notebook "{}" --output "$dir/index.ipynb"' \;
