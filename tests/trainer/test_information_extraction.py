@@ -496,6 +496,14 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         assert len(res_doc.annotations(use_correct=False, ignore_below_threshold=True)) == 19
         return
 
+    def test_14_pkl_name(self):
+        """Test pkl_name not exceeding 63 characters."""
+        self.pipeline.category = self.project.get_category_by_id(id_=63)
+        self.pipeline.category.name = 'This is a very very very very very very very very very very long name'
+        assert len(self.pipeline.pkl_name) == 63
+        self.pipeline.category.name = 'short'
+        assert len(self.pipeline.pkl_name) < 63
+
     @classmethod
     def tearDownClass(cls) -> None:
         """Clear Project files."""

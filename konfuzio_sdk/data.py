@@ -48,6 +48,7 @@ from konfuzio_sdk.utils import (
     get_file_type_and_extension,
     get_merged_bboxes,
     get_missing_offsets,
+    is_composed_of_spaces_and_tabs,
     is_file,
     normalize_name,
     sdk_isinstance,
@@ -2294,7 +2295,17 @@ class Annotation(Data):
                 self.label in self.annotation_set.label_set.labels
             ), f'{self.label} is not in {self.annotation_set.label_set.labels} of {self.annotation_set}.'
 
-        for span in spans or []:
+        for i, span in enumerate(spans or []):
+            if (i != len(spans) - 1) and (self.document.text is not None):
+                current_span = spans[i]
+                next_span = spans[i + 1]
+                current_span_end_offset = current_span.end_offset
+                next_span_start_offset = next_span.start_offset
+                text_in_between = self.document.text[current_span_end_offset:next_span_start_offset]
+                if is_composed_of_spaces_and_tabs(text_in_between):
+                    logger.warning(
+                        f'Please merge Spans {current_span} and {next_span} that are horizontally next to each other and on the same line. Such unmerged Spans may lead to inaccurate Evaluation results.'
+                    )
             self.add_span(span)
 
         self.selection_bbox = kwargs.get('selection_bbox', None)

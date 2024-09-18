@@ -1,6 +1,7 @@
 """Calculate the accuracy on any level in a  Document."""
 
 import logging
+import warnings
 from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
@@ -12,6 +13,7 @@ from konfuzio_sdk.data import Category, Document
 from konfuzio_sdk.utils import memory_size_of, sdk_isinstance
 
 logger = logging.getLogger(__name__)
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 RELEVANT_FOR_EVALUATION = [
     'is_matched',  # needed to group spans in Annotations
@@ -53,8 +55,6 @@ RELEVANT_FOR_EVALUATION = [
     'tmp_id_',  # a temporary ID used for enumerating the predicted annotations solely
     'disambiguated_id',  # an ID for multi-span annotations
 ]
-
-logger = logging.getLogger(__name__)
 
 
 def grouped(group, target: str):
@@ -109,30 +109,6 @@ def prioritize_rows(group):
         return first_false_negative
 
 
-def split_row_based_on_offset_string(row: pd.Series) -> pd.DataFrame:
-    """
-    Split a row based on the offset string. If the offset_string has multiple words split by a whitespace,
-    then the row is split into multiple rows. The offset_string is split into multiple words and each word is
-    used as offset_string value in the new row. The other columns are copied from the original row.
-    """
-    words = row['offset_string'].split()
-    if len(words) > 1:
-        new_rows = []
-        start = row['start_offset']
-        end = row['end_offset']
-        for word in words:
-            new_row = row.copy()
-            end = start + len(word)
-            new_row['offset_string'] = word
-            new_row['start_offset'] = start
-            new_row['end_offset'] = end
-            start = end + 1
-            new_rows.append(new_row)
-        return pd.DataFrame(new_rows)
-    else:
-        return pd.DataFrame([row])
-
-
 def compare(
     doc_a,
     doc_b,
@@ -142,7 +118,6 @@ def compare(
     strict=True,
     id_counter: int = 1,
     custom_threshold=None,
-    split_spans_by_whitespace=False,
 ) -> pd.DataFrame:
     """Compare the Annotations of two potentially empty Documents wrt. to **all** Annotations.
 
@@ -161,9 +136,7 @@ def compare(
     :return: Evaluation DataFrame
     """
     df_a = pd.DataFrame(doc_a.eval_dict(use_correct=only_use_correct))
-    if split_spans_by_whitespace:
-        df_a = pd.concat(df_a.apply(split_row_based_on_offset_string, axis=1).tolist(), ignore_index=True)
-    df_a_ids = df_a[['id_']]
+    df_a_ids = df_a[['id_']].copy()
     duplicated_ids = df_a_ids['id_'].duplicated(keep=False)
     df_a_ids['disambiguated_id'] = df_a_ids['id_'].astype(str)
     df_a_ids.loc[duplicated_ids, 'disambiguated_id'] += '_' + (df_a_ids.groupby('id_').cumcount() + 1).astype(str)
@@ -175,8 +148,6 @@ def compare(
             ignore_below_threshold=ignore_below_threshold,
         ),
     )
-    if split_spans_by_whitespace:
-        df_b = pd.concat(df_b.apply(split_row_based_on_offset_string, axis=1).tolist(), ignore_index=True)
     df_b['tmp_id_'] = list(range(id_counter, id_counter + len(df_b)))
 
     if doc_a.category != doc_b.category:
@@ -410,7 +381,7 @@ class EvaluationCalculator:
                 raise ZeroDivisionError('TP and FP are zero, impossible to calculate precision.')
             elif self.zero_division == 'warn':
                 precision = 0
-                logging.warning('TP and FP are zero, precision is set to 0.')
+                logging.info('TP and FP are zero, precision is set to 0.')
             else:
                 precision = self.zero_division
         return precision
@@ -429,7 +400,7 @@ class EvaluationCalculator:
                 raise ZeroDivisionError('TP and FN are zero, recall is impossible to calculate.')
             elif self.zero_division == 'warn':
                 recall = 0
-                logging.warning('TP and FN are zero, recall is set to 0.')
+                logging.info('TP and FN are zero, recall is set to 0.')
             else:
                 recall = self.zero_division
         return recall
@@ -448,7 +419,7 @@ class EvaluationCalculator:
                 raise ZeroDivisionError('Precision and recall are zero, F1 is impossible to calculate.')
             elif self.zero_division == 'warn':
                 f1 = 0
-                logging.warning('Precision and recall are zero, F1 score is set to 0.')
+                logging.info('Precision and recall are zero, F1 score is set to 0.')
             else:
                 f1 = self.zero_division
         return f1
@@ -473,7 +444,6 @@ class ExtractionEvaluation:
         strict: bool = True,
         use_view_annotations: bool = True,
         ignore_below_threshold: bool = True,
-        split_spans_by_whitespace: bool = False,
         zero_division='warn',
     ):
         """
@@ -497,7 +467,6 @@ class ExtractionEvaluation:
         logger.info(f'Initializing Evaluation object with {len(documents)} documents. Evaluation mode {strict=}.')
         self.documents = documents
         self.strict = strict
-        self.split_spans_by_whitespace = split_spans_by_whitespace
         self.use_view_annotations = use_view_annotations
         self.ignore_below_threshold = ignore_below_threshold
         self.only_use_correct = True
@@ -521,7 +490,6 @@ class ExtractionEvaluation:
                 use_view_annotations=self.use_view_annotations,
                 ignore_below_threshold=self.ignore_below_threshold,
                 id_counter=id_counter,
-                split_spans_by_whitespace=self.split_spans_by_whitespace,
             )
             evaluations.append(evaluation)
             id_counter += len(evaluation)

@@ -450,37 +450,29 @@ AI containerization
 
 `[source] <https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/konfuzio_sdk/bento>`__
 
-.. automodule:: konfuzio_sdk.bento.extraction.rfextractionai_service
-
-ExtractionService
+Pydantic schemas
 --------------------
-.. autoclass:: konfuzio_sdk.bento.extraction.rfextractionai_service.ExtractionService
+.. autopydantic_model:: konfuzio_sdk.bento.extraction.schemas.ExtractRequest20240117Page
    :members:
    :noindex:
 
-.. autofunction:: konfuzio_sdk.bento.extraction.rfextractionai_service.project_metadata
-
-.. automodule:: konfuzio_sdk.bento.extraction.schemas
-
-Pydantic schemas for ExtractionService
---------------------
-.. autoclass:: konfuzio_sdk.bento.extraction.schemas.ExtractRequest20240117Page
+.. autopydantic_model:: konfuzio_sdk.bento.extraction.schemas.ExtractRequest20240117
    :members:
    :noindex:
 
-.. autoclass:: konfuzio_sdk.bento.extraction.schemas.ExtractRequest20240117
+.. autopydantic_model:: konfuzio_sdk.bento.extraction.schemas.ExtractResponse20240117
    :members:
    :noindex:
 
-.. autoclass:: konfuzio_sdk.bento.extraction.schemas.ExtractResponse20240117
-   :members:
-   :noindex:
-
-.. autofunction:: konfuzio_sdk.bento.extraction.schemas.hex_bytes_validator
+.. autopydantic_validator:: konfuzio_sdk.bento.extraction.schemas.hex_bytes_validator
 
 .. automodule:: konfuzio_sdk.bento.extraction.utils
+.. autofunction:: konfuzio_sdk.bento.extraction.utils.prepare_request
+.. autofunction:: konfuzio_sdk.bento.extraction.utils.process_response
+.. autofunction:: konfuzio_sdk.bento.extraction.utils.convert_document_to_request
+.. autofunction:: konfuzio_sdk.bento.extraction.utils.convert_response_to_annotations
 
-Containerization utils for ExtractionService 
+Containerization utils for ExtractionService
 -----------------------
 .. autofunction:: prepare_request
 .. autofunction:: process_response
@@ -517,7 +509,7 @@ Pydantic schemas for CategorizationService
 
 .. automodule:: konfuzio_sdk.bento.categorization.utils
 
-Containerization utils for CategorizationService 
+Containerization utils for CategorizationService
 -----------------------
 .. autofunction:: konfuzio_sdk.bento.categorization.utils.prepare_request
 .. autofunction:: konfuzio_sdk.bento.categorization.utils.process_response
