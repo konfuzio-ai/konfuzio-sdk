@@ -243,12 +243,15 @@ class AbstractCategorizationAI(BaseModel, metaclass=abc.ABCMeta):
 
     def build_bento(self, bento_model):
         """Build BentoML service for the model."""
-        bento_module_dir = os.path.dirname(os.path.abspath(__file__)) + '/../bento/categorization'
+        bento_base_dir = os.path.dirname(os.path.abspath(__file__)) + '/../bento'
         dict_metadata = self.project.create_project_metadata_dict()
 
         with tempfile.TemporaryDirectory() as temp_dir:
-            # copy bento_module_dir to temp_dir
-            shutil.copytree(bento_module_dir, temp_dir + '/categorization')
+            # copy bento directories to temp_dir
+            shutil.copytree(bento_base_dir + '/categorization', temp_dir + '/categorization')
+            shutil.copytree(bento_base_dir + '/base', temp_dir + '/base')
+            # copy __init__.py file
+            shutil.copy(bento_base_dir + '/__init__.py', temp_dir + '__init__.py')
             # include metadata
             with open(f'{temp_dir}/categories_and_label_data.json5', 'w') as f:
                 json.dump(dict_metadata, f, indent=2, sort_keys=True)
@@ -260,6 +263,8 @@ class AbstractCategorizationAI(BaseModel, metaclass=abc.ABCMeta):
                 name=f'categorization_{get_timestamp()}_{self.name_lower()}_{self.project.id_}',
                 service=f'categorization.{self.name_lower()}_service:CategorizationService',
                 include=[
+                    '__init__.py',
+                    'base/*.py',
                     'categorization/*.py',
                     'categories_and_label_data.json5',
                     'AI_MODEL_NAME',

@@ -2,7 +2,6 @@
 import asyncio
 import json
 import os
-from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
 import bentoml
@@ -10,6 +9,15 @@ from fastapi import Depends, FastAPI, HTTPException
 
 from .schemas import CategorizeRequest20240729, CategorizeResponse20240729
 from .utils import prepare_request, process_response
+
+# Use relative or top module import based on whether this is run as an actual service or imported
+try:
+    from ..base.base_services import PicklableModelService
+    from ..base.utils import add_credentials_to_project, cleanup_project_after_document_processing
+except ImportError:
+    from base.base_services import PicklableModelService
+    from base.utils import add_credentials_to_project, cleanup_project_after_document_processing
+
 
 # load ai model name from AI_MODEL_NAME file in parent directory
 ai_model_name_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'AI_MODEL_NAME')
@@ -20,31 +28,23 @@ app = FastAPI()
 
 @bentoml.service
 @bentoml.mount_asgi_app(app, path='/v1')
-class CategorizationService:
+class CategorizationService(PicklableModelService):
     model_ref = bentoml.models.get(ai_model_name)
-
-    def __init__(self):
-        """Load the categorization model into memory."""
-        self.categorization_model = bentoml.picklable_model.load_model(self.model_ref)
-        self.executor = ThreadPoolExecutor()
 
     @bentoml.api(input_spec=CategorizeRequest20240729)
     async def categorize(self, ctx: bentoml.Context, **request: Any) -> CategorizeResponse20240729:
         """Send an call to the Categorization AI and process the response."""
+        # Ensure the model is loaded
+        categorization_model = await self.get_model()
         request = CategorizeRequest20240729(**request)
-        project = self.categorization_model.project
-        # Add credentials from the request headers to the Project object, but only if the SDK version supports this.
-        # Older SDK versions do not have the credentials attribute on Project.
-        if hasattr(project, 'credentials'):
-            for key, value in ctx.request.headers.items():
-                if key.startswith('env_'):
-                    key = key.replace('env_', '', 1)
-                    project.credentials[key.upper()] = value
+        project = categorization_model.project
+        add_credentials_to_project(project, ctx)
         document = prepare_request(request=request, project=project)
         result = await asyncio.get_event_loop().run_in_executor(
-            self.executor, self.categorization_model.categorize, document
+            self.executor, categorization_model.categorize, document
         )
         categories_result = process_response(result)
+        cleanup_project_after_document_processing(project, document)
         return categories_result
 
 
