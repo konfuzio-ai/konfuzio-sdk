@@ -67,8 +67,8 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         """Test to get Document details."""
         data = get_project_list()
         new_var = self.RESTORED_PROJECT_ID
-        assert new_var in [prj['id'] for prj in data['results']]
-        assert set(data['results'][0]) == {
+        assert new_var in [prj['id'] for prj in data]
+        assert set(data[0]) == {
             'id',
             'name',
             'storage_name',
@@ -287,7 +287,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
     def test_get_annotations(self):
         """Download Annotations and the Text from API for a Document and check their offset alignment."""
-        annotations = get_document_annotations(self.test_document.id_)['results']
+        annotations = get_document_annotations(self.test_document.id_)
         self.assertEqual(len(annotations), 21)
 
     def test_post_document_annotation_multiline_as_bboxes(self):
@@ -384,7 +384,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         )
         annotation = json.loads(response.text)
         # check if the update has been received by the server
-        annotations = get_document_annotations(self.test_document.id_)['results']
+        annotations = get_document_annotations(self.test_document.id_)
         assert annotation['id'] in [annotation['id'] for annotation in annotations]
         # delete the annotation, i.e. change its status from feedback required to negative
         negative_id = delete_document_annotation(annotation['id'])
@@ -430,7 +430,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
     def test_get_project_labels(self):
         """Download Labels from API for a Project."""
-        label_ids = [label['id'] for label in get_project_labels(project_id=TEST_PROJECT_ID)['results']]
+        label_ids = [label['id'] for label in get_project_labels(project_id=TEST_PROJECT_ID)]
         assert set(label_ids) == {
             858,
             859,
@@ -454,7 +454,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
     def test_get_project_label_sets(self):
         """Test getting all Label Sets of a Project."""
-        label_set_ids = [label_set['id'] for label_set in get_project_label_sets(project_id=TEST_PROJECT_ID)['results']]
+        label_set_ids = [label_set['id'] for label_set in get_project_label_sets(project_id=TEST_PROJECT_ID)]
         assert label_set_ids == [64, 3706, 3686, 3707]
 
     def test_download_office_file(self):
@@ -601,46 +601,6 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         with self.assertRaises(ConnectionError) as context:
             _get_auth_token('test', 'test')
             assert 'HTTP Status 500' in context.exception
-
-    @patch('konfuzio_sdk.api.konfuzio_session')
-    @patch('konfuzio_sdk.api.get_extraction_ais_list_url')
-    @patch('konfuzio_sdk.api.get_splitting_ais_list_url')
-    @patch('konfuzio_sdk.api.get_categorization_ais_list_url')
-    @patch('konfuzio_sdk.api.json.loads')
-    def test_get_all_project_ais(
-        self,
-        mock_json_loads,
-        mock_get_categorization_url,
-        mock_get_splitting_url,
-        mock_get_extraction_url,
-        mock_session,
-    ):
-        """Retrieve all AIs from a Project."""
-        # Setup
-        sample_data = {'AI_DATA': 'AI_SAMPLE_DATA'}
-
-        mock_session.return_value.get.return_value.status_code = 200
-        mock_json_loads.return_value = sample_data
-
-        # Action
-        result = get_all_project_ais(project_id=1)
-
-        # Assertions
-        self.assertEqual(
-            result,
-            {
-                'extraction': sample_data,
-                'filesplitting': sample_data,
-                'categorization': sample_data,
-            },
-        )
-
-        from konfuzio_sdk.api import konfuzio_session
-
-        # Ensure the mock methods were called with the correct arguments
-        mock_get_extraction_url.assert_called_once_with(1, konfuzio_session().host)
-        mock_get_splitting_url.assert_called_once_with(1, konfuzio_session().host)
-        mock_get_categorization_url.assert_called_once_with(1, konfuzio_session().host)
 
     @patch('konfuzio_sdk.api.konfuzio_session')
     @patch('konfuzio_sdk.api.get_extraction_ais_list_url')
