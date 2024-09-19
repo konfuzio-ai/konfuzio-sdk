@@ -12,6 +12,12 @@ from fastapi import Depends, FastAPI, HTTPException
 from .schemas import ExtractRequest20240117, ExtractResponse20240117
 from .utils import handle_exceptions, prepare_request, process_response
 
+# Use relative or top module import based on whether this is run as an actual service or imported
+try:
+    from ..base.utils import handle_exceptions
+except ValueError:
+    from base.utils import handle_exceptions
+
 # load ai model name from AI_MODEL_NAME file in parent directory
 ai_model_name_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'AI_MODEL_NAME')
 ai_model_name = open(ai_model_name_file).read().strip()

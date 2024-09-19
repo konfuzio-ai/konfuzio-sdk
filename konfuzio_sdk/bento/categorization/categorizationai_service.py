@@ -8,7 +8,7 @@ import bentoml
 from fastapi import Depends, FastAPI, HTTPException
 
 from .schemas import CategorizeRequest20240729, CategorizeResponse20240729
-from .utils import prepare_request, process_response
+from .utils import handle_exceptions, prepare_request, process_response
 
 # Use relative or top module import based on whether this is run as an actual service or imported
 try:
@@ -32,6 +32,7 @@ class CategorizationService(PicklableModelService):
     model_ref = bentoml.models.get(ai_model_name)
 
     @bentoml.api(input_spec=CategorizeRequest20240729)
+    @handle_exceptions
     async def categorize(self, ctx: bentoml.Context, **request: Any) -> CategorizeResponse20240729:
         """Send an call to the Categorization AI and process the response."""
         # Ensure the model is loaded
