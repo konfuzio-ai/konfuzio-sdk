@@ -295,19 +295,7 @@ class AbstractCategorizationAI(BaseModel, metaclass=abc.ABCMeta):
 
         :return: None if build=False, otherwise a tuple of (saved_bento, archive_path).
         """
-        custom_objects = {
-            'tokenizer': self.tokenizer,
-            'image_preprocessing': self.image_preprocessing,
-            'image_augmentation': self.image_augmentation,
-            'text_vocab': self.text_vocab,
-            'category_vocab': self.category_vocab,
-            'classifier': self.classifier,
-            'eval_transforms': self.eval_transforms,
-            'train_transforms': self.train_transforms,
-            'categories': self.categories,
-            'model_type': self.__class__.__name__,
-        }
-        return super().save_bento(build, output_dir, custom_objects=custom_objects)
+        return super().save_bento(build, output_dir)
 
 
 class NameBasedCategorizationAI(AbstractCategorizationAI):

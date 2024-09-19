@@ -302,13 +302,12 @@ class BaseModel(metaclass=abc.ABCMeta):
 
         return pkl_file_path
 
-    def save_bento(self, build=True, output_dir=None, custom_objects=None) -> Union[None, tuple]:
+    def save_bento(self, build=True, output_dir=None) -> Union[None, tuple]:
         """
         Save AI as a BentoML model in the local store.
 
         :param build: Bundle the model into a BentoML service and store it in the local store.
         :param output_dir: If present, a .bento archive will also be saved to this directory.
-        :param custom_objects: Objects to be saved in a .bento archive.
 
         :return: None if build=False, otherwise a tuple of (saved_bento, archive_path).
         """
@@ -323,7 +322,6 @@ class BaseModel(metaclass=abc.ABCMeta):
             model=self,
             signatures=self.entrypoint_methods,
             metadata=self.bento_metadata,
-            custom_objects=custom_objects,
         )
         logger.info(f'Model saved in the local BentoML store: {saved_model}')
 

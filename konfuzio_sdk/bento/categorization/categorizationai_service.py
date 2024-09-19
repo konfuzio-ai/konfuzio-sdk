@@ -8,15 +8,15 @@ import bentoml
 from fastapi import Depends, FastAPI, HTTPException
 
 from .schemas import CategorizeRequest20240729, CategorizeResponse20240729
-from .utils import handle_exceptions, prepare_request, process_response
+from .utils import prepare_request, process_response
 
 # Use relative or top module import based on whether this is run as an actual service or imported
 try:
     from ..base.base_services import PicklableModelService
-    from ..base.utils import add_credentials_to_project, cleanup_project_after_document_processing
+    from ..base.utils import add_credentials_to_project, cleanup_project_after_document_processing, handle_exceptions
 except ValueError:
     from base.base_services import PicklableModelService
-    from base.utils import add_credentials_to_project, cleanup_project_after_document_processing
+    from base.utils import add_credentials_to_project, cleanup_project_after_document_processing, handle_exceptions
 
 
 # load ai model name from AI_MODEL_NAME file in parent directory
