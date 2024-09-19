@@ -44,10 +44,6 @@ The name-based Categorization AI is a simple logic that checks if a name of the 
 
 Let's begin with making imports, initializing the Categorization model and calling the Document to categorize.
 ```python editable=true slideshow={"slide_type": ""} tags=["remove-cell"] vscode={"languageId": "plaintext"}
-# This is necessary to make sure we can import from 'tests'
-import sys
-sys.path.insert(0, '../../../../')
-
 import logging
 import os
 import konfuzio_sdk

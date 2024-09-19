@@ -66,10 +66,6 @@ Konfuzio applies the following [data validation rules](https://dev.konfuzio.com/
 By default, any Project has the data validation rules enabled, so nothing special needs to be done to enable it.
 
 ```python tags=["remove-cell"]
-# This is necessary to make sure we can import from 'tests'
-import sys
-sys.path.insert(0, '../../../../')
-
 from tests.variables import TEST_PROJECT_ID, TEST_PAYSLIPS_CATEGORY_ID, TEST_DOCUMENT_ID
 ```
 

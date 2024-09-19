@@ -47,10 +47,6 @@ In this section, we will walk through how to use the `WhitespaceTokenizer` to ex
 We will use the Konfuzio SDK to tokenize the Document and identify word-level Spans, which can then be visualized or used to extract Bounding Box information.
 
 ```python tags=["remove-cell"]
-# This is necessary to make sure we can import from 'tests'
-import sys
-sys.path.insert(0, '../../../../')
-
 from tests.variables import TEST_PROJECT_ID, TEST_DOCUMENT_ID, TEST_PAYSLIPS_CATEGORY_ID, TEST_CATEGORIZATION_DOCUMENT_ID, TEST_SNAPSHOT_ID
 import logging
 logging.getLogger("konfuzio_sdk").setLevel(logging.ERROR)
