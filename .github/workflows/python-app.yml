@@ -60,8 +60,8 @@ jobs:
         run: |
           find docs/sdk/tutorials/**/ -type f -name "*_nb.md" -not -path '*/\.*' -exec bash -c 'dir=$(dirname "{}"); jupytext --to notebook "{}" --output "$dir/index.ipynb"' \;
           find docs/sdk/tutorials/**/ -name "*_nb.md" -exec rm {} \;
-          export PYTHONPATH=.
-          find docs/sdk/tutorials/**/ -type f -name "*.ipynb" -exec pytest --nbval "{}" > pytest_output.log \;
+          find docs/sdk/tutorials/**/ -type f -name "*.ipynb" -exec bash -c 'PYTHONPATH=. pytest --nbval "{}"' \;
+          echo $PYTHONPATH
           cat pytest_output.log
           if [[ $(grep -c "failed" pytest_output.log) -gt 0 ]]; then exit 1; fi
         env:
