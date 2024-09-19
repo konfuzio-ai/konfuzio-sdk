@@ -51,7 +51,7 @@ FILE_PATH_3 = 'path/to/pdf_file3.pdf'
 
 ```python tags=["remove-cell"]
 # This cell gets removed when the notebook is compiled as markdown
-FILE_PATH = '../../../../tests/test_data/pdf.pdf'
+FILE_PATH = 'tests/test_data/pdf.pdf'
 
 # Use the same file for the sake of local testing
 FILE_PATH_1 = FILE_PATH_2 = FILE_PATH_3 = FILE_PATH
@@ -60,11 +60,8 @@ FILE_PATH_1 = FILE_PATH_2 = FILE_PATH_3 = FILE_PATH
 We import the id of the default test Project, as well as the libraries we need:
 
 ```python tags=["remove-cell"]
-# This is necessary to make sure we can import from 'tests'
-import sys
 from konfuzio_sdk.api import get_project_list
 from tests.variables import TEST_SNAPSHOT_ID
-sys.path.insert(0, '../../../../')
 
 projects = get_project_list()
 # we want to get the last instance of a project restored from a snapshot because creating a new one each time takes longer 
