@@ -3,9 +3,9 @@ import functools
 import traceback
 import typing as t
 
-from pydantic import errors
+from pydantic import PlainSerializer, PlainValidator, WithJsonSchema, errors
 from starlette.responses import JSONResponse
-from typing_extensions import Annotated, PlainSerializer, PlainValidator, WithJsonSchema
+from typing_extensions import Annotated
 
 
 def add_credentials_to_project(project, ctx):
