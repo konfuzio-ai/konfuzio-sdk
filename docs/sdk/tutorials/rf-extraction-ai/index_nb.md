@@ -95,11 +95,6 @@ from konfuzio_sdk.api import upload_ai_model
 Now we can load the Konfuzio Project. Here we use a simple offline Project included in the tests for the Konfuzio SDK. We can find it in the `OFFLINE_PROJECT` folder.
 <!-- #endregion -->
 
-```python tags=["remove-cell"]
-# This is necessary to make sure we can import from 'tests'
-import sys
-sys.path.insert(0, '../../../../')
-```
 
 ```python id="e0a04d2d"
 from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID, TEST_PAYSLIPS_CATEGORY_ID
