@@ -72,7 +72,7 @@ class AbstractCategorizationAI(BaseModel, metaclass=abc.ABCMeta):
     @property
     def pkl_name(self):
         """Generate a unique extension-less name for a resulting pickle file."""
-        return f'{self.name_lower()}_{get_timestamp()}'
+        return f'{self.name_lower()}_{self.project.id_ if self.project.id_ else 0}_{get_timestamp()}'
 
     @property
     def temp_pkl_file_path(self) -> str:
@@ -260,7 +260,7 @@ class AbstractCategorizationAI(BaseModel, metaclass=abc.ABCMeta):
                 f.write(self._pkl_name)
 
             built_bento = bentoml.bentos.build(
-                name=f'categorization_{get_timestamp()}_{self.name_lower()}_{self.project.id_}',
+                name=f'categorization_{self.project.id_ or "0"}',
                 service=f'categorization.{self.name_lower()}_service:CategorizationService',
                 include=[
                     '__init__.py',
@@ -285,17 +285,6 @@ class AbstractCategorizationAI(BaseModel, metaclass=abc.ABCMeta):
             )
 
         return built_bento
-
-    def save_bento(self, build=True, output_dir=None) -> Union[None, Tuple]:
-        """
-        Save AI as a BentoML model in the local store.
-
-        :param build: Bundle the model into a BentoML service and store it in the local store.
-        :param output_dir: If present, a .bento archive will also be saved to this directory.
-
-        :return: None if build=False, otherwise a tuple of (saved_bento, archive_path).
-        """
-        return super().save_bento(build, output_dir)
 
 
 class NameBasedCategorizationAI(AbstractCategorizationAI):
