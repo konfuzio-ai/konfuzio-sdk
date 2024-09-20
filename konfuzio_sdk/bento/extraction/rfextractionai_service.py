@@ -10,7 +10,7 @@ import bentoml
 from fastapi import Depends, FastAPI, HTTPException
 
 from .schemas import ExtractRequest20240117, ExtractResponse20240117
-from .utils import handle_exceptions, prepare_request, process_response
+from .utils import prepare_request, process_response
 
 # Use relative or top module import based on whether this is run as an actual service or imported
 try:
