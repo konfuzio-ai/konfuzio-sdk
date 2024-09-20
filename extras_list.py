@@ -4,7 +4,7 @@ EXTRAS = {
     'dev': [
         'autodoc_pydantic==2.2.0',
         'coverage==7.3.2',
-        'jupytext',
+        'jupytext==1.16.4',
         'pytest>=7.1.2',
         'pre-commit>=2.20.0',
         'parameterized>=0.8.1',
