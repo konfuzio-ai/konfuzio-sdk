@@ -64,8 +64,6 @@ from konfuzio_sdk.api import get_project_list
 
 from tests.variables import TEST_SNAPSHOT_ID
 
-from tests.variables import TEST_SNAPSHOT_ID
-
 projects = get_project_list()
 # we want to get the last instance of a project restored from a snapshot because creating a new one each time takes longer 
 TEST_PROJECT_ID = next(project['id'] for project in reversed(projects) if TEST_SNAPSHOT_ID in project['name'])
