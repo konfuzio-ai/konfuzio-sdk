@@ -60,10 +60,9 @@ FILE_PATH_1 = FILE_PATH_2 = FILE_PATH_3 = FILE_PATH
 We import the id of the default test Project, as well as the libraries we need:
 
 ```python tags=["remove-cell"]
-# This is necessary to make sure we can import from 'tests'
-import sys
 from konfuzio_sdk.api import get_project_list
-sys.path.insert(0, '../../../../')
+
+from tests.variables import TEST_SNAPSHOT_ID
 
 from tests.variables import TEST_SNAPSHOT_ID
 

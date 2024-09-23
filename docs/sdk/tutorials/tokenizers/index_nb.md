@@ -47,10 +47,6 @@ In this section, we will walk through how to use the `WhitespaceTokenizer` to ex
 We will use the Konfuzio SDK to tokenize the Document and identify word-level Spans, which can then be visualized or used to extract Bounding Box information.
 
 ```python tags=["remove-cell"]
-# This is necessary to make sure we can import from 'tests'
-import sys
-sys.path.insert(0, '../../../../')
-
 from tests.variables import TEST_PROJECT_ID, TEST_DOCUMENT_ID, TEST_PAYSLIPS_CATEGORY_ID, TEST_CATEGORIZATION_DOCUMENT_ID, TEST_SNAPSHOT_ID
 import logging
 logging.getLogger("konfuzio_sdk").setLevel(logging.ERROR)
@@ -262,7 +258,7 @@ from konfuzio_sdk.data import Project
 projects = get_project_list()
 TEST_PROJECT_ID = None
 while not TEST_PROJECT_ID:
-    for project in reversed(projects['results']):
+    for project in reversed(projects):
         if 'ZGF0YV80Ni02NS56aXA=' in project['name']:
             TEST_PROJECT_ID = project['id']
             break
@@ -344,7 +340,9 @@ The `SentenceTokenizer` is a specialized [tokenizer](https://dev.konfuzio.com/sd
 
 To use it, import the necessary modules, initialize the Project, the Document, and the Tokenizer and tokenize the Document.
 ```python tags=["remove-cell"]
+import time
 document = Document.from_file(path="../../../../tests/test_data/textposition.pdf", project=project, sync=True)
+time.sleep(15)
 YOUR_DOCUMENT_ID = document.id_
 ```
 

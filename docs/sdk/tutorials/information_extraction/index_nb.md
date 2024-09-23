@@ -99,10 +99,6 @@ class CustomExtractionAI(AbstractExtractionAI):
 We can now use this custom Extraction AI class. Let's start with making the necessary imports, initializing the Project, the Category and the AI:
 
 ```python tags=["remove-cell"]
-# This is necessary to make sure we can import from 'tests'
-import sys
-sys.path.insert(0, '../../../../')
-
 from tests.variables import TEST_PROJECT_ID, TEST_PAYSLIPS_CATEGORY_ID, TEST_DOCUMENT_ID
 ```
 
