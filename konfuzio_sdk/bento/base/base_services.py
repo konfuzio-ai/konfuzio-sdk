@@ -7,6 +7,8 @@ import bentoml
 
 
 class PicklableModelService:
+    """A general class for any AI models that will be packaged into Bento archive and served as a containerized version."""
+
     def __init__(self):
         """Initialize the extraction service."""
         print(f'Initializing service for model {self.model_ref}')

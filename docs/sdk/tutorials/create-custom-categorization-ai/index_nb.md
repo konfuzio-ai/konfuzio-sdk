@@ -145,13 +145,16 @@ Next, we need to define how the model assigns a Category to a Page inside a `_ca
 
     def build_bento(self, bento_model) -> Bento:
         """Build a archived instance of the AI."""
-        bento_module_dir = 'konfuzio-sdk/konfuzio_sdk/bento/categorization' # specify your own path if the root folder where konfuzio_sdk is stored has a different name
+        bento_base_dir = os.path.dirname(os.path.abspath(__file__)) + '/../bento' # specify your own path if the root folder where konfuzio_sdk is stored has a different name
         dict_metadata = self.project.create_project_metadata_dict()
 
         #  create a temporary directory for a future bento archive
         with tempfile.TemporaryDirectory() as temp_dir:
-            # copy bento_module_dir to temp_dir
-            shutil.copytree(bento_module_dir, temp_dir + '/categorization')
+            # copy bento directories to temp_dir
+            shutil.copytree(bento_base_dir + '/categorization', temp_dir + '/categorization') # specify a different directory name if yours differs from the default one
+            shutil.copytree(bento_base_dir + '/base', temp_dir + '/base') 
+            # copy __init__.py file
+            shutil.copy(bento_base_dir + '/__init__.py', temp_dir + '__init__.py')
             # include metadata
             with open(f'{temp_dir}/categories_and_label_data.json5', 'w') as f:
                 json.dump(dict_metadata, f, indent=2, sort_keys=True)
@@ -163,7 +166,9 @@ Next, we need to define how the model assigns a Category to a Page inside a `_ca
                 name=f"categorization_{self.category.id_ if self.category else '0'}",
                 service=f'categorization/categorizationai_service.py:CategorizationService',
                 include=[
-                    'categorization/*.py',
+                    '__init__.py',
+                    'base/*.py',
+                    'categorization/*.py', # specify a different directory name if yours differs from the default one
                     'categories_and_label_data.json5',
                     'AI_MODEL_NAME',
                 ],
@@ -171,6 +176,7 @@ Next, we need to define how the model assigns a Category to a Page inside a `_ca
                 python={
                     'packages': [
                         'https://github.com/konfuzio-ai/konfuzio-sdk/archive/refs/heads/master.zip#egg=konfuzio-sdk'
+                        # specify any packages you might need aside from konfuzio_sdk, if you use them
                     ],
                     'lock_packages': True,
                 },
@@ -341,13 +347,16 @@ class CustomCategorizationAI(AbstractCategorizationAI):
 
     def build_bento(self, bento_model) -> Bento:
         """Build a archived instance of the AI."""
-        bento_module_dir = 'konfuzio-sdk/konfuzio_sdk/bento/categorization' # specify your own path if the root folder where konfuzio_sdk is stored has a different name
+        bento_base_dir = os.path.dirname(os.path.abspath(__file__)) + '/../bento' # specify your own path if the root folder where konfuzio_sdk is stored has a different name
         dict_metadata = self.project.create_project_metadata_dict()
 
         #  create a temporary directory for a future bento archive
         with tempfile.TemporaryDirectory() as temp_dir:
-            # copy bento_module_dir to temp_dir
-            shutil.copytree(bento_module_dir, temp_dir + '/categorization')
+            # copy bento directories to temp_dir
+            shutil.copytree(bento_base_dir + '/categorization', temp_dir + '/categorization') # specify a different directory name if yours differs from the default one
+            shutil.copytree(bento_base_dir + '/base', temp_dir + '/base') 
+            # copy __init__.py file
+            shutil.copy(bento_base_dir + '/__init__.py', temp_dir + '__init__.py')
             # include metadata
             with open(f'{temp_dir}/categories_and_label_data.json5', 'w') as f:
                 json.dump(dict_metadata, f, indent=2, sort_keys=True)
@@ -359,7 +368,9 @@ class CustomCategorizationAI(AbstractCategorizationAI):
                 name=f"categorization_{self.category.id_ if self.category else '0'}",
                 service=f'categorization/categorizationai_service.py:CategorizationService',
                 include=[
-                    'categorization/*.py',
+                    '__init__.py',
+                    'base/*.py',
+                    'categorization/*.py', # specify a different directory name if yours differs from the default one
                     'categories_and_label_data.json5',
                     'AI_MODEL_NAME',
                 ],
@@ -367,6 +378,7 @@ class CustomCategorizationAI(AbstractCategorizationAI):
                 python={
                     'packages': [
                         'https://github.com/konfuzio-ai/konfuzio-sdk/archive/refs/heads/master.zip#egg=konfuzio-sdk'
+                        # specify any packages you might need aside from konfuzio_sdk, if you use them
                     ],
                     'lock_packages': True,
                 },

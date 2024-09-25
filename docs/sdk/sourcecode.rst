@@ -450,7 +450,28 @@ AI containerization
 
 `[source] <https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/konfuzio_sdk/bento>`__
 
-Pydantic schemas
+Base containerization services
+--------------------
+
+.. automodule:: konfuzio_sdk.bento.base.base_services
+
+PicklableModelService
+--------------------
+.. autoclass:: konfuzio_sdk.bento.base.PicklableModelService
+   :members:
+   :noindex:
+
+Base containerization utils
+--------------------
+
+.. automodule:: konfuzio_sdk.bento.base.utils
+.. autofunction:: konfuzio_sdk.bento.base.utils.add_credentials_to_project
+.. autofunction:: konfuzio_sdk.bento.base.utils.cleanup_project_after_document_processing
+.. autofunction:: konfuzio_sdk.bento.base.utils.get_error_details
+.. autofunction:: konfuzio_sdk.bento.base.utils.handle_exceptions
+.. autofunction:: konfuzio_sdk.bento.base.utils.hex_bytes_validator
+
+ExtractionService Pydantic schemas
 --------------------
 .. autopydantic_model:: konfuzio_sdk.bento.extraction.schemas.ExtractRequest20240117Page
    :members:
@@ -464,7 +485,9 @@ Pydantic schemas
    :members:
    :noindex:
 
-.. autopydantic_validator:: konfuzio_sdk.bento.extraction.schemas.hex_bytes_validator
+
+ExtractionService utils
+--------------------
 
 .. automodule:: konfuzio_sdk.bento.extraction.utils
 .. autofunction:: konfuzio_sdk.bento.extraction.utils.prepare_request
@@ -479,38 +502,25 @@ Containerization utils for ExtractionService
 .. autofunction:: convert_document_to_request
 .. autofunction:: convert_response_to_annotations
 
-.. automodule:: konfuzio_sdk.bento.categorization.categorizationai_service
 
-CategorizationService
+CategorizationService Pydantic schemas
 --------------------
-.. autoclass:: konfuzio_sdk.bento.categorization.categorizationai_service.CategorizationService
+.. autopydantic_model:: konfuzio_sdk.bento.categorization.schemas.CategorizeRequest20240729Page
    :members:
    :noindex:
 
-.. autofunction:: konfuzio_sdk.bento.categorization.categorizationai_service.project_metadata
-
-.. automodule:: konfuzio_sdk.bento.categorization.schemas
-
-Pydantic schemas for CategorizationService
---------------------
-.. autoclass:: konfuzio_sdk.bento.categorization.schemas.CategorizeRequest20240729Page
+.. autopydantic_model:: konfuzio_sdk.bento.categorization.schemas.CategorizeRequest20240729
    :members:
    :noindex:
 
-.. autoclass:: konfuzio_sdk.bento.categorization.schemas.CategorizeRequest20240729
+.. autopydantic_model:: konfuzio_sdk.bento.categorization.schemas.CategorizeResponse20240729
    :members:
    :noindex:
 
-.. autoclass:: konfuzio_sdk.bento.categorization.schemas.CategorizeResponse20240729
-   :members:
-   :noindex:
-
-.. autofunction:: konfuzio_sdk.bento.categorization.schemas.hex_bytes_validator
-
-.. automodule:: konfuzio_sdk.bento.categorization.utils
 
 Containerization utils for CategorizationService
 -----------------------
+.. automodule:: konfuzio_sdk.bento.categorization.utils
 .. autofunction:: konfuzio_sdk.bento.categorization.utils.prepare_request
 .. autofunction:: konfuzio_sdk.bento.categorization.utils.process_response
 .. autofunction:: konfuzio_sdk.bento.categorization.utils.convert_document_to_request
