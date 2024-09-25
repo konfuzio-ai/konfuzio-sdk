@@ -14,7 +14,7 @@ from .utils import prepare_request, process_response
 try:
     from ..base.base_services import PicklableModelService
     from ..base.utils import add_credentials_to_project, cleanup_project_after_document_processing, handle_exceptions
-except ValueError:
+except (ImportError, ValueError):
     from base.base_services import PicklableModelService
     from base.utils import add_credentials_to_project, cleanup_project_after_document_processing, handle_exceptions
 

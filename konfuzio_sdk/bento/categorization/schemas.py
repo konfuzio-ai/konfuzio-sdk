@@ -6,7 +6,7 @@ from pydantic import BaseModel
 # Use relative or top module import based on whether this is run as an actual service or imported
 try:
     from ..base.utils import HexBytes
-except ValueError:
+except (ImportError, ValueError):
     from base.utils import HexBytes
 
 
