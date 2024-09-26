@@ -137,21 +137,22 @@ def convert_response_to_categorized_pages(
 
     :param response: A CategorizeResponse to be converted.
     :param document: A Document to which the categorized Pages should be added.
-    :param mappings: A dict with "categories" keys containing mappings from old to new IDs. Original
-        IDs are used if no mapping is provided or if the mapping is not found.
+    :param mappings: A dict with "label_sets" keys containing mappings from old to new IDs (categories are a subset
+        of label sets for mapping purposes). Original IDs are used if no mapping is provided or if the mapping is not
+        found.
     :returns: The original Document with added categorized Pages.
     """
     if mappings is None:
         mappings = {}
 
     # Mappings might be from JSON, so we need to convert keys to integers.
-    category_mappings = {int(k): v for k, v in mappings.get('categories', {}).items()}
+    label_set_mappings = {int(k): v for k, v in mappings.get('label_sets', {}).items()}
 
     if response.__class__.__name__ == 'CategorizeResponse20240729':
         for page in response.pages:
             page_to_update = document.get_page_by_index(page.number - 1)
             for category in page.categories:
-                category_id = category_mappings.get(category.category_id, category.category_id)
+                category_id = label_set_mappings.get(category.category_id, category.category_id)
                 confidence = category.confidence
                 page_to_update.add_category_annotation(
                     category_annotation=CategoryAnnotation(
