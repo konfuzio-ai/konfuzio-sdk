@@ -9,8 +9,9 @@ import pytest
 import requests
 from PIL import Image
 
+from konfuzio_sdk.bento.base.schemas import DocumentModel20240117
 from konfuzio_sdk.bento.extraction.schemas import ExtractRequest20240117, ExtractResponse20240117
-from konfuzio_sdk.bento.extraction.utils import convert_document_to_request, convert_response_to_annotations
+from konfuzio_sdk.bento.extraction.utils import convert_response_to_annotations
 from konfuzio_sdk.data import Document, Project
 from konfuzio_sdk.settings_importer import is_dependency_installed
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
@@ -81,7 +82,7 @@ class TestExtractionAIBento(unittest.TestCase):
 
     def test_extract_converted(self):
         """Test that only a schema-adhering response is accepted by extract method of service."""
-        prepared = convert_document_to_request(document=self.test_document, schema=ExtractRequest20240117)
+        prepared = DocumentModel20240117.convert_document_to_request(document=self.test_document, schema=ExtractRequest20240117)
         response = requests.post(url=self.request_url, json=prepared.dict())
         # logging_from_subprocess(process=bento_process, breaking_point='status=')
         assert len(response.json()['annotation_sets']) == 4

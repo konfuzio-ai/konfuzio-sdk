@@ -3,14 +3,19 @@
 import asyncio
 import json
 import os
-import typing as t
 from concurrent.futures import ThreadPoolExecutor
-from typing import Dict, Iterable, List, Optional, Tuple, Union
+from typing import Any
+
 import bentoml
 from fastapi import Depends, FastAPI, HTTPException
 
 from .schemas import ExtractRequest20240117, ExtractResponseForLegacyTrainer20240912
-from .utils import handle_exceptions, prepare_request, process_response
+
+try:
+    from ..base.utils import handle_exceptions
+except (ImportError, ValueError):
+    from base.utils import handle_exceptions
+
 from konfuzio_sdk.data import Project, Category
 
 # load ai model name from AI_MODEL_NAME file in parent directory
@@ -50,7 +55,7 @@ class ExtractionService:
 
     @bentoml.api(input_spec=ExtractRequest20240117)
     @handle_exceptions
-    async def extract(self, ctx: bentoml.Context, **request: t.Any) -> ExtractResponseForLegacyTrainer20240912:
+    async def extract(self, ctx: bentoml.Context, **request: Any) -> ExtractResponseForLegacyTrainer20240912:
         """Send a call to the Extraction AI and process the response."""
 
         # Ensure the model is loaded
@@ -82,9 +87,7 @@ class ExtractionService:
             pages.append(dict(_page))
 
         result = await asyncio.get_event_loop().run_in_executor(self.executor, extraction_model.extract, request.text, bboxes, pages)
-        json_result = process_response(result, schema=ExtractResponseForLegacyTrainer20240912)
-
-        project._documents = [d for d in project._documents if d.id_ != document.id_ and d.copy_of_id != document.id_]
+        json_result = ExtractRequest20240117.process_response(result, schema=ExtractResponseForLegacyTrainer20240912)
         return json_result
 
 

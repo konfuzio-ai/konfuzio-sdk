@@ -261,7 +261,7 @@ class AbstractCategorizationAI(BaseModel, metaclass=abc.ABCMeta):
 
             built_bento = bentoml.bentos.build(
                 name=f'categorization_{self.project.id_ or "0"}',
-                service=f'categorization.{self.name_lower()}_service:CategorizationService',
+                service='categorization.service:CategorizationService',
                 include=[
                     '__init__.py',
                     'base/*.py',
