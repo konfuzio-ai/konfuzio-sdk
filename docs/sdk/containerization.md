@@ -12,6 +12,8 @@ a Dockerfile and a Python file that serves a REST API for the model. It also spe
 
 ![Bento archive](bentoml.png)
 
+Currently, Bento containerization is supported for Extraction AIs and Categorization AIs. 
+
 To save a model as a Bento instance, use `save_bento()` method of an AI class that you want to save, for instance:
 
 ```python
@@ -43,3 +45,7 @@ To run a Bento instance as a container and test it, use a following command:
 ```commandline
 bentoml containerize name:version # for example, extraction_11:2qytjiwhoc7flhbp
 ```
+
+If you want to containerize a custom Extraction AI or Categorization AI, refer to the documentation on how to create and save a 
+[custom Extraction AI](https://dev.konfuzio.com/sdk/tutorials/information_extraction/index.html#train-a-custom-date-extraction-ai) 
+or a [custom Categorization AI](https://dev.konfuzio.com/sdk/tutorials/create-custom-categorization-ai/index.html), respectively.

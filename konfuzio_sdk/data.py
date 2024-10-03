@@ -8,6 +8,7 @@ import os
 import pathlib
 import shutil
 import time
+import uuid
 import zipfile
 from copy import deepcopy
 from enum import Enum
@@ -57,10 +58,23 @@ from konfuzio_sdk.utils import (
 logger = logging.getLogger(__name__)
 
 
+class UUIDIntegerIterator:
+    """Generate a unique ID as integer at each iteration."""
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        new_uuid = uuid.uuid4()
+        # Convert the UUID to an integer
+        uuid_int = int(new_uuid.hex, 16)
+        return uuid_int
+
+
 class Data:
     """Collect general functionality to work with data from API."""
 
-    id_iter = itertools.count()
+    id_iter = UUIDIntegerIterator()
     id_ = None
     id_local = None
     session = konfuzio_session()

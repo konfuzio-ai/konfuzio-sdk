@@ -830,12 +830,15 @@ class AbstractExtractionAI(BaseModel):
 
     def build_bento(self, bento_model):
         """Build BentoML service for the model."""
-        bento_module_dir = os.path.dirname(os.path.abspath(__file__)) + '/../bento/extraction'
+        bento_base_dir = os.path.dirname(os.path.abspath(__file__)) + '/../bento'
         dict_metadata = self.project.create_project_metadata_dict()
 
         with tempfile.TemporaryDirectory() as temp_dir:
             # copy bento_module_dir to temp_dir
-            shutil.copytree(bento_module_dir, temp_dir + '/extraction')
+            shutil.copytree(bento_base_dir + '/extraction', temp_dir + '/extraction')
+            shutil.copytree(bento_base_dir + '/base', temp_dir + '/base')
+            # copy __init__.py file
+            shutil.copy(bento_base_dir + '/__init__.py', temp_dir + '__init__.py')
             # include metadata
             with open(f'{temp_dir}/categories_and_label_data.json5', 'w') as f:
                 json.dump(dict_metadata, f, indent=2, sort_keys=True)
@@ -847,6 +850,8 @@ class AbstractExtractionAI(BaseModel):
                 name=f"extraction_{self.category.id_ if self.category else '0'}",
                 service=f'extraction.{self.name_lower()}_service:ExtractionService',
                 include=[
+                    '__init__.py',
+                    'base/*.py',
                     'extraction/*.py',
                     'categories_and_label_data.json5',
                     'AI_MODEL_NAME',

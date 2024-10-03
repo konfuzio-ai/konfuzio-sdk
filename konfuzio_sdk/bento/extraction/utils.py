@@ -1,12 +1,8 @@
 """Utility functions for adapting Konfuzio concepts to be used with Pydantic models."""
-
-import functools
-import traceback
 import typing as t
 import logging
 
 from pydantic import BaseModel
-from starlette.responses import JSONResponse
 
 from konfuzio_sdk.data import Annotation, AnnotationSet, Document, Page, Project, Span
 
@@ -16,40 +12,6 @@ NOT_IMPLEMENTED_ERROR_MESSAGE = (
     'The request does not adhere to any schema version. Please modify the request to fit one of the schemas from '
     'bento/extraction/schemas.py.'
 )
-
-
-logger = logging.getLogger(__name__)
-
-# Error handling
-def get_error_details(exc: Exception) -> str:
-    error_details = type(exc).__name__
-    error_message = str(exc)
-    if error_message:
-        error_details = f'{error_details}: {error_message}'
-    return error_details
-
-
-def handle_exceptions(func: t.Callable) -> t.Callable:
-    """
-    Decorator to handle exceptions in service API endpoints and return a JSON response with error details.
-    Pydantic errors are not handled here, as they are handled by Bento automatically.
-    """
-
-    @functools.wraps(func)
-    async def wrapper(*args: t.Any, **kwargs: t.Any) -> t.Any:
-        try:
-            return await func(*args, **kwargs)
-        except Exception as exc:
-            tb = traceback.format_exception(type(exc), exc, exc.__traceback__)
-            error_details = get_error_details(exc)
-            # Override the default status code, otherwise it will be 200.
-            if 'ctx' in kwargs:
-                ctx = kwargs['ctx']
-                ctx.response.status_code = 500
-            return JSONResponse(status_code=500, content={'error': error_details, 'traceback': tb})
-
-    return wrapper
-
 
 # Pydanctic conversion functions
 
