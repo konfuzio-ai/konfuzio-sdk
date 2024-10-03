@@ -848,7 +848,7 @@ class AbstractExtractionAI(BaseModel):
 
             built_bento = bentoml.bentos.build(
                 name=f"extraction_{self.category.id_ if self.category else '0'}",
-                service='extraction.service:ExtractionService',
+                service=f'extraction.{self.name_lower()}_service:ExtractionService',
                 include=[
                     '__init__.py',
                     'base/*.py',

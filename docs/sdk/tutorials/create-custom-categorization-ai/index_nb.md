@@ -164,7 +164,7 @@ Next, we need to define how the model assigns a Category to a Page inside a `_ca
 
             built_bento = bentoml.bentos.build(
                 name=f"categorization_{self.category.id_ if self.category else '0'}",
-                service=f'categorization/service.py:CategorizationService',
+                service=f'categorization/categorizationai_service.py:CategorizationService',
                 include=[
                     '__init__.py',
                     'base/*.py',
@@ -366,7 +366,7 @@ class CustomCategorizationAI(AbstractCategorizationAI):
 
             built_bento = bentoml.bentos.build(
                 name=f"categorization_{self.category.id_ if self.category else '0'}",
-                service=f'categorization/service.py:CategorizationService',
+                service=f'categorization/categorizationai_service.py:CategorizationService',
                 include=[
                     '__init__.py',
                     'base/*.py',

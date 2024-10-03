@@ -1,14 +1,14 @@
-"""Run extraction service for a dockerized AI."""
-
+"""Run a service for a containerized instance of Categorization AI."""
 import asyncio
 import json
 import os
-import bentoml
-
 from typing import Any
+
+import bentoml
 from fastapi import Depends, FastAPI, HTTPException
 
-from .schemas import ExtractRequest20240117, ExtractResponse20240117
+from .schemas import CategorizeRequest20240729, CategorizeResponse20240729
+from .utils import prepare_request, process_response
 
 # Use relative or top module import based on whether this is run as an actual service or imported
 try:
@@ -17,6 +17,7 @@ try:
 except (ImportError, ValueError):
     from base.base_services import PicklableModelService
     from base.utils import add_credentials_to_project, cleanup_project_after_document_processing, handle_exceptions
+
 
 # load ai model name from AI_MODEL_NAME file in parent directory
 ai_model_name_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'AI_MODEL_NAME')
@@ -27,7 +28,7 @@ app = FastAPI()
 
 @bentoml.service(
     traffic={
-        'timeout': 3600,  # Hard limit for extraction calls is 1 hour
+        'timeout': 3600,  # Hard limit for categorization calls is 1 hour
         # Don't process more than 2 documents at a time. Will respond with 429 if more come.
         # Clients should implement a retry strategy for 429.
         # Servers should implement a scaling strategy and start multiple services when high load is present.
@@ -35,36 +36,25 @@ app = FastAPI()
     }
 )
 @bentoml.mount_asgi_app(app, path='/v1')
-class ExtractionService(PicklableModelService):
+class CategorizationService(PicklableModelService):
     model_ref = bentoml.models.get(ai_model_name)
 
-    @bentoml.api(input_spec=ExtractRequest20240117)
+    @bentoml.api(input_spec=CategorizeRequest20240729)
     @handle_exceptions
-    async def extract(self, ctx: bentoml.Context, **request: Any) -> ExtractResponse20240117:
-        """Send a call to the Extraction AI and process the response."""
+    async def categorize(self, ctx: bentoml.Context, **request: Any) -> CategorizeResponse20240729:
+        """Send an call to the Categorization AI and process the response."""
         # Ensure the model is loaded
-        extraction_model = await self.get_model()
-
-        # The rest of the method remains the same
-        request = ExtractRequest20240117(**request)
-        project = extraction_model.project
-
-        # Add credentials from the request headers to the Project object, but only if the SDK version supports this.
+        categorization_model = await self.get_model()
+        request = CategorizeRequest20240729(**request)
+        project = categorization_model.project
         add_credentials_to_project(project, ctx)
-        # Older SDK versions do not have the credentials attribute on Project.
-        document = ExtractResponse20240117.prepare_request(
-            request=request,
-            project=project,
-            konfuzio_sdk_version=getattr(extraction_model, 'konfuzio_sdk_version', None),
+        document = prepare_request(request=request, project=project)
+        result = await asyncio.get_event_loop().run_in_executor(
+            self.executor, categorization_model.categorize, document
         )
-        # Run the extraction in a separate thread, otherwise the API server will block
-
-        result = await asyncio.get_event_loop().run_in_executor(self.executor, extraction_model.extract, document)
-        annotations_result = ExtractRequest20240117.process_response(result)
-
-        # Remove the Document and its copies from the Project to avoid memory leaks
+        categories_result = process_response(result)
         cleanup_project_after_document_processing(project, document)
-        return annotations_result
+        return categories_result
 
 
 @app.get('/project-metadata')
