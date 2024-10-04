@@ -272,7 +272,7 @@ class AbstractCategorizationAI(BaseModel, metaclass=abc.ABCMeta):
                 labels=self.bento_metadata,
                 python={
                     'packages': [
-                        'https://github.com/konfuzio-ai/konfuzio-sdk/archive/refs/heads/12219-categorization-ai-bento.zip#egg=konfuzio-sdk',
+                        f'konfuzio-sdk<={self.konfuzio_sdk_version}'
                         'transformers==4.30.2',
                         'torch==2.3.1',
                         'torchvision==0.18.1',
