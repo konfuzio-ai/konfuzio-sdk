@@ -1,7 +1,6 @@
 """Generic AI model."""
 import abc
 import bz2
-import itertools
 import logging
 import os
 import pathlib
@@ -13,7 +12,6 @@ import bentoml
 import cloudpickle
 import lz4.frame
 
-from konfuzio_sdk.data import Data
 from konfuzio_sdk.utils import get_sdk_version, memory_size_of, normalize_memory
 
 logger = logging.getLogger(__name__)
@@ -90,9 +88,6 @@ class BaseModel(metaclass=abc.ABCMeta):
         if not os.path.isfile(pickle_path):
             raise FileNotFoundError('Invalid pickle file path:', pickle_path)
 
-        # The current local id iterator might otherwise be overriden
-        prev_local_id = next(Data.id_iter)
-
         try:
             if pickle_path.endswith('.pt') or pickle_path.endswith('.pt.lz4'):
                 from konfuzio_sdk.trainer.document_categorization import load_categorization_model
@@ -138,8 +133,6 @@ class BaseModel(metaclass=abc.ABCMeta):
         else:
             logger.info(f'Loading {model.name} AI model.')
 
-        curr_local_id = next(Data.id_iter)
-        Data.id_iter = itertools.count(max(prev_local_id, curr_local_id))
         return model
 
     def reduce_model_weight(self):
@@ -318,7 +311,10 @@ class BaseModel(metaclass=abc.ABCMeta):
         self._pkl_name = self.pkl_name
 
         saved_model = bentoml.picklable_model.save_model(
-            name=self._pkl_name, model=self, signatures=self.entrypoint_methods, metadata=self.bento_metadata
+            name=self._pkl_name,
+            model=self,
+            signatures=self.entrypoint_methods,
+            metadata=self.bento_metadata,
         )
         logger.info(f'Model saved in the local BentoML store: {saved_model}')
 

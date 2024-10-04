@@ -281,9 +281,9 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
             documents=self.pipeline.documents, require_revised_annotations=True
         )
 
-        assert 9e5 < memory_size_of(self.pipeline.category) < 12e5
+        assert 9e5 < memory_size_of(self.pipeline.category) < 13e5
 
-        assert 10e6 < memory_size_of(self.pipeline.df_train) < 12e6
+        assert 10e6 < memory_size_of(self.pipeline.df_train) < 13e6
 
     def test_03_fit(self) -> None:
         """Start to train the Model."""

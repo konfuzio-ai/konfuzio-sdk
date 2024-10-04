@@ -1,27 +1,13 @@
 """Define pydantic models for request and response from the Extraction AI."""
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
-from pydantic import BaseModel, RootModel, PlainSerializer, PlainValidator, WithJsonSchema, errors
-from typing_extensions import Annotated
+from pydantic import BaseModel, RootModel
 
-
-def hex_bytes_validator(o: Any) -> bytes:
-    """
-    Custom validator to be able to correctly serialize and unserialize bytes.
-    See https://github.com/pydantic/pydantic/issues/3756#issuecomment-1654425270
-    """
-    if isinstance(o, bytes):
-        return o
-    elif isinstance(o, bytearray):
-        return bytes(o)
-    elif isinstance(o, str):
-        return bytes.fromhex(o)
-    raise errors.BytesError
-
-
-HexBytes = Annotated[
-    bytes, PlainValidator(hex_bytes_validator), PlainSerializer(lambda b: b.hex()), WithJsonSchema({'type': 'string'})
-]
+# Use relative or top module import based on whether this is run as an actual service or imported
+try:
+    from ..base.utils import HexBytes
+except (ImportError, ValueError):
+    from base.utils import HexBytes
 
 
 class ExtractRequest20240117Page(BaseModel):
@@ -94,6 +80,7 @@ class ExtractResponse20240117(BaseModel):
         annotations: List[Annotation]
 
     annotation_sets: List[AnnotationSet]
+
 
 class ExtractResponseForLegacyTrainer20240912(RootModel):
     root: Dict
