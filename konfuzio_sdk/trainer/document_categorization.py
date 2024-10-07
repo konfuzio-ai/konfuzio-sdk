@@ -25,6 +25,7 @@ import numpy as np
 import pandas as pd
 import tqdm
 
+from extras_list import CATEGORIZATION_EXTRAS
 from konfuzio_sdk.data import Category, CategoryAnnotation, Document, Page
 from konfuzio_sdk.evaluate import CategorizationEvaluation
 from konfuzio_sdk.extras import (
@@ -273,11 +274,7 @@ class AbstractCategorizationAI(BaseModel, metaclass=abc.ABCMeta):
                 python={
                     'packages': [
                         f'konfuzio-sdk<={self.konfuzio_sdk_version}'
-                        'transformers==4.30.2',
-                        'torch==2.3.1',
-                        'torchvision==0.18.1',
-                        'timm==0.6.7',
-                    ],
+                    ] + CATEGORIZATION_EXTRAS,
                     'lock_packages': True,
                 },
                 build_ctx=temp_dir,
