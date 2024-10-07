@@ -46,7 +46,7 @@ class FileSplittingService(PicklableModelService):
         # Ensure the model is loaded
         splitting_model = await self.get_model()
         request = SplitRequest20240930(**request)
-        project = splitting_model.project
+        project = splitting_model.model.project
         add_credentials_to_project(project, ctx)
         document = prepare_request(request=request, project=project)
         result = await asyncio.get_event_loop().run_in_executor(

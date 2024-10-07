@@ -1212,12 +1212,15 @@ class SplittingAI:
 
     def build_bento(self, bento_model):
         """Build BentoML service for the model."""
-        bento_module_dir = os.path.dirname(os.path.abspath(__file__)) + '/../bento/file_splitting'
+        bento_base_dir = os.path.dirname(os.path.abspath(__file__)) + '/../bento'
         dict_metadata = self.model.project.create_project_metadata_dict()
 
         with tempfile.TemporaryDirectory() as temp_dir:
             # copy bento_module_dir to temp_dir
-            shutil.copytree(bento_module_dir, temp_dir + '/file_splitting')
+            shutil.copytree(bento_base_dir + '/file_splitting', temp_dir + '/file_splitting')
+            shutil.copytree(bento_base_dir + '/base', temp_dir + '/base')
+            # copy __init__.py file
+            shutil.copy(bento_base_dir + '/__init__.py', temp_dir + '__init__.py')
             # include metadata
             with open(f'{temp_dir}/categories_and_label_data.json5', 'w') as f:
                 json.dump(dict_metadata, f, indent=2, sort_keys=True)
@@ -1229,6 +1232,8 @@ class SplittingAI:
                 name=f'file_splitting_{self.model.project.id_}',
                 service=f'file_splitting.{self.name_lower()}_service:FileSplittingService',
                 include=[
+                    '__init__.py',
+                    'base/*.py',
                     'file_splitting/*.py',
                     'categories_and_label_data.json5',
                     'AI_MODEL_NAME',
@@ -1241,7 +1246,7 @@ class SplittingAI:
                         'mlflow==2.15.0',
                         'torch>=1.8.1',
                         'transformers==4.30.2',
-                        'tensorflow-cpu==2.12.0',
+                        'tensorflow',
                     ],
                     'lock_packages': True,
                 },
