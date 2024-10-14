@@ -7,7 +7,7 @@ from os import getenv, path
 
 import setuptools
 
-from extras_list import EXTRAS
+from konfuzio_sdk.extras_list import EXTRAS
 
 # Define version or calculate it for nightly build.
 #

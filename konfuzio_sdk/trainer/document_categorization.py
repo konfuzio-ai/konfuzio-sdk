@@ -25,7 +25,6 @@ import numpy as np
 import pandas as pd
 import tqdm
 
-from extras_list import CATEGORIZATION_EXTRAS
 from konfuzio_sdk.data import Category, CategoryAnnotation, Document, Page
 from konfuzio_sdk.evaluate import CategorizationEvaluation
 from konfuzio_sdk.extras import (
@@ -41,6 +40,7 @@ from konfuzio_sdk.extras import (
     torchvision,
     transformers,
 )
+from konfuzio_sdk.extras_list import CATEGORIZATION_EXTRAS
 from konfuzio_sdk.tokenizer.base import AbstractTokenizer, Vocab
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
 from konfuzio_sdk.trainer.base import BaseModel
@@ -272,9 +272,7 @@ class AbstractCategorizationAI(BaseModel, metaclass=abc.ABCMeta):
                 ],
                 labels=self.bento_metadata,
                 python={
-                    'packages': [
-                        f'konfuzio-sdk<={self.konfuzio_sdk_version}'
-                    ] + CATEGORIZATION_EXTRAS,
+                    'packages': [f'konfuzio-sdk<={self.konfuzio_sdk_version}'] + CATEGORIZATION_EXTRAS,
                     'lock_packages': True,
                 },
                 build_ctx=temp_dir,

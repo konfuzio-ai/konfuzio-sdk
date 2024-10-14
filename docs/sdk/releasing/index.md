@@ -24,6 +24,7 @@ If you want to edit the diagramm, please refer to the [GitHub Drawio Documentati
 │   │  ├── data.py                         <- Functions to handle data from the API
 │   │  ├── evaluate.py                     <- Functions to evaluate the performance of the AIs
 │   │  ├── extras.py                       <- Classes to initialize AI-related dependencies safely
+│   |  |── extras_list.py                  <- List of extra dependencies for different modes of installation of the SDK
 |   |  ├── normalize.py                    <- Functions to normalize Spans according to data_type
 │   │  ├── regex.py                        <- Helper Functions to handle regex related tasks
 │   │  ├── samples.py                      <- Local sample test Project
@@ -54,7 +55,6 @@ If you want to edit the diagramm, please refer to the [GitHub Drawio Documentati
 |   |
 │   ├── tests                              <- Pytests: basic tests to test scripts based on a demo project
 │   │         
-│   ├── extras_list.py                     <- List of extra dependencies for different modes of installation of the SDK
 │   ├── .gitignore                         <- Specify files untracked and ignored by git
 │   ├── README.md                          <- Readme to get to know konfuzio_sdk package
 │   ├── pytest.ini                         <- Configurations for pytests
