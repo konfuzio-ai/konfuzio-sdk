@@ -246,6 +246,8 @@ class AbstractCategorizationAI(BaseModel, metaclass=abc.ABCMeta):
         """Build BentoML service for the model."""
         bento_base_dir = os.path.dirname(os.path.abspath(__file__)) + '/../bento'
         dict_metadata = self.project.create_project_metadata_dict()
+        konfuzio_sdk_package = self.get_sdk_version_for_bento()
+        logger.info(f'Use Konfuzio SDK in version {konfuzio_sdk_package} for building bento.')
 
         with tempfile.TemporaryDirectory() as temp_dir:
             # copy bento directories to temp_dir
@@ -273,7 +275,7 @@ class AbstractCategorizationAI(BaseModel, metaclass=abc.ABCMeta):
                 labels=self.bento_metadata,
                 python={
                     'packages': [
-                        f'konfuzio-sdk<={self.konfuzio_sdk_version}'
+                        konfuzio_sdk_package
                     ] + CATEGORIZATION_EXTRAS,
                     'lock_packages': True,
                 },

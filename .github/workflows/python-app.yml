@@ -79,6 +79,7 @@ jobs:
             pytest --durations=10 --reruns=5 --only-rerun HTTPError --only-rerun "502 Bad Gateway" --only-rerun BentoMLException --only-rerun ReadTimeout -m 'not local'
           fi
         env:
+          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
           KONFUZIO_PROJECT_ID: ${{ secrets.KONFUZIO_PROJECT_ID }}
           KONFUZIO_HOST: ${{ secrets.KONFUZIO_HOST }}
           KONFUZIO_USER: ${{ secrets.KONFUZIO_USER }}
