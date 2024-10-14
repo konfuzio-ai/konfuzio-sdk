@@ -7,7 +7,7 @@ from os import getenv, path
 
 import setuptools
 
-from konfuzio_sdk.extras_list import EXTRAS
+from konfuzio_sdk_extras_list import EXTRAS
 
 # Define version or calculate it for nightly build.
 #
@@ -73,6 +73,7 @@ setuptools.setup(
     long_description_content_type='text/markdown',
     url='https://github.com/konfuzio-ai/konfuzio-sdk/',
     packages=[
+        'konfuzio_sdk_extras_list',
         'konfuzio_sdk',
         'konfuzio_sdk.bento',
         'konfuzio_sdk.bento.base',

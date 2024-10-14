@@ -40,7 +40,6 @@ from konfuzio_sdk.extras import (
     torchvision,
     transformers,
 )
-from konfuzio_sdk.extras_list import CATEGORIZATION_EXTRAS
 from konfuzio_sdk.tokenizer.base import AbstractTokenizer, Vocab
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
 from konfuzio_sdk.trainer.base import BaseModel
@@ -48,6 +47,7 @@ from konfuzio_sdk.trainer.image import ImageDataAugmentation, ImagePreProcessing
 from konfuzio_sdk.trainer.tokenization import TransformersTokenizer
 from konfuzio_sdk.trainer.utils import load_metric
 from konfuzio_sdk.utils import get_timestamp
+from konfuzio_sdk_extras_list import CATEGORIZATION_EXTRAS
 
 logger = logging.getLogger(__name__)
 
