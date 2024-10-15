@@ -73,7 +73,6 @@ setuptools.setup(
     long_description_content_type='text/markdown',
     url='https://github.com/konfuzio-ai/konfuzio-sdk/',
     packages=[
-        'konfuzio_sdk_extras_list',
         'konfuzio_sdk',
         'konfuzio_sdk.bento',
         'konfuzio_sdk.bento.base',
@@ -82,6 +81,7 @@ setuptools.setup(
         'konfuzio_sdk.tokenizer',
         'konfuzio_sdk.trainer',
     ],
+    py_modules=['konfuzio_sdk_extras_list'],
     include_package_data=True,
     entry_points={'console_scripts': ['konfuzio_sdk=konfuzio_sdk.cli:main']},
     install_requires=[
