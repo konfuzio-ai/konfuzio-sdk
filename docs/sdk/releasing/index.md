@@ -54,7 +54,7 @@ If you want to edit the diagramm, please refer to the [GitHub Drawio Documentati
 |   |
 │   ├── tests                              <- Pytests: basic tests to test scripts based on a demo project
 │   │         
-│   ├── extras_list.py                     <- List of extra dependencies for different modes of installation of the SDK
+│   ├── konfuzio_sdk_extras_list.py        <- List of extra dependencies for different modes of installation of the SDK
 │   ├── .gitignore                         <- Specify files untracked and ignored by git
 │   ├── README.md                          <- Readme to get to know konfuzio_sdk package
 │   ├── pytest.ini                         <- Configurations for pytests

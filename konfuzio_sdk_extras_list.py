@@ -30,14 +30,18 @@ EXTRAS = {
         'ruff',
         'pytest-rerunfailures',
     ],
-    'ai': list(set([
-                       'accelerate==0.20.1',
-                       'chardet==5.1.0',
-                       'datasets==2.14.6',
-                       'evaluate==0.4.1',
-                       'spacy>=2.3.5,<3.8.0',
-                       'tensorflow-cpu==2.12.0',
-                       'mlflow==2.15.0',
-                   ] + CATEGORIZATION_EXTRAS)),
-
+    'ai': list(
+        set(
+            [
+                'accelerate==0.20.1',
+                'chardet==5.1.0',
+                'datasets==2.14.6',
+                'evaluate==0.4.1',
+                'spacy>=2.3.5,<3.8.0',
+                'tensorflow-cpu==2.12.0',
+                'mlflow==2.15.0',
+            ]
+            + CATEGORIZATION_EXTRAS
+        )
+    ),
 }

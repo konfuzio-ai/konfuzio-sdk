@@ -25,7 +25,6 @@ import numpy as np
 import pandas as pd
 import tqdm
 
-from extras_list import CATEGORIZATION_EXTRAS
 from konfuzio_sdk.data import Category, CategoryAnnotation, Document, Page
 from konfuzio_sdk.evaluate import CategorizationEvaluation
 from konfuzio_sdk.extras import (
@@ -48,6 +47,7 @@ from konfuzio_sdk.trainer.image import ImageDataAugmentation, ImagePreProcessing
 from konfuzio_sdk.trainer.tokenization import TransformersTokenizer
 from konfuzio_sdk.trainer.utils import load_metric
 from konfuzio_sdk.utils import get_timestamp
+from konfuzio_sdk_extras_list import CATEGORIZATION_EXTRAS
 
 logger = logging.getLogger(__name__)
 
@@ -272,9 +272,7 @@ class AbstractCategorizationAI(BaseModel, metaclass=abc.ABCMeta):
                 ],
                 labels=self.bento_metadata,
                 python={
-                    'packages': [
-                        f'konfuzio-sdk<={self.konfuzio_sdk_version}'
-                    ] + CATEGORIZATION_EXTRAS,
+                    'packages': [f'konfuzio-sdk<={self.konfuzio_sdk_version}'] + CATEGORIZATION_EXTRAS,
                     'lock_packages': True,
                 },
                 build_ctx=temp_dir,
