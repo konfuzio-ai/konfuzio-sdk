@@ -9,11 +9,12 @@ from concurrent.futures import ThreadPoolExecutor
 from fastapi import Depends, FastAPI, HTTPException
 
 from .schemas import ExtractRequest20240117, ExtractResponseForLegacyTrainer20240912
+from .utils import process_response
 
 try:
-    from ..base.utils import handle_exceptions, process_response
+    from ..base.utils import handle_exceptions
 except (ImportError, ValueError):
-    from base.utils import handle_exceptions, process_response
+    from base.utils import handle_exceptions
 
 from konfuzio_sdk.data import Project, Category
 
