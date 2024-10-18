@@ -92,14 +92,14 @@ setuptools.setup(
         'filetype',  # Used to check that files are in the correct format
         'lz4',  # Used to compress pickles
         'matplotlib',
-        'nltk>=3.6.3,<3.8.2',
+        'nltk',
         'numpy',
         'pandas',
         'Pillow',
         'pydantic>2,<2.8',
-        'python-dateutil>=2.8.2',
-        'python-decouple>=3.3',
-        'python-dotenv>=1.0,<1.1',
+        'python-dateutil',
+        'python-decouple',
+        'python-dotenv',
         'requests',
         'regex',  # re module but better
         'scikit-learn',
