@@ -13,10 +13,10 @@ EXTRAS = {
         'autodoc_pydantic==2.2.0',
         'coverage==7.3.2',
         'jupytext==1.16.4',
-        'pytest>=7.1.2',
+        'pytest',
         'pre-commit>=2.20.0',
         'parameterized>=0.8.1',
-        'Sphinx==5.0.0',
+        'Sphinx',
         'sphinx-toolbox==3.4.0',
         'sphinx-reload==0.2.0',
         'sphinx-notfound-page==0.8',
@@ -26,20 +26,20 @@ EXTRAS = {
         'sphinx-rtd-theme==1.0.0',
         'sphinxcontrib-mermaid==0.8.1',
         'sphinx-copybutton==0.5.2',
-        'myst_nb==0.17.2',
+        'myst_nb',
         'ruff',
         'pytest-rerunfailures',
     ],
     'ai': list(
         set(
             [
-                'accelerate==0.20.1',
-                'chardet==5.1.0',
-                'datasets==2.14.6',
-                'evaluate==0.4.1',
-                'spacy>=2.3.5,<3.8.0',
-                'tensorflow-cpu==2.12.0',
-                'mlflow==2.15.0',
+                'accelerate',
+                'chardet',
+                'datasets',
+                'evaluate',
+                'spacy',
+                'tensorflow-cpu',
+                'mlflow',
             ]
             + CATEGORIZATION_EXTRAS
         )
