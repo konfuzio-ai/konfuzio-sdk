@@ -102,10 +102,10 @@ setuptools.setup(
         'python-dotenv>=1.0,<1.1',
         'requests',
         'regex>=2020.6.8',  # re module but better
-        'scikit-learn==1.2.2',
-        'tabulate>=0.9.0',  # Used to pretty print DataFrames
-        'tqdm>=4.64.0',
-        'pympler>=1.0.1',  # Use to get pickle file size.
+        'scikit-learn',
+        'tabulate',  # Used to pretty print DataFrames
+        'tqdm',
+        'pympler',  # Use to get pickle file size.
     ],
     extras_require=EXTRAS,
 )
