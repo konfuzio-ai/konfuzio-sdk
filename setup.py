@@ -94,7 +94,7 @@ setuptools.setup(
         'matplotlib==3.7.1',
         'nltk>=3.6.3,<3.8.2',
         'numpy',
-        'pandas,
+        'pandas',
         'Pillow',
         'pydantic>2,<2.8',
         'python-dateutil>=2.8.2',
