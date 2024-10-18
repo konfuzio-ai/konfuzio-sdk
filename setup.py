@@ -87,11 +87,11 @@ setuptools.setup(
     install_requires=[
         'bentoml==1.2.18',
         'fastapi<0.111.0',  # Used to serve additional endpoints in Bento services
-        'certifi==2023.7.22',
-        'cloudpickle==2.2.1',  # Used to pickle objects
-        'filetype==1.0.7',  # Used to check that files are in the correct format
-        'lz4>=4.3.2',  # Used to compress pickles
-        'matplotlib==3.7.1',
+        'certifi',
+        'cloudpickle',  # Used to pickle objects
+        'filetype',  # Used to check that files are in the correct format
+        'lz4',  # Used to compress pickles
+        'matplotlib',
         'nltk>=3.6.3,<3.8.2',
         'numpy',
         'pandas',
@@ -101,7 +101,7 @@ setuptools.setup(
         'python-decouple>=3.3',
         'python-dotenv>=1.0,<1.1',
         'requests',
-        'regex>=2020.6.8',  # re module but better
+        'regex',  # re module but better
         'scikit-learn',
         'tabulate',  # Used to pretty print DataFrames
         'tqdm',
