@@ -93,9 +93,9 @@ setuptools.setup(
         'lz4>=4.3.2',  # Used to compress pickles
         'matplotlib==3.7.1',
         'nltk>=3.6.3,<3.8.2',
-        'numpy==1.23.5',
-        'pandas>=1.3.5,<2.0.0',
-        'Pillow>=8.4.0',
+        'numpy',
+        'pandas,
+        'Pillow',
         'pydantic>2,<2.8',
         'python-dateutil>=2.8.2',
         'python-decouple>=3.3',
