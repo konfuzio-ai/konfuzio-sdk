@@ -35,7 +35,7 @@ EXTRAS = {
             [
                 'accelerate',
                 'chardet',
-                'datasets',
+                'datasets==3.0.1',
                 'evaluate',
                 'spacy',
                 'tensorflow-cpu==2.17.0',
