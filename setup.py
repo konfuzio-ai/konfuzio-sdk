@@ -91,7 +91,7 @@ setuptools.setup(
         'cloudpickle',  # Used to pickle objects
         'filetype',  # Used to check that files are in the correct format
         'lz4',  # Used to compress pickles
-        'matplotlib',
+        'matplotlib==3.9.2',
         'nltk',
         'numpy',
         'pandas',
