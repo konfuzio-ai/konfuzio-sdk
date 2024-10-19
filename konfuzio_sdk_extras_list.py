@@ -2,10 +2,10 @@
 
 # Keep track with AI type needs which package in order to make bento builds as small as possible.
 CATEGORIZATION_EXTRAS = [
-    'torch>=1.8.1',
-    'torchvision>=0.9.1',
-    'transformers==4.30.2',
-    'timm==0.6.7',
+    'torch',
+    'torchvision',
+    'transformers',
+    'timm',
 ]
 
 EXTRAS = {
