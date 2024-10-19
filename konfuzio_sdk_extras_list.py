@@ -2,7 +2,7 @@
 
 # Keep track with AI type needs which package in order to make bento builds as small as possible.
 CATEGORIZATION_EXTRAS = [
-    'torch',
+    'torch==2.5.0',
     'torchvision',
     'transformers',
     'timm',
@@ -38,7 +38,7 @@ EXTRAS = {
                 'datasets',
                 'evaluate',
                 'spacy',
-                'tensorflow-cpu',
+                'tensorflow-cpu==2.17.0',
                 'mlflow',
             ]
             + CATEGORIZATION_EXTRAS
