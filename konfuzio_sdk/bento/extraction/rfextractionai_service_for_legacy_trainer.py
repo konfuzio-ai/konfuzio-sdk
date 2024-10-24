@@ -4,13 +4,18 @@ import asyncio
 import json
 import os
 import typing as t
-from concurrent.futures import ThreadPoolExecutor
-from typing import Dict, Iterable, List, Optional, Tuple, Union
 import bentoml
+from concurrent.futures import ThreadPoolExecutor
 from fastapi import Depends, FastAPI, HTTPException
 
 from .schemas import ExtractRequest20240117, ExtractResponseForLegacyTrainer20240912
-from .utils import handle_exceptions, prepare_request, process_response
+from .utils import process_response
+
+try:
+    from ..base.utils import handle_exceptions
+except (ImportError, ValueError):
+    from base.utils import handle_exceptions
+
 from konfuzio_sdk.data import Project, Category
 
 # load ai model name from AI_MODEL_NAME file in parent directory

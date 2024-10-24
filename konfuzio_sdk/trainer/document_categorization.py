@@ -47,6 +47,7 @@ from konfuzio_sdk.trainer.image import ImageDataAugmentation, ImagePreProcessing
 from konfuzio_sdk.trainer.tokenization import TransformersTokenizer
 from konfuzio_sdk.trainer.utils import load_metric
 from konfuzio_sdk.utils import get_timestamp
+from konfuzio_sdk_extras_list import CATEGORIZATION_EXTRAS
 
 logger = logging.getLogger(__name__)
 
@@ -271,13 +272,7 @@ class AbstractCategorizationAI(BaseModel, metaclass=abc.ABCMeta):
                 ],
                 labels=self.bento_metadata,
                 python={
-                    'packages': [
-                        'https://github.com/konfuzio-ai/konfuzio-sdk/archive/refs/heads/12219-categorization-ai-bento.zip#egg=konfuzio-sdk',
-                        'transformers==4.30.2',
-                        'torch==2.3.1',
-                        'torchvision==0.18.1',
-                        'timm==0.6.7',
-                    ],
+                    'packages': [f'konfuzio-sdk<={self.konfuzio_sdk_version}'] + CATEGORIZATION_EXTRAS,
                     'lock_packages': True,
                 },
                 build_ctx=temp_dir,

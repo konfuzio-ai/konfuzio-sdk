@@ -1,5 +1,13 @@
 """List all extra dependencies to be installed for Konfuzio SDK's AIs and dev mode."""
 
+# Keep track with AI type needs which package in order to make bento builds as small as possible.
+CATEGORIZATION_EXTRAS = [
+    'torch>=1.8.1',
+    'torchvision>=0.9.1',
+    'transformers==4.30.2',
+    'timm==0.6.7',
+]
+
 EXTRAS = {
     'dev': [
         'autodoc_pydantic==2.2.0',
@@ -22,17 +30,18 @@ EXTRAS = {
         'ruff',
         'pytest-rerunfailures',
     ],
-    'ai': [
-        'accelerate==0.20.1',
-        'chardet==5.1.0',
-        'datasets==2.14.6',
-        'evaluate==0.4.1',
-        'spacy>=2.3.5,<3.8.0',
-        'torch>=1.8.1',
-        'torchvision>=0.9.1',
-        'transformers==4.30.2',
-        'tensorflow-cpu==2.12.0',
-        'timm==0.6.7',
-        'mlflow==2.15.0',
-    ],
+    'ai': list(
+        set(
+            [
+                'accelerate==0.20.1',
+                'chardet==5.1.0',
+                'datasets==2.14.6',
+                'evaluate==0.4.1',
+                'spacy>=2.3.5,<3.8.0',
+                'tensorflow-cpu==2.12.0',
+                'mlflow==2.15.0',
+            ]
+            + CATEGORIZATION_EXTRAS
+        )
+    ),
 }

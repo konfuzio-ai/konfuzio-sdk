@@ -7,7 +7,7 @@ from os import getenv, path
 
 import setuptools
 
-from extras_list import EXTRAS
+from konfuzio_sdk_extras_list import EXTRAS
 
 # Define version or calculate it for nightly build.
 #
@@ -82,6 +82,7 @@ setuptools.setup(
         'konfuzio_sdk.tokenizer',
         'konfuzio_sdk.trainer',
     ],
+    py_modules=['konfuzio_sdk_extras_list'],
     include_package_data=True,
     entry_points={'console_scripts': ['konfuzio_sdk=konfuzio_sdk.cli:main']},
     install_requires=[
