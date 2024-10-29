@@ -1,4 +1,6 @@
 """Test interfaces created for containerization of File Splitting AIs."""
+import subprocess
+import time
 import unittest
 
 import pytest
@@ -6,7 +8,7 @@ import requests
 
 from konfuzio_sdk.data import Project
 from konfuzio_sdk.settings_importer import is_dependency_installed
-from konfuzio_sdk.trainer.file_splitting import TextualFileSplittingModel
+from konfuzio_sdk.trainer.file_splitting import SplittingAI, TextualFileSplittingModel
 
 
 @pytest.mark.skipif(
@@ -25,16 +27,16 @@ class TestFileSplittingAIBento(unittest.TestCase):
         file_splitting_model.documents = file_splitting_model.categories[0].documents()
         file_splitting_model.test_documents = file_splitting_model.categories[0].test_documents()
         cls.test_document = file_splitting_model.test_documents[-1]
-        # file_splitting_model.fit(epochs=3, eval_batch_size=1, train_batch_size=1)
-        # cls.splitting_ai = SplittingAI(model=file_splitting_model)
-        # bento, path = cls.splitting_ai.save_bento()
-        # cls.bento_name = bento.tag.name + ':' + bento.tag.version
-        # cls.bento_process = subprocess.Popen(
-        #     ['bentoml', 'serve', cls.bento_name], stdout=subprocess.PIPE, stderr=subprocess.STDOUT
-        # )
+        file_splitting_model.fit(epochs=3, eval_batch_size=1, train_batch_size=1)
+        cls.splitting_ai = SplittingAI(model=file_splitting_model)
+        bento, path = cls.splitting_ai.save_bento()
+        cls.bento_name = bento.tag.name + ':' + bento.tag.version
+        cls.bento_process = subprocess.Popen(
+            ['bentoml', 'serve', cls.bento_name], stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+        )
 
-        # time.sleep(5)
-        # print('served bento')
+        time.sleep(5)
+        print('served bento')
         cls.request_url = 'http://0.0.0.0:3000/split'
 
     def test_run_splitting_ai_prediction(self):
@@ -63,4 +65,4 @@ class TestFileSplittingAIBento(unittest.TestCase):
             ],
         }
         response = requests.post(url=self.request_url, json=data)
-        response
+        assert response.status_code == 200
