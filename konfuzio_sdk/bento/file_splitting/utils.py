@@ -64,17 +64,11 @@ def process_response(result, schema: BaseModel = SplitResponse20240930) -> BaseM
     :param schema: A schema of the response.
     :returns: A list of dictionaries with Pages and their Categories.
     """
-    subdocuments = []
+    results = []
     if schema.__name__ == 'SplitResponse20240930':
-        for subdocument in result.subdocuments():
-            current_document_pages = []
+        for result in result.splitting_results():
             category_annotations = []
-            for page in subdocument.pages():
-                current_document_pages.append(
-                    schema.Subdocument.PageId(page_id=page.id_ if page.id_ else page.copy_of_id)
-                )
-
-            for category_annotation in subdocument.category_annotations:
+            for category_annotation in result.category_annotations:
                 category_annotations.append(
                     schema.Subdocument.CategoryAnnotation(
                         category_id=category_annotation.category.id_,
@@ -82,14 +76,16 @@ def process_response(result, schema: BaseModel = SplitResponse20240930) -> BaseM
                         category_name=category_annotation.category.name,
                     )
                 )
-            subdocuments.append(
+            results.append(
                 schema.Subdocument(
-                    page_ids=current_document_pages, category=subdocument.category.id_, categories=category_annotations
+                    page_ids=[page.id_ for page in result.pages()],
+                    category=result.category.id_,
+                    categories=category_annotations,
                 )
             )
     else:
         raise NotImplementedError(NOT_IMPLEMENTED_ERROR_MESSAGE)
-    return schema(subdocuments=subdocuments)
+    return schema(splitting_results=results)
 
 
 def convert_document_to_request(document: Document, schema: BaseModel = SplitRequest20240930) -> BaseModel:
@@ -129,27 +125,3 @@ def convert_document_to_request(document: Document, schema: BaseModel = SplitReq
     else:
         raise NotImplementedError(NOT_IMPLEMENTED_ERROR_MESSAGE)
     return converted
-
-
-def convert_response_to_categorized_pages(response: BaseModel, mappings: Optional[dict] = None) -> Document:
-    """
-    Receive a SplitResponse and convert it into a list of new Documents.
-    :param response: A SplitResponse to be converted.
-    :param mappings: A dict with "label_sets" keys containing mappings from old to new IDs (categories are a subset
-        of label sets for mapping purposes). Original IDs are used if no mapping is provided or if the mapping is not
-        found.
-    :returns: A list of new Documents created after splitting an original Document.
-    """
-    if mappings is None:
-        mappings = {}
-
-    # Mappings might be from JSON, so we need to convert keys to integers.
-    # label_set_mappings = {int(k): v for k, v in mappings.get('label_sets', {}).items()}
-
-    if response.__class__.__name__ == 'CategorizeResponse20240729':
-        subdocuments = []
-        for document in response.subdocuments:
-            pass
-        return subdocuments
-    else:
-        raise NotImplementedError(NOT_IMPLEMENTED_ERROR_MESSAGE)

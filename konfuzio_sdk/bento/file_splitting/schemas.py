@@ -41,13 +41,8 @@ class SplitRequest20240930(BaseModel):
 class SplitResponse20240930(BaseModel):
     """Describe a scheme for the splitting response on 30/09/2024."""
 
-    class Subdocument(BaseModel):
+    class SplittingResult(BaseModel):
         """Describe a scheme for a subdocument constructed after splitting on 30/09/2024."""
-
-        class PageId(BaseModel):
-            """Describe a scheme for Page ID object on 30/09/2024."""
-
-            page_id: int
 
         class CategoryAnnotation(BaseModel):
             """Describe a scheme for a CategoryAnnotation on 30/09/2024."""
@@ -56,8 +51,8 @@ class SplitResponse20240930(BaseModel):
             confidence: float
             category_name: str
 
-        page_ids: List[PageId]
+        page_ids: List[int]
         category: int
         categories: List[CategoryAnnotation]
 
-    subdocuments: List[Subdocument]
+    splitting_results: List[SplittingResult]

@@ -28,7 +28,7 @@ app = FastAPI()
 
 @bentoml.service(
     traffic={
-        'timeout': 3600,  # Hard limit for file splitting calls is 1 hour
+        'timeout': 9999,
         # Don't process more than 2 documents at a time. Will respond with 429 if more come.
         # Clients should implement a retry strategy for 429.
         # Servers should implement a scaling strategy and start multiple services when high load is present.
