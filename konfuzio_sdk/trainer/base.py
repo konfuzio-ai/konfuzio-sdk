@@ -322,12 +322,16 @@ class BaseModel(metaclass=abc.ABCMeta):
         logger.info(f'Model saved in the local BentoML store: {saved_model}')
 
         if not build:
+            # restore the working directory
+            os.chdir(working_dir)
             return
 
         saved_bento = self.build_bento(bento_model=saved_model)
         logger.info(f'Bento created: {saved_bento}')
 
         if not output_dir:
+            # restore the working directory
+            os.chdir(working_dir)
             return saved_bento, None  # None = no archive saved
 
         archive_path = saved_bento.export(output_dir)
@@ -335,7 +339,6 @@ class BaseModel(metaclass=abc.ABCMeta):
 
         # restore the working directory
         os.chdir(working_dir)
-
         return saved_bento, archive_path
 
 
