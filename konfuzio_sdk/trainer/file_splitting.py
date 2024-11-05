@@ -1265,6 +1265,9 @@ class SplittingAI:
 
         :return: None if build=False, otherwise a tuple of (saved_bento, archive_path).
         """
+        # get the current directory to restore later
+        working_dir = os.getcwd()
+
         if output_dir and not build:
             raise ValueError('Cannot specify output_dir without build=True')
 
@@ -1287,6 +1290,9 @@ class SplittingAI:
 
         archive_path = saved_bento.export(output_dir)
         logger.info(f'Bento archive saved: {archive_path}')
+
+        # restore the current directory
+        os.chdir(working_dir)
 
         return saved_bento, archive_path
 
