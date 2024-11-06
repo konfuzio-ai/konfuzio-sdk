@@ -66,9 +66,9 @@ def process_response(result, schema: BaseModel = SplitResponse20240930) -> BaseM
     """
     results = []
     if schema.__name__ == 'SplitResponse20240930':
-        for result in result:
+        for document in result:
             category_annotations = []
-            for category_annotation in result.category_annotations:
+            for category_annotation in document.category_annotations:
                 category_annotations.append(
                     schema.Subdocument.CategoryAnnotation(
                         category_id=category_annotation.category.id_,
@@ -78,8 +78,8 @@ def process_response(result, schema: BaseModel = SplitResponse20240930) -> BaseM
                 )
             results.append(
                 schema.Subdocument(
-                    page_ids=[page.id_ for page in result.pages()],
-                    category=result.category.id_,
+                    page_ids=[page.id_ for page in document.pages()],
+                    category=document.category.id_,
                     categories=category_annotations,
                 )
             )
