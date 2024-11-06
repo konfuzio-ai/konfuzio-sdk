@@ -70,14 +70,14 @@ def process_response(result, schema: BaseModel = SplitResponse20240930) -> BaseM
             category_annotations = []
             for category_annotation in document.category_annotations:
                 category_annotations.append(
-                    schema.Subdocument.CategoryAnnotation(
+                    schema.SplittingResult.CategoryAnnotation(
                         category_id=category_annotation.category.id_,
                         confidence=category_annotation.confidence,
                         category_name=category_annotation.category.name,
                     )
                 )
             results.append(
-                schema.Subdocument(
+                schema.SplittingResult(
                     page_ids=[page.id_ for page in document.pages()],
                     category=document.category.id_,
                     categories=category_annotations,
