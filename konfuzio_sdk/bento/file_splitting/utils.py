@@ -66,7 +66,7 @@ def process_response(result, schema: BaseModel = SplitResponse20240930) -> BaseM
     """
     results = []
     if schema.__name__ == 'SplitResponse20240930':
-        for result in result.splitting_results():
+        for result in result:
             category_annotations = []
             for category_annotation in result.category_annotations:
                 category_annotations.append(
