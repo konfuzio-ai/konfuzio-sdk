@@ -3,9 +3,9 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from konfuzio_sdk.data import Document, Page, Project
+from konfuzio_sdk.data import CategoryAnnotation, Document, Page, Project
 
-from .schemas import SplitRequest20240930, SplitRequest20240930Page, SplitResponse20240930
+from .schemas import CategoryAnnotation20240930, SplitRequest20240930, SplitRequest20240930Page, SplitResponse20240930
 
 NOT_IMPLEMENTED_ERROR_MESSAGE = (
     'The request does not adhere to any schema version. Please modify the request to fit one of the schemas from '
@@ -52,6 +52,13 @@ def prepare_request(request: BaseModel, project: Project, konfuzio_sdk_version: 
                 p._segmentation = page.segmentation
             if page.image:
                 p.image_bytes = page.image
+            for category_annotation in page.category_annotations:
+                _ = CategoryAnnotation(
+                    category=project.get_category_by_id(category_annotation.category_id),
+                    confidence=category_annotation.confidence,
+                    page=p,
+                    document=document,
+                )
     else:
         raise NotImplementedError(NOT_IMPLEMENTED_ERROR_MESSAGE)
     return document
@@ -70,7 +77,7 @@ def process_response(result, schema: BaseModel = SplitResponse20240930) -> BaseM
             category_annotations = []
             for category_annotation in document.category_annotations:
                 category_annotations.append(
-                    schema.SplittingResult.CategoryAnnotation(
+                    CategoryAnnotation20240930(
                         category_id=category_annotation.category.id_,
                         confidence=category_annotation.confidence,
                         category_name=category_annotation.category.name,

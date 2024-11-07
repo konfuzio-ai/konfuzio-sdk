@@ -10,6 +10,14 @@ except (ImportError, ValueError):
     from base.utils import HexBytes
 
 
+class CategoryAnnotation20240930(BaseModel):
+    """Describe a scheme for a CategoryAnnotation on 30/09/2024."""
+
+    category_id: int
+    confidence: float
+    category_name: str
+
+
 class SplitRequest20240930Page(BaseModel):
     """Describe a scheme for Page class on 30/09/2024."""
 
@@ -17,6 +25,7 @@ class SplitRequest20240930Page(BaseModel):
     image: Optional[HexBytes] = None
     original_size: Tuple[float, float]
     segmentation: Optional[list] = None
+    category_annotations: List[CategoryAnnotation20240930]
 
 
 class Bbox20240930(BaseModel):
@@ -44,15 +53,8 @@ class SplitResponse20240930(BaseModel):
     class SplittingResult(BaseModel):
         """Describe a scheme for a subdocument constructed after splitting on 30/09/2024."""
 
-        class CategoryAnnotation(BaseModel):
-            """Describe a scheme for a CategoryAnnotation on 30/09/2024."""
-
-            category_id: int
-            confidence: float
-            category_name: str
-
         page_ids: List[int]
         category: int
-        categories: List[CategoryAnnotation]
+        categories: List[CategoryAnnotation20240930]
 
     splitting_results: List[SplittingResult]
