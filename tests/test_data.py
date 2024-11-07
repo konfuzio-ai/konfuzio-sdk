@@ -386,7 +386,7 @@ class TestOnlineProject(unittest.TestCase):
 
         assert doc in self.project.preparation_documents
         assert doc.name == 'pdf.pdf'
-        time.sleep(5)  # for ocr processing completion
+        time.sleep(10)  # for ocr processing completion
         assert doc.get_file(ocr_version=True).split('/')[-1] == 'pdf_ocr.pdf'
 
         # Test Document modification
