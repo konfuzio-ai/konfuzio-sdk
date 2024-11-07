@@ -28,11 +28,11 @@ app = FastAPI()
 
 @bentoml.service(
     traffic={
-        'timeout': 3600,  # Hard limit for categorization calls is 1 hour
+        'timeout': int(os.environ.get('BENTO_SERVICE_TIMEOUT', '3600')),
         # Don't process more than 2 documents at a time. Will respond with 429 if more come.
         # Clients should implement a retry strategy for 429.
         # Servers should implement a scaling strategy and start multiple services when high load is present.
-        'max_concurrency': 2,
+        'max_concurrency': int(os.environ.get('BENTO_SERVICE_MAX_CONCURRENCY', '2')),
     }
 )
 @bentoml.mount_asgi_app(app, path='/v1')
