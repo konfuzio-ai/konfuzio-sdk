@@ -6,6 +6,8 @@ import unittest
 import pytest
 import requests
 
+from konfuzio_sdk.bento.file_splitting.schemas import SplitRequest20240930, SplitResponse20240930
+from konfuzio_sdk.bento.file_splitting.utils import convert_document_to_request
 from konfuzio_sdk.data import CategoryAnnotation, Project
 from konfuzio_sdk.settings_importer import is_dependency_installed
 from konfuzio_sdk.trainer.file_splitting import SplittingAI, TextualFileSplittingModel
@@ -34,7 +36,10 @@ class TestFileSplittingAIBento(unittest.TestCase):
                 )
             else:
                 _ = CategoryAnnotation(
-                    category=cls.project.get_category_by_id(19828), confidence=1, page=page, document=cls.test_document
+                    category=cls.project.get_category_by_id(19828),
+                    confidence=0.3,
+                    page=page,
+                    document=cls.test_document,
                 )
         file_splitting_model.fit(epochs=3, eval_batch_size=1, train_batch_size=1)
         cls.splitting_ai = SplittingAI(model=file_splitting_model)
@@ -86,4 +91,19 @@ class TestFileSplittingAIBento(unittest.TestCase):
         print(response.json())
         print(response._content)
         assert response.status_code == 200
-        assert response.json()['splitting_results']
+        assert len(response.json()['splitting_results']) == 2
+        assert response.json()['splitting_results'][0]['category'] == 19827
+        assert response.json()['splitting_results'][1]['category'] == 19828
+
+    def test_run_splitting_ai_with_conversion_function(self):
+        """
+        Test Splitting AI integration with the Textual File Splitting Model in Bento service
+        and a document converted by the function.
+        """
+        document = self.test_document
+        prepared = convert_document_to_request(document=document, schema=SplitRequest20240930)
+        response = requests.post(url=self.request_url, json=prepared.dict())
+        response_schema = SplitResponse20240930(splitting_results=response.json()['splitting_results'])
+        assert len(response_schema.splitting_results) == 2
+        assert response_schema.splitting_results[0].category == 19827
+        assert response_schema.splitting_results[1].category == 19828

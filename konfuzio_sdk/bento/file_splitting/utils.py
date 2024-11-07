@@ -109,6 +109,14 @@ def convert_document_to_request(document: Document, schema: BaseModel = SplitReq
                 image=page.image_bytes,
                 original_size=page._original_size,
                 segmentation=page._segmentation,
+                category_annotations=[
+                    CategoryAnnotation20240930(
+                        category_id=category_annotation.category.id_,
+                        confidence=category_annotation.confidence,
+                        category_name=category_annotation.category.name,
+                    )
+                    for category_annotation in page.category_annotations
+                ],
             )
             for page in document.pages()
         ]
