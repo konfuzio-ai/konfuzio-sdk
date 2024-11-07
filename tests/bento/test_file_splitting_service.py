@@ -22,11 +22,11 @@ class TestFileSplittingAIBento(unittest.TestCase):
     def setUpClass(cls) -> None:
         """Create a model and its Bento instance of File Splitting AI."""
 
-        cls.project = Project(id_=14392, update=True)
+        cls.project = Project(id_=14392)
         file_splitting_model = TextualFileSplittingModel(categories=cls.project.categories)
         file_splitting_model.documents = file_splitting_model.categories[0].documents()
         file_splitting_model.test_documents = file_splitting_model.categories[0].test_documents()
-        cls.test_document = cls.project.get_document_by_id(6357341)
+        cls.test_document = cls.project.get_document_by_id(6358527)
         file_splitting_model.fit(epochs=3, eval_batch_size=1, train_batch_size=1)
         cls.splitting_ai = SplittingAI(model=file_splitting_model)
         bento, path = cls.splitting_ai.save_bento()
@@ -65,6 +65,7 @@ class TestFileSplittingAIBento(unittest.TestCase):
             ],
         }
         response = requests.post(url=self.request_url, json=data)
-        # print(response.json())
+        print(response.json())
+        print(response._content)
         assert response.status_code == 200
         assert response.json()['splitting_results']

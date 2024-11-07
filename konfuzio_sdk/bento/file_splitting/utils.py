@@ -78,7 +78,7 @@ def process_response(result, schema: BaseModel = SplitResponse20240930) -> BaseM
                 )
             results.append(
                 schema.SplittingResult(
-                    page_ids=[page.id_ for page in document.pages()],
+                    page_ids=[page.id_ if page.id_ else page.copy_of_id for page in document.pages()],
                     category=document.category.id_,
                     categories=category_annotations,
                 )
