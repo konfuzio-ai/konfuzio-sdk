@@ -52,9 +52,9 @@ def prepare_request(request: BaseModel, project: Project, konfuzio_sdk_version: 
                 p._segmentation = page.segmentation
             if page.image:
                 p.image_bytes = page.image
-            for category_annotation in page.category_annotations:
+            for category_annotation in page.categories:
                 _ = CategoryAnnotation(
-                    category=project.get_category_by_id(category_annotation.category_id),
+                    category=project.get_category_by_id(category_annotation.id),
                     confidence=category_annotation.confidence,
                     page=p,
                     document=document,
@@ -78,14 +78,14 @@ def process_response(result, schema: BaseModel = SplitResponse20240930) -> BaseM
             for category_annotation in document.category_annotations:
                 category_annotations.append(
                     CategoryAnnotation20240930(
-                        category_id=category_annotation.category.id_,
+                        id=category_annotation.category.id_,
                         confidence=category_annotation.confidence,
-                        category_name=category_annotation.category.name,
+                        name=category_annotation.category.name,
                     )
                 )
             results.append(
                 schema.SplittingResult(
-                    page_ids=[page.id_ if page.id_ else page.copy_of_id for page in document.pages()],
+                    pages=[{'id': page.id_ if page.id_ else page.copy_of_id} for page in document.pages()],
                     category=document.category.id_,
                     categories=category_annotations,
                 )
@@ -109,11 +109,11 @@ def convert_document_to_request(document: Document, schema: BaseModel = SplitReq
                 image=page.image_bytes,
                 original_size=page._original_size,
                 segmentation=page._segmentation,
-                category_annotations=[
+                categories=[
                     CategoryAnnotation20240930(
-                        category_id=category_annotation.category.id_,
+                        id=category_annotation.category.id_,
+                        name=category_annotation.category.name,
                         confidence=category_annotation.confidence,
-                        category_name=category_annotation.category.name,
                     )
                     for category_annotation in page.category_annotations
                 ],
