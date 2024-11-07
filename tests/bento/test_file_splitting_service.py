@@ -24,7 +24,7 @@ class TestFileSplittingAIBento(unittest.TestCase):
     def setUpClass(cls) -> None:
         """Create a model and its Bento instance of File Splitting AI."""
 
-        cls.project = Project(id_=14392)
+        cls.project = Project(id_=14392, update=True)
         file_splitting_model = TextualFileSplittingModel(categories=cls.project.categories)
         file_splitting_model.documents = file_splitting_model.categories[0].documents()
         file_splitting_model.test_documents = file_splitting_model.categories[0].test_documents()
@@ -46,12 +46,12 @@ class TestFileSplittingAIBento(unittest.TestCase):
         bento, path = cls.splitting_ai.save_bento()
         cls.bento_name = bento.tag.name + ':' + bento.tag.version
         cls.bento_process = subprocess.Popen(
-            ['bentoml', 'serve', cls.bento_name], stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+            ['bentoml', 'serve', '-p 3002', cls.bento_name], stdout=subprocess.PIPE, stderr=subprocess.STDOUT
         )
 
         time.sleep(5)
         print('served bento')
-        cls.request_url = 'http://0.0.0.0:3000/split'
+        cls.request_url = 'http://0.0.0.0:3002/split'
 
     def test_run_splitting_ai_prediction(self):
         """Test Splitting AI integration with the Textual File Splitting Model in Bento service."""
@@ -107,3 +107,8 @@ class TestFileSplittingAIBento(unittest.TestCase):
         assert len(response_schema.splitting_results) == 2
         assert response_schema.splitting_results[0].category == 19827
         assert response_schema.splitting_results[1].category == 19828
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        """Kill process."""
+        cls.bento_process.kill()
