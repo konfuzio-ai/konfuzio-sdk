@@ -85,8 +85,11 @@ setuptools.setup(
     py_modules=['konfuzio_sdk_extras_list'],
     include_package_data=True,
     entry_points={'console_scripts': ['konfuzio_sdk=konfuzio_sdk.cli:main']},
+    dependency_links=[
+        '--ignore-requires-python bentoml==1.3.11',
+    ],
     install_requires=[
-        'bentoml==1.3.5',
+        'bentoml==1.3.11',
         'fastapi<0.111.0',  # Used to serve additional endpoints in Bento services
         'certifi==2023.7.22',
         'cloudpickle==2.2.1',  # Used to pickle objects
