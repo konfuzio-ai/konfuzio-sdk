@@ -74,11 +74,11 @@ class TestFileSplittingAIBento(unittest.TestCase):
                     'original_size': page._original_size,
                     'image': page.image_bytes,
                     'segmentation': page._segmentation,
-                    'category_annotations': [
+                    'categories': [
                         {
-                            'category_id': category_annotation.category.id_,
+                            'id': category_annotation.category.id_,
+                            'name': category_annotation.category.name,
                             'confidence': category_annotation.confidence,
-                            'category_name': category_annotation.category.name,
                         }
                         for category_annotation in page.category_annotations
                     ],
