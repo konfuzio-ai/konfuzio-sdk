@@ -457,7 +457,7 @@ Base containerization services
 
 PicklableModelService
 --------------------
-.. autoclass:: konfuzio_sdk.bento.base.PicklableModelService
+.. autoclass:: konfuzio_sdk.bento.base.base_services.PicklableModelService
    :members:
    :noindex:
 
@@ -474,19 +474,11 @@ Base containerization utils
 ExtractionService Pydantic schemas
 --------------------
 .. autopydantic_model:: konfuzio_sdk.bento.extraction.schemas.ExtractRequest20240117Page
-   :members:
-   :noindex:
-
 .. autopydantic_model:: konfuzio_sdk.bento.extraction.schemas.ExtractRequest20240117
-   :members:
-   :noindex:
-
 .. autopydantic_model:: konfuzio_sdk.bento.extraction.schemas.ExtractResponse20240117
-   :members:
-   :noindex:
 
 
-ExtractionService utils
+Containerization utils for ExtractionService 
 --------------------
 
 .. automodule:: konfuzio_sdk.bento.extraction.utils
@@ -495,28 +487,12 @@ ExtractionService utils
 .. autofunction:: konfuzio_sdk.bento.extraction.utils.convert_document_to_request
 .. autofunction:: konfuzio_sdk.bento.extraction.utils.convert_response_to_annotations
 
-Containerization utils for ExtractionService
------------------------
-.. autofunction:: prepare_request
-.. autofunction:: process_response
-.. autofunction:: convert_document_to_request
-.. autofunction:: convert_response_to_annotations
-
 
 CategorizationService Pydantic schemas
 --------------------
 .. autopydantic_model:: konfuzio_sdk.bento.categorization.schemas.CategorizeRequest20240729Page
-   :members:
-   :noindex:
-
 .. autopydantic_model:: konfuzio_sdk.bento.categorization.schemas.CategorizeRequest20240729
-   :members:
-   :noindex:
-
 .. autopydantic_model:: konfuzio_sdk.bento.categorization.schemas.CategorizeResponse20240729
-   :members:
-   :noindex:
-
 
 Containerization utils for CategorizationService
 -----------------------
@@ -525,3 +501,24 @@ Containerization utils for CategorizationService
 .. autofunction:: konfuzio_sdk.bento.categorization.utils.process_response
 .. autofunction:: konfuzio_sdk.bento.categorization.utils.convert_document_to_request
 .. autofunction:: konfuzio_sdk.bento.categorization.utils.convert_response_to_categorized_pages
+
+
+FileSplittingService Pydantic schemas
+--------------------
+.. autopydantic_model:: konfuzio_sdk.bento.file_splitting.schemas.CategoryAnnotation20240930
+
+.. autopydantic_model:: konfuzio_sdk.bento.file_splitting.schemas.SplitRequest20240930Page
+
+.. autopydantic_model:: konfuzio_sdk.bento.file_splitting.schemas.Bbox20240930
+
+.. autopydantic_model:: konfuzio_sdk.bento.file_splitting.schemas.SplitRequest20240930
+   
+.. autopydantic_model:: konfuzio_sdk.bento.file_splitting.schemas.SplitResponse20240930
+
+
+Containerization utils for FileSplittingService
+-----------------------
+.. automodule:: konfuzio_sdk.bento.file_splitting.utils
+.. autofunction:: konfuzio_sdk.bento.file_splitting.utils.prepare_request
+.. autofunction:: konfuzio_sdk.bento.file_splitting.utils.process_response
+.. autofunction:: konfuzio_sdk.bento.file_splitting.utils.convert_document_to_request
