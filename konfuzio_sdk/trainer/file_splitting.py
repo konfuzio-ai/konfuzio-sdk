@@ -1246,7 +1246,7 @@ class SplittingAI:
                         'mlflow==2.15.0',
                         'torch>=1.8.1',
                         'transformers==4.30.2',
-                        'tensorflow-macos==2.12.0',
+                        'tensorflow',
                     ],
                     'lock_packages': True,
                 },
