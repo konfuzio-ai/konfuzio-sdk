@@ -12,7 +12,7 @@ on:
 # thanks to https://www.caktusgroup.com/blog/2021/02/11/automating-pypi-releases/
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
