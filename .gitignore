@@ -22,6 +22,7 @@ docs/build/
 
 # Ignore virtual environment directory
 venv/
+.venv/
 
 # Ignore project settings
 settings.py
@@ -66,3 +67,6 @@ mlartifacts
 
 # Ignore any file or folder that starts with "draft"
 draft*
+
+# Ignore default MacOS desktop data files
+.DS_Store

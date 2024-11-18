@@ -1330,7 +1330,13 @@ class TestEvaluation(unittest.TestCase):
     def test_true_positive(self):
         """Count two Spans from two Training Documents."""
         project = LocalTextProject()
-        evaluation = ExtractionEvaluation(documents=list(zip(project.documents, project.documents)))
+        # only those of Categories 1 and 2, because the rest are intended to be used for FileSplitting testing & eval
+        documents_test_evaluation = (
+            project.get_category_by_id(1).documents() + project.get_category_by_id(2).documents()
+        )
+        evaluation = ExtractionEvaluation(
+            documents=list(zip(documents_test_evaluation, documents_test_evaluation)), zero_division=None
+        )
         assert evaluation.tp() == sum([len(doc.spans()) for doc in project.documents])
         evaluation_data = evaluation.get_evaluation_data(search=None)
         assert evaluation_data.tp == sum([len(doc.spans()) for doc in project.documents])
@@ -1364,7 +1370,13 @@ class TestEvaluation(unittest.TestCase):
     def test_f1(self):
         """Test to calculate F1 Score."""
         project = LocalTextProject()
-        evaluation = ExtractionEvaluation(documents=list(zip(project.documents, project.documents)), zero_division=None)
+        # only those of Categories 1 and 2, because the rest are intended to be used for FileSplitting testing & eval
+        documents_test_evaluation = (
+            project.get_category_by_id(1).documents() + project.get_category_by_id(2).documents()
+        )
+        evaluation = ExtractionEvaluation(
+            documents=list(zip(documents_test_evaluation, documents_test_evaluation)), zero_division=None
+        )
         scores = []
         for label in project.labels:
             if label != project.no_label:
@@ -1379,7 +1391,13 @@ class TestEvaluation(unittest.TestCase):
     def test_precision(self):
         """Test to calculate Precision."""
         project = LocalTextProject()
-        evaluation = ExtractionEvaluation(documents=list(zip(project.documents, project.documents)), zero_division=None)
+        # only those of Categories 1 and 2, because the rest are intended to be used for FileSplitting testing & eval
+        documents_test_evaluation = (
+            project.get_category_by_id(1).documents() + project.get_category_by_id(2).documents()
+        )
+        evaluation = ExtractionEvaluation(
+            documents=list(zip(documents_test_evaluation, documents_test_evaluation)), zero_division=None
+        )
         scores = []
         for label in project.labels:
             if label != project.no_label:
@@ -1394,7 +1412,13 @@ class TestEvaluation(unittest.TestCase):
     def test_recall(self):
         """Test to calculate Recall."""
         project = LocalTextProject()
-        evaluation = ExtractionEvaluation(documents=list(zip(project.documents, project.documents)), zero_division=None)
+        # only those of Categories 1 and 2, because the rest are intended to be used for FileSplitting testing & eval
+        documents_test_evaluation = (
+            project.get_category_by_id(1).documents() + project.get_category_by_id(2).documents()
+        )
+        evaluation = ExtractionEvaluation(
+            documents=list(zip(documents_test_evaluation, documents_test_evaluation)), zero_division=None
+        )
         scores = []
         for label in project.labels:
             if label != project.no_label:
@@ -1424,14 +1448,20 @@ class TestEvaluation(unittest.TestCase):
     def test_true_positive_label(self):
         """Count two Annotations from two Training Documents and filter by one Label."""
         project = LocalTextProject()
-        evaluation = ExtractionEvaluation(documents=list(zip(project.documents, project.documents)), zero_division=None)
+        # only those of Categories 1 and 2, because the rest are intended to be used for FileSplitting testing & eval
+        documents_test_evaluation = (
+            project.get_category_by_id(1).documents() + project.get_category_by_id(2).documents()
+        )
+        evaluation = ExtractionEvaluation(
+            documents=list(zip(documents_test_evaluation, documents_test_evaluation)), zero_division=None
+        )
         # there is only one Label that is not the NONE_LABEL or from a default LabelSet
         label = project.get_label_by_id(id_=4)
         assert evaluation.tp() == sum([len(doc.spans()) for doc in project.documents])
         assert evaluation.tp(search=label) == 2
         assert evaluation.fp(search=label) == 0
         assert evaluation.fn(search=label) == 0
-        assert evaluation.tn(search=label) == 6
+        assert evaluation.tn(search=label) == 0
 
     def test_true_positive_document(self):
         """Count zero Annotations from one Training Document that has no ID."""
@@ -1527,7 +1557,7 @@ class TestEvaluationFirstLabelDocumentADocumentB(unittest.TestCase):
 
     def test_true_negatives(self):
         """Evaluate that that nothing is correctly predicted below threshold."""
-        assert self.evaluation.tn(search=self.label) == 3
+        assert self.evaluation.tn(search=self.label) == 0
 
 
 class TestEvaluationFirstLabelDocumentBDocumentA(unittest.TestCase):
@@ -1555,7 +1585,7 @@ class TestEvaluationFirstLabelDocumentBDocumentA(unittest.TestCase):
 
     def test_true_negatives(self):
         """Evaluate that that nothing is correctly predicted below threshold."""
-        assert self.evaluation.tn(search=self.label) == 3
+        assert self.evaluation.tn(search=self.label) == 0
 
 
 class TestEvaluationSecondLabelDocumentADocumentB(unittest.TestCase):
@@ -1583,7 +1613,7 @@ class TestEvaluationSecondLabelDocumentADocumentB(unittest.TestCase):
 
     def test_true_negatives(self):
         """Evaluate that that nothing is correctly predicted below threshold."""
-        assert self.evaluation.tn(search=self.label) == 3
+        assert self.evaluation.tn(search=self.label) == 0
 
 
 class TestEvaluationSecondLabelDocumentBDocumentA(unittest.TestCase):
@@ -1625,7 +1655,7 @@ class TestEvaluationSecondLabelDocumentBDocumentA(unittest.TestCase):
 
     def test_true_negatives(self):
         """Evaluate that that nothing is correctly predicted below threshold."""
-        assert self.evaluation.tn(search=self.label) == 3
+        assert self.evaluation.tn(search=self.label) == 0
 
 
 class TestCategorizationEvaluation(unittest.TestCase):

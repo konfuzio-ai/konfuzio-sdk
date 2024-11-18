@@ -302,8 +302,10 @@ def compare(
 
     if not strict:
         # one Span must not be defined as TP or FP or FN more than once
-        quality = (spans[['true_positive', 'false_positive', 'false_negative']].sum(axis=1) <= 1).all()
+        quality = (spans[['true_positive', 'false_positive', 'false_negative']].sum(axis=1) == 1).all()
         assert quality
+    # QA for strict evaluation
+    # ground truth annotations + all overlapping ones for FP
     return spans
 
 
@@ -591,7 +593,10 @@ class ExtractionEvaluation:
 
     def tn(self, search=None) -> int:
         """Return the True Negatives of all Spans."""
-        return len(self._query(search=None)) - self.tp(search=search) - self.fn(search=search) - self.fp(search=search)
+        # return len(self._query(search=None)) - self.tp(search=search) - self.fn(search=search) - self.fp(search=search)
+        tn = len(self._query(search=search)) - self.tp(search=search) - self.fn(search=search) - self.fp(search=search)
+        assert tn == 0
+        return 0
 
     def gt(self, search=None) -> int:
         """Return the number of ground-truth Annotations for a given Label."""
