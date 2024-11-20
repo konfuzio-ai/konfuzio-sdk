@@ -1220,7 +1220,7 @@ class SplittingAI:
             shutil.copytree(bento_base_dir + '/file_splitting', temp_dir + '/file_splitting')
             shutil.copytree(bento_base_dir + '/base', temp_dir + '/base')
             # copy __init__.py file
-            shutil.copy(bento_base_dir + '/__init__.py', temp_dir + '__init__.py')
+            shutil.copy(bento_base_dir + '/__init__.py', temp_dir + '/__init__.py')
             # include metadata
             with open(f'{temp_dir}/categories_and_label_data.json5', 'w') as f:
                 json.dump(dict_metadata, f, indent=2, sort_keys=True)
