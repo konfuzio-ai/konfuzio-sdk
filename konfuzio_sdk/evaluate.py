@@ -300,12 +300,18 @@ def compare(
     spans['frequency'].fillna(0, inplace=True)
     spans['frequency'] = spans['frequency'].apply(lambda x: int(x))
 
-    if not strict:
+    if not strict:  # not needed
         # one Span must not be defined as TP or FP or FN more than once
+        # check if it is an excessive check
         quality = (spans[['true_positive', 'false_positive', 'false_negative']].sum(axis=1) == 1).all()
         assert quality
+
     # QA for strict evaluation
+    # if strict:
+    #     assert len(spans) == len(doc_a) + spans[['false_positive'] == True]
     # ground truth annotations + all overlapping ones for FP
+    # else:
+
     return spans
 
 
@@ -493,6 +499,7 @@ class ExtractionEvaluation:
                 ignore_below_threshold=self.ignore_below_threshold,
                 id_counter=id_counter,
             )
+            # QA here?
             evaluations.append(evaluation)
             id_counter += len(evaluation)
 

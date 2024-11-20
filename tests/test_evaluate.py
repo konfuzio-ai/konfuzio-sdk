@@ -1062,7 +1062,7 @@ class TestCompare(unittest.TestCase):
         [1, 1, 0.9, 'de chi', 'de chi', 0, 5, True, 0.1, 2, False, 1, 1, 1, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 2
         [1, 1, 0.9, 'de chi', 'de chi', 0, 5, True, 0.1, None, False, 1, 1, 1, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 2
         [1, 1, 0.05, 'de chi', 'de chi', 0, 5, True, 0.1, 1, False, 1, 1, 1, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
-        [
+        [  # fix ruff limitations
             1,
             1,
             0.9,
@@ -1135,7 +1135,7 @@ class TestCompare(unittest.TestCase):
         [1, 1, 0.9, 'de chi', 'de chi', 0, 5, True, 0.1, 2, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 0, 0, 1],  # FP 2
         [1, 1, 0.05, 'de chi', 'de chi', 0, 5, True, 0.1, 1, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
     ),
-)
+)  # add the csv version of the table and read from it
 class TestParametrizedCompare(unittest.TestCase):
     """
     Test evaluation logic on mockup data instead of document data to verify correct behavior in assigning TP/FP/FN.
