@@ -21,6 +21,7 @@ class CategoryAnnotation20240930(BaseModel):
 class SplitRequest20240930Page(BaseModel):
     """Describe a scheme for Page class on 30/09/2024."""
 
+    id: int
     number: int
     image: Optional[HexBytes] = None
     original_size: Tuple[float, float]

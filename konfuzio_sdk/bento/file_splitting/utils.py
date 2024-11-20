@@ -47,7 +47,7 @@ def prepare_request(request: BaseModel, project: Project, konfuzio_sdk_version: 
             project=project,
         )
         for page in request.pages:
-            p = Page(id_=page.number, document=document, number=page.number, original_size=page.original_size)
+            p = Page(id_=page.id, document=document, number=page.number, original_size=page.original_size)
             if page.segmentation:
                 p._segmentation = page.segmentation
             if page.image:
@@ -105,6 +105,7 @@ def convert_document_to_request(document: Document, schema: BaseModel = SplitReq
     if schema.__name__ == 'SplitRequest20240930':
         pages = [
             SplitRequest20240930Page(
+                id=page.id_,
                 number=page.number,
                 image=page.image_bytes,
                 original_size=page._original_size,

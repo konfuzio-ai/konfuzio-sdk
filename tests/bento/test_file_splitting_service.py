@@ -70,6 +70,7 @@ class TestFileSplittingAIBento(unittest.TestCase):
             },
             'pages': [
                 {
+                    'id': page.id_,
                     'number': page.number,
                     'original_size': page._original_size,
                     'image': page.image_bytes,
