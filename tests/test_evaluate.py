@@ -1013,7 +1013,6 @@ class TestCompare(unittest.TestCase):
         'id_',
         'confidence',
         'offset_string',
-        'normalized',
         'start_offset',
         'end_offset',
         'is_correct',
@@ -1032,13 +1031,12 @@ class TestCompare(unittest.TestCase):
         'FPs',
     ),
     (
-        [1, 1, 0.9, 'de chilly', 'de chilly', 0, 8, True, 0.1, 1, False, 1, 1, 1, 1, 1, 1, 'strict', 1, 0, 0],  # TP 1
-        [1, 1, 0.9, 'de chilly', 'de chilly', 0, 8, True, 0.1, 2, False, 1, 1, 1, 1, 1, 1, 'strict', 0, 0, 1],  # FP 1
+        [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, 1, False, 1, 1, 1, 1, 1, 1, 'strict', 1, 0, 0],  # TP 1
+        [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, 2, False, 1, 1, 1, 1, 1, 1, 'strict', 0, 0, 1],  # FP 1
         [
             1,
             1,
             0.9,
-            'de chilly',
             'de chilly',
             0,
             8,
@@ -1057,16 +1055,15 @@ class TestCompare(unittest.TestCase):
             1,
             0,
         ],  # FN 1
-        [1, 1, 0.05, 'de chilly', 'de chilly', 0, 8, True, 0.1, 1, False, 1, 1, 1, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
-        [1, 1, 0.9, 'de chi', 'de chi', 0, 5, True, 0.1, 1, False, 1, 1, 1, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
-        [1, 1, 0.9, 'de chi', 'de chi', 0, 5, True, 0.1, 2, False, 1, 1, 1, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 2
-        [1, 1, 0.9, 'de chi', 'de chi', 0, 5, True, 0.1, None, False, 1, 1, 1, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 2
-        [1, 1, 0.05, 'de chi', 'de chi', 0, 5, True, 0.1, 1, False, 1, 1, 1, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
-        [  # fix ruff limitations
+        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, 1, False, 1, 1, 1, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
+        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 1, False, 1, 1, 1, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
+        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 2, False, 1, 1, 1, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 2
+        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, None, False, 1, 1, 1, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 2
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 1, False, 1, 1, 1, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
+        [
             1,
             1,
             0.9,
-            'de chilly',
             'de chilly',
             0,
             8,
@@ -1090,7 +1087,6 @@ class TestCompare(unittest.TestCase):
             1,
             0.9,
             'de chilly',
-            'de chilly',
             0,
             8,
             True,
@@ -1113,7 +1109,6 @@ class TestCompare(unittest.TestCase):
             1,
             0.05,
             'de chilly',
-            'de chilly',
             0,
             8,
             True,
@@ -1131,9 +1126,9 @@ class TestCompare(unittest.TestCase):
             1,
             0,
         ],  # FN 1
-        [1, 1, 0.9, 'de chi', 'de chi', 0, 5, True, 0.1, 1, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 1, 0, 0],  # TP 1
-        [1, 1, 0.9, 'de chi', 'de chi', 0, 5, True, 0.1, 2, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 0, 0, 1],  # FP 2
-        [1, 1, 0.05, 'de chi', 'de chi', 0, 5, True, 0.1, 1, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
+        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 1, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 1, 0, 0],  # TP 1
+        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 2, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 0, 0, 1],  # FP 2
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 1, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
     ),
 )  # add the csv version of the table and read from it
 class TestParametrizedCompare(unittest.TestCase):
@@ -1152,7 +1147,6 @@ class TestParametrizedCompare(unittest.TestCase):
                 'id_': 1,
                 'confidence': 1.0,
                 'offset_string': 'de chilly',
-                'normalized': 'de chilly',
                 'start_offset': 0,
                 'end_offset': 8,
                 'is_correct': True,
@@ -1173,7 +1167,6 @@ class TestParametrizedCompare(unittest.TestCase):
                 'id_': cls.id_,
                 'confidence': cls.confidence,
                 'offset_string': cls.offset_string,
-                'normalized': cls.normalized,
                 'start_offset': cls.start_offset,
                 'end_offset': cls.end_offset,
                 'is_correct': cls.is_correct,
@@ -1208,14 +1201,10 @@ class TestParametrizedCompare(unittest.TestCase):
             spans['duplicated'] = False
             spans['duplicated_predicted'] = False
             spans = spans.groupby('id_local', dropna=False).apply(lambda group: grouped(group, 'id_'))
-            spans = spans.groupby('annotation_set_id_predicted', dropna=False).apply(
-                lambda group: grouped(group, 'annotation_set_id')
-            )
+            spans = spans.groupby('annotation_set_id_predicted', dropna=False).apply(lambda group: grouped(group, 'annotation_set_id'))
         else:
             spans = pd.merge(df_a, df_b, how='outer', on=['label_id', 'label_set_id'], suffixes=('', '_predicted'))
-            spans['is_matched'] = (spans['start_offset_predicted'] <= spans['end_offset']) & (
-                spans['end_offset_predicted'] >= spans['start_offset']
-            )
+            spans['is_matched'] = (spans['start_offset_predicted'] <= spans['end_offset']) & (spans['end_offset_predicted'] >= spans['start_offset'])
             spans['above_predicted_threshold'] = spans['confidence_predicted'] >= spans['label_threshold_predicted']
             spans['is_correct_label'] = True
             spans['is_correct_label_set'] = True
@@ -1226,9 +1215,7 @@ class TestParametrizedCompare(unittest.TestCase):
             spans['duplicated_predicted'] = spans.duplicated(subset=['id_local_predicted'], keep='first')
             spans = spans.drop(spans[(spans['duplicated']) & (spans['duplicated_predicted'])].index)
             spans = spans.groupby('id_local', dropna=False).apply(lambda group: grouped(group, 'id_'))
-            spans = spans.groupby('annotation_set_id_predicted', dropna=False).apply(
-                lambda group: grouped(group, 'annotation_set_id')
-            )
+            spans = spans.groupby('annotation_set_id_predicted', dropna=False).apply(lambda group: grouped(group, 'annotation_set_id'))
 
         spans['true_positive'] = (
             (spans['is_matched'])
@@ -1236,10 +1223,7 @@ class TestParametrizedCompare(unittest.TestCase):
             & (spans['above_predicted_threshold'])
             & (~spans['duplicated'])
             & (  # Everything is correct
-                (spans['is_correct_label'])
-                & (spans['is_correct_label_set'])
-                & (spans['is_correct_annotation_set_id'])
-                & (spans['is_correct_id_'])
+                (spans['is_correct_label']) & (spans['is_correct_label_set']) & (spans['is_correct_annotation_set_id']) & (spans['is_correct_id_'])
             )
         )
 
@@ -1266,9 +1250,7 @@ class TestParametrizedCompare(unittest.TestCase):
             label_ids_multiple = []
             label_ids_not_multiple = [1, 2]
             spans_not_multiple = spans[spans['label_id'].isin(label_ids_not_multiple)]
-            spans_not_multiple = spans_not_multiple.groupby(
-                ['annotation_set_id_predicted', 'label_id_predicted']
-            ).apply(prioritize_rows)
+            spans_not_multiple = spans_not_multiple.groupby(['annotation_set_id_predicted', 'label_id_predicted']).apply(prioritize_rows)
             spans_multiple = spans[spans['label_id'].isin(label_ids_multiple)]
             spans = pd.concat([spans_not_multiple, spans_multiple])
             spans = spans.sort_values(by='is_matched', ascending=False)
@@ -1331,12 +1313,8 @@ class TestEvaluation(unittest.TestCase):
         """Count two Spans from two Training Documents."""
         project = LocalTextProject()
         # only those of Categories 1 and 2, because the rest are intended to be used for FileSplitting testing & eval
-        documents_test_evaluation = (
-            project.get_category_by_id(1).documents() + project.get_category_by_id(2).documents()
-        )
-        evaluation = ExtractionEvaluation(
-            documents=list(zip(documents_test_evaluation, documents_test_evaluation)), zero_division=None
-        )
+        documents_test_evaluation = project.get_category_by_id(1).documents() + project.get_category_by_id(2).documents()
+        evaluation = ExtractionEvaluation(documents=list(zip(documents_test_evaluation, documents_test_evaluation)), zero_division=None)
         assert evaluation.tp() == sum([len(doc.spans()) for doc in project.documents])
         evaluation_data = evaluation.get_evaluation_data(search=None)
         assert evaluation_data.tp == sum([len(doc.spans()) for doc in project.documents])
@@ -1346,9 +1324,7 @@ class TestEvaluation(unittest.TestCase):
         project = LocalTextProject()
         true_document = project.documents[0]  # A1(0,2,Label_0) + A2(3,5,Label_1) + A3(7,10,Label_2)
         predicted_document = project.test_documents[0]  # A4(0,3,Label_0) + A5(7,10,Label_1) + A6(11,14,Label_2)
-        evaluation = ExtractionEvaluation(
-            documents=list(zip([true_document], [predicted_document])), zero_division=None
-        )
+        evaluation = ExtractionEvaluation(documents=list(zip([true_document], [predicted_document])), zero_division=None)
         assert evaluation.fp() == 3  # A4, A5, A6
         evaluation_data = evaluation.get_evaluation_data(search=None)
         assert evaluation_data.fp == 3
@@ -1357,12 +1333,8 @@ class TestEvaluation(unittest.TestCase):
         """Count zero false negatives from two Training Documents (correctly, nothing is predicted under threshold)."""
         project = LocalTextProject()
         # only those of Categories 1 and 2, because the rest are intended to be used for FileSplitting testing & eval
-        documents_test_evaluation = (
-            project.get_category_by_id(1).documents() + project.get_category_by_id(2).documents()
-        )
-        evaluation = ExtractionEvaluation(
-            documents=list(zip(documents_test_evaluation, documents_test_evaluation)), zero_division=None
-        )
+        documents_test_evaluation = project.get_category_by_id(1).documents() + project.get_category_by_id(2).documents()
+        evaluation = ExtractionEvaluation(documents=list(zip(documents_test_evaluation, documents_test_evaluation)), zero_division=None)
         assert evaluation.tn() == 0
         evaluation_data = evaluation.get_evaluation_data(search=None)
         assert evaluation_data.tn == 0
@@ -1371,12 +1343,8 @@ class TestEvaluation(unittest.TestCase):
         """Test to calculate F1 Score."""
         project = LocalTextProject()
         # only those of Categories 1 and 2, because the rest are intended to be used for FileSplitting testing & eval
-        documents_test_evaluation = (
-            project.get_category_by_id(1).documents() + project.get_category_by_id(2).documents()
-        )
-        evaluation = ExtractionEvaluation(
-            documents=list(zip(documents_test_evaluation, documents_test_evaluation)), zero_division=None
-        )
+        documents_test_evaluation = project.get_category_by_id(1).documents() + project.get_category_by_id(2).documents()
+        evaluation = ExtractionEvaluation(documents=list(zip(documents_test_evaluation, documents_test_evaluation)), zero_division=None)
         scores = []
         for label in project.labels:
             if label != project.no_label:
@@ -1392,12 +1360,8 @@ class TestEvaluation(unittest.TestCase):
         """Test to calculate Precision."""
         project = LocalTextProject()
         # only those of Categories 1 and 2, because the rest are intended to be used for FileSplitting testing & eval
-        documents_test_evaluation = (
-            project.get_category_by_id(1).documents() + project.get_category_by_id(2).documents()
-        )
-        evaluation = ExtractionEvaluation(
-            documents=list(zip(documents_test_evaluation, documents_test_evaluation)), zero_division=None
-        )
+        documents_test_evaluation = project.get_category_by_id(1).documents() + project.get_category_by_id(2).documents()
+        evaluation = ExtractionEvaluation(documents=list(zip(documents_test_evaluation, documents_test_evaluation)), zero_division=None)
         scores = []
         for label in project.labels:
             if label != project.no_label:
@@ -1413,12 +1377,8 @@ class TestEvaluation(unittest.TestCase):
         """Test to calculate Recall."""
         project = LocalTextProject()
         # only those of Categories 1 and 2, because the rest are intended to be used for FileSplitting testing & eval
-        documents_test_evaluation = (
-            project.get_category_by_id(1).documents() + project.get_category_by_id(2).documents()
-        )
-        evaluation = ExtractionEvaluation(
-            documents=list(zip(documents_test_evaluation, documents_test_evaluation)), zero_division=None
-        )
+        documents_test_evaluation = project.get_category_by_id(1).documents() + project.get_category_by_id(2).documents()
+        evaluation = ExtractionEvaluation(documents=list(zip(documents_test_evaluation, documents_test_evaluation)), zero_division=None)
         scores = []
         for label in project.labels:
             if label != project.no_label:
@@ -1435,9 +1395,7 @@ class TestEvaluation(unittest.TestCase):
         project = LocalTextProject()
         predicted_document = project.documents[0]  # A1(0,2,Label_0) + A2(3,5,Label_1) + A3(7,10,Label_2)
         true_document = project.test_documents[0]  # A4(0,3,Label_0) + A5(7,10,Label_1) + A6(11,14,Label_2)
-        evaluation = ExtractionEvaluation(
-            documents=list(zip([true_document], [predicted_document])), zero_division=None
-        )
+        evaluation = ExtractionEvaluation(documents=list(zip([true_document], [predicted_document])), zero_division=None)
         assert evaluation.tp() == 0  # nothing correctly predicted
         assert evaluation.fp() == 3  # A1, A2, A3
         assert evaluation.fn() == 2  # A4, A6
@@ -1449,12 +1407,8 @@ class TestEvaluation(unittest.TestCase):
         """Count two Annotations from two Training Documents and filter by one Label."""
         project = LocalTextProject()
         # only those of Categories 1 and 2, because the rest are intended to be used for FileSplitting testing & eval
-        documents_test_evaluation = (
-            project.get_category_by_id(1).documents() + project.get_category_by_id(2).documents()
-        )
-        evaluation = ExtractionEvaluation(
-            documents=list(zip(documents_test_evaluation, documents_test_evaluation)), zero_division=None
-        )
+        documents_test_evaluation = project.get_category_by_id(1).documents() + project.get_category_by_id(2).documents()
+        evaluation = ExtractionEvaluation(documents=list(zip(documents_test_evaluation, documents_test_evaluation)), zero_division=None)
         # there is only one Label that is not the NONE_LABEL or from a default LabelSet
         label = project.get_label_by_id(id_=4)
         assert evaluation.tp() == sum([len(doc.spans()) for doc in project.documents])
@@ -1466,7 +1420,9 @@ class TestEvaluation(unittest.TestCase):
     def test_true_positive_document(self):
         """Count zero Annotations from one Training Document that has no ID."""
         project = LocalTextProject()
-        evaluation = ExtractionEvaluation(documents=list(zip(project.documents, project.documents)), zero_division=None)
+        # only those of Categories 1 and 2, because the rest are intended to be used for FileSplitting testing & eval
+        documents_test_evaluation = project.get_category_by_id(1).documents() + project.get_category_by_id(2).documents()
+        evaluation = ExtractionEvaluation(documents=list(zip(documents_test_evaluation, documents_test_evaluation)), zero_division=None)
         with pytest.raises(AssertionError) as e:
             evaluation.tp(search=project.documents[0])
             assert 'Document None (None) must have a ID.' in e
@@ -1474,14 +1430,18 @@ class TestEvaluation(unittest.TestCase):
     def test_true_positive_label_set(self):
         """Count 3 true positives within a specific label set."""
         project = LocalTextProject()
-        evaluation = ExtractionEvaluation(documents=list(zip(project.documents, project.documents)), zero_division=None)
+        # only those of Categories 1 and 2, because the rest are intended to be used for FileSplitting testing & eval
+        documents_test_evaluation = project.get_category_by_id(1).documents() + project.get_category_by_id(2).documents()
+        evaluation = ExtractionEvaluation(documents=list(zip(documents_test_evaluation, documents_test_evaluation)), zero_division=None)
         label_set = project.get_label_set_by_id(id_=3)
         assert evaluation.tp(search=label_set) == 3
 
     def test_label_threshold_calculation(self):
         """Test calculation of optimized thresholds for Labels."""
         project = LocalTextProject()
-        evaluation = ExtractionEvaluation(documents=list(zip(project.documents, project.documents)), zero_division=None)
+        # only those of Categories 1 and 2, because the rest are intended to be used for FileSplitting testing & eval
+        documents_test_evaluation = project.get_category_by_id(1).documents() + project.get_category_by_id(2).documents()
+        evaluation = ExtractionEvaluation(documents=list(zip(documents_test_evaluation, documents_test_evaluation)), zero_division=None)
         assert len(evaluation.label_thresholds) == 12
         assert evaluation.label_thresholds[6]['f1']['score'] == 1.0
         assert evaluation.label_thresholds[6]['f1']['threshold'] == 0.05
