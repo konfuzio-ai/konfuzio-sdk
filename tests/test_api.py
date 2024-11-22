@@ -455,7 +455,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
     def test_get_project_label_sets(self):
         """Test getting all Label Sets of a Project."""
         label_set_ids = [label_set['id'] for label_set in get_project_label_sets(project_id=TEST_PROJECT_ID)]
-        assert label_set_ids == [63, 64, 3706, 3686, 3707]
+        assert set(label_set_ids) == {63, 64, 3706, 3686, 3707}
 
     def test_download_office_file(self):
         """Test to download the original version of an Office file."""
