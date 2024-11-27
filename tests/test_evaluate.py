@@ -1031,104 +1031,104 @@ class TestCompare(unittest.TestCase):
         'FPs',
     ),
     (
+        # fmt: off
         [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, 1, False, 1, 1, 1, 1, 1, 1, 'strict', 1, 0, 0],  # TP 1
         [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, 2, False, 1, 1, 1, 1, 1, 1, 'strict', 0, 0, 1],  # FP 1
-        [
-            1,
-            1,
-            0.9,
-            'de chilly',
-            0,
-            8,
-            True,
-            0.1,
-            None,
-            False,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            'strict',
-            0,
-            1,
-            0,
-        ],  # FN 1
+        [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, None, False, 1, 1, 1, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
         [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, 1, False, 1, 1, 1, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
         [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 1, False, 1, 1, 1, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
-        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 2, False, 1, 1, 1, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 2
-        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, None, False, 1, 1, 1, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 2
+        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 2, False, 1, 1, 1, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
+        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, None, False, 1, 1, 1, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
         [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 1, False, 1, 1, 1, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
-        [
-            1,
-            1,
-            0.9,
-            'de chilly',
-            0,
-            8,
-            True,
-            0.1,
-            1,
-            False,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            'nonstrict',
-            1,
-            0,
-            0,
-        ],  # TP 1
-        [
-            1,
-            1,
-            0.9,
-            'de chilly',
-            0,
-            8,
-            True,
-            0.1,
-            2,
-            False,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            'nonstrict',
-            0,
-            0,
-            1,
-        ],  # FP 2
-        [
-            1,
-            1,
-            0.05,
-            'de chilly',
-            0,
-            8,
-            True,
-            0.1,
-            1,
-            False,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            'nonstrict',
-            0,
-            1,
-            0,
-        ],  # FN 1
+        [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, 1, False, 1, 1, 2, 1, 1, 1, 'strict', 0, 0, 1],  # FP 1
+        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 1, False, 1, 1, 2, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
+        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 1, False, 1, 1, 2, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 1, False, 1, 1, 2, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
+        [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, 1, False, 2, 1, 1, 1, 1, 1, 'strict', 0, 0, 1],  # FP 1
+        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 1, False, 2, 1, 1, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
+        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, 1, False, 2, 1, 1, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 1, False, 2, 1, 1, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
+        [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, 1, False, 2, 1, 2, 1, 1, 1, 'strict', 0, 0, 1],  # FP 1
+        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 1, False, 2, 1, 2, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
+        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, 1, False, 2, 1, 2, 1, 1, 1, 'strict', 1, 0, 0],  # FN 1
+        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 1, False, 2, 1, 2, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
+        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, 2, False, 1, 1, 1, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 2, False, 1, 1, 1, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
+        [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, 2, False, 1, 1, 2, 1, 1, 1, 'strict', 0, 0, 1],  # FP 1
+        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 2, False, 1, 1, 2, 1, 1, 1, 'strict', 0, 1, 1],  # FP 1 FN 1
+        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, 2, False, 1, 1, 2, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 2, False, 1, 1, 2, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
+        [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, 2, False, 2, 1, 1, 1, 1, 1, 'strict', 0, 0, 1],  # FP 1
+        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 2, False, 2, 1, 1, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
+        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, 2, False, 2, 1, 1, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 2, False, 2, 1, 1, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
+        [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, 2, False, 2, 1, 2, 1, 1, 1, 'strict', 0, 0, 1],  # FP 1
+        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 2, False, 2, 1, 2, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
+        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, 2, False, 2, 1, 2, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 2, False, 2, 1, 2, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
+        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, None, False, 1, 1, 1, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, None, False, 1, 1, 1, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
+        [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, None, False, 1, 1, 2, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
+        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, None, False, 1, 1, 2, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
+        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, None, False, 1, 1, 2, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, None, False, 1, 1, 2, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
+        [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, None, False, 2, 1, 1, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
+        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, None, False, 2, 1, 1, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
+        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, None, False, 2, 1, 1, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, None, False, 2, 1, 1, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
+        [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, None, False, 2, 1, 2, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
+        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, None, False, 2, 1, 2, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
+        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, None, False, 2, 1, 2, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, None, False, 2, 1, 2, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
+        [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, 1, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 1, 0, 0],  # TP 1
+        [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, 2, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 0, 0, 1],  # FP 1
+        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, 1, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
         [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 1, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 1, 0, 0],  # TP 1
-        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 2, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 0, 0, 1],  # FP 2
+        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 2, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 0, 0, 1],  # FP 1
         [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 1, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
+        [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, 1, False, 1, 1, 2, 1, 1, 1, 'nonstrict', 0, 0, 1],  # FP 1
+        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 1, False, 1, 1, 2, 1, 1, 1, 'nonstrict', 0, 0, 1],  # FP 1
+        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, 1, False, 1, 1, 2, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 1, False, 1, 1, 2, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
+        [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, 1, False, 2, 1, 1, 1, 1, 1, 'nonstrict', 0, 0, 1],  # FP 1
+        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 1, False, 1, 1, 2, 1, 1, 1, 'nonstrict', 0, 0, 1],  # FP 1
+        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, 1, False, 2, 1, 1, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 1, False, 2, 1, 1, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
+        [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, 1, False, 2, 1, 2, 1, 1, 1, 'nonstrict', 0, 0, 1],  # FP 1
+        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 1, False, 2, 1, 2, 1, 1, 1, 'nonstrict', 0, 0, 1],  # FP 1
+        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, 1, False, 2, 1, 2, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 1, False, 2, 1, 2, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
+        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, 2, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 2, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
+        [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, 2, False, 1, 1, 2, 1, 1, 1, 'nonstrict', 0, 0, 1],  # FP 1
+        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 2, False, 1, 1, 2, 1, 1, 1, 'nonstrict', 0, 0, 1],  # FP 1
+        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, 2, False, 1, 1, 2, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 2, False, 1, 1, 2, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
+        [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, 2, False, 2, 1, 1, 1, 1, 1, 'nonstrict', 0, 0, 1],  # FP 1
+        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 2, False, 2, 1, 1, 1, 1, 1, 'nonstrict', 0, 0, 1],  # FP 1
+        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, 2, False, 2, 1, 1, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 2, False, 2, 1, 1, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
+        [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, 2, False, 2, 1, 2, 1, 1, 1, 'nonstrict', 0, 0, 1],  # FP 1
+        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 2, False, 2, 1, 2, 1, 1, 1, 'nonstrict', 0, 0, 1],  # FP 1
+        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, 2, False, 2, 1, 2, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 2, False, 2, 1, 2, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
+        [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, None, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
+        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, None, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
+        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, None, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, None, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
+        [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, None, False, 1, 1, 2, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
+        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, None, False, 1, 1, 2, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
+        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, None, False, 1, 1, 2, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, None, False, 1, 1, 2, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
+        [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, None, False, 2, 1, 1, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
+        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, None, False, 2, 1, 1, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
+        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, None, False, 2, 1, 1, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, None, False, 2, 1, 1, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
+        [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, None, False, 2, 1, 2, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
+        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, None, False, 2, 1, 2, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
+        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, None, False, 2, 1, 2, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, None, False, 2, 1, 2, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
+        # fmt: on
     ),
 )  # add the csv version of the table and read from it
 class TestParametrizedCompare(unittest.TestCase):
@@ -1254,7 +1254,7 @@ class TestParametrizedCompare(unittest.TestCase):
             spans_multiple = spans[spans['label_id'].isin(label_ids_multiple)]
             spans = pd.concat([spans_not_multiple, spans_multiple])
             spans = spans.sort_values(by='is_matched', ascending=False)
-            quality = (spans[['true_positive', 'false_positive', 'false_negative']].sum(axis=1) <= 1).all()
+            quality = (spans[['true_positive', 'false_positive', 'false_negative']].sum(axis=1) == 1).all()
             assert quality
 
         assert spans['true_positive'].sum() == self.tp
