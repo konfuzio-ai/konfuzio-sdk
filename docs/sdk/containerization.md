@@ -75,3 +75,5 @@ If you want to containerize a custom AI, refer to the documentation on how to cr
 [custom Extraction AI](https://dev.konfuzio.com/sdk/tutorials/information_extraction/index.html#train-a-custom-date-extraction-ai),
 a [custom File Splitting AI](https://dev.konfuzio.com/sdk/tutorials/create-custom-splitting-ai/index.html), 
 or a [custom Categorization AI](https://dev.konfuzio.com/sdk/tutorials/create-custom-categorization-ai/index.html), respectively.
+
+To learn more about the Bento containerization and how to configure your instance of Konfuzio to support them, refer to [https://dev.konfuzio.com/web/dockerized_ais.html](https://dev.konfuzio.com/web/dockerized_ais.html).
