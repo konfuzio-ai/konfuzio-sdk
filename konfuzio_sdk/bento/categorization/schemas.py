@@ -32,7 +32,7 @@ class CategorizeRequest20240729(BaseModel):
         page_number: int
         text: Optional[str]
 
-    text: str
+    text: Optional[str]
     bboxes: Optional[Dict[int, Bbox]]
     pages: Optional[List[CategorizeRequest20240729Page]]
 
