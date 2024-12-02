@@ -241,7 +241,7 @@ def get_project_details(project_id: int, session=None) -> dict:
     return r.json()
 
 
-def get_project_labels(project_id: int, session=None) -> dict:
+def get_project_labels(project_id: int, session=None) -> List[dict]:
     """
     Get Project's Labels.
 
@@ -261,11 +261,12 @@ def get_project_labels(project_id: int, session=None) -> dict:
     return result
 
 
-def get_project_label_sets(project_id: int, session=None) -> dict:
+def get_project_label_sets(project_id: int, include_categories=False, session=None) -> List[dict]:
     """
     Get Project's Label Sets.
 
     :param project_id: An ID of a Project to get Label Sets from.
+    :param include_categories: Include Label Sets that are also Categories.
     :param session: Konfuzio session with Retry and Timeout policy
     """
     if session is None:
@@ -277,6 +278,9 @@ def get_project_label_sets(project_id: int, session=None) -> dict:
 
     url = get_project_label_sets_url(project_id=project_id, host=host)
     result = consume_paginated_api(url, session)
+
+    if not include_categories:
+        result = [label_set for label_set in result if not label_set.get('is_category', False)]
 
     return result
 
