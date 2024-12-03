@@ -1,5 +1,7 @@
 ## Containerization of AIs
 
+**Note:** This section requires familiarity with the concepts of containerization and REST API.
+
 To ensure safety, flexibility, retrocompatibility and independency, we store and run AIs using 
 [Bento ML](https://docs.bentoml.org/en/latest/?_gl=1*hctmyy*_gcl_au*NzY2ODYxNDY1LjE3MDY1MzU5NTk.#) containerization 
 framework. 
@@ -46,7 +48,7 @@ bentoml containerize name:version # for example, extraction_11:2qytjiwhoc7flhbp
 
 ### Document processing with a containerized AI
 
-All Documents go through several steps during the processing pipeline that includes containerized AIs. 
+This section describes what steps every Document goes through when processed by a containerized AI. This can be helpful if you want to create your own containerized AI - the sample conversion steps can be used as blueprint for your own pipeline.
 
 The first step is always the same: transforming a Document into a JSON that adheres to a predefined Pydantic schema. This is needed to send the data
 to the container with the AI because it's not possible to send a Document object directly.
@@ -57,23 +59,46 @@ to the container with the AI because it's not possible to send a Document object
 | Categorization | Recreate a Document object inside the container | `konfuzio_sdk.bento.categorization.utils.prepare_request` | JSON | Document |
 | Categorization | Convert page-level category information into a JSON to return from a container | `konfuzio_sdk.bento.categorization.utils.process_response` | Categorized pages | JSON structured as the [latest response schema](https://dev.konfuzio.com/sdk/sourcecode.html#categorizationservice-pydantic-schemas) | 
 | Categorization | Update page-level category data in an original Document | `konfuzio_sdk.bento.categorization.utils.convert_response_to_categorized_pages` | JSON | Updated Document |
-| File Splitting | Convert a Document object into a JSON request | `konfuzio_sdk.bento.file_splitting.utils.convert_document_to_request` | Document | JSON structured as the [latest request schema](https://dev.konfuzio.com/sdk/sourcecode.html#splittingaiservice-pydantic-schemas) |
+| File Splitting | Convert a Document object into a JSON request | `konfuzio_sdk.bento.file_splitting.utils.convert_document_to_request` | Document | JSON structured as the [latest request schema](https://dev.konfuzio.com/sdk/sourcecode.html#filesplittingservice-pydantic-schemas) |
 | File Splitting | Recreate a Document object inside the container | `konfuzio_sdk.bento.file_splitting.utils.prepare_request` | JSON | Document |
-| File Splitting | Convert splitting results into a JSON to return from a container | `konfuzio_sdk.bento.file_splitting.utils.process_response` | List of Documents | JSON structured as the [latest response schema](https://dev.konfuzio.com/sdk/sourcecode.html#splittingaiservice-pydantic-schemas) | 
-| File Splitting | Create new Documents based on splitting results | - | JSON | New Documents |
-| Information Extraction | Convert a Document object into a JSON request | `konfuzio_sdk.bento.extraction.utils.convert_document_to_request` | Document | JSON structured as the [latest request schema](https://dev.konfuzio.com/sdk/sourcecode.html#rfextractionai-pydantic-schemas) |
+| File Splitting | Convert splitting results into a JSON to return from a container | `konfuzio_sdk.bento.file_splitting.utils.process_response` | List of Documents | JSON structured as the [latest response schema](https://dev.konfuzio.com/sdk/sourcecode.html#filesplittingservice-pydantic-schemas) | 
+| File Splitting | Create new Documents based on splitting results | None | JSON | New Documents |
+| Information Extraction | Convert a Document object into a JSON request | `konfuzio_sdk.bento.extraction.utils.convert_document_to_request` | Document | JSON structured as the [latest request schema](https://dev.konfuzio.com/sdk/sourcecode.html#extractionservice-pydantic-schemas) |
 | Information Extraction | Recreate a Document object inside the container | `konfuzio_sdk.bento.extraction.utils.prepare_request` | JSON | Document |
-| Information Extraction | Convert info about extracted Annotations into a JSON to return from a container | `konfuzio_sdk.bento.extraction.utils.process_response` | Annotation and Annotation Set data | JSON structured as the [latest response schema](https://dev.konfuzio.com/sdk/sourcecode.html#rfextractionai-pydantic-schemas) |
+| Information Extraction | Convert info about extracted Annotations into a JSON to return from a container | `konfuzio_sdk.bento.extraction.utils.process_response` | Annotation and Annotation Set data | JSON structured as the [latest response schema](https://dev.konfuzio.com/sdk/sourcecode.html#extractionservice-pydantic-schemas) |
 | Information Extraction | Reconstruct a Document and add new Annotations into it | `konfuzio_sdk.bento.extraction.utils.convert_response_to_annotations` | JSON | Document |
 
 The communication between Konfuzio Server (or anywhere else where the AI is served) and a containerized AI can be described as the following scheme:
 
-![Containerization scheme](containerized.png)
+```mermaid
 
+flowchart TD
+    subgraph Server["Server communicating with the containerized AI"]
+        Doc["Document"]
+        UpdatedDoc["Updated Document"]
+        JSON1["JSON schema of Document"]
+        JSON2["JSON schema of updated Document"]
+        Doc -->|convert_document_to_request| JSON1
+        JSON2 -->|convert_response_to| UpdatedDoc
+    end
+
+    subgraph ContainerAI["Containerized AI"]
+        JSON3["JSON schema of Document"]
+        JSON4["JSON schema of new info"]
+        ReconDoc["Reconstructed Document"]
+        NewDoc["New document info"]
+        JSON3 -->|prepare_request| ReconDoc
+        ReconDoc -->|Processing by AI| NewDoc
+        NewDoc -->|process_response| JSON4
+    end
+
+    JSON1 -->|REST API| JSON3
+    JSON4 -->|REST API| JSON2
+```
 
 If you want to containerize a custom AI, refer to the documentation on how to create and save a 
 [custom Extraction AI](https://dev.konfuzio.com/sdk/tutorials/information_extraction/index.html#train-a-custom-date-extraction-ai),
 a [custom File Splitting AI](https://dev.konfuzio.com/sdk/tutorials/create-custom-splitting-ai/index.html), 
 or a [custom Categorization AI](https://dev.konfuzio.com/sdk/tutorials/create-custom-categorization-ai/index.html), respectively.
 
-To learn more about the Bento containerization and how to configure your instance of Konfuzio to support them, refer to [https://dev.konfuzio.com/web/dockerized_ais.html](https://dev.konfuzio.com/web/dockerized_ais.html).
+To learn more about the Bento containerization and how to configure your instance of Konfuzio to support them, refer to [Dockerized AIs](https://dev.konfuzio.com/web/dockerized_ais.html).
