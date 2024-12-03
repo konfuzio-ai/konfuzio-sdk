@@ -32,7 +32,7 @@ class ExtractRequest20240117(BaseModel):
         page_number: int
         text: Optional[str]
 
-    text: str
+    text: Optional[str]
     bboxes: Optional[Dict[int, Bbox]]
     pages: Optional[List[ExtractRequest20240117Page]]
 
