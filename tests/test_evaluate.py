@@ -1042,44 +1042,44 @@ class TestCompare(unittest.TestCase):
         [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 1, False, 1, 1, 1, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
         [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, 1, False, 1, 1, 2, 1, 1, 1, 'strict', 0, 0, 1],  # FP 1
         [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 1, False, 1, 1, 2, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
-        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 1, False, 1, 1, 2, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
-        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 1, False, 1, 1, 2, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
+        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 1, False, 1, 1, 2, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 1, False, 1, 1, 2, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
         [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, 1, False, 2, 1, 1, 1, 1, 1, 'strict', 0, 0, 1],  # FP 1
         [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 1, False, 2, 1, 1, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
         [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, 1, False, 2, 1, 1, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
-        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 1, False, 2, 1, 1, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 1, False, 2, 1, 1, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
         [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, 1, False, 2, 1, 2, 1, 1, 1, 'strict', 0, 0, 1],  # FP 1
         [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 1, False, 2, 1, 2, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
-        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, 1, False, 2, 1, 2, 1, 1, 1, 'strict', 1, 0, 0],  # FN 1
+        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, 1, False, 2, 1, 2, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
         [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 1, False, 2, 1, 2, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
         [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, 2, False, 1, 1, 1, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
-        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 2, False, 1, 1, 1, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 2, False, 1, 1, 1, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
         [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, 2, False, 1, 1, 2, 1, 1, 1, 'strict', 0, 0, 1],  # FP 1
         [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 2, False, 1, 1, 2, 1, 1, 1, 'strict', 0, 1, 1],  # FP 1 FN 1
         [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, 2, False, 1, 1, 2, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
-        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 2, False, 1, 1, 2, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 2, False, 1, 1, 2, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
         [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, 2, False, 2, 1, 1, 1, 1, 1, 'strict', 0, 0, 1],  # FP 1
         [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 2, False, 2, 1, 1, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
         [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, 2, False, 2, 1, 1, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
-        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 2, False, 2, 1, 1, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 2, False, 2, 1, 1, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
         [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, 2, False, 2, 1, 2, 1, 1, 1, 'strict', 0, 0, 1],  # FP 1
         [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 2, False, 2, 1, 2, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
         [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, 2, False, 2, 1, 2, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
-        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 2, False, 2, 1, 2, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 2, False, 2, 1, 2, 1, 1, 1, 'strict', 0, 1, 0],  # FN
         [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, None, False, 1, 1, 1, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
-        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, None, False, 1, 1, 1, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, None, False, 1, 1, 1, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
         [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, None, False, 1, 1, 2, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
         [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, None, False, 1, 1, 2, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
         [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, None, False, 1, 1, 2, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
-        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, None, False, 1, 1, 2, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, None, False, 1, 1, 2, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
         [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, None, False, 2, 1, 1, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
         [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, None, False, 2, 1, 1, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
         [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, None, False, 2, 1, 1, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
-        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, None, False, 2, 1, 1, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, None, False, 2, 1, 1, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
         [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, None, False, 2, 1, 2, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
         [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, None, False, 2, 1, 2, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
         [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, None, False, 2, 1, 2, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
-        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, None, False, 2, 1, 2, 1, 1, 1, 'strict', 0, 1, 1],  # FN 1 FP 1
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, None, False, 2, 1, 2, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
         [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, 1, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 1, 0, 0],  # TP 1
         [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, 2, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 0, 0, 1],  # FP 1
         [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, 1, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
@@ -1198,16 +1198,17 @@ class TestParametrizedCompare(unittest.TestCase):
             spans['above_predicted_threshold'] = spans['confidence_predicted'] >= spans['label_threshold_predicted']
             spans['is_correct_label'] = spans['label_id'] == spans['label_id_predicted']
             spans['is_correct_label_set'] = spans['label_set_id'] == spans['label_set_id_predicted']
+            spans['is_correct_annotation_set_id'] = spans['annotation_set_id'] == spans['annotation_set_id_predicted']
             spans['duplicated'] = False
             spans['duplicated_predicted'] = False
             spans = spans.groupby('id_local', dropna=False).apply(lambda group: grouped(group, 'id_'))
-            spans = spans.groupby('annotation_set_id_predicted', dropna=False).apply(lambda group: grouped(group, 'annotation_set_id'))
         else:
             spans = pd.merge(df_a, df_b, how='outer', on=['label_id', 'label_set_id'], suffixes=('', '_predicted'))
             spans['is_matched'] = (spans['start_offset_predicted'] <= spans['end_offset']) & (spans['end_offset_predicted'] >= spans['start_offset'])
             spans['above_predicted_threshold'] = spans['confidence_predicted'] >= spans['label_threshold_predicted']
             spans['is_correct_label'] = True
             spans['is_correct_label_set'] = True
+            spans['is_correct_annotation_set_id'] = spans['annotation_set_id'] == spans['annotation_set_id_predicted']
             spans['label_id_predicted'] = spans['label_id']
             spans['label_set_id_predicted'] = spans['label_set_id']
             spans = spans.sort_values(by='is_matched', ascending=False)
@@ -1215,7 +1216,6 @@ class TestParametrizedCompare(unittest.TestCase):
             spans['duplicated_predicted'] = spans.duplicated(subset=['id_local_predicted'], keep='first')
             spans = spans.drop(spans[(spans['duplicated']) & (spans['duplicated_predicted'])].index)
             spans = spans.groupby('id_local', dropna=False).apply(lambda group: grouped(group, 'id_'))
-            spans = spans.groupby('annotation_set_id_predicted', dropna=False).apply(lambda group: grouped(group, 'annotation_set_id'))
 
         spans['true_positive'] = (
             (spans['is_matched'])
