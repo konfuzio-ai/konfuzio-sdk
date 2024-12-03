@@ -457,6 +457,13 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         label_set_ids = [label_set['id'] for label_set in get_project_label_sets(project_id=TEST_PROJECT_ID)]
         assert set(label_set_ids) == {63, 64, 3706, 3686, 3707}
 
+    def test_get_project_label_sets_including_categories(self):
+        """Test getting all Label Sets of a Project, including those who are also Categories."""
+        label_set_ids = [
+            label_set['id'] for label_set in get_project_label_sets(project_id=TEST_PROJECT_ID, include_categories=True)
+        ]
+        assert label_set_ids == [64, 63, 3706, 3686, 3707]
+
     def test_download_office_file(self):
         """Test to download the original version of an Office file."""
         download_file_konfuzio_api(257244, ocr=False)

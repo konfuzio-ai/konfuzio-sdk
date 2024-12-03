@@ -138,6 +138,14 @@ class TestExtractionAIBento(unittest.TestCase):
         assert response.status_code == 400
         assert 'validation error' in response.text
 
+    def test_convert_empty_document(self):
+        """Test that an empty document is processed correctly."""
+        empty_document = Document(project=self.project, category=self.pipeline.category)
+        prepared = convert_document_to_request(document=empty_document, schema=ExtractRequest20240117)
+        assert prepared.text is None
+        assert prepared.bboxes == {}
+        assert prepared.pages == []
+
     def test_service_error(self):
         """Test that Python errors occurring in the service are caught and returned as a response."""
         data = {'text': 'test', 'bboxes': {}, 'pages': []}

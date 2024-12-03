@@ -3809,7 +3809,8 @@ class Document(Data):
                     x0=x0, x1=x1, y0=y0, y1=y1, page=page, validation=self._bbox_validation_type
                 )
             self._characters = boxes
-        return self._characters
+        # if the bboxes are not available, return an empty dictionary
+        return self._characters or {}
 
     def set_bboxes(self, characters: Dict[int, Bbox]):
         """Set character Bbox dictionary."""
