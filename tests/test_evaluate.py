@@ -3,6 +3,7 @@ import unittest
 from copy import deepcopy
 from statistics import mean
 
+import numpy as np
 import pandas as pd
 import parameterized
 import pytest
@@ -1030,7 +1031,8 @@ class TestCompare(unittest.TestCase):
         'FNs',
         'FPs',
     ),
-    (
+    (  # parametrized tests based on test_data/combinations_of_errors.csv
+        # mock data to account for all possible error combinations in predicted Annotations.
         # fmt: off
         [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, 1, False, 1, 1, 1, 1, 1, 1, 'strict', 1, 0, 0],  # TP 1
         [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, 2, False, 1, 1, 1, 1, 1, 1, 'strict', 0, 0, 1],  # FP 1
@@ -1081,56 +1083,56 @@ class TestCompare(unittest.TestCase):
         [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, None, False, 2, 1, 2, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
         [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, None, False, 2, 1, 2, 1, 1, 1, 'strict', 0, 1, 0],  # FN 1
         [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, 1, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 1, 0, 0],  # TP 1
-        [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, 2, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 0, 0, 1],  # FP 1
-        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, 1, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
         [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 1, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 1, 0, 0],  # TP 1
-        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 2, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 0, 0, 1],  # FP 1
+        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, 1, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
         [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 1, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
+        [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, 2, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 0, 0, 1],  # FP 1
+        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 2, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 0, 0, 1],  # FP 1
         [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, 1, False, 1, 1, 2, 1, 1, 1, 'nonstrict', 0, 0, 1],  # FP 1
         [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 1, False, 1, 1, 2, 1, 1, 1, 'nonstrict', 0, 0, 1],  # FP 1
         [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, 1, False, 1, 1, 2, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
         [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 1, False, 1, 1, 2, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
         [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, 1, False, 2, 1, 1, 1, 1, 1, 'nonstrict', 0, 0, 1],  # FP 1
-        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 1, False, 1, 1, 2, 1, 1, 1, 'nonstrict', 0, 0, 1],  # FP 1
-        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, 1, False, 2, 1, 1, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
-        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 1, False, 2, 1, 1, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
+        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 1, False, 2, 1, 1, 1, 1, 1, 'nonstrict', 0, 0, 1],  # FP 1
+        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, 1, False, 2, 1, 1, 1, 1, 1, 'nonstrict', 0, 0, 0],  # discarded
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 1, False, 2, 1, 1, 1, 1, 1, 'nonstrict', 0, 0, 0],  # discarded
         [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, 1, False, 2, 1, 2, 1, 1, 1, 'nonstrict', 0, 0, 1],  # FP 1
         [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 1, False, 2, 1, 2, 1, 1, 1, 'nonstrict', 0, 0, 1],  # FP 1
-        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, 1, False, 2, 1, 2, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
-        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 1, False, 2, 1, 2, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
-        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, 2, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
-        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 2, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
+        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, 1, False, 2, 1, 2, 1, 1, 1, 'nonstrict', 0, 0, 0],  # discarded
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 1, False, 2, 1, 2, 1, 1, 1, 'nonstrict', 0, 0, 0],  # discarded
+        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, 2, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 0, 0, 0],  # discarded
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 2, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 0, 0, 0],  # discarded
         [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, 2, False, 1, 1, 2, 1, 1, 1, 'nonstrict', 0, 0, 1],  # FP 1
         [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 2, False, 1, 1, 2, 1, 1, 1, 'nonstrict', 0, 0, 1],  # FP 1
-        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, 2, False, 1, 1, 2, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
-        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 2, False, 1, 1, 2, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
+        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, 2, False, 1, 1, 2, 1, 1, 1, 'nonstrict', 0, 0, 0],  # discarded
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 2, False, 1, 1, 2, 1, 1, 1, 'nonstrict', 0, 0, 0],  # discarded
         [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, 2, False, 2, 1, 1, 1, 1, 1, 'nonstrict', 0, 0, 1],  # FP 1
         [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 2, False, 2, 1, 1, 1, 1, 1, 'nonstrict', 0, 0, 1],  # FP 1
-        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, 2, False, 2, 1, 1, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
-        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 2, False, 2, 1, 1, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
+        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, 2, False, 2, 1, 1, 1, 1, 1, 'nonstrict', 0, 0, 0],  # discarded
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 2, False, 2, 1, 1, 1, 1, 1, 'nonstrict', 0, 0, 0],  # discarded
         [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, 2, False, 2, 1, 2, 1, 1, 1, 'nonstrict', 0, 0, 1],  # FP 1
         [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, 2, False, 2, 1, 2, 1, 1, 1, 'nonstrict', 0, 0, 1],  # FP 1
-        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, 2, False, 2, 1, 2, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
-        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 2, False, 2, 1, 2, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
-        [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, None, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
-        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, None, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
-        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, None, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
-        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, None, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
-        [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, None, False, 1, 1, 2, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
-        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, None, False, 1, 1, 2, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
-        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, None, False, 1, 1, 2, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
-        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, None, False, 1, 1, 2, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
-        [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, None, False, 2, 1, 1, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
-        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, None, False, 2, 1, 1, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
-        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, None, False, 2, 1, 1, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
-        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, None, False, 2, 1, 1, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
-        [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, None, False, 2, 1, 2, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
-        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, None, False, 2, 1, 2, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
-        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, None, False, 2, 1, 2, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
-        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, None, False, 2, 1, 2, 1, 1, 1, 'nonstrict', 0, 1, 0],  # FN 1
+        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, 2, False, 2, 1, 2, 1, 1, 1, 'nonstrict', 0, 0, 0],  # discarded
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, 2, False, 2, 1, 2, 1, 1, 1, 'nonstrict', 0, 0, 0],  # discarded
+        [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, np.NaN, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 0, 0, 0],  # discarded
+        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, np.NaN, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 0, 0, 0],  # discarded
+        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, np.NaN, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 0, 0, 0],  # discarded
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, np.NaN, False, 1, 1, 1, 1, 1, 1, 'nonstrict', 0, 0, 0],  # discarded
+        [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, np.NaN, False, 1, 1, 2, 1, 1, 1, 'nonstrict', 0, 0, 0],  # discarded
+        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, np.NaN, False, 1, 1, 2, 1, 1, 1, 'nonstrict', 0, 0, 0],  # discarded
+        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, np.NaN, False, 1, 1, 2, 1, 1, 1, 'nonstrict', 0, 0, 0],  # discarded
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, np.NaN, False, 1, 1, 2, 1, 1, 1, 'nonstrict', 0, 0, 0],  # discarded
+        [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, np.NaN, False, 2, 1, 1, 1, 1, 1, 'nonstrict', 0, 0, 0],  # discarded
+        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, np.NaN, False, 2, 1, 1, 1, 1, 1, 'nonstrict', 0, 0, 0],  # discarded
+        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, np.NaN, False, 2, 1, 1, 1, 1, 1, 'nonstrict', 0, 0, 0],  # discarded
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, np.NaN, False, 2, 1, 1, 1, 1, 1, 'nonstrict', 0, 0, 0],  # discarded
+        [1, 1, 0.9, 'de chilly', 0, 8, True, 0.1, np.NaN, False, 2, 1, 2, 1, 1, 1, 'nonstrict', 0, 0, 0],  # discarded
+        [1, 1, 0.9, 'de chi', 0, 5, True, 0.1, np.NaN, False, 2, 1, 2, 1, 1, 1, 'nonstrict', 0, 0, 0],  # discarded
+        [1, 1, 0.05, 'de chilly', 0, 8, True, 0.1, np.NaN, False, 2, 1, 2, 1, 1, 1, 'nonstrict', 0, 0, 0],  # discarded
+        [1, 1, 0.05, 'de chi', 0, 5, True, 0.1, np.NaN, False, 2, 1, 2, 1, 1, 1, 'nonstrict', 0, 0, 0],  # discarded
         # fmt: on
     ),
-)  # add the csv version of the table and read from it
+)
 class TestParametrizedCompare(unittest.TestCase):
     """
     Test evaluation logic on mockup data instead of document data to verify correct behavior in assigning TP/FP/FN.
@@ -1250,7 +1252,8 @@ class TestParametrizedCompare(unittest.TestCase):
             label_ids_multiple = []
             label_ids_not_multiple = [1, 2]
             spans_not_multiple = spans[spans['label_id'].isin(label_ids_not_multiple)]
-            spans_not_multiple = spans_not_multiple.groupby(['annotation_set_id_predicted', 'label_id_predicted']).apply(prioritize_rows)
+            spans_not_multiple = spans_not_multiple.groupby(['annotation_set_id_predicted', 'label_id_predicted'], dropna=False)
+            spans_not_multiple = spans_not_multiple.apply(prioritize_rows)
             spans_multiple = spans[spans['label_id'].isin(label_ids_multiple)]
             spans = pd.concat([spans_not_multiple, spans_multiple])
             spans = spans.sort_values(by='is_matched', ascending=False)

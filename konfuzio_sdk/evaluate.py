@@ -250,7 +250,7 @@ def compare(
         spans = spans.groupby('annotation_set_id_predicted', dropna=False).apply(lambda group: grouped(group, 'annotation_set_id'))
     spans = spans[RELEVANT_FOR_EVALUATION]
 
-    assert not spans.empty  # this function must be able to evaluate any two docs even without annotations
+    assert not spans.empty, 'Evaluation dataframe must contain Spans.'
 
     spans['tokenizer_true_positive'] = (
         (spans['is_correct'])
@@ -337,11 +337,9 @@ def compare(
     spans['frequency'].fillna(0, inplace=True)
     spans['frequency'] = spans['frequency'].apply(lambda x: int(x))
 
-    if not strict:  # not needed
-        # one Span must not be defined as TP or FP or FN more than once
-        # check if it is an excessive check
-        quality = (spans[['true_positive', 'false_positive', 'false_negative']].sum(axis=1) == 1).all()
-        assert quality
+    quality = (spans[['true_positive', 'false_positive', 'false_negative']].sum(axis=1) == 1).all()
+    if not quality:
+        raise ValueError('One Span cannot be defined as a TP or an FP or an FN more than once.')
 
     return spans
 
@@ -526,7 +524,9 @@ class ExtractionEvaluation:
                 ignore_below_threshold=self.ignore_below_threshold,
                 id_counter=id_counter,
             )
-            assert validate_number_of_predictions(evaluation_df=evaluation, ground_truth_doc=ground_truth)
+            assert validate_number_of_predictions(
+                evaluation_df=evaluation, ground_truth_doc=ground_truth
+            ), 'The number of predicted Annotations cannot be greater than the sum of ground truth Annotations and the overlapping FPs.'
             evaluations.append(evaluation)
             id_counter += len(evaluation)
 
@@ -627,9 +627,8 @@ class ExtractionEvaluation:
 
     def tn(self, search=None) -> int:
         """Return the True Negatives of all Spans."""
-        # return len(self._query(search=None)) - self.tp(search=search) - self.fn(search=search) - self.fp(search=search)
         tn = len(self._query(search=search)) - self.tp(search=search) - self.fn(search=search) - self.fp(search=search)
-        assert tn == 0
+        assert tn == 0, 'There are no TNs for Extraction AI.'
         return 0
 
     def gt(self, search=None) -> int:
