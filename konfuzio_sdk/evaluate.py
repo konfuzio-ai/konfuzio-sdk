@@ -290,7 +290,7 @@ def compare(
         (spans['is_correct']) & (spans['is_matched']) & (spans['document_id_local_predicted'].notna()) & (~spans['is_correct_label'])
     )
 
-    # Evaluate which **spans** are TN, TP, FP and keep RELEVANT_FOR_MAPPING to allow grouping of confidence measures
+    # Evaluate which **spans** are FN, TP, FP and keep RELEVANT_FOR_MAPPING to allow grouping of confidence measures
     spans['true_positive'] = (
         (spans['is_matched'])
         & (spans['is_correct'])
@@ -629,7 +629,7 @@ class ExtractionEvaluation:
         """Return the True Negatives of all Spans."""
         tn = len(self._query(search=search)) - self.tp(search=search) - self.fn(search=search) - self.fp(search=search)
         assert tn == 0, 'There are no TNs for Extraction AI.'
-        return 0
+        return tn
 
     def gt(self, search=None) -> int:
         """Return the number of ground-truth Annotations for a given Label."""
