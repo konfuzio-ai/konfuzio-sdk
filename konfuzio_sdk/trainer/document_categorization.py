@@ -308,10 +308,16 @@ class NameBasedCategorizationAI(AbstractCategorizationAI):
         :param page: Input Page
         :returns: The input Page with added Category information
         """
+        found_categories_lengths = {}  # to keep track of intersecting category names like rechnung/rechnungskorrektur
         for training_category in self.categories:
             if training_category.fallback_name in page.text.lower():
-                _ = CategoryAnnotation(category=training_category, confidence=1.0, page=page)
-                break
+                found_categories_lengths[training_category] = len(training_category.fallback_name)
+        if found_categories_lengths:
+            if len(found_categories_lengths) > 1:
+                selected_category = max(found_categories_lengths, key=found_categories_lengths.get)
+            else:
+                selected_category = list(found_categories_lengths.keys())[0]
+            _ = CategoryAnnotation(category=selected_category, confidence=1.0, page=page)
         if page.category is None:
             logger.info(
                 f'{self} could not find the Category of {page} by using the fallback categorization logic.'
