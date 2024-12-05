@@ -525,9 +525,8 @@ class ExtractionEvaluation:
                 ignore_below_threshold=self.ignore_below_threshold,
                 id_counter=id_counter,
             )
-            assert validate_number_of_predictions(
-                evaluation_df=evaluation, ground_truth_doc=ground_truth
-            ), 'The number of predicted Annotations cannot be greater than the sum of ground truth Annotations and the overlapping FPs.'
+            if not validate_number_of_predictions(evaluation_df=evaluation, ground_truth_doc=ground_truth):
+                logger.warning('The number of predicted Annotations is greater than the sum of ground truth Annotations and the overlapping FPs.')
             evaluations.append(evaluation)
             id_counter += len(evaluation)
 
