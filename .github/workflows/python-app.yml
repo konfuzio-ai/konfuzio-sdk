@@ -12,12 +12,12 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - run: |
           echo "No build step required."
   tests:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     strategy:
       max-parallel: 2
       matrix:
@@ -109,7 +109,3 @@ jobs:
               repo: context.repo.repo,
               body: '```\n' + report + '\n```'
             });
-      
-
-
-        
