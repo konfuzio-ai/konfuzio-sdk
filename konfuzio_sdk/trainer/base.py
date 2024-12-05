@@ -323,6 +323,7 @@ class BaseModel(metaclass=abc.ABCMeta):
 
         if not build:
             # restore the working directory
+            # see https://github.com/bentoml/BentoML/issues/3403
             os.chdir(working_dir)
             return
 

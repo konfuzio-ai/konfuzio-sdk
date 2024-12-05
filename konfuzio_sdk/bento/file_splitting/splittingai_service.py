@@ -28,7 +28,7 @@ app = FastAPI()
 
 @bentoml.service(
     traffic={
-        'timeout': 9999,
+        'timeout': int(os.environ.get('BENTO_SERVICE_TIMEOUT', '3600')),
         # Don't process more than 2 documents at a time. Will respond with 429 if more come.
         # Clients should implement a retry strategy for 429.
         # Servers should implement a scaling strategy and start multiple services when high load is present.

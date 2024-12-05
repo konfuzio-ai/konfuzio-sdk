@@ -1281,6 +1281,7 @@ class SplittingAI:
 
         if not build:
             # restore the current directory
+            # see https://github.com/bentoml/BentoML/issues/3403
             os.chdir(working_dir)
             return
 
