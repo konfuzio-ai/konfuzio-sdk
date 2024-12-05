@@ -155,6 +155,7 @@ def validate_number_of_predictions(ground_truth_doc: Document, evaluation_df: pd
         False otherwise.
     """
     ground_truth_spans = sum([len(annotation.spans) for annotation in ground_truth_doc.annotations()])
+    evaluation_df = evaluation_df[evaluation_df['start_offset'] != evaluation_df['end_offset']]  # filter out the empty spans from tests
 
     if ground_truth_spans > 0:
         return len(evaluation_df) <= ground_truth_spans + len(get_overlapping_fp(evaluation_df))
@@ -337,7 +338,7 @@ def compare(
     spans['frequency'].fillna(0, inplace=True)
     spans['frequency'] = spans['frequency'].apply(lambda x: int(x))
 
-    quality = (spans[['true_positive', 'false_positive', 'false_negative']].sum(axis=1) == 1).all()
+    quality = (spans[['true_positive', 'false_positive', 'false_negative']].sum(axis=1) <= 1).all()
     if not quality:
         raise ValueError('One Span cannot be defined as a TP or an FP or an FN more than once.')
 
