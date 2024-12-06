@@ -303,7 +303,10 @@ class NameBasedCategorizationAI(AbstractCategorizationAI):
         )
 
     def _categorize_page(self, page: Page) -> Page:
-        """Run categorization on a Page.
+        """
+        Run categorization on a Page.
+        We check how many Category names are inside the text of the document and store the lengths of the names.
+        If there are multiple Category names found in the text, we choose the longest one.
 
         :param page: Input Page
         :returns: The input Page with added Category information
