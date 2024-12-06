@@ -68,5 +68,5 @@ mlartifacts
 # Ignore any file or folder that starts with "draft"
 draft*
 
-# Ignore MacOS system files
+# Ignore default MacOS desktop data files
 .DS_Store
