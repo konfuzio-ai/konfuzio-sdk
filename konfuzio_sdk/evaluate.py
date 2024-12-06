@@ -117,23 +117,20 @@ def get_overlapping_fp(unfiltered_df: pd.DataFrame):
     fp_mask = unfiltered_df['false_positive'] & (~unfiltered_df['is_matched'].fillna(False))
     fp_rows = unfiltered_df[fp_mask].copy()
 
-    def ranges_overlap(start1, end1, start2, end2):
-        try:
-            overlaps = start1 < end2 and start2 < end1
-        except TypeError:
-            overlaps = False
-        return overlaps
+    if len(fp_rows) == 0:
+        return fp_rows
 
-    overlapping_indices = []
+    fp_df = fp_rows[['start_offset_predicted', 'end_offset_predicted']]
+    gt_df = unfiltered_df[['start_offset', 'end_offset']]
 
-    for idx, fp_row in fp_rows.iterrows():
-        fp_start = fp_row['start_offset_predicted']
-        fp_end = fp_row['end_offset_predicted']
+    cross_df = fp_df.reset_index().merge(gt_df.reset_index(), how='cross', suffixes=('_fp', '_gt'))
 
-        for _, other_row in unfiltered_df.iterrows():
-            if ranges_overlap(fp_start, fp_end, other_row['start_offset'], other_row['end_offset']):
-                overlapping_indices.append(idx)
-                break
+    try:
+        overlaps = (cross_df['start_offset_predicted'] < cross_df['end_offset']) & (cross_df['start_offset'] < cross_df['end_offset_predicted'])
+    except TypeError:
+        return fp_rows.iloc[0:0]  # if there are no overlaps
+
+    overlapping_indices = cross_df[overlaps]['index_fp'].unique()
 
     return fp_rows.loc[overlapping_indices]
 
