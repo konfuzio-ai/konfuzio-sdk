@@ -1,12 +1,15 @@
 """Process Documents that consist of several files and propose splitting them into the Sub-Documents accordingly."""
 import abc
+import json
 import logging
 import os
+import shutil
 import tempfile
 from copy import deepcopy
 from inspect import signature
 from typing import List, Union
 
+import bentoml
 import numpy as np
 import pandas as pd
 import PIL
@@ -102,10 +105,7 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
     @property
     def entrypoint_methods(self) -> dict:
         """Methods that will be exposed in a bento-saved instance of a model."""
-        return {
-            'predict': {'batchable': False},
-            'evaluate': {'batchable': False},
-        }
+        pass  # a placeholder because this method is defined on splitting AI level
 
     @staticmethod
     def has_compatible_interface(other) -> bool:
@@ -1009,6 +1009,20 @@ class SplittingAI:
         if not self.model.requires_images:
             self.tokenizer = self.model.tokenizer
 
+    @property
+    def name(self):
+        """The class name."""
+        return self.__class__.__name__
+
+    def name_lower(self):
+        """Convert class name to machine-readable name."""
+        return f'{self.name.lower().strip()}'
+
+    @property
+    def pkl_name(self):
+        """Generate a unique extension-less name for a resulting pickle file."""
+        return f'{self.name_lower()}_{get_timestamp()}'
+
     def _suggest_first_pages(
         self, document: Document, inplace: bool = False, split_on_blank_pages: bool = False, device: str = 'cpu'
     ) -> List[Document]:
@@ -1179,3 +1193,113 @@ class SplittingAI:
             pred_docs.append(predictions[0])
         self.full_evaluation = FileSplittingEvaluation(original_docs, pred_docs, zero_division)
         return self.full_evaluation
+
+    @property
+    def entrypoint_methods(self) -> dict:
+        """Methods that will be exposed in a bento-saved instance of a model."""
+        return {'propose_split_documents': {'batchable': False}, 'evaluate_full': {'batchable': False}}
+
+    @property
+    def bento_metadata(self) -> dict:
+        """Metadata to include into the bento-saved instance of a model."""
+        return {
+            'requires_images': getattr(self, 'requires_images', False),
+            'requires_segmentation': getattr(self, 'requires_segmentation', False),
+            'requires_text': getattr(self, 'requires_text', False),
+            'request': 'SplitRequest20240930',
+            'response': 'SplitResponse20240930',
+        }
+
+    def build_bento(self, bento_model):
+        """Build BentoML service for the model."""
+        bento_base_dir = os.path.dirname(os.path.abspath(__file__)) + '/../bento'
+        dict_metadata = self.model.project.create_project_metadata_dict()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # copy bento_module_dir to temp_dir
+            shutil.copytree(bento_base_dir + '/file_splitting', temp_dir + '/file_splitting')
+            shutil.copytree(bento_base_dir + '/base', temp_dir + '/base')
+            # copy __init__.py file
+            shutil.copy(bento_base_dir + '/__init__.py', temp_dir + '/__init__.py')
+            # include metadata
+            with open(f'{temp_dir}/categories_and_label_data.json5', 'w') as f:
+                json.dump(dict_metadata, f, indent=2, sort_keys=True)
+            # include the AI model name so the service can load it correctly
+            with open(f'{temp_dir}/AI_MODEL_NAME', 'w') as f:
+                f.write(self._pkl_name)
+
+            built_bento = bentoml.bentos.build(
+                name=f'file_splitting_{self.model.project.id_}',
+                service=f'file_splitting.{self.name_lower()}_service:FileSplittingService',
+                include=[
+                    '__init__.py',
+                    'base/*.py',
+                    'file_splitting/*.py',
+                    'categories_and_label_data.json5',
+                    'AI_MODEL_NAME',
+                ],
+                labels=self.bento_metadata,
+                python={
+                    'packages': [
+                        'https://github.com/konfuzio-ai/konfuzio-sdk/archive/refs/heads/12218-bento-for-splitting-ai.zip#egg=konfuzio-sdk',
+                        'datasets==2.14.6',
+                        'mlflow==2.15.0',
+                        'torch>=1.8.1',
+                        'transformers==4.30.2',
+                        'tensorflow',
+                    ],
+                    'lock_packages': True,
+                },
+                build_ctx=temp_dir,
+                models=[str(bento_model.tag)],
+            )
+
+        return built_bento
+
+    def save_bento(self, build=True, output_dir=None) -> Union[None, tuple]:
+        """
+        Save AI as a BentoML model in the local store.
+
+        :param build: Bundle the model into a BentoML service and store it in the local store.
+        :param output_dir: If present, a .bento archive will also be saved to this directory.
+
+        :return: None if build=False, otherwise a tuple of (saved_bento, archive_path).
+        """
+        # get the current directory to restore later
+        working_dir = os.getcwd()
+
+        if output_dir and not build:
+            raise ValueError('Cannot specify output_dir without build=True')
+
+        # cache the pickle name to avoid changing it during the save process (as it includes timestamps)
+        self._pkl_name = self.pkl_name
+
+        saved_model = bentoml.picklable_model.save_model(
+            name=self._pkl_name, model=self, signatures=self.entrypoint_methods, metadata=self.bento_metadata
+        )
+        logger.info(f'Model saved in the local BentoML store: {saved_model}')
+
+        if not build:
+            # restore the current directory
+            # see https://github.com/bentoml/BentoML/issues/3403
+            os.chdir(working_dir)
+            return
+
+        saved_bento = self.build_bento(bento_model=saved_model)
+        logger.info(f'Bento created: {saved_bento}')
+
+        if not output_dir:
+            # restore the current directory
+            os.chdir(working_dir)
+            return saved_bento, None  # None = no archive saved
+
+        archive_path = saved_bento.export(output_dir)
+        logger.info(f'Bento archive saved: {archive_path}')
+
+        # restore the current directory
+        os.chdir(working_dir)
+        return saved_bento, archive_path
+
+    def load_bento(model_name):
+        """Load AI as a Bento ML instance."""
+        return bentoml.picklable_model.load_model(model_name)
