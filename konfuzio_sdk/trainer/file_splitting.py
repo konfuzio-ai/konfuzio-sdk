@@ -20,7 +20,7 @@ from konfuzio_sdk.evaluate import FileSplittingEvaluation
 from konfuzio_sdk.extras import datasets, mlflow, tensorflow as tf, torch, transformers
 from konfuzio_sdk.trainer.information_extraction import BaseModel
 from konfuzio_sdk.trainer.utils import BalancedLossTrainer, LoggerCallback, load_metric
-from konfuzio_sdk.utils import get_timestamp
+from konfuzio_sdk.utils import get_sdk_version, get_timestamp
 from konfuzio_sdk_extras_list import FILE_SPLITTING_EXTRAS
 
 logger = logging.getLogger(__name__)
@@ -1241,7 +1241,7 @@ class SplittingAI:
                 ],
                 labels=self.bento_metadata,
                 python={
-                    'packages': [f'konfuzio-sdk<={self.konfuzio_sdk_version}'] + FILE_SPLITTING_EXTRAS,
+                    'packages': [f'konfuzio-sdk<={get_sdk_version()}'] + FILE_SPLITTING_EXTRAS,
                     'lock_packages': True,
                 },
                 build_ctx=temp_dir,
