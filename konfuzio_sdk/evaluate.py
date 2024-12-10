@@ -75,7 +75,9 @@ def grouped(group, target: str):
             group[verbose_validation_column_name] = group.loc[eligible_to_vote][target].mode(dropna=False)[0]
         else:
             group[verbose_validation_column_name] = int(
-                weighted_mode(group.loc[eligible_to_vote][target], group.loc[eligible_to_vote]['confidence_predicted'])[0]
+                weighted_mode(group.loc[eligible_to_vote][target], group.loc[eligible_to_vote]['confidence_predicted'])[
+                    0
+                ]
             )
     validation_column_name = f'is_correct_{target}'
     group[validation_column_name] = group[target] == group[verbose_validation_column_name]
@@ -105,59 +107,6 @@ def prioritize_rows(group):
         return first_false_positive
     else:
         return first_false_negative
-
-
-def get_overlapping_fp(unfiltered_df: pd.DataFrame):
-    """
-    Filter an evaluation dataframe to get only the false positives that overlap with any ground
-    truth Annotations.
-
-    :param unfiltered_df: An unfiltered instance of the evaluation dataframe.
-    """
-    fp_mask = unfiltered_df['false_positive'] & (~unfiltered_df['is_matched'].fillna(False))
-    fp_rows = unfiltered_df[fp_mask].copy()
-
-    if len(fp_rows) == 0:
-        return fp_rows
-
-    fp_df = fp_rows[['start_offset_predicted', 'end_offset_predicted']]
-    gt_df = unfiltered_df[['start_offset', 'end_offset']]
-
-    cross_df = fp_df.reset_index().merge(gt_df.reset_index(), how='cross', suffixes=('_fp', '_gt'))
-
-    try:
-        overlaps = (cross_df['start_offset_predicted'] < cross_df['end_offset']) & (cross_df['start_offset'] < cross_df['end_offset_predicted'])
-    except TypeError:
-        return fp_rows.iloc[0:0]  # if there are no overlaps
-
-    overlapping_indices = cross_df[overlaps]['index_fp'].unique()
-
-    return fp_rows.loc[overlapping_indices]
-
-
-def validate_number_of_predictions(ground_truth_doc: Document, evaluation_df: pd.DataFrame) -> bool:
-    """
-    Validates that the number of predicted Annotations does not exceed the sum of
-    ground truth Annotations and partially overlapping false positives.
-
-    A false positive prediction is considered partially overlapping if its offset string shares
-    a substring with any ground truth Annotation (e.g., prediction "hilly" overlaps
-    with ground truth "chilly").
-
-    :param ground_truth_doc: A Document with ground truth Annotations.
-    :param evaluation_df: A dataframe with ground truth and prediction Annotations combined.
-
-    :returns: True if the number of predictions is valid (less than or equal to
-        ground truth count + partially overlapping false positives count),
-        False otherwise.
-    """
-    ground_truth_spans = sum([len(annotation.spans) for annotation in ground_truth_doc.annotations()])
-    evaluation_df = evaluation_df[evaluation_df['start_offset'] != evaluation_df['end_offset']]  # filter out the empty spans from tests
-
-    if ground_truth_spans > 0:
-        return len(evaluation_df) <= ground_truth_spans + len(get_overlapping_fp(evaluation_df))
-    else:
-        return len(evaluation_df) <= len(evaluation_df['false_positive'])
 
 
 def compare(
@@ -223,12 +172,16 @@ def compare(
         # add check to evaluate multiline Annotations
         spans = spans.groupby('id_local', dropna=False).apply(lambda group: grouped(group, 'id_'))
         # add check to evaluate Annotation Sets
-        spans = spans.groupby('annotation_set_id_predicted', dropna=False).apply(lambda group: grouped(group, 'annotation_set_id'))
+        spans = spans.groupby('annotation_set_id_predicted', dropna=False).apply(
+            lambda group: grouped(group, 'annotation_set_id')
+        )
     else:
         # allows  start_offset_predicted <= end_offset and end_offset_predicted >= start_offset
         spans = pd.merge(df_a, df_b, how='outer', on=['label_id', 'label_set_id'], suffixes=('', '_predicted'))
         # add criteria to evaluate Spans
-        spans['is_matched'] = (spans['start_offset_predicted'] <= spans['end_offset']) & (spans['end_offset_predicted'] >= spans['start_offset'])
+        spans['is_matched'] = (spans['start_offset_predicted'] <= spans['end_offset']) & (
+            spans['end_offset_predicted'] >= spans['start_offset']
+        )
         if custom_threshold:
             spans['above_predicted_threshold'] = spans['confidence_predicted'] >= custom_threshold
         else:
@@ -245,10 +198,12 @@ def compare(
         # add check to evaluate multiline Annotations
         spans = spans.groupby('id_local', dropna=False).apply(lambda group: grouped(group, 'id_'))
         # add check to evaluate Annotation Sets
-        spans = spans.groupby('annotation_set_id_predicted', dropna=False).apply(lambda group: grouped(group, 'annotation_set_id'))
+        spans = spans.groupby('annotation_set_id_predicted', dropna=False).apply(
+            lambda group: grouped(group, 'annotation_set_id')
+        )
     spans = spans[RELEVANT_FOR_EVALUATION]
 
-    assert not spans.empty, 'Evaluation dataframe must contain Spans.'
+    assert not spans.empty  # this function must be able to evaluate any two docs even without annotations
 
     spans['tokenizer_true_positive'] = (
         (spans['is_correct'])
@@ -258,7 +213,9 @@ def compare(
         & (spans['document_id_local_predicted'].notna())
     )
 
-    spans['tokenizer_false_negative'] = (spans['is_correct']) & (spans['is_matched']) & (spans['document_id_local_predicted'].isna())
+    spans['tokenizer_false_negative'] = (
+        (spans['is_correct']) & (spans['is_matched']) & (spans['document_id_local_predicted'].isna())
+    )
 
     spans['tokenizer_false_positive'] = (
         (~spans['tokenizer_false_negative'])
@@ -284,17 +241,23 @@ def compare(
     )
 
     spans['clf_false_positive'] = (
-        (spans['is_correct']) & (spans['is_matched']) & (spans['document_id_local_predicted'].notna()) & (~spans['is_correct_label'])
+        (spans['is_correct'])
+        & (spans['is_matched'])
+        & (spans['document_id_local_predicted'].notna())
+        & (~spans['is_correct_label'])
     )
 
-    # Evaluate which **spans** are FN, TP, FP and keep RELEVANT_FOR_MAPPING to allow grouping of confidence measures
+    # Evaluate which **spans** are TN, TP, FP and keep RELEVANT_FOR_MAPPING to allow grouping of confidence measures
     spans['true_positive'] = (
         (spans['is_matched'])
         & (spans['is_correct'])
         & (spans['above_predicted_threshold'])
         & (~spans['duplicated'])
         & (  # Everything is correct
-            (spans['is_correct_label']) & (spans['is_correct_label_set']) & (spans['is_correct_annotation_set_id']) & (spans['is_correct_id_'])
+            (spans['is_correct_label'])
+            & (spans['is_correct_label_set'])
+            & (spans['is_correct_annotation_set_id'])
+            & (spans['is_correct_id_'])
         )
     )
 
@@ -324,7 +287,9 @@ def compare(
         label_ids_multiple = [label.id_ for label in labels if label.has_multiple_top_candidates]
         label_ids_not_multiple = [label.id_ for label in labels if not label.has_multiple_top_candidates]
         spans_not_multiple = spans[spans['label_id'].isin(label_ids_not_multiple)]
-        spans_not_multiple = spans_not_multiple.groupby(['annotation_set_id_predicted', 'label_id_predicted']).apply(prioritize_rows)
+        spans_not_multiple = spans_not_multiple.groupby(['annotation_set_id_predicted', 'label_id_predicted']).apply(
+            prioritize_rows
+        )
         spans_multiple = spans[spans['label_id'].isin(label_ids_multiple)]
         spans = pd.concat([spans_not_multiple, spans_multiple])
         spans = spans.sort_values(by='is_matched', ascending=False)
@@ -335,10 +300,10 @@ def compare(
     spans['frequency'].fillna(0, inplace=True)
     spans['frequency'] = spans['frequency'].apply(lambda x: int(x))
 
-    quality = (spans[['true_positive', 'false_positive', 'false_negative']].sum(axis=1) <= 1).all()
-    if not quality:
-        raise ValueError('One Span cannot be defined as a TP or an FP or an FN more than once.')
-
+    if not strict:
+        # one Span must not be defined as TP or FP or FN more than once
+        quality = (spans[['true_positive', 'false_positive', 'false_negative']].sum(axis=1) <= 1).all()
+        assert quality
     return spans
 
 
@@ -364,7 +329,9 @@ class ExtractionConfusionMatrix:
         data['tmp_id_'] = data['tmp_id_'].fillna('no_match')
 
         data['relation'] = data.apply(
-            lambda x: 'TP' if x['true_positive'] else ('FP' if x['false_positive'] else ('FN' if x['false_negative'] else 'TN')),
+            lambda x: 'TP'
+            if x['true_positive']
+            else ('FP' if x['false_positive'] else ('FN' if x['false_negative'] else 'TN')),
             axis=1,
         )
 
@@ -395,7 +362,9 @@ class EvaluationCalculator:
         self.fp = fp
         self.fn = fn
         self.tn = tn
-        assert zero_division in ['warn', 'error', 0, None], "The value of zero_division has to be 'warn', 'error', 0 " 'or None'
+        assert zero_division in ['warn', 'error', 0, None], (
+            "The value of zero_division has to be 'warn', 'error', 0 " 'or None'
+        )
         self.zero_division = zero_division
 
     @property
@@ -522,8 +491,6 @@ class ExtractionEvaluation:
                 ignore_below_threshold=self.ignore_below_threshold,
                 id_counter=id_counter,
             )
-            if not validate_number_of_predictions(evaluation_df=evaluation, ground_truth_doc=ground_truth):
-                logger.warning('The number of predicted Annotations is greater than the sum of ground truth Annotations and the overlapping FPs.')
             evaluations.append(evaluation)
             id_counter += len(evaluation)
 
@@ -624,9 +591,7 @@ class ExtractionEvaluation:
 
     def tn(self, search=None) -> int:
         """Return the True Negatives of all Spans."""
-        tn = len(self._query(search=search)) - self.tp(search=search) - self.fn(search=search) - self.fp(search=search)
-        assert tn == 0, 'There are no TNs for Extraction AI.'
-        return tn
+        return len(self._query(search=None)) - self.tp(search=search) - self.fn(search=search) - self.fp(search=search)
 
     def gt(self, search=None) -> int:
         """Return the number of ground-truth Annotations for a given Label."""
@@ -668,11 +633,15 @@ class ExtractionEvaluation:
 
     def precision(self, search=None) -> Optional[float]:
         """Calculate the Precision and see f1 to calculate imbalanced classes."""
-        return EvaluationCalculator(tp=self.tp(search=search), fp=self.fp(search=search), zero_division=self.zero_division).precision
+        return EvaluationCalculator(
+            tp=self.tp(search=search), fp=self.fp(search=search), zero_division=self.zero_division
+        ).precision
 
     def recall(self, search=None) -> Optional[float]:
         """Calculate the Recall and see f1 to calculate imbalanced classes."""
-        return EvaluationCalculator(tp=self.tp(search=search), fn=self.fn(search=search), zero_division=self.zero_division).recall
+        return EvaluationCalculator(
+            tp=self.tp(search=search), fn=self.fn(search=search), zero_division=self.zero_division
+        ).recall
 
     def f1(self, search=None) -> Optional[float]:
         """Calculate the F1 Score of one class.
@@ -792,7 +761,10 @@ class CategorizationEvaluation:
     @property
     def predicted_classes(self) -> List[int]:
         """List of predicted Category IDs."""
-        return [predicted.category.id_ if predicted.category is not None else -1 for ground_truth, predicted in self.documents]
+        return [
+            predicted.category.id_ if predicted.category is not None else -1
+            for ground_truth, predicted in self.documents
+        ]
 
     def confusion_matrix(self) -> pd.DataFrame:
         """Confusion matrix."""
@@ -973,15 +945,25 @@ class FileSplittingEvaluation:
         for document in prediction_documents:
             for page in document.pages():
                 if page.is_first_page is None:
-                    raise ValueError(f'Page {page.number} of prediction of {document.copy_of_id} does not have a value ' f'of is_first_page.')
+                    raise ValueError(
+                        f'Page {page.number} of prediction of {document.copy_of_id} does not have a value '
+                        f'of is_first_page.'
+                    )
         for ground_truth, prediction in zip(ground_truth_documents, prediction_documents):
             if ground_truth.id_ not in [prediction.copy_of_id, prediction.id_]:
-                raise ValueError(f'Incorrect prediction passed for {ground_truth}. Prediction has to be a copy of a ' f'ground truth Document.')
+                raise ValueError(
+                    f'Incorrect prediction passed for {ground_truth}. Prediction has to be a copy of a '
+                    f'ground truth Document.'
+                )
         projects = list({document.project for document in ground_truth_documents})
         if len(projects) > 1:
             raise ValueError('All Documents have to belong to the same Project.')
-        print(f'ground_truth_documents: {len(ground_truth_documents)}, prediction_documents: {len(prediction_documents)}')
-        self.document_pairs = [[document[0], document[1]] for document in zip(ground_truth_documents, prediction_documents)]
+        print(
+            f'ground_truth_documents: {len(ground_truth_documents)}, prediction_documents: {len(prediction_documents)}'
+        )
+        self.document_pairs = [
+            [document[0], document[1]] for document in zip(ground_truth_documents, prediction_documents)
+        ]
         print(f'project:{projects}')
         self.project = projects[0]  # because we check that exactly one Project exists across the Documents
         self.zero_division = zero_division
@@ -1068,7 +1050,10 @@ class FileSplittingEvaluation:
         """
         if search:
             if search.id_ not in self.evaluation_results_by_category:
-                raise KeyError(f'{search} is not present in {self.project}. Only Categories within a Project can be used for ' f'viewing metrics.')
+                raise KeyError(
+                    f'{search} is not present in {self.project}. Only Categories within a Project can be used for '
+                    f'viewing metrics.'
+                )
             return self.evaluation_results_by_category[search.id_][metric]
         return self.evaluation_results[metric]
 
