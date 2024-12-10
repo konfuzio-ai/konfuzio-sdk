@@ -13,6 +13,7 @@ FILE_SPLITTING_EXTRAS = [
     'mlflow==2.15.0',
     'tensorflow-cpu==2.12.0',
     'torch>=1.8.1',
+    'transformers==4.30.2',
 ]
 
 EXTRAS = {
