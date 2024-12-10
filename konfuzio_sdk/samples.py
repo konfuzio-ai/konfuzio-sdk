@@ -11,6 +11,7 @@ class LocalTextProject(Project):
         """Create basic structure of a Project."""
         super().__init__(id_=None, *args, **kwargs)
         self.set_offline()
+        # Category 1 and 2 are for Extraction AI evaluation.
         category = Category(project=self, id_=1, name='CategoryName')
         default_label_set = LabelSet(id_=1, project=self, name='CategoryName', categories=[category])
         default_label = Label(id_=6, text='DefaultLabelName', project=self, label_sets=[default_label_set])
@@ -19,6 +20,7 @@ class LocalTextProject(Project):
         default_label_set_2 = LabelSet(id_=2, project=self, name='CategoryName 2', categories=[category_2])
         default_label_2 = Label(id_=7, text='DefaultLabelName 2', project=self, label_sets=[default_label_set_2])
 
+        # Category 3 and 4 are for File Splitting AI evaluation.
         category_3 = Category(project=self, id_=3, name='FileSplittingCategory 1')
 
         category_4 = Category(project=self, id_=4, name='FileSplittingCategory 2')
@@ -33,16 +35,10 @@ class LocalTextProject(Project):
         label = Label(id_=4, text='LabelName', project=self, label_sets=[label_set])
         label_new = Label(id_=5, text='LabelName 2', project=self, label_sets=[label_set])
 
-        self.local_none_document = Document(
-            id_=1, project=self, category=category, text='Hi all, I like pizza.', dataset_status=0
-        )
+        self.local_none_document = Document(id_=1, project=self, category=category, text='Hi all, I like pizza.', dataset_status=0)
 
-        self.local_training_document = Document(
-            id_=None, project=self, category=category, text='Hi all, I like fish.', dataset_status=2
-        )
-        default_annotation_set = AnnotationSet(
-            id_=11, document=self.local_training_document, label_set=default_label_set
-        )
+        self.local_training_document = Document(id_=None, project=self, category=category, text='Hi all, I like fish.', dataset_status=2)
+        default_annotation_set = AnnotationSet(id_=11, document=self.local_training_document, label_set=default_label_set)
         _ = Annotation(
             id_=12,
             document=self.local_training_document,
@@ -73,9 +69,7 @@ class LocalTextProject(Project):
             spans=[Span(start_offset=7, end_offset=10)],
         )
 
-        document_test_a = Document(
-            id_=3, project=self, category=category, text='Hi all, I like fish.', dataset_status=3
-        )
+        document_test_a = Document(id_=3, project=self, category=category, text='Hi all, I like fish.', dataset_status=3)
         default_annotation_set_test_a = AnnotationSet(id_=13, document=document_test_a, label_set=default_label_set)
         _ = Annotation(
             id_=14,
@@ -184,9 +178,7 @@ class LocalTextProject(Project):
         document = Document(id_=7, project=self, category=category, text=doc_3_text, dataset_status=3)
         label_set_2 = LabelSet(id_=4, project=self, categories=[category])
         view_label = Label(id_=8, text='ViewLabelName', project=self, label_sets=[label_set_2])
-        view_label_date = Label(
-            id_=9, text='date', project=self, label_sets=[label_set_2], has_multiple_top_candidates=False
-        )
+        view_label_date = Label(id_=9, text='date', project=self, label_sets=[label_set_2], has_multiple_top_candidates=False)
         view_label_3 = Label(id_=10, text='ViewLabelName 3', project=self, label_sets=[label_set_2])
         view_label_4 = Label(id_=11, text='ViewLabelName 4', project=self, label_sets=[label_set_2], threshold=0.1)
         view_label_5 = Label(id_=12, text='ViewLabelName 5', project=self, label_sets=[label_set_2])
@@ -297,9 +289,7 @@ class LocalTextProject(Project):
         ##########
         # Documents to test vertical merging logic
 
-        vert_document = Document(
-            id_=18, project=self, category=category, text='p1 ra\np2 ra\fra p3\np4 ra', dataset_status=0
-        )
+        vert_document = Document(id_=18, project=self, category=category, text='p1 ra\np2 ra\fra p3\np4 ra', dataset_status=0)
         page1 = Page(id_=None, document=vert_document, start_offset=0, end_offset=8, number=1, original_size=(12, 6))
         page2 = Page(id_=None, document=vert_document, start_offset=9, end_offset=23, number=2, original_size=(12, 6))
 
@@ -377,9 +367,7 @@ a2  s4
 """
         vert_document_2 = Document(id_=8, project=self, category=category, text=vert_document_2_text, dataset_status=0)
 
-        page1 = Page(
-            id_=None, document=vert_document_2, start_offset=0, end_offset=27, number=1, original_size=(14, 14)
-        )
+        page1 = Page(id_=None, document=vert_document_2, start_offset=0, end_offset=27, number=1, original_size=(14, 14))
 
         document_bbox_2 = {
             # line 1
@@ -486,10 +474,7 @@ a2  s4
 
         # Documents with sub-Documents in them
 
-        text_3 = (
-            "Hi all,\nI like bread.\n\fI hope to get everything done soon.\n\fMorning,\n\fI'm glad to see you."
-            '\n\fMorning,'
-        )
+        text_3 = "Hi all,\nI like bread.\n\fI hope to get everything done soon.\n\fMorning,\n\fI'm glad to see you." '\n\fMorning,'
         document_3 = Document(id_=9, project=self, category=category_3, text=text_3, dataset_status=3)
         _ = Page(
             id_=None,
@@ -671,10 +656,7 @@ a2  s4
             copy_of_id=17,
         )
 
-        text_9 = (
-            'Hi all,\nI like bread.\nWhat are your plans for today?\nEvening,\nI like it.\nHow was your week? \n'
-            'Evening,'
-        )
+        text_9 = 'Hi all,\nI like bread.\nWhat are your plans for today?\nEvening,\nI like it.\nHow was your week? \n' 'Evening,'
         document_9 = Document(id_=15, project=self, category=category_4, text=text_9, dataset_status=3)
         _ = Page(
             id_=None,
