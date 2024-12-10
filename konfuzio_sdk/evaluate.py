@@ -120,10 +120,10 @@ def get_overlapping_fp(unfiltered_df: pd.DataFrame):
     if len(fp_rows) == 0:
         return fp_rows
 
-    fp_df = fp_rows[['start_offset_predicted', 'end_offset_predicted']].reset_index().assign(original_index=lambda x: x.index)
+    fp_df = fp_rows[['start_offset_predicted', 'end_offset_predicted']]
     gt_df = unfiltered_df[['start_offset', 'end_offset']].reset_index(drop=True)
 
-    cross_df = fp_df.merge(gt_df, how='cross')
+    cross_df = pd.merge(fp_df.reset_index().rename(columns={'index': 'original_index'}), gt_df.reset_index(drop=True), how='cross')
 
     try:
         overlaps = (cross_df['start_offset_predicted'] < cross_df['end_offset']) & (cross_df['start_offset'] < cross_df['end_offset_predicted'])
@@ -132,7 +132,10 @@ def get_overlapping_fp(unfiltered_df: pd.DataFrame):
 
     overlapping_indices = cross_df[overlaps]['original_index'].unique()
 
-    return fp_rows.loc[overlapping_indices]
+    if len(overlapping_indices) == 0:
+        return fp_rows.iloc[0:0]
+    else:
+        return fp_rows.loc[overlapping_indices]
 
 
 def validate_number_of_predictions(ground_truth_doc: Document, evaluation_df: pd.DataFrame) -> bool:
