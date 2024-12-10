@@ -304,6 +304,9 @@ class BaseModel(metaclass=abc.ABCMeta):
 
         :return: None if build=False, otherwise a tuple of (saved_bento, archive_path).
         """
+        # get the current directory to restore later
+        working_dir = os.getcwd()
+
         if output_dir and not build:
             raise ValueError('Cannot specify output_dir without build=True')
 
@@ -319,17 +322,24 @@ class BaseModel(metaclass=abc.ABCMeta):
         logger.info(f'Model saved in the local BentoML store: {saved_model}')
 
         if not build:
+            # restore the working directory
+            # see https://github.com/bentoml/BentoML/issues/3403
+            os.chdir(working_dir)
             return
 
         saved_bento = self.build_bento(bento_model=saved_model)
         logger.info(f'Bento created: {saved_bento}')
 
         if not output_dir:
+            # restore the working directory
+            os.chdir(working_dir)
             return saved_bento, None  # None = no archive saved
 
         archive_path = saved_bento.export(output_dir)
         logger.info(f'Bento archive saved: {archive_path}')
 
+        # restore the working directory
+        os.chdir(working_dir)
         return saved_bento, archive_path
 
 

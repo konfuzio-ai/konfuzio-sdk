@@ -78,6 +78,7 @@ setuptools.setup(
         'konfuzio_sdk.bento.base',
         'konfuzio_sdk.bento.extraction',
         'konfuzio_sdk.bento.categorization',
+        'konfuzio_sdk.bento.file_splitting',
         'konfuzio_sdk.tokenizer',
         'konfuzio_sdk.trainer',
     ],
@@ -85,7 +86,7 @@ setuptools.setup(
     include_package_data=True,
     entry_points={'console_scripts': ['konfuzio_sdk=konfuzio_sdk.cli:main']},
     install_requires=[
-        'bentoml==1.2.18',
+        'bentoml==1.2.20',
         'fastapi<0.111.0',  # Used to serve additional endpoints in Bento services
         'certifi==2023.7.22',
         'cloudpickle==2.2.1',  # Used to pickle objects

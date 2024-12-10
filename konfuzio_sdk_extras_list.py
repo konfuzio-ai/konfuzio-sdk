@@ -8,6 +8,14 @@ CATEGORIZATION_EXTRAS = [
     'timm==0.6.7',
 ]
 
+FILE_SPLITTING_EXTRAS = [
+    'datasets==2.14.6',
+    'mlflow==2.15.0',
+    'tensorflow-cpu==2.12.0',
+    'torch>=1.8.1',
+    'transformers==4.30.2',
+]
+
 EXTRAS = {
     'dev': [
         'autodoc_pydantic==2.2.0',
@@ -35,13 +43,11 @@ EXTRAS = {
             [
                 'accelerate==0.20.1',
                 'chardet==5.1.0',
-                'datasets==2.14.6',
                 'evaluate==0.4.1',
                 'spacy>=2.3.5,<3.8.0',
-                'tensorflow-cpu==2.12.0',
-                'mlflow==2.15.0',
             ]
             + CATEGORIZATION_EXTRAS
+            + FILE_SPLITTING_EXTRAS
         )
     ),
 }
