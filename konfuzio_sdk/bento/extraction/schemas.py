@@ -35,7 +35,7 @@ class ExtractRequest20240117(BaseModel):
     text: Optional[str]
     bboxes: Optional[Dict[int, Bbox]]
     pages: Optional[List[ExtractRequest20240117Page]]
-    raw_ocr_response: Optional[Dict, List]
+    raw_ocr_response: Optional[Union[Dict, List]]
 
 
 class ExtractResponse20240117(BaseModel):
