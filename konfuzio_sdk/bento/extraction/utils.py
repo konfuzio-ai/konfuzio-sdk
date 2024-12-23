@@ -205,6 +205,7 @@ def convert_document_to_request(document: Document, schema: BaseModel = ExtractR
             )
             for page in document.pages()
         ]
+        doc_bbox = document.get_bbox()
         converted = schema(
             text=document.text,
             bboxes={
@@ -217,7 +218,7 @@ def convert_document_to_request(document: Document, schema: BaseModel = ExtractR
                     'top': v.top,
                     'bottom': v.bottom,
                     'text': document.text[k],
-                    'line_index': document.get_bbox()[str(k)]['line_index'],
+                    'line_index': doc_bbox[str(k)].get('line_index') or doc_bbox[str(k)]['line_number'] - 1,
                 }
                 for k, v in document.bboxes.items()
             },
