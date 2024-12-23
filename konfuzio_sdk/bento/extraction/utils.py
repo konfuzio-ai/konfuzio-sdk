@@ -217,7 +217,7 @@ def convert_document_to_request(document: Document, schema: BaseModel = ExtractR
                     'top': v.top,
                     'bottom': v.bottom,
                     'text': document.text[k],
-                    'line_index': document.get_bbox()[k]['line_index']
+                    'line_index': document.get_bbox()[str(k)]['line_index']
                 }
                 for k, v in document.bboxes.items()
             },
