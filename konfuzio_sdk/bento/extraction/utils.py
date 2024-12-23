@@ -1,6 +1,5 @@
 """Utility functions for adapting Konfuzio concepts to be used with Pydantic models."""
 import typing as t
-import logging
 
 from pydantic import BaseModel
 
@@ -41,6 +40,37 @@ def prepare_request(request: BaseModel, project: Project, konfuzio_sdk_version: 
                 'y1': bbox.y1,
                 'page_number': bbox.page_number,
                 'text': bbox.text,
+            }
+            # Backwards compatibility with Konfuzio SDK versions < 0.3.
+            # In newer versions, the top and bottom values are not needed.
+            if konfuzio_sdk_version and konfuzio_sdk_version < '0.3':
+                page = next(page for page in request.pages if page.number == bbox.page_number)
+                bboxes[str(bbox_id)]['top'] = round(page.original_size[1] - bbox.y0, 4)
+                bboxes[str(bbox_id)]['bottom'] = round(page.original_size[1] - bbox.y1, 4)
+        document = Document(
+            id_=document_id,
+            text=request.text,
+            bbox=bboxes,
+            project=project,
+            category=category,
+        )
+        for page in request.pages:
+            p = Page(id_=page.number, document=document, number=page.number, original_size=page.original_size)
+            if page.segmentation:
+                p._segmentation = page.segmentation
+            if page.image:
+                p.image_bytes = page.image
+    elif request.__class__.__name__ == 'ExtractRequest20240117':
+        bboxes = {}
+        for bbox_id, bbox in request.bboxes.items():
+            bboxes[str(bbox_id)] = {
+                'x0': bbox.x0,
+                'x1': bbox.x1,
+                'y0': bbox.y0,
+                'y1': bbox.y1,
+                'page_number': bbox.page_number,
+                'text': bbox.text,
+                'line_index': bbox.line_index,
             }
             # Backwards compatibility with Konfuzio SDK versions < 0.3.
             # In newer versions, the top and bottom values are not needed.
@@ -117,6 +147,7 @@ def process_response(result, schema: BaseModel = ExtractResponse20240117) -> Bas
         return schema(annotation_sets=annotations_result)
     elif schema.__name__ == 'ExtractResponseForLegacyTrainer20240912':
         import json
+
         class JSONEncoder(json.JSONEncoder):
             def default(self, obj):
                 if hasattr(obj, 'to_json'):
@@ -159,6 +190,34 @@ def convert_document_to_request(document: Document, schema: BaseModel = ExtractR
                     'top': v.top,
                     'bottom': v.bottom,
                     'text': document.text[k],
+                }
+                for k, v in document.bboxes.items()
+            },
+            pages=pages,
+        )
+    elif schema.__name__ == 'ExtractRequest20241223':
+        pages = [
+            ExtractRequest20240117Page(
+                number=page.number,
+                image=page.image_bytes,
+                original_size=page._original_size,
+                segmentation=page._segmentation,
+            )
+            for page in document.pages()
+        ]
+        converted = schema(
+            text=document.text,
+            bboxes={
+                k: {
+                    'x0': v.x0,
+                    'x1': v.x1,
+                    'y0': v.y0,
+                    'y1': v.y1,
+                    'page_number': v.page.number,
+                    'top': v.top,
+                    'bottom': v.bottom,
+                    'text': document.text[k],
+                    'line_index': v.line_index,
                 }
                 for k, v in document.bboxes.items()
             },
@@ -219,9 +278,12 @@ def convert_response_to_annotations(
     elif response_schema_class.__name__ == 'ExtractResponseForLegacyTrainer20240912':
         """Restore Pandas Dataframe which has been converted to JSON for sending via API."""
         import json
+
         result = response.json()
+
         def my_convert(res_dict):
             import pandas as pd
+
             new_dict = {}
             for k, v in res_dict.items():
                 if isinstance(v, dict):

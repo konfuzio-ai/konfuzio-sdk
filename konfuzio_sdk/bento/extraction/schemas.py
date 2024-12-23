@@ -37,6 +37,25 @@ class ExtractRequest20240117(BaseModel):
     pages: Optional[List[ExtractRequest20240117Page]]
 
 
+class ExtractRequest20241223(BaseModel):
+    """Describe a scheme for the extraction request on 23/12/2024."""
+
+    class BboxExtractRequest20241223(BaseModel):
+        """Describe a scheme for the Bbox class on 23/12/2024."""
+
+        x0: float
+        x1: float
+        y0: float
+        y1: float
+        page_number: int
+        text: Optional[str]
+        line_index: int
+
+    text: Optional[str]
+    bboxes: Optional[Dict[int, BboxExtractRequest20241223]]
+    pages: Optional[List[ExtractRequest20240117Page]]
+
+
 class ExtractResponse20240117(BaseModel):
     """Describe a scheme for the extraction response on 17/01/2024."""
 
