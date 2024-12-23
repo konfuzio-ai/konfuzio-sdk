@@ -46,6 +46,7 @@ def prepare_request(request: BaseModel, project: Project, konfuzio_sdk_version: 
             bbox=bboxes,
             project=project,
         )
+        document.raw_ocr_response = request.raw_ocr_response
         for page in request.pages:
             p = Page(id_=page.id, document=document, number=page.number, original_size=page.original_size)
             if page.segmentation:
