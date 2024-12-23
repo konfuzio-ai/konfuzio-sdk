@@ -135,6 +135,31 @@ class BaseModel(metaclass=abc.ABCMeta):
 
         return model
 
+
+    def get_sdk_version_for_bento(self):
+        """
+        Determine the appropriate Konfuzio SDK version or package link for building a Bento file, based on environment variables.
+
+        If running within a pytest environment, return the SDK from a specific Git branch (default: 'master') using the
+        'BRANCH_NAME' environment variable. Otherwise, return the stable SDK version constrained to `self.konfuzio_sdk_version`.
+        """
+
+        def is_pytest_running():
+            return "PYTEST_CURRENT_TEST" in os.environ
+
+        # Determine which version of konfuzio-sdk to use
+        if 'BRANCH_NAME' in os.environ:
+            branch_name = os.environ['BRANCH_NAME']
+        else:
+            branch_name = 'master'
+
+        konfuzio_sdk_package = (
+            f'https://github.com/konfuzio-ai/konfuzio-sdk/archive/refs/heads/{branch_name}.zip#egg=konfuzio-sdk'
+            if is_pytest_running()
+            else f'konfuzio-sdk<={self.konfuzio_sdk_version}'
+        )
+        return konfuzio_sdk_package
+
     def reduce_model_weight(self):
         """Remove all non-strictly necessary parameters before saving."""
         self.project.lose_weight()

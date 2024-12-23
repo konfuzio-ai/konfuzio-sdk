@@ -238,6 +238,7 @@ class AbstractCategorizationAI(BaseModel, metaclass=abc.ABCMeta):
             'requires_images': getattr(self, 'requires_images', False),
             'requires_segmentation': getattr(self, 'requires_segmentation', False),
             'requires_text': getattr(self, 'requires_text', False),
+            'requires_raw_ocr': getattr(self, 'requires_raw_ocr', False),
             'request': 'CategorizeRequest20240729',
             'response': 'CategorizeResponse20240729',
         }

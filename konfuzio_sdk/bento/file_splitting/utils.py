@@ -137,6 +137,7 @@ def convert_document_to_request(document: Document, schema: BaseModel = SplitReq
                 for k, v in document.bboxes.items()
             },
             pages=pages,
+            raw_ocr_response=document.raw_ocr_response if hasattr(document, 'raw_ocr_response') else None,
         )
     else:
         raise NotImplementedError(NOT_IMPLEMENTED_ERROR_MESSAGE)

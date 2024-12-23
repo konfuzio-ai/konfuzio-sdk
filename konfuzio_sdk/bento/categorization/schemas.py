@@ -35,6 +35,7 @@ class CategorizeRequest20240729(BaseModel):
     text: Optional[str]
     bboxes: Optional[Dict[int, Bbox]]
     pages: Optional[List[CategorizeRequest20240729Page]]
+    raw_ocr_response: Optional[Dict, List]
 
 
 class CategorizeResponse20240729(BaseModel):

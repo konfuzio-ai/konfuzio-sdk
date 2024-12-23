@@ -46,6 +46,7 @@ class SplitRequest20240930(BaseModel):
     text: str
     bboxes: Optional[Dict[int, Bbox20240930]]
     pages: Optional[List[SplitRequest20240930Page]]
+    raw_ocr_response: Optional[Dict, List]
 
 
 class SplitResponse20240930(BaseModel):
