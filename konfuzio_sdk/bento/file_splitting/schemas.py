@@ -1,5 +1,5 @@
 """Define pydantic models for request and response from the Splitting AI."""
-from typing import Dict, List, Optional, Tuple
+from typing import Union, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel
 

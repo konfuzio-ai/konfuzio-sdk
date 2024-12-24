@@ -1,5 +1,5 @@
 """Define pydantic models for request and response from the Extraction AI."""
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Union, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, RootModel
 

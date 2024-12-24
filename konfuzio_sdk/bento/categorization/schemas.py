@@ -1,5 +1,5 @@
 """Define pydantic models for request and response from the Categorization AI."""
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Union, List, Optional, Tuple
 
 from pydantic import BaseModel
 
