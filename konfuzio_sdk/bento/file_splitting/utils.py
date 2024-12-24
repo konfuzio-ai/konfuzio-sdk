@@ -46,6 +46,7 @@ def prepare_request(request: BaseModel, project: Project, konfuzio_sdk_version: 
             bbox=bboxes,
             project=project,
         )
+        document.raw_ocr_response = request.raw_ocr_response
         for page in request.pages:
             p = Page(id_=page.id, document=document, number=page.number, original_size=page.original_size)
             if page.segmentation:
@@ -137,6 +138,7 @@ def convert_document_to_request(document: Document, schema: BaseModel = SplitReq
                 for k, v in document.bboxes.items()
             },
             pages=pages,
+            raw_ocr_response=document.raw_ocr_response if hasattr(document, 'raw_ocr_response') else None,
         )
     else:
         raise NotImplementedError(NOT_IMPLEMENTED_ERROR_MESSAGE)

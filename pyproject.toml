@@ -1,6 +1,6 @@
 [tool.ruff]
 exclude = [".git", "*build", "venv"]
-line-length = 120
+line-length = 150
 target-version = "py38"
 
 [tool.ruff.format]

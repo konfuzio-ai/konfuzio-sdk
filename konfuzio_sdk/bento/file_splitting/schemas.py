@@ -1,5 +1,5 @@
 """Define pydantic models for request and response from the Splitting AI."""
-from typing import Dict, List, Optional, Tuple
+from typing import Union, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel
 
@@ -46,6 +46,7 @@ class SplitRequest20240930(BaseModel):
     text: str
     bboxes: Optional[Dict[int, Bbox20240930]]
     pages: Optional[List[SplitRequest20240930Page]]
+    raw_ocr_response: Optional[Union[Dict, List]]
 
 
 class SplitResponse20240930(BaseModel):

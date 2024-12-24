@@ -1207,6 +1207,7 @@ class SplittingAI:
             'requires_images': getattr(self, 'requires_images', False),
             'requires_segmentation': getattr(self, 'requires_segmentation', False),
             'requires_text': getattr(self, 'requires_text', False),
+            'requires_raw_ocr': getattr(self, 'requires_raw_ocr', False),
             'request': 'SplitRequest20240930',
             'response': 'SplitResponse20240930',
         }

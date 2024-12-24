@@ -1,5 +1,5 @@
 """Define pydantic models for request and response from the Extraction AI."""
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Union, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, RootModel
 
@@ -35,6 +35,7 @@ class ExtractRequest20240117(BaseModel):
     text: Optional[str]
     bboxes: Optional[Dict[int, Bbox]]
     pages: Optional[List[ExtractRequest20240117Page]]
+    raw_ocr_response: Optional[Union[Dict, List]]
 
 
 class ExtractRequest20241223(BaseModel):
