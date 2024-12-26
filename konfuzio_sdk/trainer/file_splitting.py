@@ -49,7 +49,7 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
             raise ValueError('At least one Category has to have Documents for training the model.')
         for category in nonempty_categories:
             if not category.test_documents():
-                raise ValueError(f'{category} does not have test Documents.')
+                logger.warning(f'{category} does not have test Documents.')
         self.categories = categories
         self.project = self.categories[0].project  # we ensured that at least one Category is present
         self.documents = [document for category in self.categories for document in category.documents()]
@@ -150,8 +150,7 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
         model = super(AbstractFileSplittingModel, AbstractFileSplittingModel).load_model(pickle_path, max_ram)
         if not AbstractFileSplittingModel.has_compatible_interface(model):
             raise TypeError(
-                "Loaded model's interface is not compatible with any AIs. Please provide a model that has all the "
-                'abstract methods implemented.'
+                "Loaded model's interface is not compatible with any AIs. Please provide a model that has all the " 'abstract methods implemented.'
             )
         return model
 
@@ -317,9 +316,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         txt_x = tf.keras.layers.Flatten()(txt_x)
         txt_x = tf.keras.layers.Dense(units=256 * self.scale, activation='relu')(txt_x)
         img_input = tf.keras.Input(shape=(224, 224, 3), name='image')
-        img_x = tf.keras.layers.Conv2D(
-            input_shape=(224, 224, 3), filters=64, kernel_size=(3, 3), padding='same', activation='relu'
-        )(img_input)
+        img_x = tf.keras.layers.Conv2D(input_shape=(224, 224, 3), filters=64, kernel_size=(3, 3), padding='same', activation='relu')(img_input)
         img_x = tf.keras.layers.Conv2D(filters=64, kernel_size=(3, 3), padding='same', activation='relu')(img_x)
         img_x = tf.keras.layers.MaxPool2D(pool_size=(2, 2), strides=(2, 2))(img_x)
         img_x = tf.keras.layers.Conv2D(filters=128, kernel_size=(3, 3), padding='same', activation='relu')(img_x)
@@ -533,9 +530,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
             previous_page_text = '[SEP]' * 20
         return previous_page_text + page.text
 
-    def _preprocess_documents(
-        self, data: List[Document], return_images: bool = False
-    ) -> (List[PIL.Image.Image], List[str], List[int]):
+    def _preprocess_documents(self, data: List[Document], return_images: bool = False) -> (List[PIL.Image.Image], List[str], List[int]):
         """
         Take a list of Documents and obtain Pages' images, texts and labels of first or non-first class.
 
@@ -577,9 +572,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         try:
             logger.info(f'Using transformers cache located at: {path} to load the model and tokenizer.')
             transformers_tokenizer = transformers.AutoTokenizer.from_pretrained(self.model_name, cache_dir=path)
-            model = transformers.AutoModelForSequenceClassification.from_pretrained(
-                self.model_name, cache_dir=path, num_labels=2
-            )
+            model = transformers.AutoModelForSequenceClassification.from_pretrained(self.model_name, cache_dir=path, num_labels=2)
             logger.info(f'Model and tokenizer {self.model_name} loaded successfully from the transformers cache.')
         # if the model is not found in the cache, download it from the HuggingFace Hub
         except OSError:
@@ -676,9 +669,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         # check if both are not None then use MLflow
         self.use_mlflow = experiment_name is not None and tracking_uri is not None
         if self.use_mlflow:
-            logger.info(
-                f'Checking MLflow connection using the provided tracking URI: {tracking_uri} and experiment_name: {experiment_name}'
-            )
+            logger.info(f'Checking MLflow connection using the provided tracking URI: {tracking_uri} and experiment_name: {experiment_name}')
             # disabling MLflow artifacts logging
             os.environ['HF_MLFLOW_LOG_ARTIFACTS'] = '0'
             try:
@@ -689,9 +680,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
                 # checking if the experiment exists
                 mlflow_experiment = mlflow_client.get_experiment_by_name(experiment_name)
                 if mlflow_experiment is None:
-                    raise ValueError(
-                        f'Tracking URI `{tracking_uri}` does not have an Experiment with name `{experiment_name}`'
-                    )
+                    raise ValueError(f'Tracking URI `{tracking_uri}` does not have an Experiment with name `{experiment_name}`')
                 _ = mlflow.set_experiment(experiment_name)
                 # starting the MLflow run
                 mlflow.start_run(run_name=f'splitting_run_{get_timestamp()}')
@@ -780,9 +769,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         concatenated_text = page.text
         if previous_page is not None:
             concatenated_text = self._concat_pages_text(page=page, previous_page=previous_page)
-        tokenized_text = self.transformers_tokenizer(
-            concatenated_text, truncation=True, padding='max_length', return_tensors='pt'
-        )
+        tokenized_text = self.transformers_tokenizer(concatenated_text, truncation=True, padding='max_length', return_tensors='pt')
         # move tokenized_text tensors to device
         tokenized_text = {key: value.to(device) for key, value in tokenized_text.items()}
         with torch.no_grad():
@@ -926,10 +913,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
             cur_first_page_strings = category.exclusive_first_page_strings(tokenizer=self.tokenizer)
             if not cur_first_page_strings:
                 if allow_empty_categories:
-                    logger.warning(
-                        f'No exclusive first-page strings were found for {category}, so it will not be used '
-                        f'at prediction.'
-                    )
+                    logger.warning(f'No exclusive first-page strings were found for {category}, so it will not be used ' f'at prediction.')
                 else:
                     raise ValueError(f'No exclusive first-page strings were found for {category}.')
 
@@ -949,13 +933,9 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         page.is_first_page_confidence = 0
         for category in self.categories:
             cur_first_page_strings = category.exclusive_first_page_strings(tokenizer=self.tokenizer)
-            intersection = {span.offset_string.strip('\f').strip('\n') for span in page.spans()}.intersection(
-                cur_first_page_strings
-            )
+            intersection = {span.offset_string.strip('\f').strip('\n') for span in page.spans()}.intersection(cur_first_page_strings)
             # we set a minimum set size to avoid false positives and pages with very few strings
-            minimum_set_size = min(
-                len(cur_first_page_strings), len({span.offset_string.strip('\f').strip('\n') for span in page.spans()})
-            )
+            minimum_set_size = min(len(cur_first_page_strings), len({span.offset_string.strip('\f').strip('\n') for span in page.spans()}))
             # if the intersection is at least 1/4 of the minimum set size, we mark the page as first
             if len(intersection) > minimum_set_size / 4:
                 page.is_first_page = True
@@ -979,16 +959,9 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         if not self.categories:
             raise AttributeError(f'{self} requires Categories.')
 
-        empty_first_page_strings = [
-            category
-            for category in self.categories
-            if not category.exclusive_first_page_strings(tokenizer=self.tokenizer)
-        ]
+        empty_first_page_strings = [category for category in self.categories if not category.exclusive_first_page_strings(tokenizer=self.tokenizer)]
         if len(empty_first_page_strings) == len(self.categories):
-            raise ValueError(
-                f'Cannot run prediction as none of the Categories in {self.project} have '
-                f'_exclusive_first_page_strings.'
-            )
+            raise ValueError(f'Cannot run prediction as none of the Categories in {self.project} have ' f'_exclusive_first_page_strings.')
 
     # end check
 
@@ -1055,12 +1028,7 @@ class SplittingAI:
                 self.model.predict(page=page)
             # if split_on_blank_pages is True, we mark pages that are preceded by blank pages and that themselves
             # are not empty as first pages
-            if (
-                split_on_blank_pages
-                and previous_page is not None
-                and previous_page.text.strip() == ''
-                and page.text.strip() != ''
-            ):
+            if split_on_blank_pages and previous_page is not None and previous_page.text.strip() == '' and page.text.strip() != '':
                 page.is_first_page = True
                 page.is_first_page_confidence = 1
             # Why is done the in both cases?
@@ -1068,9 +1036,7 @@ class SplittingAI:
 
         return [processed_document]
 
-    def _suggest_page_split(
-        self, document: Document, split_on_blank_pages: bool = False, device: str = 'cpu'
-    ) -> List[Document]:
+    def _suggest_page_split(self, document: Document, split_on_blank_pages: bool = False, device: str = 'cpu') -> List[Document]:
         """
         Create a list of Sub-Documents built from the original Document, split.
 
@@ -1096,12 +1062,7 @@ class SplittingAI:
                 self.model.predict(page=page)
             # if split_on_blank_pages is True, we mark pages that are preceded by blank pages and that themselves
             # are not empty as first pages
-            if (
-                split_on_blank_pages
-                and previous_page is not None
-                and previous_page.text.strip() == ''
-                and page.text.strip() != ''
-            ):
+            if split_on_blank_pages and previous_page is not None and previous_page.text.strip() == '' and page.text.strip() != '':
                 page.is_first_page = True
                 page.is_first_page_confidence = 1
             # if the current page is marked as first page, we add it to the list of suggested splits
@@ -1115,21 +1076,11 @@ class SplittingAI:
             last_page = document_tokenized.pages()[-1]
             for page_i, split_i in enumerate(suggested_splits):
                 if page_i == 0:
-                    split_docs.append(
-                        document_tokenized.create_subdocument_from_page_range(
-                            first_page, suggested_splits[page_i + 1], include=False
-                        )
-                    )
+                    split_docs.append(document_tokenized.create_subdocument_from_page_range(first_page, suggested_splits[page_i + 1], include=False))
                 elif page_i == len(suggested_splits) - 1:
-                    split_docs.append(
-                        document_tokenized.create_subdocument_from_page_range(split_i, last_page, include=True)
-                    )
+                    split_docs.append(document_tokenized.create_subdocument_from_page_range(split_i, last_page, include=True))
                 else:
-                    split_docs.append(
-                        document_tokenized.create_subdocument_from_page_range(
-                            split_i, suggested_splits[page_i + 1], include=False
-                        )
-                    )
+                    split_docs.append(document_tokenized.create_subdocument_from_page_range(split_i, suggested_splits[page_i + 1], include=False))
         return split_docs
 
     def propose_split_documents(
@@ -1158,13 +1109,9 @@ class SplittingAI:
         if self.model.requires_images:
             document.get_images()
         if return_pages:
-            processed = self._suggest_first_pages(
-                document=document, inplace=inplace, split_on_blank_pages=split_on_blank_pages, device=device
-            )
+            processed = self._suggest_first_pages(document=document, inplace=inplace, split_on_blank_pages=split_on_blank_pages, device=device)
         else:
-            processed = self._suggest_page_split(
-                document=document, split_on_blank_pages=split_on_blank_pages, device=device
-            )
+            processed = self._suggest_page_split(document=document, split_on_blank_pages=split_on_blank_pages, device=device)
         return processed
 
     def evaluate_full(self, use_training_docs: bool = False, zero_division='warn') -> FileSplittingEvaluation:
