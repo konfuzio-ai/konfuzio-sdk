@@ -150,7 +150,7 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
         model = super(AbstractFileSplittingModel, AbstractFileSplittingModel).load_model(pickle_path, max_ram)
         if not AbstractFileSplittingModel.has_compatible_interface(model):
             raise TypeError(
-                "Loaded model's interface is not compatible with any AIs. Please provide a model that has all the " 'abstract methods implemented.'
+                "Loaded model's interface is not compatible with any AIs. Please provide a model that has all the abstract methods implemented."
             )
         return model
 
@@ -913,7 +913,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
             cur_first_page_strings = category.exclusive_first_page_strings(tokenizer=self.tokenizer)
             if not cur_first_page_strings:
                 if allow_empty_categories:
-                    logger.warning(f'No exclusive first-page strings were found for {category}, so it will not be used ' f'at prediction.')
+                    logger.warning(f'No exclusive first-page strings were found for {category}, so it will not be used at prediction.')
                 else:
                     raise ValueError(f'No exclusive first-page strings were found for {category}.')
 
@@ -961,7 +961,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
 
         empty_first_page_strings = [category for category in self.categories if not category.exclusive_first_page_strings(tokenizer=self.tokenizer)]
         if len(empty_first_page_strings) == len(self.categories):
-            raise ValueError(f'Cannot run prediction as none of the Categories in {self.project} have ' f'_exclusive_first_page_strings.')
+            raise ValueError(f'Cannot run prediction as none of the Categories in {self.project} have _exclusive_first_page_strings.')
 
     # end check
 
