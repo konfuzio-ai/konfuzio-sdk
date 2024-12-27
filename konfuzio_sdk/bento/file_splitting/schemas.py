@@ -1,5 +1,5 @@
 """Define pydantic models for request and response from the Splitting AI."""
-from typing import Union, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel
 
@@ -42,6 +42,14 @@ class Bbox20240930(BaseModel):
 
 class SplitRequest20240930(BaseModel):
     """Describe a scheme for the splitting request on 30/09/2024."""
+
+    text: str
+    bboxes: Optional[Dict[int, Bbox20240930]]
+    pages: Optional[List[SplitRequest20240930Page]]
+
+
+class SplitRequest20241227(BaseModel):
+    """Describe a scheme for the splitting request on 27/12/2024."""
 
     text: str
     bboxes: Optional[Dict[int, Bbox20240930]]

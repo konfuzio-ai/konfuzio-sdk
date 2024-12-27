@@ -5,11 +5,10 @@ from pydantic import BaseModel
 
 from konfuzio_sdk.data import CategoryAnnotation, Document, Page, Project
 
-from .schemas import CategorizeRequest20240729, CategorizeRequest20240729Page, CategorizeResponse20240729
+from .schemas import CategorizeRequest20240729Page, CategorizeRequest20241227, CategorizeResponse20240729
 
 NOT_IMPLEMENTED_ERROR_MESSAGE = (
-    'The request does not adhere to any schema version. Please modify the request to fit one of the schemas from '
-    'bento/categorization/schemas.py.'
+    'The request does not adhere to any schema version. Please modify the request to fit one of the schemas from ' 'bento/categorization/schemas.py.'
 )
 
 
@@ -24,6 +23,36 @@ def prepare_request(request: BaseModel, project: Project, konfuzio_sdk_version: 
     document_id = max((doc.id_ for doc in project._documents if doc.id_), default=0) + 1
 
     if request.__class__.__name__ == 'CategorizeRequest20240729':
+        bboxes = {}
+        for bbox_id, bbox in request.bboxes.items():
+            bboxes[str(bbox_id)] = {
+                'x0': bbox.x0,
+                'x1': bbox.x1,
+                'y0': bbox.y0,
+                'y1': bbox.y1,
+                'page_number': bbox.page_number,
+                'text': bbox.text,
+            }
+            # Backwards compatibility with Konfuzio SDK versions < 0.3.
+            # In newer versions, the top and bottom values are not needed.
+            if konfuzio_sdk_version:
+                if konfuzio_sdk_version < '0.3':
+                    page = next(page for page in request.pages if page.number == bbox.page_number)
+                    bboxes[str(bbox_id)]['top'] = round(page.original_size[1] - bbox.y0, 4)
+                    bboxes[str(bbox_id)]['bottom'] = round(page.original_size[1] - bbox.y1, 4)
+        document = Document(
+            id_=document_id,
+            text=request.text,
+            bbox=bboxes,
+            project=project,
+        )
+        for page in request.pages:
+            p = Page(id_=page.number, document=document, number=page.number, original_size=page.original_size)
+            if page.segmentation:
+                p._segmentation = page.segmentation
+            if page.image:
+                p.image_bytes = page.image
+    elif request.__class__.__name__ == 'CategorizeRequest20241227':
         bboxes = {}
         for bbox_id, bbox in request.bboxes.items():
             bboxes[str(bbox_id)] = {
@@ -90,7 +119,7 @@ def process_response(result, schema: BaseModel = CategorizeResponse20240729) -> 
     return schema(pages=pages_result)
 
 
-def convert_document_to_request(document: Document, schema: BaseModel = CategorizeRequest20240729) -> BaseModel:
+def convert_document_to_request(document: Document, schema: BaseModel = CategorizeRequest20241227) -> BaseModel:
     """
     Receive a Document and convert it into a request in accordance to a passed schema.
 
@@ -124,6 +153,33 @@ def convert_document_to_request(document: Document, schema: BaseModel = Categori
                 for k, v in document.bboxes.items()
             },
             pages=pages,
+        )
+    elif schema.__name__ == 'CategorizeRequest20241227':
+        pages = [
+            CategorizeRequest20240729Page(
+                number=page.number,
+                image=page.image_bytes,
+                original_size=page._original_size,
+                segmentation=page._segmentation,
+            )
+            for page in document.pages()
+        ]
+        converted = schema(
+            text=document.text,
+            bboxes={
+                k: {
+                    'x0': v.x0,
+                    'x1': v.x1,
+                    'y0': v.y0,
+                    'y1': v.y1,
+                    'page_number': v.page.number,
+                    'top': v.top,
+                    'bottom': v.bottom,
+                    'text': document.text[k],
+                }
+                for k, v in document.bboxes.items()
+            },
+            pages=pages,
             raw_ocr_response=document.raw_ocr_response if hasattr(document, 'raw_ocr_response') else None,
         )
     else:
@@ -131,9 +187,7 @@ def convert_document_to_request(document: Document, schema: BaseModel = Categori
     return converted
 
 
-def convert_response_to_categorized_pages(
-    response: BaseModel, document: Document, mappings: Optional[dict] = None
-) -> Document:
+def convert_response_to_categorized_pages(response: BaseModel, document: Document, mappings: Optional[dict] = None) -> Document:
     """
     Receive a CategorizeResponse and convert it into a list of categorized Pages to be added to the Document.
 
@@ -157,9 +211,7 @@ def convert_response_to_categorized_pages(
                 category_id = label_set_mappings.get(category.category_id, category.category_id)
                 confidence = category.confidence
                 page_to_update.add_category_annotation(
-                    category_annotation=CategoryAnnotation(
-                        category=document.project.get_category_by_id(category_id), confidence=confidence
-                    )
+                    category_annotation=CategoryAnnotation(category=document.project.get_category_by_id(category_id), confidence=confidence)
                 )
         return document
     else:
