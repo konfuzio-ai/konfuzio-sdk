@@ -7,7 +7,7 @@ from typing import Any
 import bentoml
 from fastapi import Depends, FastAPI, HTTPException
 
-from .schemas import SplitRequest20240930, SplitResponse20240930
+from .schemas import SplitRequest20241227, SplitResponse20240930
 from .utils import prepare_request, process_response
 
 # Use relative or top module import based on whether this is run as an actual service or imported
@@ -39,19 +39,17 @@ app = FastAPI()
 class FileSplittingService(PicklableModelService):
     model_ref = bentoml.models.get(ai_model_name)
 
-    @bentoml.api(input_spec=SplitRequest20240930)
+    @bentoml.api(input_spec=SplitRequest20241227)
     @handle_exceptions
     async def split(self, ctx: bentoml.Context, **request: Any) -> SplitResponse20240930:
         """Send a call to the Splitting AI and process the response."""
         # Ensure the model is loaded
         splitting_model = await self.get_model()
-        request = SplitRequest20240930(**request)
+        request = SplitRequest20241227(**request)
         project = splitting_model.model.project
         add_credentials_to_project(project, ctx)
         document = prepare_request(request=request, project=project)
-        result = await asyncio.get_event_loop().run_in_executor(
-            self.executor, splitting_model.propose_split_documents, document
-        )
+        result = await asyncio.get_event_loop().run_in_executor(self.executor, splitting_model.propose_split_documents, document)
         split_result = process_response(result)
         cleanup_project_after_document_processing(project, document)
         return split_result

@@ -6,7 +6,7 @@ import unittest
 import pytest
 import requests
 
-from konfuzio_sdk.bento.categorization.schemas import CategorizeRequest20240729, CategorizeResponse20240729
+from konfuzio_sdk.bento.categorization.schemas import CategorizeRequest20241227, CategorizeResponse20240729
 from konfuzio_sdk.bento.categorization.utils import convert_document_to_request, convert_response_to_categorized_pages
 from konfuzio_sdk.data import Project
 from konfuzio_sdk.settings_importer import is_dependency_installed
@@ -41,9 +41,7 @@ class TestCategorizationAIBento(unittest.TestCase):
         cls.categorization_pipeline.fit(n_epochs=5, optimizer={'name': 'Adam'})
         bento, path = cls.categorization_pipeline.save_bento()
         cls.bento_name = bento.tag.name + ':' + bento.tag.version
-        cls.bento_process = subprocess.Popen(
-            ['bentoml', 'serve', cls.bento_name], stdout=subprocess.PIPE, stderr=subprocess.STDOUT
-        )
+        cls.bento_process = subprocess.Popen(['bentoml', 'serve', cls.bento_name], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
         time.sleep(5)
         print('served bento')
@@ -73,6 +71,7 @@ class TestCategorizationAIBento(unittest.TestCase):
                 }
                 for page in self.test_document.pages()
             ],
+            'raw_ocr_response': self.test_document.raw_ocr_response if hasattr(self.test_document, 'raw_ocr_response') else None,
         }
         response = requests.post(url=self.request_url, json=data)
         # logging_from_subprocess(process=self.bento_process, breaking_point='status=')
@@ -83,12 +82,10 @@ class TestCategorizationAIBento(unittest.TestCase):
     def test_categorize_converted(self):
         """Test that a converting function creates request that can be accepted by categorize method of service."""
         document = self.test_document
-        prepared = convert_document_to_request(document=document, schema=CategorizeRequest20240729)
+        prepared = convert_document_to_request(document=document, schema=CategorizeRequest20241227)
         response = requests.post(url=self.request_url, json=prepared.dict())
         response_schema = CategorizeResponse20240729(pages=response.json()['pages'])
-        document_with_categorized_pages = convert_response_to_categorized_pages(
-            response=response_schema, document=document
-        )
+        document_with_categorized_pages = convert_response_to_categorized_pages(response=response_schema, document=document)
         assert len(document_with_categorized_pages.pages()) == 2
         assert document_with_categorized_pages.get_page_by_index(0).category_annotations[0].category.id_ == 19827
         assert document_with_categorized_pages.get_page_by_index(0).category_annotations[0].confidence > 0.9
