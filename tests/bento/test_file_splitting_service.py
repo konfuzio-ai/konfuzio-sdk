@@ -6,7 +6,7 @@ import unittest
 import pytest
 import requests
 
-from konfuzio_sdk.bento.file_splitting.schemas import SplitRequest20240930, SplitResponse20240930
+from konfuzio_sdk.bento.file_splitting.schemas import SplitRequest20241227, SplitResponse20240930
 from konfuzio_sdk.bento.file_splitting.utils import convert_document_to_request
 from konfuzio_sdk.data import CategoryAnnotation, Project
 from konfuzio_sdk.settings_importer import is_dependency_installed
@@ -31,9 +31,7 @@ class TestFileSplittingAIBento(unittest.TestCase):
         cls.test_document = cls.project.get_document_by_id(6358527)
         for page in cls.test_document.pages():
             if page.number == 1:
-                _ = CategoryAnnotation(
-                    category=cls.project.get_category_by_id(19827), confidence=1, page=page, document=cls.test_document
-                )
+                _ = CategoryAnnotation(category=cls.project.get_category_by_id(19827), confidence=1, page=page, document=cls.test_document)
             else:
                 _ = CategoryAnnotation(
                     category=cls.project.get_category_by_id(19828),
@@ -45,9 +43,7 @@ class TestFileSplittingAIBento(unittest.TestCase):
         cls.splitting_ai = SplittingAI(model=file_splitting_model)
         bento, path = cls.splitting_ai.save_bento()
         cls.bento_name = bento.tag.name + ':' + bento.tag.version
-        cls.bento_process = subprocess.Popen(
-            ['bentoml', 'serve', '-p 3002', cls.bento_name], stdout=subprocess.PIPE, stderr=subprocess.STDOUT
-        )
+        cls.bento_process = subprocess.Popen(['bentoml', 'serve', '-p 3002', cls.bento_name], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
         time.sleep(5)
         print('served bento')
@@ -86,6 +82,7 @@ class TestFileSplittingAIBento(unittest.TestCase):
                 }
                 for page in self.test_document.pages()
             ],
+            'raw_ocr_response': self.test_document.raw_ocr_response if hasattr(self.test_document, 'raw_ocr_response') else None,
         }
         print(data['pages'])
         response = requests.post(url=self.request_url, json=data)
@@ -102,7 +99,7 @@ class TestFileSplittingAIBento(unittest.TestCase):
         and a document converted by the function.
         """
         document = self.test_document
-        prepared = convert_document_to_request(document=document, schema=SplitRequest20240930)
+        prepared = convert_document_to_request(document=document, schema=SplitRequest20241227)
         response = requests.post(url=self.request_url, json=prepared.dict())
         response_schema = SplitResponse20240930(splitting_results=response.json()['splitting_results'])
         assert len(response_schema.splitting_results) == 2
