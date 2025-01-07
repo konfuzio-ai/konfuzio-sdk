@@ -39,6 +39,7 @@ app = FastAPI()
 class ExtractionService(PicklableModelService):
     model_ref = bentoml.models.get(ai_model_name)
 
+
     @bentoml.api(input_spec=ExtractRequest20241227)
     @handle_exceptions
     async def extract(self, ctx: bentoml.Context, **request: t.Any) -> ExtractResponse20240117:
