@@ -7,7 +7,7 @@ from typing import Any
 import bentoml
 from fastapi import Depends, FastAPI, HTTPException
 
-from .schemas import CategorizeRequest20240729, CategorizeResponse20240729
+from .schemas import CategorizeRequest20241227, CategorizeResponse20240729
 from .utils import prepare_request, process_response
 
 # Use relative or top module import based on whether this is run as an actual service or imported
@@ -39,19 +39,17 @@ app = FastAPI()
 class CategorizationService(PicklableModelService):
     model_ref = bentoml.models.get(ai_model_name)
 
-    @bentoml.api(input_spec=CategorizeRequest20240729)
+    @bentoml.api(input_spec=CategorizeRequest20241227)
     @handle_exceptions
     async def categorize(self, ctx: bentoml.Context, **request: Any) -> CategorizeResponse20240729:
         """Send an call to the Categorization AI and process the response."""
         # Ensure the model is loaded
         categorization_model = await self.get_model()
-        request = CategorizeRequest20240729(**request)
+        request = CategorizeRequest20241227(**request)
         project = categorization_model.project
         add_credentials_to_project(project, ctx)
         document = prepare_request(request=request, project=project)
-        result = await asyncio.get_event_loop().run_in_executor(
-            self.executor, categorization_model.categorize, document
-        )
+        result = await asyncio.get_event_loop().run_in_executor(self.executor, categorization_model.categorize, document)
         categories_result = process_response(result)
         cleanup_project_after_document_processing(project, document)
         return categories_result

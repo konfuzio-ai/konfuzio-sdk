@@ -9,7 +9,7 @@ import pytest
 import requests
 from PIL import Image
 
-from konfuzio_sdk.bento.extraction.schemas import ExtractRequest20240117, ExtractResponse20240117
+from konfuzio_sdk.bento.extraction.schemas import ExtractRequest20241227, ExtractResponse20240117
 from konfuzio_sdk.bento.extraction.utils import convert_document_to_request, convert_response_to_annotations
 from konfuzio_sdk.data import Document, Project
 from konfuzio_sdk.settings_importer import is_dependency_installed
@@ -42,9 +42,7 @@ class TestExtractionAIBento(unittest.TestCase):
         cls.pipeline.fit()
         bento, path = cls.pipeline.save_bento()
         cls.bento_name = bento.tag.name + ':' + bento.tag.version
-        cls.bento_process = subprocess.Popen(
-            ['bentoml', 'serve', '-p 3001', cls.bento_name], stdout=subprocess.PIPE, stderr=subprocess.STDOUT
-        )
+        cls.bento_process = subprocess.Popen(['bentoml', 'serve', '-p 3001', cls.bento_name], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         time.sleep(5)
         print('served bento')
         cls.request_url = 'http://0.0.0.0:3001/extract'
@@ -73,6 +71,7 @@ class TestExtractionAIBento(unittest.TestCase):
                 }
                 for page in self.test_document.pages()
             ],
+            'raw_ocr_response': self.test_document.raw_ocr_response if hasattr(self.test_document, 'raw_ocr_response') else None,
         }
         response = requests.post(url=self.request_url, json=data)
         logging_from_subprocess(process=self.bento_process, breaking_point='status=')
@@ -81,7 +80,7 @@ class TestExtractionAIBento(unittest.TestCase):
 
     def test_extract_converted(self):
         """Test that only a schema-adhering response is accepted by extract method of service."""
-        prepared = convert_document_to_request(document=self.test_document, schema=ExtractRequest20240117)
+        prepared = convert_document_to_request(document=self.test_document, schema=ExtractRequest20241227)
         response = requests.post(url=self.request_url, json=prepared.dict())
         # logging_from_subprocess(process=bento_process, breaking_point='status=')
         assert len(response.json()['annotation_sets']) == 4
@@ -125,6 +124,7 @@ class TestExtractionAIBento(unittest.TestCase):
                 for bbox_id, bbox in self.test_document.get_bbox().items()
             },
             'pages': pages,
+            'raw_ocr_response': self.test_document.raw_ocr_response if hasattr(self.test_document, 'raw_ocr_response') else None,
         }
         response = requests.post(url=self.request_url, json=data)
         # logging_from_subprocess(process=self.bento_process, breaking_point='status=')
@@ -141,14 +141,14 @@ class TestExtractionAIBento(unittest.TestCase):
     def test_convert_empty_document(self):
         """Test that an empty document is processed correctly."""
         empty_document = Document(project=self.project, category=self.pipeline.category)
-        prepared = convert_document_to_request(document=empty_document, schema=ExtractRequest20240117)
+        prepared = convert_document_to_request(document=empty_document, schema=ExtractRequest20241227)
         assert prepared.text is None
         assert prepared.bboxes == {}
         assert prepared.pages == []
 
     def test_service_error(self):
         """Test that Python errors occurring in the service are caught and returned as a response."""
-        data = {'text': 'test', 'bboxes': {}, 'pages': []}
+        data = {'text': 'test', 'bboxes': {}, 'pages': [], 'raw_ocr_response': None}
         response = requests.post(url=self.request_url, json=data)
         assert response.status_code == 500
         assert response.json()['error'] == 'NotImplementedError'

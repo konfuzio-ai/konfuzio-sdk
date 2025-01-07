@@ -1,19 +1,20 @@
 """Utility functions for adapting Konfuzio concepts to be used with Pydantic models."""
-import typing as t
 import logging
+import typing as t
 
 from pydantic import BaseModel
 
 from konfuzio_sdk.data import Annotation, AnnotationSet, Document, Page, Project, Span
 
-from .schemas import ExtractRequest20240117, ExtractRequest20240117Page, ExtractResponse20240117
+from .schemas import ExtractRequest20240117Page, ExtractRequest20241227, ExtractResponse20240117
 
 NOT_IMPLEMENTED_ERROR_MESSAGE = (
-    'The request does not adhere to any schema version. Please modify the request to fit one of the schemas from '
-    'bento/extraction/schemas.py.'
+    'The request does not adhere to any schema version. Please modify the request to fit one of the schemas from ' 'bento/extraction/schemas.py.'
 )
 
 # Pydanctic conversion functions
+
+logger = logging.getLogger()
 
 
 def prepare_request(request: BaseModel, project: Project, konfuzio_sdk_version: t.Optional[str] = None) -> Document:
@@ -32,6 +33,36 @@ def prepare_request(request: BaseModel, project: Project, konfuzio_sdk_version: 
     document_id = max((doc.id_ for doc in project._documents if doc.id_), default=0) + 1
 
     if request.__class__.__name__ == 'ExtractRequest20240117':
+        bboxes = {}
+        for bbox_id, bbox in request.bboxes.items():
+            bboxes[str(bbox_id)] = {
+                'x0': bbox.x0,
+                'x1': bbox.x1,
+                'y0': bbox.y0,
+                'y1': bbox.y1,
+                'page_number': bbox.page_number,
+                'text': bbox.text,
+            }
+            # Backwards compatibility with Konfuzio SDK versions < 0.3.
+            # In newer versions, the top and bottom values are not needed.
+            if konfuzio_sdk_version and konfuzio_sdk_version < '0.3':
+                page = next(page for page in request.pages if page.number == bbox.page_number)
+                bboxes[str(bbox_id)]['top'] = round(page.original_size[1] - bbox.y0, 4)
+                bboxes[str(bbox_id)]['bottom'] = round(page.original_size[1] - bbox.y1, 4)
+        document = Document(
+            id_=document_id,
+            text=request.text,
+            bbox=bboxes,
+            project=project,
+            category=category,
+        )
+        for page in request.pages:
+            p = Page(id_=page.number, document=document, number=page.number, original_size=page.original_size)
+            if page.segmentation:
+                p._segmentation = page.segmentation
+            if page.image:
+                p.image_bytes = page.image
+    elif request.__class__.__name__ == 'ExtractRequest20241227':
         bboxes = {}
         for bbox_id, bbox in request.bboxes.items():
             bboxes[str(bbox_id)] = {
@@ -118,6 +149,7 @@ def process_response(result, schema: BaseModel = ExtractResponse20240117) -> Bas
         return schema(annotation_sets=annotations_result)
     elif schema.__name__ == 'ExtractResponseForLegacyTrainer20240912':
         import json
+
         class JSONEncoder(json.JSONEncoder):
             def default(self, obj):
                 if hasattr(obj, 'to_json'):
@@ -130,7 +162,7 @@ def process_response(result, schema: BaseModel = ExtractResponse20240117) -> Bas
         raise NotImplementedError(NOT_IMPLEMENTED_ERROR_MESSAGE)
 
 
-def convert_document_to_request(document: Document, schema: BaseModel = ExtractRequest20240117) -> BaseModel:
+def convert_document_to_request(document: Document, schema: BaseModel = ExtractRequest20241227) -> BaseModel:
     """
     Receive a Document and convert it into a request in accordance to a passed schema.
 
@@ -164,6 +196,33 @@ def convert_document_to_request(document: Document, schema: BaseModel = ExtractR
                 for k, v in document.bboxes.items()
             },
             pages=pages,
+        )
+    elif schema.__name__ == 'ExtractRequest20241227':
+        pages = [
+            ExtractRequest20240117Page(
+                number=page.number,
+                image=page.image_bytes,
+                original_size=page._original_size,
+                segmentation=page._segmentation,
+            )
+            for page in document.pages()
+        ]
+        converted = schema(
+            text=document.text,
+            bboxes={
+                k: {
+                    'x0': v.x0,
+                    'x1': v.x1,
+                    'y0': v.y0,
+                    'y1': v.y1,
+                    'page_number': v.page.number,
+                    'top': v.top,
+                    'bottom': v.bottom,
+                    'text': document.text[k],
+                }
+                for k, v in document.bboxes.items()
+            },
+            pages=pages,
             raw_ocr_response=document.raw_ocr_response if hasattr(document, 'raw_ocr_response') else None,
         )
     else:
@@ -171,9 +230,7 @@ def convert_document_to_request(document: Document, schema: BaseModel = ExtractR
     return converted
 
 
-def convert_response_to_annotations(
-    response: 'Response', response_schema_class: BaseModel, document: Document, mappings: t.Optional[dict] = None
-) -> Document:
+def convert_response_to_annotations(response, response_schema_class: BaseModel, document: Document, mappings: t.Optional[dict] = None) -> Document:
     """
     Receive an ExtractResponse and convert it into a list of Annotations to be added to the Document.
 
@@ -196,9 +253,7 @@ def convert_response_to_annotations(
 
         for annotation_set in response.annotation_sets:
             label_set_id = label_set_mappings.get(annotation_set.label_set_id, annotation_set.label_set_id)
-            sdk_annotation_set = AnnotationSet(
-                document=document, label_set=document.project.get_label_set_by_id(label_set_id)
-            )
+            sdk_annotation_set = AnnotationSet(document=document, label_set=document.project.get_label_set_by_id(label_set_id))
             for annotation in annotation_set.annotations:
                 label_id = label_mappings.get(annotation.label.id, annotation.label.id)
                 Annotation(
@@ -221,9 +276,12 @@ def convert_response_to_annotations(
     elif response_schema_class.__name__ == 'ExtractResponseForLegacyTrainer20240912':
         """Restore Pandas Dataframe which has been converted to JSON for sending via API."""
         import json
+
         result = response.json()
+
         def my_convert(res_dict):
             import pandas as pd
+
             new_dict = {}
             for k, v in res_dict.items():
                 if isinstance(v, dict):

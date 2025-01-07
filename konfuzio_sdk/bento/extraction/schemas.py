@@ -1,5 +1,5 @@
 """Define pydantic models for request and response from the Extraction AI."""
-from typing import Union, Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, RootModel
 
@@ -19,6 +19,25 @@ class ExtractRequest20240117Page(BaseModel):
     segmentation: Optional[list] = None
 
 
+class ExtractRequest20241227(BaseModel):
+    """Describe a scheme for the extraction request on 27/12/2024."""
+
+    class Bbox(BaseModel):
+        """Describe a scheme for the Bbox class on 27/12/2024."""
+
+        x0: float
+        x1: float
+        y0: float
+        y1: float
+        page_number: int
+        text: Optional[str]
+
+    text: Optional[str]
+    bboxes: Optional[Dict[int, Bbox]]
+    pages: Optional[List[ExtractRequest20240117Page]]
+    raw_ocr_response: Optional[Union[Dict, List]]
+
+
 class ExtractRequest20240117(BaseModel):
     """Describe a scheme for the extraction request on 17/01/2024."""
 
@@ -35,7 +54,6 @@ class ExtractRequest20240117(BaseModel):
     text: Optional[str]
     bboxes: Optional[Dict[int, Bbox]]
     pages: Optional[List[ExtractRequest20240117Page]]
-    raw_ocr_response: Optional[Union[Dict, List]]
 
 
 class ExtractResponse20240117(BaseModel):

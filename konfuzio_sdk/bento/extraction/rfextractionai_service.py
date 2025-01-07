@@ -8,7 +8,7 @@ import typing as t
 import bentoml
 from fastapi import Depends, FastAPI, HTTPException
 
-from .schemas import ExtractRequest20240117, ExtractResponse20240117
+from .schemas import ExtractRequest20241227, ExtractResponse20240117
 from .utils import prepare_request, process_response
 
 # Use relative or top module import based on whether this is run as an actual service or imported
@@ -39,7 +39,7 @@ app = FastAPI()
 class ExtractionService(PicklableModelService):
     model_ref = bentoml.models.get(ai_model_name)
 
-    @bentoml.api(input_spec=ExtractRequest20240117)
+    @bentoml.api(input_spec=ExtractRequest20241227)
     @handle_exceptions
     async def extract(self, ctx: bentoml.Context, **request: t.Any) -> ExtractResponse20240117:
         """Send a call to the Extraction AI and process the response."""
@@ -47,7 +47,7 @@ class ExtractionService(PicklableModelService):
         extraction_model = await self.get_model()
 
         # The rest of the method remains the same
-        request = ExtractRequest20240117(**request)
+        request = ExtractRequest20241227(**request)
         project = extraction_model.project
 
         # Add credentials from the request headers to the Project object, but only if the SDK version supports this.
