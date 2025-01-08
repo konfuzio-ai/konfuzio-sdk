@@ -299,6 +299,7 @@ def convert_document_to_request(document: Document, schema: BaseModel = ExtractR
             )
             for page in document.pages()
         ]
+        doc_bbox = document.get_bbox()
         converted = schema(
             text=document.text,
             bboxes={
