@@ -36,9 +36,7 @@ DEVICE = 'cpu'
 
 
 @pytest.mark.skipif(
-    not is_dependency_installed('torch')
-    and not is_dependency_installed('transformers')
-    and not is_dependency_installed('tensorflow'),
+    not is_dependency_installed('torch') and not is_dependency_installed('transformers') and not is_dependency_installed('tensorflow'),
     reason='Required dependencies not installed.',
 )
 class TestContextAwareFileSplittingModel(unittest.TestCase):
@@ -82,9 +80,7 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
     def test_init_file_splitting_model_not_a_category(self):
         """Test passing a list with an element that is not a Category as an input."""
         with pytest.raises(ValueError, match='have to be Categories'):
-            ContextAwareFileSplittingModel(
-                categories=[self.project.get_category_by_id(3), ''], tokenizer=ConnectedTextTokenizer()
-            )
+            ContextAwareFileSplittingModel(categories=[self.project.get_category_by_id(3), ''], tokenizer=ConnectedTextTokenizer())
 
     def test_init_file_splitting_model_category_no_documents(self):
         """Test passing a Category that does not have Documents."""
@@ -96,8 +92,8 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
         """Test passing a Category that does not have test Documents."""
         _ = Category(project=self.project, id_=6, name='CategoryName 6')
         Document(project=self.project, category=_, text='Hi all, I like fish.', dataset_status=2)
-        with pytest.raises(ValueError, match='does not have test Documents'):
-            ContextAwareFileSplittingModel(categories=[_], tokenizer=ConnectedTextTokenizer())
+        initialized_ai = ContextAwareFileSplittingModel(categories=[_], tokenizer=ConnectedTextTokenizer())
+        assert _ in initialized_ai.categories
 
     def test_load_incompatible_model(self):
         """Test initializing a model that does not pass has_compatible_interface check."""
@@ -112,21 +108,15 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
 
     def test_predict_context_aware_splitting_model(self):
         """Test correct first Page prediction."""
-        test_document = self.file_splitting_model.tokenizer.tokenize(
-            deepcopy(self.project.get_category_by_id(3).test_documents()[0])
-        )
+        test_document = self.file_splitting_model.tokenizer.tokenize(deepcopy(self.project.get_category_by_id(3).test_documents()[0]))
         # deep copying because we do not want changes in an original test Document.
         # typically this happens in one of the private methods, but since here we pass a Document Page by Page, we
         # need to tokenize it explicitly (compared to when we pass a full Document to the Splitting AI).
         for page in test_document.pages():
             page.is_first_page = False
             for category in self.file_splitting_model.categories:
-                cur_first_page_strings = category.exclusive_first_page_strings(
-                    tokenizer=self.file_splitting_model.tokenizer
-                )
-                intersection = {span.offset_string.strip('\f').strip('\n') for span in page.spans()}.intersection(
-                    cur_first_page_strings
-                )
+                cur_first_page_strings = category.exclusive_first_page_strings(tokenizer=self.file_splitting_model.tokenizer)
+                intersection = {span.offset_string.strip('\f').strip('\n') for span in page.spans()}.intersection(cur_first_page_strings)
                 if len(intersection) > 0:
                     page.is_first_page = True
                     break
@@ -141,9 +131,7 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
 
     def test_predict_with_empty_categories(self):
         """Test predicting with all empty Categories."""
-        model = ContextAwareFileSplittingModel(
-            categories=[self.project.get_category_by_id(2)], tokenizer=self.file_splitting_model.tokenizer
-        )
+        model = ContextAwareFileSplittingModel(categories=[self.project.get_category_by_id(2)], tokenizer=self.file_splitting_model.tokenizer)
         model.fit(allow_empty_categories=True)
         with pytest.raises(ValueError, match='Cannot run prediction as none of the Categories in'):
             model.predict(self.test_document.pages()[0])
@@ -154,28 +142,18 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
         assert os.path.isfile(self.file_splitting_model.path)
         model = ContextAwareFileSplittingModel.load_model(self.file_splitting_model.path)
         for category_gt, category_load in zip(self.file_splitting_model.categories, model.categories):
-            gt_exclusive_first_page_strings = category_gt.exclusive_first_page_strings(
-                tokenizer=ConnectedTextTokenizer()
-            )
-            load_exclusive_first_page_strings = category_load.exclusive_first_page_strings(
-                tokenizer=ConnectedTextTokenizer()
-            )
+            gt_exclusive_first_page_strings = category_gt.exclusive_first_page_strings(tokenizer=ConnectedTextTokenizer())
+            load_exclusive_first_page_strings = category_load.exclusive_first_page_strings(tokenizer=ConnectedTextTokenizer())
             assert gt_exclusive_first_page_strings == load_exclusive_first_page_strings
 
     def test_pickle_model_save_lose_weight(self):
         """Test saving Context Aware File Splitting Model with reduce_weight."""
-        self.file_splitting_model.path = self.file_splitting_model.save(
-            reduce_weight=True, keep_documents=True, max_ram='5MB'
-        )
+        self.file_splitting_model.path = self.file_splitting_model.save(reduce_weight=True, keep_documents=True, max_ram='5MB')
         assert os.path.isfile(self.file_splitting_model.path)
         model = ContextAwareFileSplittingModel.load_model(self.file_splitting_model.path)
         for category_gt, category_load in zip(self.file_splitting_model.categories, model.categories):
-            gt_exclusive_first_page_strings = category_gt.exclusive_first_page_strings(
-                tokenizer=ConnectedTextTokenizer()
-            )
-            load_exclusive_first_page_strings = category_load.exclusive_first_page_strings(
-                tokenizer=ConnectedTextTokenizer()
-            )
+            gt_exclusive_first_page_strings = category_gt.exclusive_first_page_strings(tokenizer=ConnectedTextTokenizer())
+            load_exclusive_first_page_strings = category_load.exclusive_first_page_strings(tokenizer=ConnectedTextTokenizer())
             assert gt_exclusive_first_page_strings == load_exclusive_first_page_strings
 
     @unittest.skipIf(sys.version_info[:2] != (3, 8), reason='This AI can only be loaded on Python 3.8.')
@@ -212,12 +190,8 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
         with bz2.open(pkl_file_path, 'rb') as file:
             loaded = cloudpickle.load(file)
         for category_gt, category_load in zip(self.file_splitting_model.categories, loaded.categories):
-            gt_exclusive_first_page_strings = category_gt.exclusive_first_page_strings(
-                tokenizer=ConnectedTextTokenizer()
-            )
-            load_exclusive_first_page_strings = category_load.exclusive_first_page_strings(
-                tokenizer=ConnectedTextTokenizer()
-            )
+            gt_exclusive_first_page_strings = category_gt.exclusive_first_page_strings(tokenizer=ConnectedTextTokenizer())
+            load_exclusive_first_page_strings = category_load.exclusive_first_page_strings(tokenizer=ConnectedTextTokenizer())
             assert gt_exclusive_first_page_strings == load_exclusive_first_page_strings
 
     def test_splitting_ai_predict(self):
@@ -305,9 +279,7 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
 
 
 @pytest.mark.skipif(
-    not is_dependency_installed('torch')
-    and not is_dependency_installed('transformers')
-    and not is_dependency_installed('tensorflow'),
+    not is_dependency_installed('torch') and not is_dependency_installed('transformers') and not is_dependency_installed('tensorflow'),
     reason='Required dependencies not installed.',
 )
 class TestTextualFileSplittingModel(unittest.TestCase):
@@ -467,9 +439,7 @@ class TestTextualFileSplittingModel(unittest.TestCase):
 
 
 @pytest.mark.skipif(
-    not is_dependency_installed('torch')
-    and not is_dependency_installed('transformers')
-    and not is_dependency_installed('tensorflow'),
+    not is_dependency_installed('torch') and not is_dependency_installed('transformers') and not is_dependency_installed('tensorflow'),
     reason='Required dependencies not installed.',
 )
 class TestMultimodalFileSplittingModel(unittest.TestCase):

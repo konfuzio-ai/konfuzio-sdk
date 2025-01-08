@@ -125,6 +125,37 @@ def prepare_request(request: BaseModel, project: Project, konfuzio_sdk_version: 
                 p._segmentation = page.segmentation
             if page.image:
                 p.image_bytes = page.image
+    elif request.__class__.__name__ == 'ExtractRequest20241223':
+        bboxes = {}
+        for bbox_id, bbox in request.bboxes.items():
+            bboxes[str(bbox_id)] = {
+                'x0': bbox.x0,
+                'x1': bbox.x1,
+                'y0': bbox.y0,
+                'y1': bbox.y1,
+                'page_number': bbox.page_number,
+                'text': bbox.text,
+                'line_index': bbox.line_index,
+            }
+            # Backwards compatibility with Konfuzio SDK versions < 0.3.
+            # In newer versions, the top and bottom values are not needed.
+            if konfuzio_sdk_version and konfuzio_sdk_version < '0.3':
+                page = next(page for page in request.pages if page.number == bbox.page_number)
+                bboxes[str(bbox_id)]['top'] = round(page.original_size[1] - bbox.y0, 4)
+                bboxes[str(bbox_id)]['bottom'] = round(page.original_size[1] - bbox.y1, 4)
+        document = Document(
+            id_=document_id,
+            text=request.text,
+            bbox=bboxes,
+            project=project,
+            category=category,
+        )
+        for page in request.pages:
+            p = Page(id_=page.number, document=document, number=page.number, original_size=page.original_size)
+            if page.segmentation:
+                p._segmentation = page.segmentation
+            if page.image:
+                p.image_bytes = page.image
     else:
         raise NotImplementedError(NOT_IMPLEMENTED_ERROR_MESSAGE)
     return document
@@ -287,7 +318,6 @@ def convert_document_to_request(document: Document, schema: BaseModel = ExtractR
             pages=pages,
             raw_ocr_response=document.raw_ocr_response if hasattr(document, 'raw_ocr_response') else None,
         )
-
     else:
         raise NotImplementedError(NOT_IMPLEMENTED_ERROR_MESSAGE)
     return converted
