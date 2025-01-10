@@ -499,7 +499,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         self.test_labels = None
         self.supports_gpu = True
         self.model = None
-        self.model_name = 'distilbert-base-uncased'
+        self.model_name = kwargs.get('model_name', 'distilbert-base-uncased')
         self.tokenizer = None
         self.transformers_tokenizer = None
         self.use_mlflow = False
@@ -700,14 +700,16 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
             logging_steps=0.05,
             save_total_limit=1,
             push_to_hub=False,
-            learning_rate=3e-5,
+            learning_rate=kwargs.get('learning_rate', 3e-5),
             per_device_train_batch_size=train_batch_size,
             per_device_eval_batch_size=eval_batch_size,
             num_train_epochs=epochs,
-            weight_decay=1e-3,
+            weight_decay=kwargs.get('weight_decay', 1e-3),
             disable_tqdm=True,
             report_to='mlflow' if self.use_mlflow else 'none',
             no_cuda='cuda' not in device,
+            lr_scheduler_type=kwargs.get('lr_scheduler_type', 'linear'),
+            warmup_ratio=kwargs.get('warmup_ratio', 0.0),
         )
         logger.info('=' * 50)
         logger.info(f'[{get_timestamp()}]\tStarting Training...')
