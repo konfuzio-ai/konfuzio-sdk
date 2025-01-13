@@ -692,7 +692,7 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         else:
             logger.info('MLflow tracking is disabled. Training without it.')
         # defining the training arguments
-        training_args = transformers.TrainingArguments(
+        self.training_args = transformers.TrainingArguments(
             output_dir=output_dir,
             evaluation_strategy='epoch',
             save_strategy='epoch',
@@ -718,11 +718,11 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         logger.info(f'Number of epochs: {epochs}')
         logger.info(f'Batch size for training: {train_batch_size}')
         logger.info(f'Batch size for evaluation: {eval_batch_size}')
-        logger.info(f'Learning rate: {training_args.learning_rate:.2e}\n')
+        logger.info(f'Learning rate: {self.training_args.learning_rate:.2e}\n')
         # initializing the trainer
         trainer = BalancedLossTrainer(
             model=self.model,
-            args=training_args,
+            args=self.training_args,
             train_dataset=train_dataset,
             eval_dataset=test_dataset,
             compute_metrics=compute_metrics,
