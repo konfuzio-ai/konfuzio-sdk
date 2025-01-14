@@ -9,13 +9,12 @@ import pytest
 import requests
 from PIL import Image
 
-from konfuzio_sdk.bento.extraction.schemas import ExtractRequest20241227, ExtractResponse20240117
+from konfuzio_sdk.bento.extraction.schemas import ExtractRequest20240117, ExtractRequest20241223, ExtractRequest20241227, ExtractResponse20240117
 from konfuzio_sdk.bento.extraction.utils import convert_document_to_request, convert_response_to_annotations
 from konfuzio_sdk.data import Document, Project
 from konfuzio_sdk.settings_importer import is_dependency_installed
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
 from konfuzio_sdk.trainer.information_extraction import RFExtractionAI
-from konfuzio_sdk.utils import logging_from_subprocess
 from tests.variables import OFFLINE_PROJECT
 
 
@@ -59,6 +58,7 @@ class TestExtractionAIBento(unittest.TestCase):
                     'y1': bbox['y1'],
                     'page_number': bbox['page_number'],
                     'text': bbox['text'],
+                    'line_index': bbox['line_index'] if 'line_index' in bbox else bbox['line_number'] - 1,
                 }
                 for bbox_id, bbox in self.test_document.get_bbox().items()
             },
@@ -74,7 +74,8 @@ class TestExtractionAIBento(unittest.TestCase):
             'raw_ocr_response': self.test_document.raw_ocr_response if hasattr(self.test_document, 'raw_ocr_response') else None,
         }
         response = requests.post(url=self.request_url, json=data)
-        logging_from_subprocess(process=self.bento_process, breaking_point='status=')
+        # logging_from_subprocess(process=self.bento_process, breaking_point='status=')
+        print(response.json())
         assert len(response.json()['annotation_sets']) == 4
         assert sum([len(element['annotations']) for element in response.json()['annotation_sets']]) == 19
 
@@ -120,6 +121,7 @@ class TestExtractionAIBento(unittest.TestCase):
                     'y1': bbox['y1'],
                     'page_number': bbox['page_number'],
                     'text': bbox['text'],
+                    'line_index': bbox['line_index'] if 'line_index' in bbox else bbox['line_number'] - 1,
                 }
                 for bbox_id, bbox in self.test_document.get_bbox().items()
             },
@@ -153,6 +155,14 @@ class TestExtractionAIBento(unittest.TestCase):
         assert response.status_code == 500
         assert response.json()['error'] == 'NotImplementedError'
         assert len(response.json()['traceback']) > 0
+
+    def test_convert_20240117(self):
+        prepared = convert_document_to_request(document=self.test_document, schema=ExtractRequest20240117)
+        assert len(prepared.bboxes[1000].__dict__) == 6
+
+    def test_convert_20241223(self):
+        prepared = convert_document_to_request(document=self.test_document, schema=ExtractRequest20241223)
+        assert len(prepared.bboxes[1000].__dict__) == 7
 
     @classmethod
     def tearDownClass(cls) -> None:
