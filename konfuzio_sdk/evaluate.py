@@ -127,15 +127,11 @@ def get_overlapping_fp(unfiltered_df: pd.DataFrame):
 
     try:
         overlaps = (cross_df['start_offset_predicted'] < cross_df['end_offset']) & (cross_df['start_offset'] < cross_df['end_offset_predicted'])
-    except TypeError:
-        return fp_rows.iloc[0:0]  # if there are no overlaps
-
-    overlapping_indices = cross_df[overlaps]['original_index'].unique()
-
-    if len(overlapping_indices) == 0:
-        return fp_rows.iloc[0:0]
-    else:
+        overlapping_indices = cross_df[overlaps]['original_index'].unique()
         return fp_rows.loc[overlapping_indices]
+
+    except (TypeError, KeyError):
+        return fp_rows.iloc[0:0]  # if there are no overlaps
 
 
 def validate_number_of_predictions(ground_truth_doc: Document, evaluation_df: pd.DataFrame) -> bool:
