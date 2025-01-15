@@ -418,6 +418,19 @@ class TestTextualFileSplittingModel(unittest.TestCase):
         assert splitting_ai.full_evaluation.recall() == 1.0
         assert splitting_ai.full_evaluation.f1() == 1.0
 
+    def test_splitting_ai_category_no_test_documents(self):
+        """Test passing a Category that does not have test Documents."""
+        _ = Category(project=self.project, id_=99999, name='CategoryName 99999')
+        for document in self.project.documents:
+            document.set_category(self.project.no_category)
+            document.set_category(_)
+        initialized_ai = TextualFileSplittingModel(categories=[_])
+        assert _ in initialized_ai.categories
+        initialized_ai.fit(device=DEVICE, epochs=3, eval_batch_size=1, train_batch_size=1)
+        splitting_ai = SplittingAI(model=initialized_ai)
+        evaluation = splitting_ai.evaluate_full()
+        assert evaluation
+
     @classmethod
     def tearDownClass(cls) -> None:
         """Terminate MLflow server."""
