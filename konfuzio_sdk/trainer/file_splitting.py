@@ -650,7 +650,9 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
 
         # functions to be used by transformers.trainer
         def tokenize_function(examples):
-            return self.transformers_tokenizer(examples['text'], truncation=True, padding='max_length')
+            return self.transformers_tokenizer(
+                examples['text'], truncation=True, padding='max_length', max_length=self.model.config.max_position_embeddings
+            )
 
         def compute_metrics(eval_pred):
             predictions, labels = eval_pred
@@ -771,7 +773,9 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         concatenated_text = page.text
         if previous_page is not None:
             concatenated_text = self._concat_pages_text(page=page, previous_page=previous_page)
-        tokenized_text = self.transformers_tokenizer(concatenated_text, truncation=True, padding='max_length', return_tensors='pt')
+        tokenized_text = self.transformers_tokenizer(
+            concatenated_text, truncation=True, padding='max_length', return_tensors='pt', max_length=self.model.config.max_position_embeddings
+        )
         # move tokenized_text tensors to device
         tokenized_text = {key: value.to(device) for key, value in tokenized_text.items()}
         with torch.no_grad():

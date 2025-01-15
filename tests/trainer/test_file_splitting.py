@@ -283,10 +283,7 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
     not is_dependency_installed('torch') and not is_dependency_installed('transformers') and not is_dependency_installed('tensorflow'),
     reason='Required dependencies not installed.',
 )
-@parameterized.parameterized_class(
-    ('model_name'),
-    [(None, 'prajjwal1/bert-tiny')],
-)
+@parameterized.parameterized_class(('model_name'), [(None,), ('prajjwal1/bert-tiny',)])
 class TestTextualFileSplittingModel(unittest.TestCase):
     """Test Textual File Splitting Model."""
 
@@ -303,12 +300,12 @@ class TestTextualFileSplittingModel(unittest.TestCase):
             cls.file_splitting_model.documents = cls.file_splitting_model.categories[0].documents()
             cls.file_splitting_model.test_documents = cls.file_splitting_model.categories[0].test_documents()
         cls.training_args = {
-            'epochs': 3,
+            'epochs': 10,
             'train_batch_size': 1,
             'eval_batch_size': 1,
-            'learning_rate': 1e-5,
+            'learning_rate': 3e-5,
             'weight_decay': 2e-5,
-            'lr_scheduler_type': 'cosine',
+            'lr_scheduler_type': 'linear',
             'device': DEVICE,
         }
         cls.test_document = cls.file_splitting_model.test_documents[-1]
