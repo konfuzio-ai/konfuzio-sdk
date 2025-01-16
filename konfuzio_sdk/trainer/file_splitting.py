@@ -618,15 +618,18 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         logger.info(f'Length of testing documents: {len(self.test_documents)}')
         logger.info('Preprocessing training & test documents')
         train_texts, train_labels = self._preprocess_documents(data=self.documents, return_images=False)
-        test_texts, test_labels = self._preprocess_documents(data=self.test_documents, return_images=False)
+        if self.test_documents:
+            test_texts, test_labels = self._preprocess_documents(data=self.test_documents, return_images=False)
         logger.info('Document preprocessing finished.')
         logger.info('=' * 50)
         logger.info('Creating datasets')
         train_df = pd.DataFrame({'text': train_texts, 'label': train_labels})
-        test_df = pd.DataFrame({'text': test_texts, 'label': test_labels})
+        if self.test_documents:
+            test_df = pd.DataFrame({'text': test_texts, 'label': test_labels})
         # Convert to Dataset objects
         train_dataset = datasets.Dataset.from_pandas(train_df)
-        test_dataset = datasets.Dataset.from_pandas(test_df)
+        if self.test_documents:
+            test_dataset = datasets.Dataset.from_pandas(test_df)
         # Calculate class weights to solve unbalanced dataset problem
         try:
             class_weights = compute_class_weight('balanced', classes=[0, 1], y=train_labels)
@@ -662,7 +665,8 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
         logger.info('=' * 50)
         logger.info('Tokenizing datasets')
         train_dataset = train_dataset.map(tokenize_function, batched=True)
-        test_dataset = test_dataset.map(tokenize_function, batched=True)
+        if self.test_documents:
+            test_dataset = test_dataset.map(tokenize_function, batched=True)
         logger.info('=' * 50)
         logger.info('Loading model')
         # getting MLflow variables
@@ -693,43 +697,68 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
                 self.use_mlflow = False
         else:
             logger.info('MLflow tracking is disabled. Training without it.')
-        # defining the training arguments
-        self.training_args = transformers.TrainingArguments(
-            output_dir=output_dir,
-            evaluation_strategy='epoch',
-            save_strategy='epoch',
-            load_best_model_at_end=True,
-            logging_steps=0.05,
-            save_total_limit=1,
-            push_to_hub=False,
-            learning_rate=kwargs.get('learning_rate', 3e-5),
-            per_device_train_batch_size=train_batch_size,
-            per_device_eval_batch_size=eval_batch_size,
-            num_train_epochs=epochs,
-            weight_decay=kwargs.get('weight_decay', 1e-3),
-            disable_tqdm=True,
-            report_to='mlflow' if self.use_mlflow else 'none',
-            no_cuda='cuda' not in device,
-            lr_scheduler_type=kwargs.get('lr_scheduler_type', 'linear'),
-            warmup_ratio=kwargs.get('warmup_ratio', 0.0),
-        )
+        if self.test_documents:
+            # defining the training arguments
+            training_args = transformers.TrainingArguments(
+                output_dir=output_dir,
+                evaluation_strategy='epoch',
+                save_strategy='epoch',
+                load_best_model_at_end=True,
+                logging_steps=0.05,
+                save_total_limit=1,
+                push_to_hub=False,
+                learning_rate=3e-5,
+                per_device_train_batch_size=train_batch_size,
+                per_device_eval_batch_size=eval_batch_size,
+                num_train_epochs=epochs,
+                weight_decay=1e-3,
+                disable_tqdm=True,
+                report_to='mlflow' if self.use_mlflow else 'none',
+                no_cuda='cuda' not in device,
+            )
+        else:
+            training_args = transformers.TrainingArguments(
+                output_dir=output_dir,
+                save_strategy='epoch',
+                logging_steps=0.05,
+                save_total_limit=1,
+                push_to_hub=False,
+                learning_rate=3e-5,
+                per_device_train_batch_size=train_batch_size,
+                num_train_epochs=epochs,
+                weight_decay=1e-3,
+                disable_tqdm=True,
+                report_to='mlflow' if self.use_mlflow else 'none',
+                no_cuda='cuda' not in device,
+            )
         logger.info('=' * 50)
         logger.info(f'[{get_timestamp()}]\tStarting Training...')
         logger.info('\nConfiguration to be used for Training:')
         logger.info(f"Class weights for the training dataset: {[f'{weight:.2e}' for weight in class_weights]}")
         logger.info(f'Number of epochs: {epochs}')
         logger.info(f'Batch size for training: {train_batch_size}')
-        logger.info(f'Batch size for evaluation: {eval_batch_size}')
-        logger.info(f'Learning rate: {self.training_args.learning_rate:.2e}\n')
+        if eval_batch_size:
+            logger.info(f'Batch size for evaluation: {eval_batch_size}')
+        logger.info(f'Learning rate: {training_args.learning_rate:.2e}\n')
         # initializing the trainer
-        trainer = BalancedLossTrainer(
-            model=self.model,
-            args=self.training_args,
-            train_dataset=train_dataset,
-            eval_dataset=test_dataset,
-            compute_metrics=compute_metrics,
-            callbacks=[transformers.integrations.MLflowCallback] if self.use_mlflow else [LoggerCallback],
-        )
+
+        if self.test_documents:
+            trainer = BalancedLossTrainer(
+                model=self.model,
+                args=training_args,
+                train_dataset=train_dataset,
+                eval_dataset=test_dataset,
+                compute_metrics=compute_metrics,
+                callbacks=[transformers.integrations.MLflowCallback] if self.use_mlflow else [LoggerCallback],
+            )
+        else:
+            trainer = BalancedLossTrainer(
+                model=self.model,
+                args=training_args,
+                train_dataset=train_dataset,
+                compute_metrics=compute_metrics,
+                callbacks=[transformers.integrations.MLflowCallback] if self.use_mlflow else [LoggerCallback],
+            )
         trainer.class_weights = class_weights
 
         # training the model
@@ -737,11 +766,15 @@ class TextualFileSplittingModel(AbstractFileSplittingModel):
 
         logger.info(f'[{get_timestamp()}]\t🎉 Textual File Splitting Model Training finished.')
         logger.info('=' * 50)
-        logger.info(f'[{get_timestamp()}]\tComputing AI Quality.')
-        # computing the AI quality
-        evaluation_results = trainer.evaluate()
-        logger.info(f'[{get_timestamp()}]\tTextual File Splitting Model Evaluation finished.')
-        logger.info('=' * 50)
+        if self.test_documents:
+            logger.info(f'[{get_timestamp()}]\tComputing AI Quality.')
+            # computing the AI quality
+            evaluation_results = trainer.evaluate()
+            logger.info(f'[{get_timestamp()}]\tTextual File Splitting Model Evaluation finished.')
+            logger.info('=' * 50)
+        else:
+            evaluation_results = None
+            logger.info('No evaluation data because there are no test Documents in the provided Categories.')
         # making sure to end the MLflow run if it was started
         if self.use_mlflow:
             mlflow.end_run()
@@ -1161,7 +1194,7 @@ class SplittingAI:
             'requires_segmentation': getattr(self, 'requires_segmentation', False),
             'requires_text': getattr(self, 'requires_text', False),
             'requires_raw_ocr': getattr(self, 'requires_raw_ocr', False),
-            'request': 'SplitRequest20240930',
+            'request': 'SplitRequest20241227',
             'response': 'SplitResponse20240930',
         }
 

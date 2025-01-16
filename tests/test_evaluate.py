@@ -14,6 +14,7 @@ from konfuzio_sdk.evaluate import (
     EvaluationCalculator,
     ExtractionEvaluation,
     compare,
+    get_overlapping_fp,
     grouped,
     prioritize_rows,
 )
@@ -1905,3 +1906,39 @@ class TestEvaluationFileSplitting(unittest.TestCase):
         assert evaluation.precision == 1.0
         assert evaluation.recall == 1.0
         assert evaluation.f1 == 1.0
+
+
+def test_overlap_no_original_index_column():
+    """Test that the absence of 'original_index' column returns an empty dataframe as a responce."""
+    test_df = pd.DataFrame(
+        {
+            'false_positive': [True],
+            'is_matched': [False],
+            'start_offset_predicted': [10],
+            'end_offset_predicted': [20],
+            'start_offset': [30],
+            'end_offset': [40],
+        }
+    )
+
+    result = get_overlapping_fp(test_df)
+    assert len(result) == 0
+    assert isinstance(result, pd.DataFrame)
+
+
+def test_no_overlapping_indices():
+    """Test that the case of no overlapping FPs returns an empty dataframe as a responce."""
+    test_df = pd.DataFrame(
+        {
+            'false_positive': [True, False],
+            'is_matched': [False, False],
+            'start_offset_predicted': [10, 50],
+            'end_offset_predicted': [20, 60],
+            'start_offset': [30, 70],
+            'end_offset': [40, 80],
+        }
+    )
+
+    result = get_overlapping_fp(test_df)
+    assert len(result) == 0
+    assert isinstance(result, pd.DataFrame)

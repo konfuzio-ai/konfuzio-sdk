@@ -127,15 +127,11 @@ def get_overlapping_fp(unfiltered_df: pd.DataFrame):
 
     try:
         overlaps = (cross_df['start_offset_predicted'] < cross_df['end_offset']) & (cross_df['start_offset'] < cross_df['end_offset_predicted'])
-    except TypeError:
-        return fp_rows.iloc[0:0]  # if there are no overlaps
-
-    overlapping_indices = cross_df[overlaps]['original_index'].unique()
-
-    if len(overlapping_indices) == 0:
-        return fp_rows.iloc[0:0]
-    else:
+        overlapping_indices = cross_df[overlaps]['original_index'].unique()
         return fp_rows.loc[overlapping_indices]
+
+    except (TypeError, KeyError):
+        return fp_rows.iloc[0:0]  # if there are no overlaps
 
 
 def validate_number_of_predictions(ground_truth_doc: Document, evaluation_df: pd.DataFrame) -> bool:
@@ -986,7 +982,7 @@ class FileSplittingEvaluation:
         print(f'ground_truth_documents: {len(ground_truth_documents)}, prediction_documents: {len(prediction_documents)}')
         self.document_pairs = [[document[0], document[1]] for document in zip(ground_truth_documents, prediction_documents)]
         print(f'project:{projects}')
-        self.project = projects[0]  # because we check that exactly one Project exists across the Documents
+        self.project = projects[0] if len(projects) else None  # because we check that exactly one Project exists across the Documents
         self.zero_division = zero_division
         self.evaluation_results = None
         self.evaluation_results_by_category = None
@@ -1071,7 +1067,7 @@ class FileSplittingEvaluation:
         """
         if search:
             if search.id_ not in self.evaluation_results_by_category:
-                raise KeyError(f'{search} is not present in {self.project}. Only Categories within a Project can be used for ' f'viewing metrics.')
+                raise KeyError(f'{search} is not present in {self.project}. Only Categories within a Project can be used for viewing metrics.')
             return self.evaluation_results_by_category[search.id_][metric]
         return self.evaluation_results[metric]
 
