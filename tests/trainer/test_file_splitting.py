@@ -9,6 +9,7 @@ from copy import deepcopy
 
 import cloudpickle
 import numpy
+import parameterized
 import pytest
 from requests import HTTPError
 
@@ -282,6 +283,7 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
     not is_dependency_installed('torch') and not is_dependency_installed('transformers') and not is_dependency_installed('tensorflow'),
     reason='Required dependencies not installed.',
 )
+@parameterized.parameterized_class(('model_name'), [(None,), ('prajjwal1/bert-tiny',)])
 class TestTextualFileSplittingModel(unittest.TestCase):
     """Test Textual File Splitting Model."""
 
@@ -290,10 +292,22 @@ class TestTextualFileSplittingModel(unittest.TestCase):
         """Initialize the tested class."""
         # setting up project documents and model
         cls.project = Project(id_=14392)
-        cls.file_splitting_model = TextualFileSplittingModel(categories=cls.project.categories)
+        if cls.model_name:
+            cls.file_splitting_model = TextualFileSplittingModel(categories=cls.project.categories, model_name=cls.model_name)
+        else:
+            cls.file_splitting_model = TextualFileSplittingModel(categories=cls.project.categories)
         if not TEST_WITH_FULL_DATASET:
             cls.file_splitting_model.documents = cls.file_splitting_model.categories[0].documents()
             cls.file_splitting_model.test_documents = cls.file_splitting_model.categories[0].test_documents()
+        cls.training_args = {
+            'epochs': 10,
+            'train_batch_size': 1,
+            'eval_batch_size': 1,
+            'learning_rate': 3e-5,
+            'weight_decay': 2e-5,
+            'lr_scheduler_type': 'linear',
+            'device': DEVICE,
+        }
         cls.test_document = cls.file_splitting_model.test_documents[-1]
         # starting MLflow server
         cls.mlflow_process, cls.mlflow_host, cls.mlflow_port, cls.mlflow_url = cls.start_mlflow_server()
@@ -322,9 +336,22 @@ class TestTextualFileSplittingModel(unittest.TestCase):
 
     def test_model_training_without_mlflow(self):
         """Test model's fit() method without Mlflow arguments."""
-
-        self.file_splitting_model.fit(device=DEVICE, epochs=3, eval_batch_size=1, train_batch_size=1)
+        # check the name of the model being trained
+        if self.model_name:
+            assert self.file_splitting_model.model_name == self.model_name
+        else:
+            assert self.file_splitting_model.model_name == 'distilbert-base-uncased'
+        self.file_splitting_model.fit(**self.training_args)
+        # checking if training arguments are correctly set
+        assert self.file_splitting_model.training_args.num_train_epochs == self.training_args['epochs']
+        assert self.file_splitting_model.training_args.per_device_train_batch_size == self.training_args['train_batch_size']
+        assert self.file_splitting_model.training_args.per_device_eval_batch_size == self.training_args['eval_batch_size']
+        assert self.file_splitting_model.training_args.learning_rate == self.training_args['learning_rate']
+        assert self.file_splitting_model.training_args.weight_decay == self.training_args['weight_decay']
+        assert self.file_splitting_model.training_args.lr_scheduler_type == self.training_args['lr_scheduler_type']
+        # checking if trained model has been saved
         assert self.file_splitting_model.model is not None
+        # checking if mlflow was used
         assert self.file_splitting_model.use_mlflow is False
 
     def test_model_training_with_mlflow(self):
@@ -336,16 +363,23 @@ class TestTextualFileSplittingModel(unittest.TestCase):
         # if experiment with experiment_name does not exist, create it
         if not mlflow_client.get_experiment_by_name('test_experiment'):
             _ = mlflow_client.create_experiment('test_experiment')
+        # check the name of the model being trained
+        if self.model_name:
+            assert self.file_splitting_model.model_name == self.model_name
+        else:
+            assert self.file_splitting_model.model_name == 'distilbert-base-uncased'
         # training the model
-        self.file_splitting_model.fit(
-            device=DEVICE,
-            epochs=3,
-            eval_batch_size=1,
-            train_batch_size=1,
-            experiment_name='test_experiment',
-            tracking_uri=self.mlflow_url,
-        )
+        self.file_splitting_model.fit(experiment_name='test_experiment', tracking_uri=self.mlflow_url, **self.training_args)
+        # checking if training arguments are correctly set
+        assert self.file_splitting_model.training_args.num_train_epochs == self.training_args['epochs']
+        assert self.file_splitting_model.training_args.per_device_train_batch_size == self.training_args['train_batch_size']
+        assert self.file_splitting_model.training_args.per_device_eval_batch_size == self.training_args['eval_batch_size']
+        assert self.file_splitting_model.training_args.learning_rate == self.training_args['learning_rate']
+        assert self.file_splitting_model.training_args.weight_decay == self.training_args['weight_decay']
+        assert self.file_splitting_model.training_args.lr_scheduler_type == self.training_args['lr_scheduler_type']
+        # checking if trained model has been saved
         assert self.file_splitting_model.model is not None
+        # checking if mlflow was used
         assert self.file_splitting_model.use_mlflow is True
         # checking if the experiment was created
         try:

@@ -63,26 +63,30 @@ about the existing class of Konfuzio SDK.
 
 Familiarize yourself with a simple fallback logic for splitting stream of Pages into separate sub-Documents.
 
-9. :doc:`Create your own File Splitting AI <tutorials/create-custom-splitting-ai/index>`
+9. :doc:`Split a Document using Splitting AI <tutorials/document_splitting/index>`
+
+Master the art of splitting multi-document files within your projects automatically. This tutorial provides step-by-step guidance on dividing and organizing files into shorter, more manageable documents based on their content.
+
+10. :doc:`Create your own File Splitting AI <tutorials/create-custom-splitting-ai/index>`
 
 Build a custom File Splitting AI and define your own architecture or reuse any external model. This tutorial provides
 guidance about constructing a class for the model for File Splitting that can later be reused on Konfuzio app
 or in an on-prem installation.
 
-10. :doc:`Evaluate the performance of a File Splitting AI <tutorials/file-splitting-evaluation/index>`
+11. :doc:`Evaluate the performance of a File Splitting AI <tutorials/file-splitting-evaluation/index>`
 
 Get to know how to work with FileSplittingEvaluation class, assess the performance of Splitting AIs and interpret the
 results.
 
-11. :doc:`Tokenization <tutorials/tokenizers/index>`
+12. :doc:`Tokenization <tutorials/tokenizers/index>`
 
 Delve into the world of Document tokenization, a crucial step in text analysis. This tutorial explores various tokenization techniques and their applications.
 
-12. :doc:`Information Extraction <tutorials/information_extraction/index>`
+13. :doc:`Information Extraction <tutorials/information_extraction/index>`
 
 Unlock the potential of extracting valuable information from unstructured text. This tutorial guides you through the process of identifying and labeling key details.
 
-13. :doc:`Upload your AI model to use on Konfuzio app or an on-prem installation <tutorials/upload-your-ai/index>`
+14. :doc:`Upload your AI model to use on Konfuzio app or an on-prem installation <tutorials/upload-your-ai/index>`
 
 Learn how to proceed with your model after you built and trained it and upload it to use in production using API.
 
@@ -90,30 +94,30 @@ Learn how to proceed with your model after you built and trained it and upload i
 Advanced Techniques
 -------------------
 
-14. :doc:`Named Entity Recognition <tutorials/ner-ontonotes-fast/index>`
+15. :doc:`Named Entity Recognition <tutorials/ner-ontonotes-fast/index>`
 
 Take your text analysis to the next level with fast and accurate Named Entity Recognition using OntoNotes. This tutorial provides in-depth insights into NER techniques.
 
-15. :doc:`Annual Reports Analysis <tutorials/annual-reports/index>`
+16. :doc:`Annual Reports Analysis <tutorials/annual-reports/index>`
 
 Learn how to extract critical insights from annual reports using our advanced AI models. This tutorial is ideal for financial analysts and researchers.
 
 Specialized Applications
 ------------------------
 
-16. :doc:`Barcode Scanner <tutorials/barcode-scanner/index>`
+17. :doc:`Barcode Scanner <tutorials/barcode-scanner/index>`
 
 Explore the capabilities of our barcode scanning tool. This tutorial demonstrates how to effortlessly extract information from barcodes in Documents.
 
-17. :doc:`PDF Form Generator <tutorials/pdf-form-generator/index>`
+18. :doc:`PDF Form Generator <tutorials/pdf-form-generator/index>`
 
 Learn how to dynamically generate PDF forms using our AI-powered tools. This tutorial is perfect for streamlining Document creation processes.
 
-18. :doc:`Regex-based Annotations <tutorials/regex_based_annotations/index>`
+19. :doc:`Regex-based Annotations <tutorials/regex_based_annotations/index>`
 
 Harness the power of regular expressions for precise Document Annotations. This tutorial guides you through the process of using regex patterns effectively.
 
-19. :doc:`Object Detection <tutorials/object-detection/index>`
+20. :doc:`Object Detection <tutorials/object-detection/index>`
 
 Dive into object detection to detect document structures. This tutorial provides a step by step guide on how to train an object detection model on document structures.
 
@@ -121,15 +125,15 @@ Dive into object detection to detect document structures. This tutorial provides
 Streamlined Operations
 ---------------------
 
-20. :doc:`Data Validation <tutorials/data_validation/index>`
+21. :doc:`Data Validation <tutorials/data_validation/index>`
 
 Ensure the accuracy and integrity of your data with effective validation techniques. This tutorial provides best practices for maintaining high-quality data sets.
 
-21. :doc:`Outlier Annotations <tutorials/outlier-annotations/index>`
+22. :doc:`Outlier Annotations <tutorials/outlier-annotations/index>`
 
 Discover how to identify and handle outliers in your Document processing pipeline. This tutorial offers strategies for accurate Annotations.
 
-22. :doc:`Async Upload with Callback <tutorials/async_upload_with_callback/index>`
+23. :doc:`Async Upload with Callback <tutorials/async_upload_with_callback/index>`
 
 Optimize your Document processing workflow with asynchronous upload and callback functionality. This tutorial enhances the efficiency of large-scale operations.
 
